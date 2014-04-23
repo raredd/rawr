@@ -430,8 +430,8 @@ ggcols <- function(n, l = 65, c = 100) {
 #' @usage grcols(n, s = .5, v = 1, alpha = 1)
 #'
 #' @param n number of colors
-#' @param s,v numeric vectors of values in the range \code{[0, 1]} for
-#' ‘saturation’ and ‘value,’ respectively, to be combined to form a vector of
+#' @param s,v numeric vectors of values in the range \code{[0, 1]} for 
+#' "saturation" and "value," respectively, to be combined to form a vector of
 #' colors; values in shorter arguments are recycled
 #' @param alpha  numeric vector of values in the range \code{[0, 1]} for alpha 
 #' transparency channel (0 is transparent and 1 is opaque)

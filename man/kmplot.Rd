@@ -147,7 +147,7 @@ When \code{dev = TRUE}, a platform-specific graphics device
 is used to displace the plot. Defaults are
 \code{\link{quartz}}, \code{\link{windows}}, and
 \code{\link{x11}} for apple, windows, and unix platforms,
-respectfully. However, any device can be used by setting
+respectively. However, any device can be used by setting
 \code{dev = FALSE} and opening a device before running
 \code{kmplot}. If \code{dev} is \code{FALSE}, the plot will
 open in the current device; see \code{\link{.Device}}.

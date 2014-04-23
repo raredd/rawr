@@ -8,7 +8,7 @@ grcols(n, s = .5, v = 1, alpha = 1)
   \item{n}{number of colors}
 
   \item{s,v}{numeric vectors of values in the range
-  \code{[0, 1]} for ‘saturation’ and ‘value,’ respectively,
+  \code{[0, 1]} for "saturation" and "value," respectively,
   to be combined to form a vector of colors; values in
   shorter arguments are recycled}
 
