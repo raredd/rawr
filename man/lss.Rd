@@ -1,0 +1,48 @@
+\name{lss}
+\alias{lss}
+\title{Improved list of objects}
+\usage{
+lss(pos = 1L, pattern, by = 'size', decreasing = TRUE, all.names = FALSE,
+    head = TRUE, n = 10)
+}
+\arguments{
+  \item{pos}{argument specifying the environment as a
+  position in search list}
+
+  \item{pattern}{optional \code{\link{regex}}; only names
+  matching \code{pattern} are returned;
+  \code{\link{glob2rx}} can be used to convert wildcard
+  patterns to regular expressions}
+
+  \item{by}{variable to order output ('type', 'size'
+  (default), 'sizef', 'nrow', or 'ncol')}
+
+  \item{decreasing}{logical; if \code{TRUE}, displays
+  output in decreasing order}
+
+  \item{all.names}{logical; if \code{TRUE}, all object
+  names are returned; if \code{FALSE}, names which begin
+  with a \code{.} are omitted}
+
+  \item{head}{logical; if \code{TRUE}, only shows first
+  \code{n} objects of output}
+
+  \item{n}{number of objects to displace if \code{head} is
+  \code{TRUE}}
+}
+\description{
+Provides more details of objects in workspace
+}
+\examples{
+lss()
+\dontrun{
+a <- rnorm(100000)
+b <- matrix(1, 1000, 100)
+lss()
+}
+}
+\seealso{
+\code{\link{ls}}, \code{\link{ls.str}},
+\code{\link{objects}}
+}
+

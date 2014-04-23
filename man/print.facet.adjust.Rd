@@ -1,0 +1,22 @@
+\name{print.facet.adjust}
+\alias{print.facet.adjust}
+\title{facet.adjust print method}
+\usage{
+print.facet.adjust(x, newpage = is.null(vp), vp = NULL)
+}
+\arguments{
+  \item{x}{object from \code{\link{facet.adjust}}}
+
+  \item{newpage}{draw new (empty) page first; see
+  \code{\link[ggplot2]{print.ggplot}}}
+
+  \item{vp}{viewport to draw plot in; see
+  \code{\link[ggplot2]{print.ggplot}}}
+}
+\description{
+facet.adjust print method
+}
+\seealso{
+\code{\link{facet.adjust}}
+}
+

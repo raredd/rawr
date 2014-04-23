@@ -1,0 +1,30 @@
+\name{zoomin}
+\alias{zoomin}
+\title{Zoom for points in base \code{R} plot}
+\usage{
+zoomin(x, y, ...)
+}
+\arguments{
+  \item{x}{x-coordinates}
+
+  \item{y}{y-coordinates}
+
+  \item{...}{other options passed to
+  \code{\link{identify}}}
+}
+\description{
+Provides a summary statistic for sample points in a plot
+(in progress).
+}
+\examples{
+set.seed(1618)
+x <- runif(10)
+y <- rnorm(10, mean = 5)
+
+par(mfrow = c(1, 2))
+plot(x, y, xlab = 'mean', ylab = 'sd')
+
+zoomin(x, y)
+## ESC to quit
+}
+

@@ -1,0 +1,58 @@
+\name{recoder}
+\alias{recoder}
+\title{Recode a variable}
+\usage{
+recoder(object, pattern, replacement, ...)
+}
+\arguments{
+  \item{object}{object to recode}
+
+  \item{pattern}{what to replace}
+
+  \item{replacement}{what to replace \code{pattern} with}
+
+  \item{...}{for future use}
+}
+\value{
+Returns an object with the same length (or dimensions) and
+class as \code{object}
+}
+\description{
+A function for recoding numeric, character, and factor
+values in a vector, list, matrix, or data frame.
+}
+\details{
+When recoding a factor variable with a new level,
+\code{recoder} automatically adds the corresponding level
+to \code{levels(object)} to avoid errors.
+}
+\note{
+The function currently recursively replaces
+\code{pattern[i]} with \code{replacement[i]} in sequential
+order, so if you intend to swap values, say \code{a} and
+\code{b}, in an \code{object}, \code{recoder} will instead
+first replace all occurrences of \code{a} with \code{b} and
+then all occurrences of \code{b} with \code{a} resulting in
+the \code{object} with no \code{b} occurrences. See
+examples. I will fix this eventually.
+}
+\examples{
+data(mtcars)
+recoder(mtcars$carb, c(1, 2), c('A','B'))
+recoder(mtcars, c(1, 2), c('A', 'B'))
+mtcars <- within(mtcars, carb1 <- factor(carb))
+recoder(mtcars$carb1, 1, 999)
+
+tmp <- c(list(1:5), list(5), list(NA))
+recoder(tmp, 5, NA)
+
+# example from note
+tmp <- 1:10
+recoder(tmp, c(1, 2), c(2, 1))
+# [1]  1  1  3  4  5  6  7  8  9 10    # actual return
+# [1]  2  1  3  4  5  6  7  8  9 10    # intended return
+}
+\seealso{
+\code{\link[car]{recode}}
+}
+

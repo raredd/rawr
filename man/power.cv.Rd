@@ -1,0 +1,63 @@
+\name{power.cv}
+\alias{power.cv}
+\title{Power calculations for one- and two-sample t-tests using ratio of means and
+coefficients of variation}
+\usage{
+power.cv(n = NULL, f = NULL, cv = NULL, sig.level = NULL,
+   power = NULL, type = c('two.sample', 'one.sample', 'paired'),
+   alternative = c('two.sided', 'less', 'greater'),
+   distribution = c('t', 'normal', 'log.normal'))
+}
+\arguments{
+  \item{n}{number of observations (per group)}
+
+  \item{f}{ratio of means (>1)}
+
+  \item{cv}{coefficient of variation}
+
+  \item{sig.level}{significance level (type I error
+  probability)}
+
+  \item{power}{power of test (1 - type II error
+  probability)}
+
+  \item{type}{type of t test}
+
+  \item{alternative}{one- or two-sided test}
+
+  \item{distribution}{underlying distribution assumption}
+}
+\value{
+Object of class "power.htest," a list of the arguments
+(including the computed one) augmented with method and note
+elements
+}
+\description{
+Compute power of test using mean ratios and coefficients of
+variation or determine other parameters to obtain target
+power.
+}
+\details{
+Exactly one of n, f, cv, sig.level, and power must be NULL
+}
+\note{
+\code{\link{uniroot}} is used to solve power equation for
+unknowns, so you may see errors from it, notably about
+inability to bracket the root when invalid arguments are
+given.
+}
+\examples{
+power.cv(n = NULL, 1.25, .2, .05, .8, distribution = 'normal')
+power.cv(13, 1.25, .2, .05, power = NULL, distribution = 't')
+power.cv(13, 1.25, .2, .05, power = NULL, distribution = 'log.normal')
+}
+\references{
+Van Belle, G., Martin, D. Sample size as a function of
+coefficient of variation and ratio of means. Am
+Statistician, Vol. 47, No. 3 (Aug., 1993), pp. 165-7.
+
+Martin, D.C., and van Belle, G. Approximations for Power
+and Sample Size for Student's t-Test. Technical Report 125
+(1991), University of Washington, Dept. of Biostatistics.
+}
+

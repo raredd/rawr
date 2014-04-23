@@ -1,0 +1,66 @@
+\name{dodge}
+\alias{dodge}
+\title{Point dodge}
+\usage{
+dodge(formula, data = parent.frame(), z = 20, spread = FALSE)
+}
+\arguments{
+  \item{formula}{an object of class \code{\link{formula}}
+  (or an object which can be coerced to a formula) having
+  the form \code{var1 ~ var2}; interactions are not allowed
+  and \code{> 1} variable per side are not allowed.}
+
+  \item{data}{optional matrix or data frame containing the
+  variables in \code{formula}; by default, variables are
+  taken from \code{environment(formula)}}
+
+  \item{z}{numeric scaling parameter for distance between
+  points; \code{0} for no point dodge and larger values for
+  more spread; default is \code{0.5}}
+}
+\description{
+Dodge and center overlapping points (in progress; see
+details).
+}
+\details{
+Still in progress. First attempt uses \code{\link{floor}}
+to find points that are close, i.e., within 1 unit, and
+only spreads those within the range. This is desirable if
+\code{x} values are close but not exact. For example,
+points \code{1.1} and \code{1.0} may overlap and will not
+be offset if \code{spread} is \code{FALSE}. If \code{TRUE},
+both values will be treated as \code{1.0} and will be
+offset; see boxplot example below.
+}
+\examples{
+## these are equivalent ways to call dodge:
+dodge(mpg ~ cyl, mtcars)
+with(mtcars, dodge(cyl ~ mpg))
+dodge(mtcars[c('mpg', 'cyl')])
+
+set.seed(1618)
+dat <- data.frame(x = rpois(50, 1),
+                  grp = 1:5)
+op <- par(no.readonly = TRUE)
+par(list(mfrow = c(2, 2),
+         mar = c(3,1,2,2)))
+with(dat, plot(grp, x, main = 'overlapping points'))
+with(dat, plot(grp, x, cex = runif(100), main = 'still overlapping points'))
+with(dat, plot(jitter(grp), x, main = 'adding random noise'))
+with(dat, plot(grp + dodge(x ~ grp, dat), x, main = 'dodge points'))
+par(op)
+
+boxplot(mpg ~ gear, data = mtcars, xlab = 'gears', ylab = 'mpg')
+with(dat <- mtcars[order(mtcars$gear, mtcars$mpg), ],
+     points(gear - 2 + dodge(mpg ~ gear, dat), mpg,
+            pch = 19, col = rep(c('red','green','blue'), table(dat$gear))))
+with(dat <- mtcars[order(mtcars$gear, mtcars$mpg), ],
+     points(gear - 2 + dodge(mpg ~ gear, dat, spread = TRUE), mpg,
+            col = 'black', pch = 4))
+legend('topleft', pch = c(4, 19),
+       legend = c('TRUE','FALSE'), title = 'spread = ')
+}
+\seealso{
+\code{\link{jitter}}
+}
+

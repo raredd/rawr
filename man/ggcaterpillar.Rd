@@ -1,0 +1,35 @@
+\name{ggcaterpillar}
+\alias{ggcaterpillar}
+\title{Caterpillar plot}
+\usage{
+ggcaterpillar(re, qq = TRUE, likeDotplot = TRUE)
+}
+\arguments{
+  \item{re}{random effects from lmer object}
+
+  \item{qq}{if \code{TRUE}, returns normal q/q plot; else
+  returns caterpillar dotplot}
+
+  \item{likeDotplot}{if \code{TRUE}, uses different scales
+  for random effects, i.e.,
+  \code{\link[ggplot2]{facet_wrap}}}
+}
+\description{
+Caterpillar plots for random effects models using ggplot
+}
+\details{
+Behaves like \code{\link[lattice]{qqmath}} and
+\code{\link[lattice]{dotplot}} from the lattice package;
+also handles models with multiple correlated random effects
+}
+\examples{
+library(lme4)
+fit <- lmer(Reaction ~ Days + (Days | Subject), data = sleepstudy)
+
+# this function
+ggcaterpillar(ranef(fit, condVar = TRUE))
+
+# for comparison (requires lattice package)
+lattice:::qqmath(ranef(fit, condVar = TRUE))
+}
+

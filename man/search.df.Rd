@@ -1,0 +1,39 @@
+\name{search.df}
+\alias{search.df}
+\title{Search function for data frames}
+\usage{
+search.df(pattern, df, col.name, var = 0, ignore.case = TRUE, ...)
+}
+\arguments{
+  \item{pattern}{string to find}
+
+  \item{df}{data frame to search}
+
+  \item{col.name}{column name in \code{df} to search}
+
+  \item{var}{variation; maximum distance allowed for a
+  match; see \code{\link{agrep}}}
+
+  \item{ignore.case}{logical; if \code{FALSE}, the pattern
+  matching is \emph{case-sensitive}, and if \code{TRUE},
+  case is ignored during matching}
+
+  \item{...}{other arguments passed to \code{\link{agrep}}}
+}
+\value{
+Subset of the original \code{df} where the \code{pattern}
+was found in the specificed \code{col.name}
+}
+\description{
+Searches a data frame column for matches
+}
+\examples{
+df <- data.frame(islands = names(islands)[1:32], mtcars)
+search.df(New, df, islands)
+search.df(ho, df, islands, var = 0.2) # too much variation
+search.df(ho, df, islands, var = 0)
+search.df('Axel Hieberg', df, islands) # misspelled, not enough variation
+search.df('Axel Hieberg', df, islands, var = 2)
+search.df(19, df, mpg)
+}
+

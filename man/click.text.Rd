@@ -1,0 +1,44 @@
+\name{click.text}
+\alias{click.text}
+\title{Add text interactively in base \code{R} graphics}
+\usage{
+click.text(express, col = 'black', cex = NULL, srt = 0, trans = NULL,
+           family = 'sans', ...)
+}
+\arguments{
+  \item{express}{text or \code{\link{expression}}}
+
+  \item{col}{colour of text}
+
+  \item{cex}{numerical \strong{c}haracter
+  \strong{ex}pansion factor; multiplied by
+  \code{\link{par}} ("cex") yields the final character
+  size; \code{NULL} and \code{NA} are equivalent to
+  \code{1.0}}
+
+  \item{srt}{the string rotation in degrees; see
+  \code{\link{par}}}
+
+  \item{trans}{color transparency; see \code{\link{tcol}}}
+
+  \item{family}{the name of a font or drawing text; see
+  \code{\link{Hershey}}}
+
+  \item{...}{further graphical parameters passed to
+  \code{\link{text}} (or \code{\link{par}})}
+}
+\description{
+Allows you to add text and expressions anywhere in a plot
+(including margins) with mouse click(s).
+}
+\examples{
+plot.new()
+click.text('hello', col = 'red', cex = .5)
+click.text('goodbye', family = 'HersheyScript', cex = 3)
+click.text(expression(sum(x ^ 2) == 5 ^ hat(x)), srt = 45)
+}
+\seealso{
+\code{\link{click.shape}}; \code{\link{plotmath}} for help
+with mathematical expressions
+}
+

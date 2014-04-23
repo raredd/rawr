@@ -1,0 +1,84 @@
+\name{simon2}
+\alias{simon2}
+\title{Simon two-stage designs}
+\usage{
+simon2(p0low, p0high = p0low, p1low, p1high = p1low, n1max, ntmax,
+       alpha = 0.1, beta = 0.1, beta.max = beta, del = 1, minimax = FALSE)
+}
+\arguments{
+  \item{p0low}{null response probability (lower bound)}
+
+  \item{p0high}{null response probability (upper bound)}
+
+  \item{p1low}{alternative response probability (lower
+  bound)}
+
+  \item{p1high}{alternative response probability (upper
+  bound)}
+
+  \item{n1max}{maximum number of subjects entered during
+  first stage (<= 0)}
+
+  \item{ntmax}{maximum total number of subjects}
+
+  \item{alpha}{type I error rate}
+
+  \item{beta}{type II error rate}
+
+  \item{beta.max}{highest type II error rate acceptable}
+
+  \item{del}{searches for designs where the expected number
+  of subjects under the null with within \code{del} of the
+  minimum possible value}
+
+  \item{minimax}{logical; if \code{TRUE}, only searches for
+  designs which will minimize the maximum sample size}
+}
+\description{
+Function for sample sizes for Simon optimal two-stage,
+single-arm designs
+}
+\details{
+For two-stage designs for studies with binary endpoints,
+searches over possible two-stage sampling designs to find
+those that minimize the expected number of subjects,
+subject to specified constraints.
+}
+\note{
+To install the desmon package in a win \code{R} (for mac,
+replace \code{.zip} file with appropriate \code{.tgz}
+file); in terminal:
+
+\code{cd ~}
+
+\code{mkdir r.packages}
+
+\code{cp /homes8/gray/R/desmon.zip ./r.packages}
+
+\code{R} console:
+
+\code{install.packages('z:/r.packages/desmon.zip', repos =
+NULL)}
+}
+\examples{
+simon2(p0low = .55, p0high = .6, p1low = .75, ntmax = 60, beta.max = .12)
+# compare this function to results from desmon:::simon
+simon2(p0low = .4, p1low = .6)
+# requires desmon package
+# simon(.4, .6)
+}
+\author{
+Robert Gray (original); Robert Redd (modifications)
+}
+\references{
+Simon R (1989). Optimal two-stage designs for phase II
+clinical trials. \emph{Controlled Clinical Trials},
+10:1-10.
+}
+\seealso{
+desmon package: \code{\link[desmon]{simon}},
+\code{\link[desmon]{twostg}},
+\code{\link[desmon]{bin1samp}},
+\code{\link[desmon]{pickwin}}, \code{\link[desmon]{rp21}}
+}
+

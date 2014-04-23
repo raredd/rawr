@@ -1,0 +1,38 @@
+\name{fapply}
+\alias{fapply}
+\title{Apply list of functions over list or vector}
+\usage{
+fapply(X, FUN, trans = FALSE, ...)
+}
+\arguments{
+  \item{X}{a vector (atomic or list) or an
+  \code{\link{expression}} object; other objects (including
+  classed objects) will be coerced by
+  \code{base::\link{as.list}}.}
+
+  \item{FUN}{a list of functions to be applied to each
+  element of \code{X}; see \code{\link{lapply}}:"Details"}
+
+  \item{trans}{logical; should output be transposed}
+
+  \item{...}{for future options}
+}
+\value{
+A data frame where \code{nrow} equals the length of
+\code{X} and \code{ncol} equals the length of \code{FUN}.
+}
+\description{
+A simple modification to the \code{*apply} functions which
+allows a list of functions to be passed simultaneously.
+}
+\examples{
+fct <- function(x) quantile(x, c(.05, .95))
+fapply(mtcars, list(median, fct))
+fapply(mtcars, list(min, mean, max, length), trans = TRUE)
+# compare to
+summary(mtcars)
+}
+\seealso{
+\code{\link{sapply}}
+}
+

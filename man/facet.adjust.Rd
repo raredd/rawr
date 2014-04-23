@@ -1,0 +1,35 @@
+\name{facet.adjust}
+\alias{facet.adjust}
+\title{Facet labeling}
+\usage{
+facet.adjust(x, pos = c('up', 'down'),
+  newpage = is.null(vp), vp = NULL)
+}
+\arguments{
+  \item{x}{\code{\link[ggplot2]{ggplot}} object}
+
+  \item{pos}{position of labels}
+
+  \item{newpage}{draw new (empty) page first; see
+  \code{\link{print.ggplot}}}
+
+  \item{vp}{viewport to draw plot in; see
+  \code{\link[ggplot2]{print.ggplot}}}
+}
+\value{
+facet.adjust object that inherits
+\code{\link[gtable]{gtable}} class
+}
+\description{
+Adjusts labels on x-axes when using
+\code{\link[ggplot2]{facet_wrap}}
+}
+\examples{
+library(ggplot2)
+# missing some labels
+(tmp <- ggplot(diamonds, aes(carat, price, colour = clarity)) +
+  geom_point() + facet_wrap( ~ cut))
+facet.adjust(tmp)
+facet.adjust(tmp, pos = 'down')
+}
+

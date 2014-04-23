@@ -1,0 +1,44 @@
+\name{ggheat}
+\alias{ggheat}
+\title{ggHeatmap}
+\usage{
+ggheat(cors = NULL, data = NULL,
+       gradn = rev(heat.colors(10)),
+       gradc = c('white', 'steelblue')
+}
+\arguments{
+  \item{cors}{matrix (or matrix-like object) of
+  correlations}
+
+  \item{data}{data frame of data (in progress)}
+
+  \item{gradn}{vector of \code{n} colors to use, from low
+  to high; see details}
+
+  \item{gradc}{vector of length two, low color and high
+  color; see details}
+}
+\description{
+Function to plot a heat map using \code{ggplot}
+}
+\details{
+\code{gradn} takes a vector of \code{n} colors: either a
+list of names, a list of hexadecimal values, an existing
+color palette (i.e., \code{\link{heat.colors}},
+\code{\link{rainbow}}, etc); see also
+\code{\link{palette}}, \code{\link{colors}}, the
+\code{RColorBrewer} package, etc.
+
+\code{gradc} takes a low color and a high color,
+respectively, and generates a continuous scale between
+those colors; see
+\code{\link[ggplot2]{scale_fill_gradient}}
+}
+\examples{
+tmp <- rescaler(matrix(1:25, 5))
+diag(tmp) <- 1
+colnames(tmp) <- rownames(tmp) <- LETTERS[1:5]
+ggheat(cors = tmp)
+ggheat(cors = tmp, gradn = NULL, gradc = c('white','red'))
+}
+

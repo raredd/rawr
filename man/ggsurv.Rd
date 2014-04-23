@@ -1,0 +1,209 @@
+\name{ggsurv}
+\alias{ggsurv}
+\title{Survival curves with ggplot}
+\usage{
+ggsurv(s,
+       # basic plot options
+       surv.col = NULL, surv.lty = 1,
+       censor = TRUE, cens.col = NULL, cens.shape = 3,
+
+       # confidence options
+       confin = TRUE, confband = FALSE, band.col = NULL,
+
+       # extra plot options
+       median = FALSE, atrisk = TRUE, atrisk.col = NULL,
+       pval = NULL, basehaz = FALSE,
+
+       # aesthetics
+       ticks = NULL, median.ticks = TRUE,
+       xlab = NULL, ylab = NULL, main = NULL,
+       xlim = NULL, ylim = NULL,
+       legend = 'right', legend.labels = NULL,
+       grid = TRUE, ggdefault = FALSE,
+
+       # other options
+       plot.margin = NULL, table.margin = NULL,
+       data = FALSE)
+}
+\arguments{
+  \item{s}{\code{\link{survfit}} or
+  \code{\link{survfit.cox}} object}
+
+  \item{surv.col}{color of survival lines; should be one
+  color or match number of strata}
+
+  \item{surv.lty}{line type used for survival line; default
+  is 1 (solid line)}
+
+  \item{censor}{logical; if \code{TRUE}, plots censored
+  observations (default)}
+
+  \item{cens.col}{color for censore}
+
+  \item{cens.shape}{shape for censored}
+
+  \item{confin}{logical; plot confidence bounds around
+  survival estimate}
+
+  \item{confband}{logical; plot confidence band; note that
+  this is not a confidence band in the statistical sense;
+  see details}
+
+  \item{band.col}{band colors; if \code{NULL}, uses default
+  ggplot colors (default); should be one color or match
+  number of strata}
+
+  \item{median}{logical; if \code{TRUE}, plots line
+  corresponding to median survival (inherits
+  \code{surv.col})}
+
+  \item{atrisk}{logical; if \code{TRUE}, adds table with
+  number of at-risk observatons at each \code{tick}
+  timepoint; color of text inherits from \code{surv.col}}
+
+  \item{atrisk.col}{optional color for at risk text, e.g.,
+  'black'}
+
+  \item{pval}{two-element numeric vector corresponding to
+  x- and y-coordinates to plot a p-value; p-value based on
+  log-rank test for significant differences in Kaplan-Meier
+  curves (see \code{\link{survdiff}}); if \code{NULL}, no
+  test is performed (default)}
+
+  \item{basehaz}{logical; if \code{TRUE}, returns baseline
+  survival curve of a \code{\link[survival]{coxph}} object;
+  see \code{\link[survival]{basehaz}}}
+
+  \item{ticks}{three-element numeric vector corresponding
+  to the "from," "to," and "by" arguments of \code{seq},
+  respectively; if \code{NULL}, \code{ticks} will be the
+  default values; if \code{NULL} and \code{atrist = TRUE},
+  defaults to \code{seq(0, max(time), length.out = 10)}}
+
+  \item{median.ticks}{logical; if \code{TRUE}, tick labels
+  will be shown for median survival times (user should
+  provide \code{ticks} argument to avoid overlapping
+  labels); if \code{atrisk = TRUE}, plot will also provide
+  number at risk at median survival time(s)}
+
+  \item{xlab}{x-axis label}
+
+  \item{ylab}{y-axis label}
+
+  \item{main}{title}
+
+  \item{xlim}{two-element numeric vector of x-axis range;
+  see \code{\link[ggplot2]{xlim}}; if \code{NULL}, default
+  is used}
+
+  \item{ylim}{two-element numeric vector of y-axis range;
+  see \code{\link[ggplot2]{ylim}}; if \code{NULL}, default
+  is used}
+
+  \item{legend}{legend position (no legend if no strata
+  present); takes values of \code{TRUE}, \code{FALSE},
+  "none," "right," "left," "top," "bottom," or two-element
+  numeric vector}
+
+  \item{legend.labels}{labels to use for strata in legend;
+  defaults are made by \code{\link[survival]{survfit}}}
+
+  \item{grid}{logical; if \code{TRUE}, grid lines are drawn
+  at major and minor ticks}
+
+  \item{ggdefault}{logical; use default ggplot background;
+  if \code{FALSE}, white background is used (default)}
+
+  \item{plot.margin}{numeric; extra "lines" added to left
+  margin of plot; see details}
+
+  \item{table.margin}{numeric; extra "lines" added to left
+  margin of at risk table; see details}
+
+  \item{data}{logical; if \code{TRUE}, saves data frame
+  used to create graphs; also see \code{\link{survdat}}}
+}
+\description{
+Function to plot Kaplan-Meier or Cox proportional hazards
+plots with optional at risk table using
+\code{\link[ggplot2]{ggplot}}
+}
+\details{
+The argument \code{confband = TRUE} does not plot a
+confidence band in the statistical sense, i.e., xx-percent
+chance of containing entire population of the survival
+curve which are wider than the point-wise confidence
+limits. Rather, it refers to a band of color in
+\code{ggplot} objects, specifically the use of a
+\code{\link[ggplot2]{geom_ribbon}} geometric shape. The
+band is bounded by the confidence limits calculated in the
+\code{survfit} object which is passed to \code{ggsurv} in
+the initial function call.
+
+Long strata labels can mis-align the at risk numbers and
+plot ticks. If the arguments \code{plot.margin} and
+\code{table.margin} are \code{NULL}, the function will make
+a guess based on the number of characters in the strata
+labels. If this is not perfect, \code{plot.margin} and
+\code{table.margin} can be specified explicitly by
+providing a single numeric corresponding to the number of
+"lines" of padding (see \code{\link{unit}}). Note that the
+default for \code{ggplot} is \code{unit(.25, "lines")}.
+}
+\examples{
+library(survival)
+data(cancer)
+
+### data to use
+cancer <- within(cancer, {
+  age.cat <- factor(as.numeric(cut(age, c(-Inf, 50, 60, 70, Inf))))
+  meal.cat <- factor(as.numeric(cut(meal.cal,
+    c(-Inf,quantile(meal.cal, c(.25,.5,.75), na.rm = TRUE), Inf))))
+  wt.cat <- factor(as.numeric(cut(wt.loss, c(-Inf,quantile(wt.loss,
+    c(.25,.5,.75), na.rm = TRUE),Inf))))
+})
+
+### fitting models
+# kaplan-meier
+kmfit0 <- survfit(Surv(time = time, event = status) ~ 1, data = cancer,
+  conf.type = 'log-log')
+kmfit1 <- survfit(Surv(time = time, event = status) ~ sex, data = cancer,
+  conf.type = 'log-log')
+# cox proportional hazards
+coxfit0 <- survfit(coxph(Surv(time = time, event = status) ~ strata(age.cat),
+  data = cancer))
+coxfit1 <- survfit(coxph(Surv(time = time, event = status) ~ strata(I(age > 45)),
+  data = cancer))
+
+### example plots
+ggsurv(kmfit0)
+
+ggsurv(kmfit1, confin = FALSE, surv.lty = 1:2, cens.col = 'blue',
+  grid = FALSE, pval = c(500, .75))
+
+ggsurv(kmfit1, confin = FALSE, surv.lty = 1:2, cens.col = 'red',
+  confband = TRUE, band.col = c('blue','red'),
+  legend.labels = c('Male', 'Female'), median = TRUE, ticks = c(0, 1000, 200))
+
+ggsurv(coxfit0, basehaz = TRUE)
+
+# this long label mis-aligns the table numbers, so we can use plot.margin
+# to adjust; it may be easier to adjust plot.margin instead of table.margin
+ggsurv(coxfit0, confin = FALSE, atrisk.col = 'black',
+  surv.col = c('red','green','blue','black'),
+  legend.labels = c('Less than 50','50-60','60-70','70+'),
+  plot.margin = 3)
+
+\dontrun{
+png('./plot.png', height = 600, width = 750)
+ggsurv(coxfit1, confin = FALSE, median = TRUE, confband = FALSE,
+  legend.labels = c('< 45','> 45'),
+  surv.col = c('red','green'), cens.shape = '#', cens.col = 'black',
+  legend = FALSE)
+dev.off()
+}
+}
+\seealso{
+\code{\link[rawr]{kmplot}}; \code{survival:::plot.survfit}
+}
+

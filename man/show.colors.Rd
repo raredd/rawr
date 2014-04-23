@@ -1,0 +1,18 @@
+\name{show.colors}
+\alias{show.colors}
+\title{Show colors}
+\usage{
+show.colors()
+}
+\description{
+In \code{R}, there are 657 named colors. This funciton
+shows these colors and their respective numbers. Find a
+color by number in the plot or find the name of the color
+with \code{colors()[n]}
+}
+\examples{
+show.colors()
+colors()[81]
+# [1] "darkgreen"
+}
+

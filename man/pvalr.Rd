@@ -1,0 +1,39 @@
+\name{pvalr}
+\alias{pvalr}
+\title{p-value formatter}
+\usage{
+pvalr(pvals, sig.limit = .001, digits = 3, html = FALSE)
+}
+\arguments{
+  \item{pvals}{numeric value or vector of p-values}
+
+  \item{sig.limit}{lower bound for precision}
+
+  \item{digits}{integer; number of decimal places; see also
+  \code{\link[rawr]{roundr}}}
+
+  \item{html}{logical; if \code{TRUE}, uses \code{&lt;}
+  instead of \code{<}}
+}
+\description{
+Formats several cases of p-values; see details
+}
+\details{
+This function will deal with several cases of common
+p-values: 1) p-values which are > 0.1 will be rounded to
+two decimal places (and keep any trailing 0s) since we are
+not usually interested in precision of insignificant
+values; 2) p-values which are less than the specified
+\code{sig.level} will be formatted as \code{< 0.001}, for
+example; 3) p-values that are less than 0.01 but greater
+than \code{sig.level} will be precise to \code{digits} and
+keep any trailing 0s.
+}
+\examples{
+pvals <- c(.13354, .060123, .004233, .00000016223)
+pvalr(pvals, digits = 3)
+}
+\seealso{
+\code{\link[rawr]{roundr}}
+}
+

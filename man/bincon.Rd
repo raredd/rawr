@@ -1,0 +1,74 @@
+\name{bincon}
+\alias{bincon}
+\title{Binomial probability confidence intervals}
+\usage{
+bincon(r, n, alpha = 0.05,
+   method = c('exact','wilson','asymptotic','all'),
+   inc.r = FALSE, inc.n = FALSE, df = FALSE)
+}
+\arguments{
+  \item{r}{number of responses (successes)}
+
+  \item{n}{number of observations (trials)}
+
+  \item{alpha}{type I error probability}
+
+  \item{round}{integer value specifying number of decimal
+  places to round (default is no rounding); see
+  \code{\link{round}}}
+
+  \item{method}{character strings specifying which method
+  to use; see details}
+
+  \item{inc.r}{logical; include \code{r} in return}
+
+  \item{inc.n}{logical; include \code{n} in return}
+
+  \item{df}{logical; coerce return matrix to data frame}
+}
+\value{
+A matrix or data frame containing the computed intervals,
+their widths, and, optionally, \code{r} and \code{n}.
+}
+\description{
+Calculates confidence intervales for binomial probabilities
+for specified type I error (\code{alpha}) using exact,
+Wilson, or asymptotic methods.
+}
+\details{
+The "all" option, which shows results from each calculation
+method, only works where \code{r} and \code{n} are of
+length 1. The "exact" method uses the \code{\link{df}}
+distribution to comupte exact intervales (based on the
+binomial cdf); the "wilson" interval is score-test-based;
+the "asymptotic" is the asymptotic normal interval.
+
+The "wilson" method has been preferred by Agresti and
+Coull.
+}
+\examples{
+bincon(0:10, 10)
+bincon(5, 10, method = 'all')
+}
+\author{
+Rollin Brant, Frank Harrell, and Brad Biggerstaff;
+modifications by Robert Redd
+}
+\references{
+Agresti, A. and B.A. Coull. Approximate is better than
+"exact" for interval extimation of binomial proportions.
+\emph{American Statistician}. \strong{59}:119-126, 1998.
+
+Brown, L.D., T.T. Cai, and A. Das Gupta. Inverval
+estimation for a binomial proportion (with discussion).
+\emph{Statistical Science}. \strong{16}:101-133, 2001.
+
+Newcombe, R.G. Logit confidence intervals and the inverse
+sinh transformation, \emph{American Statistician}.
+\strong{55}:200-202, 2001.
+}
+\seealso{
+\code{\link[Hmisc]{binconf}}, \code{\link{binci}} (desmon
+package)
+}
+
