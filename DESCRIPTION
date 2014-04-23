@@ -1,0 +1,16 @@
+Package: rawr
+Type: Package
+Title: A personal package with miscellaneous tools.
+Version: 0.1
+Author: Robert Redd  <raredd01@gmail.com>
+Maintainer: Robert Redd <raredd01@gmail.com>
+Description: Functions in progress and tools I use regularly
+Depends:
+    R (>= 3.0.2)
+Suggests:
+    ggplot2,
+    grid,
+    gridExtra,
+    survival
+License: GPL-3
+LazyData: yes
