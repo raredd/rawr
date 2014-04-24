@@ -1,0 +1,97 @@
+\name{jmplot}
+\alias{jmplot}
+\title{jmplot}
+\usage{
+jmplot(x, y, z,
+
+       # labels
+       main = NULL, sub = NULL, xlab = NULL, ylab = NULL, names = NULL,
+
+       # axes stuff
+       xlim = NULL, ylim = NULL, axes = TRUE, frame.plot = axes,
+       log = '', xratio = .8, yratio = xratio,
+
+       # more options
+       show.n = FALSE, cex.n = NULL, ann = par('ann'), asp = NA,
+       panel.first = NULL, panel.last = NULL,
+
+       ...)
+}
+\arguments{
+  \item{x}{x-axis variable}
+
+  \item{y}{y-axis variable}
+
+  \item{z}{group variable}
+
+  \item{main}{overall title for the plot}
+
+  \item{sub}{sub-title for the plot (below x-axis)}
+
+  \item{xlab}{x-axis label}
+
+  \item{ylab}{y-axis label}
+
+  \item{names}{labels for \code{x} and \code{y} variables}
+
+  \item{xlim}{x-axis limits}
+
+  \item{ylim}{y-axis limits}
+
+  \item{axes}{logical; draw axes}
+
+  \item{frame.plot}{logical; draw box around \code{x-y}
+  plot}
+
+  \item{log}{character, "x", "y", or both for logarithmic
+  scale; sets negative values to \code{\link{NA}} and gives
+  a warning; see \code{\link{xy.coords}}}
+
+  \item{xratio}{ratio of \code{x-y} plot to bar plots along
+  x-axis; see \code{widths} in \code{\link{layout}}}
+
+  \item{yratio}{ratio of \code{x-y} plot to bar plots along
+  x-axis; see \code{heights} in \code{\link{layout}}}
+
+  \item{show.n}{logical; show number in each group}
+
+  \item{cex.n}{size of \code{show.n} text}
+
+  \item{ann}{logical; annotate plot}
+
+  \item{asp}{numeric, giving the \strong{asp}ect ratio
+  \emph{y/x}; see \code{\link{plot.window}}}
+
+  \item{panel.first}{an "expression" to be evaluated after
+  the plot axes are set up but before any plotting takes
+  place; this can be useful for drawing background grids or
+  scatterplot smooths; note that this works by lazy
+  evaluation: passing this argument from other plot methods
+  may well not work since it may be evaluated too early;
+  see also \code{\link{plot.default}}}
+
+  \item{panel.last}{an expression to be evaluated after
+  plotting has taken place but before the axes, title, and
+  box are added; see the comments about \code{panel.first}}
+
+  \item{...}{further arguments passed to \code{par}
+  (\code{las}, \code{pch}, etc) and/or \code{\link{tplot}}
+  (\code{group.col}, \code{group.pch}, etc)}
+}
+\description{
+Joint distribution and marginal distributions plot;
+requires \code{\link{tplot}}
+}
+\examples{
+set.seed(1618)
+dat <- data.frame(x = rnorm(100, 20, 5),
+                  y = rexp(100),
+                  z = c('M','F'),
+                  zz = c(LETTERS[1:4]))
+with(dat, jmplot(x, y, zz, type = 'db', jit = .02, col = 1:4, las = 1,
+     group.col = TRUE, pch = 1:4, group.pch = TRUE, boxcol = grey(.9)))
+}
+\references{
+\url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
+}
+

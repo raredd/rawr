@@ -1,0 +1,76 @@
+\name{dsplot}
+\alias{dsplot}
+\title{Discrete scatter plot}
+\usage{
+dsplot(x, y, ...)
+
+## S3 method for class 'formula':
+dsplot(formula, data = parent.frame(), ..., subset)
+
+## Default S3 method:
+dsplot(x, y, bkgr = TRUE, col = 1, pch = 19, cex = 0.8, ...)
+}
+\arguments{
+  \item{formula}{a \code{\link{formula}}, such as \code{y ~
+  grp}, where y is a numeric vector of data values to be
+  split into groups according to the grouping variable
+  \code{grp} (usually a factor)}
+
+  \item{data}{a data frame (or list) from which the
+  variables in formula should be taken}
+
+  \item{subset}{an optional vector specifying a subset of
+  observations to be used for plotting}
+
+  \item{na.action}{a function which indicates what should
+  happen when the data contain \code{\link{NA}}s; the
+  default is to ignore missing values in either the
+  response or the group}
+
+  \item{x}{x-axis variable}
+
+  \item{y}{y-axis variable}
+
+  \item{bkgr}{logical; fill boxes with gray scale based on
+  density}
+
+  \item{col}{plotting color}
+
+  \item{pch}{\strong{p}lotting \strong{ch}aracter}
+
+  \item{cex}{numerical value giving the amount by which
+  plotting text and symbols should be magnified relative to
+  the default; this starts as 1 when a device is opened and
+  is reset when the layout is changed, e.g., by setting
+  \code{mfrow}}
+
+  \item{...}{for the \code{formula} method, named arguments
+  to be passed to the default method
+
+  for the default method, unnamed arguments are additional
+  data vectors (unless x is a list when they are ignored),
+  and named arguments are arguments and \code{\link{par}}s
+  to be passed to \code{\link{plot}}}
+}
+\value{
+A table corresponding to the plot cell counts.
+}
+\description{
+This creates a scatter plot (sort of) for discrete,
+bivariate data; an alternative to sunflower plots for
+integer-valued variables.
+}
+\examples{
+set.seed(1618)
+x <- round(rnorm(400, 100, 4))
+y <- round(rnorm(400, 200, 4))
+sex <- sample(c('Female', 'Male'), 400, replace = TRUE)
+dsplot(y ~ x, pch = 19, col = 1 + (sex \%in\% 'Female'), cex = .6,
+       xlab = 'measurement 1', ylab = 'measurement 2', bty = 'L')
+legend('bottomright', pch = 19, col = 1:2,
+       legend = c('Male', 'Female'), cex = .8)
+}
+\references{
+\url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
+}
+

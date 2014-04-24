@@ -1,0 +1,169 @@
+\name{tplot}
+\alias{tplot}
+\title{tplot}
+\usage{
+tplot(x, ...)
+
+## S3 method for class 'formula':
+tplot(formula, data = parent.frame(), ..., subset)
+
+## Default S3 method:
+tplot(x, ..., type = c('d','db','bd','b'),
+
+      # labels
+      main = NULL, sub = NULL, xlab = NULL, ylab = NULL, names,
+
+      # axes stuff
+      xlim = NULL, ylim = NULL, axes = TRUE, frame.plot = axes,
+      at = NULL, horizontal = FALSE,
+
+      # aesthetics
+      jit = 0.1, dist = NULL, boxplot.pars = NULL,
+      col = NULL, group.col = TRUE,
+      boxcol = NULL, boxborder = NULL,
+      pch = par('pch'), group.pch = TRUE,
+      median.line = FALSE, mean.line = FALSE,
+      median.pars = list(col = par('col')), mean.pars = median.pars,
+      show.n = FALSE, cex.n = NULL, my.gray = gray(0.75),
+
+      # more options
+      ann = par('ann'), add = FALSE,
+      panel.first = NULL, panel.last = NULL
+)
+}
+\arguments{
+  \item{formula}{a \code{\link{formula}}, such as \code{y ~
+  grp}, where y is a numeric vector of data values to be
+  split into groups according to the grouping variable
+  \code{grp} (usually a factor)}
+
+  \item{data}{a data frame (or list) from which the
+  variables in formula should be taken}
+
+  \item{subset}{an optional vector specifying a subset of
+  observations to be used for plotting}
+
+  \item{na.action}{a function which indicates what should
+  happen when the data contain \code{\link{NA}}s; the
+  default is to ignore missing values in either the
+  response or the group}
+
+  \item{x}{for specifying data from which the boxplots are
+  to be produced; either a numeric vector or a single list
+  containing such vectors; additional unnamed arguments
+  specify further data as separate vectors (each
+  corresponding to a component boxplot); \code{NA}s are
+  allowed in the data}
+
+  \item{...}{for the \code{formula} method, named arguments
+  to be passed to the default method
+
+  for the default method, unnamed arguments are additional
+  data vectors (unless x is a list when they are ignored),
+  and named arguments are arguments and \code{\link{par}}s
+  to be passed to \code{\link{bxp}}}
+
+  \item{type}{type of plot (dot, dot-box, box-dot, box)}
+
+  \item{main}{overall title for the plot}
+
+  \item{sub}{sub-title for the plot (below x-axis)}
+
+  \item{xlab}{x-axis label}
+
+  \item{ylab}{y-axis label}
+
+  \item{x-axis}{tick labels for groups}
+
+  \item{xlim}{x-axis limits}
+
+  \item{ylim}{y-axis limits}
+
+  \item{axes}{logical; draw axes}
+
+  \item{frame.plot}{logical; draw box around \code{x-y}
+  plot}
+
+  \item{at}{group positions on axis}
+
+  \item{horizontal}{logical; flip axes}
+
+  \item{jit}{numeric; x-axis jitter parameter for
+  overlapping pts (\code{0} for overlap and higher values
+  for more distance between points)}
+
+  \item{dist}{numeric; additional jitter parameter}
+
+  \item{boxplot.pars}{additional list of graphical
+  parameters for box plots}
+
+  \item{col}{plotting color}
+
+  \item{group.col}{logical; if \code{TRUE}, color by group;
+  o/w by order}
+
+  \item{boxcol}{fill color}
+
+  \item{boxborder}{border color}
+
+  \item{pch}{plotting character}
+
+  \item{group.pch}{logical; if \code{TRUE}, \code{pch} by
+  group; o/w, by order}
+
+  \item{median.line}{logical; draw median line}
+
+  \item{mean.line}{logical; draw mean line}
+
+  \item{median.pars}{list of graphical parameters for
+  median line}
+
+  \item{mean.pars}{see above}
+
+  \item{show.n}{show number per group}
+
+  \item{cex.n}{text size for \code{show.n}}
+
+  \item{my.gray}{default border color}
+
+  \item{ann}{logical; annotate plot}
+
+  \item{add}{logical; add to an existing plot}
+
+  \item{panel.first}{an "expression" to be evaluated after
+  the plot axes are set up but before any plotting takes
+  place; this can be useful for drawing background grids or
+  scatterplot smooths; note that this works by lazy
+  evaluation: passing this argument from other plot methods
+  may well not work since it may be evaluated too early;
+  see also \code{\link{plot.default}}}
+
+  \item{panel.last}{an expression to be evaluated after
+  plotting has taken place but before the axes, title, and
+  box are added; see the comments about \code{panel.first}}
+}
+\description{
+An alternative to \code{\link{boxplot}}. The individual
+data can be shown (either in the foreground or background)
+with jittering if necessary.
+}
+\examples{
+set.seed(1618)
+dat <- data.frame(age = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
+                  sex = sample(c('Female', 'Male'), 80, replace = TRUE),
+                  group = paste0('Group ',
+                                 sample(1:4, 40, prob = c(2, 5, 4, 1),
+                                        replace = TRUE)))
+
+tplot(age ~ group, data = dat, las = 1, cex = 1, cex.axis = 1, bty = 'L',
+      show.n = TRUE, dist = NULL, jit = .1, type = c('db', 'db', 'db', 'd'),
+      group.pch = TRUE, pch = c(15, 17, 19, 8),
+      group.col = FALSE, names = LETTERS[1:4],
+      col = c('darkred', 'darkblue')[c(sex)],
+      boxcol = c('lightsteelblue1', 'lightyellow1', grey(.9)),
+      boxplot.pars = list(notch = TRUE, boxwex = .5))
+}
+\references{
+\url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
+}
+
