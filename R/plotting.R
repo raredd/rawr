@@ -647,8 +647,9 @@ dodge <- function(formula, data = parent.frame(), z = .5, spread = FALSE) {
   m <- match.call()
   if (is.matrix(eval(m$data, parent.frame()))) 
     m$data <- as.data.frame(data)
+  m$z <- m$spread <- NULL
   m[[1L]] <- quote(stats::model.frame)
-  mf <- eval(m[-(4:5)], parent.frame())
+  mf <- eval(m, parent.frame())
   if (length(formula) == 2L) {
     by <- mf
     y <- NULL
