@@ -2,7 +2,7 @@
 \alias{ggheat}
 \title{ggHeatmap}
 \usage{
-ggheat(cors = NULL, data = NULL,
+ggheat(cors = NULL, data = NULL, limits = c(-1, 1),
        gradn = rev(heat.colors(10)),
        gradc = c('white', 'steelblue')
 }
@@ -11,6 +11,9 @@ ggheat(cors = NULL, data = NULL,
   correlations}
 
   \item{data}{data frame of data (in progress)}
+
+  \item{limits}{range of color scale in legend; see
+  \code{\link[ggplot2]{discrete_scale}}}
 
   \item{gradn}{vector of \code{n} colors to use, from low
   to high; see details}
@@ -38,7 +41,7 @@ those colors; see
 tmp <- rescaler(matrix(1:25, 5))
 diag(tmp) <- 1
 colnames(tmp) <- rownames(tmp) <- LETTERS[1:5]
-ggheat(cors = tmp)
+ggheat(cors = tmp, limits = c(0, 1))
 ggheat(cors = tmp, gradn = NULL, gradc = c('white','red'))
 }
 

@@ -519,12 +519,14 @@ zoomin <- function(x, y, ...) {
 #' Function to plot a heat map using \code{ggplot}
 #' 
 #' @usage 
-#' ggheat(cors = NULL, data = NULL, 
+#' ggheat(cors = NULL, data = NULL, limits = c(-1, 1),
 #'        gradn = rev(heat.colors(10)),
 #'        gradc = c('white', 'steelblue')
 #' 
 #' @param cors matrix (or matrix-like object) of correlations
 #' @param data data frame of data (in progress)
+#' @param limits range of color scale in legend; see 
+#' \code{\link[ggplot2]{discrete_scale}}
 #' @param gradn vector of \code{n} colors to use, from low to high; see details
 #' @param gradc vector of length two, low color and high color; see details
 #' 
@@ -543,18 +545,25 @@ zoomin <- function(x, y, ...) {
 #' tmp <- rescaler(matrix(1:25, 5))
 #' diag(tmp) <- 1
 #' colnames(tmp) <- rownames(tmp) <- LETTERS[1:5]
-#' ggheat(cors = tmp)
+#' ggheat(cors = tmp, limits = c(0, 1))
 #' ggheat(cors = tmp, gradn = NULL, gradc = c('white','red'))
 #' @export
 
 ggheat <- function(cors = NULL, data = NULL, 
+                   limits = c(-1, 1),
                    gradn = rev(heat.colors(10)),
                    gradc = c('white', 'steelblue')) {
+  
+  require(ggplot2)
   
   zzz <- as.data.frame(cors)
   zzz <- stack(zzz)
   zzz$ind1 <- rownames(cors)
   names(zzz) <- c('corr', 'x', 'y')
+  zzz <- within(zzz, {
+    x <- factor(x, levels = colnames(cors), ordered = TRUE)
+    y <- factor(y, levels = rownames(cors), ordered = TRUE)
+  })
   
   p <- ggplot(zzz, aes(x = x, y = rev(y), fill = corr)) + 
     geom_tile() +
@@ -567,12 +576,13 @@ ggheat <- function(cors = NULL, data = NULL,
           axis.title.y = element_blank())
   
   if (!is.null(gradc)) {
-    p <- p + scale_fill_gradient(limits = c(0, 1), 
+    p <- p + scale_fill_gradient(limits = limits, 
                                  low = gradc[1], 
                                  high = gradc[2])
   }
   if (!is.null(gradn))
-    p <- p + scale_fill_gradientn(colours = gradn)
+    p <- p + scale_fill_gradientn(limits = limits,
+                                  colours = gradn)
   
   p
 }
