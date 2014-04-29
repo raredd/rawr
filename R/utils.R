@@ -4,6 +4,29 @@
 # show.colors
 ###
 
+#' @export
+`%ni%` <- Negate(`%in%`)
+
+#' headtail
+#' 
+#' @usage ht(x, ..., sep = NULL)
+#' @param x an object
+#' @param ... other parameters, such as \code{n}, passed to \code{\link{head}} 
+#' or other methods
+#' @param sep separater 
+#' @export
+ht <- function(x, ..., sep = NULL) rbind(head(x, ...), sep, tail(x, ...))
+
+#' oror
+#' 
+#' function_that_may_return_null() or default value
+#' @name oror
+#' @aliases %||%
+#' @examples
+#' NULL || TRUE    # error
+#' NULL %||% TRUE  # no error
+#' @export
+`%||%` <- function(e1, e2) if (!is.null(e1)) e1 else e2
 
 #' Progress function
 #' 
