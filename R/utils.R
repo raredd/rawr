@@ -54,9 +54,6 @@ progress <- function (value, max.value = NULL) {
     percent <- TRUE
   } else percent <- FALSE
   
-  if (!is.numeric(max.value) || !is.null(max.value)) 
-    stop("'max.value' must be numeric or NULL")
-  
   erase.only <- value > max.value
   max.value <- as.character(round(max.value))
   l <- nchar(max.value)
