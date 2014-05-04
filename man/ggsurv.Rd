@@ -24,7 +24,7 @@ ggsurv(s,
 
        # other options
        plot.margin = NULL, table.margin = NULL,
-       data = FALSE)
+       data = FALSE, ...)
 }
 \arguments{
 \item{s}{\code{\link{survfit}} or \code{\link{survfit.cox}} object}
@@ -107,6 +107,8 @@ details}
 table; see details}
 
 \item{data}{logical; if \code{TRUE}, saves data frame used to create graphs}
+
+\item{...}{for backwards compatibility with deprecated arguments}
 }
 \description{
 Function to plot Kaplan-Meier or Cox proportional hazards plots with

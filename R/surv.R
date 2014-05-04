@@ -424,7 +424,7 @@ kmplot <- function(s,
 #'              
 #'        # other options
 #'        plot.margin = NULL, table.margin = NULL, 
-#'        data = FALSE)
+#'        data = FALSE, ...)
 #' 
 #' @param s \code{\link{survfit}} or \code{\link{survfit.cox}} object
 #' @param col.surv color of survival lines; should be one color or match 
@@ -479,6 +479,7 @@ kmplot <- function(s,
 #' @param table.margin numeric; extra "lines" added to left margin of at risk
 #' table; see details
 #' @param data logical; if \code{TRUE}, saves data frame used to create graphs
+#' @param ... for backwards compatibility with deprecated arguments
 #' 
 #' @details
 #' The argument \code{confband = TRUE} does not plot a confidence band in the 
@@ -575,7 +576,7 @@ ggsurv <- function(s,
                    
                    # other options
                    plot.margin = NULL, table.margin = NULL,
-                   data = FALSE) {
+                   data = FALSE, ...) {
   
   ## to do:
   # y axis ticks
@@ -594,6 +595,28 @@ ggsurv <- function(s,
     warning('choose confidence interval or confidence band')
   if (atrisk && is.null(ticks)) 
     message('ticks not specified: \ntick marks defaulting to seq(0, max(time), length.out = 10)\n')
+  
+  #### allow for backwards compatibility
+  m <- match.call(expand.dots = FALSE)
+  if (!is.null(m$...)) {
+    depr <- c('surv.col','surv.lty','cens.col',
+              'cens.shape','band.col','atrisk.col')
+    if (any(depr %in% names(m$...))) {
+      warning('\n NOTE: using deprecated arguments: ', 
+              paste(depr[depr %in% names(m$...)], collapse = ' '))
+    }
+    if (!is.null(m$...) && !all(names(m$...) %in% depr))
+        warning('\n NOTE: unused arguments: ', 
+                paste(names(m$...)[names(m$...) %ni% depr], collapse = ' '))
+    
+    try(list(if (!is.null(m$...$surv.col)) col.surv <- eval(m$...$surv.col),
+             if (!is.null(m$...$surv.lty)) lty.surv <- eval(m$...$surv.lty),
+             if (!is.null(m$...$cens.col)) col.cens <- eval(m$...$cens.col),
+             if (!is.null(m$...$cens.shape)) mark <- eval(m$...$cens.shape),
+             if (!is.null(m$...$band.col)) col.band <- eval(m$...$band.col),
+             if (!is.null(m$...$atrisk.col)) col.atrisk <- eval(m$...$atrisk.col)), 
+        silent = TRUE)
+  }
   
   #### create data from survfit object in proper format for ggplot
   survdat <- function(s) {
