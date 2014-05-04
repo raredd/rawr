@@ -23,7 +23,7 @@ Adjusts labels on x-axes when using \code{\link[ggplot2]{facet_wrap}}
 \examples{
 library(ggplot2)
 # missing some labels
-(tmp <- ggplot(diamonds, aes(carat, price, colour = clarity)) +
+(tmp <- ggplot(diamonds[1:100, ], aes(carat, price, colour = clarity)) +
   geom_point() + facet_wrap( ~ cut))
 facet.adjust(tmp)
 facet.adjust(tmp, pos = 'down')

@@ -308,7 +308,7 @@ click.shape <- function(shape = 'line', col = 'black', border = col, trans = NUL
 #' @examples
 #' library(ggplot2)
 #' # missing some labels 
-#' (tmp <- ggplot(diamonds, aes(carat, price, colour = clarity)) + 
+#' (tmp <- ggplot(diamonds[1:100, ], aes(carat, price, colour = clarity)) + 
 #'   geom_point() + facet_wrap( ~ cut))
 #' facet.adjust(tmp)
 #' facet.adjust(tmp, pos = 'down')
@@ -360,7 +360,7 @@ facet.adjust <- function(x, pos = c('up', 'down'),
 #' \code{\link[ggplot2]{print.ggplot}}
 #' @param vp viewport to draw plot in; see \code{\link[ggplot2]{print.ggplot}}
 #' 
-#' @S3method print facet.adjust
+#' @export print facet.adjust
 #' @seealso \code{\link{facet.adjust}}
 
 print.facet.adjust <- function(x, newpage = is.null(vp), vp = NULL) {
