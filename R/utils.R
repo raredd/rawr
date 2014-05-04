@@ -23,10 +23,13 @@ ht <- function(x, ..., sep = NULL) rbind(head(x, ...), sep, tail(x, ...))
 #' @name oror
 #' @aliases %||%
 #' @examples
+#' \dontrun{
 #' NULL || TRUE    # error
 #' NULL %||% TRUE  # no error
+#' }
 #' @export
 `%||%` <- function(e1, e2) if (!is.null(e1)) e1 else e2
+
 
 #' Progress function
 #' 
@@ -52,7 +55,8 @@ progress <- function (value, max.value = NULL) {
   if (is.null(max.value)) {
     max.value <- 100
     percent <- TRUE
-  } else percent <- FALSE
+  } else 
+    percent <- FALSE
   
   erase.only <- value > max.value
   max.value <- as.character(round(max.value))
@@ -396,16 +400,22 @@ search.df <- function(pattern, df, col.name, var = 0, ignore.case = TRUE, ...) {
 #' Searches Rhistory file for pattern matches
 #' 
 #' @usage search.hist(..., fixed = FALSE)
+#' 
 #' @param ... numeric or character; if numeric, shows the most recent \code{n} 
 #' lines in \code{.Rhistory}; if character, searches for pattern matches
+#' @param fixed logical; if \code{TRUE}, \code{pattern} is a string to be 
+#' matched as is; overrides all conflicting arguments.
+#' 
 #' @return Returns a list of recent commands that match \code{pattern}
 #' 
 #' @examples
+#' \dontrun{
 #' search.hist()
 #' search.hist(25)
 #' search.hist('?')
 #' search.hist('?', fixed = TRUE)
 #' search.hist('\\?')
+#' }
 #' @export
 
 search.hist <- function (..., fixed = FALSE) {
@@ -419,17 +429,17 @@ search.hist <- function (..., fixed = FALSE) {
     return(grep(..., readLines(".Rhistory"), fixed = fixed, value = TRUE))
 }
 
-#' ggplot colours
+#' ggplot colors
 #' 
-#' A function to replicate default \code{\link{ggplot}} colours
+#' A function to replicate default \code{\link{ggplot}} colors
 #' 
-#' @usage ggcols(n, c = 100, l = 65)
+#' @usage ggcols(n, l = 65, c = 100)
 #' 
-#' @param n number of colours
-#' @param c the chroma of the colour; the upper bound for chroma depends on hue
+#' @param n number of colors
+#' @param c the chroma of the color; the upper bound for chroma depends on hue
 #' and luminance
 #' @param l a value in the range \code{[0, 100]} giving the luminance of the 
-#' colour; for a given combination of hue and chroma, only a subset of this 
+#' color; for a given combination of hue and chroma, only a subset of this 
 #' range is possible
 #' @seealso \code{\link{hcl}}
 #' 
@@ -455,14 +465,14 @@ ggcols <- function(n, l = 65, c = 100) {
 #' colors; values in shorter arguments are recycled
 #' @param alpha  numeric vector of values in the range \code{[0, 1]} for alpha 
 #' transparency channel (0 is transparent and 1 is opaque)
-#' @param alpha Numeric. The alpha blending value that is input into hsv.
 #' @seealso \code{\link{hsv}}
 #' 
 #' @examples
 #' plot(1:5, 1:5, col = grcols(5), pch = 20, cex = 3)
 #' 
-#' plot(c(1, 5), c(0, 1), type = 'n')
-#' rect(1:5, 0, 2:6, 1, col = grcols(5))
+#' plot(c(1, 6), c(0, 1), type = 'n', axes = FALSE, 
+#'      bty = 'n', xlab = '', ylab = '')
+#' rect(1:5, 0, 2:6, 1, col = grcols(5), border = NA)
 #' @export
 
 grcols <- function(n, s = .5, v = 1, alpha = 1) {
@@ -568,8 +578,8 @@ fapply <- function(X, FUN, trans = FALSE, ...) {
 #' Provides more details of objects in workspace
 #' 
 #' @usage 
-#' lss(pos = 1L, pattern, by = 'size', decreasing = TRUE, all.names = FALSE, 
-#'     head = TRUE, n = 10)
+#' lss(pos = 1, pattern, by = NULL, all.names = FALSE,
+#'     decreasing = TRUE, head = TRUE, n = 15)
 #' 
 #' @param pos argument specifying the environment as a position in search list
 #' @param pattern optional \code{\link{regex}}; only names matching 
@@ -597,7 +607,7 @@ fapply <- function(X, FUN, trans = FALSE, ...) {
 #' @export
 
 lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
-                 decreasing = TRUE, head = TRUE, n = 15, ...) {
+                 decreasing = TRUE, head = TRUE, n = 15) {
   
   if (length(ls(envir = as.environment(pos))) < 1L)
     stop(return(character(0)))
@@ -671,13 +681,14 @@ rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
 
 #' html test
 #' 
-#' View html in rstudio viewer
+#' Render html in rstudio viewer
 #' 
 #' @usage html.test(...)
 #' 
 #' @param ... character string of html code
 #' 
 #' @examples
+#' \dontrun{
 #' html.test("
 #' <div align = center><h1>A heading<sup>&dagger;</sup><h1></div>
 #' <font size = 1><sup>&dagger;</sup>That was the heading</font>
@@ -685,6 +696,7 @@ rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
 #' 
 #' library(Gmisc)
 #' html.test(htmlTable(mtcars, output = FALSE))
+#' }
 #' @export
 
 html.test <- function(...) {
@@ -698,7 +710,7 @@ html.test <- function(...) {
 #' Round a number to the specified number of decimal places (default is 1), 
 #' preserving trailing 0s
 #' 
-#' @usage roundr(..., digits  = 1)
+#' @usage roundr(x, digits = 1)
 #'
 #' @param x numeric value or vector
 #' @param digits number of digits past the decimal point to keep
@@ -707,6 +719,7 @@ html.test <- function(...) {
 #' Uses \code{\link[base]{sprintf}} to round numeric value, retaining extra 0s.
 #' @return
 #' A vector of character strings.
+#' @seealso \code{\link[base]{round}}; \code{\link[base]{sprintf}}
 #'
 #' @examples
 #' roundr(51.01, 3)
@@ -714,8 +727,7 @@ html.test <- function(...) {
 #' 
 #' # useful for dropping the negative in case 1:
 #' roundr(c(-0.0002, 0.0002, 0.5, -0.5, -0.002), digits = 3)
-#'
-#' @seealso \code{\link[base]{round}}; \code{\link[base]{sprintf}}
+#' 
 #' @export
 
 roundr <- function(x, digits = 1) {
@@ -756,10 +768,9 @@ roundr <- function(x, digits = 1) {
 intr <- function(..., fun = median, conf = NULL, digits = 2, na.rm = FALSE) {
   
   lst <- list(...)
-  if (is.null(conf)) 
-    conf <- 1 else
-      if (findInterval(conf, c(0, 1), rightmost.closed = TRUE) !=1)
-        stop('invalid confidence interval')
+  if (is.null(conf) || conf == 0 || 
+        findInterval(conf, c(0, 1), rightmost.closed = FALSE) !=1)
+    conf <- 1
   
   # see ?rawr::roundr
   roundr <- function(x, digits = 1) {
@@ -774,10 +785,11 @@ intr <- function(..., fun = median, conf = NULL, digits = 2, na.rm = FALSE) {
     bounds <- roundr(bounds, digits = digits)
     val <- roundr(fun(x, na.rm = na.rm), digits = digits)
     
-    if (! conf %in% 1)
+    if (! conf %in% c(0, 1))
       paste0(val, ' (', paste0(conf * 100, '% CI: '), 
-             bounds[1], ' - ', bounds[2],')') else
-               paste0(val, ' (min ', bounds[1], '; max ', bounds[2],')')
+             bounds[1], ' - ', bounds[2],')') 
+    else
+      paste0(val, ' (min ', bounds[1], '; max ', bounds[2],')')
   })
 }
 
@@ -833,11 +845,12 @@ pvalr <- function(pvals, sig.limit = .001, digits = 3, html = FALSE) {
 
 #' Show colors
 #' 
-#' In \code{R}, there are 657 named colors. This funciton shows these colors 
+#' In \code{R}, there are 657 named colors. This function shows these colors 
 #' and their respective numbers. Find a color by number in the plot or find the
 #' name of the color with \code{colors()[n]}
 #' 
 #' @usage show.colors()
+#' @seealso \code{\link{show.pch}}
 #' 
 #' @examples
 #' show.colors()
@@ -846,15 +859,18 @@ pvalr <- function(pvals, sig.limit = .001, digits = 3, html = FALSE) {
 #' @export
 
 show.colors <- function() {
-  par(mfrow = c(1,1))
-  par(mai=c(.4,.4,.4,.4), oma=c(.2,0,0,.2))
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
+  par(mfrow = c(1,1),
+      mai=c(.4,.4,.4,.4),
+      oma=c(.2,0,0,.2))
   x <- 22
   y <- 30
   plot(c(-1, x), c(-1, y), xlab = '', ylab = '', type = 'n', xaxt = 'n', 
        yaxt = 'n', bty = 'n')
   sapply(1:x, function(i) {
     sapply(1:y, function(j) {
-      k <- y*(i-1) + j
+      k <- y * (i - 1) + j
       co <- colors()[k]
       rect(i - 1, j - 1, i, j, col = co, border = grey(.5))
     })
@@ -862,4 +878,32 @@ show.colors <- function() {
   text(rep(-.5, y), (1:y) - .5, 1:y, cex = 1.2 - .016 * y)
   text((1:x) - .5, rep(-.5, x), y * (0:(x - 1)), cex = 1.2 - .022 * x)
   title('col = colors()[n]')
+}
+
+#' Show plotting characters
+#' 
+#' In \code{R}, there are 26 numeric plotting characters. This function shows 
+#' these options and their respective numbers. Note that \code{col} specifies
+#' both the border and fill color (if applicable) for \code{0:20}; \code{pch}s
+#' \code{21:25} can be filled with \code{bg}.
+#' 
+#' @usage show.pch()
+#' @seealso \code{\link{show.colors}}
+#' 
+#' @examples
+#' show.pch()
+#' @export
+
+show.pch <- function() {
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
+  par(xpd = TRUE,
+      mfrow = c(1, 1),
+      mai = c(.4,.4,.4,.4),
+      oma = c(.2,0,0,.2))
+  x <- rep(1:5, 6)[1:26]
+  y <- c(rep(5:1, each = 5)[1:25], 0)
+  plot(x, y, pch = 0:25, axes = FALSE, bg = 'gray', cex = 2, col = 'red')
+  text(x = x, y = y, labels = 0:25, pos = 4, cex = 1.5, offset = 1)
+  text(x = 4, y = 0, labels = 'plotting characters 0:25', cex = 1.5)
 }

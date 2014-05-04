@@ -71,16 +71,19 @@
 #' @export
 
 jmplot <- function(x, y, z, 
-                   log = '', 
-                   main = NULL, sub = NULL, xlab = NULL, ylab = NULL, 
-                   names = NULL, 
-                   xlim = NULL, ylim = NULL, axes = TRUE, 
-                   xratio = .8, yratio = xratio, 
-                   show.n = FALSE, cex.n = NULL, 
-                   ann = par('ann'), frame.plot = axes, 
-                   panel.first = NULL, panel.last = NULL, asp = NA, 
-                   ...
-) {
+                   
+                   # labels
+                   main = NULL, sub = NULL, xlab = NULL, ylab = NULL, names = NULL, 
+                   
+                   # axes stuff
+                   xlim = NULL, ylim = NULL, axes = TRUE, frame.plot = axes, 
+                   log = '', xratio = .8, yratio = xratio, 
+                   
+                   # more options
+                   show.n = FALSE, cex.n = NULL, ann = par('ann'), asp = NA, 
+                   panel.first = NULL, panel.last = NULL,
+                   
+                   ...) {
   
   localTplot <- function(..., type = 'b', horizontal = FALSE) 
     tplot(..., type = type, axes = FALSE, horizontal = horizontal)
@@ -112,7 +115,6 @@ jmplot <- function(x, y, z,
   if (is.null(ylab)) 
     ylab <- xy$ylab
   
-  # save pars
   op <- par(no.readonly = TRUE)
   mar <- op$mar
   # set the layout
@@ -165,9 +167,6 @@ jmplot <- function(x, y, z,
     localTitle(sub = sub, xlab = xlab, ylab = ylab, ...)
     localTitle(main = main, outer = TRUE, ...)
   }
-  
-  # reset par
-  par(op)
 }
 
 #' tplot
@@ -179,7 +178,7 @@ jmplot <- function(x, y, z,
 #' tplot(x, ...)
 #' 
 #' ## S3 method for class 'formula':
-#' tplot(formula, data = parent.frame(), ..., subset)
+#' tplot(formula, data = parent.frame(), ..., subset, na.action = NULL)
 #' 
 #' ## Default S3 method:
 #' tplot(x, ..., type = c('d','db','bd','b'),
@@ -230,7 +229,7 @@ jmplot <- function(x, y, z,
 #' @param sub sub-title for the plot (below x-axis)
 #' @param xlab x-axis label
 #' @param ylab y-axis label
-#' @param x-axis tick labels for groups
+#' @param names group labels
 #' @param xlim x-axis limits
 #' @param ylim y-axis limits
 #' @param axes logical; draw axes
@@ -320,8 +319,9 @@ tplot.default <- function(x, ...,
                           at = NULL,
                           horizontal = FALSE,
                           panel.first = NULL,
-                          panel.last = NULL
-) {
+                          panel.last = NULL) {
+  
+  op <- par(no.readonly = TRUE)
   
   # helpers
   localPoints <- function(..., tick) points(...)
@@ -567,7 +567,7 @@ tplot.default <- function(x, ...,
   }
   # optional sample sizes
   if (show.n){
-    if(is.null(cex.n)) cex.n <- 1
+    if (is.null(cex.n)) cex.n <- 1
     do.call('localMtext', c(list(paste('n = ', l, sep = ''), 
                                  side = 3 + horizontal, at = at), 
                             pars, list(xaxt = 's', yaxt = 's')))
@@ -592,6 +592,7 @@ tplot.default <- function(x, ...,
 #' @export
 tplot.formula <- function(formula, data = parent.frame(), ..., subset,
                           na.action = NULL) {
+  
   if (missing(formula) || (length(formula) !=  3))
     stop("'formula' missing or incorrect")
   
@@ -644,7 +645,7 @@ tplot.formula <- function(formula, data = parent.frame(), ..., subset,
 #' dsplot(x, y, ...)
 #' 
 #' ## S3 method for class 'formula':
-#' dsplot(formula, data = parent.frame(), ..., subset)
+#' dsplot(formula, data = parent.frame(), ..., subset, na.action = NULL)
 #' 
 #' ## Default S3 method:
 #' dsplot(x, y, bkgr = TRUE, col = 1, pch = 19, cex = 0.8, ...)
@@ -700,6 +701,8 @@ dsplot.default <- function(x, y,
                            pch = 19, 
                            cex = 0.8, 
                            ...) {
+  
+  op <- par(no.readonly = TRUE)
   
   #   if (any(x != round(x), na.rm = TRUE) | any(y != round(y), na.rm = TRUE))
   #     stop('x must be integer values', '\n')

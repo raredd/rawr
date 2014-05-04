@@ -9,7 +9,7 @@
 #' Function for plotting multiple base \code{R} graphics in a 
 #' single layout
 #' 
-#' @usage multiplot(width = 8.5, height = 11, rows, cols, matrix = c())
+#' @usage multiplot(width = 8.5, height = 11, rows, cols, matrix = c(1, 1))
 #' 
 #' @param width,height the width and height of the plotting window in inches; 
 #' if \code{NA}, taken from the resources and if not specified there, defaults 
@@ -22,21 +22,15 @@
 #' once in the matrix; see \code{\link{layout}}
 #' 
 #' @examples
+#' \dontrun{
 #' library(descr)
-#' library(psych)
 #' 
 #' multiplot(18, 8, 3, 3, c(1,1,1, 1,1,1, 2,3,4))
 #' with(mtcars, histkdnc(mpg, breaks = 15, main = 'MPG'))
 #' with(mtcars, histkdnc(cyl, breaks = 15, main = "Cyl"))
 #' with(mtcars, histkdnc(hp, breaks = 15, main = 'HP'))
 #' with(mtcars, histkdnc(drat, breaks = 15, main = 'Drat'))
-#' 
-#' 
-#' multiplot(18, 10, 3, 4, c(1,1,1, 1,1,1, 2,2, 3, 2,2, 3))
-#' with(mtcars, histkdnc(mpg, breaks = 15))
-#' with(mtcars, boxplot(mpg ~ cyl, notch = FALSE, ylab = 'MPG', 
-#'   border = 'blue', xlab = 'Cyl', main = 'MPG boxplot with error bars'))
-#' with(mtcars, plot.design(mpg ~ (as.factor(cyl)), fun = mean))
+#' }
 #' @export
 
 multiplot <- function(width = 8.5, height = 11, 
@@ -62,6 +56,8 @@ multiplot <- function(width = 8.5, height = 11,
 #' 
 #' @examples
 #' data(mtcars)
+#' library(ggplot2)
+#' 
 #' tmp <- ggplot(mtcars, aes(factor(1), fill = factor(cyl))) + 
 #'   geom_bar(width = 1)
 #' tmp1 <- tmp + coord_polar()
@@ -119,7 +115,7 @@ ggmultiplot <- function(..., plotlist = NULL, cols = 1, layout = NULL) {
 #' 
 #' @usage 
 #' click.text(express, col = 'black', cex = NULL, srt = 0, trans = NULL,
-#'            family = 'sans', ...)
+#'            family = 'sans', dev = FALSE, ...)
 #' 
 #' @param express text or \code{\link{expression}}
 #' @param col colour of text
@@ -129,27 +125,47 @@ ggmultiplot <- function(..., plotlist = NULL, cols = 1, layout = NULL) {
 #' @param srt the string rotation in degrees; see \code{\link{par}}
 #' @param trans color transparency; see \code{\link{tcol}}
 #' @param family the name of a font or drawing text; see \code{\link{Hershey}}
+#' @param dev logical; if \code{TRUE}, will plot on a platform-specific
+#' graphics device; see details
 #' @param ... further graphical parameters passed to \code{\link{text}} (or 
 #' \code{\link{par}})
-
+#'
+#' @details
+#' When \code{dev = TRUE}, a platform-specific graphics device is used to 
+#' displace the plot. Defaults are \code{\link{quartz}}, \code{\link{windows}},
+#' and \code{\link{x11}} for apple, windows, and unix platforms, respectively.
+#' However, any device can be used by setting \code{dev = FALSE} and opening
+#' a device before running \code{kmplot}. If \code{dev} is \code{FALSE}, the
+#' plot will open in the current device; see \code{\link{.Device}}. Close the
+#' device pane or use \code{dev.off()} to turn off the current device.
 #' @seealso \code{\link{click.shape}}; \code{\link{plotmath}} for help with 
 #' mathematical expressions
 #' 
 #' @examples
+#' \dontrun{
 #' plot.new()
 #' click.text('hello', col = 'red', cex = .5)
 #' click.text('goodbye', family = 'HersheyScript', cex = 3)
 #' click.text(expression(sum(x ^ 2) == 5 ^ hat(x)), srt = 45)
+#' }
 #' @export
 
 click.text <- function(express, col = 'black', cex = NULL, srt = 0, trans = NULL,
-                       family = 'sans', ...) {
+                       family = 'sans', dev = FALSE, ...) {
   
+  op <- par(no.readonly = TRUE) 
+  on.exit(par(op))
   if (!is.null(trans))
     col <- tcol(col, trans)
   
-  old.par <- par(no.readonly = TRUE) 
-  on.exit(par(old.par))
+  if (dev) {
+    if (grepl('apple', sessionInfo()$platform))
+      quartz()
+    else if (grepl('mingw', sessionInfo()$platform))
+      windows()
+    else 
+      x11()
+  } else par(xpd = NA)
   
   par(mar = rep(0, 4), xpd = NA)
   x <- locator(1)
@@ -166,8 +182,8 @@ click.text <- function(express, col = 'black', cex = NULL, srt = 0, trans = NULL
 #' 
 #' @usage 
 #' click.shape(shape = 'line', col = 'black', border = col, trans = NULL,
-#'             corners = NULL, lty = par('lty'), lwd = par('lwd'), length = 1, 
-#'             code = 2, ...)
+#'             corners = NULL, lty = par('lty'), lwd = par('lwd'), 
+#'             density = NULL, length = 1, code = 2, dev = FALSE, ...)
 #' @param shape type of shape: 'box', 'arrow', 'line', 'poly', 'circle', 'cyl'
 #' @param col shape outline colour
 #' @param border border colour for shape; defaults to value for \code{col}
@@ -182,16 +198,24 @@ click.text <- function(express, col = 'black', cex = NULL, srt = 0, trans = NULL
 #' \code{\link{arrows}}
 #' @param code integer code for 'arrows' determining \emph{kind} of arrows to 
 #' be drawn
-#' @param x11 logical; if \code{TRUE}, starts a graphics device for the X 
-#' Window System (version 11); this can only be done on machines/accounts that
-#' have access to an X server
+#' @param dev logical; if \code{TRUE}, will plot on a platform-specific
+#' graphics device; see details
 #' @param ... other parameters (future use)
 #' 
+#' @details
+#' When \code{dev = TRUE}, a platform-specific graphics device is used to 
+#' displace the plot. Defaults are \code{\link{quartz}}, \code{\link{windows}},
+#' and \code{\link{x11}} for apple, windows, and unix platforms, respectively.
+#' However, any device can be used by setting \code{dev = FALSE} and opening
+#' a device before running \code{kmplot}. If \code{dev} is \code{FALSE}, the
+#' plot will open in the current device; see \code{\link{.Device}}. Close the
+#' device pane or use \code{dev.off()} to turn off the current device.
 #' @seealso \code{\link{click.text}}
 #' 
 #' @examples
+#' \dontrun{
 #' plot.new()
-#' click.shape()
+#' click.shape() # a line segment
 #' click.shape('arrow', col = 'blue', code = 2, lwd = 2, length = .15)
 #' click.shape('box', border = 'purple', col = 'pink', lwd = 2)
 #' click.shape('box', col = NULL, border = 'purple', lwd = 2)
@@ -202,19 +226,26 @@ click.text <- function(express, col = 'black', cex = NULL, srt = 0, trans = NULL
 #'   lwd = 2)
 #' click.shape('cyl', col = 'orange')
 #' click.shape('circle', col = 'orange', border = 'black', lty = 3, lwd = 3)
+#' }
 #' @export
 
 click.shape <- function(shape = 'line', col = 'black', border = col, trans = NULL,
                         corners = NULL, lty = par('lty'), lwd = par('lwd'), 
-                        density = NULL, length = 1, code = 2, x11 = FALSE, ...) {
+                        density = NULL, length = 1, code = 2, dev = FALSE, ...) {
   
+  op <- par(no.readonly = TRUE) 
+  on.exit(par(op))
   if (!is.null(trans))
     col <- tcol(col, trans)
   
-  if (x11) {
-    try(x11())
-    plot.new()
-     } else par(xpd = NA)
+  if (dev) {
+    if (grepl('apple', sessionInfo()$platform))
+      quartz()
+    else if (grepl('mingw', sessionInfo()$platform))
+      windows()
+    else 
+      x11()
+  } else par(xpd = NA)
   
   RECTANGLE <- function(...) {
     coords <- c(unlist(locator(1)), unlist(locator(1)))
@@ -250,14 +281,14 @@ click.shape <- function(shape = 'line', col = 'black', border = col, trans = NUL
   }
   
   suppressWarnings(
-  switch(shape,
-         box = RECTANGLE(col, border, lty, lwd, density),
-         arrow = ARROW(col, border, lty, lwd, code, length),
-         line = lineSEGMENT(col, border, lty, lwd),
-         poly = POLYGON(col, border, lty, lwd, density, corners),
-         circle = CIRCLE(col, border, lty, lwd),
-         cyl = CYLINDER(col, border),
-         stop('Invalid Argumets'))
+    switch(shape,
+           box = RECTANGLE(col, border, lty, lwd, density),
+           arrow = ARROW(col, border, lty, lwd, code, length),
+           line = lineSEGMENT(col, border, lty, lwd),
+           poly = POLYGON(col, border, lty, lwd, density, corners),
+           circle = CIRCLE(col, border, lty, lwd),
+           cyl = CYLINDER(col, border),
+           stop('Invalid Argumets'))
   )
 }
 
@@ -265,8 +296,8 @@ click.shape <- function(shape = 'line', col = 'black', border = col, trans = NUL
 #' 
 #' Adjusts labels on x-axes when using \code{\link[ggplot2]{facet_wrap}}
 #'
-#' @usage facet.adjust(x, pos = c('up', 'down'), 
-#'   newpage = is.null(vp), vp = NULL)
+#' @usage 
+#' facet.adjust(x, pos = c('up', 'down'), newpage = is.null(vp), vp = NULL)
 #'   
 #' @param x \code{\link[ggplot2]{ggplot}} object
 #' @param pos position of labels
@@ -316,7 +347,7 @@ facet.adjust <- function(x, pos = c('up', 'down'),
       gtable$layout[rows, c('t','b')] <- gtable$layout[lastAxis, c('t')]
     }
   }
-  class(gtable) <- c('facet.adjust','gtable','ggplot')
+  class(gtable) <- c('facet.adjust','gtable','ggplot','gg')
   
   gtable
 }
@@ -374,7 +405,7 @@ print.facet.adjust <- function(x, newpage = is.null(vp), vp = NULL) {
 #' ggcaterpillar(ranef(fit, condVar = TRUE))
 #' 
 #' # for comparison (requires lattice package)
-#' lattice:::qqmath(ranef(fit, condVar = TRUE))
+#' lattice::qqmath(ranef(fit, condVar = TRUE))
 #' @export
 
 ggcaterpillar <- function(re, qq  =  TRUE, likeDotplot  =  TRUE) {
@@ -395,9 +426,9 @@ ggcaterpillar <- function(re, qq  =  TRUE, likeDotplot  =  TRUE) {
                        ind = gl(ncol(x), nrow(x), labels = names(x)))
     
     if (qq) {  ## normal q/q plot
-      p <- ggplot(pDf, aes(nQQ, y))
-      p <- p + facet_wrap(~ ind, scales = 'free')
-      p <- p + xlab('Standard normal quantiles') + 
+      p <- ggplot(pDf, aes(nQQ, y)) + 
+        facet_wrap(~ ind, scales = 'free') +
+        xlab('Standard normal quantiles') + 
         ylab('Random effect quantiles')
     } else {              # caterpillar dotplot
       p <- ggplot(pDf, aes(x = ID, y = y)) + coord_flip()
@@ -409,11 +440,12 @@ ggcaterpillar <- function(re, qq  =  TRUE, likeDotplot  =  TRUE) {
       p <- p + xlab('Levels') + ylab('Random effects')
     }
     
-    p <- p + theme_bw() + theme(legend.position = 'none')
-    p <- p + geom_hline(yintercept = 0)
-    p <- p + geom_errorbar(aes(ymin = y - ci, ymax = y + ci), 
-                           width = 0, colour = 'black')
-    p <- p + geom_point(aes(size = 1.2), colour = 'blue') 
+    p <- p + theme_bw() + 
+      theme(legend.position = 'none') + 
+      geom_hline(yintercept = 0) + 
+      geom_errorbar(aes(ymin = y - ci, ymax = y + ci), 
+                    width = 0, colour = 'black') + 
+      geom_point(aes(size = 1.2), colour = 'blue') 
     
     return(p)
   }
@@ -444,6 +476,9 @@ ggcaterpillar <- function(re, qq  =  TRUE, likeDotplot  =  TRUE) {
 #' @export
 
 zoomin <- function(x, y, ...) {
+  
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
   
   ans <- identify(x, y, n = 1, plot = FALSE, ...)
   
@@ -521,7 +556,7 @@ zoomin <- function(x, y, ...) {
 #' @usage 
 #' ggheat(cors = NULL, data = NULL, limits = c(-1, 1),
 #'        gradn = rev(heat.colors(10)),
-#'        gradc = c('white', 'steelblue')
+#'        gradc = c('white', 'steelblue'))
 #' 
 #' @param cors matrix (or matrix-like object) of correlations
 #' @param data data frame of data (in progress)
@@ -591,7 +626,7 @@ ggheat <- function(cors = NULL, data = NULL,
 #' 
 #' Dodge and center overlapping points (in progress; see details).
 #' 
-#' @usage dodge(formula, data = parent.frame(), z = 20, spread = FALSE)
+#' @usage dodge(formula, data = parent.frame(), z = .5, spread = FALSE)
 #' 
 #' @param formula an object of class \code{\link{formula}} (or an object which 
 #' can be coerced to a formula) having the form \code{var1 ~ var2}; interactions
@@ -601,8 +636,8 @@ ggheat <- function(cors = NULL, data = NULL,
 #' \code{environment(formula)}
 #' @param z numeric scaling parameter for distance between points; \code{0} for
 #' no point dodge and larger values for more spread; default is \code{0.5}
-#' @spread logical; if values are close but not identical and points still
-#' overlap, \if{TRUE}, decimal places will be ignored to creater larger 
+#' @param spread logical; if values are close but not identical and points still
+#' overlap, if \code{TRUE}, decimal places will be ignored to creater larger 
 #' neighborhoods from which the point offset will be calculated; see details
 #' 
 #' @details
@@ -669,9 +704,11 @@ dodge <- function(formula, data = parent.frame(), z = .5, spread = FALSE) {
     y <- mf[i]
   }
   dat <- cbind(by, y)
+  
   if (spread)
-    dat[2] <- floor(dat[2])
-  dat$offset <- ave(dat[[2]], dat[ , 1:2], 
+    dat[names(y)] <- floor(dat[names(y)])
+  
+  dat$offset <- ave(dat[[names(y)]], dat[ , 1:2], 
                     FUN = function(x) seq_along(x) * z / 10)
   dat$offset <- ave(dat$offset, dat[ , 1:2], FUN = function(x) x - mean(x))
   dat$offset

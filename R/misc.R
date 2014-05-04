@@ -7,7 +7,7 @@
 #' spark(...)
 #' 
 #' @param ... numeric vector
-#' @seealso \link{https://gist.github.com/ramnathv/7793167}
+#' @seealso \url{https://gist.github.com/ramnathv/7793167}
 #' 
 #' @examples
 #' spark(30, 31, 32, 33)
@@ -72,9 +72,10 @@ R <- function() {
 #' @return A prize.
 #' 
 #' @examples
+#' \dontrun{
 #' witchcraft()
 #' witchcraft(level = 3)
-#' 
+#' }
 #' @export
 
 witchcraft <- function(level = 1, seed = NULL) {

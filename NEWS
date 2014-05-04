@@ -1,0 +1,12 @@
+rawr 0.2
+--------
+	* fixed for R CMD check
+	* added some tests
+	* minor bugs fixes
+	* fixed args in ggsurv to be consistent with kmplot
+	* roxygen 4.0.0
+
+
+rawr 0.1
+--------
+	* initial bullshit commit

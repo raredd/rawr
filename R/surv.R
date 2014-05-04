@@ -119,21 +119,19 @@
 #' kmfit1 <- survfit(Surv(time, status) ~ sex, data = colon)
 #' kmfit2 <- survfit(Surv(time, status) ~ rx + adhere, data = colon)
 #' 
+#' \dontrun{
 #' ## simple example, draw in r window
 #' kmplot(kmfit1, dev = FALSE)
 #' 
 #' ## using mfrow options, use ADD = TRUE
 #' ## when saving to another device, use dev = FALSE (see details)
-#' \dontrun{
 #' png('./desktop/kmplot2.png', width = 750, height = 1200, pointsize = 14)
 #' par(mfrow = c(2, 1))
 #' kmplot(kmfit1, add = TRUE, dev = FALSE)
 #' kmplot(kmfit2, add = TRUE, dev = FALSE, extra.margin = 8)
 #' dev.off()
-#' }
 #' 
 #' ## more complex example
-#' \dontrun{
 #' pdf('./tmp.pdf', height = 8, width = 11, pointsize = 12)
 #' kmplot(kmfit2, 
 #'        dev = FALSE,  # view in r window
@@ -231,9 +229,9 @@ kmplot <- function(s,
     col.band <- NA
   if (all(sapply(1:(length(col.surv) - 1), function(x) 
     identical(col.surv[x], col.surv[x + 1]))) && !(is.na(col.band)))
-      col.lines <- col.band
-    else 
-      col.lines <- col.surv
+    col.lines <- col.band
+  else 
+    col.lines <- col.surv
   
   ## group names and more error checks
   gr <- c(s$strata)
@@ -281,10 +279,13 @@ kmplot <- function(s,
     abline(v = xaxis.at, lty = lty.grid, lwd = lwd.grid, col = col.grid)
     abline(h = pretty(c(0, 1)), lty = lty.grid, lwd = lwd.grid, col = col.grid)
   }
-  axis(side = 2, at = yaxis.at, las = 1, label = yaxis.lab, cex.axis = cex.axis)
-  axis(side = 1, at = xaxis.at, label = xaxis.lab, line = -0.5, 
+  axis(side = 2, at = yaxis.at, las = 1, 
+       labels = yaxis.lab, cex.axis = cex.axis)
+  axis(side = 1, at = xaxis.at, 
+       labels = xaxis.lab, line = -0.5, 
        tick = FALSE, cex.axis = cex.axis)
-  axis(side = 1, at = xaxis.at, label = rep('', length(xaxis.at)), 
+  axis(side = 1, at = xaxis.at, 
+       labels = rep('', length(xaxis.at)), 
        line = 0, tick = TRUE)
   title(xlab = xlab, line = 1.5, adj = .5, ...)
   title(ylab = ylab, ...)
@@ -337,7 +338,7 @@ kmplot <- function(s,
     if (!is.null(atrisk.lab)) 
       mtext(side = 1, text = atrisk.lab, at = group.name.pos, 
             line = 1.5, adj = 1, col = 1, las = 1, cex = cex.axis)
-  } ## /if (atrisk)	
+  } ## /if (atrisk)  
   
   ## legend
   rlp <- strata.order
@@ -350,8 +351,8 @@ kmplot <- function(s,
   
   ## confidence intervals
   tcol <- function(color, trans = 100) {
-          # helper function for transparent colors
-          # see ?rawr::tcol for details
+    # helper function for transparent colors
+    # see ?rawr::tcol for details
     if (length(color) != length(trans) & 
           !any(c(length(color), length(trans)) == 1)) 
       stop('Vector lengths not correct')
@@ -404,14 +405,14 @@ kmplot <- function(s,
 #' @usage 
 #' ggsurv(s, 
 #'        # basic plot options
-#'        surv.col = NULL, surv.lty = 1,
-#'        censor = TRUE, cens.col = NULL, cens.shape = 3, 
+#'        col.surv = NULL, lty.surv = 1,
+#'        censor = TRUE, col.cens = NULL, mark = 3, 
 #'       
 #'        # confidence options
-#'        confin = TRUE, confband = FALSE, band.col = NULL, 
+#'        confin = TRUE, confband = FALSE, col.band = NULL, 
 #'              
 #'        # extra plot options
-#'        median = FALSE, atrisk = TRUE, atrisk.col = NULL, 
+#'        median = FALSE, atrisk = TRUE, col.atrisk = NULL, 
 #'        pval = NULL, basehaz = FALSE,
 #'              
 #'        # aesthetics
@@ -426,23 +427,23 @@ kmplot <- function(s,
 #'        data = FALSE)
 #' 
 #' @param s \code{\link{survfit}} or \code{\link{survfit.cox}} object
-#' @param surv.col color of survival lines; should be one color or match 
+#' @param col.surv color of survival lines; should be one color or match 
 #' number of strata
-#' @param surv.lty line type used for survival line; default is 1 (solid line)
+#' @param lty.surv line type used for survival line; default is 1 (solid line)
 #' @param censor logical; if \code{TRUE}, plots censored observations (default)
-#' @param cens.col color for censore
-#' @param cens.shape shape for censored
+#' @param col.cens color for censore
+#' @param mark plotting character for censored observations
 #' @param confin logical; plot confidence bounds around survival estimate
 #' @param confband logical; plot confidence band; note that this is not a 
 #' confidence band in the statistical sense; see details
-#' @param band.col band colors; if \code{NULL}, uses default ggplot colors 
+#' @param col.band band colors; if \code{NULL}, uses default ggplot colors 
 #' (default); should be one color or match number of strata
 #' @param median logical; if \code{TRUE}, plots line corresponding to median 
-#' survival (inherits \code{surv.col})
+#' survival (inherits \code{col.surv})
 #' @param atrisk logical; if \code{TRUE}, adds table with number of at-risk
 #' observatons at each \code{tick} timepoint; color of text inherits from 
-#' \code{surv.col}
-#' @param atrisk.col optional color for at risk text, e.g., 'black'
+#' \code{col.surv}
+#' @param col.atrisk optional color for at risk text, e.g., 'black'
 #' @param pval two-element numeric vector corresponding to x- and y-coordinates
 #' to plot a p-value; p-value based on log-rank test for significant 
 #' differences in Kaplan-Meier curves (see \code{\link{survdiff}}); if 
@@ -477,8 +478,7 @@ kmplot <- function(s,
 #' details
 #' @param table.margin numeric; extra "lines" added to left margin of at risk
 #' table; see details
-#' @param data logical; if \code{TRUE}, saves data frame used to create graphs;
-#' also see \code{\link{survdat}}
+#' @param data logical; if \code{TRUE}, saves data frame used to create graphs
 #' 
 #' @details
 #' The argument \code{confband = TRUE} does not plot a confidence band in the 
@@ -525,21 +525,22 @@ kmplot <- function(s,
 #'   data = cancer))
 #' 
 #' ### example plots
+#' library(ggplot2)
 #' ggsurv(kmfit0)
 #' 
-#' ggsurv(kmfit1, confin = FALSE, surv.lty = 1:2, cens.col = 'blue', 
+#' ggsurv(kmfit1, confin = FALSE, lty.surv = 1:2, col.cens = 'blue', 
 #'   grid = FALSE, pval = c(500, .75))
 #' 
-#' ggsurv(kmfit1, confin = FALSE, surv.lty = 1:2, cens.col = 'red', 
-#'   confband = TRUE, band.col = c('blue','red'), 
+#' ggsurv(kmfit1, confin = FALSE, lty.surv = 1:2, col.cens = 'red', 
+#'   confband = TRUE, col.band = c('blue','red'), 
 #'   legend.labels = c('Male', 'Female'), median = TRUE, ticks = c(0, 1000, 200))
 #'   
 #' ggsurv(coxfit0, basehaz = TRUE)
 #' 
 #' # this long label mis-aligns the table numbers, so we can use plot.margin
 #' # to adjust; it may be easier to adjust plot.margin instead of table.margin
-#' ggsurv(coxfit0, confin = FALSE, atrisk.col = 'black',
-#'   surv.col = c('red','green','blue','black'),
+#' ggsurv(coxfit0, confin = FALSE, col.atrisk = 'black',
+#'   col.surv = c('red','green','blue','black'),
 #'   legend.labels = c('Less than 50','50-60','60-70','70+'),
 #'   plot.margin = 3)
 #' 
@@ -547,7 +548,7 @@ kmplot <- function(s,
 #' png('./plot.png', height = 600, width = 750)
 #' ggsurv(coxfit1, confin = FALSE, median = TRUE, confband = FALSE,
 #'   legend.labels = c('< 45','> 45'), 
-#'   surv.col = c('red','green'), cens.shape = '#', cens.col = 'black', 
+#'   col.surv = c('red','green'), mark = '#', col.cens = 'black', 
 #'   legend = FALSE)
 #' dev.off()
 #' }
@@ -555,14 +556,14 @@ kmplot <- function(s,
 
 ggsurv <- function(s, 
                    # basic plot options
-                   surv.col = NULL, surv.lty = 1,
-                   censor = TRUE, cens.col = NULL, cens.shape = 3,
+                   col.surv = NULL, lty.surv = 1,
+                   censor = TRUE, col.cens = NULL, mark = 3,
                    
                    # confidence options
-                   confin = TRUE, confband = FALSE, band.col = NULL, 
+                   confin = TRUE, confband = FALSE, col.band = NULL, 
                    
                    # extra plot options
-                   median = FALSE, atrisk = TRUE, atrisk.col = NULL,
+                   median = FALSE, atrisk = TRUE, col.atrisk = NULL,
                    pval = NULL, basehaz = FALSE,
                    
                    # aesthetics
@@ -650,7 +651,7 @@ ggsurv <- function(s,
   }
   
   #### for custom ribbon color with no strata present
-  if (is.null(survdat$strata) && !is.null(band.col)) survdat$band.col <- band.col
+  if (is.null(survdat$strata) && !is.null(col.band)) survdat$col.band <- col.band
   
   #### change levels in strata
   if (!is.null(survdat$strata) && !(is.null(legend.labels))) {
@@ -676,43 +677,43 @@ ggsurv <- function(s,
   #### graph with no strata ####
   
   if (is.null(survdat$strata)) {
-    if (length(band.col) > 1) warning('more colors chosen than bands')
-    if (length(surv.col) > 1) warning('more colors chosen than lines')
+    if (length(col.band) > 1) warning('more colors chosen than bands')
+    if (length(col.surv) > 1) warning('more colors chosen than lines')
     
-    if (is.null(surv.col)) surv.col <- 'black'
+    if (is.null(col.surv)) col.surv <- 'black'
     
     # step plot
     tmp <- ggplot(data = survdat, aes(x = time, y = surv)) 
-    if (is.null(surv.col)) {
-      tmp <- tmp + geom_step(colour = 'black', lty = surv.lty, direction = 'hv')
+    if (is.null(col.surv)) {
+      tmp <- tmp + geom_step(colour = 'black', lty = lty.surv, direction = 'hv')
     } else {
-      tmp <- tmp + geom_step(colour = surv.col, lty = surv.lty, direction = 'hv')
+      tmp <- tmp + geom_step(colour = col.surv, lty = lty.surv, direction = 'hv')
     }
     # add censored observations
     if (censor) {
-      if (is.null(cens.col) & !is.null(surv.col)) {
-        tmp <- tmp + geom_point(data = subset(survdat, n.censor > 0), aes(x = time, y = surv), colour = surv.col, shape = cens.shape) 
+      if (is.null(col.cens) & !is.null(col.surv)) {
+        tmp <- tmp + geom_point(data = subset(survdat, n.censor > 0), aes(x = time, y = surv), colour = col.surv, shape = mark) 
       } else { 
-        if (is.null(cens.col) & is.null(surv.col)) {
-          tmp <- tmp + geom_point(data = subset(survdat, n.censor > 0), aes(x = time, y = surv), colour = 'black', shape = cens.shape)
+        if (is.null(col.cens) & is.null(col.surv)) {
+          tmp <- tmp + geom_point(data = subset(survdat, n.censor > 0), aes(x = time, y = surv), colour = 'black', shape = mark)
         } else {
-          tmp <- tmp + geom_point(data = subset(survdat, n.censor > 0), aes(x = time, y = surv), colour = cens.col, shape = cens.shape)
+          tmp <- tmp + geom_point(data = subset(survdat, n.censor > 0), aes(x = time, y = surv), colour = col.cens, shape = mark)
         }
       }
     }
     # add confidence interval
     if (confin) {
       tmp <- tmp + 
-        geom_step(aes(x = time, y = upper), direction = 'hv', linetype = 2, colour = surv.col) + 
-        geom_step(aes(x = time, y = lower), direction = 'hv', linetype = 2, colour = surv.col)
+        geom_step(aes(x = time, y = upper), direction = 'hv', linetype = 2, colour = col.surv) + 
+        geom_step(aes(x = time, y = lower), direction = 'hv', linetype = 2, colour = col.surv)
     }
     # add confidence band
     if (confband) {
-      if (is.null(survdat$band.col)) {
+      if (is.null(survdat$col.band)) {
         tmp <- tmp + geom_ribbon(aes(x = time, ymax = upper, ymin = lower), directions = 'hv',alpha = 0.25)
       } else {
-        tmp <- tmp + geom_ribbon(aes(x = time, ymax = upper, ymin = lower, fill = band.col), direction = 'hv', alpha = 0.25) + 
-          scale_fill_manual(values = band.col)
+        tmp <- tmp + geom_ribbon(aes(x = time, ymax = upper, ymin = lower, fill = col.band), direction = 'hv', alpha = 0.25) + 
+          scale_fill_manual(values = col.band)
       }
     }
     # median survival line
@@ -726,8 +727,8 @@ ggsurv <- function(s,
       if (nrow(tmp.med) == 0) {
         cat('\nmedian survival not reached\n')
       } else {
-        tmp <- tmp + geom_line(data = tmp.med, aes(x = time, y = quant), colour = surv.col, linetype = 3) + 
-          geom_point(data = tmp.med, aes(x = time, y = quant), colour = surv.col)
+        tmp <- tmp + geom_line(data = tmp.med, aes(x = time, y = quant), colour = col.surv, linetype = 3) + 
+          geom_point(data = tmp.med, aes(x = time, y = quant), colour = col.surv)
       }
     }
     
@@ -737,32 +738,32 @@ ggsurv <- function(s,
     
     # make sure options are compatible
     # line colors
-    surv.cols <- if (length(surv.col == 1)) {
-      scale_colour_manual(values = rep(surv.col, length(unique(survdat$strata))))
+    col.survs <- if (length(col.surv == 1)) {
+      scale_colour_manual(values = rep(col.surv, length(unique(survdat$strata))))
     } else {
-      scale_colour_manual(values = surv.col)
+      scale_colour_manual(values = col.surv)
     } 
-    if (is.null(surv.col)) surv.cols <- NULL
+    if (is.null(col.surv)) col.survs <- NULL
     # line types
-    surv.ltys <- if (length(surv.lty == 1)) {
-      scale_linetype_manual(values = rep(surv.lty, length(unique(survdat$strata))))
+    lty.survs <- if (length(lty.surv == 1)) {
+      scale_linetype_manual(values = rep(lty.surv, length(unique(survdat$strata))))
     } else {
-      scale_linetype_manual(values = surv.lty)
+      scale_linetype_manual(values = lty.surv)
     }
     # censor shapes
-    cens.shapes <- rep(cens.shape, times = length(unique(survdat$strata)))
+    marks <- rep(mark, times = length(unique(survdat$strata)))
     
     # step plot
     tmp <- ggplot(data = survdat, aes(x = time, y = surv, group = strata, colour = strata)) +
       geom_step(aes(colour = strata, group = strata, linetype = strata), direction = 'hv') +
-      surv.cols + surv.ltys
+      col.survs + lty.survs
     # add censored observations
     if (censor) {
-      if (is.null(cens.col)) {
-        tmp <- tmp + geom_point(data = subset(survdat, n.censor > 0), aes(x = time, y = surv, colour = strata, group = strata), shape = cens.shape) 
+      if (is.null(col.cens)) {
+        tmp <- tmp + geom_point(data = subset(survdat, n.censor > 0), aes(x = time, y = surv, colour = strata, group = strata), shape = mark) 
       } else { 
-        tmp <- tmp + geom_point(data = subset(survdat, n.censor > 0), aes(x = time, y = surv, colour = strata, group = strata, shape = strata), colour = cens.col) + 
-          scale_shape_manual(values = cens.shapes)
+        tmp <- tmp + geom_point(data = subset(survdat, n.censor > 0), aes(x = time, y = surv, colour = strata, group = strata, shape = strata), colour = col.cens) + 
+          scale_shape_manual(values = marks)
       }
     }
     # add confidence interval
@@ -775,7 +776,7 @@ ggsurv <- function(s,
     if (confband) {
       tmp <- tmp + geom_ribbon(aes(x = time, ymax = upper, ymin = lower, fill = strata), directions = "hv", linetype = 0 ,alpha = 0.25)
       # custom conf band fill colors
-      if (!is.null(band.col)) tmp <- tmp + scale_fill_manual(values = rep(band.col, length(unique(survdat$strata))))
+      if (!is.null(col.band)) tmp <- tmp + scale_fill_manual(values = rep(col.band, length(unique(survdat$strata))))
     }
     
     # median survival line
@@ -784,21 +785,21 @@ ggsurv <- function(s,
       tmp.med <- summary(s)$table[ ,'median']
       cat('median survival times:\n')
       print(tmp.med)
-      cols <- if (is.null(surv.col)) {
+      cols <- if (is.null(col.surv)) {
         rep(ggcols(length(names(tmp.med))), each = 2)
       } else {
-        rep(surv.col, each = 2)
+        rep(col.surv, each = 2)
       }
       tmp.med <- data.frame(time = rep(tmp.med, each = 2), 
                             quant = rep(c(.5,0), times = length(tmp.med)), 
                             group = rep(names(tmp.med), each = 2),
-                            surv.col = cols)
+                            col.surv = cols)
       tmp.med <- subset(tmp.med, !is.na(time))
       if (nrow(tmp.med) == 0) {
         cat('\nmedian survival not reached\n')
       } else {
-        tmp <- tmp + geom_line(data = tmp.med, aes(time, quant, group = group), colour = tmp.med$surv.col, linetype = 3) + 
-          geom_point(data = tmp.med, aes(time, quant, group = group), colour = tmp.med$surv.col)
+        tmp <- tmp + geom_line(data = tmp.med, aes(time, quant, group = group), colour = tmp.med$col.surv, linetype = 3) + 
+          geom_point(data = tmp.med, aes(time, quant, group = group), colour = tmp.med$col.surv)
       }
     }
   }
@@ -815,7 +816,7 @@ ggsurv <- function(s,
         geom_line() + xlab('Time') + ylab('Hazard')
     } else {
       tmp <- ggplot(data = tmp.haz, aes(x = time, y = hazard, colour = strata)) + 
-        geom_line() + xlab('Time') + ylab('Hazard') + surv.cols + surv.ltys
+        geom_line() + xlab('Time') + ylab('Hazard') + col.survs + lty.survs
     }
   }
   ### / test
@@ -911,12 +912,12 @@ ggsurv <- function(s,
       plot.margin <- .5 * (max(nchar(levels(survdat$strata))) - 1) - .3
     
     tmp <- tmp + theme(plot.margin = unit(c(.25, .25, .4, plot.margin), 'lines'))
-
+    
     # create table in ggplot
     gg.table <- ggplot(risk.table, aes(x = time, y = strata, colour = strata, label = format(n.risk, nsmall = 0))) + 
       theme_bw() + 
-            scale_y_discrete(breaks = as.character(levels(risk.table$strata)), labels = rev(unique(survdat$strata))) +
-#       scale_y_discrete(breaks = as.character(levels(risk.table$strata)), labels = rep('', length(unique(survdat$strata)))) +
+      scale_y_discrete(breaks = as.character(levels(risk.table$strata)), labels = rev(unique(survdat$strata))) +
+      #       scale_y_discrete(breaks = as.character(levels(risk.table$strata)), labels = rep('', length(unique(survdat$strata)))) +
       scale_x_continuous('Number at risk', breaks = tick.seq, limits = c(0, max(s$time))) + 
       theme(axis.title.x = element_text(size = 10, vjust = 1),
             panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -925,23 +926,23 @@ ggsurv <- function(s,
     #       annotate('text', x = 0, y = length(unique(risk.table$strata)) + .5, label = 'Number at risk')
     #       ggtitle('Number at risk') 
     #       theme(plot.title = element_text(size = rel(1)))
-      if (!is.null(atrisk.col))
-        gg.table <- gg.table + geom_text(size = 3.5, colour = atrisk.col)
-          else gg.table <- gg.table + geom_text(size = 3.5)
-
+    if (!is.null(col.atrisk))
+      gg.table <- gg.table + geom_text(size = 3.5, colour = col.atrisk)
+    else gg.table <- gg.table + geom_text(size = 3.5)
+    
     if (is.null(table.margin))
       table.margin <- 2
     gg.table <- gg.table + 
       theme(plot.margin = unit(c(-2, .5, .1, table.margin), 'lines'),
             legend.position = 'none') + xlab(NULL) + ylab(NULL)
     
-    if (is.null(surv.col)) {
+    if (is.null(col.surv)) {
       gg.table <- gg.table + 
         scale_colour_manual(values = rev(ggcols(length(unique(risk.table$strata)))))
     } else {
-      if (length(surv.col) == 1) surv.col <- rep(surv.col, length(unique(survdat$strata)))
+      if (length(col.surv) == 1) col.surv <- rep(col.surv, length(unique(survdat$strata)))
       gg.table <- gg.table + 
-        scale_colour_manual(values = rev(surv.col))
+        scale_colour_manual(values = rev(col.surv))
     }
     
     # blank plot for place-holding
@@ -962,6 +963,6 @@ ggsurv <- function(s,
                        clip = FALSE, nrow = 3, ncol = 1,
                        heights = unit(c(2, .1, .25), c('null','null','null')))
   }
-
+  
   tmp
 }

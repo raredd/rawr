@@ -5,13 +5,13 @@
 
 #' Binomial probability confidence intervals
 #' 
-#' Calculates confidence intervales for binomial probabilities for
-#' specified type I error (\code{alpha}) using exact, Wilson, or asymptotic
-#' methods.
+#' Calculates confidence intervales for binomial probabilities for specified 
+#' type I error (\code{alpha}) using exact, Wilson, or asymptotic methods.
 #' 
-#' @usage bincon(r, n, alpha = 0.05,
-#'    method = c('exact','wilson','asymptotic','all'), 
-#'    inc.r = FALSE, inc.n = FALSE, df = FALSE)
+#' @usage 
+#' bincon(r, n, alpha = 0.05, round = NULL,
+#'        method = c('exact','wilson','asymptotic','all'), 
+#'        inc.r = FALSE, inc.n = FALSE, df = FALSE)
 #'    
 #' @param r number of responses (successes)
 #' @param n number of observations (trials)
@@ -51,22 +51,6 @@
 #' bincon(0:10, 10)
 #' bincon(5, 10, method = 'all')
 #' @export
-
-# to do
-# add plot?
-# allow for multiple methods for vectors
-
-# df <- data.frame(x =1:10,
-#                  F =runif (10,1,2),
-#                  L =runif (10,0,1),
-#                  U =runif (10,2,3))
-# 
-# require(ggplot2)
-# df <- as.data.frame(tmp)
-# ggplot(df, aes(x = 1:201, y = PointEst)) +
-#   geom_point(data = df, size = 4) +
-#   geom_errorbar(aes(ymin = Lower, ymax = Upper))
-
 
 bincon <- function(r, n, alpha = 0.05, round = NULL,
                    method = c('exact','wilson','asymptotic','all'), 
@@ -135,8 +119,8 @@ bincon <- function(r, n, alpha = 0.05, round = NULL,
   }
   
   mat <- matrix(ncol = 3, nrow = length(r))
-  for (i in 1:length(r)) mat[i, ] <- bc(r[i], n[i], alpha = alpha, 
-                                        method = method)
+  for (i in 1:length(r)) 
+    mat[i, ] <- bc(r[i], n[i], alpha = alpha, method = method)
   
   mat <- cbind(mat, mat[ ,3] - mat[ ,2])
   
@@ -248,10 +232,10 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
 #' Creates a standard dose-limiting toxicity table with probabilities of 
 #' dose-escalation
 #' 
-#' @usage dlt.table(dlt.low, dlt.high. delta = 10)
+#' @usage dlt.table(low, high, delta = 10)
 #' 
-#' @param dlt.low lowest true DLT rate, percent
-#' @param dlt.high highest true DLT rate, percent
+#' @param low lowest true DLT rate, percent
+#' @param high highest true DLT rate, percent
 #' @param delta interval of DLT rate sequence; default is 10
 #' 
 #' @examples
@@ -260,13 +244,12 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
 #' 
 #' @export 
 
-dlt.table <- function(dlt.low, dlt.high, delta = 10) {
+dlt.table <- function(low, high, delta = 10) {
   
-  int <- seq(dlt.low, dlt.high, by = delta)
+  int <- seq(low, high, by = delta)
   mat <- matrix(NA, nrow = length(int), ncol = 2)
   
-  for (i in 1:length(int))
-  {
+  for (i in 1:length(int)) {
     mat[i, 1] <- round(int[i])
     mat[i, 2] <- dbinom(0, 3, int[i] / 100) + 
       dbinom(1, 3, int[i] / 100) * dbinom(0, 3, int[i] / 100)
@@ -328,9 +311,8 @@ power.cv <- function(n = NULL, f = NULL, cv = NULL,
     stop("'sig.level' must be numeric in [0, 1]")
   if (!is.null(power) && !is.numeric(power) || any(0 > power | power > 1)) 
     stop("'power' must be numeric in [0, 1]")
-  if (f < 1 )
-  {
-    f <- 1/f
+  if (f < 1 ) {
+    f <- 1 / f
     warning('ratio of means must be such that mu1/mu0 > 1: 1/f used')
   }
   
@@ -348,8 +330,7 @@ power.cv <- function(n = NULL, f = NULL, cv = NULL,
                   less = 1, two.sided = 2, greater = 1)
   
   # assuming underlying t distribution
-  if (ttside == 1) # one-sided, less
-  {
+  if (ttside == 1) { # one-sided, less
     p.body <- quote({
       df <- (n - 1) * tsample
       qt <- qt(p = sig.level/tside, df = df, lower.tail = TRUE)
@@ -357,8 +338,7 @@ power.cv <- function(n = NULL, f = NULL, cv = NULL,
          lower.tail = TRUE)
     })
   }
-  if (ttside == 2) # two-sided
-  {
+  if (ttside == 2) { # two-sided
     p.body <- quote({
       df <- (n - 1) * tsample
       qt <- qt(sig.level/tside, df, lower.tail = FALSE)
@@ -368,8 +348,7 @@ power.cv <- function(n = NULL, f = NULL, cv = NULL,
            lower.tail = FALSE)/2
     })
   }
-  if (ttside == 3) # one-sided, greater
-  {
+  if (ttside == 3) { # one-sided, greater
     p.body <- quote({
       df <- (n - 1) * tsample
       qt <- qt(sig.level/tside, df = df, lower.tail = FALSE)
@@ -379,8 +358,7 @@ power.cv <- function(n = NULL, f = NULL, cv = NULL,
   }
   
   # assuming underlying normal distribution
-  if (dist == 'normal')
-  {
+  if (dist == 'normal') {
     p.body <- quote({
       qt <- qnorm(p = sig.level/tside, lower.tail = FALSE)
       pnorm(q = -qt + (sqrt(n)*(f-1))/(cv*(f**2+1)**.5), lower.tail = TRUE)
@@ -388,8 +366,7 @@ power.cv <- function(n = NULL, f = NULL, cv = NULL,
   }
   
   # assuming underlying lognormal distribution with unknown variance
-  if (dist == 'log.normal')
-  {
+  if (dist == 'log.normal') {
     mat <- matrix(c(.005, -2.57583, -2.203837, .6699734, -.0524065, -.0059258,
                     .010, -2.32635, -1.821394, .5380802, .0181774, -.0584748,
                     .025, -1.95996, -1.145521, .2370261, .0392020, -.0670915,
@@ -497,7 +474,7 @@ power.cv <- function(n = NULL, f = NULL, cv = NULL,
 #' 
 #' @examples
 #' simon2(p0low = .55, p0high = .6, p1low = .75, ntmax = 60, beta.max = .12)
-#' # compare this function to results from desmon:::simon
+#' # compare this function to results from desmon::simon
 #' simon2(p0low = .4, p1low = .6)
 #' # requires desmon package
 #' # simon(.4, .6)
@@ -510,7 +487,7 @@ simon2 <- function (p0low, p0high = p0low, p1low, p1high = p1low, n1max = 0,
   # helper function (desmon::bin1samp)
   bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20) {
     if (p0 == pa) 
-      stop()
+      stop('p0 should not be equal to pa')
     b <- 1
     x <- round(p0 * n.min)
     n <- n.min - 1
@@ -552,12 +529,9 @@ simon2 <- function (p0low, p0high = p0low, p1low, p1high = p1low, n1max = 0,
   
   z.list <- NULL
   
-  for (p0 in seq(p0low, p0high, by = 0.01))
-  {
-    for (p1 in seq(p1low, p1high, by = 0.01))
-    {
-      for (b0 in seq(beta, beta.max, by = .01))
-      {
+  for (p0 in seq(p0low, p0high, by = 0.01)) {
+    for (p1 in seq(p1low, p1high, by = 0.01)) {
+      for (b0 in seq(beta, beta.max, by = .01)) {
         
         u1 <- bin1samp(p0, p1, alpha, b0)
         z <- matrix(c(u1[1:2], 0, u1[2], 1, u1[5:6], u1[1]), nrow = 1)
