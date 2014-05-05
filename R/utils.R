@@ -19,7 +19,7 @@ ht <- function(x, ..., sep = NULL) rbind(head(x, ...), sep, tail(x, ...))
 
 #' oror
 #' 
-#' function_that_may_return_null() \code{oror} default value
+#' \code{function_that_may_return_null()} \code{oror} default value
 #' @name oror
 #' @aliases %||%
 #' @examples

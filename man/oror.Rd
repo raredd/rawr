@@ -7,7 +7,7 @@
 e1 \%||\% e2
 }
 \description{
-function_that_may_return_null() \code{oror} default value
+\code{function_that_may_return_null()} \code{oror} default value
 }
 \examples{
 \dontrun{
