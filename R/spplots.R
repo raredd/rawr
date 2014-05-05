@@ -1,8 +1,8 @@
 ### specific plots
-# tplot, jmplot, dsplot
+# jmplot, tplot, dsplot
 ###
 
-#' jmplot
+#' Joint/marginal plot
 #' 
 #' Joint distribution and marginal distributions plot; requires 
 #' \code{\link{tplot}}
@@ -169,7 +169,7 @@ jmplot <- function(x, y, z,
   }
 }
 
-#' tplot
+#' tplot (boxplot)
 #' 
 #' An alternative to \code{\link{boxplot}}. The individual data can be shown 
 #' (either in the foreground or background) with jittering if necessary.

@@ -7,7 +7,7 @@
 #' @export
 `%ni%` <- Negate(`%in%`)
 
-#' headtail
+#' head/tail
 #' 
 #' @usage ht(x, ..., sep = NULL)
 #' @param x an object
@@ -19,7 +19,7 @@ ht <- function(x, ..., sep = NULL) rbind(head(x, ...), sep, tail(x, ...))
 
 #' oror
 #' 
-#' function_that_may_return_null() or default value
+#' function_that_may_return_null() \code{oror} default value
 #' @name oror
 #' @aliases %||%
 #' @examples
@@ -89,8 +89,8 @@ progress <- function (value, max.value = NULL) {
 
 #' Recode a variable
 #' 
-#' A function for recoding numeric, character, and factor values 
-#' in a vector, list, matrix, or data frame.
+#' A function for recoding numeric, character, and factor values in a vector, 
+#' list, matrix, or data frame.
 #' 
 #' @usage recoder(object, pattern, replacement, ...)
 #' 
@@ -707,8 +707,7 @@ html.test <- function(...) {
 
 #  roundr
 #'
-#' Round a number to the specified number of decimal places (default is 1), 
-#' preserving trailing 0s
+#' Improved rounding formatter
 #' 
 #' @usage roundr(x, digits = 1)
 #'
@@ -737,7 +736,7 @@ roundr <- function(x, digits = 1) {
   res
 }
 
-#' Interval formatter
+#' Confidence interval formatter
 #' 
 #' Automatically calculate summary statistic and interval for numeric vectors
 #'  

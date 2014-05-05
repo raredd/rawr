@@ -19,8 +19,8 @@ Returns an object with the same length (or dimensions) and class as
 \code{object}
 }
 \description{
-A function for recoding numeric, character, and factor values
-in a vector, list, matrix, or data frame.
+A function for recoding numeric, character, and factor values in a vector,
+list, matrix, or data frame.
 }
 \details{
 When recoding a factor variable with a new level, \code{recoder}
