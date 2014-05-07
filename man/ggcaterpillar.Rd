@@ -23,6 +23,7 @@ Behaves like \code{\link[lattice]{qqmath}} and
 with multiple correlated random effects
 }
 \examples{
+\donttest{
 library(lme4)
 fit <- lmer(Reaction ~ Days + (Days | Subject), data = sleepstudy)
 
@@ -31,5 +32,6 @@ ggcaterpillar(ranef(fit, condVar = TRUE))
 
 # for comparison (requires lattice package)
 lattice::qqmath(ranef(fit, condVar = TRUE))
+}
 }
 

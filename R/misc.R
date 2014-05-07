@@ -47,10 +47,6 @@ spark <- function(...) {
   noquote(intToUtf8(9601 + nums))
 }
 
-#' \code{R}
-#' @usage R()
-#' @export
-
 R <- function() {
   eval(quote({h=character;r=rep;a=b=h(0);p=options()$width%/%2-5;n="
   ";j=r(toupper(substring(mode(a),4,4)),sum(r(5:9,2)+1)-3)

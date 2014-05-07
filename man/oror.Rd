@@ -6,6 +6,9 @@
 \usage{
 e1 \%||\% e2
 }
+\arguments{
+\item{e1,e2}{raw or logical or "number-like" vectors or objects}
+}
 \description{
 \code{function_that_may_return_null()} \code{oror} default value
 }

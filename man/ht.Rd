@@ -11,7 +11,7 @@ ht(x, ..., sep = NULL)
 \item{...}{other parameters, such as \code{n}, passed to \code{\link{head}}
 or other methods}
 
-\item{sep}{separater}
+\item{sep}{separator}
 }
 \description{
 head/tail

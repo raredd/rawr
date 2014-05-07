@@ -49,7 +49,7 @@ levels of significance and power. \emph{British J of Cancer} (2012) 107,
 1801-9.
 }
 \seealso{
-\code{\link[clinfun]{ph2single}} (clinfun package);
-\code{\link{bin1samp}} (desmon package); bintest.sas (SAS macro)
+\code{ph2single} (clinfun package); \code{bin1samp} (desmon
+package); bintest.sas (SAS macro)
 }
 

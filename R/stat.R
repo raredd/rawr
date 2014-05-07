@@ -45,7 +45,7 @@
 #' \strong{16}:101-133, 2001.
 #' @references Newcombe, R.G. Logit confidence intervals and the inverse sinh 
 #' transformation, \emph{American Statistician}. \strong{55}:200-202, 2001.
-#' @seealso \code{\link[Hmisc]{binconf}}, \code{\link{binci}} (desmon package)
+#' @seealso \code{\link[Hmisc]{binconf}}, \code{binci} (desmon package)
 #' 
 #' @examples
 #' bincon(0:10, 10)
@@ -165,8 +165,8 @@ bincon <- function(r, n, alpha = 0.05, round = NULL,
 #' levels of significance and power. \emph{British J of Cancer} (2012) 107, 
 #' 1801-9.
 #' @return Sample size, overall power, and overall type I error rate
-#' @seealso \code{\link[clinfun]{ph2single}} (clinfun package); 
-#' \code{\link{bin1samp}} (desmon package); bintest.sas (SAS macro)
+#' @seealso \code{ph2single} (clinfun package); \code{bin1samp} (desmon 
+#' package); bintest.sas (SAS macro)
 #' 
 #' @examples
 #' bintest(p0low = .2, p1low = .5, n.max  = 25)

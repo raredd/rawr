@@ -1,9 +1,19 @@
 ### utilities
-# progress bar, data recoder, pairwise sum, ident, search functions, ggcols, 
-# grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
-# show.colors
+# %ni%, ht, oror, progress, recoder, psum, ident, search.df, search.hist, 
+# ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
+# show.colors, show.pch, %inside%, try_require, clist
 ###
 
+#' not in
+#' 
+#' Negation of \code{\link[base]{\%in\%}}
+#' @name notin
+#' @usage x \%ni\% y
+#' @param x vector or NULL; the values to be matched
+#' @param y vector or NULL; the values to be matched against
+#' @aliases %ni%
+#' @examples
+#' 1:5 %ni% 3:5
 #' @export
 `%ni%` <- Negate(`%in%`)
 
@@ -13,7 +23,7 @@
 #' @param x an object
 #' @param ... other parameters, such as \code{n}, passed to \code{\link{head}} 
 #' or other methods
-#' @param sep separater 
+#' @param sep separator 
 #' @export
 ht <- function(x, ..., sep = NULL) rbind(head(x, ...), sep, tail(x, ...))
 
@@ -21,6 +31,7 @@ ht <- function(x, ..., sep = NULL) rbind(head(x, ...), sep, tail(x, ...))
 #' 
 #' \code{function_that_may_return_null()} \code{oror} default value
 #' @name oror
+#' @param e1,e2 raw or logical or "number-like" vectors or objects
 #' @aliases %||%
 #' @examples
 #' \dontrun{
@@ -29,7 +40,6 @@ ht <- function(x, ..., sep = NULL) rbind(head(x, ...), sep, tail(x, ...))
 #' }
 #' @export
 `%||%` <- function(e1, e2) if (!is.null(e1)) e1 else e2
-
 
 #' Progress function
 #' 
@@ -906,3 +916,54 @@ show.pch <- function() {
   text(x = x, y = y, labels = 0:25, pos = 4, cex = 1.5, offset = 1)
   text(x = 4, y = 0, labels = 'plotting characters 0:25', cex = 1.5)
 }
+
+#' Inside
+#' 
+#' Return logical vector indicating if \code{x} is inside the \code{interval}
+#' @name inside
+#' @usage x \%inside\% interval
+#' @param x numeric
+#' @param interval numeric interval
+#' @aliases %inside%
+#' @examples
+#' -5:5 %inside% c(0,5)
+#' @export
+
+`%inside%` <- function(x, interval) x >= interval[1] & x <= interval[2]
+
+#' Quietly try to require a package
+#' 
+#' Quietly require a package, returning an error message if not installed.
+#' 
+#' @param package name of package as name or character string
+#' 
+#' @export
+
+try_require <- function(package) {
+  package <- ifelse(!is.character(substitute(package)), 
+                    as.character(substitute(package)),
+                    package)
+  available <- suppressMessages(
+    suppressWarnings(
+      sapply(package, require, quietly = TRUE, 
+             character.only = TRUE, warn.conflicts=FALSE)))
+  missing <- package[!available]
+  
+  if (length(missing) > 0)
+    stop(paste(package, collapse = ', '), ' package not found.', call. = FALSE)
+}
+
+#' Concatenate a named list for output
+#' 
+#' Print a \code{list(a = 1, b = 2)} as \code{(a = 1, b = 2)}
+#'
+#' @param l list to concatenate
+#' 
+#' @examples
+#' clist(list(a = 1, b = 2))
+#' clist(par()[1:5])
+#' 
+#' @export
+
+clist <- function(l) 
+  paste(paste(names(l), l, sep = ' = ', collapse = ', '), sep = '')

@@ -692,7 +692,7 @@ tplot.formula <- function(formula, data = parent.frame(), ..., subset,
 #'        
 #' @export
 
-dsplot <- function(x, ...) UseMethod('dsplot')
+dsplot <- function(x, y, ...) UseMethod('dsplot')
 
 #' @export
 dsplot.default <- function(x, y, 

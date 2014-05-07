@@ -1,6 +1,6 @@
 ### plot functions
-# multiplot, ggmultiplot, click.text, click.shape, facet.adjust, 
-# facet.adjust.print, ggcaterpillar, zoomin, ggheat, dodge
+# multiplot, ggmultiplot, click.text, click.shape, facet_adjust, 
+# facet_adjust.print, ggcaterpillar, zoomin, ggheat, dodge
 ###
 
 
@@ -297,24 +297,24 @@ click.shape <- function(shape = 'line', col = 'black', border = col, trans = NUL
 #' Adjusts labels on x-axes when using \code{\link[ggplot2]{facet_wrap}}
 #'
 #' @usage 
-#' facet.adjust(x, pos = c('up', 'down'), newpage = is.null(vp), vp = NULL)
+#' facet_adjust(x, pos = c('up', 'down'), newpage = is.null(vp), vp = NULL)
 #'   
 #' @param x \code{\link[ggplot2]{ggplot}} object
 #' @param pos position of labels
 #' @param newpage draw new (empty) page first; see \code{\link{print.ggplot}}
 #' @param vp viewport to draw plot in; see \code{\link[ggplot2]{print.ggplot}}
-#' @return facet.adjust object that inherits \code{\link[gtable]{gtable}} class
+#' @return facet_adjust object that inherits \code{\link[gtable]{gtable}} class
 #' 
 #' @examples
 #' library(ggplot2)
 #' # missing some labels 
 #' (tmp <- ggplot(diamonds[1:100, ], aes(carat, price, colour = clarity)) + 
 #'   geom_point() + facet_wrap( ~ cut))
-#' facet.adjust(tmp)
-#' facet.adjust(tmp, pos = 'down')
+#' facet_adjust(tmp)
+#' facet_adjust(tmp, pos = 'down')
 #' @export
 
-facet.adjust <- function(x, pos = c('up', 'down'), 
+facet_adjust <- function(x, pos = c('up', 'down'), 
                          newpage = is.null(vp), vp = NULL) {
   
   require(grid)
@@ -347,23 +347,23 @@ facet.adjust <- function(x, pos = c('up', 'down'),
       gtable$layout[rows, c('t','b')] <- gtable$layout[lastAxis, c('t')]
     }
   }
-  class(gtable) <- c('facet.adjust','gtable','ggplot','gg')
+  class(gtable) <- c('facet_adjust','gtable','ggplot','gg')
   
   gtable
 }
 
-#' facet.adjust print method
+#' facet_adjust print method
 #' 
-#' @usage print.facet.adjust(x, newpage = is.null(vp), vp = NULL)
-#' @param x object from \code{\link{facet.adjust}}
+#' @usage print.facet_adjust(x, newpage = is.null(vp), vp = NULL)
+#' @param x object from \code{\link{facet_adjust}}
 #' @param newpage draw new (empty) page first; see 
 #' \code{\link[ggplot2]{print.ggplot}}
 #' @param vp viewport to draw plot in; see \code{\link[ggplot2]{print.ggplot}}
 #' 
-#' @export print facet.adjust
-#' @seealso \code{\link{facet.adjust}}
+#' @export
+#' @seealso \code{\link{facet_adjust}}
 
-print.facet.adjust <- function(x, newpage = is.null(vp), vp = NULL) {
+print.facet_adjust <- function(x, newpage = is.null(vp), vp = NULL) {
   
   require(grid)
   require(ggplot2)
@@ -398,6 +398,7 @@ print.facet.adjust <- function(x, newpage = is.null(vp), vp = NULL) {
 #' with multiple correlated random effects
 #' 
 #' @examples
+#' \donttest{
 #' library(lme4)
 #' fit <- lmer(Reaction ~ Days + (Days | Subject), data = sleepstudy)
 #' 
@@ -406,6 +407,7 @@ print.facet.adjust <- function(x, newpage = is.null(vp), vp = NULL) {
 #' 
 #' # for comparison (requires lattice package)
 #' lattice::qqmath(ranef(fit, condVar = TRUE))
+#' }
 #' @export
 
 ggcaterpillar <- function(re, qq  =  TRUE, likeDotplot  =  TRUE) {

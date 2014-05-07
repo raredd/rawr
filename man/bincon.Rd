@@ -64,6 +64,6 @@ Newcombe, R.G. Logit confidence intervals and the inverse sinh
 transformation, \emph{American Statistician}. \strong{55}:200-202, 2001.
 }
 \seealso{
-\code{\link[Hmisc]{binconf}}, \code{\link{binci}} (desmon package)
+\code{\link[Hmisc]{binconf}}, \code{binci} (desmon package)
 }
 
