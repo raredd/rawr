@@ -13,7 +13,8 @@ jmplot(x, y, z,
        log = '', xratio = .8, yratio = xratio,
 
        # more options
-       show.n = FALSE, cex.n = NULL, ann = par('ann'), asp = NA,
+       show.n = TRUE, show.na = TRUE, cex.n = NULL,
+       ann = par('ann'), asp = NA,
        panel.first = NULL, panel.last = NULL,
 
        ...)
@@ -54,7 +55,9 @@ values to \code{\link{NA}} and gives a warning; see \code{\link{xy.coords}}}
 
 \item{show.n}{logical; show number in each group}
 
-\item{cex.n}{size of \code{show.n} text}
+\item{show.na}{logical; show number missing in each group}
+
+\item{cex.n}{size of \code{show.n} and \code{show.na} text}
 
 \item{ann}{logical; annotate plot}
 
@@ -85,7 +88,8 @@ dat <- data.frame(x = rnorm(100, 20, 5),
                   z = c('M','F'),
                   zz = c(LETTERS[1:4]))
 with(dat, jmplot(x, y, zz, type = 'db', jit = .02, col = 1:4, las = 1,
-     group.col = TRUE, pch = 1:4, group.pch = TRUE, boxcol = grey(.9)))
+     group.col = TRUE, pch = 1:4, group.pch = TRUE, boxcol = grey(.9),
+     cex.n = .5))
 }
 \references{
 \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}

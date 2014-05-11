@@ -18,7 +18,8 @@
 #'        log = '', xratio = .8, yratio = xratio, 
 #'        
 #'        # more options
-#'        show.n = FALSE, cex.n = NULL, ann = par('ann'), asp = NA, 
+#'        show.n = TRUE, show.na = TRUE, cex.n = NULL, 
+#'        ann = par('ann'), asp = NA, 
 #'        panel.first = NULL, panel.last = NULL,
 #'        
 #'        ...)
@@ -42,7 +43,8 @@
 #' @param yratio ratio of \code{x-y} plot to bar plots along x-axis; see
 #' \code{heights} in \code{\link{layout}}
 #' @param show.n logical; show number in each group
-#' @param cex.n size of \code{show.n} text
+#' @param show.na logical; show number missing in each group
+#' @param cex.n size of \code{show.n} and \code{show.na} text
 #' @param ann logical; annotate plot
 #' @param asp numeric, giving the \strong{asp}ect ratio \emph{y/x}; see 
 #' \code{\link{plot.window}}
@@ -66,7 +68,8 @@
 #'                   z = c('M','F'),
 #'                   zz = c(LETTERS[1:4]))
 #' with(dat, jmplot(x, y, zz, type = 'db', jit = .02, col = 1:4, las = 1,
-#'      group.col = TRUE, pch = 1:4, group.pch = TRUE, boxcol = grey(.9)))
+#'      group.col = TRUE, pch = 1:4, group.pch = TRUE, boxcol = grey(.9), 
+#'      cex.n = .5))
 #'        
 #' @export
 
@@ -80,7 +83,8 @@ jmplot <- function(x, y, z,
                    log = '', xratio = .8, yratio = xratio, 
                    
                    # more options
-                   show.n = FALSE, cex.n = NULL, ann = par('ann'), asp = NA, 
+                   show.n = TRUE, show.na = TRUE, cex.n = NULL, 
+                   ann = par('ann'), asp = NA, 
                    panel.first = NULL, panel.last = NULL,
                    
                    ...) {
@@ -137,13 +141,15 @@ jmplot <- function(x, y, z,
   
   # plot x distribution on top
   par(mar = c(0, mar[2], 0, 0))
-  localTplot(x ~ z, ylim = xlim, horizontal = TRUE, show.n = FALSE, ...)
+  localTplot(x ~ z, ylim = xlim, horizontal = TRUE, 
+             show.n = FALSE, show.na = FALSE, ...)
   if (axes) 
     localAxis(side = 2, at = 1:nlevels(z), labels = names, ...)
   
   # plot y distribution on right
   par(mar = c(mar[1], 0, 0, 0))
-  localTplot(y ~ z, ylim = ylim, show.n = show.n, cex.n = cex.n, ...)
+  localTplot(y ~ z, ylim = ylim, show.n = show.n, show.na = show.na, 
+             cex.n = cex.n, ...)
   if (axes) 
     localAxis(side = 1, at = 1:nlevels(z), labels = names, ...)
   
@@ -197,7 +203,7 @@ jmplot <- function(x, y, z,
 #'       pch = par('pch'), group.pch = TRUE,
 #'       median.line = FALSE, mean.line = FALSE, 
 #'       median.pars = list(col = par('col')), mean.pars = median.pars, 
-#'       show.n = FALSE, cex.n = NULL, my.gray = gray(0.75),
+#'       show.n = TRUE, show.na = TRUE, cex.n = NULL, my.gray = gray(0.75),
 #'       
 #'       # more options
 #'       ann = par('ann'), add = FALSE,
@@ -250,8 +256,9 @@ jmplot <- function(x, y, z,
 #' @param mean.line logical; draw mean line
 #' @param median.pars list of graphical parameters for median line
 #' @param mean.pars see above
-#' @param show.n show number per group
-#' @param cex.n text size for \code{show.n}
+#' @param show.n show number in each group
+#' @param show.na show number missing in each group
+#' @param cex.n text size for \code{show.n} and \code{show.na}
 #' @param my.gray default border color
 #' @param ann logical; annotate plot
 #' @param add logical; add to an existing plot
@@ -273,12 +280,12 @@ jmplot <- function(x, y, z,
 #'                   group = paste0('Group ', 
 #'                                  sample(1:4, 40, prob = c(2, 5, 4, 1), 
 #'                                         replace = TRUE)))
+#' dat[1:5, 'age'] <- NA
 #' 
-#' tplot(age ~ group, data = dat, las = 1, cex = 1, cex.axis = 1, bty = 'L', 
-#'       show.n = TRUE, dist = NULL, jit = .1, type = c('db', 'db', 'db', 'd'),
+#' tplot(age ~ group, data = dat, las = 1, cex.n = .8, cex.axis = 1, bty = 'L', 
+#'       type = c('db', 'db', 'db', 'd'), names = LETTERS[1:4],
 #'       group.pch = TRUE, pch = c(15, 17, 19, 8), 
-#'       group.col = FALSE, names = LETTERS[1:4],
-#'       col = c('darkred', 'darkblue')[c(sex)],
+#'       group.col = FALSE, col = c('darkred', 'darkblue')[c(sex)],
 #'       boxcol = c('lightsteelblue1', 'lightyellow1', grey(.9)), 
 #'       boxplot.pars = list(notch = TRUE, boxwex = .5))
 #'
@@ -309,7 +316,8 @@ tplot.default <- function(x, ...,
                           median.pars = list(col = par('col')), 
                           mean.pars = median.pars, 
                           boxplot.pars = NULL, 
-                          show.n = FALSE,
+                          show.n = TRUE,
+                          show.na = TRUE,
                           cex.n = NULL,
                           my.gray = gray(0.75),
                           ann = par('ann'),
@@ -434,6 +442,7 @@ tplot.default <- function(x, ...,
   pch <- split(pch, g)
   # remove any NAs from the data and options
   nonas <- lapply(groups, function(x) !is.na(x))
+  l2 <- sapply(groups, function(x) sum(is.na(x)))
   groups <- mapply('[', groups, nonas, SIMPLIFY = FALSE)
   l <- sapply(groups, length)
   col <- mapply('[', col, nonas, SIMPLIFY = FALSE)
@@ -492,7 +501,7 @@ tplot.default <- function(x, ...,
   for (i in 1:ng) {
     to.plot <- groups[[i]]
     gs <- to.plot$g.si
-    hms <- to.plot$hm
+    hms <- to.plot$hmsf
     x <- rep(at[i], nrow(to.plot)) + jit.f2(gs, hms) * jit
     y <- to.plot$vs
     
@@ -503,7 +512,8 @@ tplot.default <- function(x, ...,
                                    border = boxborder[i], outline = FALSE, 
                                    horizontal = horizontal), boxplot.pars))
       notoplot <- (y <=  boxplotout$stats[5,]) & (y >=  boxplotout$stats[1,])
-      if( sum(notoplot) > 0 ){ col[[i]][notoplot] <- '#BFBFBF' }
+      if (sum(notoplot) > 0)
+        col[[i]][notoplot] <- '#BFBFBF'
       if (horizontal)
         do.call('localPoints', c(list(x = y, y = x, pch = pch[[i]], 
                                       col = col[[i]]), pars))
@@ -566,11 +576,16 @@ tplot.default <- function(x, ...,
     do.call('localAxis', c(list(side = 2 - horizontal), pars))
   }
   # optional sample sizes
-  if (show.n){
+  if (show.n) {
     if (is.null(cex.n)) cex.n <- 1
-    do.call('localMtext', c(list(paste('n = ', l, sep = ''), 
-                                 side = 3 + horizontal, at = at), 
-                            pars, list(xaxt = 's', yaxt = 's')))
+    do.call('localMtext', 
+            if (show.na) 
+              c(list(paste0('n = ', l, '\nmissing = ', l2), 
+                     side = 3 + horizontal, at = at), 
+                pars, list(xaxt = 's', yaxt = 's'))
+            else c(list(paste0('n = ', l), 
+                        side = 3 + horizontal, at = at), 
+                   pars, list(xaxt = 's', yaxt = 's')))
   }
   # add bounding box
   if (frame.plot)

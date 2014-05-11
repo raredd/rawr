@@ -25,7 +25,7 @@ tplot(x, ..., type = c('d','db','bd','b'),
       pch = par('pch'), group.pch = TRUE,
       median.line = FALSE, mean.line = FALSE,
       median.pars = list(col = par('col')), mean.pars = median.pars,
-      show.n = FALSE, cex.n = NULL, my.gray = gray(0.75),
+      show.n = TRUE, show.na = TRUE, cex.n = NULL, my.gray = gray(0.75),
 
       # more options
       ann = par('ann'), add = FALSE,
@@ -110,9 +110,11 @@ overlap and higher values for more distance between points)}
 
 \item{mean.pars}{see above}
 
-\item{show.n}{show number per group}
+\item{show.n}{show number in each group}
 
-\item{cex.n}{text size for \code{show.n}}
+\item{show.na}{show number missing in each group}
+
+\item{cex.n}{text size for \code{show.n} and \code{show.na}}
 
 \item{my.gray}{default border color}
 
@@ -141,12 +143,12 @@ dat <- data.frame(age = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
                   group = paste0('Group ',
                                  sample(1:4, 40, prob = c(2, 5, 4, 1),
                                         replace = TRUE)))
+dat[1:5, 'age'] <- NA
 
-tplot(age ~ group, data = dat, las = 1, cex = 1, cex.axis = 1, bty = 'L',
-      show.n = TRUE, dist = NULL, jit = .1, type = c('db', 'db', 'db', 'd'),
+tplot(age ~ group, data = dat, las = 1, cex.n = .8, cex.axis = 1, bty = 'L',
+      type = c('db', 'db', 'db', 'd'), names = LETTERS[1:4],
       group.pch = TRUE, pch = c(15, 17, 19, 8),
-      group.col = FALSE, names = LETTERS[1:4],
-      col = c('darkred', 'darkblue')[c(sex)],
+      group.col = FALSE, col = c('darkred', 'darkblue')[c(sex)],
       boxcol = c('lightsteelblue1', 'lightyellow1', grey(.9)),
       boxplot.pars = list(notch = TRUE, boxwex = .5))
 }
