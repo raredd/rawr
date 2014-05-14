@@ -691,7 +691,8 @@ tplot.formula <- function(formula, data = parent.frame(), ..., subset,
 #' (unless x is a list when they are ignored), and named arguments are 
 #' arguments and \code{\link{par}}s to be passed to \code{\link{plot}}
 #' 
-#' @return A table corresponding to the plot cell counts.
+#' @return An \code{\link{invisible}} table corresponding to the plot cell 
+#' counts.
 #' 
 #' @references \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
 #' 
@@ -714,10 +715,11 @@ dsplot.default <- function(x, y,
                            bkgr = TRUE,
                            col = 1, 
                            pch = 19, 
-                           cex = 0.8, 
+                           cex = 0.8,
                            ...) {
   
   op <- par(no.readonly = TRUE)
+  on.exit(par(op))
   
   #   if (any(x != round(x), na.rm = TRUE) | any(y != round(y), na.rm = TRUE))
   #     stop('x must be integer values', '\n')
@@ -813,8 +815,8 @@ dsplot.default <- function(x, y,
            coord[sc[dat$idx, 2]] + dat$ly, pch = dat$pch, 
          col = dat$col, cex = cex)
   
-  table(factor(y, levels = rev(min(y):max(y))), 
-        factor(x, levels = min(x):max(x)))
+  invisible(table(factor(y, levels = rev(min(y):max(y))), 
+                  factor(x, levels = min(x):max(x))))
 }
 
 #' @export

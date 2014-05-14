@@ -49,7 +49,8 @@ for the default method, unnamed arguments are additional data vectors
 arguments and \code{\link{par}}s to be passed to \code{\link{plot}}}
 }
 \value{
-A table corresponding to the plot cell counts.
+An \code{\link{invisible}} table corresponding to the plot cell
+counts.
 }
 \description{
 This creates a scatter plot (sort of) for discrete, bivariate data; an
