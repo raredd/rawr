@@ -148,15 +148,21 @@ recoder <- function(object, pattern, replacement, ...) {
   # allow NA for input: DONE
   # need to recode factor and numeric NAs simultaneously?
   
+  m <- match.call()
+  op <- options()
+  on.exit(options(op))
+  options(stringsAsFactors = FALSE)
+  
   if (is.factor(object)) {
     cat('level(s)', 
         levels(factor(levels = setdiff(replacement, levels(object)))),
-        'added to factor variable,', deparse(substitute(object)),'\n')
+        'added to factor variable', deparse(m$object),'\n')
     levels(object) <- c(levels(object), replacement)
+    #     object <- droplevels(object)
   }
-  if (length(replacement) == 1) {
+  if (length(replacement) == 1)
     replacement <- rep(replacement, length(pattern))
-  }
+  
   ## helper functions
   splitter <- function(df){
     LIST <- split(t(df), 1:ncol(df))
