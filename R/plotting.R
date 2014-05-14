@@ -323,7 +323,7 @@ facet_adjust <- function(x, pos = c('up', 'down'),
   pos <- match.arg(pos)
   p <- ggplot_build(x)
   gtable <- ggplot_gtable(p)
-  dev.off()
+#   dev.off() # this prevented plots from being rendered in knitr
   # finding dimensions
   dims <- apply(p$panel$layout[2:3], 2, max)
   nrow <- dims[1]
