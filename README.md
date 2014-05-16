@@ -14,22 +14,22 @@ about
 
 <font align = center>
 
-### [graphics](#gr)
+### [graphics](#some-rawr-graphics)
 
-**[joint marginal, box, discrete scatter plots](#special)** | **[pretty bar plots](#pretty)** <br> **[plotting utilities](#plutils)** | **[interactive plots](#inter)** <br> **[other gg plots](#other)** | **[survival plots in base and gg](#surv)**
+**[joint marginal, box, discrete scatter plots](#special-plots)** | **[pretty bar plots](#pretty-bars)** <br> **[plotting utilities](#plotting-utils)** | **[interactive plots](#interactive-base-plots)** <br> **[other gg plots](#other-gg-plots)** | **[survival plots in base and gg](#survival-in-base-and-gg)**
 
 #### more stuff <a href = 'https://github.com/raredd/rgraphics'>here</a>
 
-### [utils](#ut)
+### [utils](#rawr-utils)
 
-**[utils](#ut)** | **[stat things](#stats)** | **[dumb things](#dumb)**
+**[utils](#rawr-utils)** | **[stat things](#stat-things)** | **[dumb things](#dumb-stuff)**
 
 </font>
 
 ---
 
 
-### <h3 id="gr">some rawr graphics</h3>
+## some rawr graphics
 
 
 ```r
@@ -42,7 +42,9 @@ op <- par(no.readonly = TRUE)
 ```
 
 
-### <h3 id="special">joint marginal, box, and discrete scatter plots</h3>
+## special plots
+
+### joint marginal, box, and discrete scatter plots
 
 
 ```r
@@ -96,7 +98,7 @@ legend('bottomright', pch = 19, col = 1:2, bty = 'n',
 <figure><img src='about/figure/spplots3.png'  style='display:block; margin: auto;'><figcaption>Figure 3: special plots</figcaption></figure>
 
 
-### ### <h3 id="pretty">pretty bars</h3>
+## pretty bars
 
 
 ```r
@@ -153,7 +155,7 @@ with(mtcars,
 <figure><img src='about/figure/legend.png'  style='display:block'><figcaption>Figure 6: Legend</figcaption></figure>
 
 
-### <h3 id="plutils">plotting utilities</h3>
+## plotting utils
 
 ```r
 ## show colors
@@ -221,7 +223,7 @@ with(dat, plot(grp + dodge(x ~ grp, dat), x, main = 'dodge points'))
 <figure><img src='about/figure/rawr_plot_utils6.png'  style='display:block; margin: auto;'><figcaption>Figure 12: Utilities</figcaption></figure>
 
 
-### <h3 id="inter">interactive base plots</h3>
+## interactive base plots
 
 
 ```r
@@ -233,7 +235,7 @@ with(dat, plot(grp + dodge(x ~ grp, dat), x, main = 'dodge points'))
 ```
 
 
-### <h3 id="other">other gg plots</h3>
+## other-gg-plots
 
 
 ```r
@@ -266,7 +268,7 @@ ggcaterpillar(ranef(fit, condVar = TRUE))
 <figure><img src='about/figure/spggplot2.png'  style='display:block; margin: auto;'><figcaption>Figure 14: Other ggplots</figcaption></figure>
 
 
-### <h3 id="surv">survival plots in base and gg</h3>
+## survival in base and gg
 
 
 ```r
@@ -314,7 +316,7 @@ ggsurv(coxfit, legend.labels = c('< 45','> 45'), legend = FALSE, median = TRUE)
 
 ---
 
-### <h3 id="ut">some rawr utilities</h3>
+## rawr utils
 
 
 ```r
@@ -476,7 +478,7 @@ fapply(mtcars, list(min, mean, max, length))
 ```
 
 
-### <h3 id="stats">stat things</h3>
+## stat things
 
 
 ```r
@@ -615,7 +617,7 @@ power.cv(n = NULL, f = 1.25, cv = 0.2, sig.level = 0.05, power = 0.8, distributi
 ```
 
 
-### <h3 id="dumb">dumb stuff</h3>
+## dumb stuff
 
 
 ```r
