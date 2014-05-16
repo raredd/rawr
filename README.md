@@ -14,22 +14,22 @@ about
 
 <font align = center>
 
-### graphics
+### [graphics](#gr)
 
 **[joint marginal, box, discrete scatter plots](#special)** | **[pretty bar plots](#pretty)** <br> **[plotting utilities](#plutils)** | **[interactive plots](#inter)** <br> **[other gg plots](#other)** | **[survival plots in base and gg](#surv)**
 
 #### more stuff <a href = 'https://github.com/raredd/rgraphics'>here</a>
 
-### utils
+### [utils](#ut)
 
-**[utils](#utils)** | **[stat things](#stats)** | **[dumb things](#dumb)**
+**[utils](#ut)** | **[stat things](#stats)** | **[dumb things](#dumb)**
 
 </font>
 
 ---
 
 
-### some rawr graphics
+### <a id="gr">some rawr graphics</a>
 
 
 ```r
@@ -42,7 +42,7 @@ op <- par(no.readonly = TRUE)
 ```
 
 
-### <a id = 'special'>joint marginal, box, and discrete scatter plots</a>
+### <a id="special">joint marginal, box, and discrete scatter plots</a>
 
 
 ```r
@@ -96,7 +96,7 @@ legend('bottomright', pch = 19, col = 1:2, bty = 'n',
 <figure><img src='about/figure/spplots3.png'  style='display:block; margin: auto;'><figcaption>Figure 3: special plots</figcaption></figure>
 
 
-### ### <a id = 'pretty'>pretty bars</a>
+### ### <a id="pretty">pretty bars</a>
 
 
 ```r
@@ -153,8 +153,7 @@ with(mtcars,
 <figure><img src='about/figure/legend.png'  style='display:block'><figcaption>Figure 6: Legend</figcaption></figure>
 
 
-### <a id = 'plutils'>plotting utilities</a>
-
+### <a id="plutils">plotting utilities</a>
 
 ```r
 ## show colors
@@ -222,7 +221,7 @@ with(dat, plot(grp + dodge(x ~ grp, dat), x, main = 'dodge points'))
 <figure><img src='about/figure/rawr_plot_utils6.png'  style='display:block; margin: auto;'><figcaption>Figure 12: Utilities</figcaption></figure>
 
 
-### <a id = 'inter'>interactive base plots</a>
+### <a id="inter">interactive base plots</a>
 
 
 ```r
@@ -234,7 +233,7 @@ with(dat, plot(grp + dodge(x ~ grp, dat), x, main = 'dodge points'))
 ```
 
 
-### <a id = 'other'>other gg plots</a>
+### <a id="other">other gg plots</a>
 
 
 ```r
@@ -267,7 +266,7 @@ ggcaterpillar(ranef(fit, condVar = TRUE))
 <figure><img src='about/figure/spggplot2.png'  style='display:block; margin: auto;'><figcaption>Figure 14: Other ggplots</figcaption></figure>
 
 
-### <a id = 'surv'>survival plots in base and gg</a>
+### <a id="surv">survival plots in base and gg</a>
 
 
 ```r
@@ -315,7 +314,7 @@ ggsurv(coxfit, legend.labels = c('< 45','> 45'), legend = FALSE, median = TRUE)
 
 ---
 
-### <a id = 'utils'>some rawr utilities</a>
+### <a id="ut">some rawr utilities</a>
 
 
 ```r
@@ -477,7 +476,7 @@ fapply(mtcars, list(min, mean, max, length))
 ```
 
 
-### <a id = 'stats'>stat things</a>
+### <a id="stats">stat things</a>
 
 
 ```r
@@ -616,7 +615,7 @@ power.cv(n = NULL, f = 1.25, cv = 0.2, sig.level = 0.05, power = 0.8, distributi
 ```
 
 
-### <a id = 'dumb'>dumb stuff</a>
+### <a id="dumb">dumb stuff</a>
 
 
 ```r
