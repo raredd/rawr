@@ -29,7 +29,7 @@ about
 ---
 
 
-### <a id="gr">some rawr graphics</a>
+### <h3 id="gr">some rawr graphics</h3>
 
 
 ```r
@@ -42,7 +42,7 @@ op <- par(no.readonly = TRUE)
 ```
 
 
-### <a id="special">joint marginal, box, and discrete scatter plots</a>
+### <h3 id="special">joint marginal, box, and discrete scatter plots</h3>
 
 
 ```r
@@ -96,7 +96,7 @@ legend('bottomright', pch = 19, col = 1:2, bty = 'n',
 <figure><img src='about/figure/spplots3.png'  style='display:block; margin: auto;'><figcaption>Figure 3: special plots</figcaption></figure>
 
 
-### ### <a id="pretty">pretty bars</a>
+### ### <h3 id="pretty">pretty bars</h3>
 
 
 ```r
@@ -153,7 +153,7 @@ with(mtcars,
 <figure><img src='about/figure/legend.png'  style='display:block'><figcaption>Figure 6: Legend</figcaption></figure>
 
 
-### <a id="plutils">plotting utilities</a>
+### <h3 id="plutils">plotting utilities</h3>
 
 ```r
 ## show colors
@@ -221,7 +221,7 @@ with(dat, plot(grp + dodge(x ~ grp, dat), x, main = 'dodge points'))
 <figure><img src='about/figure/rawr_plot_utils6.png'  style='display:block; margin: auto;'><figcaption>Figure 12: Utilities</figcaption></figure>
 
 
-### <a id="inter">interactive base plots</a>
+### <h3 id="inter">interactive base plots</h3>
 
 
 ```r
@@ -233,7 +233,7 @@ with(dat, plot(grp + dodge(x ~ grp, dat), x, main = 'dodge points'))
 ```
 
 
-### <a id="other">other gg plots</a>
+### <h3 id="other">other gg plots</h3>
 
 
 ```r
@@ -266,7 +266,7 @@ ggcaterpillar(ranef(fit, condVar = TRUE))
 <figure><img src='about/figure/spggplot2.png'  style='display:block; margin: auto;'><figcaption>Figure 14: Other ggplots</figcaption></figure>
 
 
-### <a id="surv">survival plots in base and gg</a>
+### <h3 id="surv">survival plots in base and gg</h3>
 
 
 ```r
@@ -314,7 +314,7 @@ ggsurv(coxfit, legend.labels = c('< 45','> 45'), legend = FALSE, median = TRUE)
 
 ---
 
-### <a id="ut">some rawr utilities</a>
+### <h3 id="ut">some rawr utilities</h3>
 
 
 ```r
@@ -476,7 +476,7 @@ fapply(mtcars, list(min, mean, max, length))
 ```
 
 
-### <a id="stats">stat things</a>
+### <h3 id="stats">stat things</h3>
 
 
 ```r
@@ -615,7 +615,7 @@ power.cv(n = NULL, f = 1.25, cv = 0.2, sig.level = 0.05, power = 0.8, distributi
 ```
 
 
-### <a id="dumb">dumb stuff</a>
+### <h3 id="dumb">dumb stuff</h3>
 
 
 ```r
