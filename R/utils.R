@@ -158,11 +158,11 @@ recoder <- function(object, pattern, replacement, ...) {
         levels(factor(levels = setdiff(replacement, levels(object)))),
         'added to factor variable', deparse(m$object),'\n')
     levels(object) <- c(levels(object), replacement)
-    #     object <- droplevels(object)
+#     object <- droplevels(object)
   }
   if (length(replacement) == 1)
     replacement <- rep(replacement, length(pattern))
-  
+
   ## helper functions
   splitter <- function(df){
     LIST <- split(t(df), 1:ncol(df))
