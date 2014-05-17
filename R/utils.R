@@ -519,7 +519,7 @@ grcols <- function(n, s = .5, v = 1, alpha = 1) {
 #' @seealso \code{\link{num2hex}}, \code{\link{col2rgb}}
 #' 
 #' @examples
-#' cols <- c('red','green','pink')
+#' cols <- c('red','green','blue')
 #' 
 #' # a normal plot
 #' plot(rnorm(100), col = tcol(cols), pch = 16, cex = 4)
@@ -528,8 +528,8 @@ grcols <- function(n, s = .5, v = 1, alpha = 1) {
 #' plot(rnorm(100), col = tcol(cols, 100), pch = 16, cex = 4)
 #' 
 #' # hexadecimal colors also work
-#' cols <- c('#FF0000','#00FF00','#FFC0CB')
-#' plot(rnorm(100), col = tcol(cols, 200), pch= 16, cex = 4)
+#' cols <- c('#FF0000','#00FF00','#0000FF')
+#' plot(rnorm(100), col = tcol(cols, c(50, 100, 255)), pch= 16, cex = 4)
 #' @export
 
 tcol <- function(color, trans = 255) {
@@ -541,14 +541,9 @@ tcol <- function(color, trans = 255) {
   if (length(trans) == 1 & length(color) > 1) 
     trans <- rep(trans, length(color))
   
-  num2hex <- function(x) {
-    hex <- unlist(strsplit('0123456789ABCDEF', split = ''))
-    return(paste0(hex[(x - x %% 16) / 16 + 1], hex[x %% 16 + 1]))
-  }
-  
-  rgb <- rbind(col2rgb(color), trans)
-  res <- paste0('#', apply(apply(rgb, 2, num2hex), 2, paste, collapse = ''))
-  return(res)
+  res <- paste0('#', apply(apply(rbind(col2rgb(color)), 2, function(x) 
+    as.character(as.hexmode(x))), 2, paste, collapse = ''))
+  return(unlist(unname(Map(paste0, res, as.character(as.hexmode(trans))))))
 }
 
 #' Apply list of functions over list or vector

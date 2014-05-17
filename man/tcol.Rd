@@ -25,7 +25,7 @@ between 0 (fully transparent) and 255 (fully visible). \code{color} values
 are converted to RGB, transparency is added, and converted
 }
 \examples{
-cols <- c('red','green','pink')
+cols <- c('red','green','blue')
 
 # a normal plot
 plot(rnorm(100), col = tcol(cols), pch = 16, cex = 4)
@@ -34,8 +34,8 @@ plot(rnorm(100), col = tcol(cols), pch = 16, cex = 4)
 plot(rnorm(100), col = tcol(cols, 100), pch = 16, cex = 4)
 
 # hexadecimal colors also work
-cols <- c('#FF0000','#00FF00','#FFC0CB')
-plot(rnorm(100), col = tcol(cols, 200), pch= 16, cex = 4)
+cols <- c('#FF0000','#00FF00','#0000FF')
+plot(rnorm(100), col = tcol(cols, c(50, 100, 255)), pch= 16, cex = 4)
 }
 \seealso{
 \code{\link{num2hex}}, \code{\link{col2rgb}}
