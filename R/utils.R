@@ -991,7 +991,7 @@ clist <- function(l)
 #' binconr(5, 10, .90, est = FALSE)
 #' binconr(45, 53, .95, digits = 1)
 #' 
-#' @seealso \code{\link{bincon}}; \code{\link[Hmisc]{bincon}}
+#' @seealso \code{\link{bincon}}; \code{\link[Hmisc]{binconf}}
 #' 
 #' @export
 

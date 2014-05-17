@@ -5,7 +5,7 @@
 \usage{
 bincon(r, n, alpha = 0.05, round = NULL,
        method = c('exact','wilson','asymptotic','all'),
-       inc.r = FALSE, inc.n = FALSE, df = FALSE)
+       inc.r = TRUE, inc.n = TRUE, df = FALSE)
 }
 \arguments{
 \item{r}{number of responses (successes)}
@@ -27,8 +27,7 @@ bincon(r, n, alpha = 0.05, round = NULL,
 }
 \value{
 A matrix or data frame containing the computed intervals, their
-widths, and,
-optionally, \code{r} and \code{n}.
+widths, and, optionally, \code{r} and \code{n}.
 }
 \description{
 Calculates confidence intervales for binomial probabilities for specified
