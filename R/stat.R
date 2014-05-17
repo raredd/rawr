@@ -11,7 +11,7 @@
 #' @usage 
 #' bincon(r, n, alpha = 0.05, round = NULL,
 #'        method = c('exact','wilson','asymptotic','all'), 
-#'        inc.r = FALSE, inc.n = FALSE, df = FALSE)
+#'        inc.r = TRUE, inc.n = TRUE, df = FALSE)
 #'    
 #' @param r number of responses (successes)
 #' @param n number of observations (trials)
@@ -33,8 +33,7 @@
 #' The "wilson" method has been preferred by Agresti and Coull.
 #' 
 #' @return A matrix or data frame containing the computed intervals, their 
-#' widths, and, 
-#' optionally, \code{r} and \code{n}.
+#' widths, and, optionally, \code{r} and \code{n}.
 #' @author Rollin Brant, Frank Harrell, and Brad Biggerstaff; modifications by 
 #' Robert Redd
 #' @references Agresti, A. and B.A. Coull. Approximate is better than "exact" 
@@ -54,7 +53,7 @@
 
 bincon <- function(r, n, alpha = 0.05, round = NULL,
                    method = c('exact','wilson','asymptotic','all'), 
-                   inc.r = FALSE, inc.n = FALSE, df = FALSE) {
+                   inc.r = TRUE, inc.n = TRUE, df = FALSE) {
   
   # error checks
   if (any(r < 0) | any(r > n)) stop('invalid response value')
