@@ -1,7 +1,7 @@
 ### utilities
 # %ni%, ht, oror, progress, recoder, psum, ident, search.df, search.hist, 
 # ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
-# show.colors, show.pch, %inside%, try_require, clist
+# show.colors, show.pch, %inside%, try_require, clist, binconr
 ###
 
 #' not in
@@ -973,3 +973,34 @@ try_require <- function(package) {
 
 clist <- function(l) 
   paste(paste(names(l), l, sep = ' = ', collapse = ', '), sep = '')
+
+#' binconr
+#' 
+#' Binomial confidence interval formatter
+#' 
+#' @usage binconr(r, n, conf = 0.95, digits = 2, est = TRUE, method = 'exact')
+#' 
+#' @param r number of responses (successes)
+#' @param n number of observations (trials)
+#' @param conf level of confidence
+#' @param digits number of digits
+#' @param est logical; if \code{TRUE}, includes the point estimate
+#' @param method method to use; see \code{\link{bincon}}
+#' 
+#' @examples
+#' binconr(5, 10, .90, est = FALSE)
+#' binconr(45, 53, .95, digits = 1)
+#' 
+#' @seealso \code{\link{bincon}}; \code{\link[Hmisc]{bincon}}
+#' 
+#' @export
+
+binconr <- function(r, n, conf = 0.95, digits = 2, 
+                    est = TRUE, method = 'exact') {
+  res <- roundr(bincon(r, n, alpha = 1 - conf, method = method) * 100, 
+                digits = digits)
+  zzz <- paste0('(', conf * 100, '% CI: ', res[4], ' - ', res[5], ')')
+  if (est) 
+    zzz <- paste0(res[3], ' ', zzz)
+  return(zzz)
+}

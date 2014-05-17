@@ -105,6 +105,11 @@ fapply(mtcars, list(min, mean, max, length))
 ### <a id = 'stats'>stat things</a>
 
 ```{r rawr stat}
+## binomial confidence interval formatter
+
+## ?binconr
+list(binconr(5, 10, .90, est = FALSE),
+     binconr(45, 53, .95, digits = 1))
 ## interval formatter
 
 ## ?intr

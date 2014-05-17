@@ -235,7 +235,7 @@ with(dat, plot(grp + dodge(x ~ grp, dat), x, main = 'dodge points'))
 ```
 
 
-## other-gg-plots
+## other gg plots
 
 
 ```r
@@ -480,6 +480,22 @@ fapply(mtcars, list(min, mean, max, length))
 
 ## stat things
 
+
+```r
+## binomial confidence interval formatter
+
+## ?binconr
+list(binconr(5, 10, .90, est = FALSE),
+     binconr(45, 53, .95, digits = 1))
+```
+
+```
+## [[1]]
+## [1] "(90% CI: 22.24 - 77.76)"
+## 
+## [[2]]
+## [1] "84.9 (95% CI: 72.4 - 93.3)"
+```
 
 ```r
 ## interval formatter
