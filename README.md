@@ -377,6 +377,17 @@ ht(recoder(mtcars, c(6, 1, 110), NA), sep = "...")
 ```
 
 ```r
+## number to name
+
+## ?num2char
+num2char(54321)
+```
+
+```
+## [1] "Fifty-four thousand three hundred twenty-one"
+```
+
+```r
 ## ruby || analoge
 
 ## ?oror

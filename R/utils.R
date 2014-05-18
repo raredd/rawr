@@ -1,7 +1,7 @@
 ### utilities
 # %ni%, ht, oror, progress, recoder, psum, ident, search.df, search.hist, 
 # ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
-# show.colors, show.pch, %inside%, try_require, clist, binconr
+# show.colors, show.pch, %inside%, try_require, clist, binconr, num2char
 ###
 
 #' not in
@@ -158,11 +158,11 @@ recoder <- function(object, pattern, replacement, ...) {
         levels(factor(levels = setdiff(replacement, levels(object)))),
         'added to factor variable', deparse(m$object),'\n')
     levels(object) <- c(levels(object), replacement)
-#     object <- droplevels(object)
+    #     object <- droplevels(object)
   }
   if (length(replacement) == 1)
     replacement <- rep(replacement, length(pattern))
-
+  
   ## helper functions
   splitter <- function(df){
     LIST <- split(t(df), 1:ncol(df))
@@ -998,4 +998,116 @@ binconr <- function(r, n, conf = 0.95, digits = 2,
   if (est) 
     zzz <- paste0(res[3], ' ', zzz)
   return(zzz)
+}
+
+#' Numeric to character string
+#' 
+#' Convert a number to a character string
+#' 
+#' @usage num2char(num, informal = FALSE, cap = TRUE)
+#' 
+#' @param num number; integer value in \code{(-1e08, 1e08)}
+#' @param informal logical; if \code{TRUE}, adds "and" before tens or ones
+#' @param cap logical; if \code{TRUE}, capitalizes the first word
+#' 
+#' @details
+#' Whole numbers twenty-one through ninety-nine are hyphenated when they are 
+#' written out whether used alone or as part of a larger number; for example: 
+#' twenty-one. Whole numbers are also hyphenated when they are part of larger 
+#' numbers that are written out - but not other parts of large numbers; for 
+#' example, 5,264 is written "five thousand two hundred sixty-four." The rule 
+#' applies only to two-word numbers; for example, 603 is written out, e.g., 
+#' "six hundred three" (formal) or "six hundred and three" (informal). A whole 
+#' number followed by hundred, thousand, etc., would be written as, for 
+#' example, "one hundred," and not hyphenated. In a phrase like "one hundred 
+#' and ten years," no hyphenation should be added. 
+#' 
+#' @references \url{http://dictionary.reference.com/help/faq/language/g80.html}
+#' 
+#' @examples
+#' num2char(19401, informal = TRUE)
+#' 
+#' v_num2char <- Vectorize(num2char)
+#' nums <- c(-1000, 100, 10000, 3922, 3012, 201, -152, 1002, 90765432)
+#' v_num2char(nums)
+#' 
+#' @export
+
+num2char <- function(num, informal = FALSE, cap = TRUE) {
+  
+  if (num == 0) {if (cap) return('Zero') else return('zero')}
+  neg <- FALSE
+  if (num < 0) {neg <- TRUE; num <- abs(num)}
+  if (!num %inside% c(1, 99999999)) 
+    stop("I can't count that high")
+  #   `%inside%` <- function(x, interval) # don't need as.numeric
+  #     as.numeric(x) >= interval[1] & as.numeric(x) <= interval[2]
+  ## helpers
+  key <- c('0'='','1'='one','2'='two','3'='three','4'='four','5'='five',
+           '6'='six','7'='seven','8'='eight','9'='nine','10'='ten',
+           '11'='eleven','12'='twelve','13'='thirteen','14'='fourteen',
+           '15'='fifteen','16'='sixteen','17'='seventeen','18'='eighteen',
+           '19'='nineteen','20'='twenty','30'='thirty','40'='forty','50'='fifty',
+           '60'='sixty','70'='seventy','80'='eighty','90'='ninety',
+           '100'='hundred','1000'='thousand','1000000'='million')
+  upcase <- function(x)
+    paste(toupper(substr(x, 1, 1)), substring(x, 2), sep = '', collapse = ' ')
+  f1 <- function(x, informal = informal) { # for 1-99
+    x <- as.numeric(x) # if string with leading 0s is passed
+    z <- paste0(' and ',
+                if (x %inside% c(21, 99) && (x %ni% seq(30, 100, 10)))
+                  paste(key[as.character(as.numeric(substr(x, 1, 1)) * 10)], 
+                        key[substr(x, 2, 2)], sep = '-')
+                else 
+                  key[as.character(as.numeric(x))])
+    if (!informal) gsub(' and ', '', z) else z
+  }
+  f2 <- function(x, informal = informal) {
+    x <- as.numeric(x) # if string with leading 0s is passed
+    if (x %inside% c(100, 999))
+      paste0(key[substr(x, 1, 1)], ' hundred ', f1(substr(x, 2, 3), informal))
+    else f1(x, informal = informal)
+  }
+  f3 <- function(x, informal = informal) {
+    x <- as.numeric(x) # if string with leading 0s is passed
+    if (x %inside% c(1000, 9999))
+      paste0(key[substr(x, 1, 1)], ' thousand ', f2(substr(x, 2, 4), informal))
+    else f2(x, informal = informal)
+  }
+  f4 <- function(x, informal = informal) {
+    x <- as.numeric(x) # if string with leading 0s is passed
+    if (x %inside% c(10000, 99999))
+      paste0(f1(substr(x, 1, 2), FALSE), ' thousand ', 
+             f2(substr(x, 3, 5), informal)) 
+    else f3(x, informal = informal)
+  }
+  f5 <- function(x, informal = informal) {
+    x <- as.numeric(x) # if string with leading 0s is passed
+    if (x %inside% c(100000, 999999))
+      paste0(f2(substr(x, 1, 3), FALSE), ' thousand ', 
+             f2(substr(x, 4, 6), informal)) 
+    else f4(x, informal = informal)
+  }
+  f6 <- function(x, informal = informal) {
+    x <- as.numeric(x) # if string with leading 0s is passed
+    if (x %inside% c(1000000, 9999999))
+      paste0(key[substr(x, 1, 1)], ' million ', f5(substr(x, 2, 7), informal))
+    else f5(x, informal = informal)
+  }
+  f <- function(x, informal = informal) {
+    x <- as.numeric(x) # if string with leading 0s is passed
+    if (x %inside% c(10000000, 99999999))
+      paste0(f1(substr(x, 1, 2), FALSE), ' million ',
+             f5(substr(x, 3, 8), informal))
+    else f6(x, informal = informal)
+  }
+  ## trim leading/trailing whitespace
+  zzz <- gsub('^\\s+|\\s+$', '', f(num, informal = informal))
+  ## trim double whitespace
+  zzz <- upcase(gsub('\\s{2,}', ' ', zzz))
+  ## trim ands in special cases
+  zzz <- ifelse(cap, upcase(gsub('And\ |\ and*$', '', zzz)),
+                gsub('And\ |\ and*$', '', zzz))
+  zzz <- ifelse(neg, paste0('negative ', tolower(zzz)), tolower(zzz))
+  return(ifelse(cap, upcase(zzz), zzz))
 }
