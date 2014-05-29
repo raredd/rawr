@@ -136,7 +136,7 @@ bincon <- function(r, n, alpha = 0.05, round = NULL,
     mat <- as.data.frame(mat, row.names = NULL)
   
   mat
-}
+  }
 
 #' Single-stage designs
 #' 
@@ -456,6 +456,23 @@ power.cv <- function(n = NULL, f = NULL, cv = NULL,
 #' @details  For two-stage designs for studies with binary endpoints, searches 
 #' over possible two-stage sampling designs to find those that minimize the 
 #' expected number of subjects, subject to specified constraints.
+#' @return
+#' Returns a list with components:
+#' \item{\code{$designs}}{a matrix with a row giving a summary of each 
+#' design which meets the criteria. The columns are: \code{n1}, the number of 
+#' subjects entered in the first stage; \code{r1}, the cutoff for stopping at 
+#' the first stage (continue if the number of responses is > \code{r1}); 
+#' \code{n2}, the additional number of subjects enrolled in the second stage; 
+#' \code{r2}, the cutoff for inactivity after the second stage (reject the null
+#' if the number of responses is > \code{r2}); \code{Pr(Stop under H0)}, the
+#' probability of stopping after the first stage under H0 (\code{p0}); 
+#' \code{Overall type I}, the actual type I error; \code{Overall type II}, the
+#' actual type II error; \code{E(N|p0)}, the expected number of subjects under 
+#' H0 (\code{p0}).}
+#' \item{\code{$call}}{the call to \code{simon2}.}
+#' \item{\code{$description}}{a text string giving a brief description of 
+#' the columns in \code{$designs}.}
+#' 
 #' @author Robert Gray (original); Robert Redd (modifications)
 #' @references Simon R (1989). Optimal two-stage designs for phase II clinical 
 #' trials. \emph{Controlled Clinical Trials}, 10:1-10.
@@ -633,10 +650,12 @@ simon2 <- function (p0low, p0high = p0low, p1low, p1high = p1low, n1max = 0,
   if (sum(!is.na(z.list))==0)
     stop('no valid designs')
   
-  dimnames(z.list) <- list(NULL, c('p0','p1','n1','r1','n2','r2','Pstop1.H0',
-                                   'size','type2','E.tot.n.H0'))
+  dimnames(z.list) <- list(NULL, c('p0','p1','n1','r1','n2','r2',
+                                   'Pr(Stop under H0)','Overall type I',
+                                   'Overall type II','E(N|p0)'))
   list(designs = z.list, 
        call = match.call(), 
-       description = c('n1, n2 = cases 1st stage and additional # in 2nd', 
-                       'r1, r2 = max # responses 1st stage and total to declare trt inactive'))
+       description = 
+         c('n1, n2 = cases 1st stage and additional # in 2nd', 
+           'r1, r2 = max # responses 1st stage and total to declare trt inactive'))
 }
