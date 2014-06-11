@@ -542,7 +542,7 @@ tcol <- function(color, trans = 255) {
     trans <- rep(trans, length(color))
   
   res <- paste0('#', apply(apply(rbind(col2rgb(color)), 2, function(x) 
-    as.character(as.hexmode(x))), 2, paste, collapse = ''))
+    format(as.hexmode(x), 2)), 2, paste, collapse = ''))
   return(unlist(unname(Map(paste0, res, as.character(as.hexmode(trans))))))
 }
 
