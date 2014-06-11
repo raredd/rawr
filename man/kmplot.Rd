@@ -53,9 +53,9 @@ by default}
 \item{col.ci}{line color for confidence interval(s); either numeric or
 character string(s); hexadecimal format also works}
 
-\item{col.band}{line color for confidence band(s); either numeric or
-character string(s); hexadecimal format also works; note that this is not a
-true confidence band; see details}
+\item{col.band}{line color for confidence band(s); either \code{NULL},
+numeric, or character string(s); hexadecimal format also works; note that
+this is not a true confidence band; see details}
 
 \item{atrisk}{logical; if \code{TRUE}, draws at risk table}
 

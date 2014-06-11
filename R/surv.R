@@ -49,9 +49,9 @@
 #' @param lwd.ci line width for confidence interval(s)
 #' @param col.ci line color for confidence interval(s); either numeric or 
 #' character string(s); hexadecimal format also works
-#' @param col.band line color for confidence band(s); either numeric or 
-#' character string(s); hexadecimal format also works; note that this is not a 
-#' true confidence band; see details
+#' @param col.band line color for confidence band(s); either \code{NULL}, 
+#' numeric, or character string(s); hexadecimal format also works; note that 
+#' this is not a true confidence band; see details
 #' @param atrisk logical; if \code{TRUE}, draws at risk table
 #' @param atrisk.lab heading for at risk table
 #' @param atrisk.lines logical; draw lines next to strata in at risk table
@@ -348,26 +348,7 @@ kmplot <- function(s,
            lty = lty.surv[rlp], lwd = lwd.surv[rlp], bty = 'o', cex = cex.axis,
            bg = bgc, box.col = 'transparent', inset = .01)
   }
-  
-  ## confidence intervals
-  tcol <- function(color, trans = 100) {
-    # helper function for transparent colors
-    # see ?rawr::tcol for details
-    if (length(color) != length(trans) & 
-          !any(c(length(color), length(trans)) == 1)) 
-      stop('Vector lengths not correct')
-    if (length(color) == 1 & length(trans) > 1) 
-      color <- rep(color, length(trans))
-    if (length(trans) == 1 & length(color) > 1) 
-      trans <- rep(trans, length(color))
-    num2hex <- function(x) {
-      hex <- unlist(strsplit('0123456789ABCDEF', split = ''))
-      return(paste0(hex[(x - x %% 16) / 16 + 1], hex[x %% 16 + 1]))}
-    rgb <- rbind(col2rgb(color), trans)
-    res <- paste0('#', apply(apply(rgb, 2, num2hex), 2, paste, collapse = ''))
-    return(res)
-  }
-  
+
   for (i in 1:ng) {
     tmp <- dat.list[[i]]
     x <- tmp$time
@@ -381,11 +362,11 @@ kmplot <- function(s,
     lines(x, U, type = 's', col = col.ci[i], lty = lty.ci[i], lwd = lwd.ci[i])
     
     ## confidence bands
-    if (!is.null(col.band))
-      col.band <- tcol(col.band)
-    
-    polygon(c(x, rev(x)), c(U, rev(L)), border = NA,
-            col = col.band[i])
+    if (!is.null(col.band)) {
+      col.band <- rawr::tcol(col.band, 100)
+      
+      polygon(c(x, rev(x)), c(U, rev(L)), border = NA, col = col.band[i])
+    }
     
     ## survival curves
     lines(s[i], conf.int = FALSE, col = col.surv[i], lty = lty.surv[i], 
