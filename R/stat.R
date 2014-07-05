@@ -436,18 +436,16 @@ power.cv <- function(n = NULL, f = NULL, cv = NULL,
 #' Function for sample sizes for Simon optimal two-stage, single-arm designs
 #' 
 #' @usage 
-#' simon2(p0low, p0high = p0low, p1low, p1high = p1low, n1max, ntmax, 
-#'        alpha = 0.1, beta = 0.1, beta.max = beta, del = 1, minimax = FALSE)
+#' simon2(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,
+#'        del = 1, minimax = FALSE)
 #'    
-#' @param p0low null response probability (lower bound)
-#' @param p0high null response probability (upper bound)
-#' @param p1low alternative response probability (lower bound)
-#' @param p1high alternative response probability (upper bound)
-#' @param n1max maximum number of subjects entered during first stage (<= 0)
-#' @param ntmax maximum total number of subjects
+#' @param p0 null hypothesis response probability
+#' @param pa alternative hypothesis response probability
+#' @param n1max maximum number of subjects entered during the first stage; 
+#' ignored if <= 0
+#' @param ntmax maximum total number of total subjects
 #' @param alpha type I error rate
 #' @param beta type II error rate
-#' @param beta.max highest type II error rate acceptable
 #' @param del searches for designs where the expected number of subjects under 
 #' the null with within \code{del} of the minimum possible value
 #' @param minimax logical; if \code{TRUE}, only searches for designs which will
@@ -456,6 +454,7 @@ power.cv <- function(n = NULL, f = NULL, cv = NULL,
 #' @details  For two-stage designs for studies with binary endpoints, searches 
 #' over possible two-stage sampling designs to find those that minimize the 
 #' expected number of subjects, subject to specified constraints.
+#' 
 #' @return
 #' Returns a list with components:
 #' \item{\code{$designs}}{a matrix with a row giving a summary of each 
@@ -464,18 +463,18 @@ power.cv <- function(n = NULL, f = NULL, cv = NULL,
 #' the first stage (continue if the number of responses is > \code{r1}); 
 #' \code{n2}, the additional number of subjects enrolled in the second stage; 
 #' \code{r2}, the cutoff for inactivity after the second stage (reject the null
-#' if the number of responses is > \code{r2}); \code{Pr(Stop under H0)}, the
+#' if the number of responses is > \code{r2}); \code{Pstop1.H0}, the
 #' probability of stopping after the first stage under H0 (\code{p0}); 
-#' \code{Overall type I}, the actual type I error; \code{Overall type II}, the
-#' actual type II error; \code{E(N|p0)}, the expected number of subjects under 
-#' H0 (\code{p0}).}
+#' \code{size}, the actual type I error; \code{type2}, the actual type II 
+#' error; \code{E.tot.n.H0}, the expected number of subjects under H0}
 #' \item{\code{$call}}{the call to \code{simon2}.}
 #' \item{\code{$description}}{a text string giving a brief description of 
 #' the columns in \code{$designs}.}
 #' 
-#' @author Robert Gray (original); Robert Redd (modifications)
+#' @author Robert Gray (\code{\link{simon}}); Robert Redd (\code{simon2})
 #' @references Simon R (1989). Optimal two-stage designs for phase II clinical 
 #' trials. \emph{Controlled Clinical Trials}, 10:1-10.
+#' 
 #' @seealso desmon package: \code{\link[desmon]{simon}}, 
 #' \code{\link[desmon]{twostg}}, \code{\link[desmon]{bin1samp}}, 
 #' \code{\link[desmon]{pickwin}}, \code{\link[desmon]{rp21}}
@@ -489,36 +488,175 @@ power.cv <- function(n = NULL, f = NULL, cv = NULL,
 #' @note \code{install.packages('z:/r.packages/desmon.zip', repos = NULL)}
 #' 
 #' @examples
-#' simon2(p0low = .55, p0high = .6, p1low = .75, ntmax = 60, beta.max = .12)
-#' # compare this function to results from desmon::simon
-#' simon2(p0low = .4, p1low = .6)
-#' # requires desmon package
+#' simon2(.2, c(.4, .5))
+#' simon2(p0 = seq(.55, .6, by = .01), pa = .75, ntmax = 60)
+#' 
+#' ## compare this function to results from desmon::simon
+#' simon2(.4, .6)
+#' ## requires desmon package
 #' # simon(.4, .6)
 #' @export
 
-simon2 <- function (p0low, p0high = p0low, p1low, p1high = p1low, n1max = 0, 
-                    ntmax = 1e+05, alpha = 0.1, beta = 0.1, beta.max = beta, 
-                    del = 1, minimax = FALSE) {
+simon2 <- function(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,
+                   del = 1, minimax = FALSE) {
   
-  # helper function (desmon::bin1samp)
-  bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20) {
-    if (p0 == pa) 
-      stop('p0 should not be equal to pa')
-    b <- 1
-    x <- round(p0 * n.min)
-    n <- n.min - 1
-    if (pa > p0) {
-      while (b > beta) {
-        n <- n + 1
-        l <- x:n
-        s <- 1 - pbinom(l, n, p0)
-        sub <- s <= alpha
-        x <- l[sub][1]
-        size <- s[sub][1]
-        b <- pbinom(x, n, pa)
+  args <- expand.grid(p0 = p0, pa = pa)
+  tmp <- setNames(lapply(Map(simon, p0 = args[['p0']], pa = args[['pa']],
+                             n1max = n1max, alpha = alpha, beta = beta, 
+                             del = del, minimax = minimax), 
+                         '[[', 1),
+                  sapply(seq_len(nrow(args)), function(x) clist(args[x, ])))
+  
+  list(designs = tmp,
+       call = match.call(),
+       description = c('n1, n2 = cases 1st stage and additional # in 2nd',
+                       'r1, r2 = max # responses 1st stage and total to declare trt inactive'))
+}
+
+simon <- function(p0, pa, n1max = 0, ntmax = 1e5, alpha = 0.1, beta = 0.1,
+                  del = 1, minimax = FALSE) {
+  
+  ## prob calculations for 2-stage phase II design
+  ## optimal simon designs (minimize E(n|H0))
+  ## p0, pa, null & alt response probabilities
+  ## n1max = max # subject in first stage
+  
+  if (alpha > .5 | alpha <= 0 | 1 - beta <= alpha | beta <= 0 | p0 <= 0 | p0 >= pa | 
+        pa >= 1 | n1max > ntmax) stop('invalid arguments')
+  ## determine min sample size first stage
+  n1min <- max(ceiling(log(beta) / log(1 - pa)), 2)
+  if (n1min > ntmax) 
+    stop('no valid designs')
+  ## optimal one-sample design
+  u1 <- bin1samp(p0, pa, alpha, beta)
+  ## include even if n > n1max
+  z <- matrix(c(u1[1:2], 0, u1[2], 1, u1[5:6], u1[1]), nrow = 1)
+  if (n1min < u1[1]) {
+    if (n1max > 0) 
+      n1max <- min(n1max, u1[1] - 1) 
+    else n1max <- u1[1] - 1
+  } else 
+    if (n1min == u1[1]) {
+      if (n1max > 0) 
+        n1max <- min(n1max, u1[1]) 
+      else n1max <- u1[1]
+    } else
+      stop('no valid designs')
+  n1max <- min(n1max,ntmax)
+  
+  n1max <- min(n1max,ntmax)
+  
+  ## determine min total sample size 
+  ## (use randomized decision rule on boundary for single sample)
+  b <- 0
+  n <- u1[1]
+  while (b <= beta) {
+    n <- n-1
+    u <- c(1, 1 - pbinom(0:(u1[2] + 1), n, p0))
+    index <- min((1:(u1[2] + 3))[u <= alpha])
+    pi <- (alpha - u[index]) / (u[index - 1] - u[index])
+    if (index > 2) {
+      u <- 1 - pbinom((index - 3):(index - 2), n, pa)
+    } else
+      u <- c(1, 1 - pbinom(0, n, pa))
+    b <- 1 - u[2] - pi * (u[1] - u[2])
+  }
+  
+  if (n > ntmax)
+    stop('no valid designs')
+  e0 <- u1[1]
+  
+  ## cases 1st stage
+  for (i in n1min:n1max) {
+    # stage I
+    # feasible stopping rules
+    x1 <- 0:i
+    w1 <- dbinom(x1, i, p0)
+    w2 <- dbinom(x1, i, pa)
+    sub <- cumsum(w2) <= beta
+    ## feasible 1st stage stopping rules
+    y1 <- x1[sub]
+    
+    for (r1 in y1) {
+      ## additional cases at 2nd stage
+      j <- n-i
+      if (j > 0) {
+        q <- 0
+        pi0 <- 1-sum(w1[1:(r1 + 1)])
+        
+        while (q == 0) {
+          x2 <- 0:j
+          w3 <- dbinom(x2, j, p0)
+          w4 <- dbinom(x2, j, pa)
+          ## b0, ba = marginal dist of # responses H0, Ha
+          u3 <- c(outer(x1[-(1:(r1 + 1))], x2, '+'))
+          u4 <- c(outer(w1[-(1:(r1 + 1))], w3))
+          b0 <- cumsum(c(w1[1:(r1 + 1)], tapply(u4, u3, sum)))
+          sub <- b0 < 1 - alpha
+          r2 <- sum(sub)
+          u4 <- c(outer(w2[-(1:(r1 + 1))], w4))
+          ba <- cumsum(c(w2[1:(r1 + 1)], tapply(u4, u3, sum)))
+          e1 <- i + pi0 * j
+          if (ba[r2 + 1] <= beta) {
+            q <- 1
+            if (minimax) {
+              if (i + j < ntmax) {
+                ntmax <- i + j
+                ## need to reset to min E.H0 at min # cases
+                e0 <- e1
+              } else 
+                if (i + j == ntmax) 
+                  e0 <- min(e0, e1)
+            } else {
+              e0 <- min(e0, e1)
+            }
+            z <- rbind(z, c(i, r1, j, r2, b0[r1 + 1], 
+                            1 - b0[r2 + 1], ba[r2 + 1], e1))
+          } else {
+            j <- j + 1
+            if (minimax) {
+              if (i + j > ntmax) 
+                q <- 1 
+            } else {
+              if (e1 > e0 + del | i + j > ntmax) 
+                q <- 1
+            }
+          }
+        }
       }
     }
-    else if (pa < p0) {
+  }
+  
+  dimnames(z) <- list(NULL, c('n1', 'r1', 'n2', 'r2', 'Pstop1.H0', 
+                              'size', 'type2', 'E.tot.n.H0'))
+  z <- z[z[ , 1] + z[ , 3] <= ntmax, ,drop = FALSE]
+  z <- z[z[ , 8] <= e0 + del, , drop = FALSE]
+  
+  list(designs = z[order(z[ , 8]), , drop = FALSE],
+       call = match.call(),
+       description = c('n1, n2 = cases 1st stage and additional # in 2nd',
+                       'r1, r2 = max # responses 1st stage and total to declare trt inactive'))
+}
+
+bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20) {
+  if (p0 == pa) 
+    stop('p0 should not be equal to pa')
+  b <- 1
+  x <- round(p0 * n.min)
+  n <- n.min - 1
+  if (pa > p0) {
+    while (b > beta) {
+      n <- n + 1
+      l <- x:n
+      s <- 1 - pbinom(l, n, p0)
+      sub <- s <= alpha
+      x <- l[sub][1]
+      size <- s[sub][1]
+      b <- pbinom(x, n, pa)
+    }
+  } else 
+    if (pa < p0) {
+      
       while (b > beta) {
         n <- n + 1
         l <- x:0
@@ -530,132 +668,7 @@ simon2 <- function (p0low, p0high = p0low, p1low, p1high = p1low, n1max = 0,
         x <- x + 1
       }
     }
-    u <- c(n = n, r = x, p0 = p0, pa = pa, size = size, type2 = b)
-    class(u) <- 'bin1samp'
-    u
-  }
-  # end helper function
-  
-  if (alpha > 0.5 | alpha <= 0 | 1 - beta <= alpha | beta <= 0 | 
-        p0low <= 0 | p0high >= p1low | p1high >= 1 | n1max > ntmax) 
-    stop('invalid arguments')
-  n1min <- max(ceiling(log(beta)/log(1 - p1high)), 2)
-  if (n1min > ntmax) 
-    stop('no valid designs')
-  
-  z.list <- NULL
-  
-  for (p0 in seq(p0low, p0high, by = 0.01)) {
-    for (p1 in seq(p1low, p1high, by = 0.01)) {
-      for (b0 in seq(beta, beta.max, by = .01)) {
-        
-        u1 <- bin1samp(p0, p1, alpha, b0)
-        z <- matrix(c(u1[1:2], 0, u1[2], 1, u1[5:6], u1[1]), nrow = 1)
-        if (n1min < u1[1]) {
-          if (n1max > 0) 
-            n1max <- min(n1max, u1[1] - 1)
-          else n1max <- u1[1] - 1
-        }
-        else if (n1min == u1[1]) {
-          if (n1max > 0) 
-            n1max <- min(n1max, u1[1])
-          else n1max <- u1[1]
-        }
-        else {
-          stop('no valid designs')
-        }
-        n1max <- min(n1max, ntmax)
-        b <- 0
-        n <- u1[1]
-        while (b <= b0) {
-          n <- n - 1
-          u <- c(1, 1 - pbinom(0:(u1[2] + 1), n, p0))
-          index <- min((1:(u1[2] + 3))[u <= alpha])
-          pi <- (alpha - u[index])/(u[index - 1] - u[index])
-          if (index > 2) {
-            u <- 1 - pbinom((index - 3):(index - 2), n, p1)
-          }
-          else {
-            u <- c(1, 1 - pbinom(0, n, p1))
-          }
-          b <- 1 - u[2] - pi * (u[1] - u[2])
-        }
-        e0 <- u1[1]
-        for (i in n1min:n1max) 
-        {
-          x1 <- 0:i
-          w1 <- dbinom(x1, i, p0)
-          w2 <- dbinom(x1, i, p1)
-          sub <- cumsum(w2) <= b0
-          y1 <- x1[sub]
-          for (r1 in y1) {
-            j <- n - i
-            if (j > 0) {
-              q <- 0
-              pi0 <- 1 - sum(w1[1:(r1 + 1)])
-              while (q == 0) {
-                x2 <- 0:j
-                w3 <- dbinom(x2, j, p0)
-                w4 <- dbinom(x2, j, p1)
-                u3 <- c(outer(x1[-(1:(r1 + 1))], x2, '+'))
-                u4 <- c(outer(w1[-(1:(r1 + 1))], w3))
-                b.0 <- cumsum(c(w1[1:(r1 + 1)], tapply(u4, u3, sum)))
-                sub <- b.0 < 1 - alpha
-                r2 <- sum(sub)
-                u4 <- c(outer(w2[-(1:(r1 + 1))], w4))
-                ba <- cumsum(c(w2[1:(r1 + 1)], tapply(u4, u3, sum)))
-                e1 <- i + pi0 * j
-                if (ba[r2 + 1] <= b0) {
-                  q <- 1
-                  if (minimax) {
-                    if (i + j < ntmax) {
-                      ntmax <- i + j
-                      e0 <- e1
-                    }
-                    else if (i + j == ntmax) 
-                      e0 <- min(e0, e1)
-                  }
-                  else {
-                    e0 <- min(e0, e1)
-                  }
-                  z <- rbind(z, c(i, r1, j, r2, b.0[r1 + 1], 1 - b.0[r2 + 1], 
-                                  ba[r2 + 1], e1))
-                }
-                else {
-                  j <- j + 1
-                  if (minimax) {
-                    if (i + j > ntmax) 
-                      q <- 1
-                  }
-                  else {
-                    if (e1 > e0 + del | i + j > ntmax) 
-                      q <- 1
-                  }
-                }
-              }
-            }
-          }
-        }
-        dimnames(z) <- list(NULL, c('n1', 'r1', 'n2', 'r2', 'Pstop1.H0', 
-                                    'size', 'type2', 'E.tot.n.H0'))
-        z <- z[z[, 1] + z[, 3] <= ntmax, , drop = FALSE]
-        z <- z[z[, 8] <= e0 + del, , drop = FALSE]
-        z <- z[order(z[,8]), , drop = FALSE]
-        
-        z.list <- rbind(z.list, cbind(rep(p0, times=dim(z)[1]), 
-                                      rep(p1, times=dim(z)[1]), z))
-      }
-    }
-  }
-  if (sum(!is.na(z.list))==0)
-    stop('no valid designs')
-  
-  dimnames(z.list) <- list(NULL, c('p0','p1','n1','r1','n2','r2',
-                                   'Pr(Stop under H0)','Overall type I',
-                                   'Overall type II','E(N|p0)'))
-  list(designs = z.list, 
-       call = match.call(), 
-       description = 
-         c('n1, n2 = cases 1st stage and additional # in 2nd', 
-           'r1, r2 = max # responses 1st stage and total to declare trt inactive'))
+  u <- c(n = n, r = x, p0 = p0, pa = pa, size = size, type2 = b)
+  class(u) <- 'bin1samp'
+  u
 }

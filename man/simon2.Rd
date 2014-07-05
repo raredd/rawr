@@ -3,27 +3,22 @@
 \alias{simon2}
 \title{Simon two-stage designs}
 \usage{
-simon2(p0low, p0high = p0low, p1low, p1high = p1low, n1max, ntmax,
-       alpha = 0.1, beta = 0.1, beta.max = beta, del = 1, minimax = FALSE)
+simon2(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,
+       del = 1, minimax = FALSE)
 }
 \arguments{
-\item{p0low}{null response probability (lower bound)}
+\item{p0}{null hypothesis response probability}
 
-\item{p0high}{null response probability (upper bound)}
+\item{pa}{alternative hypothesis response probability}
 
-\item{p1low}{alternative response probability (lower bound)}
+\item{n1max}{maximum number of subjects entered during the first stage;
+ignored if <= 0}
 
-\item{p1high}{alternative response probability (upper bound)}
-
-\item{n1max}{maximum number of subjects entered during first stage (<= 0)}
-
-\item{ntmax}{maximum total number of subjects}
+\item{ntmax}{maximum total number of total subjects}
 
 \item{alpha}{type I error rate}
 
 \item{beta}{type II error rate}
-
-\item{beta.max}{highest type II error rate acceptable}
 
 \item{del}{searches for designs where the expected number of subjects under
 the null with within \code{del} of the minimum possible value}
@@ -39,11 +34,10 @@ subjects entered in the first stage; \code{r1}, the cutoff for stopping at
 the first stage (continue if the number of responses is > \code{r1});
 \code{n2}, the additional number of subjects enrolled in the second stage;
 \code{r2}, the cutoff for inactivity after the second stage (reject the null
-if the number of responses is > \code{r2}); \code{Pr(Stop under H0)}, the
+if the number of responses is > \code{r2}); \code{Pstop1.H0}, the
 probability of stopping after the first stage under H0 (\code{p0});
-\code{Overall type I}, the actual type I error; \code{Overall type II}, the
-actual type II error; \code{E(N|p0)}, the expected number of subjects under
-H0 (\code{p0}).}
+\code{size}, the actual type I error; \code{type2}, the actual type II
+error; \code{E.tot.n.H0}, the expected number of subjects under H0}
 \item{\code{$call}}{the call to \code{simon2}.}
 \item{\code{$description}}{a text string giving a brief description of
 the columns in \code{$designs}.}
@@ -71,14 +65,16 @@ To install the desmon package in a win \code{R} (for mac, replace
 \code{install.packages('z:/r.packages/desmon.zip', repos = NULL)}
 }
 \examples{
-simon2(p0low = .55, p0high = .6, p1low = .75, ntmax = 60, beta.max = .12)
-# compare this function to results from desmon::simon
-simon2(p0low = .4, p1low = .6)
-# requires desmon package
+simon2(.2, c(.4, .5))
+simon2(p0 = seq(.55, .6, by = .01), pa = .75, ntmax = 60)
+
+## compare this function to results from desmon::simon
+simon2(.4, .6)
+## requires desmon package
 # simon(.4, .6)
 }
 \author{
-Robert Gray (original); Robert Redd (modifications)
+Robert Gray (\code{\link{simon}}); Robert Redd (\code{simon2})
 }
 \references{
 Simon R (1989). Optimal two-stage designs for phase II clinical
