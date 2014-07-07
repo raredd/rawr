@@ -40,6 +40,8 @@ test_that('new tcol is identical to old', {
                        toupper(tcol(col, c(200))))
     }))
   
+  ## these lengths are not compatible
+  ## e.g., 2 colors and 3 transparencies
   expect_error(tcol(cols[1:2], c(50, 100, 150)))
   expect_error(tcol(cols, c(50, 150)))
   expect_error(tcol(coln[1:2], c(50, 100, 150)))
