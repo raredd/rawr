@@ -301,7 +301,8 @@ click.shape <- function(shape = 'line', col = 'black', border = col, trans = NUL
 #'   
 #' @param x \code{\link[ggplot2]{ggplot}} object
 #' @param pos position of labels
-#' @param newpage draw new (empty) page first; see \code{\link{print.ggplot}}
+#' @param newpage draw new (empty) page first; see 
+#' \code{\link[ggplot2]{print.ggplot}}
 #' @param vp viewport to draw plot in; see \code{\link[ggplot2]{print.ggplot}}
 #' @return facet_adjust object that inherits \code{\link[gtable]{gtable}} class
 #' 

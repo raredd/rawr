@@ -37,7 +37,7 @@
 #'        dev = TRUE, add = FALSE, ...)
 #' 
 #' @param s object of class \code{\link[survival]{survfit}} or 
-#' \code{survfit.cox}
+#' \code{\link[survival]{survfit.cox}}
 #' @param lty.surv line type for survival curve(s); see \code{\link{par}}
 #' @param lwd.surv line width for survival curve(s)
 #' @param col.surv line color for survival curve(s); either numeric or 

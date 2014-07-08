@@ -16,7 +16,7 @@ color; for a given combination of hue and chroma, only a subset of this
 range is possible}
 }
 \description{
-A function to replicate default \code{\link{ggplot}} colors
+A function to replicate default \code{\link[ggplot2]{ggplot}} colors
 }
 \examples{
 plot(rnorm(1000), col = ggcols(1000), pch = 19)

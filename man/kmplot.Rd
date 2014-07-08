@@ -33,7 +33,7 @@ kmplot(s,
 }
 \arguments{
 \item{s}{object of class \code{\link[survival]{survfit}} or
-\code{survfit.cox}}
+\code{\link[survival]{survfit.cox}}}
 
 \item{lty.surv}{line type for survival curve(s); see \code{\link{par}}}
 

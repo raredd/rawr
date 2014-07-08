@@ -10,7 +10,8 @@ facet_adjust(x, pos = c('up', 'down'), newpage = is.null(vp), vp = NULL)
 
 \item{pos}{position of labels}
 
-\item{newpage}{draw new (empty) page first; see \code{\link{print.ggplot}}}
+\item{newpage}{draw new (empty) page first; see
+\code{\link[ggplot2]{print.ggplot}}}
 
 \item{vp}{viewport to draw plot in; see \code{\link[ggplot2]{print.ggplot}}}
 }

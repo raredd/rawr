@@ -447,7 +447,7 @@ search.hist <- function (..., fixed = FALSE) {
 
 #' ggplot colors
 #' 
-#' A function to replicate default \code{\link{ggplot}} colors
+#' A function to replicate default \code{\link[ggplot2]{ggplot}} colors
 #' 
 #' @usage ggcols(n, l = 65, c = 100)
 #' 
@@ -516,7 +516,7 @@ grcols <- function(n, s = .5, v = 1, alpha = 1) {
 #' between 0 (fully transparent) and 255 (fully visible). \code{color} values 
 #' are converted to RGB, transparency is added, and converted 
 #' 
-#' @seealso \code{\link{num2hex}}, \code{\link{col2rgb}}
+#' @seealso \code{\link{as.hexmode}}, \code{\link{col2rgb}}
 #' 
 #' @examples
 #' cols <- c('red','green','blue')
@@ -551,31 +551,45 @@ tcol <- function(color, trans = 255) {
 #' A simple modification to the \code{*apply} functions which allows a list of 
 #' functions to be passed simultaneously.
 #' 
-#' @usage fapply(X, FUN, trans = FALSE, ...)
+#' @usage fapply(X, FUN, ...)
 #' 
 #' @param X a vector (atomic or list) or an \code{\link{expression}} object; 
 #' other objects (including classed objects) will be coerced by 
 #' \code{base::\link{as.list}}.
 #' @param FUN a list of functions to be applied to each element of \code{X}; 
 #' see \code{\link{lapply}}:"Details"
-#' @param trans logical; should output be transposed
-#' @param ... for future options
+#' @param ... additional arguments passed to \code{FUN}; note that these must
+#' be defined arguments for each function in \code{FUN}; otherwise, you will
+#' need to define a function before passing to \code{FUN}; see examples
 #' 
 #' @return A data frame where \code{nrow} equals the length of \code{X} and 
 #' \code{ncol} equals the length of \code{FUN}.
 #' @seealso \code{\link{sapply}}
 #' 
 #' @examples
-#' fct <- function(x) quantile(x, c(.05, .95))
-#' fapply(mtcars, list(median, fct))
-#' fapply(mtcars, list(min, mean, max, length), trans = TRUE)
-#' # compare to 
+#' ## define a new function
+#' `95% CI` <- function(x) 
+#'      paste0('(', paste0(quantile(x, c(.025, .975)), collapse = ', '), ')')
+#' fapply(mtcars, list(median, `95% CI`))
+#' 
+#' ## compare: 
+#' t(fapply(mtcars, list(min, mean, max, length)))
 #' summary(mtcars)
 #' @export
-#' 
-#' 
 
-fapply <- function(X, FUN, trans = FALSE, ...) {
+fapply <- function(X, FUN, ...) {
+  fcts <- unlist(sapply(match.call()$FUN, as.character))[-1]
+  out <- t(sapply(FUN, mapply, X))
+  setNames(as.data.frame(t(out)), fcts)
+}
+
+fapply_1 <- function(X, FUN, ...) {
+  fcts <- unlist(sapply(match.call()$FUN, as.character))[-1]
+  out <- outer(FUN, X, Vectorize(function(a, b) a(b, ...)))
+  setNames(as.data.frame(t(out)), fcts)
+}
+
+fapply_2 <- function(X, FUN, trans = FALSE, ...) {
   fcts <- unlist(sapply(match.call()$FUN, as.character))[-1]
   out <- as.data.frame(sapply(FUN, function(x) lapply(X, x)))
   names(out) <- fcts

@@ -3,7 +3,7 @@
 \alias{fapply}
 \title{Apply list of functions over list or vector}
 \usage{
-fapply(X, FUN, trans = FALSE, ...)
+fapply(X, FUN, ...)
 }
 \arguments{
 \item{X}{a vector (atomic or list) or an \code{\link{expression}} object;
@@ -13,9 +13,9 @@ other objects (including classed objects) will be coerced by
 \item{FUN}{a list of functions to be applied to each element of \code{X};
 see \code{\link{lapply}}:"Details"}
 
-\item{trans}{logical; should output be transposed}
-
-\item{...}{for future options}
+\item{...}{additional arguments passed to \code{FUN}; note that these must
+be defined arguments for each function in \code{FUN}; otherwise, you will
+need to define a function before passing to \code{FUN}; see examples}
 }
 \value{
 A data frame where \code{nrow} equals the length of \code{X} and
@@ -26,10 +26,13 @@ A simple modification to the \code{*apply} functions which allows a list of
 functions to be passed simultaneously.
 }
 \examples{
-fct <- function(x) quantile(x, c(.05, .95))
-fapply(mtcars, list(median, fct))
-fapply(mtcars, list(min, mean, max, length), trans = TRUE)
-# compare to
+## define a new function
+`95\% CI` <- function(x)
+     paste0('(', paste0(quantile(x, c(.025, .975)), collapse = ', '), ')')
+fapply(mtcars, list(median, `95\% CI`))
+
+## compare:
+t(fapply(mtcars, list(min, mean, max, length)))
 summary(mtcars)
 }
 \seealso{
