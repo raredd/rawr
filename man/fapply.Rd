@@ -26,6 +26,10 @@ A simple modification to the \code{*apply} functions which allows a list of
 functions to be passed simultaneously.
 }
 \examples{
+tmp <- recoder(mtcars, 6, NA)
+fapply(tmp, list(mean, median))
+fapply(tmp, list(mean, median), na.rm = TRUE)
+
 ## define a new function
 `95\% CI` <- function(x)
      paste0('(', paste0(quantile(x, c(.025, .975)), collapse = ', '), ')')

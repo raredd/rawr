@@ -27,7 +27,7 @@ ggsurv(s,
        data = FALSE, ...)
 }
 \arguments{
-\item{s}{\code{\link{survfit}} or \code{\link{survfit.cox}} object}
+\item{s}{\code{\link{survfit}} or \code{survfit.cox} object}
 
 \item{col.surv}{color of survival lines; should be one color or match
 number of strata}

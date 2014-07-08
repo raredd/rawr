@@ -114,8 +114,8 @@ ggmultiplot <- function(..., plotlist = NULL, cols = 1, layout = NULL) {
 #' margins) with mouse click(s).
 #' 
 #' @usage 
-#' click.text(express, col = 'black', cex = NULL, srt = 0, trans = NULL,
-#'            family = 'sans', dev = FALSE, ...)
+#' click.text(express, col = 'black', cex = NULL, srt = 0, 
+#'            trans = NULL, family = 'sans', dev = FALSE, ...)
 #' 
 #' @param express text or \code{\link{expression}}
 #' @param col colour of text
@@ -132,10 +132,11 @@ ggmultiplot <- function(..., plotlist = NULL, cols = 1, layout = NULL) {
 #'
 #' @details
 #' When \code{dev = TRUE}, a platform-specific graphics device is used to 
-#' displace the plot. Defaults are \code{\link{quartz}}, \code{\link{windows}},
-#' and \code{\link{x11}} for apple, windows, and unix platforms, respectively.
+#' displace the plot. Defaults are \code{\link{quartz}}, for apple and 
+#' \code{\link{x11}} for windows and unix platforms.
+#' 
 #' However, any device can be used by setting \code{dev = FALSE} and opening
-#' a device before running \code{kmplot}. If \code{dev} is \code{FALSE}, the
+#' a device before \code{click.text}. If \code{dev} is \code{FALSE}, the
 #' plot will open in the current device; see \code{\link{.Device}}. Close the
 #' device pane or use \code{dev.off()} to turn off the current device.
 #' @seealso \code{\link{click.shape}}; \code{\link{plotmath}} for help with 
@@ -150,8 +151,8 @@ ggmultiplot <- function(..., plotlist = NULL, cols = 1, layout = NULL) {
 #' }
 #' @export
 
-click.text <- function(express, col = 'black', cex = NULL, srt = 0, trans = NULL,
-                       family = 'sans', dev = FALSE, ...) {
+click.text <- function(express, col = 'black', cex = NULL, srt = 0, 
+                       trans = NULL, family = 'sans', dev = FALSE, ...) {
   
   op <- par(no.readonly = TRUE) 
   on.exit(par(op))
@@ -161,8 +162,6 @@ click.text <- function(express, col = 'black', cex = NULL, srt = 0, trans = NULL
   if (dev) {
     if (grepl('apple', sessionInfo()$platform))
       quartz()
-    else if (grepl('mingw', sessionInfo()$platform))
-      windows()
     else 
       x11()
   } else par(xpd = NA)
@@ -204,10 +203,11 @@ click.text <- function(express, col = 'black', cex = NULL, srt = 0, trans = NULL
 #' 
 #' @details
 #' When \code{dev = TRUE}, a platform-specific graphics device is used to 
-#' displace the plot. Defaults are \code{\link{quartz}}, \code{\link{windows}},
-#' and \code{\link{x11}} for apple, windows, and unix platforms, respectively.
+#' displace the plot. Defaults are \code{\link{quartz}}, for apple and 
+#' \code{\link{x11}} for windows and unix platforms.
+#' 
 #' However, any device can be used by setting \code{dev = FALSE} and opening
-#' a device before running \code{kmplot}. If \code{dev} is \code{FALSE}, the
+#' a device before \code{click.shape}. If \code{dev} is \code{FALSE}, the
 #' plot will open in the current device; see \code{\link{.Device}}. Close the
 #' device pane or use \code{dev.off()} to turn off the current device.
 #' @seealso \code{\link{click.text}}
@@ -241,8 +241,6 @@ click.shape <- function(shape = 'line', col = 'black', border = col, trans = NUL
   if (dev) {
     if (grepl('apple', sessionInfo()$platform))
       quartz()
-    else if (grepl('mingw', sessionInfo()$platform))
-      windows()
     else 
       x11()
   } else par(xpd = NA)
@@ -361,7 +359,6 @@ facet_adjust <- function(x, pos = c('up', 'down'),
 #' \code{\link[ggplot2]{print.ggplot}}
 #' @param vp viewport to draw plot in; see \code{\link[ggplot2]{print.ggplot}}
 #' 
-#' @export
 #' @seealso \code{\link{facet_adjust}}
 
 print.facet_adjust <- function(x, newpage = is.null(vp), vp = NULL) {

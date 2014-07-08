@@ -37,7 +37,7 @@
 #'        dev = TRUE, add = FALSE, ...)
 #' 
 #' @param s object of class \code{\link[survival]{survfit}} or 
-#' \code{\link[survival]{survfit.cox}}
+#' \code{survfit.cox}
 #' @param lty.surv line type for survival curve(s); see \code{\link{par}}
 #' @param lwd.surv line width for survival curve(s)
 #' @param col.surv line color for survival curve(s); either numeric or 
@@ -98,10 +98,11 @@
 #' invervals.
 #' 
 #' When \code{dev = TRUE}, a platform-specific graphics device is used to 
-#' displace the plot. Defaults are \code{\link{quartz}}, \code{\link{windows}},
-#' and \code{\link{x11}} for apple, windows, and unix platforms, respectively.
+#' displace the plot. Defaults are \code{\link{quartz}}, for apple and 
+#' \code{\link{x11}} for windows and unix platforms.
+#' 
 #' However, any device can be used by setting \code{dev = FALSE} and opening
-#' a device before running \code{kmplot}. If \code{dev} is \code{FALSE}, the
+#' a device before \code{kmplot}. If \code{dev} is \code{FALSE}, the
 #' plot will open in the current device; see \code{\link{.Device}}. Close the
 #' device pane or use \code{dev.off()} to turn off the current device.
 #' 
@@ -197,8 +198,6 @@ kmplot <- function(s,
   if (dev) {
     if (grepl('apple', sessionInfo()$platform))
       quartz()
-    else if (grepl('mingw', sessionInfo()$platform))
-      windows()
     else 
       x11()
   }
@@ -407,7 +406,7 @@ kmplot <- function(s,
 #'        plot.margin = NULL, table.margin = NULL, 
 #'        data = FALSE, ...)
 #' 
-#' @param s \code{\link{survfit}} or \code{\link{survfit.cox}} object
+#' @param s \code{\link{survfit}} or \code{survfit.cox} object
 #' @param col.surv color of survival lines; should be one color or match 
 #' number of strata
 #' @param lty.surv line type used for survival line; default is 1 (solid line)

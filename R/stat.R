@@ -471,7 +471,8 @@ power.cv <- function(n = NULL, f = NULL, cv = NULL,
 #' \item{\code{$description}}{a text string giving a brief description of 
 #' the columns in \code{$designs}.}
 #' 
-#' @author Robert Gray (\code{\link{simon}}); Robert Redd (\code{simon2})
+#' @author Robert Gray (\code{\link[desmon]{simon}}); Robert Redd 
+#' (\code{simon2})
 #' @references Simon R (1989). Optimal two-stage designs for phase II clinical 
 #' trials. \emph{Controlled Clinical Trials}, 10:1-10.
 #' 
@@ -483,9 +484,10 @@ power.cv <- function(n = NULL, f = NULL, cv = NULL,
 #' \code{.zip} file with appropriate \code{.tgz} file); in terminal:
 #' @note \code{cd ~}
 #' @note \code{mkdir r.packages}
-#' @note \code{cp /homes8/gray/R/desmon.zip ./r.packages}
+#' @note \code{cp ~rredd/r.packages/desmon.zip ./r.packages}
 #' @note \code{R} console:
-#' @note \code{install.packages('z:/r.packages/desmon.zip', repos = NULL)}
+#' @note \code{install.packages('z:/r.packages/desmon.zip', repos = NULL,
+#' type = 'source')}
 #' 
 #' @examples
 #' simon2(.2, c(.4, .5))

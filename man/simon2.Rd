@@ -58,11 +58,12 @@ To install the desmon package in a win \code{R} (for mac, replace
 
 \code{mkdir r.packages}
 
-\code{cp /homes8/gray/R/desmon.zip ./r.packages}
+\code{cp ~rredd/r.packages/desmon.zip ./r.packages}
 
 \code{R} console:
 
-\code{install.packages('z:/r.packages/desmon.zip', repos = NULL)}
+\code{install.packages('z:/r.packages/desmon.zip', repos = NULL,
+type = 'source')}
 }
 \examples{
 simon2(.2, c(.4, .5))
@@ -74,7 +75,8 @@ simon2(.4, .6)
 # simon(.4, .6)
 }
 \author{
-Robert Gray (\code{\link{simon}}); Robert Redd (\code{simon2})
+Robert Gray (\code{\link[desmon]{simon}}); Robert Redd
+(\code{simon2})
 }
 \references{
 Simon R (1989). Optimal two-stage designs for phase II clinical

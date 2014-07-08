@@ -2,7 +2,6 @@
 
 S3method(dsplot,default)
 S3method(dsplot,formula)
-S3method(print,facet_adjust)
 S3method(tplot,default)
 S3method(tplot,formula)
 export("%inside%")

@@ -33,7 +33,7 @@ kmplot(s,
 }
 \arguments{
 \item{s}{object of class \code{\link[survival]{survfit}} or
-\code{\link[survival]{survfit.cox}}}
+\code{survfit.cox}}
 
 \item{lty.surv}{line type for survival curve(s); see \code{\link{par}}}
 
@@ -131,10 +131,11 @@ the confidence bands are identical, just two ways of plotting the same
 invervals.
 
 When \code{dev = TRUE}, a platform-specific graphics device is used to
-displace the plot. Defaults are \code{\link{quartz}}, \code{\link{windows}},
-and \code{\link{x11}} for apple, windows, and unix platforms, respectively.
+displace the plot. Defaults are \code{\link{quartz}}, for apple and
+\code{\link{x11}} for windows and unix platforms.
+
 However, any device can be used by setting \code{dev = FALSE} and opening
-a device before running \code{kmplot}. If \code{dev} is \code{FALSE}, the
+a device before \code{kmplot}. If \code{dev} is \code{FALSE}, the
 plot will open in the current device; see \code{\link{.Device}}. Close the
 device pane or use \code{dev.off()} to turn off the current device.
 

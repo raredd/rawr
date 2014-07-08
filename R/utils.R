@@ -567,6 +567,10 @@ tcol <- function(color, trans = 255) {
 #' @seealso \code{\link{sapply}}
 #' 
 #' @examples
+#' tmp <- recoder(mtcars, 6, NA)
+#' fapply(tmp, list(mean, median))
+#' fapply(tmp, list(mean, median), na.rm = TRUE)
+#' 
 #' ## define a new function
 #' `95% CI` <- function(x) 
 #'      paste0('(', paste0(quantile(x, c(.025, .975)), collapse = ', '), ')')
@@ -579,7 +583,7 @@ tcol <- function(color, trans = 255) {
 
 fapply <- function(X, FUN, ...) {
   fcts <- unlist(sapply(match.call()$FUN, as.character))[-1]
-  out <- t(sapply(FUN, mapply, X))
+  out <- t(sapply(FUN, mapply, X, ...))
   setNames(as.data.frame(t(out)), fcts)
 }
 
