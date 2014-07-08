@@ -730,8 +730,10 @@ rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
 
 html.test <- function(...) {
   htmlFile <- tempfile(fileext = '.html')
-  write(..., file = htmlFile)
-  rstudio::viewer(htmlFile)
+  writeLines(..., con = htmlFile,)
+  if ((Sys.getenv('RSTUDIO') != '') && ('rstudio' %in% .packages(TRUE)))
+      rstudio::viewer(htmlFile)
+  else browseURL(htmlFile)
 }
 
 #  roundr
