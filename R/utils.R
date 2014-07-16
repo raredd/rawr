@@ -1,8 +1,89 @@
 ### utilities
-# %ni%, ht, oror, progress, recoder, psum, ident, search.df, search.hist, 
+# lsp, %ni%, ht, oror, progress, recoder, psum, ident, search.df, search.hist, 
 # ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
 # show.colors, show.pch, %inside%, try_require, clist, binconr, num2char
 ###
+
+#' list package
+#' 
+#' @description
+#' list all exported and/or non exported objects in a package.
+#' 
+#' This is a helper/wrapper function to easily list exported (\code{?'::'}) and
+#' non exported (\code{?':::'}) functions (and other features from a package's 
+#' \code{NAMESPACE} file). Note that \code{base} and older packages do not have
+#' a \code{'NAMESPACE'} file in which case, for \code{base} packages, 
+#' \code{lsp} returns \code{ls(.BaseNamespaceEnv, all.names = TRUE)}, and for
+#' older packages with no \code{NAMESPACE} will throw an error.
+#' 
+#' Possible values for \code{what} are \code{'all'} (default), \code{NULL},
+#' \code{'exports'}, \code{'imports'}, \code{'dynlibs'}, \code{'lazydata'}, 
+#' \code{'path'}, \code{'S3methods'}, \code{'spec'}, and others depending on 
+#' the package.
+#' 
+#' \code{lsp(packagename, '?')} to see options for a specific package.
+#' 
+#' \code{lsp(packagename, NULL)} to return all information.
+#' 
+#' @usage
+#' lsp(package, what = 'all')
+#' 
+#' @param package package name as a character string
+#' @param what what to get; \code{'all'} is default which returns all exported
+#' and non exported functions in \code{package}; see description for more
+#' 
+#' @examples
+#' lsp('rawr')
+#' 
+#' ## for "what" options
+#' lsp('rawr', '?')
+#' 
+#' ## library path
+#' lsp('rawr', 'path')
+#' 
+#' ## to return everything
+#' lsp('rawr', NULL)
+#' 
+#' ## data sets
+#' lsp('ggplot2', 'lazydata')
+#' 
+#' @export
+
+lsp <- function(package, what = 'all') {
+  
+  ns <- asNamespace(package)
+  
+  ## base packages do not have NAMESPACE files
+  if (isBaseNamespace(ns))
+    ls(.BaseNamespaceEnv, all.names = TRUE)
+  
+  ## for non base packages
+  if (exists('.__NAMESPACE__.', envir = ns, inherits = FALSE)) {
+    wh <- get('.__NAMESPACE__.', envir = asNamespace(package, base.OK = FALSE),
+              inherits = FALSE)
+    if ('?' %in% what) 
+      return(ls(wh))
+    if (!is.null(what) && !any(what %in% c('all', ls(wh))))
+      stop('what is invalid; see ?rawr::lsp \'details\'')
+    tmp <- sapply(ls(wh), function(x) getNamespaceInfo(ns, x))
+    tmp <- rapply(tmp, ls, classes = 'environment', 
+                  how = 'replace', all.names = TRUE)
+    if (is.null(what))
+      return(tmp)
+    if (what %in% 'all')
+      return(ls(getNamespace(package), all.names = TRUE))
+    if (any(what %in% ls(wh)))
+      return(tmp[what])
+  } else 
+    stop(sprintf('no NAMESPACE file found for package %s', package))
+}
+
+package <- 'Gmisc'
+ns <- asNamespace(package)
+tmp <- get('.__NAMESPACE__.', envir = asNamespace(package, base.OK = FALSE),
+           inherits = FALSE)
+tmp1 <- sapply(ls(tmp), function(x) getNamespaceInfo(ns, x))
+rapply(tmp1, ls, classes = 'environment', how = 'replace', all.names = TRUE)
 
 #' not in
 #' 
