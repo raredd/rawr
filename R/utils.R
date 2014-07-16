@@ -78,13 +78,6 @@ lsp <- function(package, what = 'all') {
     stop(sprintf('no NAMESPACE file found for package %s', package))
 }
 
-package <- 'Gmisc'
-ns <- asNamespace(package)
-tmp <- get('.__NAMESPACE__.', envir = asNamespace(package, base.OK = FALSE),
-           inherits = FALSE)
-tmp1 <- sapply(ls(tmp), function(x) getNamespaceInfo(ns, x))
-rapply(tmp1, ls, classes = 'environment', how = 'replace', all.names = TRUE)
-
 #' not in
 #' 
 #' Negation of \code{\link[base]{\%in\%}}
