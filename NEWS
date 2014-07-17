@@ -1,8 +1,8 @@
 rawr 0.2.2
 --------
-  * surv_summary added
-  * minor fixes
-  * lsp added
+  * surv_summary, lsp added
+  * fixes to kmplot: custom margins, expressions/bquote in strata labels
+  * minor misc fixes
 
 rawr 0.2.1
 --------

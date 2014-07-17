@@ -45,6 +45,8 @@ character string(s); hexadecimal format also works}
 \item{mark}{numeric plotting character (\code{\link{pch}}) or character
 string, i.e., \code{''}, \code{'|'}, etc}
 
+\item{mar}{margins; see \code{mar} section in \code{\link{par}}}
+
 \item{lty.ci}{line type for confidence interval(s); not plotted (\code{= 0})
 by default}
 
@@ -66,6 +68,10 @@ this is not a true confidence band; see details}
 \item{strata.lab}{labels used in legend and at risk table for strata; if
 \code{NULL} (default), labels created in \code{survfit} are used; if only
 one strata is present, "All" is used by default}
+
+\item{strata.expr}{list; an alternative to \code{strata.lab} which allows
+for \code{\link{bquote}} or \code{\link{expression}} labels to be passed to
+labels of at risk table; note that \code{legend} inherits \code{strata.lab}}
 
 \item{strata.order}{order of strata in legend and at risk table}
 
@@ -153,6 +159,11 @@ kmfit2 <- survfit(Surv(time, status) ~ rx + adhere, data = colon)
 \dontrun{
 ## simple example, draw in r window
 kmplot(kmfit1, dev = FALSE)
+
+## expressions in at risk table
+kmplot(kmfit1, dev = FALSE, strata.lab = c('Female','Male'),
+       strata.expr = list(bquote(widetilde(ring(Female))),
+                          bquote(phantom() >= Male~'\%')))
 
 ## using mfrow options, use ADD = TRUE
 ## when saving to another device, use dev = FALSE (see details)

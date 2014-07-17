@@ -44,6 +44,7 @@
 #' character string(s); hexadecimal format also works
 #' @param mark numeric plotting character (\code{\link{pch}}) or character 
 #' string, i.e., \code{''}, \code{'|'}, etc
+#' @param mar margins; see \code{mar} section in \code{\link{par}}
 #' @param lty.ci line type for confidence interval(s); not plotted (\code{= 0})
 #' by default
 #' @param lwd.ci line width for confidence interval(s)
@@ -58,6 +59,9 @@
 #' @param strata.lab labels used in legend and at risk table for strata; if 
 #' \code{NULL} (default), labels created in \code{survfit} are used; if only
 #' one strata is present, "All" is used by default
+#' @param strata.expr list; an alternative to \code{strata.lab} which allows
+#' for \code{\link{bquote}} or \code{\link{expression}} labels to be passed to
+#' labels of at risk table; note that \code{legend} inherits \code{strata.lab}
 #' @param strata.order order of strata in legend and at risk table
 #' @param extra.margin increase left margin when strata labels in at risk table
 #' are long
@@ -124,6 +128,11 @@
 #' ## simple example, draw in r window
 #' kmplot(kmfit1, dev = FALSE)
 #' 
+#' ## expressions in at risk table
+#' kmplot(kmfit1, dev = FALSE, strata.lab = c('Female','Male'),
+#'        strata.expr = list(bquote(widetilde(ring(Female))), 
+#'                           bquote(phantom() >= Male~'%')))
+#' 
 #' ## using mfrow options, use ADD = TRUE
 #' ## when saving to another device, use dev = FALSE (see details)
 #' png('./desktop/kmplot2.png', width = 750, height = 1200, pointsize = 14)
@@ -160,7 +169,7 @@
 kmplot <- function(s, 
                    # basic plot options
                    lty.surv = 1, lwd.surv = 1, col.surv = 1, 
-                   mark = 3,
+                   mark = 3, mar = NULL,
                    
                    # confidence options
                    lty.ci = 0, lwd.ci = 1, col.ci = col.surv, 
@@ -169,6 +178,7 @@ kmplot <- function(s,
                    # at risk table options
                    atrisk = TRUE, atrisk.lab = 'Number at risk', 
                    atrisk.lines = TRUE, strata.lab = NULL, 
+                   strata.expr = NULL,
                    strata.order = seq(length(s$n)), 
                    extra.margin = 5, 
                    
@@ -186,11 +196,11 @@ kmplot <- function(s,
                    dev = TRUE, add = FALSE, ...) {
   
   #### to do:
-  #
+  ## use expressions in legend text ?
   
   ## error checks
   if (!inherits(s, 'survfit')) 
-    stop('s must be a survfit object')
+    stop('s must be a \'survfit\' object')
   
   ## save current par settings
   op <- par(no.readonly = TRUE)
@@ -234,11 +244,11 @@ kmplot <- function(s,
   
   ## group names and more error checks
   gr <- c(s$strata)
-  if(is.null(strata.lab))
+  if (is.null(strata.lab))
     strata.lab <- names(s$strata)
-  if(length(unique(strata.lab)) != ng)
+  if (length(unique(strata.lab)) != ng)
     stop('\n','length(unique(strata.lab)) != number of groups')
-  if(suppressWarnings(any(sort(strata.order) != 1:ng)))
+  if (suppressWarnings(any(sort(strata.order) != 1:ng)))
     stop('\n', 'sort(strata.order) must equal 1:', ng)
   strata.lab <- gsub(' *$', '', strata.lab)  # remove white space
   if (ng == 1 & (strata.lab[1] == 'strata.lab')) {
@@ -248,7 +258,6 @@ kmplot <- function(s,
   
   ## graphic parameters
   par(mar = c(4 + ng, 4 + extra.margin, 4, 2) + .1)
-  
   if (!add) {
     par(list(mar = c(4 + ng, 4 + extra.margin, 4, 2) + .1,
              oma = c(1, 1, 1, 1)))
@@ -256,6 +265,8 @@ kmplot <- function(s,
       par(mar = c(3, 4, 2, 1) + .1)
     par(list(...))
   }
+  if (!is.null(mar)) 
+    par(mar = mar)
   
   ## reformat survival estimates
   dat <- with(s, data.frame(time = time, 
@@ -292,18 +303,23 @@ kmplot <- function(s,
   
   ## at risk table below surv plot
   if (atrisk) {
-    
     ## write group names
-    group.name.pos <- (par()$usr[2] - par()$usr[1]) / -8
+    group.name.pos <- diff(par('usr')[1:2]) / -8
     padding <- abs(group.name.pos / 8)
     line.pos <- (1:ng)[order(strata.order)] + 2
-    mtext(strata.lab, side = 1, line = line.pos, at = group.name.pos, 
-          adj = 1, col = 1, las = 1, cex = cex.axis)
+    if (!is.null(strata.expr))
+      sapply(1:length(strata.expr), function(x)
+        mtext(strata.expr[[x]], side = 1, line = line.pos[x], 
+              at = group.name.pos, adj = 1, col = 1, las = 1, cex = cex.axis))
+    else 
+      mtext(strata.lab, side = 1, line = line.pos, at = group.name.pos, 
+            adj = 1, col = 1, las = 1, cex = cex.axis)
     
     ## draw matching lines for n at risk  
     if (atrisk.lines) {  
       par('xpd' = TRUE)
-      for(i in 1:ng) {
+      for (i in 1:ng) {
+        ## mess with the 2 here to adjust the lenght of the atrisk.line
         axis(side = 1, at = c(group.name.pos + padding, 0 - 2 * padding), 
              labels = FALSE, line = line.pos[i] + 0.6, lwd.ticks = 0,
              col = col.lines[i], lty = lty.surv[i], lwd = lwd.surv[i])
@@ -337,6 +353,8 @@ kmplot <- function(s,
     if (!is.null(atrisk.lab)) 
       mtext(side = 1, text = atrisk.lab, at = group.name.pos, 
             line = 1.5, adj = 1, col = 1, las = 1, cex = cex.axis)
+#       mtext(side = 1, text = atrisk.lab, at = par('usr')[1], 
+#             line = 1.5, adj = 0, col = 1, las = 1, cex = cex.axis)
   } ## /if (atrisk)  
   
   ## legend
