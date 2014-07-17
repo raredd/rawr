@@ -62,11 +62,12 @@ this is not a true confidence band; see details}
 
 \item{strata.lab}{labels used in legend and at risk table for strata; if
 \code{NULL} (default), labels created in \code{survfit} are used; if only
-one strata is present, "All" is used by default}
+one strata is present, "All" is used by default; if \code{FALSE}, labels
+are not used}
 
-\item{strata.expr}{list; an alternative to \code{strata.lab} which allows
-for \code{\link{bquote}} or \code{\link{expression}} labels to be passed to
-labels of at risk table; note that \code{legend} inherits \code{strata.lab}}
+\item{strata.expr}{an alternative to \code{strata.lab} which allows for
+\code{\link{bquote}} or \code{\link{expression}} to be passed to labels for
+at risk table; note that \code{strata.expr} trumps \code{strata.lab}}
 
 \item{strata.order}{order of strata in legend and at risk table}
 
@@ -157,8 +158,8 @@ kmplot(kmfit1, dev = FALSE)
 
 ## expressions in at risk table
 kmplot(kmfit1, dev = FALSE, strata.lab = c('Female','Male'),
-       strata.expr = list(bquote(widetilde(ring(Female))),
-                          bquote(phantom() >= Male~'\%')))
+       strata.expr = expression(widetilde(ring(Female)),
+                                phantom() >= Male))
 
 ## using mfrow options, use ADD = TRUE
 ## when saving to another device, use dev = FALSE (see details)

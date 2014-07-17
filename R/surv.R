@@ -53,10 +53,11 @@
 #' @param atrisk.lines logical; draw lines next to strata in at risk table
 #' @param strata.lab labels used in legend and at risk table for strata; if 
 #' \code{NULL} (default), labels created in \code{survfit} are used; if only
-#' one strata is present, "All" is used by default
-#' @param strata.expr list; an alternative to \code{strata.lab} which allows
-#' for \code{\link{bquote}} or \code{\link{expression}} labels to be passed to
-#' labels of at risk table; note that \code{legend} inherits \code{strata.lab}
+#' one strata is present, "All" is used by default; if \code{FALSE}, labels
+#' are not used
+#' @param strata.expr an alternative to \code{strata.lab} which allows for 
+#' \code{\link{bquote}} or \code{\link{expression}} to be passed to labels for
+#' at risk table; note that \code{strata.expr} trumps \code{strata.lab}
 #' @param strata.order order of strata in legend and at risk table
 #' @param extra.margin increase left margin when strata labels in at risk table
 #' are long
@@ -125,8 +126,8 @@
 #' 
 #' ## expressions in at risk table
 #' kmplot(kmfit1, dev = FALSE, strata.lab = c('Female','Male'),
-#'        strata.expr = list(bquote(widetilde(ring(Female))), 
-#'                           bquote(phantom() >= Male~'%')))
+#'        strata.expr = expression(widetilde(ring(Female)), 
+#'                                 phantom() >= Male))
 #' 
 #' ## using mfrow options, use ADD = TRUE
 #' ## when saving to another device, use dev = FALSE (see details)
@@ -190,9 +191,6 @@ kmplot <- function(s,
                    col.grid = grey(.9),
                    dev = TRUE, add = FALSE, ...) {
   
-  #### to do:
-  ## use expressions in legend text ?
-  
   ## error checks
   if (!inherits(s, 'survfit')) 
     stop('s must be a \'survfit\' object')
@@ -239,9 +237,13 @@ kmplot <- function(s,
   
   ## group names and more error checks
   gr <- c(s$strata)
+  if (!is.null(strata.lab) && strata.lab == TRUE)
+    strata.lab <- NULL
+  if (!is.null(strata.lab) && strata.lab == FALSE)
+    strata.lab <- rep(FALSE, ng)
   if (is.null(strata.lab))
     strata.lab <- names(s$strata)
-  if (length(unique(strata.lab)) != ng)
+  if (length(unique(strata.lab)) != ng && strata.lab[1] != FALSE)
     stop('\n','length(unique(strata.lab)) != number of groups')
   if (suppressWarnings(any(sort(strata.order) != 1:ng)))
     stop('\n', 'sort(strata.order) must equal 1:', ng)
@@ -302,13 +304,15 @@ kmplot <- function(s,
     group.name.pos <- diff(par('usr')[1:2]) / -8
     padding <- abs(group.name.pos / 8)
     line.pos <- (1:ng)[order(strata.order)] + 2
-    if (!is.null(strata.expr))
-      sapply(1:length(strata.expr), function(x)
-        mtext(strata.expr[[x]], side = 1, line = line.pos[x], 
-              at = group.name.pos, adj = 1, col = 1, las = 1, cex = cex.axis))
-    else 
-      mtext(strata.lab, side = 1, line = line.pos, at = group.name.pos, 
-            adj = 1, col = 1, las = 1, cex = cex.axis)
+    if (strata.lab[1] != FALSE){
+      if (!is.null(strata.expr))
+        sapply(1:length(strata.expr), function(x)
+          mtext(strata.expr[[x]], side = 1, line = line.pos[x], 
+                at = group.name.pos, adj = 1, col = 1, las = 1, cex = cex.axis))
+      else 
+        mtext(strata.lab, side = 1, line = line.pos, at = group.name.pos, 
+              adj = 1, col = 1, las = 1, cex = cex.axis)
+    }
     
     ## draw matching lines for n at risk  
     if (atrisk.lines) {  
@@ -356,9 +360,17 @@ kmplot <- function(s,
   rlp <- strata.order
   if (legend) {
     bgc <- ifelse(par('bg') == 'transparent', 'white', par('bg'))
-    legend(x = legend.pos, legend = strata.lab[rlp], col = col.lines[rlp], 
-           lty = lty.surv[rlp], lwd = lwd.surv[rlp], bty = 'o', cex = cex.axis,
-           bg = bgc, box.col = 'transparent', inset = .01)
+    if (!is.null(strata.expr))
+      legend(x = legend.pos, legend = strata.expr[rlp], col = col.lines[rlp], 
+             lty = lty.surv[rlp], lwd = lwd.surv[rlp], bty = 'o', cex = cex.axis,
+             bg = bgc, box.col = 'transparent', inset = .01)
+    else {
+      if (strata.lab[1] == FALSE)
+        strata.lab <- names(s$strata)
+      legend(x = legend.pos, legend = strata.lab[rlp], col = col.lines[rlp], 
+             lty = lty.surv[rlp], lwd = lwd.surv[rlp], bty = 'o', cex = cex.axis,
+             bg = bgc, box.col = 'transparent', inset = .01)
+    }
   }
 
   for (i in 1:ng) {
