@@ -33,6 +33,8 @@
 #' and non exported functions in \code{package}; see description for more
 #' 
 #' @examples
+#' lsp('base')
+#' 
 #' lsp('rawr')
 #' 
 #' ## for "what" options
@@ -53,29 +55,30 @@ lsp <- function(package, what = 'all') {
   
   ns <- asNamespace(package)
   
-  ## base packages do not have NAMESPACE files
+  ## base package does not have NAMESPACE
   if (isBaseNamespace(ns))
-    ls(.BaseNamespaceEnv, all.names = TRUE)
-  
-  ## for non base packages
-  if (exists('.__NAMESPACE__.', envir = ns, inherits = FALSE)) {
-    wh <- get('.__NAMESPACE__.', envir = asNamespace(package, base.OK = FALSE),
-              inherits = FALSE)
-    if ('?' %in% what) 
-      return(ls(wh))
-    if (!is.null(what) && !any(what %in% c('all', ls(wh))))
-      stop('what is invalid; see ?rawr::lsp \'details\'')
-    tmp <- sapply(ls(wh), function(x) getNamespaceInfo(ns, x))
-    tmp <- rapply(tmp, ls, classes = 'environment', 
-                  how = 'replace', all.names = TRUE)
-    if (is.null(what))
-      return(tmp)
-    if (what %in% 'all')
-      return(ls(getNamespace(package), all.names = TRUE))
-    if (any(what %in% ls(wh)))
-      return(tmp[what])
-  } else 
-    stop(sprintf('no NAMESPACE file found for package %s', package))
+    return(ls(.BaseNamespaceEnv, all.names = TRUE))
+  else {
+    ## for non base packages
+    if (exists('.__NAMESPACE__.', envir = ns, inherits = FALSE)) {
+      wh <- get('.__NAMESPACE__.', envir = asNamespace(package, base.OK = FALSE),
+                inherits = FALSE)
+      if ('?' %in% what) 
+        return(ls(wh))
+      if (!is.null(what) && !any(what %in% c('all', ls(wh))))
+        stop('what is invalid; see ?rawr::lsp \'details\'')
+      tmp <- sapply(ls(wh), function(x) getNamespaceInfo(ns, x))
+      tmp <- rapply(tmp, ls, classes = 'environment', 
+                    how = 'replace', all.names = TRUE)
+      if (is.null(what))
+        return(tmp)
+      if (what %in% 'all')
+        return(ls(getNamespace(package), all.names = TRUE))
+      if (any(what %in% ls(wh)))
+        return(tmp[what])
+    } else 
+      stop(sprintf('no NAMESPACE file found for package %s', package))
+  }
 }
 
 #' not in

@@ -31,6 +31,8 @@ the package.
 \code{lsp(packagename, NULL)} to return all information.
 }
 \examples{
+lsp('base')
+
 lsp('rawr')
 
 ## for "what" options
