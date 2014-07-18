@@ -2,6 +2,9 @@
 
 S3method(dsplot,default)
 S3method(dsplot,formula)
+S3method(roundr,data.frame)
+S3method(roundr,default)
+S3method(roundr,matrix)
 S3method(tplot,default)
 S3method(tplot,formula)
 export("%inside%")

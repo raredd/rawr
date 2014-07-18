@@ -819,7 +819,7 @@ html.test <- function(...) {
 #' 
 #' @usage roundr(x, digits = 1)
 #'
-#' @param x numeric value or vector
+#' @param x numeric value, vector, matrix, or data frame
 #' @param digits number of digits past the decimal point to keep
 #'
 #' @details 
@@ -832,16 +832,42 @@ html.test <- function(...) {
 #' roundr(51.01, 3)
 #' roundr(0.199, 2)
 #' 
-#' # useful for dropping the negative in case 1:
+#' ## useful for dropping the negative in case 1:
 #' roundr(c(-0.0002, 0.0002, 0.5, -0.5, -0.002), digits = 3)
+#' 
+#' roundr(matrix(1:9, 3), 2)
 #' 
 #' @export
 
-roundr <- function(x, digits = 1) {
+roundr <- function(x, digits = 1) UseMethod('roundr')
+
+#' @export
+roundr.default <- function(x, digits = 1) {
+  mode.ok <- vapply(x, function(x) is.numeric(x) || is.complex(x), NA)
+  if (!all(mode.ok))
+    stop('non-numeric argument to mathematical function')
   res <- sprintf(paste0('%.', digits, 'f'), x)
   zzz <- paste0('0.', paste(rep('0', digits), collapse = ''))
   res[res == paste0('-', zzz)] <- zzz
   res
+}
+
+#' @export
+roundr.data.frame <- function(x, digits = 1) {
+  mode.ok <- vapply(x, function(x) is.numeric(x) || is.complex(x), NA)
+  if (!all(mode.ok))
+    stop(paste0('non-numeric variable in data frame, ', deparse(substitute(x))))
+  else
+    do.call(data.frame, lapply(x, roundr, digits))
+}
+
+#' @export
+roundr.matrix <- function(x, digits = 1) {
+  mode.ok <- vapply(x, function(x) is.numeric(x) || is.complex(x), NA)
+  if (!all(mode.ok))
+    stop(paste0('non-numeric variable in matrix, ', deparse(substitute(x))))
+  else
+    apply(x, 2, roundr, digits)
 }
 
 #' Confidence interval formatter

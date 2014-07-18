@@ -2,6 +2,7 @@ rawr 0.2.2
 --------
   * surv_summary, lsp added
   * fixes to kmplot: custom margins, expressions/bquote in strata labels
+  * roundr works on matrices/data.frames as primitive round does
   * minor misc fixes
 
 rawr 0.2.1

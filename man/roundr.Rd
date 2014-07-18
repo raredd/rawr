@@ -6,7 +6,7 @@
 roundr(x, digits = 1)
 }
 \arguments{
-\item{x}{numeric value or vector}
+\item{x}{numeric value, vector, matrix, or data frame}
 
 \item{digits}{number of digits past the decimal point to keep}
 }
@@ -23,8 +23,10 @@ Uses \code{\link[base]{sprintf}} to round numeric value, retaining extra 0s.
 roundr(51.01, 3)
 roundr(0.199, 2)
 
-# useful for dropping the negative in case 1:
+## useful for dropping the negative in case 1:
 roundr(c(-0.0002, 0.0002, 0.5, -0.5, -0.002), digits = 3)
+
+roundr(matrix(1:9, 3), 2)
 }
 \seealso{
 \code{\link[base]{round}}; \code{\link[base]{sprintf}}
