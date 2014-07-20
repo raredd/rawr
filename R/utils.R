@@ -85,14 +85,14 @@ lsp <- function(package, what = 'all') {
 #' 
 #' Negation of \code{\link[base]{\%in\%}}
 #' @name notin
-#' @usage x \%ni\% y
-#' @param x vector or NULL; the values to be matched
-#' @param y vector or NULL; the values to be matched against
+#' @usage x \%ni\% table
+#' @param x vector or \code{NULL}; the values to be matched
+#' @param table vector or \code{NULL}; the values to be matched against
 #' @aliases %ni%
 #' @examples
 #' 1:5 %ni% 3:5
 #' @export
-`%ni%` <- Negate(`%in%`)
+`%ni%` <- function(x, table) !(match(x, table, nomatch = 0) > 0)
 
 #' head/tail
 #' 

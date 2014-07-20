@@ -4,12 +4,12 @@
 \alias{notin}
 \title{not in}
 \usage{
-x \%ni\% y
+x \%ni\% table
 }
 \arguments{
-\item{x}{vector or NULL; the values to be matched}
+\item{x}{vector or \code{NULL}; the values to be matched}
 
-\item{y}{vector or NULL; the values to be matched against}
+\item{table}{vector or \code{NULL}; the values to be matched against}
 }
 \description{
 Negation of \code{\link[base]{\%in\%}}

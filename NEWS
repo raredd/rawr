@@ -1,3 +1,9 @@
+rawr 0.2.3
+--------
+  * new sas tools: sas.mget, rmacro, get_margs
+  * surv_table, surv_cp, local.coxph.test added
+  * minor fixes and improvements
+
 rawr 0.2.2
 --------
   * surv_summary, lsp added
