@@ -1,5 +1,5 @@
 ### survival stuff
-# kmplot, ggsurv, survdat, surv_summary
+# kmplot, ggsurv, survdat, surv_summary, surv_table, local.coxph.test, surv_cp
 ###
 
 #' Survival curves in base graphics
@@ -1154,6 +1154,189 @@ surv_summary <- function(s, digits = max(options()$digits - 4, 3), ...) {
       }), levels(strata)))
     }
   } else 
-    stop("There are no events to print. Please use the option censored=TRUE ",
+    stop("There are no events to print. Use the option censored = TRUE ",
          "with the summary function to see the censored observations.")
+}
+
+#' Summary table
+#' 
+#' Prints a formatted summary table for \code{\link[survival]{survfit}} objects
+#' 
+#' @usage
+#' surv_table(s, digits = max(options() $digits-4, 3), ...)
+#' 
+#' @param s \code{\link[survival]{survfit}} object
+#' @param digits number of digits to use in printing numbers
+#' @param ... additional arguments passed to 
+#' \code{\link[survival]{summary.survfit}}
+#' 
+#' @return
+#' A matrix (or list of matrices) with formatted summaries for each strata; see 
+#' \code{\link[survival]{summary.survfit}}
+#' @seealso
+#' \code{\link[survival]{survfit}}, 
+#' \code{\link[survival]{print.summary.survfit}}
+#' 
+#' @examples
+#' library(survival)
+#' data(cancer)
+#' 
+#' fit0 <- survfit(coxph(Surv(time, status) ~ 1, 
+#'                       data = cancer),
+#'                 conf.type = 'log-log')
+#' surv_table(fit0, times = c(0, 100, 200))
+#' 
+#' ## also works for list of tables
+#' fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)), 
+#'                       data = cancer),
+#'                 conf.type = 'log-log')
+#' surv_table(fit1, times = c(0, 100, 200))
+#' 
+#' \dontrun{
+#' library(Gmisc)
+#' s <- `colnames<-`(surv_table(fit0, times = c(0, 200, 400, 600, 800), 
+#'                              digits = 2)[ , -4], 
+#'                   c('Time','No. at risk','No. of events','OS (95% CI)'))
+#' htmlTable(s)
+#' }
+#' 
+#' @export
+
+surv_table <- function(s, digits = max(options()$digits - 4, 3), ...) {
+  tmp <- capture.output(summ <- surv_summary(s, digits = digits, ...))
+  
+  f <- function(x, d = digits, vars = vars) {
+    vars = colnames(x)
+    tmpvar <- colnames(x)[grep('survival|std.err|lower|upper', colnames(x))]
+    x[ , tmpvar] <- roundr(x[ , tmpvar], digits = d)
+    
+    surv <- sprintf('%s (%s, %s)', 
+                    x[ , colnames(x)[grepl('survival', colnames(x))]], 
+                    x[ , colnames(x)[grepl('lower', colnames(x))]], 
+                    x[ , colnames(x)[grepl('upper', colnames(x))]])
+    
+    cbind(x[ , c(setdiff(vars, tmpvar), 'std.err')], surv)
+  }
+  
+  if (is.list(summ))
+    Map(f = f, summ)
+  else f(summ)
+}
+
+#' Compute local p-value from coxph
+#' 
+#' Checks the null hypothesis: C * beta.hat = c, i.e., the local
+#' p-value of one or more factors in a model; can also be used to test more
+#' comlex hypotheses.
+#' 
+#' @usage
+#' local.coxph.test(s, pos, C = NULL, d = NULL, digits = 3)
+#' 
+#' @param s survival object of class \code{\link[survival]{coxph}}
+#' @param pos vector of positions of \code{\link{coefficients}} of interest 
+#' from \code{summary(coxph)}; defaults to \code{1:length(coef(s))}
+#' @param C,d \code{C}, a q-by-p matrix, and \code{d}, a q-by-1 matrix, define
+#' the null hypothesis being checked; default is a global test on the variables
+#' in \code{pos}, i.e., \code{C} is the identity matrix, and \code{d} is a
+#' vector of zeros
+#' @param digits number of significant figures in output
+#' 
+#' @references
+#' \url{http://www.ddiez.com/teac/surv/}
+#' 
+#' @examples
+#' library(survival)
+#' fit <- coxph(Surv(time, status) ~ sex + ph.ecog, data = cancer)
+#' 
+#' ## compare to summary(fit)
+#' local.coxph.test(fit)
+#' local.coxph.test(fit, 2)
+#' 
+#' @export
+
+local.coxph.test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
+  if (missing(pos))
+    pos <- 1:length(coef(s))
+  n <- length(pos)
+  if (is.null(C)) {
+    C <- matrix(0, n, n)
+    diag(C) <- 1
+  } else
+    if (dim(C)[1] != n)
+      stop("C has improper dimensions\n")
+  if (is.null(d))
+    d <- matrix(0, n, 1)
+  if (dim(d)[1] != dim(C)[1])
+    stop("C and d do not have appropriate dimensions\n")
+  I. <- s$var[pos, pos]
+  est <- matrix(as.vector(s$coeff[pos]), dim(C)[2])
+  X <- as.numeric(t(C %*% est - d) %*% solve(t(C) %*% I. %*% C ) %*% 
+                    (C %*% est - d))
+  signif(1 - pchisq(X, dim(C)[1]), digits)
+}
+
+#' Create counting process data
+#' 
+#' Converts a data frame to counting process notation and allows for time-
+#' dependent variables to be introduced.
+#' 
+#' @usage
+#' surv_cp(dat, time.var, status.var,
+#'         covars = setdiff(names(dat), c(time.var, status.var)))
+#' 
+#' @param dat data frame with survival time, survival status, and other 
+#' covariates
+#' @param time.var \code{dat} variable name representing survival time
+#' @param status.var \code{dat} variable name representing status
+#' @param covars other covariates to retain
+#' 
+#' @return
+#' A data frame with events in counting process notation.
+#' 
+#' @references
+#' \url{http://www.ddiez.com/teac/surv/}
+#' 
+#' @examples
+#' library(survival)
+#' 
+#' cp <- surv_cp(aml, 'time', 'status')
+#' coxph(Surv(start, stop, status) ~ x, data = cp)
+#' 
+#' ## compare to
+#' coxph(Surv(time, status) ~ x, data = aml)
+#' 
+#' @export
+
+surv_cp <- function(dat, time.var, status.var, 
+                      covars = setdiff(names(dat), c(time.var, status.var))) {
+  
+  ## sorted times, append to 0
+  t.sort <- c(0, sort(unique(dat[[time.var]])))
+  
+  ## for each data point find times less than or equal to the obs time
+  t.list <- lapply(dat[[time.var]], function(x) t.sort[t.sort <= x])
+  
+  ## create list of datasets with covariates and all relevant start/stop times
+  ## remove one from end of x, stop by removing first of x
+  ## include the status variable and covariates in the dataframe
+  f <- function(i)
+    data.frame(start = head(t.list[[i]], -1),
+               stop = tail(t.list[[i]], -1),
+               dat[i, c(status.var, covars)], 
+               row.names = NULL)
+  
+  n <- length(t.list)
+  datl <- Map(f, 1:n)
+  dat <- do.call(rbind, datl)
+  
+  ## create the correct status need last time for each
+  ## subject with status=1 to to be status=1 but all others status=0
+  
+  ## lapply creates vectors 0,0,0,...,1 based on length of t.list
+  ## substract 2 because the lag takes one away, then need one for the 1 at end
+  ## this is then multiplied by status to correct it
+  keep.status <- do.call(c, lapply(t.list, function(x) 
+    c(rep(0, length(x) - 2), 1)))
+  dat[status.var] <- dat[status.var] * keep.status
+  dat
 }
