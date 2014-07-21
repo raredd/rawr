@@ -6,7 +6,7 @@
 source_sas(path, ...)
 }
 \arguments{
-\item{path}{character string path to \code{.sas} file}
+\item{path}{path to \code{.sas} file as character string}
 
 \item{...}{additional parameters passed to \code{\link{r2sas}}}
 }
@@ -27,5 +27,9 @@ source_sas('./tests/testfiles/onemacro.sas')
 ##
 ## ... will be run. Continue? (y/n):
 }
+}
+\seealso{
+\code{\link{r2sas}}, \code{\link{rmacro}}, \code{\link{get_margs}},
+\code{\link{sas.mget}}
 }
 

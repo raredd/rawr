@@ -3,7 +3,7 @@
 \alias{r2sas}
 \title{r2sas}
 \usage{
-r2sas(code, saspath, log.file = TRUE, force = FALSE)
+r2sas(code, saspath, force = FALSE, out = getwd())
 }
 \arguments{
 \item{code}{character string of valid \code{SAS} code}
@@ -13,12 +13,13 @@ windows, the path \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
 where \code{x.x} is the \code{SAS} version number, is the correct directory,
 and \code{sas.mget} defaults to this (the most recent version of \code{SAS})}
 
-\item{log.file}{logical; if \code{TRUE} (default), keeps a \code{SAS} log
-file (\code{_temp_.log}) in the current working directory}
-
 \item{force}{logical; by default, user must interactively allow
 \code{r2sas} to continue running \code{code}; set to \code{TRUE} to ignore
 this or for non-interactive \code{R}}
+
+\item{out}{either \code{FALSE}, directory (as character string) to dump
+\code{.sas} program file, \code{.log} file, and any \code{SAS} output, i.e.,
+\code{.lst} file(s)}
 }
 \description{
 Write and run \code{SAS} code in \code{R}. To run an existing \code{.sas}
@@ -60,5 +61,9 @@ r2sas(code)
 ##
 ## ... will be run. Continue? (y/n):
 }
+}
+\seealso{
+\code{\link{rmacro}}, \code{\link{get_margs}}, \code{\link{sas.mget}},
+\code{\link{source_sas}}
 }
 

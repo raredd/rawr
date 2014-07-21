@@ -1,84 +1,196 @@
 ## sas helpers
-# rmacro, get_margs, sas.mget, source_sas, r2sas
+# r2sas, rmacro, get_margs, sas.mget, source_sas
 ##
 
-#' Call SAS macros
+#' r2sas
 #' 
-#' \code{rmacro} runs \code{SAS} macros in \code{*.sas} files from \code{R}; 
-#' currently only for windows platforms.
+#' Write and run \code{SAS} code in \code{R}. To run an existing \code{.sas}
+#' file, see \code{\link{source_sas}}.
 #' 
 #' @usage
-#' rmacro(mpath, mname, args, saspath, show.args, log.file = TRUE, moreArgs)
+#' r2sas(code, saspath, force = FALSE, out = getwd())
 #' 
-#' @param mpath character string of path to \code{macro.sas} file
-#' @param mname macro name; if missing, \code{\link{get_margs}} will search
-#' \code{mpath} for macro names; if missing and \code{get_margs} finds more
-#' than one macro in \code{mpath}, will throw an error
-#' @param args arguments passed to the macro; if unsure of arguments, simply 
-#' run \code{rmacro} with \code{show.args = TRUE}
+#' @param code character string of valid \code{SAS} code
 #' @param saspath character string of directory of \code{sas.exe}; usually for
 #' windows, the path \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
 #' where \code{x.x} is the \code{SAS} version number, is the correct directory,
-#' and \code{mpath} defaults to this (the most recent version of \code{SAS})
-#' @param show.args logical; return macro names and arguments in \code{mpath}
-#' @param log.file logical; if \code{TRUE} (default), keeps a \code{SAS} log
-#' file (\code{_temp_.log}) in the \code{mpath} directory
-#' @param moreArgs character string of additional \code{SAS} (legal) commands 
-#' to use separated by semicolons; for example, \code{'options <OPTIONS> ;'} or
-#' \code{"x 'cd c:/path/to/new/directory ;'"}
+#' and \code{sas.mget} defaults to this (the most recent version of \code{SAS})
+#' @param force logical; by default, user must interactively allow 
+#' \code{r2sas} to continue running \code{code}; set to \code{TRUE} to ignore 
+#' this or for non-interactive \code{R}
+#' @param out either \code{FALSE}, directory (as character string) to dump 
+#' \code{.sas} program file, \code{.log} file, and any \code{SAS} output, i.e.,
+#' \code{.lst} file(s)
 #' 
+#' @seealso
+#' \code{\link{rmacro}}, \code{\link{get_margs}}, \code{\link{sas.mget}},
+#' \code{\link{source_sas}}
+#' 
+#' @examples
+#' \dontrun{
+#' code <- "
+#' * this is a sas program file : ;
+#' 
+#' options nodate nocenter nonumber ;
+#' 
+#' x 'cd ./newfolder' ;
+#' 
+#' libname lib './newfolder' ;
+#' 
+#' data data ;
+#'   set data ;
+#' if x = 1 then delete ;
+#' run ;
+#' "
+#' 
+#' r2sas(code)
+#' 
+#' ## * this is a sas program file : ;
+#' ## 
+#' ## options nodate nocenter nonumber ;
+#' ## 
+#' ## x 'cd ./newfolder' ;
+#' ## 
+#' ## libname lib './newfolder' ;
+#' ## 
+#' ## data data ;
+#' ##   set data ;
+#' ## if x = 1 then delete ;
+#' ## run ;
+#' ## 
+#' ## 
+#' ## 
+#' ## ... will be run. Continue? (y/n): 
+#' }
 #' @export
 
-rmacro <- function(mpath, mname, args, saspath, show.args = FALSE, 
-                   log.file = TRUE, moreArgs) {
+r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
   
-  margs <- get_margs(mpath, mname)
-  if (missing(mname))
-    mname <- names(margs)
-  if (show.args)
-    return(margs)
+  if (interactive() && !force) {
+    cat(code, '\n\n\n')
+    check <- readline('... will be run. Continue? (y/n): ')
+    if (tolower(substr(check, 1L, 1L)) != 'y')
+      return(invisible())
+  }
   
   ## define sas path
   if (missing(saspath)) {
     sashome <- 'c:/program files/sashome/sasfoundation/'
     saspath <- sprintf('%s%s/sas.exe',
                        sashome,
-                       max(as.numeric(list.files(sashome)), na.rm = TRUE))
+                       max(as.numeric(9.3, list.files(sashome)), na.rm = TRUE))
   }
   
-  ## create log file in mpath directory
-  logpath <- sprintf('%s/_temp_.log', mpath)
+  ## temporary .sas, .lst, .log files
+  sasin   <- tempfile('_r2sas_', fileext = '.sas')
+  lstpath <- tempfile('_r2sas_', fileext = '.lst')
+  logpath <- tempfile('_r2sas_', fileext = '.log')
   
+  ## run sas
+  if (force || !interactive() || tolower(substr(check, 1, 1)) == 'y') {
+    cat(code, file = sasin, append = TRUE)
+    sys_args <- paste(sasin, '-log', logpath, '-print', lstpath)
+    status <- system2(saspath, sys_args)
+  } else return(invisible())
+  
+  ## determine out-paths and spit error(s)
+  if (out == FALSE) {
+    if (status == 0) {
+      on.exit(file.remove(sasin, lstpath, logpath))
+      cat('\nr2sas is complete\n')
+    } else stop(sprintf('error in r2sas, see log:\n%s\n', logpath))
+  } else {
+    if (status == 0) {
+      on.exit(file.copy(c(sasin, lstpath, logpath), out))
+      on.exit(file.remove(sasin, lstpath, logpath))
+      cat('\nr2sas is complete\n')
+    } else stop(sprintf('error in r2sas, see log:\n%s/_r2sas_', out,
+                        regmatches(logpath, 
+                                   gregexpr('(?<=_r2sas_).*', 
+                                            logpath, perl = TRUE))[[1]]))
+  }
+  return(invisible())
+}
+
+#' Call SAS macros
+#' 
+#' \code{rmacro} runs \code{SAS} macros in \code{.sas} files from \code{R}; 
+#' currently only for windows platforms.
+#' 
+#' @usage
+#' rmacro(mpath, mname, args, saspath, show.args = FALSE,
+#'        force = FALSE, firstArgs, lastArgs, out = getwd())
+#' 
+#' @param mpath path to macro (\code{.sas}) file as character string
+#' @param mname macro name; if missing, \code{\link{get_margs}} will search
+#' \code{mpath} for macro names; if missing and \code{get_margs} finds more
+#' than one macro in \code{mpath}, will throw an error
+#' @param args arguments passed to the macro, separated by commas (do not 
+#' include semicolons---\code{args} is passed directly as 
+#' \code{\%macro(args);} ); if unsure of the macro parameters, run 
+#' \code{rmacro} with \code{show.args = TRUE}
+#' @param saspath character string of directory of \code{sas.exe}; usually for
+#' windows, the path \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
+#' where \code{x.x} is the \code{SAS} version number, is the correct directory;
+#' \code{mpath} defaults to the most recent version of \code{SAS}
+#' @param show.args logical; if \code{TRUE}, \code{rmacro} will only return the
+#' macro names and arguments found in \code{mpath}
+#' @param force logical; by default, user must interactively allow 
+#' \code{r2sas} to continue running \code{code}; set to \code{TRUE} to ignore 
+#' this or for non-interactive \code{R}
+#' @param firstArgs optional character string of (valid) \code{SAS} commands 
+#' separated by semicolons to be excuted \emph{before} the macro; for example,
+#' \code{'options <OPTIONS> ;'} or \code{"x 'cd c:/path/to/directory\';"}
+#' @param lastArgs optional commands to be executed \emph{after} the macro; see
+#' \code{firstArgs}
+#' @param out either \code{FALSE}, directory (as character string) to dump 
+#' \code{.sas} program file, \code{.log} file, and any \code{SAS} output, i.e.,
+#' \code{.lst} file(s)
+#' 
+#' @seealso 
+#' \code{\link{get_margs}}, \code{\link{r2sas}}, \code{\link{sas.mget}}
+#' \code{\link{source_sas}}
+#' 
+#' @examples
+#' \dontrun{
+#' rmacro('./tests/testfiles/onemacro.sas',
+#'        args = 'arg1 = 1, arg2 = 2',
+#'        firstArgs = 'options nodate no center ; x \'cd ~/desktop\';',
+#'        lastArgs = 'endsas;')
+#' }
+#' 
+#' @export
+
+rmacro <- function(mpath, mname, args, saspath, show.args = FALSE,
+                   force = FALSE, firstArgs, lastArgs, out = getwd()) {
+  
+  margs <- get_margs(mpath, mname)
+  if (missing(mname))
+    mname <- names(margs)
+  if (show.args)
+    return(margs)
+
   if (length(mname) > 1)
-    stop('run one macro per rmacro call')
+    stop('run one macro per rmacro call\n')
   
   ## create .sas script to call macro
-  if (!missing(moreArgs))
-    moreArgs <- gsub(';', ' ; \n', moreArgs)
-  else moreArgs <- '\n'
-  sass <- c(paste0('%include ', mpath, ' ;'),
+  if (!missing(firstArgs))
+    firstArgs <- gsub(';', ' ; \n', firstArgs)
+  else firstArgs <- '\n'
+  if (!missing(lastArgs))
+    lastArgs <- gsub(';', ' ; \n', lastArgs)
+  else lastArgs <- '\n'
+  sass <- c(paste0('%include \"', mpath, '\" ;'),
             paste0('%', sprintf("%s(%s) ;", mname, args)))
   
-  sasin <- paste0(mpath, '/tmp.sas')
-  on.exit(unlink(sasin))
-  
-  cat(c(moreArgs, sass), sep = '\n', file = sasin, append = TRUE)
-  sys_args <- paste(sasin, '-log', log.path)
-  status <- system2(saspath, sys_args)
-  
-  if (status != 0)
-    warning(sprintf('error in rmacro; see log, %s\n', log.path))
-  else cat(sprintf('\n%s macro is complete\n', mname))
-  if (!log.file && status == 0)
-    on.exit(unlink(log.path))
-  else cat(sprintf('see log, %s\n', log.file))
-  return(invisible())
+  r2sas(code = cat(c(firstArgs, sass, lastArgs), sep = '\n'),
+        saspath = saspath, force = force, out = out)
 }
 
 #' Get arguments from SAS macros
 #' 
 #' Reads a text file (usually \code{.sas}) and extracts \code{SAS} macro names
-#' and parameter names with any default values; see tests in examples below.
+#' and parameters with any default values; see tests in examples below.
 #' 
 #' @usage
 #' get_margs(mpath, mname)
@@ -88,7 +200,11 @@ rmacro <- function(mpath, mname, args, saspath, show.args = FALSE,
 #' all macros found
 #' 
 #' @return
-#' A list with macro names in \code{mpath} and their respective arguments.
+#' A list with macro names in \code{mpath} and their respective parameters.
+#' 
+#' @seealso
+#' \code{\link{rmacro}}, \code{\link{r2sas}}, \code{\link{sas.mget}},
+#' \code{\link{source_sas}}
 #' 
 #' @examples
 #' \dontrun{
@@ -115,8 +231,8 @@ rmacro <- function(mpath, mname, args, saspath, show.args = FALSE,
 #' 
 #' get_margs('./tests/testfiles/macros.sas', 'no_macro_with_this_name')
 #' 
-#' ## Error in get_margs("./tests/testfiles/macros.sas", "macro") : 
-#' ##   check macro name and .sas file for consistency
+#' Error in get_margs("./tests/testfiles/macros.sas", "no_macro_with_this_name") : 
+#'  no_macro_with_this_name macro not found in ./tests/testfiles/macros.sas
 #' 
 #' get_margs('./tests/testfiles/nomacro.sas')
 #' 
@@ -139,7 +255,7 @@ get_margs <- function(mpath, mname) {
   ## extract lines with '%macro' and ignore after ';'
   mcall <- macro[grep('%macro', macro, ignore.case = TRUE)]
   mcall <- gsub(';.*','', mcall)
-  if (length(mcall) < 1L)
+  if (length(mcall) < 1)
     stop(sprintf('no valid macros found in %s\n', mpath))
 
   ## added for macros with params defined on multiple lines
@@ -189,17 +305,18 @@ get_margs <- function(mpath, mname) {
 #' @usage
 #' sas.mget(libpath, dsn, saspath, fmtpath, log.file, ..., force = FALSE)
 #' 
-#' @param libpath character string of directory of data set(s)
+#' @param libpath directory to data set(s) as character string
 #' @param dsn data set name(s); either \code{data1} or \code{data1.sas7bdat} 
-#' will work; if missing or \code{NULL}, will get all \code{.sas7bdat} files
-#' @param saspath character string of directory of \code{sas.exe}; usually for
+#' will work; if missing or \code{NULL}, all \code{.sas7bdat} files found in
+#' \code{libpath} will be read
+#' @param saspath directory to \code{sas.exe} as character string; usually for
 #' windows, the path \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
 #' where \code{x.x} is the \code{SAS} version number, is the correct directory,
 #' and \code{sas.mget} defaults to this (the most recent version of \code{SAS})
-#' @param fmtpath character string of path to a format \code{.sas} file; 
-#' \code{sas} throws an error if the host used to make the format catalog does
-#' not use the same platform; this creates a new format catalog either by
-#' running a \code{proc format} macro or by making a copy of the non native
+#' @param fmtpath path to a format \code{.sas} file as character string; 
+#' \code{SAS} throws an error if the host used to make the format catalog was
+#' not on the same platform, so we create a new format catalog either by
+#' running a \code{proc format} macro or by making a copy of the non-native
 #' \code{.sas7bcat} file
 #' @param log.file name of \code{SAS} log file; default value will create 
 #' \code{_temp_.log} in the \code{libpath} directory
@@ -210,6 +327,10 @@ get_margs <- function(mpath, mname) {
 #' 
 #' @return
 #' A list of data frames resembling the \code{SAS} data sets.
+#' 
+#' @seealso
+#' \code{\link{rmacro}}, \code{\link{get_margs}}, \code{\link{r2sas}},
+#' \code{\link{source_sas}}
 #' 
 #' @examples
 #' \dontrun{
@@ -248,7 +369,7 @@ sas.mget <- function(libpath, dsn, saspath, fmtpath, log.file, ...,
     sashome <- 'c:/program files/sashome/sasfoundation/'
     saspath <- sprintf('%s%s/sas.exe',
                        sashome,
-                       max(as.numeric(9.2, list.files(sashome)), na.rm = TRUE))
+                       max(as.numeric(9.3, list.files(sashome)), na.rm = TRUE))
   }
   
   dsf <- list.files(libpath, pattern = '.sas7bdat')
@@ -330,8 +451,12 @@ sas.mget <- function(libpath, dsn, saspath, fmtpath, log.file, ...,
 #' @usage
 #' source_sas(path, ...)
 #' 
-#' @param path character string path to \code{.sas} file
+#' @param path path to \code{.sas} file as character string
 #' @param ... additional parameters passed to \code{\link{r2sas}}
+#' 
+#' @seealso
+#' \code{\link{r2sas}}, \code{\link{rmacro}}, \code{\link{get_margs}},
+#' \code{\link{sas.mget}}
 #' 
 #' @examples
 #' \dontrun{
@@ -354,99 +479,4 @@ source_sas <- function(path, ...) {
   sas <- readLines(con <- file(path), warn = FALSE)
   close(con)
   r2sas(code = cat(sas, sep = '\n'), ...)
-}
-
-#' r2sas
-#' 
-#' Write and run \code{SAS} code in \code{R}. To run an existing \code{.sas}
-#' file, see \code{\link{source_sas}}.
-#' 
-#' @usage
-#' r2sas(code, saspath, log.file = TRUE, force = FALSE)
-#' 
-#' @param code character string of valid \code{SAS} code
-#' @param saspath character string of directory of \code{sas.exe}; usually for
-#' windows, the path \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
-#' where \code{x.x} is the \code{SAS} version number, is the correct directory,
-#' and \code{sas.mget} defaults to this (the most recent version of \code{SAS})
-#' @param log.file logical; if \code{TRUE} (default), keeps a \code{SAS} log
-#' file (\code{_temp_.log}) in the current working directory
-#' @param force logical; by default, user must interactively allow 
-#' \code{r2sas} to continue running \code{code}; set to \code{TRUE} to ignore 
-#' this or for non-interactive \code{R}
-#' 
-#' @examples
-#' \dontrun{
-#' code <- "
-#' * this is a sas program file : ;
-#' 
-#' options nodate nocenter nonumber ;
-#' 
-#' x 'cd ./newfolder' ;
-#' 
-#' libname lib './newfolder' ;
-#' 
-#' data data ;
-#'   set data ;
-#' if x = 1 then delete ;
-#' run ;
-#' "
-#' 
-#' r2sas(code)
-#' 
-#' ## * this is a sas program file : ;
-#' ## 
-#' ## options nodate nocenter nonumber ;
-#' ## 
-#' ## x 'cd ./newfolder' ;
-#' ## 
-#' ## libname lib './newfolder' ;
-#' ## 
-#' ## data data ;
-#' ##   set data ;
-#' ## if x = 1 then delete ;
-#' ## run ;
-#' ## 
-#' ## 
-#' ## 
-#' ## ... will be run. Continue? (y/n): 
-#' }
-#' @export
-
-r2sas <- function(code, saspath, log.file = TRUE, force = FALSE) {
-  
-  if (interactive() && !force) {
-    cat(code, '\n\n\n')
-    check <- readline('... will be run. Continue? (y/n): ')
-    if (tolower(substr(check, 1L, 1L)) != 'y')
-      return(invisible())
-  }
-  
-  ## define sas path
-  if (missing(saspath)) {
-    sashome <- 'c:/program files/sashome/sasfoundation/'
-    saspath <- sprintf('%s%s/sas.exe',
-                       sashome,
-                       max(as.numeric(list.files(sashome)), na.rm = TRUE))
-  }
-  
-  ## create log file in current working directory
-  logpath <- sprintf('%s/_temp_.log', getwd())
-  
-  sasin <- tempfile('_r2sas_', fileext = '.sas')
-  on.exit(unlink(sasin))
-  
-  if (force || !interactive() || tolower(substr(check, 1L, 1L)) == 'y') {
-    cat(code, file = sasin, append = TRUE)
-    sys_args <- paste(sasin, '-log', log.file)
-    status <- system2(saspath, sys_args)
-  } else return(invisible())
-  
-  if (status != 0)
-    warning(sprintf('error in r2sas; see %s', log.path))
-  else cat('\nr2sas is complete\n')
-  if (!log.file && status == 0)
-    on.exit(unlink(log.path))
-  else cat('see log, %s\n', log.path)
-  return(invisible())
 }

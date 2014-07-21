@@ -3,34 +3,58 @@
 \alias{rmacro}
 \title{Call SAS macros}
 \usage{
-rmacro(mpath, mname, args, saspath, show.args, log.file = TRUE, moreArgs)
+rmacro(mpath, mname, args, saspath, show.args = FALSE,
+       force = FALSE, firstArgs, lastArgs, out = getwd())
 }
 \arguments{
-\item{mpath}{character string of path to \code{macro.sas} file}
+\item{mpath}{path to macro (\code{.sas}) file as character string}
 
 \item{mname}{macro name; if missing, \code{\link{get_margs}} will search
 \code{mpath} for macro names; if missing and \code{get_margs} finds more
 than one macro in \code{mpath}, will throw an error}
 
-\item{args}{arguments passed to the macro; if unsure of arguments, simply
-run \code{rmacro} with \code{show.args = TRUE}}
+\item{args}{arguments passed to the macro, separated by commas (do not
+include semicolons---\code{args} is passed directly as
+\code{\%macro(args);} ); if unsure of the macro parameters, run
+\code{rmacro} with \code{show.args = TRUE}}
 
 \item{saspath}{character string of directory of \code{sas.exe}; usually for
 windows, the path \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
-where \code{x.x} is the \code{SAS} version number, is the correct directory,
-and \code{mpath} defaults to this (the most recent version of \code{SAS})}
+where \code{x.x} is the \code{SAS} version number, is the correct directory;
+\code{mpath} defaults to the most recent version of \code{SAS}}
 
-\item{show.args}{logical; return macro names and arguments in \code{mpath}}
+\item{show.args}{logical; if \code{TRUE}, \code{rmacro} will only return the
+macro names and arguments found in \code{mpath}}
 
-\item{log.file}{logical; if \code{TRUE} (default), keeps a \code{SAS} log
-file (\code{_temp_.log}) in the \code{mpath} directory}
+\item{force}{logical; by default, user must interactively allow
+\code{r2sas} to continue running \code{code}; set to \code{TRUE} to ignore
+this or for non-interactive \code{R}}
 
-\item{moreArgs}{character string of additional \code{SAS} (legal) commands
-to use separated by semicolons; for example, \code{'options <OPTIONS> ;'} or
-\code{"x 'cd c:/path/to/new/directory ;'"}}
+\item{firstArgs}{optional character string of (valid) \code{SAS} commands
+separated by semicolons to be excuted \emph{before} the macro; for example,
+\code{'options <OPTIONS> ;'} or \code{"x 'cd c:/path/to/directory\';"}}
+
+\item{lastArgs}{optional commands to be executed \emph{after} the macro; see
+\code{firstArgs}}
+
+\item{out}{either \code{FALSE}, directory (as character string) to dump
+\code{.sas} program file, \code{.log} file, and any \code{SAS} output, i.e.,
+\code{.lst} file(s)}
 }
 \description{
-\code{rmacro} runs \code{SAS} macros in \code{*.sas} files from \code{R};
+\code{rmacro} runs \code{SAS} macros in \code{.sas} files from \code{R};
 currently only for windows platforms.
+}
+\examples{
+\dontrun{
+rmacro('./tests/testfiles/onemacro.sas',
+       args = 'arg1 = 1, arg2 = 2',
+       firstArgs = 'options nodate no center ; x \\'cd ~/desktop\\';',
+       lastArgs = 'endsas;')
+}
+}
+\seealso{
+\code{\link{get_margs}}, \code{\link{r2sas}}, \code{\link{sas.mget}}
+\code{\link{source_sas}}
 }
 

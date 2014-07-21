@@ -6,20 +6,21 @@
 sas.mget(libpath, dsn, saspath, fmtpath, log.file, ..., force = FALSE)
 }
 \arguments{
-\item{libpath}{character string of directory of data set(s)}
+\item{libpath}{directory to data set(s) as character string}
 
 \item{dsn}{data set name(s); either \code{data1} or \code{data1.sas7bdat}
-will work; if missing or \code{NULL}, will get all \code{.sas7bdat} files}
+will work; if missing or \code{NULL}, all \code{.sas7bdat} files found in
+\code{libpath} will be read}
 
-\item{saspath}{character string of directory of \code{sas.exe}; usually for
+\item{saspath}{directory to \code{sas.exe} as character string; usually for
 windows, the path \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
 where \code{x.x} is the \code{SAS} version number, is the correct directory,
 and \code{sas.mget} defaults to this (the most recent version of \code{SAS})}
 
-\item{fmtpath}{character string of path to a format \code{.sas} file;
-\code{sas} throws an error if the host used to make the format catalog does
-not use the same platform; this creates a new format catalog either by
-running a \code{proc format} macro or by making a copy of the non native
+\item{fmtpath}{path to a format \code{.sas} file as character string;
+\code{SAS} throws an error if the host used to make the format catalog was
+not on the same platform, so we create a new format catalog either by
+running a \code{proc format} macro or by making a copy of the non-native
 \code{.sas7bcat} file}
 
 \item{log.file}{name of \code{SAS} log file; default value will create
@@ -57,5 +58,9 @@ sas.mget('./tests/testfiles/')
 ##
 ## do you want to continue (y/n)?
 }
+}
+\seealso{
+\code{\link{rmacro}}, \code{\link{get_margs}}, \code{\link{r2sas}},
+\code{\link{source_sas}}
 }
 

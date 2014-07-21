@@ -12,11 +12,11 @@ get_margs(mpath, mname)
 all macros found}
 }
 \value{
-A list with macro names in \code{mpath} and their respective arguments.
+A list with macro names in \code{mpath} and their respective parameters.
 }
 \description{
 Reads a text file (usually \code{.sas}) and extracts \code{SAS} macro names
-and parameter names with any default values; see tests in examples below.
+and parameters with any default values; see tests in examples below.
 }
 \examples{
 \dontrun{
@@ -43,8 +43,8 @@ get_margs('./tests/testfiles/macros.sas', 'macro1')
 
 get_margs('./tests/testfiles/macros.sas', 'no_macro_with_this_name')
 
-## Error in get_margs("./tests/testfiles/macros.sas", "macro") :
-##   check macro name and .sas file for consistency
+Error in get_margs("./tests/testfiles/macros.sas", "no_macro_with_this_name") :
+ no_macro_with_this_name macro not found in ./tests/testfiles/macros.sas
 
 get_margs('./tests/testfiles/nomacro.sas')
 
@@ -56,5 +56,9 @@ get_margs('./tests/testfiles/onemacro.sas')
 ## $macro1
 ## [1] "arg1, arg2"
 }
+}
+\seealso{
+\code{\link{rmacro}}, \code{\link{r2sas}}, \code{\link{sas.mget}},
+\code{\link{source_sas}}
 }
 
