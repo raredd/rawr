@@ -88,7 +88,7 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
   
   ## run sas
   if (force || !interactive() || tolower(substr(check, 1, 1)) == 'y') {
-    cat(code, file = sasin, append = TRUE)
+    cat(code, sep = '\n', file = sasin, append = TRUE)
     sys_args <- paste(sasin, '-log', logpath, '-print', lstpath)
     status <- system2(saspath, sys_args)
   } else return(invisible())
