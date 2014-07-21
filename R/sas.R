@@ -478,5 +478,5 @@ sas.mget <- function(libpath, dsn, saspath, fmtpath, log.file, ...,
 source_sas <- function(path, ...) {
   sas <- readLines(con <- file(path), warn = FALSE)
   close(con)
-  r2sas(code = cat(sas, sep = '\n'), ...)
+  r2sas(code = paste(sas, sep = '\n'), ...)
 }
