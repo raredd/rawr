@@ -102,7 +102,7 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
   } else {
     if (status == 0) {
       on.exit(file.copy(c(sasin, lstpath, logpath), out))
-      on.exit(file.remove(sasin, lstpath, logpath))
+      on.exit(file.remove(sasin, lstpath, logpath), add = TRUE)
       cat('\nr2sas is complete\n')
     } else stop(sprintf('error in r2sas, see log:\n%s/_r2sas_', out,
                         regmatches(logpath, 
@@ -415,7 +415,7 @@ sas.mget <- function(libpath, dsn, saspath, fmtpath, log.file, ...,
               'copy out = tmp.formats ;',
               'quit ;')
     sasin <- paste0(libpath, '/tmp.sas')
-    on.exit(unlink(sasin))
+    on.exit(unlink(sasin), add = TRUE)
     cat(sass, sep = '\n', file = sasin, append = TRUE)
     sys_args <- paste(sasin, '-log', log.fmt)
     status <- system2(saspath, sys_args)
