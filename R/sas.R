@@ -67,9 +67,9 @@
 r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
   
   if (interactive() && !force) {
-    cat(code, '\n\n\n')
+    cat(code, '\n\n\n', sep = '\n')
     check <- readline('... will be run. Continue? (y/n): ')
-    if (tolower(substr(check, 1L, 1L)) != 'y')
+    if (tolower(substr(check, 1, 1)) != 'y')
       return(invisible())
   }
   
