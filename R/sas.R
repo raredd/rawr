@@ -214,15 +214,18 @@ rmacro <- function(mpath, mname, args, saspath, show.args = FALSE,
 #' 
 #' ## $macro1
 #' ## [1] "arg1, arg2"
-#' ## 
+#' ##
 #' ## $macro2
-#' ## [1] "arg1 = 1, arg2 = 2, arg3 = 3"
-#' ## 
+#' ## [1] "arg1=1, arg2=2, arg3=3"
+#' ##
 #' ## $macro3
-#' ## [1] "arg1=,arg2="
-#' ## 
+#' ## [1] "arg1=, arg2="
+#' ##
 #' ## $macro4
 #' ## [1] "this=, macro=, has=, many=, params=, on=, multiple=, lines="
+#' ##
+#' ## $macro5
+#' ## [1] ""this=, macro=, has=, comments=, between=, each=, parameter="
 #' 
 #' get_margs('./tests/testfiles/macros.sas', 'macro1')
 #' 
@@ -239,10 +242,10 @@ rmacro <- function(mpath, mname, args, saspath, show.args = FALSE,
 #' ## Error in get_margs("./tests/testfiles/nomacro.sas") : 
 #' ##   no valid macros found in ./tests/testfiles/nomacro.sas
 #' 
-#' get_margs('./tests/testfiles/onemacro.sas')
+#' get_margs('./tests/testfiles/onemacro.sas', c('macro2', 'macro5'))
 #' 
-#' ## $macro1
-#' ## [1] "arg1, arg2"
+#' ## Error in get_margs("./tests/testfiles/onemacro.sas", c("macro2", "macro5")) : 
+#' ## macro2, macro5 not found in ./tests/testfiles/onemacro.sas
 #' }
 #' 
 #' @export
@@ -252,48 +255,30 @@ get_margs <- function(mpath, mname) {
   macro <- readLines(con <- file(mpath), warn = FALSE)
   close(con)
   
-  ## extract lines with '%macro' and ignore after ';'
-  mcall <- macro[grep('%macro', macro, ignore.case = TRUE)]
-  mcall <- gsub(';.*','', mcall)
-  if (length(mcall) < 1)
+  ## ignore everything between /* */, collapse, 
+  ## then split lines by semicolons
+  macro <- paste(macro, collapse = ' ')
+  macro <- gsub('/\\*[^/\\*]*?\\*/', '', macro, perl = TRUE)
+  macro <- gsub(';', ';$$$;', macro)
+  macro <- strsplit(macro, split = '\\$\\$\\$;')
+  
+  ## match the macro syntax: " %macro name( ) ; "
+  ## and trim whitespace
+  mcall <- unlist(lapply(macro, function(x)
+    regmatches(x, gregexpr('\\s*%macro\\s+(\\w+)\\((.*)\\)\\s*;{1}', x, 
+                           perl = TRUE))))
+  mnames <- gsub('\\ |\\%macro|\\(|\\)|;|(?<=\\().*?(?=\\))', '',
+                 mcall, perl = TRUE)
+  args <- gsub(' ','', regmatches(mcall, gregexpr('(?<=\\().*?(?=\\))', 
+                                                  mcall, perl = TRUE)))
+  
+  if (length(mnames) < 1)
     stop(sprintf('no valid macros found in %s\n', mpath))
-
-  ## added for macros with params defined on multiple lines
-  ## ugly but works
-  idx <- grep('%macro', macro, ignore.case = TRUE)
-  idx2 <- grep(';', macro)
-  sidx <- sort(c(idx, idx2))
-  tmp <- NULL
-  sapply(idx, function(x) {
-    if (!grepl(';', macro[x]))
-      tmp <<- paste0(macro[x:(min(sidx[sidx > x]))], collapse = '')
-  })
-  mcall <- c(mcall, tmp)
-  
-  ## extract parentheses data and ignore %macro 
-  args <- regmatches(mcall, gregexpr("(?<=\\().*?(?=\\))", mcall, perl = TRUE))
-  mcall <- mcall[which(sapply(args, nchar) > 0)]
-  args <- args[which(sapply(args, nchar) > 0)]
-  
-  mnames <- sapply(1:length(mcall), function(x)
-    gsub(sprintf('\\(|\\)|%s|;.*', args[[x]]), '', 
-         mcall[x], ignore.case = TRUE))
-  
-  args <- lapply(args, function(x) gsub('\\s+', ' ', x))
-  args <- setNames(args, mnames <- gsub('%macro| ', '', 
-                                        mnames, ignore.case = TRUE))
-  idx <- which(mnames %ni% make.names(mnames))
-  
-  if (length(idx) > 0)
-    args <- args[-idx]
-  
-  if (!missing(mname)) {
-    if (mname %ni% names(args))
-      stop(sprintf('%s macro not found in %s\n', mname, mpath))
-    else 
-      args <- args[mname]
-  }
-  return(args)
+  if (!missing(mname) && any(mname %ni% mnames))
+    stop(sprintf('%s not found in %s', 
+                 paste(mname[mname %ni% mnames], collapse = ', '), mpath))
+  margs <- setNames(gsub(',',', ', args), mnames)
+  return(as.list(margs)[mname])
 }
 
 #' Convert multiple SAS data sets to R data frame

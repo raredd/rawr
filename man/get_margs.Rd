@@ -28,13 +28,16 @@ get_margs('./tests/testfiles/macros.sas')
 ## [1] "arg1, arg2"
 ##
 ## $macro2
-## [1] "arg1 = 1, arg2 = 2, arg3 = 3"
+## [1] "arg1=1, arg2=2, arg3=3"
 ##
 ## $macro3
-## [1] "arg1=,arg2="
+## [1] "arg1=, arg2="
 ##
 ## $macro4
 ## [1] "this=, macro=, has=, many=, params=, on=, multiple=, lines="
+##
+## $macro5
+## [1] ""this=, macro=, has=, comments=, between=, each=, parameter="
 
 get_margs('./tests/testfiles/macros.sas', 'macro1')
 
@@ -51,10 +54,10 @@ get_margs('./tests/testfiles/nomacro.sas')
 ## Error in get_margs("./tests/testfiles/nomacro.sas") :
 ##   no valid macros found in ./tests/testfiles/nomacro.sas
 
-get_margs('./tests/testfiles/onemacro.sas')
+get_margs('./tests/testfiles/onemacro.sas', c('macro2', 'macro5'))
 
-## $macro1
-## [1] "arg1, arg2"
+## Error in get_margs("./tests/testfiles/onemacro.sas", c("macro2", "macro5")) :
+## macro2, macro5 not found in ./tests/testfiles/onemacro.sas
 }
 }
 \seealso{

@@ -51,6 +51,18 @@ run ;
               lines=);
 %mend;
 
+** macro5--special case ;
+
+%macro macro5(this= /* this */,
+              macro= /* macro */,
+              has= /* writer */,
+              comments= /* is */,
+              between= /* being */,
+              each= /* very */,
+              parameter= /* annoying */)
+        ;
+%mend;
+
 /*
 end macros.sas
 */
