@@ -42,8 +42,7 @@ separated by semicolons to be excuted \emph{before} the macro; for example,
 \code{.lst} file(s)}
 }
 \description{
-\code{rmacro} runs \code{SAS} macros in \code{.sas} files from \code{R};
-currently only for windows platforms.
+\code{rmacro} runs \code{SAS} macros in \code{.sas} files from \code{R}.
 }
 \examples{
 \dontrun{
@@ -51,6 +50,20 @@ rmacro('./tests/testfiles/onemacro.sas',
        args = 'arg1 = 1, arg2 = 2',
        firstArgs = 'options nodate no center ; x \\'cd ~/desktop\\';',
        lastArgs = 'endsas;')
+
+## options nodate no center  ;
+## x 'cd ~/desktop' ;
+##
+## \%include "./tests/testfiles/onemacro.sas" ;
+## \%macro1(arg1 = 1, arg2 = 2) ;
+## endsas ;
+##
+##
+##
+##
+##
+##
+## ... will be run. Continue? (y/n):
 }
 }
 \seealso{

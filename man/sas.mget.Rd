@@ -6,7 +6,8 @@
 sas.mget(libpath, dsn, saspath, fmtpath, log.file, ..., force = FALSE)
 }
 \arguments{
-\item{libpath}{directory to data set(s) as character string}
+\item{libpath}{directory to data set(s) as character string; if missing,
+searches the current working directory}
 
 \item{dsn}{data set name(s); either \code{data1} or \code{data1.sas7bdat}
 will work; if missing or \code{NULL}, all \code{.sas7bdat} files found in
@@ -42,7 +43,7 @@ frames.
 }
 \examples{
 \dontrun{
-sas.mget('./tests/testfiles/')
+data.list <- sas.mget('./tests/testfiles/')
 
 ## !!! Two data set(s) will be read !!!
 ##

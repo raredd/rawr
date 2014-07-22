@@ -22,8 +22,17 @@ this or for non-interactive \code{R}}
 \code{.lst} file(s)}
 }
 \description{
-Write and run \code{SAS} code in \code{R}. To run an existing \code{.sas}
-file, see \code{\link{source_sas}}.
+Write and run \code{SAS} code in \code{R}.
+
+This is meant as a utility function for other \code{SAS} functions in this
+package, and users are \emph{not} encouraged to use \code{r2sas} to
+interface with \code{SAS} (while possible with this function, see examples).
+
+To source an existing \code{.sas} program, see \code{\link{source_sas}}.
+
+For macros, see \code{\link{get_margs}} and \code{\link{rmacro}}.
+
+To convert \code{.sas7bdat} files, \code{\link{sas.mget}}.
 }
 \examples{
 \dontrun{

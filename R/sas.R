@@ -4,8 +4,18 @@
 
 #' r2sas
 #' 
-#' Write and run \code{SAS} code in \code{R}. To run an existing \code{.sas}
-#' file, see \code{\link{source_sas}}.
+#' @description
+#' Write and run \code{SAS} code in \code{R}.
+#' 
+#' This is meant as a utility function for other \code{SAS} functions in this 
+#' package, and users are \emph{not} encouraged to use \code{r2sas} to 
+#' interface with \code{SAS} (while possible with this function, see examples).
+#' 
+#' To source an existing \code{.sas} program, see \code{\link{source_sas}}.
+#' 
+#' For macros, see \code{\link{get_margs}} and \code{\link{rmacro}}.
+#' 
+#' To convert \code{.sas7bdat} files, \code{\link{sas.mget}}.
 #' 
 #' @usage
 #' r2sas(code, saspath, force = FALSE, out = getwd())
@@ -93,6 +103,11 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
     status <- system2(saspath, sys_args)
   } else return(invisible())
   
+  ## for annoying warning in file.copy/file.remove 
+  ## if no sas output is generated from .sas program
+  if (!exists(lstpath))
+    lstpath <- NULL
+  
   ## determine out-paths and spit error(s)
   if (out == FALSE) {
     if (status == 0) {
@@ -114,8 +129,7 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
 
 #' Call SAS macros
 #' 
-#' \code{rmacro} runs \code{SAS} macros in \code{.sas} files from \code{R}; 
-#' currently only for windows platforms.
+#' \code{rmacro} runs \code{SAS} macros in \code{.sas} files from \code{R}.
 #' 
 #' @usage
 #' rmacro(mpath, mname, args, saspath, show.args = FALSE,
@@ -157,6 +171,20 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
 #'        args = 'arg1 = 1, arg2 = 2',
 #'        firstArgs = 'options nodate no center ; x \'cd ~/desktop\';',
 #'        lastArgs = 'endsas;')
+#'        
+#' ## options nodate no center  ; 
+#' ## x 'cd ~/desktop' ; 
+#' ## 
+#' ## %include "./tests/testfiles/onemacro.sas" ;
+#' ## %macro1(arg1 = 1, arg2 = 2) ;
+#' ## endsas ; 
+#' ## 
+#' ## 
+#' ## 
+#' ## 
+#' ## 
+#' ## 
+#' ## ... will be run. Continue? (y/n): 
 #' }
 #' 
 #' @export
@@ -180,10 +208,10 @@ rmacro <- function(mpath, mname, args, saspath, show.args = FALSE,
   if (!missing(lastArgs))
     lastArgs <- gsub(';', ' ; \n', lastArgs)
   else lastArgs <- '\n'
-  sass <- c(paste0('%include \"', mpath, '\" ;'),
-            paste0('%', sprintf("%s(%s) ;", mname, args)))
+  sass <- c(sprintf('%%include \"%s\" ;', mpath),
+            sprintf('%%%s(%s) ;', mname, args))
   
-  r2sas(code = cat(c(firstArgs, sass, lastArgs), sep = '\n'),
+  r2sas(code = paste(c(firstArgs, sass, lastArgs), sep = '\n'),
         saspath = saspath, force = force, out = out)
 }
 
@@ -259,6 +287,7 @@ get_margs <- function(mpath, mname) {
   ## then split lines by semicolons
   macro <- paste(macro, collapse = ' ')
   macro <- gsub('/\\*[^/\\*]*?\\*/', '', macro, perl = TRUE)
+  macro <- gsub('\\s+', ' ', macro)
   macro <- gsub(';', ';$$$;', macro)
   macro <- strsplit(macro, split = '\\$\\$\\$;')
   
@@ -267,7 +296,7 @@ get_margs <- function(mpath, mname) {
   mcall <- unlist(lapply(macro, function(x)
     regmatches(x, gregexpr('\\s*%macro\\s+(\\w+)\\((.*)\\)\\s*;{1}', x, 
                            perl = TRUE))))
-  mnames <- gsub('\\ |\\%macro|\\(|\\)|;|(?<=\\().*?(?=\\))', '',
+  mnames <- gsub('%macro|;|(?<=\\().*?(?=\\))|\\(|\\)|\\s*', '',
                  mcall, perl = TRUE)
   args <- gsub(' ','', regmatches(mcall, gregexpr('(?<=\\().*?(?=\\))', 
                                                   mcall, perl = TRUE)))
@@ -290,7 +319,8 @@ get_margs <- function(mpath, mname) {
 #' @usage
 #' sas.mget(libpath, dsn, saspath, fmtpath, log.file, ..., force = FALSE)
 #' 
-#' @param libpath directory to data set(s) as character string
+#' @param libpath directory to data set(s) as character string; if missing, 
+#' searches the current working directory
 #' @param dsn data set name(s); either \code{data1} or \code{data1.sas7bdat} 
 #' will work; if missing or \code{NULL}, all \code{.sas7bdat} files found in
 #' \code{libpath} will be read
@@ -319,7 +349,7 @@ get_margs <- function(mpath, mname) {
 #' 
 #' @examples
 #' \dontrun{
-#' sas.mget('./tests/testfiles/')
+#' data.list <- sas.mget('./tests/testfiles/')
 #' 
 #' ## !!! Two data set(s) will be read !!!
 #' ## 
@@ -338,8 +368,8 @@ get_margs <- function(mpath, mname) {
 #' 
 #' @export
 
-sas.mget <- function(libpath, dsn, saspath, fmtpath, log.file, ..., 
-                     force = FALSE) {
+sas.mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE, 
+                     log.file, ..., force = FALSE) {
   
   suppressPackageStartupMessages(require(Hmisc))
   oo <- options(stringsAsFactors = FALSE)
@@ -358,6 +388,14 @@ sas.mget <- function(libpath, dsn, saspath, fmtpath, log.file, ...,
   }
   
   dsf <- list.files(libpath, pattern = '.sas7bdat')
+  dcf <- list.files(libpath, pattern = '.sas7bcat')
+  if (length(dcf) > 1)
+    stop('only one format catalog is allowed per SAS directory\n')
+  if (catalog && length(dcf) == 0) {
+    warning(sprintf('no format catalog found in %s\n\nignoring formats', 
+                    libpath))
+    no.formats <- TRUE
+  }
   dsi <- `colnames<-`(round(file.info(list.files(libpath, 
                                                  full.names = TRUE))['size'] / 
                               1000), 'size (Kb)')
@@ -385,30 +423,37 @@ sas.mget <- function(libpath, dsn, saspath, fmtpath, log.file, ...,
     if (tolower(substr(check, 1L, 1L)) != 'y')
       return(invisible())
   }
+  ## // initial error checks
   
   ## create formats native to host
   ## sas doesn't seem to like using unix format catalogs
   ## so we have to make a copy using windows
   ## to do so, user must specify the .sas macro (INFORM)
   ## or a proc format .sas file
-  if (!missing(fmtpath)) {
-    log.fmt <- sprintf('%s/_temp_fmt_.log', libpath)
-    sass <- c(sprintf('x \'cd %s\' ;', libpath),
-              sprintf('libname tmp \'%s\' ;', libpath),
-              paste0('%include \'', fmtpath, '\' ;'),
-              'proc catalog catalog =  work.formats ;',
-              'copy out = tmp.formats ;',
-              'quit ;')
-    sasin <- paste0(libpath, '/tmp.sas')
-    on.exit(unlink(sasin), add = TRUE)
-    cat(sass, sep = '\n', file = sasin, append = TRUE)
-    sys_args <- paste(sasin, '-log', log.fmt)
-    status <- system2(saspath, sys_args)
-    
-    if (status != 0) {
-      warning('error in getting formats; formatting ignored\n')
-      cat('see log, %s\n', log.fmt)
-    }
+  if (!catalog) {
+    if (!missing(fmtpath)) {
+      log.fmt <- sprintf('%s/_temp_fmt_.log', libpath)
+      sass <- c(sprintf('x \"cd %s\" ;', libpath),
+                sprintf('libname tmp \"%s\" ;', libpath),
+                sprintf('%%include \"%s\" ;', fmtpath),
+                'proc catalog catalog =  work.formats ;',
+                'copy out = tmp.formats ;',
+                'quit ;')
+      sasin <- paste0(libpath, '/tmp.sas')
+      on.exit(unlink(sasin), add = TRUE)
+      cat(sass, sep = '\n', file = sasin, append = TRUE)
+      sys_args <- paste(sasin, '-log', log.fmt)
+      status <- system2(saspath, sys_args)
+      
+      if (status != 0) {
+        warning('error in getting formats; formatting ignored\n')
+        cat('see log, %s\n', log.fmt)
+      } else no.formats <- FALSE
+    } else warning('no formats specified, ignoring formats\n')
+  } else {
+    warning(sprintf('%s is being used for formats\n', dcf),
+            'note that sas.get will throw erros if catalog is non native')
+    no.format <- FALSE
   }
   
   ## sas.get wrapper
@@ -416,7 +461,7 @@ sas.mget <- function(libpath, dsn, saspath, fmtpath, log.file, ...,
     dsn <- p(dsn)
     zzz <- setNames(lapply(dsn, function(x) 
       Hmisc::sas.get(libraryName = libpath, member = x, sasprog = saspath,
-                     log.file = log.file, ...)), dsn)
+                     log.file = log.file, formats = no.format, ...)), dsn)
     
     ## print dims for user
     cat('\nread summary:\n\n')
