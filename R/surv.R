@@ -278,8 +278,8 @@ kmplot <- function(s,
   dat.list <- split(dat, f = dat$order)
   
   ## plot (but not survival curves) 
-  plot(0, type = 'n', xlim = xlim, ylim = ylim, 
-       xaxt = 'n', yaxt = 'n', xlab = '', ylab = '')
+  plot(0, type = 'n', xlim = xlim, ylim = ylim, ann = FALSE,
+       xaxt = 'n', yaxt = 'n')
   box(bty = par('bty'))
   if (grid) {
     par('xpd' = FALSE)
@@ -318,7 +318,7 @@ kmplot <- function(s,
     if (atrisk.lines) {  
       par('xpd' = TRUE)
       for (i in 1:ng) {
-        ## mess with the 2 here to adjust the lenght of the atrisk.line
+        ## mess with the 2 here to adjust the length of the atrisk.line
         axis(side = 1, at = c(group.name.pos + padding, 0 - 2 * padding), 
              labels = FALSE, line = line.pos[i] + 0.6, lwd.ticks = 0,
              col = col.lines[i], lty = lty.surv[i], lwd = lwd.surv[i])
@@ -355,7 +355,7 @@ kmplot <- function(s,
       mtext(side = 1, text = atrisk.lab, at = par('usr')[1], 
             line = 1.5, adj = 1, col = 1, las = 1, cex = cex.axis)
   } ## /if (atrisk)  
-  
+
   ## legend
   rlp <- strata.order
   if (legend) {
@@ -386,7 +386,7 @@ kmplot <- function(s,
     lines(x, U, type = 's', col = col.ci[i], lty = lty.ci[i], lwd = lwd.ci[i])
     
     ## confidence bands
-    if (!is.null(col.band)) {
+    if (!is.na(col.band)) {
       col.band <- rawr::tcol(col.band, 100)
       
       polygon(c(x, rev(x)), c(U, rev(L)), border = NA, col = col.band[i])
