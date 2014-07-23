@@ -88,7 +88,7 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
     sashome <- 'c:/program files/sashome/sasfoundation/'
     saspath <- sprintf('%s%s/sas.exe',
                        sashome,
-                       max(as.numeric(9.3, list.files(sashome)), na.rm = TRUE))
+                       max(as.numeric(9.2, list.files(sashome)), na.rm = TRUE))
   }
   
   ## temporary .sas, .lst, .log files
@@ -384,7 +384,7 @@ sas.mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
     sashome <- 'c:/program files/sashome/sasfoundation/'
     saspath <- sprintf('%s%s/sas.exe',
                        sashome,
-                       max(as.numeric(9.3, list.files(sashome)), na.rm = TRUE))
+                       max(as.numeric(9.2, list.files(sashome)), na.rm = TRUE))
   }
   
   dsf <- list.files(libpath, pattern = '.sas7bdat')
