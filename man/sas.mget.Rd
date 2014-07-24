@@ -3,7 +3,8 @@
 \alias{sas.mget}
 \title{Convert multiple SAS data sets to R data frame}
 \usage{
-sas.mget(libpath, dsn, saspath, fmtpath, log.file, ..., force = FALSE)
+sas.mget(libpath, dsn, saspath, fmtpath, catalog, log.file,
+         ..., force = FALSE)
 }
 \arguments{
 \item{libpath}{directory to data set(s) as character string; if missing,
@@ -15,14 +16,25 @@ will work; if missing or \code{NULL}, all \code{.sas7bdat} files found in
 
 \item{saspath}{directory to \code{sas.exe} as character string; usually for
 windows, the path \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
-where \code{x.x} is the \code{SAS} version number, is the correct directory,
-and \code{sas.mget} defaults to this (the most recent version of \code{SAS})}
+where \code{x.x} is the \code{SAS} version number, is the correct directory
+for v9.3 and v9.4, and \code{sas.mget} defaults to this (the most recent
+version if multiple are installed); note that if v9.2 is installed in the
+default directory (i.e., \code{c:/program files/sasfoundation/9.2/sas.exe}),
+specifying \code{saspath} is not required; for previous versions or if
+\code{SAS} is not installed in the default directory, it will be necessary
+to supply \code{saspath} to your \code{sas.exe}}
 
 \item{fmtpath}{path to a format \code{.sas} file as character string;
 \code{SAS} throws an error if the host used to make the format catalog was
 not on the same platform, so we create a new format catalog either by
 running a \code{proc format} macro or by making a copy of the non-native
 \code{.sas7bcat} file}
+
+\item{catalog}{logical; use the format catalog in \code{libpath}; by default
+this is \code{FALSE} since using cross-platform catalogs throws errors, so
+\code{sas.mget} will either ignore the catalog or create a new one if
+\code{fmtpath} is given; set \code{catalog = TRUE} if you are sure that
+the format catalog is native to windows}
 
 \item{log.file}{name of \code{SAS} log file; default value will create
 \code{_temp_.log} in the \code{libpath} directory}

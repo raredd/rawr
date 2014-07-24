@@ -32,7 +32,7 @@ this or for non-interactive \code{R}}
 
 \item{firstArgs}{optional character string of (valid) \code{SAS} commands
 separated by semicolons to be excuted \emph{before} the macro; for example,
-\code{'options <OPTIONS> ;'} or \code{"x 'cd c:/path/to/directory\';"}}
+\code{options <OPTIONS> ;} or \code{x "cd c:/path/to/directory";}}
 
 \item{lastArgs}{optional commands to be executed \emph{after} the macro; see
 \code{firstArgs}}
