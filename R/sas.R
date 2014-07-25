@@ -224,7 +224,7 @@ rmacro <- function(mpath, mname, args, saspath, show.args = FALSE,
     lastArgs <- gsub(';', ' ; \n', lastArgs)
   else lastArgs <- '\n'
   sass <- c(sprintf('%%include \"%s\" ;', mpath),
-            sprintf('%%%s(%s) ;', mname, args))
+            sprintf('%%%s(%s) ;', mname, gsub(';','', args)))
   
   r2sas(code = paste(c(firstArgs, sass, lastArgs), sep = '\n'),
         saspath = saspath, force = force, out = out)
@@ -447,8 +447,8 @@ sas.mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
     cat(sprintf('\n!!! %s data set%s will be read !!!\n\n Size in Kb:\n\n', 
                 num2char(length(dsn)), ifelse(length(dsn) > 1, 's', '')))
     print(`rownames<-`(dsi[which(p(rownames(dsi)) %in% 
-                                   paste0(libpath, '/', p(dsn))), , 
-                           drop = FALSE], p(dsn)))
+                       gsub('\\/+','/', paste0(libpath, '/', p(dsn)))), , 
+                       drop = FALSE], p(dsn)))
     cat('\n\n\n\n\n')
     check <- readline('Do you want to continue? (y/n): ')
     if (tolower(substr(check, 1, 1)) != 'y')
