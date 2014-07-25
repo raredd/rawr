@@ -1,7 +1,8 @@
 ### utilities
 # lsp, %ni%, ht, oror, progress, recoder, psum, ident, search.df, search.hist, 
 # ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
-# show.colors, show.pch, %inside%, try_require, clist, binconr, num2char
+# show.colors, show.pch, %inside%, try_require, clist, binconr, num2char, 
+# iprint
 ###
 
 #' list package
@@ -1233,4 +1234,57 @@ num2char <- function(num, informal = FALSE, cap = TRUE) {
                 gsub('And\ |\ and*$', '', zzz))
   zzz <- ifelse(neg, paste0('negative ', tolower(zzz)), tolower(zzz))
   return(ifelse(cap, upcase(zzz), zzz))
+}
+
+#' In-line printing
+#' 
+#' Modified \code{\link[pander]{p}} function from the \code{pander} package.
+#' 
+#' @usage
+#' iprint(..., wrap, sep, copula, digits = 2)
+#' 
+#' @param ... one or more numeric or character elements to be converted into
+#' character vectors
+#' @param wrap character string to wrap each term
+#' @param sep character string to separate the terms
+#' @param copula character string to separate last two terms
+#' @param digits number of digits past the decimal point to keep; see 
+#' \code{\link{roundr}}
+#' 
+#' @seealso \code{\link{roundr}}, \code{\link[pander]{p}}
+#' 
+#' @examples
+#' iprint('fee','fi','fo','fum')
+#' iprint(rnorm(2))
+#' iprint(-0.000, 0.100)
+#' iprint(LETTERS[1:5], copula = ", and the letter ")
+#' iprint("Thelma", "Louise", copula = " & ")
+#' 
+#' @export
+
+iprint <- function (..., wrap, sep, copula, digits = 2) {
+  
+  x <- c(...)
+  len <- length(x)
+  f <- function(x, wrap = '"') 
+    sprintf('%s%s%s', wrap, x, wrap)
+  
+  if (len == 0) 
+    return('')
+  if (missing(wrap))
+    wrap <- ''
+  if (missing(sep))
+    sep <- ', '
+  if (missing(copula))
+    copula <- ifelse(len == 2, ' and ', ', and ')
+  
+  if (is.numeric(x))
+    x <- roundr(x, digits = digits)
+  
+  if (len == 1) 
+    f(x, wrap)
+  else if (len == 2) 
+    paste(f(x, wrap), collapse = copula)
+  else paste0(paste(f(head(x, -1), wrap = wrap), collapse = sep), 
+              copula, f(tail(x, 1), wrap = wrap))
 }
