@@ -611,6 +611,7 @@ grcols <- function(n, s = .5, v = 1, alpha = 1) {
 #' @export
 
 tcol <- function(color, trans = 255) {
+  
   if (length(color) != length(trans) & 
         !any(c(length(color), length(trans)) == 1)) 
     stop('Vector lengths not correct')
@@ -621,7 +622,9 @@ tcol <- function(color, trans = 255) {
   
   res <- paste0('#', apply(apply(rbind(col2rgb(color)), 2, function(x) 
     format(as.hexmode(x), 2)), 2, paste, collapse = ''))
-  return(unlist(unname(Map(paste0, res, as.character(as.hexmode(trans))))))
+  res <- unlist(unname(Map(paste0, res, as.character(as.hexmode(trans)))))
+  res[is.na(color)] <- NA
+  return(res)
 }
 
 #' Apply list of functions over list or vector
