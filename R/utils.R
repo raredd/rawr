@@ -2,7 +2,7 @@
 # lsp, %ni%, ht, oror, progress, recoder, psum, ident, search.df, search.hist, 
 # ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
 # show.colors, show.pch, %inside%, try_require, clist, binconr, num2char, 
-# iprint
+# iprint, list2file
 ###
 
 #' list package
@@ -1287,4 +1287,64 @@ iprint <- function (..., wrap, sep, copula, digits = 2) {
     paste(f(x, wrap), collapse = copula)
   else paste0(paste(f(head(x, -1), wrap = wrap), collapse = sep), 
               copula, f(tail(x, 1), wrap = wrap))
+}
+
+#' List to file
+#' 
+#' Save a \emph{named} list of data frames or matrices into \code{R} data files
+#' \code{.rda}, \code{.csv}, or \code{.txt} files.
+#' 
+#' @usage
+#' list2file(l, targetdir = getwd(), sep, ...)
+#' 
+#' @param l a list of data frames or matrices
+#' @param targetdir target directory (created if doesn't exist)
+#' @param sep field separator string; default is none which results in \code{R}
+#' data files; \code{,} creates \code{.csv} files; any other separator will
+#' create \code{.txt} files
+#' @param ... additional arguments passed to \code{\link{save}} if \code{sep}
+#' is not given or to \code{\link{write.table}} if \code{sep} is given
+#' 
+#' @return
+#' \code{list2file} will create \code{length(l)} files in the \code{targetdir}.
+#' 
+#' @examples
+#' \dontrun{
+#' dfl <- setNames(list(mtcars, iris), c('mtcars','iris'))
+#' 
+#' ## .csv files
+#' list2file(dfl, '~/desktop/tmp', sep = ',')
+#' 
+#' ## r data files
+#' list2file(dfl, '~/desktop/tmp')
+#' }
+#' 
+#' @export
+
+list2file <- function(l, targetdir = getwd(), sep, ...) {
+  
+  if (!is.list(l))
+    stop('\'l\' must be a list')
+  if (is.null(names(l)) || any(is.na(names(l))))
+    stop('all elements of \'l\' must be named')
+  if (any(sapply(l, class) %ni% c('data.frame','matrix')))
+    stop('all elements of \'l\' should be class \'matrix\' or \'data.frame\'')
+  if (!file.exists(targetdir)) {
+    message(sprintf('creating directory:\n%s', targetdir))
+    dir.create(targetdir)
+  }
+  e <- new.env()
+  list2env(l, envir = e)
+  
+  if (missing(sep)) {
+    sapply(names(l), function(x)
+      save(x, file = sprintf('%s/%s.rda', targetdir, x), ...))
+  } else
+    sapply(names(l), function(x)
+      write.table(get(x, envir = e), 
+                  file = sprintf('%s/%s.%s', targetdir, x, 
+                                 ifelse(sep == ',','csv','txt')),
+                  row.names = FALSE, quote = FALSE, ...))
+  message(sprintf('NOTE: %s written to %s', iprint(names(l)), targetdir))
+  return(invisible())
 }
