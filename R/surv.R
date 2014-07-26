@@ -234,6 +234,12 @@ kmplot <- function(s,
     col.lines <- col.band
   else 
     col.lines <- col.surv
+  if (any(is.na(col.band)))
+    col.lines <- ifelse(is.na(col.band), col.surv, col.band)
+  ## test:
+  ## atrisk lines inherit from col.surv if is.na(col.band)
+  ## but inherits col.band if given and not NA
+  ## kmplot(kmfit1, dev = FALSE, col.band = c('red',NA), col.surv = 'black')
   
   ## group names and more error checks
   gr <- c(s$strata)
@@ -386,9 +392,8 @@ kmplot <- function(s,
     lines(x, U, type = 's', col = col.ci[i], lty = lty.ci[i], lwd = lwd.ci[i])
     
     ## confidence bands
-    if (!is.na(col.band)) {
-      col.band <- rawr::tcol(col.band, 100)
-      
+    if (any(!is.na(col.band))) {
+      col.band[i] <- tcol(col.band[i], 100)
       polygon(c(x, rev(x)), c(U, rev(L)), border = NA, col = col.band[i])
     }
     
