@@ -234,8 +234,8 @@ kmplot <- function(s,
     col.lines <- col.band
   else 
     col.lines <- col.surv
-  if (any(is.na(col.band)))
-    col.lines <- ifelse(is.na(col.band), col.surv, col.band)
+#   if (any(is.na(col.band)))
+#     col.lines <- ifelse(is.na(col.band), col.surv, col.band)
   ## test:
   ## atrisk lines inherit from col.surv if is.na(col.band)
   ## but inherits col.band if given and not NA
