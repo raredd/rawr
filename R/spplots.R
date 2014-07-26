@@ -1,4 +1,4 @@
-### specific plots
+### special plots
 # jmplot, tplot, dsplot
 ###
 

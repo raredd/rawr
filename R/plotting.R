@@ -411,6 +411,8 @@ print.facet_adjust <- function(x, newpage = is.null(vp), vp = NULL) {
 ggcaterpillar <- function(re, qq  =  TRUE, likeDotplot  =  TRUE) {
   
   require(ggplot2)
+  ## no visible binding note
+  nQQ <- y <- ID <- ci <- NULL
   
   f <- function(x) {
     pv   <- attr(x, 'postVar')
@@ -590,6 +592,8 @@ ggheat <- function(cors = NULL, data = NULL,
                    gradc = c('white', 'steelblue')) {
   
   require(ggplot2)
+  ## no visible binding note
+  corr <- NULL
   
   zzz <- as.data.frame(cors)
   zzz <- stack(zzz)
