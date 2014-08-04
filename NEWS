@@ -2,6 +2,7 @@ rawr 0.2.3
 --------
   * new sas tools: sas.mget, rmacro, get_margs, source_sas, r2sas
   * surv_table, surv_cp, local.coxph.test added
+  * added ctc data and match_ctc
   * minor fixes and improvements
 
 rawr 0.2.2
