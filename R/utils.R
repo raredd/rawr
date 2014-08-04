@@ -2,7 +2,7 @@
 # lsp, %ni%, ht, oror, progress, recoder, psum, ident, search.df, search.hist, 
 # ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
 # show.colors, show.pch, %inside%, try_require, clist, binconr, num2char, 
-# iprint, list2file
+# iprint, list2file, match_ctc
 ###
 
 #' list package
@@ -1350,4 +1350,56 @@ list2file <- function(l, targetdir = getwd(), sep, ...) {
                   row.names = FALSE, quote = FALSE, ...))
   message(sprintf('NOTE: %s written to %s', iprint(names(l)), targetdir))
   return(invisible())
+}
+
+#' Match CTCAE codes
+#' 
+#' Convenience function to convert CTCAE (version 3 or 4) toxicity codes or
+#' descriptions with their appropriate matches. Especially useful in data from
+#' paper trials where only the toxicity codes are reported excluding (the more
+#' meaningful) descriptions.
+#' 
+#' @usage
+#' match_ctc(..., version = 4)
+#' 
+#' @param ... character string(s) of toxicity codes (usually of the form 
+#' \code{AB123} but can handle \code{AB-123} or \code{AB 123}) or keyword(s)
+#' to be matched in the toxicity description
+#' @param version version number; default is 
+#' \href{http://www.dfhcc.harvard.edu/fileadmin/DFHCC_Admin/Clinical_Trials/QACT/Policies_and_Procedures/CTCToxVersion4.pdf}{CTCAE v4}
+#' 
+#' @return
+#' A list containing:
+#' 
+#' \item{\code{matches}}{a data frame of matches with toxicity codes and their
+#' respective descriptions and categories}
+#' \item{\code{version}}{CTCAE version used}
+#' 
+#' @examples
+#' codes <- sample(ctcae_v4$tox_code, 10)
+#' match_ctc(codes)
+#' 
+#' match_ctc('injury', version = 3)
+#' match_ctc('aortic','arterial')
+#' 
+#' @export
+
+match_ctc <- function(..., version = 4) {
+  
+  x <- c(...)
+  if (version %ni% 3:4)
+    stop('CTCAE version should be 3 or 4')
+  else if (version == 3)
+    dat <- rawr::ctcae_v3
+  else dat <- rawr::ctcae_v4
+  
+  if (any(grepl('([A-Za-z -])([0-9])', x))) {
+    idx <- 'tox_code'
+    x <- gsub('\\s*|-', '', x)
+  } else idx <- 'tox_desc'
+  
+  idx <- grep(paste(x, collapse = '|'), dat[ , idx], ignore.case = TRUE)
+  
+  return(list(matches = dat[idx, ],
+              version = sprintf('CTCAE v%s', version)))
 }
