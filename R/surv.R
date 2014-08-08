@@ -1214,7 +1214,8 @@ surv_table <- function(s, digits = max(options()$digits - 4, 3), ...) {
   
   f <- function(x, d = digits, vars = vars) {
     vars = colnames(x)
-    tmpvar <- colnames(x)[grep('survival|std.err|lower|upper', colnames(x))]
+    tmpvar <- colnames(x)[grep('time|survival|std.err|lower|upper', 
+                               colnames(x))]
     x[ , tmpvar] <- roundr(x[ , tmpvar], digits = d)
     
     surv <- sprintf('%s (%s, %s)', 
@@ -1222,7 +1223,7 @@ surv_table <- function(s, digits = max(options()$digits - 4, 3), ...) {
                     x[ , colnames(x)[grepl('lower', colnames(x))]], 
                     x[ , colnames(x)[grepl('upper', colnames(x))]])
     
-    cbind(x[ , c(setdiff(vars, tmpvar), 'std.err')], surv)
+    cbind(x[ , c('time', setdiff(vars, tmpvar), 'std.err')], surv)
   }
   
   if (is.list(summ))
