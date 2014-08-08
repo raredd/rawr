@@ -2,7 +2,7 @@
 # lsp, %ni%, ht, oror, progress, recoder, psum, ident, search.df, search.hist, 
 # ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
 # show.colors, show.pch, %inside%, try_require, clist, binconr, num2char, 
-# iprint, list2file, match_ctc
+# iprint, list2file, match_ctc, clc, clear
 ###
 
 #' list package
@@ -1403,3 +1403,25 @@ match_ctc <- function(..., version = 4) {
   return(list(matches = dat[idx, ],
               version = sprintf('CTCAE v%s', version)))
 }
+
+#' clc
+#' 
+#' Clear the workspace
+#' 
+#' @usage clc(all = FALSE)
+#' @param all logical; if \code{TRUE}, also removes hidden files
+#' 
+#' @export
+
+clc <- function(all = FALSE)
+  rm(list = ls(.GlobalEnv, all.names = all), envir = .GlobalEnv)
+
+#' clear
+#' 
+#' Clear the console window
+#' 
+#' @usage clear()
+#' 
+#' @export
+
+clear <- function() cat('\014')
