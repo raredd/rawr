@@ -2,7 +2,7 @@
 # lsp, %ni%, ht, oror, progress, recoder, psum, ident, search.df, search.hist, 
 # ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
 # show.colors, show.pch, %inside%, try_require, clist, binconr, num2char, 
-# iprint, list2file, match_ctc, clc, clear
+# iprint, list2file, match_ctc, clc, clear, writeftable, helpExtract
 ###
 
 #' list package
@@ -1425,3 +1425,127 @@ clc <- function(all = FALSE)
 #' @export
 
 clear <- function() cat('\014')
+
+#' Write ftable
+#' 
+#' \code{\link{ftable}}s can look nice, but are only \code{\link{cat}}'d to 
+#' the console and, thus, not easily used (or manipulated). 
+#' \code{\link{write.ftable}} does not write \code{ftable}s as they print,
+#' so here we are.
+#' 
+#' @usage
+#' writeftable(x, quote = FALSE, digits = getOption('digits'), ...)
+#' 
+#' @param x an object of class \code{ftable}
+#' @param quote logical; if \code{TRUE}, strings will be surrounded by double
+#' quotes
+#' @param digits integer giving the number of significant digits to use for
+#' the cell entries of \code{x}
+#' @param ... additional parameters passed to \code{\link{format.ftable}}
+#' 
+#' @return
+#' A matrix formatted as \code{ftable} would print.
+#' 
+#' @examples
+#' x <- ftable(Titanic, row.vars = 1:3)
+#' writeftable(x)
+#' 
+#' @export
+
+writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
+  if (!inherits(x, 'ftable'))
+    stop('x must be an ftable object')
+  x <- stats:::format.ftable(x, quote = quote, digits = digits, ...)
+  as.matrix(x)
+}
+
+#' Extract R help files
+#' 
+#' Extracts specified portions of R help files (from \emph{loaded} libraries)
+#' for use in Sweave or R-markdown documents.
+#' 
+#' @usage
+#' helpExtract(f, show.sections = FALSE, section = 'Usage', 
+#'             type = 'm_code', ...)
+#' 
+#' @param f a function
+#' @param show.sections logical; if \code{TRUE}, returns \code{section} options
+#' for \code{f}
+#' @param section section to extract (default is \code{"Usage"}
+#' @param type type of character vector you want returned; deefaults is 
+#' \code{"m_code"}, see details
+#' @param ... additional arguments passed to \code{utils:::.getHelpFile}
+#' 
+#' @details
+#' The \code{type} argument accepts:
+#' \itemize{ 
+#' \item \code{"m_code"}: Markdown code chunks; for use with markdown documents
+#' when highlighted code is expected.
+#' \item \code{"m_text"}: Markdown plain text; for use with markdown documents 
+#' where regular text is expected.
+#' \item \code{"s_code"}: Sweave code chunks; for use with Sweave documents 
+#' where highlighted code is expected.
+#' \item \code{"s_text"}: Sweave plain text; for use with Sweave documents 
+#' where regular text is expected.
+#' }
+#' 
+#' To see the results in the console:
+#' 
+#' \code{cat(helpExtract(print, type = 'm_text'))}
+#' 
+#' To insert a (highlighted) chunk into a markdown document:
+#' 
+#' \verb{```{r, results='asis'}} \verb{cat(helpExtract(print), sep ='\n')} 
+#' \verb{```}
+#' 
+#' To insert a (highlighted) chunk into a Sweave document:
+#' 
+#' \verb{\Sexpr{knit_child(textConnection(helpExtract(print, type = 's_code')),
+#' options = list(tidy = FALSE, eval = FALSE))}}
+#' 
+#' @return 
+#' A character vector to be used in a Sweave or R-markdown document.
+#' @author Ananda Mahto
+#' 
+#' @examples
+#' 
+#' cat(helpExtract(print), sep = "\n")
+#' 
+#' cat(helpExtract(print, type = 'm_text'))
+#' 
+#' cat(helpExtract(print, type = 'm_text', section = 'description'))
+#' 
+#' @export
+
+helpExtract <- function(f, show.sections = FALSE, section = 'Usage', 
+                        type = 'm_code', ...) {
+  
+  A <- deparse(substitute(f))
+  x <- capture.output(tools:::Rd2txt(utils:::.getHelpFile(utils::help(A, ...)),
+                                     options = list(sectionIndent = 0)))
+  ## section start lines
+  B <- grep('^_', x)
+  ## remove "_\b"
+  x <- gsub('_\b', '', x, fixed = TRUE)
+  if (show.sections)
+    return(gsub(':','', x[B]))
+  X <- rep(FALSE, length(x))
+  X[B] <- 1
+  out <- split(x, cumsum(X))
+  out <- out[[which(sapply(out, function(x) 
+    grepl(section, x[1], fixed = F, ignore.case = TRUE)))]][-c(1, 2)]
+  while (TRUE) {
+    out <- out[-length(out)]
+    if (out[length(out)] != '')
+      break
+  }
+  
+  switch(type,
+         m_code = c('```r', out, '```'),
+         s_code = c('<<>>=', out, '@'),
+         m_text = paste('    ', out, collapse = '\n'),
+         s_text = c('\\begin{verbatim}', out, '\\end{verbatim}'),
+         stop('\"type\" must be either \"m_code\", \"s_code\", \"m_text\", ',
+              'or \"s_text\"')
+  )
+}
