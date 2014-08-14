@@ -11,14 +11,14 @@
 #' jmplot(x, y, z, 
 #'        
 #'        # labels
-#'        main = NULL, sub = NULL, xlab = NULL, ylab = NULL, names = NULL, 
+#'        main, sub, xlab, ylab, names, 
 #'        
 #'        # axes stuff
-#'        xlim = NULL, ylim = NULL, axes = TRUE, frame.plot = axes, 
+#'        xlim, ylim, axes = TRUE, frame.plot = axes, 
 #'        log = '', xratio = .8, yratio = xratio, 
 #'        
 #'        # more options
-#'        show.n = TRUE, show.na = TRUE, cex.n = NULL, 
+#'        show.n = TRUE, show.na = TRUE, cex.n, 
 #'        ann = par('ann'), asp = NA, 
 #'        panel.first = NULL, panel.last = NULL,
 #'        
@@ -76,14 +76,14 @@
 jmplot <- function(x, y, z, 
                    
                    # labels
-                   main = NULL, sub = NULL, xlab = NULL, ylab = NULL, names = NULL, 
+                   main, sub, xlab, ylab, names, 
                    
                    # axes stuff
-                   xlim = NULL, ylim = NULL, axes = TRUE, frame.plot = axes, 
+                   xlim, ylim, axes = TRUE, frame.plot = axes, 
                    log = '', xratio = .8, yratio = xratio, 
                    
                    # more options
-                   show.n = TRUE, show.na = TRUE, cex.n = NULL, 
+                   show.n = TRUE, show.na = TRUE, cex.n, 
                    ann = par('ann'), asp = NA, 
                    panel.first = NULL, panel.last = NULL,
                    
@@ -112,12 +112,14 @@ jmplot <- function(x, y, z,
   xy <- xy.coords(x, y, deparse(substitute(x)), deparse(substitute(y)), log)
   
   # defaults
-  if (is.null(names)) 
+  if (missing(names)) 
     names <- levels(z)
-  if (is.null(xlab)) 
+  if (missing(xlab)) 
     xlab <- xy$xlab
-  if (is.null(ylab)) 
+  if (missing(ylab)) 
     ylab <- xy$ylab
+  if (missing(sub)) sub <- ''
+  if (missing(main)) main <- ''
   
   op <- par(no.readonly = TRUE)
   mar <- op$mar
@@ -134,10 +136,12 @@ jmplot <- function(x, y, z,
     #     pm <- diff(r) / 20
     #     r + pm * c(-1,1)
   }
-  if (is.null(xlim)) 
+  if (missing(xlim)) 
     xlim <- lim(xy$x)
-  if (is.null(ylim)) 
+  if (missing(ylim)) 
     ylim <- lim(xy$y)
+  if (missing(cex.n)) 
+    cex.n <- 1
   
   # plot x distribution on top
   par(mar = c(0, mar[2], 0, 0))
@@ -190,17 +194,14 @@ jmplot <- function(x, y, z,
 #' tplot(x, ..., type = c('d','db','bd','b'),
 #'       
 #'       # labels
-#'       main = NULL, sub = NULL, xlab = NULL, ylab = NULL, names,
+#'       main, sub, xlab, ylab, names,
 #'       
 #'       # axes stuff
-#'       xlim = NULL, ylim = NULL, axes = TRUE, frame.plot = axes, 
-#'       at = NULL, horizontal = FALSE,
+#'       xlim, ylim, axes = TRUE, frame.plot = axes, at, horizontal = FALSE,
 #'       
 #'       # aesthetics
-#'       jit = 0.1, dist = NULL, boxplot.pars = NULL,
-#'       col = NULL, group.col = TRUE,
-#'       boxcol = NULL, boxborder = NULL, 
-#'       pch = par('pch'), group.pch = TRUE,
+#'       jit = 0.1, dist, boxplot.pars, col, group.col = TRUE,
+#'       boxcol, boxborder, pch = par('pch'), group.pch = TRUE,
 #'       median.line = FALSE, mean.line = FALSE, 
 #'       median.pars = list(col = par('col')), mean.pars = median.pars, 
 #'       show.n = TRUE, show.na = TRUE, cex.n = NULL, my.gray = gray(0.75),
@@ -297,34 +298,34 @@ tplot <- function(x, ...) UseMethod('tplot')
 tplot.default <- function(x, ..., 
                           type = c('d','db','bd','b'),
                           jit = 0.1, 
-                          dist = NULL,
-                          main = NULL, 
-                          sub = NULL, 
-                          xlab = NULL, 
-                          ylab = NULL, 
+                          dist,
+                          main,
+                          sub,
+                          xlab,
+                          ylab,
                           names,
-                          xlim = NULL, 
-                          ylim = NULL, 
-                          col = NULL, 
+                          xlim,
+                          ylim,
+                          col,
                           group.col = TRUE,
-                          boxcol = NULL, 
-                          boxborder = NULL, 
+                          boxcol,
+                          boxborder ,
                           pch = par('pch'), 
                           group.pch = TRUE,
                           median.line = FALSE, 
                           mean.line = FALSE, 
                           median.pars = list(col = par('col')), 
                           mean.pars = median.pars, 
-                          boxplot.pars = NULL, 
+                          boxplot.pars,
                           show.n = TRUE,
                           show.na = TRUE,
-                          cex.n = NULL,
+                          cex.n,
                           my.gray = gray(0.75),
                           ann = par('ann'),
                           axes = TRUE,
                           frame.plot = axes,
                           add = FALSE,
-                          at = NULL,
+                          at,
                           horizontal = FALSE,
                           panel.first = NULL,
                           panel.last = NULL) {
@@ -343,8 +344,7 @@ tplot.default <- function(x, ...,
   namedargs <- if (!is.null(attributes(args)$names))
     attributes(args)$names !=  ''
   else logical(length(args))
-  groups <- if (is.list(x))
-    x
+  groups <- if (is.list(x)) x
   else args[!namedargs]
   pars <- args[namedargs]
   if ((n <- length(groups)) == 0)
@@ -364,26 +364,26 @@ tplot.default <- function(x, ...,
   g <- factor(rep(1:ng, l), levels = 1:ng, labels = names(groups))
   nv <- sum(l) # total count
   
-  if (is.null(at)) at <- 1:ng
+  if (missing(at)) at <- 1:ng
   if (length(at) !=  ng)
     stop("'at' must have same length as the number of groups")
   
   # set y scale
-  if (is.null(ylim)) {
+  if (missing(ylim)) {
     r <- range(groups, na.rm = TRUE, finite = TRUE)
     pm <- diff(r) / 20
     ylim <- r + pm * c(-1,1)
   }
   # set x scale
-  if (is.null(xlim)) {
-    if (is.null(at)) xlim <- c(0.5, ng+0.5)
+  if (missing(xlim)) {
+    if (missing(at)) xlim <- c(0.5, ng+0.5)
     else xlim <- c(0.5, max(at)+0.5)
   }
   
-  if (is.null(xlab)) xlab <- ''
-  if (is.null(ylab)) ylab <- ''
-  if (is.null(main)) main <- ''
-  if (is.null(sub)) sub <- ''
+  if (missing(xlab)) xlab <- ''
+  if (missing(ylab)) ylab <- ''
+  if (missing(main)) main <- ''
+  if (missing(sub)) sub <- ''
   
   type <- match.arg(type, choices = c('d','db','bd','b'), several.ok = TRUE)
   # type of plot for each group
@@ -395,13 +395,15 @@ tplot.default <- function(x, ...,
   # Handle default colors
   defcols <- c(my.gray, par('col'))
   # use 50% gray for box in back, otherwise default color
-  if (is.null(boxborder))
+  if (missing(boxborder))
     boxborder <- defcols[2 - grepl('.b', type)]
   # use 50% gray for dots in back, otherwise default color
-  if (is.null(col)) {
+  if (missing(col)) {
     col <- defcols[2-grepl('.d', type)]
     group.col <- TRUE
   }
+  if (missing(boxplot.pars))
+    boxplot.pars <- NULL
   
   #if (length(boxborder) !=  ng)
   #    warning('length of 'boxborder' does not match the number of groups')
@@ -453,12 +455,11 @@ tplot.default <- function(x, ...,
   median.line <- rep(median.line, length.out = ng)
   
   # set defaults for dist and jit
-  if (is.null(dist) || is.na(dist)) dist <- diff(range(ylim)) / 100
-  if (is.null(jit) || is.na(jit)) jit <- 0.025 * ng
-  
-  # 1 2 3 1 3 2 1 1 4 2
-  # -------------------
-  # 1 1 1 2 2 2 3 4 1 3
+  if (missing(dist) || is.na(dist) || is.null(dist)) 
+    dist <- diff(range(ylim)) / 100
+  if (missing(jit) || is.na(jit) || is.null(jit)) 
+    jit <- 0.025 * ng
+
   how.many.so.far <- function(g) {
     out <- NULL
     u <- unique(g)
@@ -528,8 +529,9 @@ tplot.default <- function(x, ...,
                                    border = boxborder[i], outline = FALSE, 
                                    horizontal = horizontal), boxplot.pars))
       toplot <- (y > boxplotout$stats[5,]) | (y < boxplotout$stats[1,])
-      if( sum(toplot) > 0 ){
-        if( col[[i]][toplot][1] == '#BFBFBF' ) col[[i]][toplot] <- 1 }
+      if (sum(toplot) > 0) 
+        if (col[[i]][toplot][1] == '#BFBFBF') 
+          col[[i]][toplot] <- 1
       if (horizontal)
         do.call('localPoints', 
                 c(list(x = y[toplot], y = x[toplot], pch = pch[[i]][toplot], 
@@ -577,7 +579,7 @@ tplot.default <- function(x, ...,
   }
   # optional sample sizes
   if (show.n) {
-    if (is.null(cex.n)) cex.n <- 1
+    if (missing(cex.n)) cex.n <- 1
     do.call('localMtext', 
             if (show.na) 
               c(list(paste0('n = ', l, '\nmissing = ', l2), 

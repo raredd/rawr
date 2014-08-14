@@ -6,14 +6,14 @@
 jmplot(x, y, z,
 
        # labels
-       main = NULL, sub = NULL, xlab = NULL, ylab = NULL, names = NULL,
+       main, sub, xlab, ylab, names,
 
        # axes stuff
-       xlim = NULL, ylim = NULL, axes = TRUE, frame.plot = axes,
+       xlim, ylim, axes = TRUE, frame.plot = axes,
        log = '', xratio = .8, yratio = xratio,
 
        # more options
-       show.n = TRUE, show.na = TRUE, cex.n = NULL,
+       show.n = TRUE, show.na = TRUE, cex.n,
        ann = par('ann'), asp = NA,
        panel.first = NULL, panel.last = NULL,
 

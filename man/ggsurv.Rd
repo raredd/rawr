@@ -5,21 +5,20 @@
 \usage{
 ggsurv(s,
        # basic plot options
-       col.surv = NULL, lty.surv = 1,
-       censor = TRUE, col.cens = NULL, mark = 3,
+       col.surv = 1, lty.surv = 1,
+       censor = TRUE, col.cens = 1, mark = 3,
 
        # confidence options
-       confin = TRUE, confband = FALSE, col.band = NULL,
+       confin = TRUE, confband = FALSE, col.band = NA,
 
        # extra plot options
-       median = FALSE, atrisk = TRUE, col.atrisk = NULL,
-       pval = NULL, basehaz = FALSE,
+       median = FALSE, atrisk = TRUE, col.atrisk,
+       pval, basehaz = FALSE,
 
        # aesthetics
-       ticks = NULL, median.ticks = TRUE,
-       xlab = NULL, ylab = NULL, main = NULL,
-       xlim = NULL, ylim = NULL,
-       legend = 'right', legend.labels = NULL,
+       ticks, median.ticks = TRUE,
+       xlab, ylab, main, xlim, ylim,
+       legend = 'right', legend.labels,
        grid = TRUE, ggdefault = FALSE,
 
        # other options

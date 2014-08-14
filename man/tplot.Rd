@@ -12,17 +12,14 @@ tplot(formula, data = parent.frame(), ..., subset, na.action = NULL)
 tplot(x, ..., type = c('d','db','bd','b'),
 
       # labels
-      main = NULL, sub = NULL, xlab = NULL, ylab = NULL, names,
+      main, sub, xlab, ylab, names,
 
       # axes stuff
-      xlim = NULL, ylim = NULL, axes = TRUE, frame.plot = axes,
-      at = NULL, horizontal = FALSE,
+      xlim, ylim, axes = TRUE, frame.plot = axes, at, horizontal = FALSE,
 
       # aesthetics
-      jit = 0.1, dist = NULL, boxplot.pars = NULL,
-      col = NULL, group.col = TRUE,
-      boxcol = NULL, boxborder = NULL,
-      pch = par('pch'), group.pch = TRUE,
+      jit = 0.1, dist, boxplot.pars, col, group.col = TRUE,
+      boxcol, boxborder, pch = par('pch'), group.pch = TRUE,
       median.line = FALSE, mean.line = FALSE,
       median.pars = list(col = par('col')), mean.pars = median.pars,
       show.n = TRUE, show.na = TRUE, cex.n = NULL, my.gray = gray(0.75),

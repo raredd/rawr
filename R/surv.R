@@ -415,25 +415,24 @@ kmplot <- function(s,
 #' @usage 
 #' ggsurv(s, 
 #'        # basic plot options
-#'        col.surv = NULL, lty.surv = 1,
-#'        censor = TRUE, col.cens = NULL, mark = 3, 
-#'       
+#'        col.surv = 1, lty.surv = 1,
+#'        censor = TRUE, col.cens = 1, mark = 3,
+#'        
 #'        # confidence options
-#'        confin = TRUE, confband = FALSE, col.band = NULL, 
-#'              
+#'        confin = TRUE, confband = FALSE, col.band = NA, 
+#'        
 #'        # extra plot options
-#'        median = FALSE, atrisk = TRUE, col.atrisk = NULL, 
-#'        pval = NULL, basehaz = FALSE,
-#'              
+#'        median = FALSE, atrisk = TRUE, col.atrisk,
+#'        pval, basehaz = FALSE,
+#'        
 #'        # aesthetics
-#'        ticks = NULL, median.ticks = TRUE,
-#'        xlab = NULL, ylab = NULL, main = NULL, 
-#'        xlim = NULL, ylim = NULL,
-#'        legend = 'right', legend.labels = NULL, 
+#'        ticks, median.ticks = TRUE,
+#'        xlab, ylab, main, xlim, ylim,
+#'        legend = 'right', legend.labels,
 #'        grid = TRUE, ggdefault = FALSE,
-#'              
+#'        
 #'        # other options
-#'        plot.margin = NULL, table.margin = NULL, 
+#'        plot.margin = NULL, table.margin = NULL,
 #'        data = FALSE, ...)
 #' 
 #' @param s \code{\link{survfit}} or \code{survfit.cox} object
@@ -567,21 +566,20 @@ kmplot <- function(s,
 
 ggsurv <- function(s, 
                    # basic plot options
-                   col.surv = NULL, lty.surv = 1,
-                   censor = TRUE, col.cens = NULL, mark = 3,
+                   col.surv = 1, lty.surv = 1,
+                   censor = TRUE, col.cens = 1, mark = 3,
                    
                    # confidence options
-                   confin = TRUE, confband = FALSE, col.band = NULL, 
+                   confin = TRUE, confband = FALSE, col.band = NA, 
                    
                    # extra plot options
-                   median = FALSE, atrisk = TRUE, col.atrisk = NULL,
-                   pval = NULL, basehaz = FALSE,
+                   median = FALSE, atrisk = TRUE, col.atrisk,
+                   pval, basehaz = FALSE,
                    
                    # aesthetics
-                   ticks = NULL, median.ticks = TRUE,
-                   xlab = NULL, ylab = NULL, main = NULL, 
-                   xlim = NULL, ylim = NULL,
-                   legend = 'right', legend.labels = NULL, 
+                   ticks, median.ticks = TRUE,
+                   xlab, ylab, main, xlim, ylim,
+                   legend = 'right', legend.labels,
                    grid = TRUE, ggdefault = FALSE,
                    
                    # other options
@@ -603,9 +601,12 @@ ggsurv <- function(s,
     stop('s must be a survfit.cox object')
   if (confin & confband) 
     warning('choose confidence interval or confidence band')
-  if (atrisk && is.null(ticks)) 
+  if (atrisk && missing(ticks)) 
     message('ticks not specified: \ntick marks defaulting to seq(0, ',
             'max(time), length.out = 10)\n')
+  if (missing(xlab)) xlab <- 'Time'
+  if (missing(ylab)) ylab <- 'Probability of event'
+  if (missing(main)) main <- ''
   
   #### allow for backwards compatibility
   m <- match.call(expand.dots = FALSE)
@@ -689,11 +690,11 @@ ggsurv <- function(s,
   }
   
   #### for custom ribbon color with no strata present
-  if (is.null(survdat$strata) && !is.null(col.band)) 
+  if (is.null(survdat$strata) && !missing(col.band)) 
     survdat$col.band <- col.band
   
   #### change levels in strata
-  if (!is.null(survdat$strata) && !(is.null(legend.labels))) {
+  if (!is.null(survdat$strata) && !(missing(legend.labels))) {
     if (length(unique(levels(survdat$strata))) != length(legend.labels)) {
       warning('legend labels not equal to number of strata')
     }
@@ -841,7 +842,7 @@ ggsurv <- function(s,
                                    fill = strata), 
                                directions = "hv", linetype = 0 ,alpha = 0.25)
       # custom conf band fill colors
-      if (!is.null(col.band)) 
+      if (!missing(col.band)) 
         tmp <- tmp + scale_fill_manual(values = rep(col.band, 
                                       length(unique(survdat$strata))))
     }
@@ -892,9 +893,9 @@ ggsurv <- function(s,
   ### / test
   
   # label options
-  if (!is.null(xlab)) tmp <- tmp + xlab(xlab)
-  if (!is.null(ylab)) tmp <- tmp + ylab(ylab)
-  if (!is.null(main)) tmp <- tmp + ggtitle(main)
+  if (!missing(xlab)) tmp <- tmp + xlab(xlab)
+  if (!missing(ylab)) tmp <- tmp + ylab(ylab)
+  if (!missing(main)) tmp <- tmp + ggtitle(main)
   
   # background options
   if (ggdefault == FALSE) tmp <- tmp + theme_bw()
@@ -914,7 +915,7 @@ ggsurv <- function(s,
     tmp <- tmp + theme(legend.position = legend)
   }
   
-  if (!is.null(pval)) {
+  if (!missing(pval)) {
     # log-rank/Mantel-Haenszel (rho = 0)
     sdiff <- survdiff(eval(s$call$formula), data = eval(s$call$data), rho = 0)
     pval.chisq <- pchisq(sdiff$chisq, length(sdiff$n) - 1, lower.tail = FALSE)
@@ -925,21 +926,21 @@ ggsurv <- function(s,
   }
   
   ## added labels here
-  if (!is.null(ticks)) 
+  if (!missing(ticks)) 
     tmp <- tmp + scale_x_continuous(breaks = seq(ticks[1], ticks[2], 
                                                  by = ticks[3]),
                                     labels = format(seq(ticks[1], ticks[2], 
                                                         by = ticks[3]), 
                                                     nsmall = 0))
   ## here
-  if (!is.null(ticks) && median && median.ticks) 
+  if (!missing(ticks) && median && median.ticks) 
     tmp <- tmp + 
       scale_x_continuous(breaks = sort(c(tmp.med$time, seq(ticks[1], ticks[2], 
                                                            by = ticks[3]))),
                          labels = format(sort(c(tmp.med$time, seq(ticks[1], 
                                       ticks[2], by = ticks[3]))), nsmall = 0))
-  if (!is.null(xlim)) tmp <- tmp + xlim(xlim)
-  if (!is.null(ylim)) tmp <- tmp + ylim(ylim)
+  if (!missing(xlim)) tmp <- tmp + xlim(xlim)
+  if (!missing(ylim)) tmp <- tmp + ylim(ylim)
   tmp <- tmp + theme(legend.title = element_blank())
   
   if (atrisk) {
@@ -955,7 +956,7 @@ ggsurv <- function(s,
     
     # set up tick marks for atrisk alignment
     options(survfit.rmean = 'individual')
-    if (is.null(ticks)) {
+    if (missing(ticks)) {
       tick.seq <- seq(0, max(s$time), length = 10)
       if (median && median.ticks) 
         tick.seq <- sort(c(tmp.med$time, tick.seq))
@@ -988,7 +989,7 @@ ggsurv <- function(s,
     }
     
     # increase margins with long labels in risk.table
-    if (is.null(plot.margin))
+    if (missing(plot.margin))
       plot.margin <- .5 * (max(nchar(levels(survdat$strata))) - 1) - .3
     
     tmp <- tmp + 
@@ -1016,11 +1017,11 @@ ggsurv <- function(s,
 #                    label = 'Number at risk')
 #           ggtitle('Number at risk') 
 #           theme(plot.title = element_text(size = rel(1)))
-    if (!is.null(col.atrisk))
+    if (!missing(col.atrisk))
       gg.table <- gg.table + geom_text(size = 3.5, colour = col.atrisk)
     else gg.table <- gg.table + geom_text(size = 3.5)
     
-    if (is.null(table.margin))
+    if (missing(table.margin))
       table.margin <- 2
     gg.table <- gg.table + 
       theme(plot.margin = unit(c(-2, .5, .1, table.margin), 'lines'),
