@@ -5,11 +5,18 @@
 # iprint, list2file, match_ctc, clc, clear, writeftable, helpExtract
 ###
 
-#' list package
+#' List package
 #' 
-#' @description
-#' list all exported and/or non exported objects in a package.
+#' List all exported and/or non exported objects in a package.
 #' 
+#' @usage
+#' lsp(package, what = 'all')
+#' 
+#' @param package package name
+#' @param what what to get; \code{'all'} is default which returns all exported
+#' and non exported functions in \code{package}; see details for more
+#' 
+#' @details
 #' This is a helper/wrapper function to easily list exported (\code{?'::'}) and
 #' non exported (\code{?':::'}) functions (and other features from a package's 
 #' \code{NAMESPACE} file). Note that \code{base} and older packages do not have
@@ -26,17 +33,10 @@
 #' 
 #' \code{lsp(packagename, NULL)} to return all information.
 #' 
-#' @usage
-#' lsp(package, what = 'all')
-#' 
-#' @param package package name as a character string
-#' @param what what to get; \code{'all'} is default which returns all exported
-#' and non exported functions in \code{package}; see description for more
-#' 
 #' @examples
-#' lsp('base')
+#' lsp(base)
 #' 
-#' lsp('rawr')
+#' lsp(rawr)
 #' 
 #' ## for "what" options
 #' lsp('rawr', '?')
@@ -54,6 +54,8 @@
 
 lsp <- function(package, what = 'all') {
   
+  if (!is.character(substitute(package)))
+    package <- deparse(substitute(package))
   ns <- asNamespace(package)
   
   ## base package does not have NAMESPACE
