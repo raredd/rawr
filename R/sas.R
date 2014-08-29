@@ -397,9 +397,11 @@ get_margs <- function(mpath, mname) {
 sas.mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE, 
                      log.file, ..., force = FALSE) {
   
-  suppressPackageStartupMessages(require(Hmisc))
-  oo <- options(stringsAsFactors = FALSE)
+  if (!suppressPackageStartupMessages(require(Hmisc)))
+    stop('install.packages(\'Hmisc\') before continuing')
+  oo <- options()
   on.exit(options(oo))
+  options(stringsAsFactors = FALSE)
   
   ## error checks
   if (missing(log.file))
