@@ -2,7 +2,7 @@
 # lsp, %ni%, ht, oror, progress, recoder, psum, ident, search.df, search.hist, 
 # ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
 # show.colors, show.pch, %inside%, try_require, clist, binconr, num2char, 
-# iprint, list2file, match_ctc, clc, clear, writeftable, helpExtract
+# iprint, list2file, match_ctc, clc, clear, writeftable, helpExtract, Round
 ###
 
 #' List package
@@ -1550,4 +1550,40 @@ helpExtract <- function(f, show.sections = FALSE, section = 'Usage',
          stop('\"type\" must be either \"m_code\", \"s_code\", \"m_text\", ',
               'or \"s_text\"')
   )
+}
+
+#' Round to specified target
+#' 
+#' Rounds a numeric vector constrained to sum to a \code{target} value.
+#' 
+#' @usage Round(x, target)
+#' 
+#' @param x numeric values
+#' @param target desired sum of code{x} after rounding
+#' 
+#' @examples
+#' pcts <- data.frame(pct1 = c(33.3, 21.5, 45.51),
+#'                    pct2 = c(33.3,33.3,33.3))
+#' 
+#' Map(round, pcts); sapply(.Last.value, sum)
+#' Map(Round, pcts, 100); sapply(.Last.value, sum)
+#' 
+#' @export
+
+Round <- function(x, target) {
+  r.x <- round(x)
+  diff.x <- r.x - x
+  if ((s <- sum(r.x)) == target) {
+    return(r.x)
+  } else if (s > target) {
+    select <- seq_along(x)[diff.x > 0]
+    which <- which.max(diff.x[select])
+    x[select[which]] <- r.x[select[which]] - 1
+    Round(x, target)
+  } else {
+    select <- seq_along(x)[diff.x < 0]
+    which <- which.min(diff.x[select])
+    x[select[which]] <- r.x[select[which]] + 1
+    Round(x, target)
+  }
 }
