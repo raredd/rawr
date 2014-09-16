@@ -1576,14 +1576,14 @@ Round <- function(x, target) {
   if ((s <- sum(r.x)) == target) {
     return(r.x)
   } else if (s > target) {
-    select <- seq_along(x)[diff.x > 0]
-    which <- which.max(diff.x[select])
-    x[select[which]] <- r.x[select[which]] - 1
+    select <- seq_along(x)[diff.x != 0]
+    wh <- which.max(diff.x[select])
+    x[select[wh]] <- r.x[select[wh]] - 1
     Round(x, target)
   } else {
-    select <- seq_along(x)[diff.x < 0]
-    which <- which.min(diff.x[select])
-    x[select[which]] <- r.x[select[which]] + 1
+    select <- seq_along(x)[diff.x != 0]
+    wh <- which.min(diff.x[select])
+    x[select[wh]] <- r.x[select[wh]] + 1
     Round(x, target)
   }
 }
