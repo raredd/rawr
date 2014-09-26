@@ -1,5 +1,5 @@
 ### statistical functions
-# bincon, bintest, dlt.table, power.cv, simon2
+# bincon, bintest, dlt.table, power.cv, simon2, moods.test
 ###
 
 
@@ -673,4 +673,44 @@ bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20) {
   u <- c(n = n, r = x, p0 = p0, pa = pa, size = size, type2 = b)
   class(u) <- 'bin1samp'
   u
+}
+
+#' Mood's median test
+#' 
+#' A nonparametric test used to test the equality of medians from two or more
+#' populations.
+#' 
+#' Mood's median test is an exact test which dichotomizes values in each group
+#' above or below the median of the pooled data. The test is conservative in 
+#' small sample sizes.
+#' 
+#' Note that this test is different than \code{\link{mood.test}} in the stats
+#' package which tests for a difference in \emph{scale parameters} rather than 
+#' medians.
+#' 
+#' @usage moods.test(X, ...)
+#' 
+#' @param X a list of two or more numeric vectors
+#' @param ... additional parameters passed to \code{\link{fisher.test}}
+#' 
+#' @seealso \code{\link{mood.test}}, \code{\link{kruskal.test}}, 
+#' \code{\link{wilcox.test}}
+#' 
+#' @examples
+#' set.seed(1618)
+#' X <- list(rnorm(10), rnorm(10, 1), rnorm(20, 2))
+#' moods.test(X)
+#' 
+#' plot(density(X[[1]]), xlim = range(unlist(X)), ylim = c(0, .5))
+#' for (x in 2:3) lines(density(X[[x]]), col = x)
+#' @export
+
+moods.test <- function(X, ...) {
+  x <- unlist(X)
+  g <- rep(ng <- seq_len(length(X)), times = sapply(X, length))
+  m <- median(x)
+  zzz <- fisher.test(x < m, g, ...)
+  zzz$method <- sprintf('Mood\'s median test of %s groups', length(ng))
+  zzz$data <- table(x < m, g, dnn = c('< median', 'group'))
+  return(zzz)
 }

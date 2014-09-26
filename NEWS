@@ -4,6 +4,7 @@ rawr 0.2.3
   * surv_table, surv_cp, local.coxph.test added
   * added ctc data, match_ctc, writeftable, helpExtract
   * minor fixes and improvements
+  * added mood's median test
 
 rawr 0.2.2
 --------
