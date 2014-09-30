@@ -134,6 +134,8 @@ An alternative to \code{\link{boxplot}}. The individual data can be shown
 (either in the foreground or background) with jittering if necessary.
 }
 \examples{
+tplot(mpg ~ gear, mtcars)
+
 set.seed(1618)
 dat <- data.frame(age = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
                   sex = sample(c('Female', 'Male'), 80, replace = TRUE),

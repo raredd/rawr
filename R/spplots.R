@@ -275,6 +275,8 @@ jmplot <- function(x, y, z,
 #' @references \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
 #' 
 #' @examples
+#' tplot(mpg ~ gear, mtcars)
+#' 
 #' set.seed(1618)
 #' dat <- data.frame(age = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
 #'                   sex = sample(c('Female', 'Male'), 80, replace = TRUE),
@@ -384,6 +386,7 @@ tplot.default <- function(x, ...,
   if (missing(ylab)) ylab <- ''
   if (missing(main)) main <- ''
   if (missing(sub)) sub <- ''
+  if (missing(boxcol)) boxcol <- 'grey97'
   
   type <- match.arg(type, choices = c('d','db','bd','b'), several.ok = TRUE)
   # type of plot for each group
