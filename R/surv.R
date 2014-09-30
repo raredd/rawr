@@ -29,7 +29,7 @@
 #'        
 #'        ## other options
 #'        grid = TRUE, lty.grid = 1, lwd.grid = 1, col.grid = grey(.9),
-#'        dev = TRUE, add = FALSE, ...)
+#'        dev = FALSE, add = FALSE, ...)
 #' 
 #' @param s object of class \code{\link[survival]{survfit}} or 
 #' \code{survfit.cox}
@@ -98,7 +98,7 @@
 #' invervals.
 #' 
 #' When \code{dev = TRUE}, a platform-specific graphics device is used to 
-#' displace the plot. Defaults are \code{\link{quartz}}, for apple and 
+#' displace the plot. Defaults are \code{\link{quartz}} for apple and 
 #' \code{\link{x11}} for windows and unix platforms.
 #' 
 #' However, any device can be used by setting \code{dev = FALSE} and opening
@@ -122,10 +122,10 @@
 #' 
 #' \dontrun{
 #' ## simple example, draw in r window
-#' kmplot(kmfit1, dev = FALSE)
+#' kmplot(kmfit1)
 #' 
 #' ## expressions in at risk table
-#' kmplot(kmfit1, dev = FALSE, strata.lab = c('Female','Male'),
+#' kmplot(kmfit1, strata.lab = c('Female','Male'),
 #'        strata.expr = expression(widetilde(ring(Female)), 
 #'                                 phantom() >= Male))
 #' 
@@ -133,14 +133,13 @@
 #' ## when saving to another device, use dev = FALSE (see details)
 #' png('./desktop/kmplot2.png', width = 750, height = 1200, pointsize = 14)
 #' par(mfrow = c(2, 1))
-#' kmplot(kmfit1, add = TRUE, dev = FALSE)
-#' kmplot(kmfit2, add = TRUE, dev = FALSE, extra.margin = 8)
+#' kmplot(kmfit1, add = TRUE)
+#' kmplot(kmfit2, add = TRUE, extra.margin = 8)
 #' dev.off()
 #' 
 #' ## more complex example
 #' pdf('./tmp.pdf', height = 8, width = 11, pointsize = 12)
 #' kmplot(kmfit2, 
-#'        dev = FALSE,  # view in r window
 #'        mark = '',    # no censor mark
 #'        lty.ci = 2,   # dashed line for CIs
 #'        xaxis.at = c(0, .5, 1:9) * 365,    # change days to years
@@ -189,7 +188,7 @@ kmplot <- function(s,
                    # other options
                    grid = TRUE, lty.grid = 1, lwd.grid = 1, 
                    col.grid = grey(.9),
-                   dev = TRUE, add = FALSE, ...) {
+                   dev = FALSE, add = FALSE, ...) {
   
   ## error checks
   if (!inherits(s, 'survfit')) 
