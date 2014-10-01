@@ -898,7 +898,9 @@ roundr.matrix <- function(x, digits = 1) {
 #' intr(1:10)
 #' intr(1:10, conf = .95)
 #' # inner quartile range
-#' cbind(lapply(mtcars, intr, conf = .5), lapply(mtcars, intr, fun = mean))
+#' `colnames<-`(cbind(lapply(mtcars, intr, conf = .5), 
+#'                    lapply(mtcars, intr, fun = mean)),
+#'              c('median (IQR)','mean (range)'))
 #' # compare to
 #' summary(mtcars)
 #' 
@@ -908,16 +910,8 @@ intr <- function(..., fun = median, conf = NULL, digits = 2, na.rm = FALSE) {
   
   lst <- list(...)
   if (is.null(conf) || conf == 0 || 
-        findInterval(conf, c(0, 1), rightmost.closed = FALSE) !=1)
+        findInterval(conf, c(0, 1), rightmost.closed = FALSE) != 1)
     conf <- 1
-  
-  # see ?rawr::roundr
-  roundr <- function(x, digits = 1) {
-    res <- sprintf(paste0('%.', digits, 'f'), x)
-    zzz <- paste0('0.', paste(rep('0', digits), collapse = ''))
-    res[res == paste0('-', zzz)] <- zzz
-    res
-  }
   
   sapply(lst, function(x) {
     bounds <- quantile(x, c((1 - conf) / 2 * c(1, -1) + c(0, 1)), na.rm = na.rm)
@@ -925,10 +919,9 @@ intr <- function(..., fun = median, conf = NULL, digits = 2, na.rm = FALSE) {
     val <- roundr(fun(x, na.rm = na.rm), digits = digits)
     
     if (! conf %in% c(0, 1))
-      paste0(val, ' (', paste0(conf * 100, '% CI: '), 
-             bounds[1], ' - ', bounds[2],')') 
+      sprintf('%s (%s%% CI: %s - %s)', val, conf * 100, bounds[1], bounds[2])
     else
-      paste0(val, ' (min ', bounds[1], '; max ', bounds[2],')')
+      sprintf('%s (%s - %s)', val, bounds[1], bounds[2])
   })
 }
 

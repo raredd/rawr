@@ -27,7 +27,9 @@ Automatically calculate summary statistic and interval for numeric vectors
 intr(1:10)
 intr(1:10, conf = .95)
 # inner quartile range
-cbind(lapply(mtcars, intr, conf = .5), lapply(mtcars, intr, fun = mean))
+`colnames<-`(cbind(lapply(mtcars, intr, conf = .5),
+                   lapply(mtcars, intr, fun = mean)),
+             c('median (IQR)','mean (range)'))
 # compare to
 summary(mtcars)
 }
