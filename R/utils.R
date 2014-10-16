@@ -927,15 +927,18 @@ intr <- function(..., fun = median, conf = NULL, digits = 2, na.rm = FALSE) {
 
 #' p-value formatter
 #' 
-#' Formats several cases of p-values; see details
+#' Formats several cases of p-values; see details.
 #'  
-#' @usage pvalr(pvals, sig.limit = .001, digits = 3, html = FALSE)
+#' @usage
+#' pvalr(pvals, sig.limit = .001, digits = 3, html = FALSE, show.p = FALSE)
 #' 
 #' @param pvals numeric value or vector of p-values
 #' @param sig.limit lower bound for precision
 #' @param digits integer; number of decimal places; see also 
 #' \code{\link[rawr]{roundr}}
 #' @param html logical; if \code{TRUE}, uses \code{&lt;} instead of \code{<}
+#' @param show.p logical; if \code{TRUE}, inserts \code{p = } or \code{p < }
+#' where appropriate
 #' 
 #' @details
 #' This function will deal with several cases of common p-values: 1) p-values
@@ -951,27 +954,24 @@ intr <- function(..., fun = median, conf = NULL, digits = 2, na.rm = FALSE) {
 #' @examples
 #' pvals <- c(.13354, .060123, .004233, .00000016223)
 #' pvalr(pvals, digits = 3)
+#' pvalr(pvals, digits = 3, show.p = TRUE)
 #' 
 #' @export
 
-pvalr <- function(pvals, sig.limit = .001, digits = 3, html = FALSE) {
-  
-  # see ?rawr::roundr
-  roundr <- function(x, digits = 1) {
-    res <- sprintf(paste0('%.', digits, 'f'), x)
-    zzz <- paste0('0.', paste(rep('0', digits), collapse = ''))
-    res[res == paste0('-', zzz)] <- zzz
-    res
-  }
-  
+pvalr <- function(pvals, sig.limit = .001, digits = 3, html = FALSE, 
+                  show.p = FALSE) {
   sapply(pvals, function(x, sig.limit) {
-    if (x < sig.limit)
+    if (x < sig.limit) {
+      if (show.p) p <- 'p ' else p <- ''
       if (html)
-        return(sprintf('&lt; %s', format(sig.limit))) else
-          return(sprintf('< %s', format(sig.limit)))
-    if (x > .1)
-      return(roundr(x, digits = 2)) else
-        return(roundr(x, digits = digits))
+        return(sprintf('%s&lt; %s', p, format(sig.limit))) else
+          return(sprintf('%s< %s', p, format(sig.limit)))
+    } else {
+      if (show.p) p <- 'p = ' else p <- ''
+      if (x > .1)
+        return(sprintf('%s%s', p, roundr(x, digits = 2))) else
+          return(sprintf('%s%s', p, roundr(x, digits = digits)))
+    }
   }, sig.limit = sig.limit)
 }
 
