@@ -2,7 +2,8 @@
 # lsp, %ni%, ht, oror, progress, recoder, psum, ident, search.df, search.hist, 
 # ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
 # show.colors, show.pch, %inside%, try_require, clist, binconr, num2char, 
-# iprint, list2file, match_ctc, clc, clear, writeftable, helpExtract, Round
+# iprint, list2file, match_ctc, clc, clear, writeftable, helpExtract, Round,
+# bind_all, interleave
 ###
 
 #' List package
@@ -1579,4 +1580,52 @@ Round <- function(x, target) {
     x[select[wh]] <- r.x[select[wh]] + 1
     Round(x, target)
   }
+}
+
+#' Bind objects with unequal number of rows or columns
+#' 
+#' Bind objects with unequal number of rows or columns.
+#' 
+#' @usage bind_all(..., which)
+#' 
+#' @param ... vectors
+#' @param which joining method; \code{'rbind'} or \code{'cbind'}
+#' 
+#' @examples
+#' bind_all(1:5, 1:3, which = 'cbind')
+#' bind_all(1:5, 1:3, which = 'rbind')
+#' 
+#' @export
+
+bind_all <- function(..., which) {
+  if (missing(which))
+    stop('specify which: \'rbind\' or \'cbind\'')
+  l <- list(...)
+  l <- lapply(l, `length<-`, max(sapply(l, length)))
+  return(do.call(which, l))
+}
+
+#' Interleave rows or columns
+#' 
+#' Interleave rows (or columns) of vectors, matrices, or data frames.
+#' 
+#' @usage interleave(..., which)
+#' 
+#' @param ... vectors, matrices, or data frames
+#' @param which joining method; \code{'rbind'} or \code{'cbind'}
+#' 
+#' @examples
+#' interleave(matrix(1:9, 3, 3), matrix(letters[1:9], 3, 3), which = 'rbind')
+#' interleave(matrix(1:9, 3, 3), matrix(letters[1:9], 3, 3), which = 'cbind')
+#' 
+#' @export
+
+interleave <- function(..., which) {
+  if (missing(which))
+    stop('specify which: \'rbind\' or \'cbind\'')
+  l <- list(...)
+  if (which == 'rbind')
+    return(do.call('rbind', l)[order(sequence(sapply(l, nrow))), ])
+  else if (which == 'cbind')
+    return(do.call('cbind', l)[ , order(sequence(sapply(l, ncol)))])
 }
