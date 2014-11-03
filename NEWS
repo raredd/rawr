@@ -5,6 +5,7 @@ rawr 0.2.3
   * added ctc data, match_ctc, writeftable, helpExtract
   * minor fixes and improvements
   * added mood's median test
+  * added outer2
 
 rawr 0.2.2
 --------

@@ -962,6 +962,8 @@ intr <- function(..., fun = median, conf = NULL, digits = 2, na.rm = FALSE) {
 pvalr <- function(pvals, sig.limit = .001, digits = 3, html = FALSE, 
                   show.p = FALSE) {
   sapply(pvals, function(x, sig.limit) {
+    if (is.na(x))
+      return(NA)
     if (x < sig.limit) {
       if (show.p) p <- 'p ' else p <- ''
       if (html)
@@ -1628,4 +1630,35 @@ interleave <- function(..., which) {
     return(do.call('rbind', l)[order(sequence(sapply(l, nrow))), ])
   else if (which == 'cbind')
     return(do.call('cbind', l)[ , order(sequence(sapply(l, ncol)))])
+}
+
+#' Outer product of n-dimensional arrays
+#' 
+#' The outer product of the arrays \code{X}, \code{Y}, ... with dimensions
+#' \code{c(dim(X), dim(Y), ...)}; see \code{\link{outer}}.
+#' 
+#' @usage outer2(..., FUN)
+#' 
+#' @param ... arguments passed to \code{FUN} in the order given
+#' @param FUN a function to use on the outer products
+#' 
+#' @seealso \code{\link{outer}}; \code{\link{Vectorize}}
+#' 
+#' @examples
+#' outer2(LETTERS[1:3], letters[1:3], LETTERS[24:26], FUN = paste0)
+#' outer2(1:3, 1:3, 1:2, FUN = prod)
+#' 
+#' ## three-way example in ?outer
+#' x <- setNames(1:9, 1:9); y <- setNames(2:8, paste0(2:8, ':'))
+#' x %o% x %o% y[1:3]
+#' outer2(x, x, y[1:3], FUN = prod)
+#' 
+#' @export
+
+outer2 <- function(..., FUN) {
+  vf <- Vectorize(function(x, y) c(as.list(x), as.list(y)), SIMPLIFY = FALSE)
+  f <- function(l) Reduce(function(x, y) outer(x, y, vf), l)
+  args <- f(list(...))
+  res <- apply(args, 1:length(dim(args)), function(x) do.call(FUN, x[[1]]))
+  array(res, dim = dim(res), dimnames = list(...))
 }
