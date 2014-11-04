@@ -964,6 +964,8 @@ pvalr <- function(pvals, sig.limit = .001, digits = 3, html = FALSE,
   sapply(pvals, function(x, sig.limit) {
     if (is.na(x))
       return(NA)
+    if (x >= 1)
+      return('1')
     if (x < sig.limit) {
       if (show.p) p <- 'p ' else p <- ''
       if (html)
