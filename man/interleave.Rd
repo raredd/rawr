@@ -8,12 +8,14 @@ interleave(..., which)
 \arguments{
 \item{...}{vectors, matrices, or data frames}
 
-\item{which}{joining method; \code{'rbind'} or \code{'cbind'}}
+\item{which}{joining method to use (\code{'rbind'} or \code{'cbind'}) when
+\code{...} are matrices or data frames}
 }
 \description{
 Interleave rows (or columns) of vectors, matrices, or data frames.
 }
 \examples{
+interleave(letters[1:5], LETTERS[1:3], letters[20:26])
 interleave(matrix(1:9, 3, 3), matrix(letters[1:9], 3, 3), which = 'rbind')
 interleave(matrix(1:9, 3, 3), matrix(letters[1:9], 3, 3), which = 'cbind')
 }

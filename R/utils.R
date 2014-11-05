@@ -3,7 +3,7 @@
 # ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
 # show.colors, show.pch, %inside%, try_require, clist, binconr, num2char, 
 # iprint, list2file, match_ctc, clc, clear, writeftable, helpExtract, Round,
-# bind_all, interleave
+# bind_all, interleave, outer2
 ###
 
 #' List package
@@ -1616,22 +1616,28 @@ bind_all <- function(..., which) {
 #' @usage interleave(..., which)
 #' 
 #' @param ... vectors, matrices, or data frames
-#' @param which joining method; \code{'rbind'} or \code{'cbind'}
+#' @param which joining method to use (\code{'rbind'} or \code{'cbind'}) when
+#' \code{...} are matrices or data frames
 #' 
 #' @examples
+#' interleave(letters[1:5], LETTERS[1:3], letters[20:26])
 #' interleave(matrix(1:9, 3, 3), matrix(letters[1:9], 3, 3), which = 'rbind')
 #' interleave(matrix(1:9, 3, 3), matrix(letters[1:9], 3, 3), which = 'cbind')
 #' 
 #' @export
 
 interleave <- function(..., which) {
-  if (missing(which))
-    stop('specify which: \'rbind\' or \'cbind\'')
   l <- list(...)
-  if (which == 'rbind')
-    return(do.call('rbind', l)[order(sequence(sapply(l, nrow))), ])
-  else if (which == 'cbind')
-    return(do.call('cbind', l)[ , order(sequence(sapply(l, ncol)))])
+  if (all(sapply(l, is.vector)))
+    return(unlist(l)[order(unlist(sapply(l, order)))])
+  else {
+    if (missing(which))
+      stop('specify which: \'rbind\' or \'cbind\'')
+    if (which == 'rbind')
+      return(do.call('rbind', l)[order(sequence(sapply(l, nrow))), ])
+    else if (which == 'cbind')
+      return(do.call('cbind', l)[ , order(sequence(sapply(l, ncol)))])
+  }
 }
 
 #' Outer product of n-dimensional arrays
