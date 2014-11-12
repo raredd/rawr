@@ -490,13 +490,15 @@ power.cv <- function(n = NULL, f = NULL, cv = NULL,
 #' type = 'source')}
 #' 
 #' @examples
+#' \donttest{
 #' simon2(.2, c(.4, .5))
 #' simon2(p0 = seq(.55, .6, by = .01), pa = .75, ntmax = 60)
 #' 
 #' ## compare this function to results from desmon::simon
 #' simon2(.4, .6)
 #' ## requires desmon package
-#' # simon(.4, .6)
+#' simon(.4, .6)
+#' }
 #' @export
 
 simon2 <- function(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,

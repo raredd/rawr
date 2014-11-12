@@ -593,9 +593,9 @@ grcols <- function(n, s = .5, v = 1, alpha = 1) {
 #' \code{color} and \code{trans} must either be the same length or one of the 
 #' two must have length one. 
 #' 
-#' The funtion converts a adds two more hex numbers coding a transparency 
-#' between 0 (fully transparent) and 255 (fully visible). \code{color} values 
-#' are converted to RGB, transparency is added, and converted 
+#' The function adds integers (in hex) between 0 (fully transparent) and 255
+#' (fully visible) to the color(s) given. \code{color} values are converted to
+#' RGB with transparency.
 #' 
 #' @seealso \code{\link{as.hexmode}}, \code{\link{col2rgb}}
 #' 

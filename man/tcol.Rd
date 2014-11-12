@@ -20,9 +20,9 @@ This is a vectorized function to add transparency to colors.
 \code{color} and \code{trans} must either be the same length or one of the
 two must have length one.
 
-The funtion converts a adds two more hex numbers coding a transparency
-between 0 (fully transparent) and 255 (fully visible). \code{color} values
-are converted to RGB, transparency is added, and converted
+The function adds integers (in hex) between 0 (fully transparent) and 255
+(fully visible) to the color(s) given. \code{color} values are converted to
+RGB with transparency.
 }
 \examples{
 cols <- c('red','green','blue')
