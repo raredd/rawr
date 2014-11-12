@@ -3,7 +3,7 @@
 # ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
 # show.colors, show.pch, %inside%, try_require, clist, binconr, num2char, 
 # iprint, list2file, match_ctc, clc, clear, writeftable, helpExtract, Round,
-# bind_all, interleave, outer2
+# bind_all, interleave, outer2, merge2
 ###
 
 #' List package
@@ -1670,3 +1670,29 @@ outer2 <- function(..., FUN) {
   res <- apply(args, 1:length(dim(args)), function(x) do.call(FUN, x[[1]]))
   array(res, dim = dim(res), dimnames = list(...))
 }
+
+#' Recursively merge a list of data frames
+#' 
+#' Use \code{\link{merge}} to join \code{n} data frames
+#' 
+#' @usage merge2(l, ...)
+#' 
+#' @param l list of data frames or objects to be coerced
+#' @param ... additional arguments passed to \code{merge} (eg, \code{by}, 
+#' \code{all}, etc)
+#' 
+#' @seealso \code{\link[plyr]{join_all}}
+#' 
+#' @examples
+#' a <- data.frame(id = 1:10, a = rnorm(10))
+#' b <- data.frame(id = 4:6, b = rnorm(3))
+#' c <- data.frame(id = 4:14, c = rpois(11, 1))
+#' d <- matrix(c(1:5, rnorm(5)), nrow = 5, dimnames = list(NULL, c('id', 'd')))
+#' 
+#' merge2(list(a, b, c))
+#' merge2(list(a, b, c), all = TRUE)
+#' merge2(list(a, b, c, d), all = TRUE)
+#' 
+#' @export
+
+merge2 <- function(l, ...) Reduce(function(x, y) merge(x, y, ...), l)
