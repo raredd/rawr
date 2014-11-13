@@ -3,12 +3,14 @@
 \alias{surv_table}
 \title{Summary table}
 \usage{
-surv_table(s, digits = max(options() $digits-4, 3), ...)
+surv_table(s, digits = 3, times = pretty(range(s$time)), ...)
 }
 \arguments{
 \item{s}{\code{\link[survival]{survfit}} object}
 
 \item{digits}{number of digits to use in printing numbers}
+
+\item{times}{vector of times}
 
 \item{...}{additional arguments passed to
 \code{\link[survival]{summary.survfit}}}
@@ -32,8 +34,8 @@ surv_table(fit0, times = c(0, 100, 200))
 ## also works for list of tables
 fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)),
                       data = cancer),
-                conf.type = 'log-log')
-surv_table(fit1, times = c(0, 100, 200))
+                conf.type = 'log-log', conf.int = 0.9)
+surv_table(fit1)
 
 \dontrun{
 library(Gmisc)

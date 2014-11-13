@@ -1170,10 +1170,11 @@ surv_summary <- function(s, digits = max(options()$digits - 4, 3), ...) {
 #' Prints a formatted summary table for \code{\link[survival]{survfit}} objects
 #' 
 #' @usage
-#' surv_table(s, digits = max(options() $digits-4, 3), ...)
+#' surv_table(s, digits = 3, times = pretty(range(s$time)), ...)
 #' 
 #' @param s \code{\link[survival]{survfit}} object
 #' @param digits number of digits to use in printing numbers
+#' @param times vector of times
 #' @param ... additional arguments passed to 
 #' \code{\link[survival]{summary.survfit}}
 #' 
@@ -1196,8 +1197,8 @@ surv_summary <- function(s, digits = max(options()$digits - 4, 3), ...) {
 #' ## also works for list of tables
 #' fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)), 
 #'                       data = cancer),
-#'                 conf.type = 'log-log')
-#' surv_table(fit1, times = c(0, 100, 200))
+#'                 conf.type = 'log-log', conf.int = 0.9)
+#' surv_table(fit1)
 #' 
 #' \dontrun{
 #' library(Gmisc)
@@ -1209,21 +1210,24 @@ surv_summary <- function(s, digits = max(options()$digits - 4, 3), ...) {
 #' 
 #' @export
 
-surv_table <- function(s, digits = max(options()$digits - 4, 3), ...) {
-  tmp <- capture.output(summ <- surv_summary(s, digits = digits, ...))
+surv_table <- function(s, digits = 3, times = pretty(range(s$time)), ...) {
+  tmp <- capture.output(summ <- surv_summary(s, digits = digits, 
+                                             times = times, ...))
   
   f <- function(x, d = digits, vars = vars) {
     vars = colnames(x)
-    tmpvar <- colnames(x)[grep('time|survival|std.err|lower|upper', 
+    tmpvar <- colnames(x)[grep('survival|std.err|lower|upper', 
                                colnames(x))]
     x[ , tmpvar] <- roundr(x[ , tmpvar], digits = d)
     
     surv <- sprintf('%s (%s, %s)', 
-                    x[ , colnames(x)[grepl('survival', colnames(x))]], 
-                    x[ , colnames(x)[grepl('lower', colnames(x))]], 
+                    x[ , colnames(x)[grepl('survival', colnames(x))]],
+                    x[ , colnames(x)[grepl('lower', colnames(x))]],
                     x[ , colnames(x)[grepl('upper', colnames(x))]])
     
-    cbind(x[ , c('time', setdiff(vars, tmpvar), 'std.err')], surv)
+    `colnames<-`(cbind(x[ , c(setdiff(vars, tmpvar), 'std.err')], surv),
+                 c('Time','No. at risk','No. event','Std.Error',
+                   sprintf('OR (%s%% CI)', s$conf.int * 100)))
   }
   
   if (is.list(summ))

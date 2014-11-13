@@ -1696,3 +1696,58 @@ outer2 <- function(..., FUN) {
 #' @export
 
 merge2 <- function(l, ...) Reduce(function(x, y) merge(x, y, ...), l)
+
+#' Tabler
+#' 
+#' Extracts coefficients, standard errors, odds ratios, confidence intervals, 
+#' p-values, etc. from model fits.
+#' 
+#' @usage tabler(x, ...)
+#' 
+#' @param x an object of class \code{\link{lm}}, \code{\link{glm}},
+#' \code{\link{survfit}}
+#' @param ... additional parameters passed to other methods
+#' 
+#' @examples
+#' lmfit <- lm(mpg ~ hp + disp + wt, data = mtcars)
+#' tabler(lmfit)
+#' 
+#' glmfit <- glm(vs ~ drat + factor(gear), data = mtcars, family = 'binomial')
+#' tabler(glmfit, type = 'or')
+#' 
+#' \donttest{
+#' library(survival)
+#' sfit <- survfit(Surv(time, status) ~ 1, data = cancer, conf.int = 0.9)
+#' tabler(sfit)
+#' }
+#' 
+#' @export
+
+tabler <- function(x, ...) UseMethod('tabler')
+
+#' @export
+tabler.default <- function(x, ...) summary(x, ...)
+
+#' @export
+tabler.lm <- function(x, digits = 3, ...) {
+  res <- round(summary(x, ...)$coefficients, digits = digits)
+  return(res)
+}
+
+#' @export
+tabler.glm <- function(x, digits = 3, level = 0.95, type = '', ...) {
+  res <- summary(x, ...)$coefficients
+  if (tolower(type) == 'or') {
+    res <- round(cbind(exp(cbind(coef(x), confint(x, level = level))),
+                       res[, 4]), digits)
+    res <- setNames(as.data.frame(res), 
+                    c('Odds Ratio', sprintf('L%s%% CI', level * 100), 
+                      sprintf('U%s%% CI', level * 100), 'Pr(>|z)'))
+  }
+  return(res)
+}
+
+#' @export
+tabler.survfit <- function(x, ...) {
+  surv_table(x, ...)
+}
