@@ -172,14 +172,23 @@ progress <- function (value, max.value, textbar = FALSE) {
   f <- function(...) paste0(..., collapse = '')
   
   if (textbar) {
-    m <- getOption('width')
-    r <- floor(as.numeric(value) / as.numeric(max.value) * m)
+#     m <- getOption('width')
+#     r <- floor(as.numeric(value) / as.numeric(max.value) * m)
+#     backspaces <- f(rep('\b', m * 2))
+#     if (erase.only) message <- ''
+#     else {
+#       message <- f('|', f(rep('=', max(0, r - 1))), 
+#                    f(rep(' ', max(0, m - r))), '|')
+#       cat(backspaces, message, sep = '')
+    m <- getOption('width') - 5
+    pct <- as.numeric(value) / as.numeric(max.value)
+    r <- floor(pct * m)
     backspaces <- f(rep('\b', m * 2))
     if (erase.only) message <- ''
     else {
       message <- f('|', f(rep('=', max(0, r - 1))), 
                    f(rep(' ', max(0, m - r))), '|')
-      cat(backspaces, message, sep = '')
+      cat(backspaces, message, sprintf('  %s%%', round(pct * 100)), sep = '')
     }
   } else {
     if (percent) {
