@@ -6,17 +6,35 @@
 progress(value, max.value = NULL)
 }
 \arguments{
-\item{value}{numeric; i-th iteration}
+\item{value}{numeric; i-th iteration or percent completed (values 0-100)}
 
-\item{max.value}{numeric; n-th iteration}
+\item{max.value}{numeric; n-th iteration; if missing, will assume percent
+completion is desired}
+
+\item{textbar}{logical; if \code{TRUE}, uses text progress bar which will
+span across the console width; see \code{\link{options}}}
 }
 \description{
 Displays the percent completed during an iteration
 }
 \examples{
 \dontrun{
-for (ii in 1:1000) {
-   progress(ii / 1000 * 100)
+iterations <- 77
+## percent completed:
+for (ii in 1:iterations) {
+   progress(ii / iterations * 100)
+   Sys.sleep(.01)
+}
+
+## iterations completed
+for (ii in 1:iterations) {
+   progress(ii, iterations)
+   Sys.sleep(.01)
+}
+
+## text progress bar
+for (ii in 1:iterations) {
+   progress(ii, iterations, textbar = T)
    Sys.sleep(.01)
 }
 }

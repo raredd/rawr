@@ -127,51 +127,73 @@ ht <- function(x, ..., sep = NULL) rbind(head(x, ...), sep, tail(x, ...))
 #' Displays the percent completed during an iteration
 #' 
 #' @usage progress(value, max.value = NULL)
-#' @param value numeric; i-th iteration
-#' @param max.value numeric; n-th iteration
+#' @param value numeric; i-th iteration or percent completed (values 0-100)
+#' @param max.value numeric; n-th iteration; if missing, will assume percent
+#' completion is desired
+#' @param textbar logical; if \code{TRUE}, uses text progress bar which will
+#' span across the console width; see \code{\link{options}}
 #' 
 #' @examples
 #' \dontrun{
-#' for (ii in 1:1000) {
-#'    progress(ii / 1000 * 100)
+#' iterations <- 77
+#' ## percent completed:
+#' for (ii in 1:iterations) {
+#'    progress(ii / iterations * 100)
+#'    Sys.sleep(.01)
+#' }
+#' 
+#' ## iterations completed
+#' for (ii in 1:iterations) {
+#'    progress(ii, iterations)
+#'    Sys.sleep(.01)
+#' }
+#'
+#' ## text progress bar
+#' for (ii in 1:iterations) {
+#'    progress(ii, iterations, textbar = T)
 #'    Sys.sleep(.01)
 #' }
 #' }
 #' @export
 
-progress <- function (value, max.value = NULL) {
+progress <- function (value, max.value, textbar = FALSE) {
   
   if (!is.numeric(value)) 
-    stop("'value' must be numeric")
-  if (is.null(max.value)) {
+    stop("\'value\' must be numeric")
+  if (missing(max.value)) {
     max.value <- 100
     percent <- TRUE
-  } else 
-    percent <- FALSE
+  } else percent <- FALSE
   
   erase.only <- value > max.value
   max.value <- as.character(round(max.value))
   l <- nchar(max.value)
   value <- formatC(round(value), width = l)
+  f <- function(...) paste0(..., collapse = '')
   
-  if (percent) {
-    backspaces <- paste(rep('\b', l + 14), collapse = '')
-    
-    if (erase.only) 
-      message <- ''
-    else 
-      message <- paste('Progress: ', value, '%  ', sep = '')
-    cat(backspaces, message, sep = '')
-    
+  if (textbar) {
+    m <- getOption('width')
+    r <- floor(as.numeric(value) / as.numeric(max.value) * m)
+    backspaces <- f(rep('\b', m * 2))
+    if (erase.only) message <- ''
+    else {
+      message <- f('|', f(rep('=', max(0, r - 1))), 
+                   f(rep(' ', max(0, m - r))), '|')
+      cat(backspaces, message, sep = '')
+    }
   } else {
-    backspaces <- paste(rep('\b', 2 * l + 16), collapse = '')
-    if (erase.only) 
-      message <- ''
-    else 
-      message <- paste('Progress: ', value, ' on ', max.value, '  ', sep = '')
-    cat(backspaces, message, sep = '')
+    if (percent) {
+      backspaces <- f(rep('\b', l + 14))
+      if (erase.only) message <- ''
+      else message <- paste0('Progress: ', value, '%  ')
+      cat(backspaces, message, sep = '')
+    } else {
+      backspaces <- f(rep('\b', 2 * l + 17))
+      if (erase.only) message <- ''
+      else message <- f('Progress: ', value, ' of ', max.value, '  ')
+      cat(backspaces, message, sep = '')
+    }
   }
-  
   if (.Platform$OS.type == 'windows') 
     flush.console()
   invisible(NULL)
