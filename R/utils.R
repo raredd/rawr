@@ -1435,6 +1435,26 @@ match_ctc <- function(..., version = 4) {
               version = sprintf('CTCAE v%s', version)))
 }
 
+#' Reload
+#' 
+#' Emulate starting a fresh \code{R} session
+#' 
+#' @usage Reload()
+#' @export
+
+Reload <- function() {
+  ## clean (rstudio) r session packages:
+  pkgs <- c(".GlobalEnv", "tools:rstudio", "package:stats", "package:graphics",
+            "package:grDevices", "package:utils", "package:datasets",
+            "package:methods", "Autoloads", "package:base")
+  to_unload <- setdiff(search(), pkgs)
+  for (pkg in to_unload)
+    try(detach(pkg, character.only = TRUE), silent = TRUE)
+  rm(list = ls(envir = .GlobalEnv), envir = .GlobalEnv)
+  cat('\014')
+  invisible(NULL)
+}
+
 #' clc
 #' 
 #' Clear the workspace
