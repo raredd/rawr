@@ -3,7 +3,7 @@
 # ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
 # show.colors, show.pch, %inside%, try_require, clist, binconr, num2char, 
 # iprint, list2file, match_ctc, clc, clear, writeftable, helpExtract, Round,
-# bind_all, interleave, outer2, merge2
+# bind_all, interleave, outer2, merge2, locf
 ###
 
 #' List package
@@ -1801,4 +1801,49 @@ tabler.glm <- function(x, digits = 3, level = 0.95, type = '', ...) {
 #' @export
 tabler.survfit <- function(x, ...) {
   surv_table(x, ...)
+}
+
+#' Last observation carried forward
+#' 
+#' Replaces \code{NA} in vectors, data frames, or matrices with most recent
+#' non-\code{NA} value
+#' 
+#' @usage locf(x, fromLast = FALSE)
+#' 
+#' @param x a vector, matrix, or data frame
+#' @param fromLast logical; if \code{TRUE}, starts from end
+#' 
+#' @examples
+#' df <- data.frame(V1 = c('Bob', NA, NA, 'Joe', NA, NA),
+#'                  V2 = c(NA, 1, NA, NA, 2, NA))
+#' 
+#' within(df, {
+#'   V1 <- locf(V1)
+#'   V2 <- locf(V2, fromLast = TRUE)
+#' })
+#' 
+#' locf(df)
+#' 
+#' @export
+
+locf <- function(x, fromLast = FALSE) {
+  if (!(ok <- !is.null(nrow(x))))
+    x <- data.frame(x)
+  indx <- !is.na(x)
+  #   if (!missing(ch.strings))
+  #     indx <- do.call('cbind', lapply(x, `%in%`, ch.strings))
+  x[] <- lapply(seq_along(x), function(ii) {
+    if (fromLast) {
+      idx <- rev(cumsum(rev(indx[, ii])))
+      idx[idx == 0] <- NA
+      return(rev(x[, ii])[rev(indx[, ii])][idx])
+    } else {
+      idx <- cumsum(indx[, ii])
+      idx[idx == 0] <- NA
+      return(x[, ii][indx[, ii]][idx])
+    }
+  })
+  if (ok)
+    return(x)
+  else return(x[, 1])
 }
