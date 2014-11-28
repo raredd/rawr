@@ -34,11 +34,11 @@ about
 ### plots / plot utils
 
 name | function
------|-----
+----------------|---------------
 `click.shape`   | add shapes interactively
 `click.text`    | add text interactively
 `dodge`         | dodge points (alternative to jitter)
-`dsplot`       | discrete scatter plot
+`dsplot`        | discrete scatter plot
 `facet_adjust`  | ggplot facet adjust
 `ggcaterpillar` | caterpillar using ggplot
 `ggcols`        | replicate ggplot colors
@@ -310,7 +310,7 @@ ggsurv(coxfit, legend.labels = c('< 45','> 45'), legend = FALSE, median = TRUE)
 ### SAS utils
 
 name | function
------|-----
+----------------|---------------
 `r2sas`      | write/run sas code in r
 `get_margs`  | extract macro name(s) and arguments from a text file
 `rmacro`     | runs sas macros from .sas files
@@ -320,7 +320,7 @@ name | function
 ### rawr utils
 
 name | function
--|-
+----------------|---------------
 `%||%`        | `||` ruby analogue
 `%inside%`    | inside interval
 `%ni%`        | negation of `%in%`
@@ -352,7 +352,7 @@ name | function
 ### table/knitr utils
 
 name | function
------|-----
+----------------|---------------
 `binconr`      | format exact binomial confidence intervals
 `helpExtract`  | extract r help files for use in markdown/sweave documents
 `html.test`    | test html code in rstudio viewer
@@ -449,7 +449,7 @@ lss()
 ### utils
 
 name | function
------|-----
+----------------|---------------
 `bin1samp`         | one-stage exact binomial designs
 `bincon`           | exact binomial confidence intervals
 `bintest`          | one-stage exact binomial designs
