@@ -16,13 +16,13 @@ about
 
 ### [graphics](#some-rawr-graphics)
 
-**[joint marginal, box, discrete scatter plots](#special-plots)** | **[pretty bar plots](#pretty-bars)** <br> **[plotting utilities](#plotting-utils)** | **[interactive plots](#interactive-base-plots)** <br> **[other gg plots](#other-gg-plots)** | **[survival plots in base and gg](#survival-in-base-and-gg)**
+**[joint marginal, box, discrete scatter plots](#special-plots)** <br> **[plotting utilities](#plotting-utils)** <br> **[other gg plots](#other-gg-plots)** | **[survival plots in base and gg](#survival-in-base-and-gg)**
 
 #### more stuff <a href = 'https://github.com/raredd/rgraphics'>here</a>
 
 ### [utils](#rawr-utils)
 
-**[utils](#rawr-utils)** | **[stat things](#stat-things)** | **[dumb things](#dumb-stuff)**
+**[utils](#rawr-utils)** | **[stat things](#stat-things)** | **[SAS things](#sas-things)**
 
 </font>
 
@@ -30,6 +30,29 @@ about
 
 
 ## some rawr graphics
+
+### plots / plot utils
+
+name | function
+-|-
+`click.shape`   | add shapes interactively
+`click.text`    | add text interactively
+`dodge`         | dodge points (alternative to jitter)
+`dsplot`       | discrete scatter plot
+`facet_adjust`  | ggplot facet adjust
+`ggcaterpillar` | caterpillar using ggplot
+`ggcols`        | replicate ggplot colors
+`ggheat`        | heatmap using ggplot
+`ggmultiplot`   | align multiple ggplots on single layout
+`ggsurv`        | survival curve using ggplot
+`grcols`        | golden ratio colors
+`jmplot`        | joint marginal plot
+`kmplot`        | survival curve using base
+`multiplot`     | plot multiple base plots on single layout
+`show.colors`   | show all base colors
+`show.pch`      | show all base plotting characters
+`tcol`          | add transparency to colors
+`tplot`         | improved boxplots
 
 
 ```r
@@ -98,48 +121,6 @@ legend('bottomright', pch = 19, col = 1:2, bty = 'n',
 <figure><img src='about/figure/spplots3.png'  style='display:block; margin: auto;'><figcaption>Figure 3: special plots</figcaption></figure>
 
 
-## pretty bars
-
-
-```r
-## kinda pretty?
-prettybars(mtcars$mpg, y = rownames(mtcars), col.bg = 'snow',
-           emph = rownames(mtcars)[grepl('Merc', rownames(mtcars))],
-           extra.margin = 1, col.emph = 'cyan2',
-           FUN = quantile, probs = c(.25, .5, .75), na.rm = TRUE, 
-           fun.lab = c('lower quartile','median','upper quartile'),
-           note = "if you buy a Merccedes,\nget ready to pay for lots of gas",
-           title = 'motor trend cars', sub = '   (miles per gallon)')
-```
-
-<figure><img src='about/figure/prettybars1.png'  style='display:block'><figcaption>Figure 4: prettybars</figcaption></figure>
-
-```r
-## a face only a mother could love
-set.seed(1618)
-f <- function(...) sample(1:5, 100, replace = TRUE, prob = c(...))
-dat <- data.frame(q1 = f(.1, .2, .3, .3, .1),
-                  q2 = f(.1, .4, .1, .3, .1),
-                  q3 = f(.1, .2, .3, .3, .1),
-                  q4 = f(.1, .1, .3, .3, .1),
-                  q5 = f(.2, .1, .2, .3, .2),
-                  q6 = f(.1, .3, .3, .2, .1),
-                  q7 = f(.1, .4, .1, .1, .3))
-dat <- stack(dat)
-dat <- within(dat, {
-  values <- factor(values, levels = 1:5, labels = c('NA','SA','A','D','SD'))})
-
-mydata <- table(dat)
-cols <- c(grey(.9), tcol(c('lightblue','lightblue','magenta1','magenta1'), 
-               c(200, 100, 100, 200)))
-
-prettybars2(mydata, lab.y = paste('Question #', 1:7), extra.margin = 3, 
-            col.group = cols)
-```
-
-<figure><img src='about/figure/prettybars2.png'  style='display:block'><figcaption>Figure 5: prettybars</figcaption></figure>
-
-
 
 ```r
 ## a pretty legend
@@ -155,7 +136,7 @@ with(mtcars,
 <figure><img src='about/figure/legend.png'  style='display:block'><figcaption>Figure 6: Legend</figcaption></figure>
 
 
-## plotting utils
+### plotting utils
 
 ```r
 ## show colors
@@ -222,8 +203,18 @@ with(dat, plot(grp + dodge(x ~ grp, dat), x, main = 'dodge points'))
 
 <figure><img src='about/figure/rawr_plot_utils6.png'  style='display:block; margin: auto;'><figcaption>Figure 12: Utilities</figcaption></figure>
 
+```r
+## color functions
+par(mfrow = c(1, 3), pch = 20, bg = "snow", mar = c(3, 3, 3, 2))
+plot(1:10, col = grcols(10), main = "grcols", cex = 4)
+plot(1:10, col = ggcols(10), main = "ggcols", cex = 4)
+plot(rnorm(100), col = tcol(ggcols(10), 100), main = "tcol", cex = 6)
+```
 
-## interactive base plots
+<figure><img src='about/figure/dumb_stuff.png'  style='display:block'><figcaption>Figure 1: Color functions</figcaption></figure>
+
+
+### interactive base plots
 
 
 ```r
@@ -235,7 +226,7 @@ with(dat, plot(grp + dodge(x ~ grp, dat), x, main = 'dodge points'))
 ```
 
 
-## other gg plots
+### other gg plots
 
 
 ```r
@@ -316,17 +307,77 @@ ggsurv(coxfit, legend.labels = c('< 45','> 45'), legend = FALSE, median = TRUE)
 
 ---
 
-## rawr utils
+### SAS utils
 
+name | function
+-|-
+`r2sas`      | write/run sas code in r
+`get_margs`  | extract macro name(s) and arguments from a text file
+`rmacro`     | runs sas macros from .sas files
+`sas.mget`   | converts one or more sas data sets to r data frames and returns list
+`source_sas` | source-esque function for .sas files
+
+### rawr utils
+
+name | function
+-|-
+`%||%`        | `||` ruby analogue
+`%inside%`    | inside interval
+`%ni%`        | negation of `%in%`
+`bind_all`    | `rbind` or `cbind` objects with unequal rows/columns
+`clc`         | remove all objects from workspace
+`clear`       | clear console window
+`clist`       | concatenate named list
+`fapply`      | apply list of functions
+`ht`          | head/tail
+`ident`       | generalized `identical` function for two or more objects
+`interleave`  | interleave vector/matrix/dataframe
+`list2file`   | save named list of data frames/matrices to .rda, .csv, etc
+`locf`        | last observation carried forward
+`lsp`         | list package contents
+`lss`         | improved `ls`
+`merge2`      | merge two or more data frames
+`num2char`    | convert integers to words
+`outer2`      | `outer` for n-dimensional arrays
+`progress`    | progress percent/text bar
+`psum`        | pairwise summation
+`recoder`     | recode data frames
+`Reload`      | emulate new r session
+`rescaler`    | rescale numeric vectors
+`search.df`   | search data frames
+`search.hist` | search history
+`try_require` | load packages silently
+
+
+### table/knitr utils
+
+name | function
+-|-
+`binconr`      | format exact binomial confidence intervals
+`helpExtract`  | extract r help files for use in markdown/sweave documents
+`html.test`    | test html code in rstudio viewer
+`intr`         | interval formatter
+`iprint`       | in-line printing
+`pvalr`        | p-value formatter
+`Round`        | round numeric vector to sum to a specified target
+`roundr`       | improved rounding formatter
+`surv_table`   | extract survival summary into table
+`tabler`       | extract lm, glm, surv summaries into table
+`writeftable`  | convert ftable into (printable) table
 
 ```r
-options(width = 100)
-## load packages silently
+## list package contents
 
-## ? try_require
-try_require(Hmisc)  # Hmisc is stupidly noisy
+lsp(rawr, pat = 'plot')
+```
 
+```
+## [1] "dsplot"         "dsplot.default" "dsplot.formula" "ggmultiplot"   
+## [5] "jmplot"         "kmplot"         "multiplot"      "tplot"         
+## [9] "tplot.default"  "tplot.formula" 
+```
 
+```r
 ## search functions for data frames and R history
 
 ## ?search.hist
@@ -377,69 +428,6 @@ ht(recoder(mtcars, c(6, 1, 110), NA), sep = "...")
 ```
 
 ```r
-## number to name
-
-## ?num2char
-num2char(54321)
-```
-
-```
-## [1] "Fifty-four thousand three hundred twenty-one"
-```
-
-```r
-## ruby || analoge
-
-## ?oror
-NULL || TRUE
-```
-
-```
-## Error: invalid 'x' type in 'x || y'
-```
-
-```r
-NULL %||% TRUE
-```
-
-```
-## [1] TRUE
-```
-
-```r
-## inside interval
-
-## ?inside
-1:5 %inside% c(3, 7)
-```
-
-```
-## [1] FALSE FALSE  TRUE  TRUE  TRUE
-```
-
-```r
-## negation of ?'%in%'
-
-## ?notin
-1:5 %ni% c(3, 7)
-```
-
-```
-## [1]  TRUE  TRUE FALSE  TRUE  TRUE
-```
-
-```r
-## concatenate a named list
-
-## ?clist
-clist(list(a = 1, b = 2))
-```
-
-```
-## [1] "a = 1, b = 2"
-```
-
-```r
 ## more information from ls()
 
 ## ?lss
@@ -455,41 +443,25 @@ lss()
 ## mat     matrix  248 248 bytes    3    3
 ```
 
-```r
-## generalized ?identical for > 2 objects
-
-## ?ident
-ident(.GlobalEnv, environment(), globalenv(), as.environment(1))
-```
-
-```
-## [1] TRUE
-```
-
-```r
-## apply list of functions
-
-## ?fapply
-fapply(mtcars, list(min, mean, max, length))
-```
-
-```
-##        min   mean   max length
-## mpg   10.4  20.09  33.9     32
-## cyl      4  6.188     8     32
-## disp  71.1  230.7   472     32
-## hp      52  146.7   335     32
-## drat  2.76  3.597  4.93     32
-## wt   1.513  3.217 5.424     32
-## qsec  14.5  17.85  22.9     32
-## vs       0 0.4375     1     32
-## am       0 0.4062     1     32
-## gear     3  3.688     5     32
-## carb     1  2.812     8     32
-```
-
 
 ## stat things
+
+### utils
+
+name | function
+-|-
+`bin1samp`         | one-stage exact binomial designs
+`bincon`           | exact binomial confidence intervals
+`bintest`          | one-stage exact binomial designs
+`dlt.table`        | dlt table  
+`local.coxph.test` | local coxph p-value
+`match_ctc`        | convert ctc toxicity codes to descriptions
+`moods.test`       | mood's median test
+`power.cv`         | coefficient of variation power calculation
+`simon`            | simon optional two-stage designs  
+`simon2`           | simon optional two-stage designs  
+`surv_cp`          | convert survival to counting process
+`surv_summary`     | extract survival summary into list
 
 
 ```r
@@ -642,57 +614,6 @@ power.cv(n = NULL, f = 1.25, cv = 0.2, sig.level = 0.05, power = 0.8, distributi
 ## 
 ## NOTE: n is number in *each* group
 ```
-
-
-## dumb stuff
-
-
-```r
-## sparkbar
-
-## ?spark
-spark(rpois(10, 3))
-```
-
-```
-## [1] ▅▇▆▅▁▆▂▆▅▆
-```
-
-```r
-## color functions
-par(mfrow = c(1, 3), pch = 20, bg = "snow", mar = c(3, 3, 3, 2))
-plot(1:10, col = grcols(10), main = "grcols", cex = 4)
-plot(1:10, col = ggcols(10), main = "ggcols", cex = 4)
-plot(rnorm(100), col = tcol(ggcols(10), 100), main = "tcol", cex = 6)
-```
-
-<figure><img src='about/figure/dumb_stuff.png'  style='display:block'><figcaption>Figure 1: Color functions</figcaption></figure>
-
-
-
-
-```r
-## a game
-
-## ?witchcraft
-witchcraft()
-
-## progress bar for the anxious
-
-## ?progress
-for (ii in 1:100) {
-    progress(ii/100 * 100)
-    Sys.sleep(0.01)
-}
-
-## others
-rescaler
-ht
-psum
-dlt.table
-zoomin
-```
-
 
 ---
 

@@ -1,3 +1,9 @@
+rawr 0.3.0
+--------
+  * added some misc functions
+  * fixes, tweaks, removed some unneeded functions
+  * moving special plots to another package
+
 rawr 0.2.3
 --------
   * new sas tools: sas.mget, rmacro, get_margs, source_sas, r2sas

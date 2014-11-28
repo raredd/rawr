@@ -12,7 +12,7 @@
 \tab \code{ctc_version} \tab version number \cr
 }}
 \usage{
-data(ctcae_v3)
+ctcae_v3
 }
 \description{
 A dataset containing the CTCAE (version 3) toxicity codes, descriptions, and

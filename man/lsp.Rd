@@ -3,24 +3,28 @@
 \alias{lsp}
 \title{List package}
 \usage{
-lsp(package, what = 'all')
+lsp(package, what, pattern)
 }
 \arguments{
-\item{package}{package name}
+\item{package}{package name, as \code{\link{name}} or literal character
+string}
 
 \item{what}{what to get; \code{'all'} is default which returns all exported
 and non exported functions in \code{package}; see details for more}
+
+\item{pattern}{text pattern or regular expression passed to
+\code{\link{grep}} to filter results}
 }
 \description{
 List all exported and/or non exported objects in a package.
 }
 \details{
-This is a helper/wrapper function to easily list exported (\code{?'::'}) and
+This is a helper/wrapper function to list exported (\code{?'::'}) and
 non exported (\code{?':::'}) functions (and other features from a package's
 \code{NAMESPACE} file). Note that \code{base} and older packages do not have
-a \code{'NAMESPACE'} file in which case, for \code{base} packages,
-\code{lsp} returns \code{ls(.BaseNamespaceEnv, all.names = TRUE)}, and for
-older packages with no \code{NAMESPACE} will throw an error.
+a \code{NAMESPACE} file in which case, for \code{base} packages,
+\code{lsp} returns \code{ls(.BaseNamespaceEnv, all.names = TRUE)}, and
+throws an error otherwise.
 
 Possible values for \code{what} are \code{'all'} (default), \code{NULL},
 \code{'exports'}, \code{'imports'}, \code{'dynlibs'}, \code{'lazydata'},
@@ -29,12 +33,14 @@ the package.
 
 \code{lsp(packagename, '?')} to see options for a specific package.
 
-\code{lsp(packagename, NULL)} to return all information.
+\code{lsp(packagename, NULL)} to return all information in a list.
 }
 \examples{
-lsp(base)
-
+## see the contents of this package
 lsp(rawr)
+
+## return all one or two character functions from base package
+lsp(base, pat = '^.{1,2}$')
 
 ## for "what" options
 lsp('rawr', '?')

@@ -13,15 +13,15 @@
 \tab \code{MedDRA_code_v12} \tab Medical Dictionary for Regulatory
 Activities codes, v12 \cr
 }}
+\source{
+\href{http://www.dfhcc.harvard.edu/fileadmin/DFHCC_Admin/Clinical_Trials/QACT/Policies_and_Procedures/CTCToxVersion4.pdf}{CTCAE v4}
+}
 \usage{
-data(ctcae_v4)
+ctcae_v4
 }
 \description{
 A dataset containing the CTCAE (version 4) toxicity codes, descriptions, and
 categories.
-}
-\references{
-\href{http://www.dfhcc.harvard.edu/fileadmin/DFHCC_Admin/Clinical_Trials/QACT/Policies_and_Procedures/CTCToxVersion4.pdf}{CTCAE v4}
 }
 \keyword{datasets}
 

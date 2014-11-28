@@ -2,28 +2,32 @@
 # lsp, %ni%, ht, oror, progress, recoder, psum, ident, search.df, search.hist, 
 # ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
 # show.colors, show.pch, %inside%, try_require, clist, binconr, num2char, 
-# iprint, list2file, match_ctc, clc, clear, writeftable, helpExtract, Round,
-# bind_all, interleave, outer2, merge2, locf
+# iprint, list2file, match_ctc, Reload, clc, clear, writeftable, helpExtract,
+# Round, bind_all, interleave, outer2, merge2, locf
 ###
+
 
 #' List package
 #' 
 #' List all exported and/or non exported objects in a package.
 #' 
 #' @usage
-#' lsp(package, what = 'all')
+#' lsp(package, what, pattern)
 #' 
-#' @param package package name
+#' @param package package name, as \code{\link{name}} or literal character 
+#' string
 #' @param what what to get; \code{'all'} is default which returns all exported
 #' and non exported functions in \code{package}; see details for more
+#' @param pattern text pattern or regular expression passed to 
+#' \code{\link{grep}} to filter results
 #' 
 #' @details
-#' This is a helper/wrapper function to easily list exported (\code{?'::'}) and
+#' This is a helper/wrapper function to list exported (\code{?'::'}) and
 #' non exported (\code{?':::'}) functions (and other features from a package's 
 #' \code{NAMESPACE} file). Note that \code{base} and older packages do not have
-#' a \code{'NAMESPACE'} file in which case, for \code{base} packages, 
-#' \code{lsp} returns \code{ls(.BaseNamespaceEnv, all.names = TRUE)}, and for
-#' older packages with no \code{NAMESPACE} will throw an error.
+#' a \code{NAMESPACE} file in which case, for \code{base} packages, 
+#' \code{lsp} returns \code{ls(.BaseNamespaceEnv, all.names = TRUE)}, and 
+#' throws an error otherwise.
 #' 
 #' Possible values for \code{what} are \code{'all'} (default), \code{NULL},
 #' \code{'exports'}, \code{'imports'}, \code{'dynlibs'}, \code{'lazydata'}, 
@@ -32,12 +36,14 @@
 #' 
 #' \code{lsp(packagename, '?')} to see options for a specific package.
 #' 
-#' \code{lsp(packagename, NULL)} to return all information.
+#' \code{lsp(packagename, NULL)} to return all information in a list.
 #' 
 #' @examples
-#' lsp(base)
-#' 
+#' ## see the contents of this package
 #' lsp(rawr)
+#' 
+#' ## return all one or two character functions from base package
+#' lsp(base, pat = '^.{1,2}$')
 #' 
 #' ## for "what" options
 #' lsp('rawr', '?')
@@ -53,16 +59,21 @@
 #' 
 #' @export
 
-lsp <- function(package, what = 'all') {
+lsp <- function(package, what, pattern) {
   
   if (!is.character(substitute(package)))
     package <- deparse(substitute(package))
   ns <- asNamespace(package)
+  if (missing(what))
+    what <- 'all'
+  if (missing(pattern))
+    pattern <- '.*'
   
   ## base package does not have NAMESPACE
-  if (isBaseNamespace(ns))
-    return(ls(.BaseNamespaceEnv, all.names = TRUE))
-  else {
+  if (isBaseNamespace(ns)) {
+    res <- ls(.BaseNamespaceEnv, all.names = TRUE)
+    return(res[grep(pattern, res, perl = TRUE, ignore.case = TRUE)])
+  } else {
     ## for non base packages
     if (exists('.__NAMESPACE__.', envir = ns, inherits = FALSE)) {
       wh <- get('.__NAMESPACE__.', envir = asNamespace(package, base.OK = FALSE),
@@ -71,17 +82,20 @@ lsp <- function(package, what = 'all') {
         return(ls(wh))
       if (!is.null(what) && !any(what %in% c('all', ls(wh))))
         stop('what is invalid; see ?rawr::lsp \'details\'')
-      tmp <- sapply(ls(wh), function(x) getNamespaceInfo(ns, x))
-      tmp <- rapply(tmp, ls, classes = 'environment', 
+      res <- sapply(ls(wh), function(x) getNamespaceInfo(ns, x))
+      res <- rapply(res, ls, classes = 'environment', 
                     how = 'replace', all.names = TRUE)
-      if (is.null(what))
-        return(tmp)
-      if (what %in% 'all')
-        return(ls(getNamespace(package), all.names = TRUE))
-      if (any(what %in% ls(wh)))
-        return(tmp[what])
-    } else 
-      stop(sprintf('no NAMESPACE file found for package %s', package))
+      if (is.null(what)) 
+        return(res[grep(pattern, res, perl = TRUE, ignore.case = TRUE)])
+      if (what %in% 'all') {
+        res <- ls(getNamespace(package), all.names = TRUE)
+        return(res[grep(pattern, res, perl = TRUE, ignore.case = TRUE)])
+      }
+      if (any(what %in% ls(wh))) {
+        res <- res[what]
+        return(res[[grep(pattern, res, perl = TRUE, ignore.case = TRUE)]])
+      }
+    } else stop(sprintf('no NAMESPACE file found for package %s', package))
   }
 }
 
@@ -124,9 +138,11 @@ ht <- function(x, ..., sep = NULL) rbind(head(x, ...), sep, tail(x, ...))
 
 #' Progress function
 #' 
-#' Displays the percent completed during an iteration
+#' Displays the percent (or iterations) completed during some loop.
 #' 
-#' @usage progress(value, max.value = NULL)
+#' @usage
+#' progress(value, max.value = NULL, textbar = FALSE)
+#' 
 #' @param value numeric; i-th iteration or percent completed (values 0-100)
 #' @param max.value numeric; n-th iteration; if missing, will assume percent
 #' completion is desired
@@ -150,7 +166,7 @@ ht <- function(x, ..., sep = NULL) rbind(head(x, ...), sep, tail(x, ...))
 #'
 #' ## text progress bar
 #' for (ii in 1:iterations) {
-#'    progress(ii, iterations, textbar = T)
+#'    progress(ii, iterations, textbar = TRUE)
 #'    Sys.sleep(.01)
 #' }
 #' }
@@ -1449,7 +1465,7 @@ Reload <- function() {
             "package:methods", "Autoloads", "package:base")
   to_unload <- setdiff(search(), pkgs)
   for (pkg in to_unload)
-    try(detach(pkg, character.only = TRUE), silent = TRUE)
+    try(detach(pkg, unload = TRUE, character.only = TRUE), silent = TRUE)
   rm(list = ls(envir = .GlobalEnv), envir = .GlobalEnv)
   cat('\014')
   invisible(NULL)
@@ -1671,16 +1687,16 @@ bind_all <- function(..., which) {
 #' \code{...} are matrices or data frames
 #' 
 #' @examples
-#' interleave(letters[1:5], LETTERS[1:3], letters[20:26])
-#' interleave(matrix(1:9, 3, 3), matrix(letters[1:9], 3, 3), which = 'rbind')
+#' interleave(letters[1:3], LETTERS[3:1], letters[26:24])
+#' interleave(t(matrix(1:9, 3, 3)), t(matrix(letters[1:9], 3, 3)), which = 'rbind')
 #' interleave(matrix(1:9, 3, 3), matrix(letters[1:9], 3, 3), which = 'cbind')
 #' 
 #' @export
 
 interleave <- function(..., which) {
   l <- list(...)
-  if (all(sapply(l, is.vector)))
-    return(unlist(l)[order(unlist(sapply(l, order)))])
+  if (all(sapply(l, function(x) is.null(dim(x)))))
+    return(c(do.call('rbind', l)))
   else {
     if (missing(which))
       stop('specify which: \'rbind\' or \'cbind\'')

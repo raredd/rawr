@@ -2,6 +2,7 @@
 # kmplot, ggsurv, survdat, surv_summary, surv_table, local.coxph.test, surv_cp
 ###
 
+
 #' Survival curves in base graphics
 #' 
 #' Function to plot Kaplan-Meier or Cox proportional hazards plots with 

@@ -3,7 +3,7 @@
 \alias{progress}
 \title{Progress function}
 \usage{
-progress(value, max.value = NULL)
+progress(value, max.value = NULL, textbar = FALSE)
 }
 \arguments{
 \item{value}{numeric; i-th iteration or percent completed (values 0-100)}
@@ -15,7 +15,7 @@ completion is desired}
 span across the console width; see \code{\link{options}}}
 }
 \description{
-Displays the percent completed during an iteration
+Displays the percent (or iterations) completed during some loop.
 }
 \examples{
 \dontrun{
@@ -34,7 +34,7 @@ for (ii in 1:iterations) {
 
 ## text progress bar
 for (ii in 1:iterations) {
-   progress(ii, iterations, textbar = T)
+   progress(ii, iterations, textbar = TRUE)
    Sys.sleep(.01)
 }
 }

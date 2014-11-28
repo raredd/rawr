@@ -1,7 +1,7 @@
 Package: rawr
 Type: Package
 Title: A personal package with miscellaneous tools.
-Version: 0.2.3
+Version: 0.3.0
 Author: Robert Redd  <raredd01@gmail.com>
 Maintainer: Robert Redd <raredd01@gmail.com>
 Description: Personal package with miscellaneous functions, stuff in progress,
