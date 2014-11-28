@@ -33,7 +33,7 @@ about
 
 ### plots / plot utils
 
-name | function
+ name           | function
 ----------------|---------------
 `click.shape`   | add shapes interactively
 `click.text`    | add text interactively
@@ -309,8 +309,8 @@ ggsurv(coxfit, legend.labels = c('< 45','> 45'), legend = FALSE, median = TRUE)
 
 ### SAS utils
 
-name | function
-----------------|---------------
+ name        | function
+-------------|---------------
 `r2sas`      | write/run sas code in r
 `get_margs`  | extract macro name(s) and arguments from a text file
 `rmacro`     | runs sas macros from .sas files
@@ -319,8 +319,8 @@ name | function
 
 ### rawr utils
 
-name | function
-----------------|---------------
+ name         | function
+--------------|---------------
 `%||%`        | `||` ruby analogue
 `%inside%`    | inside interval
 `%ni%`        | negation of `%in%`
@@ -351,8 +351,8 @@ name | function
 
 ### table/knitr utils
 
-name | function
-----------------|---------------
+ name          | function
+---------------|---------------
 `binconr`      | format exact binomial confidence intervals
 `helpExtract`  | extract r help files for use in markdown/sweave documents
 `html.test`    | test html code in rstudio viewer
@@ -448,8 +448,8 @@ lss()
 
 ### utils
 
-name | function
-----------------|---------------
+ name              | function
+-------------------|---------------
 `bin1samp`         | one-stage exact binomial designs
 `bincon`           | exact binomial confidence intervals
 `bintest`          | one-stage exact binomial designs
