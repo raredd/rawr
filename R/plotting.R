@@ -1,6 +1,7 @@
 ### plot functions
 # multiplot, ggmultiplot, click.text, click.shape, facet_adjust, 
-# facet_adjust.print, ggcaterpillar, ggheat, dodge, jmplot, tplot, dsplot
+# facet_adjust.print, ggcaterpillar, ggheat, dodge, jmplot, tplot, dsplot,
+# bpCI
 ###
 
 
@@ -1485,4 +1486,96 @@ dsplot.formula <- function(formula, data = parent.frame(),... , subset,
     mf <- mf[s,]
   }
   do.call(dsplot, c(list(mf[[response]], mf[[-response]]), args))
+}
+
+#' Barplot confidence intervals
+#' 
+#' Add confidence intervals (error bars) and group comparisons to barplots.
+#' 
+#' @usage
+#' bpCI(bp, horiz = FALSE, ci = TRUE, ci.u, ci.l, ci.width = .5,
+#'      sig = FALSE, pvals, ch = '*', ...)
+#' 
+#' @param bp the return value of \code{\link{barplot}}, i.e., a vector or
+#' matrix (when \code{beside = TRUE}) of all bar (or group) midpoints
+#' @param horiz logical; if \code{TRUE}, \code{bpCI} assumes horizontal bars
+#' @param ci logical; draw error bars (must give \code{ci.u}, \code{ci.l})
+#' @param ci.u,ci.l a numeric vector or matrix having the same dimensions as
+#' \code{bp} giving the upper and lower intervals, respectively
+#' @param ci.width width of the ends of the error bars, will depend on 
+#' \code{range(bp)}
+#' @param sig logical; if \code{TRUE}, draws group comparisons (must give
+#' \code{pvals} to plot sig stars)
+#' @param pvals p-values of group comparisons to be displayed as sig stars
+#' @param ch plotting character to be used for significance; default is 
+#' \code{*} and uses same significance codes as \code{\link{printCoefmat}}
+#' @param ... additional parameters passed to \code{\link{par}}
+#' 
+#' @examples
+#' ## generate data and p-values
+#' hh <- t(VADeaths)[1:2, 5:1]
+#' ci.l <- hh * 0.85
+#' ci.u <- hh * 1.15
+#' pvals <- pt(apply(hh, 2, diff), 1) / 5:1
+#' 
+#' bp <- barplot(hh, beside = TRUE, ylim = c(0,100))
+#' bpCI(bp, ci.u = ci.u, ci.l = ci.l, sig = TRUE, pvals = pvals)
+#' mtext("Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1",
+#'       side = 1, at = par('usr')[2], line = 2, adj = 1, cex = .8, font = 3)
+#' 
+#' 
+#' bp <- barplot(hh <- cbind(x = c(465, 91) / 465 * 100,
+#'                           y = c(200, 840) / 840 * 100,
+#'                           z = c(37, 17) / 37 * 100),
+#'               beside = TRUE, width = c(465, 840, 37),
+#'               col = c(1, 2), ylim = c(0,130))
+#' 
+#' ci.l <- hh * 0.85
+#' ci.u <- hh * 1.15
+#' pvals <- pt(-abs(apply(hh, 2, diff)), 1)
+#' 
+#' bpCI(bp, ci.u = ci.u, ci.l = ci.l, sig = TRUE, pvals = pvals, ci.width = 100,
+#'      col = 'red', lty = 'dashed', lwd = 2)
+#' mtext("Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1",
+#'       side = 1, at = par('usr')[2], line = 2, adj = 1, cex = .8, font = 3)
+#' 
+#' @export
+
+bpCI <- function(bp, horiz = FALSE, ci = TRUE, ci.u, ci.l, ci.width = .5,
+                     sig = FALSE, pvals, ch = '*', ...) {
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
+  par(list(...))
+  if (ci) {
+    ci.width <- ci.width / 2
+    if (horiz) {
+      ci.l <- t(ci.l)
+      ci.u <- t(ci.u)
+      segments(ci.l, t(bp), ci.u, t(bp))
+      segments(ci.u, t(bp - ci.width), ci.u, t(bp + ci.width))
+      segments(ci.l, t(bp - ci.width), ci.l, t(bp + ci.width))
+    } else {
+      segments(bp, ci.l, bp, ci.u)
+      segments(bp - ci.width, ci.u, bp + ci.width, ci.u)
+      segments(bp - ci.width, ci.l, bp + ci.width, ci.l)
+    }
+    if (sig) {
+      pstar <- function(pv, ch = '*') {
+        symnum(pv, corr = FALSE, na = FALSE, 
+               cutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1), 
+               symbols = gsub('\\*', ch, c("***", "**", "*", ".", "NS")))
+      }
+      if (horiz)
+        stop('sig is not supported when horiz = TRUE')
+      if (nrow(bp) > 2)
+        stop('sig is not supported for > 2 bars per group')
+      yy <- rbind(c(ci.u[1, ] + 3), c(apply(ci.u, 2 , max) + 5),
+                  c(apply(ci.u, 2, max) + 5), c(ci.u[2, ] + 3))
+      xx <- apply(bp, 2, function(x) rep(x, each = nrow(bp)))
+      sapply(1:ncol(bp), function(x) lines(xx[, x], yy[, x]))
+      xt <- colMeans(bp)
+      yt <- apply(ci.u, 2, max) + 7
+      text(pstar(pvals, ch = '*'), x = xt, y = yt)
+    }
+  }
 }

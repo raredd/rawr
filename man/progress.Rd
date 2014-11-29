@@ -3,7 +3,7 @@
 \alias{progress}
 \title{Progress function}
 \usage{
-progress(value, max.value = NULL, textbar = FALSE)
+progress(value, max.value, textbar = FALSE)
 }
 \arguments{
 \item{value}{numeric; i-th iteration or percent completed (values 0-100)}

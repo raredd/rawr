@@ -141,7 +141,7 @@ ht <- function(x, ..., sep = NULL) rbind(head(x, ...), sep, tail(x, ...))
 #' Displays the percent (or iterations) completed during some loop.
 #' 
 #' @usage
-#' progress(value, max.value = NULL, textbar = FALSE)
+#' progress(value, max.value, textbar = FALSE)
 #' 
 #' @param value numeric; i-th iteration or percent completed (values 0-100)
 #' @param max.value numeric; n-th iteration; if missing, will assume percent

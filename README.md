@@ -35,6 +35,7 @@ about
 
  name           | function
 ----------------|---------------
+`bpCI`          | add error bars/sig stars to barplots
 `click.shape`   | add shapes interactively
 `click.text`    | add text interactively
 `dodge`         | dodge points (alternative to jitter)
