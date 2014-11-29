@@ -1,7 +1,7 @@
 ### plot functions
 # multiplot, ggmultiplot, click.text, click.shape, facet_adjust, 
 # facet_adjust.print, ggcaterpillar, ggheat, dodge, jmplot, tplot, dsplot,
-# bpCI
+# bpCI, inset
 ###
 
 
@@ -1494,7 +1494,7 @@ dsplot.formula <- function(formula, data = parent.frame(),... , subset,
 #' 
 #' @usage
 #' bpCI(bp, horiz = FALSE, ci = TRUE, ci.u, ci.l, ci.width = .5,
-#'      sig = FALSE, pvals, ch = '*', ...)
+#'      sig = FALSE, pvals, pch, ...)
 #' 
 #' @param bp the return value of \code{\link{barplot}}, i.e., a vector or
 #' matrix (when \code{beside = TRUE}) of all bar (or group) midpoints
@@ -1507,9 +1507,9 @@ dsplot.formula <- function(formula, data = parent.frame(),... , subset,
 #' @param sig logical; if \code{TRUE}, draws group comparisons (must give
 #' \code{pvals} to plot sig stars)
 #' @param pvals p-values of group comparisons to be displayed as sig stars
-#' @param ch plotting character to be used for significance; default is 
+#' @param pch plotting character to be used for significance; default is 
 #' \code{*} and uses same significance codes as \code{\link{printCoefmat}}
-#' @param ... additional parameters passed to \code{\link{par}}
+#' @param ... additional graphical parameters passed to \code{\link{par}}
 #' 
 #' @examples
 #' ## generate data and p-values
@@ -1519,8 +1519,8 @@ dsplot.formula <- function(formula, data = parent.frame(),... , subset,
 #' pvals <- pt(apply(hh, 2, diff), 1) / 5:1
 #' 
 #' bp <- barplot(hh, beside = TRUE, ylim = c(0,100))
-#' bpCI(bp, ci.u = ci.u, ci.l = ci.l, sig = TRUE, pvals = pvals)
-#' mtext("Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1",
+#' bpCI(bp, ci.u = ci.u, ci.l = ci.l, sig = TRUE, pvals = pvals, pch = "+")
+#' mtext("Signif. codes:  0 '+++' 0.001 '++' 0.01 '+' 0.05 '.' 0.1 ' ' 1",
 #'       side = 1, at = par('usr')[2], line = 2, adj = 1, cex = .8, font = 3)
 #' 
 #' 
@@ -1536,16 +1536,16 @@ dsplot.formula <- function(formula, data = parent.frame(),... , subset,
 #' 
 #' bpCI(bp, ci.u = ci.u, ci.l = ci.l, sig = TRUE, pvals = pvals, ci.width = 100,
 #'      col = 'red', lty = 'dashed', lwd = 2)
-#' mtext("Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1",
+#' mtext("Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1",
 #'       side = 1, at = par('usr')[2], line = 2, adj = 1, cex = .8, font = 3)
 #' 
 #' @export
 
 bpCI <- function(bp, horiz = FALSE, ci = TRUE, ci.u, ci.l, ci.width = .5,
-                     sig = FALSE, pvals, ch = '*', ...) {
+                     sig = FALSE, pvals, pch, ...) {
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
-  par(list(...))
+  par(...)
   if (ci) {
     ci.width <- ci.width / 2
     if (horiz) {
@@ -1560,10 +1560,12 @@ bpCI <- function(bp, horiz = FALSE, ci = TRUE, ci.u, ci.l, ci.width = .5,
       segments(bp - ci.width, ci.l, bp + ci.width, ci.l)
     }
     if (sig) {
-      pstar <- function(pv, ch = '*') {
+      if (missing(pch))
+        pch <- '*'
+      pstar <- function(pv, pch) {
         symnum(pv, corr = FALSE, na = FALSE, 
                cutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1), 
-               symbols = gsub('\\*', ch, c("***", "**", "*", ".", "NS")))
+               symbols = gsub('\\*', pch, c("***", "**", "*", ".", "NS")))
       }
       if (horiz)
         stop('sig is not supported when horiz = TRUE')
@@ -1575,7 +1577,97 @@ bpCI <- function(bp, horiz = FALSE, ci = TRUE, ci.u, ci.l, ci.width = .5,
       sapply(1:ncol(bp), function(x) lines(xx[, x], yy[, x]))
       xt <- colMeans(bp)
       yt <- apply(ci.u, 2, max) + 7
-      text(pstar(pvals, ch = '*'), x = xt, y = yt)
+      text(pstar(pvals, pch), x = xt, y = yt)
     }
   }
+}
+
+#' Inset plots
+#'
+#' Inset new plots in existing plot windows.
+#' 
+#' \code{x} should be of the form \code{x0, x1} and similar for \code{y} 
+#' giving the starting and ending coordinates to draw the inset plot and must
+#' be in the range defined in the current plotting area.
+#' 
+#' Alternatively, \code{x} can be a keyword ("bottomright", "bottom",
+#' "bottomleft", "left", "topleft", "top", "topright" "right", or "center")
+#' giving the approximate location of the inset plot. \code{pct} is used to
+#' adjust the size.
+#' 
+#' @usage
+#' inset(x, y = NULL, pct = .25, ...)
+#' 
+#' @param x a keyword (see details) or a vector of length two giving the 
+#' positions on the current plot at which to draw the inset plot along the
+#' x-axis
+#' @param y ignored if \code{x} is a keyword or a vector of length two giving
+#' the positions on the current plot at which to draw the inset plot along the
+#' y-axis
+#' @param pct inset plot scaling (only used if \code{x} is a keyword)
+#' @param ... additional graphical parameters passed to \code{\link{par}}
+#' 
+#' @examples
+#' op <- par(no.readonly = TRUE)
+#' plot(mpg ~ wt, data = mtcars, col = 'blue')
+#' abline(lm(mpg ~ wt, data = mtcars), col = 'red')
+#' inset('topright', pct = .4)
+#' hist(mtcars$mpg, ann = FALSE, panel.last = box(),
+#'      col = 'dodgerblue2', las = 1)
+#' 
+#' par(op)
+#' plot(1:10)
+#' op <- par(no.readonly = TRUE)
+#' Map(function(x) {
+#'  inset(x, las = 1, col = 'red', pct = 1/3)
+#'  plot(rnorm(10), ann = FALSE, axes = FALSE, panel.last = box())
+#'  par(op)
+#'  Sys.sleep(.5)
+#'  }, c("bottomright", "bottom", "bottomleft", "left",
+#'       "topleft", "top", "topright", "right", "center"))
+#' 
+#' @export
+
+inset <- function(x, y = NULL, pct = .25, ...) {
+  m <- substitute(...())
+  usr <- par('usr')
+  plt <- par('plt')
+  pctx <- pct * diff(plt[1:2])
+  pcty <- pct * diff(plt[3:4])
+  
+  auto <- if (is.character(x))
+    match.arg(x, c("bottomright", "bottom", "bottomleft", "left",
+                   "topleft", "top", "topright", "right", "center"))
+  else NA
+  
+  xx <- switch(auto, bottomright = c(plt[2] - pctx, plt[2]),
+               bottom = mean(plt[1:2]) + c(-1, 1) * pctx / 2,
+               bottomleft = c(plt[1], plt[1] + pctx),
+               left = c(plt[1], plt[1] + pctx),
+               topleft = c(plt[1], plt[1] + pctx),
+               top = mean(plt[1:2]) + c(-1, 1) * pctx / 2,
+               topright = c(plt[2] - pctx, plt[2]),
+               right = c(plt[2] - pctx, plt[2]),
+               center = mean(plt[1:2]) + c(-1, 1) * pctx / 2)
+  
+  yy <- switch(auto, bottomright = c(plt[3], plt[3] + pcty),
+               bottom = c(plt[3], plt[3] + pcty),
+               bottomleft = c(plt[3], plt[3] + pcty),
+               left = mean(plt[3:4]) + c(-1, 1) * pcty / 2,
+               topleft = c(plt[4] - pcty, plt[4]),
+               top = c(plt[4] - pcty, plt[4]),
+               topright = c(plt[4] - pcty, plt[4]),
+               right = mean(plt[3:4]) + c(-1, 1) * pcty / 2,
+               center = mean(plt[3:4]) + c(-1, 1) * pcty / 2,)
+  
+  #   xx <- rescaler(xx, plt[1:2], usr[1:2])
+  #   yy <- rescaler(yy, plt[3:4], usr[3:4])
+  if (is.na(auto)) {
+    xx <- grconvertX(x, 'user', 'ndc')
+    yy <- grconvertY(y, 'user', 'ndc')
+  }
+  if ('mar' %ni% names(m))
+    par(fig = c(xx, yy), new = TRUE, mar = c(0,0,0,0), ...)
+  else par(fig = c(xx, yy), new = TRUE, ...)
+  invisible(c(xx, yy))
 }

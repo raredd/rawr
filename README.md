@@ -47,6 +47,7 @@ about
 `ggmultiplot`   | align multiple ggplots on single layout
 `ggsurv`        | survival curve using ggplot
 `grcols`        | golden ratio colors
+`inset`         | inset plots inside plots
 `jmplot`        | joint marginal plot
 `kmplot`        | survival curve using base
 `multiplot`     | plot multiple base plots on single layout

@@ -4,7 +4,7 @@
 \title{Barplot confidence intervals}
 \usage{
 bpCI(bp, horiz = FALSE, ci = TRUE, ci.u, ci.l, ci.width = .5,
-     sig = FALSE, pvals, ch = '*', ...)
+     sig = FALSE, pvals, pch, ...)
 }
 \arguments{
 \item{bp}{the return value of \code{\link{barplot}}, i.e., a vector or
@@ -25,10 +25,10 @@ matrix (when \code{beside = TRUE}) of all bar (or group) midpoints}
 
 \item{pvals}{p-values of group comparisons to be displayed as sig stars}
 
-\item{ch}{plotting character to be used for significance; default is
+\item{pch}{plotting character to be used for significance; default is
 \code{*} and uses same significance codes as \code{\link{printCoefmat}}}
 
-\item{...}{additional parameters passed to \code{\link{par}}}
+\item{...}{additional graphical parameters passed to \code{\link{par}}}
 }
 \description{
 Add confidence intervals (error bars) and group comparisons to barplots.
@@ -41,8 +41,8 @@ ci.u <- hh * 1.15
 pvals <- pt(apply(hh, 2, diff), 1) / 5:1
 
 bp <- barplot(hh, beside = TRUE, ylim = c(0,100))
-bpCI(bp, ci.u = ci.u, ci.l = ci.l, sig = TRUE, pvals = pvals)
-mtext("Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1",
+bpCI(bp, ci.u = ci.u, ci.l = ci.l, sig = TRUE, pvals = pvals, pch = "+")
+mtext("Signif. codes:  0 '+++' 0.001 '++' 0.01 '+' 0.05 '.' 0.1 ' ' 1",
       side = 1, at = par('usr')[2], line = 2, adj = 1, cex = .8, font = 3)
 
 
@@ -58,7 +58,7 @@ pvals <- pt(-abs(apply(hh, 2, diff)), 1)
 
 bpCI(bp, ci.u = ci.u, ci.l = ci.l, sig = TRUE, pvals = pvals, ci.width = 100,
      col = 'red', lty = 'dashed', lwd = 2)
-mtext("Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1",
+mtext("Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1",
       side = 1, at = par('usr')[2], line = 2, adj = 1, cex = .8, font = 3)
 }
 
