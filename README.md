@@ -621,6 +621,6 @@ power.cv(n = NULL, f = 1.25, cv = 0.2, sig.level = 0.05, power = 0.8, distributi
 
 <a href="mailto:raredd01@gmail.com?subject=rawr">talk to me</a>
 
-Most recent compile: 16 May 2014 (R version 3.1.0 (2014-04-10))
+Most recent compile: 28 Nov 2014 (R version 3.1.1 (2014-07-10))
 
 </font>
