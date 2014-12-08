@@ -3,7 +3,7 @@
 # ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
 # show.colors, show.pch, %inside%, try_require, clist, binconr, num2char, 
 # iprint, list2file, match_ctc, Reload, clc, clear, writeftable, helpExtract,
-# Round, bind_all, interleave, outer2, merge2, locf
+# Round, bind_all, interleave, outer2, merge2, locf, roll_fun
 ###
 
 
@@ -1862,4 +1862,42 @@ locf <- function(x, fromLast = FALSE) {
   if (ok)
     return(x)
   else return(x[, 1])
+}
+
+#' Rolling functions
+#' 
+#' Apply rolling functions
+#' 
+#' @param x a vector
+#' @param n size of groups
+#' @param FUN a function to apply as a \code{\link{name}} or literal character
+#' string
+#' @param ... additional arguments passed to \code{FUN}
+#' @param fromLast logical; if \code{TRUE}, \code{roll_fun} is applied to
+#' \code{x} in reverse order
+#' 
+#' @return A vector of the same length of \code{x} with calculations obtained
+#' by \code{FUN}.
+#' 
+#' @examples
+#' cbind(1:10, roll_fun(1:10, 2))
+#' cbind(rep(1, 10), roll_fun(rep(1, 10), 5, sum))
+#' 
+#' dat <- data.frame(x = c(1,1,2,2,2,3,4,5,5,5),
+#'                   y = 1:10)
+#' ## compare:
+#' within(dat, 
+#'   z <- unlist(by(dat, dat$x, function(ii)
+#'           roll_fun(ii$y, length(ii$y), sum))))
+#' do.call('rbind', by(dat, dat$x, cumsum))
+#' 
+#' @export
+
+roll_fun <- function(x, n = 5, FUN = mean, ..., fromLast = FALSE) {
+  l <- lapply(seq_along(x), function(ii) {
+    if (fromLast) 
+      x[length(x) + 1 - tail(sequence(ii), n)]
+    else x[tail(sequence(ii), n)]
+  })
+  sapply(if (fromLast) rev(l) else l, FUN, ...)
 }
