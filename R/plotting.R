@@ -623,6 +623,25 @@ dodge <- function(formula, data = parent.frame(), z = .5, spread = FALSE) {
   dat$offset
 }
 
+dodge2 <- function(X, n, z = .5) {
+  nx <- length(X)
+  if (!missing(n))
+    df <- data.frame(x = X, gr = gl(n, nx / n))
+  else df <- setNames(X, c('x', 'gr'))
+  res <- with(df, ave(x, list(x, gr), FUN = function(xx) seq_along(xx) * z / 10))
+  df$x + ave(res, list(df$x, df$gr), FUN = function(xx) xx - mean(xx))
+}
+
+# boxplot(mpg ~ gear, data = mtcars, xlab = 'gears', ylab = 'mpg')
+# with(dat <- mtcars[order(mtcars$gear, mtcars$mpg), ],
+#      points(gear - 2 + dodge(mpg ~ gear, dat), mpg,
+#             pch = 19, col = rep(c('red','green','blue'), table(dat$gear))))
+# 
+# boxplot(mpg ~ gear, data = mtcars, xlab = 'gears',g ylab = 'mpg')
+# with(dat <- mtcars[order(mtcars$gear, mtcars$mpg), c('mpg','gear')],
+#      points(dodge2(rev(dat)) - 2, mpg,
+#             pch = 19, col = rep(c('red','green','blue'), table(dat$gear))))
+
 #' Joint/marginal plot
 #' 
 #' Joint distribution and marginal distributions plot; requires 
