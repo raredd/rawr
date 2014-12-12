@@ -3,7 +3,7 @@
 \alias{roll_fun}
 \title{Rolling functions}
 \usage{
-roll_fun(x, n = 5, FUN = mean, ..., fromLast = FALSE)
+roll_fun(x, n = 5, FUN = mean, ..., fromLast = FALSE, keep = FALSE)
 }
 \arguments{
 \item{x}{a vector}
@@ -17,6 +17,11 @@ string}
 
 \item{fromLast}{logical; if \code{TRUE}, \code{roll_fun} is applied to
 \code{x} in reverse order}
+
+\item{keep}{logical; if \code{TRUE}, the rolling \code{FUN} is applied to
+the first \code{n} elements of \code{x}; if \code{FALSE} (default), then
+\code{FUN} is applied to \code{x[1]}, \code{x[1:2]}, ..., \code{x[1:n]},
+ie, until groups of size \code{n} are possible}
 }
 \value{
 A vector of the same length of \code{x} with calculations obtained
@@ -26,7 +31,7 @@ by \code{FUN}.
 Apply rolling functions
 }
 \examples{
-cbind(1:10, roll_fun(1:10, 2))
+cbind(1:10, roll_fun(1:10, 2, keep = TRUE))
 cbind(rep(1, 10), roll_fun(rep(1, 10), 5, sum))
 
 dat <- data.frame(x = c(1,1,2,2,2,3,4,5,5,5),

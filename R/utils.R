@@ -1875,12 +1875,16 @@ locf <- function(x, fromLast = FALSE) {
 #' @param ... additional arguments passed to \code{FUN}
 #' @param fromLast logical; if \code{TRUE}, \code{roll_fun} is applied to
 #' \code{x} in reverse order
+#' @param keep logical; if \code{TRUE}, the rolling \code{FUN} is applied to
+#' the first \code{n} elements of \code{x}; if \code{FALSE} (default), then
+#' \code{FUN} is applied to \code{x[1]}, \code{x[1:2]}, ..., \code{x[1:n]},
+#' ie, until groups of size \code{n} are possible
 #' 
 #' @return A vector of the same length of \code{x} with calculations obtained
 #' by \code{FUN}.
 #' 
 #' @examples
-#' cbind(1:10, roll_fun(1:10, 2))
+#' cbind(1:10, roll_fun(1:10, 2, keep = TRUE))
 #' cbind(rep(1, 10), roll_fun(rep(1, 10), 5, sum))
 #' 
 #' dat <- data.frame(x = c(1,1,2,2,2,3,4,5,5,5),
@@ -1893,11 +1897,13 @@ locf <- function(x, fromLast = FALSE) {
 #' 
 #' @export
 
-roll_fun <- function(x, n = 5, FUN = mean, ..., fromLast = FALSE) {
+roll_fun <- function(x, n = 5, FUN = mean, ..., fromLast = FALSE, keep = FALSE) {
   l <- lapply(seq_along(x), function(ii) {
     if (fromLast) 
       x[length(x) + 1 - tail(sequence(ii), n)]
     else x[tail(sequence(ii), n)]
   })
+  if (keep)
+    l[1:n] <- lapply(1:n, function(x) l[[n]])
   sapply(if (fromLast) rev(l) else l, FUN, ...)
 }
