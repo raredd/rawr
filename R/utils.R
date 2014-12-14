@@ -11,9 +11,6 @@
 #' 
 #' List all exported and/or non exported objects in a package.
 #' 
-#' @usage
-#' lsp(package, what, pattern)
-#' 
 #' @param package package name, as \code{\link{name}} or literal character 
 #' string
 #' @param what what to get; \code{'all'} is default which returns all exported
@@ -24,14 +21,16 @@
 #' @details
 #' This is a helper/wrapper function to list exported (\code{?'::'}) and
 #' non exported (\code{?':::'}) functions (and other features from a package's 
-#' \code{NAMESPACE} file). Note that \code{base} and older packages do not have
-#' a \code{NAMESPACE} file in which case, for \code{base} packages, 
-#' \code{lsp} returns \code{ls(.BaseNamespaceEnv, all.names = TRUE)}, and 
-#' throws an error otherwise.
+#' \code{NAMESPACE} file).
 #' 
-#' Possible values for \code{what} are \code{'all'} (default), \code{NULL},
-#' \code{'exports'}, \code{'imports'}, \code{'dynlibs'}, \code{'lazydata'}, 
-#' \code{'path'}, \code{'S3methods'}, \code{'spec'}, and others depending on 
+#' Note that \code{base} and older packages do not have a \code{NAMESPACE}
+#' file in which case, for \code{base} packages, \code{lsp} returns 
+#' \code{ls(.BaseNamespaceEnv, all.names = TRUE)}, and throws an error
+#' otherwise.
+#' 
+#' Possible values for \code{what} are "\code{all}" (default), \code{NULL},
+#' "\code{exports}", "\code{imports}", "\code{dynlibs}", "\code{lazydata}", 
+#' "\code{path}", "\code{S3methods}", "\code{spec}", and others depending on 
 #' the package.
 #' 
 #' \code{lsp(packagename, '?')} to see options for a specific package.
@@ -110,16 +109,17 @@ lsp <- function(package, what, pattern) {
 #' @examples
 #' 1:5 %ni% 3:5
 #' @export
+
 `%ni%` <- function(x, table) !(match(x, table, nomatch = 0) > 0)
 
 #' head/tail
 #' 
-#' @usage ht(x, ..., sep = NULL)
 #' @param x an object
 #' @param ... other parameters, such as \code{n}, passed to \code{\link{head}} 
 #' or other methods
 #' @param sep separator 
 #' @export
+
 ht <- function(x, ..., sep = NULL) rbind(head(x, ...), sep, tail(x, ...))
 
 #' oror
@@ -134,14 +134,12 @@ ht <- function(x, ..., sep = NULL) rbind(head(x, ...), sep, tail(x, ...))
 #' NULL %||% TRUE  # no error
 #' }
 #' @export
+
 `%||%` <- function(e1, e2) if (!is.null(e1)) e1 else e2
 
 #' Progress function
 #' 
 #' Displays the percent (or iterations) completed during some loop.
-#' 
-#' @usage
-#' progress(value, max.value, textbar = FALSE)
 #' 
 #' @param value numeric; i-th iteration or percent completed (values 0-100)
 #' @param max.value numeric; n-th iteration; if missing, will assume percent
@@ -170,6 +168,7 @@ ht <- function(x, ..., sep = NULL) rbind(head(x, ...), sep, tail(x, ...))
 #'    Sys.sleep(.01)
 #' }
 #' }
+#' 
 #' @export
 
 progress <- function (value, max.value, textbar = FALSE) {
@@ -230,8 +229,6 @@ progress <- function (value, max.value, textbar = FALSE) {
 #' A function for recoding numeric, character, and factor values in a vector, 
 #' list, matrix, or data frame.
 #' 
-#' @usage recoder(object, pattern, replacement, ...)
-#' 
 #' @param object object to recode
 #' @param pattern what to replace
 #' @param replacement what to replace \code{pattern} with
@@ -265,6 +262,7 @@ progress <- function (value, max.value, textbar = FALSE) {
 #' recoder(tmp, c(1, 2), c(2, 1))
 #' # [1]  1  1  3  4  5  6  7  8  9 10    # actual return
 #' # [1]  2  1  3  4  5  6  7  8  9 10    # intended return
+#' 
 #' @export
 
 recoder <- function(object, pattern, replacement, ...) {
@@ -352,7 +350,6 @@ recoder <- function(object, pattern, replacement, ...) {
 #' 
 #' Compute the pairwise sum of two or more vectors
 #' 
-#' @usage psum(..., na.rm = FALSE)
 #' @param ... string of vectors
 #' @param na.rm logical; should missing values (including \code{NaN}) be 
 #' omitted from calculations
@@ -368,6 +365,7 @@ recoder <- function(object, pattern, replacement, ...) {
 #' y <- c(NA, NA, 6, -1)
 #' psum(x, y)
 #' psum(x, y, na.rm = TRUE)
+#' 
 #' @export
 
 psum <- function(..., na.rm = FALSE) {
@@ -382,9 +380,6 @@ psum <- function(..., na.rm = FALSE) {
 #' 
 #' The safe and reliable way to test two or more objects for being exactly 
 #' equal; returns \code{TRUE} in this case, \code{FALSE} in every other case.
-#' 
-#' @usage ident(..., num.eq = TRUE, single.NA = TRUE, attrib.as.set = TRUE, 
-#'    ignore.bytecode = TRUE, ignore.environment = FALSE)
 #'    
 #' @param ... any \code{R} objects
 #' @param num.eq logical indicating if (\code{\link{double}} and 
@@ -403,64 +398,10 @@ psum <- function(..., na.rm = FALSE) {
 #' @param ignore.environment logical indicating if their environments should be
 #' ignored when comparing \code{closure}s.
 #' 
-#' @details 
-#' Generalized, recursive \code{\link{identical}} function for testing equality
-#' of two or more \code{R} objects. 
-#' 
-#' A call to \code{identical} is the way to test exact equality in \code{if} 
-#' and \code{while} statements, as well as in logical expressions that use 
-#' \code{&&} or \code{||}. In all these applications you need to be assured of 
-#' getting a single logical value. 
-#' 
-#' Users often use the comparison operators, such as \code{==} or \code{!=}, 
-#' in these situations. It looks natural, but it is not what these operators 
-#' are designed to do in \code{R}. They return an object like the arguments. 
-#' If you expected \code{x} and \code{y} to be of length 1, but it happened 
-#' that one of them was not, you will \emph{not} get a single \code{FALSE}. 
-#' Similarly, if one of the arguments is \code{NA}, the result is also 
-#' \code{NA}. In either case, the expression \code{if(x == y)...} won't work 
-#' as expected. 
-#' 
-#' The function \code{all.equal} is also sometimes used to test equality this 
-#' way, but was intended for something different: it allows for small 
-#' differences in numeric results. 
-#' 
-#' The computations in \code{identical} are also reliable and usually fast. 
-#' There should never be an error. The only known way to kill \code{identical} 
-#' is by having an invalid pointer at the C level, generating a memory fault. 
-#' It will usually find inequality quickly. Checking equality for two large, 
-#' complicated objects can take longer if the objects are identical or nearly 
-#' so, but represent completely independent copies. For most applications, 
-#' however, the computational cost should be negligible. 
-#' 
-#' If \code{single.NA} is true, as by default, identical sees \code{NaN} as 
-#' different from \code{\link{NA_real_}}, but all \code{NaN}s are equal (and 
-#' all \code{NA} of the same type are equal). 
-#' 
-#' Character strings are regarded as identical if they are in different marked 
-#' encodings but would agree when translated to UTF-8. 
-#' 
-#' If \code{attrib.as.set} is \code{TRUE}, as by default, comparison of 
-#' attributes view them as a set (and not a vector, so order is not tested). 
-#' 
-#' If \code{ignore.bytecode} is \code{TRUE} (the default), the compiled 
-#' bytecode of a function (see \code{\link{cmpfun}}) will be ignored in the 
-#' comparison. If it is \code{FALSE}, functions will compare equal only if they
-#' are copies of the same compiled object (or both are uncompiled). To check 
-#' whether two different compiles are equal, you should compare the results of 
-#' \code{\link{disassemble}}(). 
-#' 
-#' Note that \code{identical(x, y, FALSE, FALSE, FALSE, FALSE)} and 
-#' \code{ident(..., FALSE, FALSE, FALSE, FALSE)} \emph{pickily} tests for 
-#' exact equality. 
-#' 
 #' @return A single logical value, \code{TRUE} or \code{FALSE}, never \code{NA}
 #' and never anything other than a single value.
-#' @author John Chambers and R Core, \code{\link{identical}}; Robert Redd, 
-#' additions
-#' @references Chambers, J.M. (1998) \emph{Programming with Data. A guide to 
-#' the S Language}. Springer.
-#' @seealso \code{\link{identical}} for original; \code{\link{all.equal}} for 
+#' 
+#' @seealso \code{\link{identical}}; \code{\link{all.equal}} for 
 #' descriptions of how two objects differ; \code{\link{Comparison}} for 
 #' operators that generate elementwise comparisons; \code{\link{isTRUE}} is a 
 #' simple wrapper based on \code{identical}.
@@ -483,6 +424,7 @@ psum <- function(..., na.rm = FALSE) {
 #' g <- compiler::cmpfun(f)
 #' ident(f, g)
 #' ident(f, g, ignore.bytecode = FALSE)
+#' 
 #' @export
 
 ident <- function(..., num.eq = TRUE, single.NA = TRUE, attrib.as.set = TRUE,
@@ -507,8 +449,6 @@ ident <- function(..., num.eq = TRUE, single.NA = TRUE, attrib.as.set = TRUE,
 #' 
 #' Searches a data frame column for matches
 #' 
-#' @usage search.df(pattern, df, col.name, var = 0, ignore.case = TRUE, ...)
-#' 
 #' @param pattern string to find
 #' @param df data frame to search
 #' @param col.name column name in \code{df} to search
@@ -528,6 +468,7 @@ ident <- function(..., num.eq = TRUE, single.NA = TRUE, attrib.as.set = TRUE,
 #' search.df('Axel Hieberg', df, islands) # misspelled, not enough variation
 #' search.df('Axel Hieberg', df, islands, var = 2)
 #' search.df(19, df, mpg)
+#' 
 #' @export
 
 search.df <- function(pattern, df, col.name, var = 0, ignore.case = TRUE, ...) {
@@ -543,12 +484,9 @@ search.df <- function(pattern, df, col.name, var = 0, ignore.case = TRUE, ...) {
 #' 
 #' Searches Rhistory file for pattern matches
 #' 
-#' @usage search.hist(..., fixed = FALSE)
-#' 
-#' @param ... numeric or character; if numeric, shows the most recent \code{n} 
+#' @param x numeric or character; if numeric, shows the most recent \code{n} 
 #' lines in \code{.Rhistory}; if character, searches for pattern matches
-#' @param fixed logical; if \code{TRUE}, \code{pattern} is a string to be 
-#' matched as is; overrides all conflicting arguments.
+#' @param ... additional arguments passed to \code{\link{grep}}
 #' 
 #' @return Returns a list of recent commands that match \code{pattern}
 #' 
@@ -560,24 +498,25 @@ search.df <- function(pattern, df, col.name, var = 0, ignore.case = TRUE, ...) {
 #' search.hist('?', fixed = TRUE)
 #' search.hist('\\?')
 #' }
+#' 
 #' @export
 
-search.hist <- function (..., fixed = FALSE) {
+search.hist <- function (x, ...) {
   
-  hist <- readLines('.Rhistory')
+  hist <- tryCatch(readLines('.Rhistory'),
+                   warning = function(w) message("No history found"),
+                   finally = return(invisible()))
   lhist <- length(hist)
   
-  if (is.numeric(...))
-    return(hist[lhist:(lhist - ... + 1)])
-  if (is.character(...))
-    return(grep(..., readLines(".Rhistory"), fixed = fixed, value = TRUE))
+  if (is.numeric(x))
+    return(hist[lhist:(lhist - x + 1)])
+  if (is.character(x))
+    return(grep(x, readLines(".Rhistory"), value = TRUE, ...))
 }
 
 #' ggplot colors
 #' 
 #' A function to replicate default \code{\link[ggplot2]{ggplot}} colors
-#' 
-#' @usage ggcols(n, l = 65, c = 100)
 #' 
 #' @param n number of colors
 #' @param c the chroma of the color; the upper bound for chroma depends on hue
@@ -589,6 +528,7 @@ search.hist <- function (..., fixed = FALSE) {
 #' 
 #' @examples
 #' plot(rnorm(1000), col = ggcols(1000), pch = 19)
+#' 
 #' @export
 
 ggcols <- function(n, l = 65, c = 100) {
@@ -599,9 +539,7 @@ ggcols <- function(n, l = 65, c = 100) {
 #' Choose n colors using the golden ratio
 #'
 #' This chooses \code{n} colour hues using a sequence generated by the Golden
-#' Ratio
-#' 
-#' @usage grcols(n, s = .5, v = 1, alpha = 1)
+#' Ratio.
 #'
 #' @param n number of colors
 #' @param s,v numeric vectors of values in the range \code{[0, 1]} for 
@@ -617,6 +555,7 @@ ggcols <- function(n, l = 65, c = 100) {
 #' plot(c(1, 6), c(0, 1), type = 'n', axes = FALSE, 
 #'      bty = 'n', xlab = '', ylab = '')
 #' rect(1:5, 0, 2:6, 1, col = grcols(5), border = NA)
+#' 
 #' @export
 
 grcols <- function(n, s = .5, v = 1, alpha = 1) {
@@ -627,9 +566,7 @@ grcols <- function(n, s = .5, v = 1, alpha = 1) {
 
 #' Transparent colors
 #' 
-#' Add transparency to colors
-#' 
-#' @usage tcol(color, trans = 255)
+#' Add transparency to colors.
 #' 
 #' @param color single or string of color names (or hexadecimal format) 
 #' @param trans transparency defined as an integer in the range 
@@ -644,7 +581,8 @@ grcols <- function(n, s = .5, v = 1, alpha = 1) {
 #' (fully visible) to the color(s) given. \code{color} values are converted to
 #' RGB with transparency.
 #' 
-#' @seealso \code{\link{as.hexmode}}, \code{\link{col2rgb}}
+#' @seealso \code{\link{as.hexmode}}, \code{\link{col2rgb}}, 
+#' \code{\link{adjustcolor}}
 #' 
 #' @examples
 #' cols <- c('red','green','blue')
@@ -658,6 +596,7 @@ grcols <- function(n, s = .5, v = 1, alpha = 1) {
 #' # hexadecimal colors also work
 #' cols <- c('#FF0000','#00FF00','#0000FF')
 #' plot(rnorm(100), col = tcol(cols, c(50, 100, 255)), pch= 16, cex = 4)
+#' 
 #' @export
 
 tcol <- function(color, trans = 255) {
@@ -682,8 +621,6 @@ tcol <- function(color, trans = 255) {
 #' A simple modification to the \code{*apply} functions which allows a list of 
 #' functions to be passed simultaneously.
 #' 
-#' @usage fapply(X, FUN, ...)
-#' 
 #' @param X a vector (atomic or list) or an \code{\link{expression}} object; 
 #' other objects (including classed objects) will be coerced by 
 #' \code{base::\link{as.list}}.
@@ -695,7 +632,6 @@ tcol <- function(color, trans = 255) {
 #' 
 #' @return A data frame where \code{nrow} equals the length of \code{X} and 
 #' \code{ncol} equals the length of \code{FUN}.
-#' @seealso \code{\link{sapply}}
 #' 
 #' @examples
 #' tmp <- recoder(mtcars, 6, NA)
@@ -710,36 +646,18 @@ tcol <- function(color, trans = 255) {
 #' ## compare: 
 #' t(fapply(mtcars, list(min, mean, max, length)))
 #' summary(mtcars)
+#' 
 #' @export
 
 fapply <- function(X, FUN, ...) {
-  fcts <- unlist(sapply(match.call()$FUN, as.character))[-1]
-  out <- t(sapply(FUN, mapply, X, ...))
-  setNames(as.data.frame(t(out)), fcts)
-}
-
-fapply_1 <- function(X, FUN, ...) {
-  fcts <- unlist(sapply(match.call()$FUN, as.character))[-1]
-  out <- outer(FUN, X, Vectorize(function(a, b) a(b, ...)))
-  setNames(as.data.frame(t(out)), fcts)
-}
-
-fapply_2 <- function(X, FUN, trans = FALSE, ...) {
-  fcts <- unlist(sapply(match.call()$FUN, as.character))[-1]
-  out <- as.data.frame(sapply(FUN, function(x) lapply(X, x)))
-  names(out) <- fcts
-  if (trans) 
-    out <- as.data.frame(t(out))
-  out
+  fn <- as.character(match.call()$FUN)[-1]
+  out <- sapply(FUN, mapply, X, ...)
+  setNames(as.data.frame(out), fn)
 }
 
 #' Improved list of objects
 #' 
-#' Provides more details of objects in workspace
-#' 
-#' @usage 
-#' lss(pos = 1, pattern, by = NULL, all.names = FALSE,
-#'     decreasing = TRUE, head = TRUE, n = 15)
+#' Provides more details of objects in workspace.
 #' 
 #' @param pos argument specifying the environment as a position in search list
 #' @param pattern optional \code{\link{regex}}; only names matching 
@@ -764,6 +682,7 @@ fapply_2 <- function(X, FUN, trans = FALSE, ...) {
 #' b <- matrix(1, 1000, 100)
 #' lss()
 #' }
+#' 
 #' @export
 
 lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
@@ -801,8 +720,6 @@ lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
 #' Rescale a numeric vector to have specified maximum and minimum; shamelessly
 #' stolen from hadley's \code{scales} package
 #' 
-#' @usage rescaler(x, to = c(0, 1), from = range(x, na.rm = TRUE))
-#' 
 #' @param x numeric vector of values
 #' @param to output range (numeric vector of length two)
 #' @param from input range (numeric vector of length two); if not given, 
@@ -813,6 +730,7 @@ lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
 #' rescaler(1:100)
 #' rescaler(runif(10))
 #' rescaler(1)
+#' 
 #' @export
 
 rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
@@ -843,9 +761,7 @@ rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
 #' 
 #' Render html in rstudio viewer
 #' 
-#' @usage html.test(...)
-#' 
-#' @param ... character string of html code
+#' @param x character string of html code
 #' 
 #' @examples
 #' \dontrun{
@@ -857,11 +773,12 @@ rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
 #' library(Gmisc)
 #' html.test(htmlTable(mtcars, output = FALSE))
 #' }
+#' 
 #' @export
 
-html.test <- function(...) {
+html.test <- function(x) {
   htmlFile <- tempfile(fileext = '.html')
-  writeLines(..., con = htmlFile,)
+  writeLines(x, con = htmlFile)
   if ((Sys.getenv('RSTUDIO') != '') && ('rstudio' %in% .packages(TRUE)))
       rstudio::viewer(htmlFile)
   else browseURL(htmlFile)
@@ -870,8 +787,6 @@ html.test <- function(...) {
 #  roundr
 #'
 #' Improved rounding formatter
-#' 
-#' @usage roundr(x, digits = 1)
 #'
 #' @param x numeric value, vector, matrix, or data frame
 #' @param digits number of digits past the decimal point to keep
@@ -895,7 +810,9 @@ html.test <- function(...) {
 
 roundr <- function(x, digits = 1) UseMethod('roundr')
 
+#' @rdname roundr
 #' @export
+
 roundr.default <- function(x, digits = 1) {
   mode.ok <- vapply(x, function(x) is.numeric(x) || is.complex(x), NA)
   if (!all(mode.ok))
@@ -906,7 +823,9 @@ roundr.default <- function(x, digits = 1) {
   res
 }
 
+#' @rdname roundr
 #' @export
+
 roundr.data.frame <- function(x, digits = 1) {
   mode.ok <- vapply(x, function(x) is.numeric(x) || is.complex(x), NA)
   if (!all(mode.ok))
@@ -915,7 +834,9 @@ roundr.data.frame <- function(x, digits = 1) {
     do.call(data.frame, lapply(x, roundr, digits))
 }
 
+#' @rdname roundr
 #' @export
+
 roundr.matrix <- function(x, digits = 1) {
   mode.ok <- vapply(x, function(x) is.numeric(x) || is.complex(x), NA)
   if (!all(mode.ok))
@@ -927,8 +848,6 @@ roundr.matrix <- function(x, digits = 1) {
 #' Confidence interval formatter
 #' 
 #' Automatically calculate summary statistic and interval for numeric vectors
-#'  
-#' @usage intr(..., fun = median, conf = NULL, digits = 2, na.rm = FALSE)
 #' 
 #' @param ... numeric vector or string of numeric vectors
 #' @param fun summary stat function, usually \code{\link{mean}} or 
@@ -976,9 +895,6 @@ intr <- function(..., fun = median, conf = NULL, digits = 2, na.rm = FALSE) {
 #' p-value formatter
 #' 
 #' Formats several cases of p-values; see details.
-#'  
-#' @usage
-#' pvalr(pvals, sig.limit = .001, digits = 3, html = FALSE, show.p = FALSE)
 #' 
 #' @param pvals numeric value or vector of p-values
 #' @param sig.limit lower bound for precision
@@ -1033,7 +949,6 @@ pvalr <- function(pvals, sig.limit = .001, digits = 3, html = FALSE,
 #' and their respective numbers. Find a color by number in the plot or find the
 #' name of the color with \code{colors()[n]}
 #' 
-#' @usage show.colors()
 #' @seealso \code{\link{show.pch}}
 #' 
 #' @examples
@@ -1071,7 +986,6 @@ show.colors <- function() {
 #' both the border and fill color (if applicable) for \code{0:20}; \code{pch}s
 #' \code{21:25} can be filled with \code{bg}.
 #' 
-#' @usage show.pch()
 #' @seealso \code{\link{show.colors}}
 #' 
 #' @examples
@@ -1145,9 +1059,7 @@ clist <- function(l)
 
 #' binconr
 #' 
-#' Binomial confidence interval formatter
-#' 
-#' @usage binconr(r, n, conf = 0.95, digits = 2, est = TRUE, method = 'exact')
+#' Binomial confidence interval formatter.
 #' 
 #' @param r number of responses (successes)
 #' @param n number of observations (trials)
@@ -1156,11 +1068,11 @@ clist <- function(l)
 #' @param est logical; if \code{TRUE}, includes the point estimate
 #' @param method method to use; see \code{\link{bincon}}
 #' 
+#' @seealso \code{\link{bincon}}; \code{\link[Hmisc]{binconf}}
+#' 
 #' @examples
 #' binconr(5, 10, .90, est = FALSE)
 #' binconr(45, 53, .95, digits = 1)
-#' 
-#' @seealso \code{\link{bincon}}; \code{\link[Hmisc]{binconf}}
 #' 
 #' @export
 
@@ -1176,9 +1088,7 @@ binconr <- function(r, n, conf = 0.95, digits = 2,
 
 #' Numeric to character string
 #' 
-#' Convert a number to a character string
-#' 
-#' @usage num2char(num, informal = FALSE, cap = TRUE)
+#' Convert a number to a character string.
 #' 
 #' @param num number; integer value in \code{(-1e08, 1e08)}
 #' @param informal logical; if \code{TRUE}, adds "and" before tens or ones
@@ -1290,9 +1200,6 @@ num2char <- function(num, informal = FALSE, cap = TRUE) {
 #' 
 #' Modified \code{\link[pander]{p}} function from the \code{pander} package.
 #' 
-#' @usage
-#' iprint(..., wrap, sep, copula, digits = 2)
-#' 
 #' @param ... one or more numeric or character elements to be converted into
 #' character vectors
 #' @param wrap character string to wrap each term
@@ -1344,14 +1251,11 @@ iprint <- function (..., wrap, sep, copula, digits = 2) {
 #' Save a \emph{named} list of data frames or matrices into \code{R} data files
 #' \code{.rda}, \code{.csv}, or \code{.txt} files.
 #' 
-#' @usage
-#' list2file(l, targetdir = getwd(), sep, ...)
-#' 
 #' @param l a list of data frames or matrices
 #' @param targetdir target directory (created if doesn't exist)
-#' @param sep field separator string; default is none which results in \code{R}
-#' data files; \code{,} creates \code{.csv} files; any other separator will
-#' create \code{.txt} files
+#' @param sep field separator string; default is none which results in 
+#' \code{.rda} data files; "\code{,}" creates \code{.csv} files; any other
+#' separator will create \code{.dat} files
 #' @param ... additional arguments passed to \code{\link{save}} if \code{sep}
 #' is not given or to \code{\link{write.table}} if \code{sep} is given
 #' 
@@ -1393,7 +1297,7 @@ list2file <- function(l, targetdir = getwd(), sep, ...) {
     sapply(names(l), function(x)
       write.table(get(x, envir = e), 
                   file = sprintf('%s/%s.%s', targetdir, x, 
-                                 ifelse(sep == ',','csv','txt')),
+                                 ifelse(sep == ',','csv','dat')),
                   row.names = FALSE, quote = FALSE, ...))
   message(sprintf('NOTE: %s written to %s', iprint(names(l)), targetdir))
   return(invisible())
@@ -1405,9 +1309,6 @@ list2file <- function(l, targetdir = getwd(), sep, ...) {
 #' descriptions with their appropriate matches. Especially useful in data from
 #' paper trials where only the toxicity codes are reported excluding (the more
 #' meaningful) descriptions.
-#' 
-#' @usage
-#' match_ctc(..., version = 4)
 #' 
 #' @param ... character string(s) of toxicity codes (usually of the form 
 #' \code{AB123} but can handle \code{AB-123} or \code{AB 123}) or keyword(s)
@@ -1437,8 +1338,8 @@ match_ctc <- function(..., version = 4) {
   if (version %ni% 3:4)
     stop('CTCAE version should be 3 or 4')
   else if (version == 3)
-    dat <- rawr::ctcae_v3
-  else dat <- rawr::ctcae_v4
+    dat <- ctcae_v3
+  else dat <- ctcae_v4
   
   if (any(grepl('([A-Za-z -])([0-9])', x))) {
     idx <- 'tox_code'
@@ -1453,12 +1354,13 @@ match_ctc <- function(..., version = 4) {
 
 #' Reload
 #' 
-#' Emulate starting a fresh \code{R} session
+#' Emulate starting a fresh \code{R} session.
 #' 
-#' @usage Reload()
+#' @param ... ignored
+#' 
 #' @export
 
-Reload <- function() {
+Reload <- function(...) {
   ## clean (rstudio) r session packages:
   pkgs <- c(".GlobalEnv", "tools:rstudio", "package:stats", "package:graphics",
             "package:grDevices", "package:utils", "package:datasets",
@@ -1475,7 +1377,6 @@ Reload <- function() {
 #' 
 #' Clear the workspace
 #' 
-#' @usage clc(all = FALSE)
 #' @param all logical; if \code{TRUE}, also removes hidden files
 #' 
 #' @export
@@ -1487,11 +1388,11 @@ clc <- function(all = FALSE)
 #' 
 #' Clear the console window
 #' 
-#' @usage clear()
+#' @param ... ignored
 #' 
 #' @export
 
-clear <- function() cat('\014')
+clear <- function(...) cat('\014')
 
 #' Write ftable
 #' 
@@ -1499,9 +1400,6 @@ clear <- function() cat('\014')
 #' the console and, thus, not easily used (or manipulated). 
 #' \code{\link{write.ftable}} does not write \code{ftable}s as they print,
 #' so here we are.
-#' 
-#' @usage
-#' writeftable(x, quote = FALSE, digits = getOption('digits'), ...)
 #' 
 #' @param x an object of class \code{ftable}
 #' @param quote logical; if \code{TRUE}, strings will be surrounded by double
@@ -1522,7 +1420,7 @@ clear <- function() cat('\014')
 writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
   if (!inherits(x, 'ftable'))
     stop('x must be an ftable object')
-  x <- stats:::format.ftable(x, quote = quote, digits = digits, ...)
+  x <- format(x, quote = quote, digits = digits, ...)
   as.matrix(x)
 }
 
@@ -1530,10 +1428,6 @@ writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
 #' 
 #' Extracts specified portions of R help files (from \emph{loaded} libraries)
 #' for use in Sweave or R-markdown documents.
-#' 
-#' @usage
-#' helpExtract(f, show.sections = FALSE, section = 'Usage', 
-#'             type = 'm_code', ...)
 #' 
 #' @param f a function
 #' @param show.sections logical; if \code{TRUE}, returns \code{section} options
@@ -1562,17 +1456,21 @@ writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
 #' 
 #' To insert a (highlighted) chunk into a markdown document:
 #' 
-#' \verb{```{r, results='asis'}} \verb{cat(helpExtract(print), sep ='\n')} 
-#' \verb{```}
+#' \verb{
+#' ```{r, results='asis'}
+#' cat(helpExtract(print), sep ='\n')
+#' ```
+#' }
 #' 
 #' To insert a (highlighted) chunk into a Sweave document:
 #' 
-#' \verb{\Sexpr{knit_child(textConnection(helpExtract(print, type = 's_code')),
-#' options = list(tidy = FALSE, eval = FALSE))}}
+#' \verb{
+#' \\Sexpr{knit_child(textConnection(helpExtract(print, type = 's_code')),
+#'      options = list(tidy = FALSE, eval = FALSE))}
+#' }
 #' 
 #' @return 
 #' A character vector to be used in a Sweave or R-markdown document.
-#' @author Ananda Mahto
 #' 
 #' @examples
 #' 
@@ -1587,8 +1485,49 @@ writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
 helpExtract <- function(f, show.sections = FALSE, section = 'Usage', 
                         type = 'm_code', ...) {
   
+  ## helpers 
+  # tools:::fetchRdDB
+  fetchRdDB <- function (filebase, key = NULL) {
+    fun <- function(db) {
+      vals <- db$vals
+      vars <- db$vars
+      datafile <- db$datafile
+      compressed <- db$compressed
+      envhook <- db$envhook
+      fetch <- function(key) 
+        lazyLoadDBfetch(vals[key][[1L]], datafile, compressed, envhook)
+      if (length(key)) {
+        if (!key %in% vars) 
+          stop(gettextf("No help on %s found in RdDB %s", 
+                        sQuote(key), sQuote(filebase)), domain = NA)
+        fetch(key)
+      } else {
+        res <- lapply(vars, fetch)
+        names(res) <- vars
+        res
+      }
+    }
+    res <- lazyLoadDBexec(filebase, fun)
+    if (length(key)) 
+      res
+    else invisible(res)
+  }
+  # utils:::.getHelpFile
+  getHelpFile <- function (file) {
+    path <- dirname(file)
+    dirpath <- dirname(path)
+    if (!file.exists(dirpath)) 
+      stop(gettextf("invalid %s argument", sQuote("file")), domain = NA)
+    pkgname <- basename(dirpath)
+    RdDB <- file.path(path, pkgname)
+    if (!file.exists(paste(RdDB, "rdx", sep = "."))) 
+      stop(gettextf("package %s exists but was not installed under R >= 2.10.0 so help cannot be accessed", 
+                    sQuote(pkgname)), domain = NA)
+    fetchRdDB(RdDB, basename(file))
+  }
+  
   A <- deparse(substitute(f))
-  x <- capture.output(tools:::Rd2txt(utils:::.getHelpFile(utils::help(A, ...)),
+  x <- capture.output(tools::Rd2txt(getHelpFile(utils::help(A, ...)),
                                      options = list(sectionIndent = 0)))
   ## section start lines
   B <- grep('^_', x)
@@ -1620,8 +1559,6 @@ helpExtract <- function(f, show.sections = FALSE, section = 'Usage',
 #' Round to specified target
 #' 
 #' Rounds a numeric vector constrained to sum to a \code{target} value.
-#' 
-#' @usage Round(x, target)
 #' 
 #' @param x numeric values
 #' @param target desired sum of code{x} after rounding
@@ -1657,8 +1594,6 @@ Round <- function(x, target) {
 #' 
 #' Bind objects with unequal number of rows or columns.
 #' 
-#' @usage bind_all(..., which)
-#' 
 #' @param ... vectors
 #' @param which joining method; \code{'rbind'} or \code{'cbind'}
 #' 
@@ -1679,8 +1614,6 @@ bind_all <- function(..., which) {
 #' Interleave rows or columns
 #' 
 #' Interleave rows (or columns) of vectors, matrices, or data frames.
-#' 
-#' @usage interleave(..., which)
 #' 
 #' @param ... vectors, matrices, or data frames
 #' @param which joining method to use (\code{'rbind'} or \code{'cbind'}) when
@@ -1712,8 +1645,6 @@ interleave <- function(..., which) {
 #' The outer product of the arrays \code{X}, \code{Y}, ... with dimensions
 #' \code{c(dim(X), dim(Y), ...)}; see \code{\link{outer}}.
 #' 
-#' @usage outer2(..., FUN)
-#' 
 #' @param ... arguments passed to \code{FUN} in the order given
 #' @param FUN a function to use on the outer products
 #' 
@@ -1742,8 +1673,6 @@ outer2 <- function(..., FUN) {
 #' 
 #' Use \code{\link{merge}} to join \code{n} data frames
 #' 
-#' @usage merge2(l, ...)
-#' 
 #' @param l list of data frames or objects to be coerced
 #' @param ... additional arguments passed to \code{merge} (eg, \code{by}, 
 #' \code{all}, etc)
@@ -1769,10 +1698,11 @@ merge2 <- function(l, ...) Reduce(function(x, y) merge(x, y, ...), l)
 #' Extracts coefficients, standard errors, odds ratios, confidence intervals, 
 #' p-values, etc. from model fits.
 #' 
-#' @usage tabler(x, ...)
-#' 
 #' @param x an object of class \code{\link{lm}}, \code{\link{glm}},
 #' \code{\link{survfit}}
+#' @param digits number of digits printed
+#' @param level confidence level; default is \code{0.95}
+#' @param type use \code{"or"} for odds ratios; others may be added later
 #' @param ... additional parameters passed to other methods
 #' 
 #' @examples
@@ -1792,16 +1722,22 @@ merge2 <- function(l, ...) Reduce(function(x, y) merge(x, y, ...), l)
 
 tabler <- function(x, ...) UseMethod('tabler')
 
+#' @rdname tabler
 #' @export
+
 tabler.default <- function(x, ...) summary(x, ...)
 
+#' @rdname tabler
 #' @export
+
 tabler.lm <- function(x, digits = 3, ...) {
   res <- round(summary(x, ...)$coefficients, digits = digits)
   return(res)
 }
 
+#' @rdname tabler
 #' @export
+
 tabler.glm <- function(x, digits = 3, level = 0.95, type = '', ...) {
   res <- summary(x, ...)$coefficients
   if (tolower(type) == 'or') {
@@ -1814,7 +1750,9 @@ tabler.glm <- function(x, digits = 3, level = 0.95, type = '', ...) {
   return(res)
 }
 
+#' @rdname tabler
 #' @export
+
 tabler.survfit <- function(x, ...) {
   surv_table(x, ...)
 }
@@ -1823,8 +1761,6 @@ tabler.survfit <- function(x, ...) {
 #' 
 #' Replaces \code{NA} in vectors, data frames, or matrices with most recent
 #' non-\code{NA} value
-#' 
-#' @usage locf(x, fromLast = FALSE)
 #' 
 #' @param x a vector, matrix, or data frame
 #' @param fromLast logical; if \code{TRUE}, starts from end

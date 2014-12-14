@@ -3,7 +3,7 @@
 \alias{dodge}
 \title{Point dodge}
 \usage{
-dodge(formula, data = parent.frame(), z = .5, spread = FALSE)
+dodge(formula, data = parent.frame(), z = 0.5, spread = FALSE)
 }
 \arguments{
 \item{formula}{an object of class \code{\link{formula}} (or an object which

@@ -14,7 +14,7 @@ dlt.table(low, high, delta = 10)
 }
 \description{
 Creates a standard dose-limiting toxicity table with probabilities of
-dose-escalation
+dose-escalation.
 }
 \examples{
 dlt.table(10, 50)

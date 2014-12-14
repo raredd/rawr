@@ -15,7 +15,7 @@ dotplot}
 i.e., \code{\link[ggplot2]{facet_wrap}}}
 }
 \description{
-Caterpillar plots for random effects models using ggplot
+Caterpillar plots for random effects models using ggplot.
 }
 \details{
 Behaves like \code{\link[lattice]{qqmath}} and

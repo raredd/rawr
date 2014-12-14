@@ -13,7 +13,7 @@ num2char(num, informal = FALSE, cap = TRUE)
 \item{cap}{logical; if \code{TRUE}, capitalizes the first word}
 }
 \description{
-Convert a number to a character string
+Convert a number to a character string.
 }
 \details{
 Whole numbers twenty-one through ninety-nine are hyphenated when they are

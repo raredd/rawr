@@ -3,27 +3,12 @@
 \alias{ggsurv}
 \title{Survival curves with ggplot}
 \usage{
-ggsurv(s,
-       # basic plot options
-       col.surv = 1, lty.surv = 1,
-       censor = TRUE, col.cens = 1, mark = 3,
-
-       # confidence options
-       confin = TRUE, confband = FALSE, col.band = NA,
-
-       # extra plot options
-       median = FALSE, atrisk = TRUE, col.atrisk,
-       pval, basehaz = FALSE,
-
-       # aesthetics
-       ticks, median.ticks = TRUE,
-       xlab, ylab, main, xlim, ylim,
-       legend = 'right', legend.labels,
-       grid = TRUE, ggdefault = FALSE,
-
-       # other options
-       plot.margin = NULL, table.margin = NULL,
-       data = FALSE, ...)
+ggsurv(s, col.surv = 1, lty.surv = 1, censor = TRUE, col.cens = 1,
+  mark = 3, confin = TRUE, confband = FALSE, col.band = NA,
+  median = FALSE, atrisk = TRUE, col.atrisk, pval, basehaz = FALSE, ticks,
+  median.ticks = TRUE, xlab, ylab, main, xlim, ylim, legend = "right",
+  legend.labels, grid = TRUE, ggdefault = FALSE, plot.margin = NULL,
+  table.margin = NULL, ...)
 }
 \arguments{
 \item{s}{\code{\link{survfit}} or \code{survfit.cox} object}
@@ -105,13 +90,11 @@ details}
 \item{table.margin}{numeric; extra "lines" added to left margin of at risk
 table; see details}
 
-\item{data}{logical; if \code{TRUE}, saves data frame used to create graphs}
-
 \item{...}{for backwards compatibility with deprecated arguments}
 }
 \description{
 Function to plot Kaplan-Meier or Cox proportional hazards plots with
-optional at risk table using \code{\link[ggplot2]{ggplot}}
+optional at risk table using \code{\link[ggplot2]{ggplot}}.
 }
 \details{
 The argument \code{confband = TRUE} does not plot a confidence band in the

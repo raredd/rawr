@@ -3,28 +3,16 @@
 \alias{kmplot}
 \title{Survival curves in base graphics}
 \usage{
-kmplot(s,
-       ## basic plot options
-       lty.surv = 1, lwd.surv = 1, col.surv = 1, mark = 3, mar = NULL,
-
-       ## confidence options
-       lty.ci = 0, lwd.ci = 1, col.ci = col.surv, col.band = col.surv,
-
-       ## at risk table options
-       atrisk = TRUE, atrisk.lab = 'Number at risk', atrisk.lines = TRUE,
-       strata.lab = NULL, strata.expr = NULL,
-       strata.order = seq(length(s$n)), extra.margin = 5,
-
-       ## aesthetics
-       xlim = c(0, max(s$time)), ylim = c(0, 1),
-       xaxis.at = pretty(s$time), xaxis.lab = xaxis.at,
-       yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
-       xlab = 'Time', ylab = 'Survival probability', main = '',
-       cex.axis = 1, legend = !is.null(s$strata), legend.pos = 'bottomleft',
-
-       ## other options
-       grid = TRUE, lty.grid = 1, lwd.grid = 1, col.grid = grey(.9),
-       dev = FALSE, add = FALSE, ...)
+kmplot(s, lty.surv = 1, lwd.surv = 1, col.surv = 1, mark = 3,
+  mar = NULL, lty.ci = 0, lwd.ci = 1, col.ci = col.surv,
+  col.band = col.surv, atrisk = TRUE, atrisk.lab = "Number at risk",
+  atrisk.lines = TRUE, strata.lab = NULL, strata.expr = NULL,
+  strata.order = seq(length(s$n)), extra.margin = 5, xlim = c(0,
+  max(s$time)), ylim = c(0, 1), xaxis.at = pretty(s$time),
+  xaxis.lab = xaxis.at, yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
+  xlab = "Time", ylab = "Survival probability", main = "", cex.axis = 1,
+  legend = !is.null(s$strata), legend.pos = "bottomleft", grid = TRUE,
+  lty.grid = 1, lwd.grid = 1, col.grid = grey(0.9), add = FALSE, ...)
 }
 \arguments{
 \item{s}{object of class \code{\link[survival]{survfit}} or
@@ -106,9 +94,6 @@ are long}
 
 \item{col.grid}{line color for grid}
 
-\item{dev}{logical; if \code{TRUE}, will plot on a platform-specific
-graphics device; see details}
-
 \item{add}{logical; if \code{TRUE}, \code{par} is not refreshed; allows for
 multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}}
 
@@ -117,7 +102,7 @@ multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}}
 }
 \description{
 Function to plot Kaplan-Meier or Cox proportional hazards plots with
-optional at risk table in base graphics
+optional at risk table in base graphics.
 }
 \details{
 Line specifications (\code{lty.surv}, \code{lwd.surv}, etc) will be recycled

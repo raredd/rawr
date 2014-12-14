@@ -39,7 +39,4 @@ fapply(mtcars, list(median, `95\% CI`))
 t(fapply(mtcars, list(min, mean, max, length)))
 summary(mtcars)
 }
-\seealso{
-\code{\link{sapply}}
-}
 

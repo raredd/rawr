@@ -4,8 +4,7 @@
 \title{ggHeatmap}
 \usage{
 ggheat(cors = NULL, data = NULL, limits = c(-1, 1),
-       gradn = rev(heat.colors(10)),
-       gradc = c('white', 'steelblue'))
+  gradn = rev(heat.colors(10)), gradc = c("white", "steelblue"))
 }
 \arguments{
 \item{cors}{matrix (or matrix-like object) of correlations}

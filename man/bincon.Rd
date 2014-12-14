@@ -3,9 +3,8 @@
 \alias{bincon}
 \title{Binomial probability confidence intervals}
 \usage{
-bincon(r, n, alpha = 0.05, round = NULL,
-       method = c('exact','wilson','asymptotic','all'),
-       inc.r = TRUE, inc.n = TRUE, df = FALSE)
+bincon(r, n, alpha = 0.05, round = NULL, method = c("exact", "wilson",
+  "asymptotic", "all"), inc.r = TRUE, inc.n = TRUE, df = FALSE)
 }
 \arguments{
 \item{r}{number of responses (successes)}

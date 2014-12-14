@@ -4,7 +4,7 @@
 \title{Simon two-stage designs}
 \usage{
 simon2(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,
-       del = 1, minimax = FALSE)
+  del = 1, minimax = FALSE)
 }
 \arguments{
 \item{p0}{null hypothesis response probability}
@@ -43,27 +43,12 @@ error; \code{E.tot.n.H0}, the expected number of subjects under H0}
 the columns in \code{$designs}.}
 }
 \description{
-Function for sample sizes for Simon optimal two-stage, single-arm designs
+Function for sample sizes for Simon optimal two-stage, single-arm designs.
 }
 \details{
 For two-stage designs for studies with binary endpoints, searches
 over possible two-stage sampling designs to find those that minimize the
 expected number of subjects, subject to specified constraints.
-}
-\note{
-To install the desmon package in a win \code{R} (for mac, replace
-\code{.zip} file with appropriate \code{.tgz} file); in terminal:
-
-\code{cd ~}
-
-\code{mkdir r.packages}
-
-\code{cp ~rredd/r.packages/desmon.zip ./r.packages}
-
-\code{R} console:
-
-\code{install.packages('z:/r.packages/desmon.zip', repos = NULL,
-type = 'source')}
 }
 \examples{
 \donttest{

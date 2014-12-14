@@ -3,8 +3,8 @@
 \alias{rmacro}
 \title{Call SAS macros}
 \usage{
-rmacro(mpath, mname, args, saspath, show.args = FALSE,
-       force = FALSE, firstArgs, lastArgs, out = getwd())
+rmacro(mpath, mname, args, saspath, show.args = FALSE, force = FALSE,
+  firstArgs, lastArgs, out = getwd())
 }
 \arguments{
 \item{mpath}{path to macro (\code{.sas}) file as character string}
@@ -18,9 +18,16 @@ include semicolons---\code{args} is passed directly as
 \code{\%macro(args);} ); if unsure of the macro parameters, run
 \code{rmacro} with \code{show.args = TRUE}}
 
-\item{saspath}{character string of directory of \code{sas.exe}; usually for
-windows, the path \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
-where \code{x.x} is the \code{SAS} version number, is the correct directory;
+\item{saspath}{file path to \code{sas.exe} as character string
+
+Usually \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
+where \code{x.x} is the \code{SAS} version number, is the correct directory
+
+Note that specifying \code{saspath} is not required if v9.2 is installed in
+the default directory (i.e., \code{c:/program files/sasfoundation/9.2/sas.exe});
+
+For previous versions or if\code{SAS} is not installed in the default
+directory, it will be necessary to supply \code{saspath} to \code{sas.exe}
 \code{mpath} defaults to the most recent version of \code{SAS}}
 
 \item{show.args}{logical; if \code{TRUE}, \code{rmacro} will only return the
@@ -32,7 +39,7 @@ this or for non-interactive \code{R}}
 
 \item{firstArgs}{optional character string of (valid) \code{SAS} commands
 separated by semicolons to be excuted \emph{before} the macro; for example,
-\code{options <OPTIONS> ;} or \code{x "cd c:/path/to/directory";}}
+\code{options <OPTIONS>;} or \code{x "cd ..";}}
 
 \item{lastArgs}{optional commands to be executed \emph{after} the macro; see
 \code{firstArgs}}

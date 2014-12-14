@@ -3,9 +3,12 @@
 \alias{Reload}
 \title{Reload}
 \usage{
-Reload()
+Reload(...)
+}
+\arguments{
+\item{...}{ignored}
 }
 \description{
-Emulate starting a fresh \code{R} session
+Emulate starting a fresh \code{R} session.
 }
 

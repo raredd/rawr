@@ -3,21 +3,10 @@
 \alias{jmplot}
 \title{Joint/marginal plot}
 \usage{
-jmplot(x, y, z,
-
-       # labels
-       main, sub, xlab, ylab, names,
-
-       # axes stuff
-       xlim, ylim, axes = TRUE, frame.plot = axes,
-       log = '', xratio = .8, yratio = xratio,
-
-       # more options
-       show.n = TRUE, show.na = TRUE, cex.n,
-       ann = par('ann'), asp = NA,
-       panel.first = NULL, panel.last = NULL,
-
-       ...)
+jmplot(x, y, z, main, sub, xlab, ylab, names, xlim, ylim, axes = TRUE,
+  frame.plot = axes, log = "", xratio = 0.8, yratio = xratio,
+  show.n = TRUE, show.na = TRUE, cex.n, ann = par("ann"), asp = NA,
+  panel.first = NULL, panel.last = NULL, ...)
 }
 \arguments{
 \item{x}{x-axis variable}
@@ -44,7 +33,7 @@ jmplot(x, y, z,
 
 \item{frame.plot}{logical; draw box around \code{x-y} plot}
 
-\item{log}{character, "x", "y", or both for logarithmic scale; sets negative
+\item{log}{character, "x", "y", or "xy" for logarithmic scale; sets negative
 values to \code{\link{NA}} and gives a warning; see \code{\link{xy.coords}}}
 
 \item{xratio}{ratio of \code{x-y} plot to bar plots along x-axis; see
@@ -79,7 +68,7 @@ etc) and/or \code{\link{tplot}} (\code{group.col}, \code{group.pch}, etc)}
 }
 \description{
 Joint distribution and marginal distributions plot; requires
-\code{\link{tplot}}
+\code{\link{tplot}}.
 }
 \examples{
 set.seed(1618)

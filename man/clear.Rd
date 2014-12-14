@@ -3,7 +3,10 @@
 \alias{clear}
 \title{clear}
 \usage{
-clear()
+clear(...)
+}
+\arguments{
+\item{...}{ignored}
 }
 \description{
 Clear the console window

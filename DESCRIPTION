@@ -1,9 +1,9 @@
 Package: rawr
 Type: Package
 Title: A personal package with miscellaneous tools.
-Version: 0.3.0
-Author: Robert Redd  <raredd01@gmail.com>
-Maintainer: Robert Redd <raredd01@gmail.com>
+Version: 0.4.0
+Authors@R: person("Robert", "Redd", email = "raredd01@gmail.com",
+    role = c("aut", "cre"))
 Description: Personal package with miscellaneous functions, stuff in progress,
     and tools I use regularly
 Depends:
@@ -15,10 +15,13 @@ Suggests:
     grid,
     gridExtra,
     Hmisc,
+    knitr,
     plotrix,
+    rstudio,
     survival,
     testthat (>= 0.8.0)
-License: GPL-3 + file LICENSE
+License: GPL-2
 LazyData: yes
 URL: https://github.com/raredd/rawr
 Roxygen: list(wrap = FALSE)
+VignetteBuilder: knitr

@@ -3,7 +3,7 @@
 \alias{writeftable}
 \title{Write ftable}
 \usage{
-writeftable(x, quote = FALSE, digits = getOption('digits'), ...)
+writeftable(x, quote = FALSE, digits = getOption("digits"), ...)
 }
 \arguments{
 \item{x}{an object of class \code{ftable}}

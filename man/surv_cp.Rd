@@ -3,8 +3,8 @@
 \alias{surv_cp}
 \title{Create counting process data}
 \usage{
-surv_cp(dat, time.var, status.var,
-        covars = setdiff(names(dat), c(time.var, status.var)))
+surv_cp(dat, time.var, status.var, covars = setdiff(names(dat), c(time.var,
+  status.var)))
 }
 \arguments{
 \item{dat}{data frame with survival time, survival status, and other

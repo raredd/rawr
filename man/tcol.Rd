@@ -13,7 +13,7 @@ tcol(color, trans = 255)
 visible; see details}
 }
 \description{
-Add transparency to colors
+Add transparency to colors.
 }
 \details{
 This is a vectorized function to add transparency to colors.
@@ -38,6 +38,7 @@ cols <- c('#FF0000','#00FF00','#0000FF')
 plot(rnorm(100), col = tcol(cols, c(50, 100, 255)), pch= 16, cex = 4)
 }
 \seealso{
-\code{\link{as.hexmode}}, \code{\link{col2rgb}}
+\code{\link{as.hexmode}}, \code{\link{col2rgb}},
+\code{\link{adjustcolor}}
 }
 

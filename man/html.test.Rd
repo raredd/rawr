@@ -3,10 +3,10 @@
 \alias{html.test}
 \title{html test}
 \usage{
-html.test(...)
+html.test(x)
 }
 \arguments{
-\item{...}{character string of html code}
+\item{x}{character string of html code}
 }
 \description{
 Render html in rstudio viewer

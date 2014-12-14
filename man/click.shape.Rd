@@ -3,9 +3,9 @@
 \alias{click.shape}
 \title{Add shapes interactively in base \code{R} graphics}
 \usage{
-click.shape(shape = 'line', col = 'black', border = col, trans = NULL,
-            corners = NULL, lty = par('lty'), lwd = par('lwd'),
-            density = NULL, length = 1, code = 2, dev = FALSE, ...)
+click.shape(shape = "line", col = "black", border = col, trans = NULL,
+  corners = NULL, lty = par("lty"), lwd = par("lwd"), density = NULL,
+  length = 1, code = 2, ...)
 }
 \arguments{
 \item{shape}{type of shape: 'box', 'arrow', 'line', 'poly', 'circle', 'cyl'}
@@ -31,24 +31,11 @@ value of \code{NULL} means that no shading lines are drawm; a zero value of
 \item{code}{integer code for 'arrows' determining \emph{kind} of arrows to
 be drawn}
 
-\item{dev}{logical; if \code{TRUE}, will plot on a platform-specific
-graphics device; see details}
-
-\item{...}{other parameters (future use)}
+\item{...}{ignored}
 }
 \description{
 Allows you to add shapes anywhere in a plot (including margins)
-with mouse click(s)
-}
-\details{
-When \code{dev = TRUE}, a platform-specific graphics device is used to
-displace the plot. Defaults are \code{\link{quartz}}, for apple and
-\code{\link{x11}} for windows and unix platforms.
-
-However, any device can be used by setting \code{dev = FALSE} and opening
-a device before \code{click.shape}. If \code{dev} is \code{FALSE}, the
-plot will open in the current device; see \code{\link{.Device}}. Close the
-device pane or use \code{dev.off()} to turn off the current device.
+with mouse click(s).
 }
 \examples{
 \dontrun{
@@ -65,8 +52,5 @@ click.shape('poly', corners = 3, border = 'red', col = 'yellow', lty = 1,
 click.shape('cyl', col = 'orange')
 click.shape('circle', col = 'orange', border = 'black', lty = 3, lwd = 3)
 }
-}
-\seealso{
-\code{\link{click.text}}
 }
 

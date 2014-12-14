@@ -3,7 +3,8 @@
 \alias{pvalr}
 \title{p-value formatter}
 \usage{
-pvalr(pvals, sig.limit = .001, digits = 3, html = FALSE, show.p = FALSE)
+pvalr(pvals, sig.limit = 0.001, digits = 3, html = FALSE,
+  show.p = FALSE)
 }
 \arguments{
 \item{pvals}{numeric value or vector of p-values}

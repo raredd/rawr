@@ -10,9 +10,9 @@ list2file(l, targetdir = getwd(), sep, ...)
 
 \item{targetdir}{target directory (created if doesn't exist)}
 
-\item{sep}{field separator string; default is none which results in \code{R}
-data files; \code{,} creates \code{.csv} files; any other separator will
-create \code{.txt} files}
+\item{sep}{field separator string; default is none which results in
+\code{.rda} data files; "\code{,}" creates \code{.csv} files; any other
+separator will create \code{.dat} files}
 
 \item{...}{additional arguments passed to \code{\link{save}} if \code{sep}
 is not given or to \code{\link{write.table}} if \code{sep} is given}

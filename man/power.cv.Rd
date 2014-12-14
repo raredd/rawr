@@ -5,9 +5,9 @@
 coefficients of variation}
 \usage{
 power.cv(n = NULL, f = NULL, cv = NULL, sig.level = NULL,
-   power = NULL, type = c('two.sample', 'one.sample', 'paired'),
-   alternative = c('two.sided', 'less', 'greater'),
-   distribution = c('t', 'normal', 'log.normal'))
+  power = NULL, type = c("two.sample", "one.sample", "paired"),
+  alternative = c("two.sided", "less", "greater"), distribution = c("t",
+  "normal", "log.normal"))
 }
 \arguments{
 \item{n}{number of observations (per group)}
@@ -27,8 +27,8 @@ power.cv(n = NULL, f = NULL, cv = NULL, sig.level = NULL,
 \item{distribution}{underlying distribution assumption}
 }
 \value{
-Object of class "power.htest," a list of the arguments (including
-the computed one) augmented with method and note elements
+Object of class "\code{power.htest}," a list of the arguments
+(including the computed one) augmented with method and note elements
 }
 \description{
 Compute power of test using mean ratios and coefficients of variation or

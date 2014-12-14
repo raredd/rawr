@@ -3,7 +3,7 @@
 \alias{surv_summary}
 \title{Summary of a survival curve}
 \usage{
-surv_summary(s, digits = max(options() $digits-4, 3), ...)
+surv_summary(s, digits = max(options()$digits - 4, 3), ...)
 }
 \arguments{
 \item{s}{\code{\link[survival]{survfit}} object}

@@ -3,8 +3,8 @@
 \alias{click.text}
 \title{Add text interactively in base \code{R} graphics}
 \usage{
-click.text(express, col = 'black', cex = NULL, srt = 0,
-           trans = NULL, family = 'sans', dev = FALSE, ...)
+click.text(express, col = "black", cex = NULL, srt = 0, trans = NULL,
+  family = "sans", ...)
 }
 \arguments{
 \item{express}{text or \code{\link{expression}}}
@@ -21,25 +21,12 @@ multiplied by \code{\link{par}} ("cex") yields the final character size;
 
 \item{family}{the name of a font or drawing text; see \code{\link{Hershey}}}
 
-\item{dev}{logical; if \code{TRUE}, will plot on a platform-specific
-graphics device; see details}
-
-\item{...}{further graphical parameters passed to \code{\link{text}} (or
+\item{...}{additional graphical parameters passed to \code{\link{text}} (or
 \code{\link{par}})}
 }
 \description{
 Allows you to add text and expressions anywhere in a plot (including
 margins) with mouse click(s).
-}
-\details{
-When \code{dev = TRUE}, a platform-specific graphics device is used to
-displace the plot. Defaults are \code{\link{quartz}}, for apple and
-\code{\link{x11}} for windows and unix platforms.
-
-However, any device can be used by setting \code{dev = FALSE} and opening
-a device before \code{click.text}. If \code{dev} is \code{FALSE}, the
-plot will open in the current device; see \code{\link{.Device}}. Close the
-device pane or use \code{dev.off()} to turn off the current device.
 }
 \examples{
 \dontrun{

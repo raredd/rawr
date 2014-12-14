@@ -3,14 +3,13 @@
 \alias{search.hist}
 \title{Search history}
 \usage{
-search.hist(..., fixed = FALSE)
+search.hist(x, ...)
 }
 \arguments{
-\item{...}{numeric or character; if numeric, shows the most recent \code{n}
+\item{x}{numeric or character; if numeric, shows the most recent \code{n}
 lines in \code{.Rhistory}; if character, searches for pattern matches}
 
-\item{fixed}{logical; if \code{TRUE}, \code{pattern} is a string to be
-matched as is; overrides all conflicting arguments.}
+\item{...}{additional arguments passed to \code{\link{grep}}}
 }
 \value{
 Returns a list of recent commands that match \code{pattern}

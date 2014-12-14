@@ -3,8 +3,8 @@
 \alias{bpCI}
 \title{Barplot confidence intervals}
 \usage{
-bpCI(bp, horiz = FALSE, ci = TRUE, ci.u, ci.l, ci.width = .5,
-     sig = FALSE, pvals, pch, ...)
+bpCI(bp, horiz = FALSE, ci = TRUE, ci.u, ci.l, ci.width = 0.5,
+  sig = FALSE, pvals, pch, ...)
 }
 \arguments{
 \item{bp}{the return value of \code{\link{barplot}}, i.e., a vector or

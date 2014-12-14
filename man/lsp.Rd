@@ -21,14 +21,16 @@ List all exported and/or non exported objects in a package.
 \details{
 This is a helper/wrapper function to list exported (\code{?'::'}) and
 non exported (\code{?':::'}) functions (and other features from a package's
-\code{NAMESPACE} file). Note that \code{base} and older packages do not have
-a \code{NAMESPACE} file in which case, for \code{base} packages,
-\code{lsp} returns \code{ls(.BaseNamespaceEnv, all.names = TRUE)}, and
-throws an error otherwise.
+\code{NAMESPACE} file).
 
-Possible values for \code{what} are \code{'all'} (default), \code{NULL},
-\code{'exports'}, \code{'imports'}, \code{'dynlibs'}, \code{'lazydata'},
-\code{'path'}, \code{'S3methods'}, \code{'spec'}, and others depending on
+Note that \code{base} and older packages do not have a \code{NAMESPACE}
+file in which case, for \code{base} packages, \code{lsp} returns
+\code{ls(.BaseNamespaceEnv, all.names = TRUE)}, and throws an error
+otherwise.
+
+Possible values for \code{what} are "\code{all}" (default), \code{NULL},
+"\code{exports}", "\code{imports}", "\code{dynlibs}", "\code{lazydata}",
+"\code{path}", "\code{S3methods}", "\code{spec}", and others depending on
 the package.
 
 \code{lsp(packagename, '?')} to see options for a specific package.

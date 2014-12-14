@@ -18,19 +18,17 @@
 #' 
 #' To convert \code{.sas7bdat} files, \code{\link{sas.mget}}.
 #' 
-#' @usage
-#' r2sas(code, saspath, force = FALSE, out = getwd())
-#' 
 #' @param code character string of valid \code{SAS} code
-#' @param saspath directory to \code{sas.exe} as character string; usually for
-#' windows, the path \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
+#' @param saspath file path to \code{sas.exe} as character string
+#' 
+#' Usually \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
 #' where \code{x.x} is the \code{SAS} version number, is the correct directory
-#' for v9.3 and v9.4, and \code{sas.mget} defaults to this (the most recent 
-#' version if multiple are installed); note that if v9.2 is installed in the
-#' default directory (i.e., \code{c:/program files/sasfoundation/9.2/sas.exe}),
-#' specifying \code{saspath} is not required; for previous versions or if
-#' \code{SAS} is not installed in the default directory, it will be necessary 
-#' to supply \code{saspath} to your \code{sas.exe}
+#' 
+#' Note that specifying \code{saspath} is not required if v9.2 is installed in
+#' the default directory (i.e., \code{c:/program files/sasfoundation/9.2/sas.exe});
+#' 
+#' For previous versions or if\code{SAS} is not installed in the default 
+#' directory, it will be necessary to supply \code{saspath} to \code{sas.exe}
 #' @param force logical; by default, user must interactively allow 
 #' \code{r2sas} to continue running \code{code}; set to \code{TRUE} to ignore 
 #' this or for non-interactive \code{R}
@@ -147,10 +145,6 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
 #' 
 #' \code{rmacro} runs \code{SAS} macros in \code{.sas} files from \code{R}.
 #' 
-#' @usage
-#' rmacro(mpath, mname, args, saspath, show.args = FALSE,
-#'        force = FALSE, firstArgs, lastArgs, out = getwd())
-#' 
 #' @param mpath path to macro (\code{.sas}) file as character string
 #' @param mname macro name; if missing, \code{\link{get_margs}} will search
 #' \code{mpath} for macro names; if missing and \code{get_margs} finds more
@@ -159,9 +153,16 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
 #' include semicolons---\code{args} is passed directly as 
 #' \code{\%macro(args);} ); if unsure of the macro parameters, run 
 #' \code{rmacro} with \code{show.args = TRUE}
-#' @param saspath character string of directory of \code{sas.exe}; usually for
-#' windows, the path \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
-#' where \code{x.x} is the \code{SAS} version number, is the correct directory;
+#' @param saspath file path to \code{sas.exe} as character string
+#' 
+#' Usually \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
+#' where \code{x.x} is the \code{SAS} version number, is the correct directory
+#' 
+#' Note that specifying \code{saspath} is not required if v9.2 is installed in
+#' the default directory (i.e., \code{c:/program files/sasfoundation/9.2/sas.exe});
+#' 
+#' For previous versions or if\code{SAS} is not installed in the default 
+#' directory, it will be necessary to supply \code{saspath} to \code{sas.exe}
 #' \code{mpath} defaults to the most recent version of \code{SAS}
 #' @param show.args logical; if \code{TRUE}, \code{rmacro} will only return the
 #' macro names and arguments found in \code{mpath}
@@ -170,7 +171,7 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
 #' this or for non-interactive \code{R}
 #' @param firstArgs optional character string of (valid) \code{SAS} commands 
 #' separated by semicolons to be excuted \emph{before} the macro; for example,
-#' \code{options <OPTIONS> ;} or \code{x "cd c:/path/to/directory";}
+#' \code{options <OPTIONS>;} or \code{x "cd ..";}
 #' @param lastArgs optional commands to be executed \emph{after} the macro; see
 #' \code{firstArgs}
 #' @param out either \code{FALSE}, directory (as character string) to dump 
@@ -235,9 +236,6 @@ rmacro <- function(mpath, mname, args, saspath, show.args = FALSE,
 #' 
 #' Reads a text file (usually \code{.sas}) and extracts \code{SAS} macro names
 #' and parameters with any default values; see tests in examples below.
-#' 
-#' @usage
-#' get_margs(mpath, mname)
 #' 
 #' @param mpath character string of path to \code{.sas} file
 #' @param mname macro name in \code{mpath} of interest; if missing, returns
@@ -332,24 +330,21 @@ get_margs <- function(mpath, mname) {
 #' \code{SAS} data sets (\code{.sas7bdat} files) into a list of \code{R} data 
 #' frames.
 #' 
-#' @usage
-#' sas.mget(libpath, dsn, saspath, fmtpath, catalog, log.file, 
-#'          ..., force = FALSE)
-#' 
 #' @param libpath directory to data set(s) as character string; if missing, 
 #' searches the current working directory
 #' @param dsn data set name(s); either \code{data1} or \code{data1.sas7bdat} 
 #' will work; if missing or \code{NULL}, all \code{.sas7bdat} files found in
 #' \code{libpath} will be read
-#' @param saspath directory to \code{sas.exe} as character string; usually for
-#' windows, the path \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
+#' @param saspath file path to \code{sas.exe} as character string
+#' 
+#' Usually \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
 #' where \code{x.x} is the \code{SAS} version number, is the correct directory
-#' for v9.3 and v9.4, and \code{sas.mget} defaults to this (the most recent 
-#' version if multiple are installed); note that if v9.2 is installed in the
-#' default directory (i.e., \code{c:/program files/sasfoundation/9.2/sas.exe}),
-#' specifying \code{saspath} is not required; for previous versions or if
-#' \code{SAS} is not installed in the default directory, it will be necessary 
-#' to supply \code{saspath} to your \code{sas.exe}
+#' 
+#' Note that specifying \code{saspath} is not required if v9.2 is installed in
+#' the default directory (i.e., \code{c:/program files/sasfoundation/9.2/sas.exe});
+#' 
+#' For previous versions or if\code{SAS} is not installed in the default 
+#' directory, it will be necessary to supply \code{saspath} to \code{sas.exe}
 #' @param fmtpath path to a format \code{.sas} file as character string; 
 #' \code{SAS} throws an error if the host used to make the format catalog was
 #' not on the same platform, so we create a new format catalog either by
@@ -529,9 +524,6 @@ sas.mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
 #' Source SAS code
 #' 
 #' \code{\link{source}}-esque function for \code{.sas} files
-#' 
-#' @usage
-#' source_sas(path, ...)
 #' 
 #' @param path path to \code{.sas} file as character string
 #' @param ... additional parameters passed to \code{\link{r2sas}}

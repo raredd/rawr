@@ -3,8 +3,8 @@
 \alias{sas.mget}
 \title{Convert multiple SAS data sets to R data frame}
 \usage{
-sas.mget(libpath, dsn, saspath, fmtpath, catalog, log.file,
-         ..., force = FALSE)
+sas.mget(libpath, dsn, saspath, fmtpath, catalog = FALSE, log.file, ...,
+  force = FALSE)
 }
 \arguments{
 \item{libpath}{directory to data set(s) as character string; if missing,
@@ -14,15 +14,16 @@ searches the current working directory}
 will work; if missing or \code{NULL}, all \code{.sas7bdat} files found in
 \code{libpath} will be read}
 
-\item{saspath}{directory to \code{sas.exe} as character string; usually for
-windows, the path \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
+\item{saspath}{file path to \code{sas.exe} as character string
+
+Usually \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
 where \code{x.x} is the \code{SAS} version number, is the correct directory
-for v9.3 and v9.4, and \code{sas.mget} defaults to this (the most recent
-version if multiple are installed); note that if v9.2 is installed in the
-default directory (i.e., \code{c:/program files/sasfoundation/9.2/sas.exe}),
-specifying \code{saspath} is not required; for previous versions or if
-\code{SAS} is not installed in the default directory, it will be necessary
-to supply \code{saspath} to your \code{sas.exe}}
+
+Note that specifying \code{saspath} is not required if v9.2 is installed in
+the default directory (i.e., \code{c:/program files/sasfoundation/9.2/sas.exe});
+
+For previous versions or if\code{SAS} is not installed in the default
+directory, it will be necessary to supply \code{saspath} to \code{sas.exe}}
 
 \item{fmtpath}{path to a format \code{.sas} file as character string;
 \code{SAS} throws an error if the host used to make the format catalog was

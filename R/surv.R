@@ -6,31 +6,7 @@
 #' Survival curves in base graphics
 #' 
 #' Function to plot Kaplan-Meier or Cox proportional hazards plots with 
-#' optional at risk table in base graphics
-#' 
-#' @usage
-#' kmplot(s, 
-#'        ## basic plot options
-#'        lty.surv = 1, lwd.surv = 1, col.surv = 1, mark = 3, mar = NULL,
-#'       
-#'        ## confidence options
-#'        lty.ci = 0, lwd.ci = 1, col.ci = col.surv, col.band = col.surv,
-#'        
-#'        ## at risk table options
-#'        atrisk = TRUE, atrisk.lab = 'Number at risk', atrisk.lines = TRUE, 
-#'        strata.lab = NULL, strata.expr = NULL,
-#'        strata.order = seq(length(s$n)), extra.margin = 5, 
-#'        
-#'        ## aesthetics
-#'        xlim = c(0, max(s$time)), ylim = c(0, 1),
-#'        xaxis.at = pretty(s$time), xaxis.lab = xaxis.at, 
-#'        yaxis.at = pretty(ylim), yaxis.lab = yaxis.at, 
-#'        xlab = 'Time', ylab = 'Survival probability', main = '', 
-#'        cex.axis = 1, legend = !is.null(s$strata), legend.pos = 'bottomleft', 
-#'        
-#'        ## other options
-#'        grid = TRUE, lty.grid = 1, lwd.grid = 1, col.grid = grey(.9),
-#'        dev = FALSE, add = FALSE, ...)
+#' optional at risk table in base graphics.
 #' 
 #' @param s object of class \code{\link[survival]{survfit}} or 
 #' \code{survfit.cox}
@@ -78,8 +54,6 @@
 #' @param lty.grid line type for grid
 #' @param lwd.grid line width for grid
 #' @param col.grid line color for grid
-#' @param dev logical; if \code{TRUE}, will plot on a platform-specific
-#' graphics device; see details
 #' @param add logical; if \code{TRUE}, \code{par} is not refreshed; allows for
 #' multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}
 #' @param ... additional parameters (\code{font}, \code{mfrow}, \code{bty}, 
@@ -189,7 +163,7 @@ kmplot <- function(s,
                    # other options
                    grid = TRUE, lty.grid = 1, lwd.grid = 1, 
                    col.grid = grey(.9),
-                   dev = FALSE, add = FALSE, ...) {
+                   add = FALSE, ...) {
   
   ## error checks
   if (!inherits(s, 'survfit')) 
@@ -197,13 +171,6 @@ kmplot <- function(s,
   
   ## save current par settings
   op <- par(no.readonly = TRUE)
-  
-  if (dev) {
-    if (grepl('apple', sessionInfo()$platform))
-      quartz()
-    else 
-      x11()
-  }
   
   ng0 <- length(s$strata)
   ng <- max(ng0, 1) 
@@ -410,30 +377,7 @@ kmplot <- function(s,
 #' Survival curves with ggplot
 #' 
 #' Function to plot Kaplan-Meier or Cox proportional hazards plots with 
-#' optional at risk table using \code{\link[ggplot2]{ggplot}}
-#'   
-#' @usage 
-#' ggsurv(s, 
-#'        # basic plot options
-#'        col.surv = 1, lty.surv = 1,
-#'        censor = TRUE, col.cens = 1, mark = 3,
-#'        
-#'        # confidence options
-#'        confin = TRUE, confband = FALSE, col.band = NA, 
-#'        
-#'        # extra plot options
-#'        median = FALSE, atrisk = TRUE, col.atrisk,
-#'        pval, basehaz = FALSE,
-#'        
-#'        # aesthetics
-#'        ticks, median.ticks = TRUE,
-#'        xlab, ylab, main, xlim, ylim,
-#'        legend = 'right', legend.labels,
-#'        grid = TRUE, ggdefault = FALSE,
-#'        
-#'        # other options
-#'        plot.margin = NULL, table.margin = NULL,
-#'        data = FALSE, ...)
+#' optional at risk table using \code{\link[ggplot2]{ggplot}}.
 #' 
 #' @param s \code{\link{survfit}} or \code{survfit.cox} object
 #' @param col.surv color of survival lines; should be one color or match 
@@ -487,7 +431,6 @@ kmplot <- function(s,
 #' details
 #' @param table.margin numeric; extra "lines" added to left margin of at risk
 #' table; see details
-#' @param data logical; if \code{TRUE}, saves data frame used to create graphs
 #' @param ... for backwards compatibility with deprecated arguments
 #' 
 #' @details
@@ -583,8 +526,7 @@ ggsurv <- function(s,
                    grid = TRUE, ggdefault = FALSE,
                    
                    # other options
-                   plot.margin = NULL, table.margin = NULL,
-                   data = FALSE, ...) {
+                   plot.margin = NULL, table.margin = NULL, ...) {
   
   ## to do:
   # y axis ticks
@@ -680,14 +622,9 @@ ggsurv <- function(s,
     return(survdat)
   }
   
-  survdat <- survdat(s)
-  
-  #### save data
-  if (data) { 
-    assign(paste(deparse(substitute(s)), 'data', sep = '.'), survdat, 
-           envir = .GlobalEnv)
-    cat(paste(deparse(substitute(s)), 'data', sep = '.'), ' created')
-  }
+  survdat <- outdata <- survdat(s)
+#   if (data) 
+#     return(outdata)
   
   #### for custom ribbon color with no strata present
   if (is.null(survdat$strata) && !missing(col.band)) 
@@ -1029,8 +966,7 @@ ggsurv <- function(s,
     
     if (is.null(col.surv)) {
       gg.table <- gg.table + 
-        scale_colour_manual(values = 
-                              rev(ggcols(length(unique(risk.table$strata)))))
+        scale_colour_manual(values = rev(ggcols(length(unique(risk.table$strata)))))
     } else {
       if (length(col.surv) == 1) 
         col.surv <- rep(col.surv, length(unique(survdat$strata)))
@@ -1056,7 +992,6 @@ ggsurv <- function(s,
                        clip = FALSE, nrow = 3, ncol = 1,
                        heights = unit(c(2, .1, .25), c('null','null','null')))
   }
-  
   tmp
 }
 
@@ -1064,9 +999,6 @@ ggsurv <- function(s,
 #' 
 #' Prints and returns a list containing the survival curve, confidence limits 
 #' for the curve, and other information.
-#' 
-#' @usage
-#' surv_summary(s, digits = max(options() $digits-4, 3), ...)
 #' 
 #' @param s \code{\link[survival]{survfit}} object
 #' @param digits number of digits to use in printing numbers
@@ -1098,7 +1030,7 @@ surv_summary <- function(s, digits = max(options()$digits - 4, 3), ...) {
   if (!inherits(s, 'survfit')) 
     stop('s must be a survfit object')
   
-  x <- survival:::summary.survfit(s, ...)
+  x <- summary(s, ...)
   
   savedig <- options(digits = digits)
   on.exit(options(savedig))
@@ -1170,9 +1102,6 @@ surv_summary <- function(s, digits = max(options()$digits - 4, 3), ...) {
 #' 
 #' Prints a formatted summary table for \code{\link[survival]{survfit}} objects
 #' 
-#' @usage
-#' surv_table(s, digits = 3, times = pretty(range(s$time)), ...)
-#' 
 #' @param s \code{\link[survival]{survfit}} object
 #' @param digits number of digits to use in printing numbers
 #' @param times vector of times
@@ -1242,9 +1171,6 @@ surv_table <- function(s, digits = 3, times = pretty(range(s$time)), ...) {
 #' p-value of one or more factors in a model; can also be used to test more
 #' comlex hypotheses.
 #' 
-#' @usage
-#' local.coxph.test(s, pos, C = NULL, d = NULL, digits = 3)
-#' 
 #' @param s survival object of class \code{\link[survival]{coxph}}
 #' @param pos vector of positions of \code{\link{coefficients}} of interest 
 #' from \code{summary(coxph)}; defaults to \code{1:length(coef(s))}
@@ -1292,10 +1218,6 @@ local.coxph.test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
 #' 
 #' Converts a data frame to counting process notation and allows for time-
 #' dependent variables to be introduced.
-#' 
-#' @usage
-#' surv_cp(dat, time.var, status.var,
-#'         covars = setdiff(names(dat), c(time.var, status.var)))
 #' 
 #' @param dat data frame with survival time, survival status, and other 
 #' covariates

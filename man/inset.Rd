@@ -3,7 +3,7 @@
 \alias{inset}
 \title{Inset plots}
 \usage{
-inset(x, y = NULL, pct = .25, ...)
+inset(x, y = NULL, pct = 0.25, ...)
 }
 \arguments{
 \item{x}{a keyword (see details) or a vector of length two giving the

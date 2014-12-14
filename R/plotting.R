@@ -1,57 +1,21 @@
 ### plot functions
-# multiplot, ggmultiplot, click.text, click.shape, facet_adjust, 
-# facet_adjust.print, ggcaterpillar, ggheat, dodge, jmplot, tplot, dsplot,
-# bpCI, inset
+# ggmultiplot, click.text, click.shape, facet_adjust, facet_adjust.print, 
+# ggcaterpillar, ggheat, dodge, jmplot, tplot, dsplot, bpCI, inset
 ###
 
-
-#' Draw multiple plots in a single layout
-#' 
-#' Function for plotting multiple base \code{R} graphics in a 
-#' single layout
-#' 
-#' @usage multiplot(width = 8.5, height = 11, rows, cols, matrix = c(1, 1))
-#' 
-#' @param width,height the width and height of the plotting window in inches; 
-#' if \code{NA}, taken from the resources and if not specified there, defaults 
-#' to \code{7} inches; see \code{\link{x11}} and "Resources"
-#' @param rows,cols number of rows and columns in \code{matrix}
-#' @param matrix a matrix object specifying the location of the next \code{n} 
-#' figures on the output device; each value in the matrix must be \code{0} or 
-#' a positive integer;  if \code{n} is the largest positive integer in the 
-#' matrix, then the integers \code{{1, ..., n-1}} must also appear at least 
-#' once in the matrix; see \code{\link{layout}}
-#' 
-#' @examples
-#' \dontrun{
-#' library(descr)
-#' 
-#' multiplot(18, 8, 3, 3, c(1,1,1, 1,1,1, 2,3,4))
-#' with(mtcars, histkdnc(mpg, breaks = 15, main = 'MPG'))
-#' with(mtcars, histkdnc(cyl, breaks = 15, main = "Cyl"))
-#' with(mtcars, histkdnc(hp, breaks = 15, main = 'HP'))
-#' with(mtcars, histkdnc(drat, breaks = 15, main = 'Drat'))
-#' }
-#' @export
-
-multiplot <- function(width = 8.5, height = 11, 
-                      rows, cols, matrix = c(1, 1)) {
-  x11(width, height)
-  layout(matrix(c(matrix), rows, cols, byrow = TRUE))
-}
 
 #' Draw multiple ggplot objects in a single layout
 #' 
 #' Uses functions in \pkg{grid} to arrange one or more 
 #' \code{\link[ggplot2]{ggplot}} objects into a single layout
 #' 
-#' @usage ggmultiplot(..., plotlist = NULL, cols = 1, layout = NULL)
-#' 
 #' @param ... ggplot objects
 #' @param plotlist list of ggplot objects (optional)
 #' @param cols number of columns in layout
 #' @param layout matrix specifying the layout; if present, \code{cols} is 
-#' ignored; if layout is \code{matrix(c(1, 2, 3, 3), nrow = 2, byrow = TRUE)} 
+#' ignored; 
+#' 
+#' if layout is \code{matrix(c(1, 2, 3, 3), nrow = 2, byrow = TRUE)},
 #' for example, then plot 1 will go in the upper left, 2 will go in the upper 
 #' right, and 3 will go all the way across the bottom.
 #' 
@@ -69,6 +33,7 @@ multiplot <- function(width = 8.5, height = 11,
 #' ggmultiplot(tmp1, tmp2, tmp3, cols = 2)
 #' ggmultiplot(tmp1, tmp2, tmp3, 
 #'   layout = matrix(c(1, 2, 3, 3, 3, 3), ncol = 2, byrow = TRUE))
+#'   
 #' @export
 
 ggmultiplot <- function(..., plotlist = NULL, cols = 1, layout = NULL) {
@@ -114,10 +79,6 @@ ggmultiplot <- function(..., plotlist = NULL, cols = 1, layout = NULL) {
 #' Allows you to add text and expressions anywhere in a plot (including 
 #' margins) with mouse click(s).
 #' 
-#' @usage 
-#' click.text(express, col = 'black', cex = NULL, srt = 0, 
-#'            trans = NULL, family = 'sans', dev = FALSE, ...)
-#' 
 #' @param express text or \code{\link{expression}}
 #' @param col colour of text
 #' @param cex numerical \strong{c}haracter \strong{ex}pansion factor; 
@@ -126,20 +87,9 @@ ggmultiplot <- function(..., plotlist = NULL, cols = 1, layout = NULL) {
 #' @param srt the string rotation in degrees; see \code{\link{par}}
 #' @param trans color transparency; see \code{\link{tcol}}
 #' @param family the name of a font or drawing text; see \code{\link{Hershey}}
-#' @param dev logical; if \code{TRUE}, will plot on a platform-specific
-#' graphics device; see details
-#' @param ... further graphical parameters passed to \code{\link{text}} (or 
+#' @param ... additional graphical parameters passed to \code{\link{text}} (or 
 #' \code{\link{par}})
 #'
-#' @details
-#' When \code{dev = TRUE}, a platform-specific graphics device is used to 
-#' displace the plot. Defaults are \code{\link{quartz}}, for apple and 
-#' \code{\link{x11}} for windows and unix platforms.
-#' 
-#' However, any device can be used by setting \code{dev = FALSE} and opening
-#' a device before \code{click.text}. If \code{dev} is \code{FALSE}, the
-#' plot will open in the current device; see \code{\link{.Device}}. Close the
-#' device pane or use \code{dev.off()} to turn off the current device.
 #' @seealso \code{\link{click.shape}}; \code{\link{plotmath}} for help with 
 #' mathematical expressions
 #' 
@@ -153,19 +103,14 @@ ggmultiplot <- function(..., plotlist = NULL, cols = 1, layout = NULL) {
 #' @export
 
 click.text <- function(express, col = 'black', cex = NULL, srt = 0, 
-                       trans = NULL, family = 'sans', dev = FALSE, ...) {
+                       trans = NULL, family = 'sans', ...) {
   
   op <- par(no.readonly = TRUE) 
   on.exit(par(op))
   if (!is.null(trans))
     col <- tcol(col, trans)
   
-  if (dev) {
-    if (grepl('apple', sessionInfo()$platform))
-      quartz()
-    else 
-      x11()
-  } else par(xpd = NA)
+  par(xpd = NA)
   
   par(mar = rep(0, 4), xpd = NA)
   x <- locator(1)
@@ -178,12 +123,8 @@ click.text <- function(express, col = 'black', cex = NULL, srt = 0,
 #' Add shapes interactively in base \code{R} graphics
 #' 
 #' Allows you to add shapes anywhere in a plot (including margins)
-#' with mouse click(s)
+#' with mouse click(s).
 #' 
-#' @usage 
-#' click.shape(shape = 'line', col = 'black', border = col, trans = NULL,
-#'             corners = NULL, lty = par('lty'), lwd = par('lwd'), 
-#'             density = NULL, length = 1, code = 2, dev = FALSE, ...)
 #' @param shape type of shape: 'box', 'arrow', 'line', 'poly', 'circle', 'cyl'
 #' @param col shape outline colour
 #' @param border border colour for shape; defaults to value for \code{col}
@@ -198,20 +139,7 @@ click.text <- function(express, col = 'black', cex = NULL, srt = 0,
 #' \code{\link{arrows}}
 #' @param code integer code for 'arrows' determining \emph{kind} of arrows to 
 #' be drawn
-#' @param dev logical; if \code{TRUE}, will plot on a platform-specific
-#' graphics device; see details
-#' @param ... other parameters (future use)
-#' 
-#' @details
-#' When \code{dev = TRUE}, a platform-specific graphics device is used to 
-#' displace the plot. Defaults are \code{\link{quartz}}, for apple and 
-#' \code{\link{x11}} for windows and unix platforms.
-#' 
-#' However, any device can be used by setting \code{dev = FALSE} and opening
-#' a device before \code{click.shape}. If \code{dev} is \code{FALSE}, the
-#' plot will open in the current device; see \code{\link{.Device}}. Close the
-#' device pane or use \code{dev.off()} to turn off the current device.
-#' @seealso \code{\link{click.text}}
+#' @param ... ignored
 #' 
 #' @examples
 #' \dontrun{
@@ -232,19 +160,14 @@ click.text <- function(express, col = 'black', cex = NULL, srt = 0,
 
 click.shape <- function(shape = 'line', col = 'black', border = col, trans = NULL,
                         corners = NULL, lty = par('lty'), lwd = par('lwd'), 
-                        density = NULL, length = 1, code = 2, dev = FALSE, ...) {
+                        density = NULL, length = 1, code = 2, ...) {
   
   op <- par(no.readonly = TRUE) 
   on.exit(par(op))
   if (!is.null(trans))
     col <- tcol(col, trans)
   
-  if (dev) {
-    if (grepl('apple', sessionInfo()$platform))
-      quartz()
-    else 
-      x11()
-  } else par(xpd = NA)
+  par(xpd = NA)
   
   RECTANGLE <- function(...) {
     coords <- c(unlist(locator(1)), unlist(locator(1)))
@@ -293,10 +216,7 @@ click.shape <- function(shape = 'line', col = 'black', border = col, trans = NUL
 
 #' Facet labeling 
 #' 
-#' Adjusts labels on x-axes when using \code{\link[ggplot2]{facet_wrap}}
-#'
-#' @usage 
-#' facet_adjust(x, pos = c('up', 'down'), newpage = is.null(vp), vp = NULL)
+#' Adjusts labels on x-axes when using \code{\link[ggplot2]{facet_wrap}}.
 #'   
 #' @param x \code{\link[ggplot2]{ggplot}} object
 #' @param pos position of labels
@@ -312,6 +232,7 @@ click.shape <- function(shape = 'line', col = 'black', border = col, trans = NUL
 #'   geom_point() + facet_wrap( ~ cut))
 #' facet_adjust(tmp)
 #' facet_adjust(tmp, pos = 'down')
+#' 
 #' @export
 
 facet_adjust <- function(x, pos = c('up', 'down'), 
@@ -354,7 +275,6 @@ facet_adjust <- function(x, pos = c('up', 'down'),
 
 #' facet_adjust print method
 #' 
-#' @usage print.facet_adjust(x, newpage = is.null(vp), vp = NULL)
 #' @param x object from \code{\link{facet_adjust}}
 #' @param newpage draw new (empty) page first; see 
 #' \code{\link[ggplot2]{print.ggplot}}
@@ -383,9 +303,7 @@ print.facet_adjust <- function(x, newpage = is.null(vp), vp = NULL) {
 
 #' Caterpillar plot
 #' 
-#' Caterpillar plots for random effects models using ggplot
-#' 
-#' @usage ggcaterpillar(re, qq = TRUE, likeDotplot = TRUE)
+#' Caterpillar plots for random effects models using ggplot.
 #' 
 #' @param re random effects from lmer object
 #' @param qq if \code{TRUE}, returns normal q/q plot; else returns caterpillar 
@@ -428,16 +346,20 @@ ggcaterpillar <- function(re, qq  =  TRUE, likeDotplot  =  TRUE) {
                                    levels = rownames(x)[ord]),
                        ind = gl(ncol(x), nrow(x), labels = names(x)))
     
-    if (qq) {  ## normal q/q plot
+    if (qq) {
+      ## normal q/q plot
       p <- ggplot(pDf, aes(nQQ, y)) + 
         facet_wrap(~ ind, scales = 'free') +
         xlab('Standard normal quantiles') + 
         ylab('Random effect quantiles')
-    } else {              # caterpillar dotplot
+    } else {
+      # caterpillar dotplot
       p <- ggplot(pDf, aes(x = ID, y = y)) + coord_flip()
-      if (likeDotplot) {  # imitate dotplot() -> same scales for random effects
+      if (likeDotplot) {
+        # imitate dotplot() -> same scales for random effects
         p <- p + facet_wrap( ~ ind)
-      } else {            # different scales for random effects
+      } else {
+        # different scales for random effects
         p <- p + facet_grid(ind ~ ., scales = 'free_y')
       }
       p <- p + xlab('Levels') + ylab('Random effects')
@@ -459,11 +381,6 @@ ggcaterpillar <- function(re, qq  =  TRUE, likeDotplot  =  TRUE) {
 #' ggHeatmap
 #' 
 #' Function to plot a heat map using \code{ggplot}
-#' 
-#' @usage 
-#' ggheat(cors = NULL, data = NULL, limits = c(-1, 1),
-#'        gradn = rev(heat.colors(10)),
-#'        gradc = c('white', 'steelblue'))
 #' 
 #' @param cors matrix (or matrix-like object) of correlations
 #' @param data data frame of data (in progress)
@@ -534,8 +451,6 @@ ggheat <- function(cors = NULL, data = NULL,
 #' Point dodge
 #' 
 #' Dodge and center overlapping points (in progress; see details).
-#' 
-#' @usage dodge(formula, data = parent.frame(), z = .5, spread = FALSE)
 #' 
 #' @param formula an object of class \code{\link{formula}} (or an object which 
 #' can be coerced to a formula) having the form \code{var1 ~ var2}; interactions
@@ -645,24 +560,7 @@ dodge2 <- function(X, n, z = .5) {
 #' Joint/marginal plot
 #' 
 #' Joint distribution and marginal distributions plot; requires 
-#' \code{\link{tplot}}
-#' 
-#' @usage
-#' jmplot(x, y, z, 
-#'        
-#'        # labels
-#'        main, sub, xlab, ylab, names, 
-#'        
-#'        # axes stuff
-#'        xlim, ylim, axes = TRUE, frame.plot = axes, 
-#'        log = '', xratio = .8, yratio = xratio, 
-#'        
-#'        # more options
-#'        show.n = TRUE, show.na = TRUE, cex.n, 
-#'        ann = par('ann'), asp = NA, 
-#'        panel.first = NULL, panel.last = NULL,
-#'        
-#'        ...)
+#' \code{\link{tplot}}.
 #' 
 #' @param x x-axis variable
 #' @param y y-axis variable
@@ -676,7 +574,7 @@ dodge2 <- function(X, n, z = .5) {
 #' @param ylim y-axis limits
 #' @param axes logical; draw axes
 #' @param frame.plot logical; draw box around \code{x-y} plot
-#' @param log character, "x", "y", or both for logarithmic scale; sets negative
+#' @param log character, "x", "y", or "xy" for logarithmic scale; sets negative
 #' values to \code{\link{NA}} and gives a warning; see \code{\link{xy.coords}}
 #' @param xratio ratio of \code{x-y} plot to bar plots along x-axis; see 
 #' \code{widths} in \code{\link{layout}}
@@ -824,33 +722,6 @@ jmplot <- function(x, y, z,
 #' An alternative to \code{\link{boxplot}}. The individual data can be shown 
 #' (either in the foreground or background) with jittering if necessary.
 #' 
-#' @usage
-#' tplot(x, ...)
-#' 
-#' ## S3 method for class 'formula':
-#' tplot(formula, data = parent.frame(), ..., subset, na.action = NULL)
-#' 
-#' ## Default S3 method:
-#' tplot(x, ..., type = c('d','db','bd','b'),
-#'       
-#'       # labels
-#'       main, sub, xlab, ylab, names,
-#'       
-#'       # axes stuff
-#'       xlim, ylim, axes = TRUE, frame.plot = axes, at, horizontal = FALSE,
-#'       
-#'       # aesthetics
-#'       jit = 0.1, dist, boxplot.pars, col, group.col = TRUE,
-#'       boxcol, boxborder, pch = par('pch'), group.pch = TRUE,
-#'       median.line = FALSE, mean.line = FALSE, 
-#'       median.pars = list(col = par('col')), mean.pars = median.pars, 
-#'       show.n = TRUE, show.na = TRUE, cex.n = NULL, my.gray = gray(0.75),
-#'       
-#'       # more options
-#'       ann = par('ann'), add = FALSE,
-#'       panel.first = NULL, panel.last = NULL
-#' )
-#' 
 #' @param formula a \code{\link{formula}}, such as \code{y ~ grp}, where y is 
 #' a numeric vector of data values to be split into groups according to the 
 #' grouping variable \code{grp} (usually a factor)
@@ -936,7 +807,9 @@ jmplot <- function(x, y, z,
 
 tplot <- function(x, ...) UseMethod('tplot')
 
+#' @rdname tplot
 #' @export
+
 tplot.default <- function(x, ..., 
                           type = c('d','db','bd','b'),
                           jit = 0.1, 
@@ -1249,8 +1122,10 @@ tplot.default <- function(x, ...,
   invisible(out)
 }
 
+#' @rdname tplot
 #' @export
-tplot.formula <- function(formula, data = parent.frame(), ..., subset,
+
+tplot.formula <- function(formula, data = NULL, ..., subset, 
                           na.action = NULL) {
   
   if (missing(formula) || (length(formula) !=  3))
@@ -1301,15 +1176,6 @@ tplot.formula <- function(formula, data = parent.frame(), ..., subset,
 #' This creates a scatter plot (sort of) for discrete, bivariate data; an
 #' alternative to sunflower plots for integer-valued variables.
 #' 
-#' @usage
-#' dsplot(x, y, ...)
-#' 
-#' ## S3 method for class 'formula':
-#' dsplot(formula, data = parent.frame(), ..., subset, na.action = NULL)
-#' 
-#' ## Default S3 method:
-#' dsplot(x, y, bkgr = TRUE, col = 1, pch = 19, cex = 0.8, ...)
-#' 
 #' @param formula a \code{\link{formula}}, such as \code{y ~ grp}, where y is 
 #' a numeric vector of data values to be split into groups according to the 
 #' grouping variable \code{grp} (usually a factor)
@@ -1322,6 +1188,12 @@ tplot.formula <- function(formula, data = parent.frame(), ..., subset,
 #' the response or the group
 #' @param x x-axis variable
 #' @param y y-axis variable
+#' @param ... for the \code{formula} method, named arguments to be passed to 
+#' the default method
+#' 
+#' for the default method, unnamed arguments are additional data vectors
+#' (unless x is a list when they are ignored), and named arguments are 
+#' arguments and \code{\link{par}}s to be passed to \code{\link{plot}}
 #' @param bkgr logical; fill boxes with gray scale based on density
 #' @param col plotting color
 #' @param pch \strong{p}lotting \strong{ch}aracter
@@ -1329,12 +1201,6 @@ tplot.formula <- function(formula, data = parent.frame(), ..., subset,
 #' symbols should be magnified relative to the default; this starts as 1 when 
 #' a device is opened and is reset when the layout is changed, e.g., by setting
 #' \code{mfrow}
-#' @param ... for the \code{formula} method, named arguments to be passed to 
-#' the default method
-#' 
-#' for the default method, unnamed arguments are additional data vectors
-#' (unless x is a list when they are ignored), and named arguments are 
-#' arguments and \code{\link{par}}s to be passed to \code{\link{plot}}
 #' 
 #' @return An \code{\link{invisible}} table corresponding to the plot cell 
 #' counts.
@@ -1353,15 +1219,16 @@ tplot.formula <- function(formula, data = parent.frame(), ..., subset,
 #'        
 #' @export
 
-dsplot <- function(x, y, ...) UseMethod('dsplot')
+dsplot <- function(x, ...) UseMethod('dsplot')
 
+#' @rdname dsplot
 #' @export
-dsplot.default <- function(x, y, 
+
+dsplot.default <- function(x, y, ...,
                            bkgr = TRUE,
                            col = 1, 
                            pch = 19, 
-                           cex = 0.8,
-                           ...) {
+                           cex = 0.8) {
   
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
@@ -1464,8 +1331,10 @@ dsplot.default <- function(x, y,
                   factor(x, levels = min(x):max(x))))
 }
 
+#' @rdname dsplot
 #' @export
-dsplot.formula <- function(formula, data = parent.frame(),... , subset,
+
+dsplot.formula <- function(formula, data = NULL, ..., subset,
                            na.action = NULL) {
   if (missing(formula) || (length(formula) != 3))
     stop("'formula' missing or incorrect")
@@ -1510,10 +1379,6 @@ dsplot.formula <- function(formula, data = parent.frame(),... , subset,
 #' Barplot confidence intervals
 #' 
 #' Add confidence intervals (error bars) and group comparisons to barplots.
-#' 
-#' @usage
-#' bpCI(bp, horiz = FALSE, ci = TRUE, ci.u, ci.l, ci.width = .5,
-#'      sig = FALSE, pvals, pch, ...)
 #' 
 #' @param bp the return value of \code{\link{barplot}}, i.e., a vector or
 #' matrix (when \code{beside = TRUE}) of all bar (or group) midpoints
@@ -1613,9 +1478,6 @@ bpCI <- function(bp, horiz = FALSE, ci = TRUE, ci.u, ci.l, ci.width = .5,
 #' "bottomleft", "left", "topleft", "top", "topright" "right", or "center")
 #' giving the approximate location of the inset plot. \code{pct} is used to
 #' adjust the size.
-#' 
-#' @usage
-#' inset(x, y = NULL, pct = .25, ...)
 #' 
 #' @param x a keyword (see details) or a vector of length two giving the 
 #' positions on the current plot at which to draw the inset plot along the

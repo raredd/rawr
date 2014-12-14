@@ -67,7 +67,7 @@ dat <- data.frame(x = rnorm(100, 20, 5),
                   zz = c(LETTERS[1:4]))
 dat[1:5, 1:2] <- NA
 with(dat, jmplot(x, y, z, type = 'db', jit = .02, col = 1:2, las = 1,
-     group.col = FALSE, pch = 1:2, group.pch = FALSE, boxcol = grey(.9),
+     group.col = TRUE, pch = 1:2, group.pch = TRUE, boxcol = grey(.9),
      cex.n = .8))
 ## tplot
 par(op)

@@ -3,8 +3,8 @@
 \alias{lss}
 \title{Improved list of objects}
 \usage{
-lss(pos = 1, pattern, by = NULL, all.names = FALSE,
-    decreasing = TRUE, head = TRUE, n = 15)
+lss(pos = 1, pattern, by = NULL, all.names = FALSE, decreasing = TRUE,
+  head = TRUE, n = 15)
 }
 \arguments{
 \item{pos}{argument specifying the environment as a position in search list}
@@ -28,7 +28,7 @@ output}
 \item{n}{number of objects to displace if \code{head} is \code{TRUE}}
 }
 \description{
-Provides more details of objects in workspace
+Provides more details of objects in workspace.
 }
 \examples{
 lss()

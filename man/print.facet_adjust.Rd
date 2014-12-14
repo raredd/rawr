@@ -3,7 +3,7 @@
 \alias{print.facet_adjust}
 \title{facet_adjust print method}
 \usage{
-print.facet_adjust(x, newpage = is.null(vp), vp = NULL)
+\method{print}{facet_adjust}(x, newpage = is.null(vp), vp = NULL)
 }
 \arguments{
 \item{x}{object from \code{\link{facet_adjust}}}

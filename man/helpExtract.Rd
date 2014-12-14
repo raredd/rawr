@@ -3,8 +3,8 @@
 \alias{helpExtract}
 \title{Extract R help files}
 \usage{
-helpExtract(f, show.sections = FALSE, section = 'Usage',
-            type = 'm_code', ...)
+helpExtract(f, show.sections = FALSE, section = "Usage", type = "m_code",
+  ...)
 }
 \arguments{
 \item{f}{a function}
@@ -45,13 +45,18 @@ To see the results in the console:
 
 To insert a (highlighted) chunk into a markdown document:
 
-\verb{```{r, results='asis'}} \verb{cat(helpExtract(print), sep ='\n')}
-\verb{```}
+\verb{
+```{r, results='asis'}
+cat(helpExtract(print), sep ='\n')
+```
+}
 
 To insert a (highlighted) chunk into a Sweave document:
 
-\verb{\Sexpr{knit_child(textConnection(helpExtract(print, type = 's_code')),
-options = list(tidy = FALSE, eval = FALSE))}}
+\verb{
+\\Sexpr{knit_child(textConnection(helpExtract(print, type = 's_code')),
+     options = list(tidy = FALSE, eval = FALSE))}
+}
 }
 \examples{
 cat(helpExtract(print), sep = "\\n")

@@ -7,11 +7,6 @@
 #' 
 #' Calculates confidence intervales for binomial probabilities for specified 
 #' type I error (\code{alpha}) using exact, Wilson, or asymptotic methods.
-#' 
-#' @usage 
-#' bincon(r, n, alpha = 0.05, round = NULL,
-#'        method = c('exact','wilson','asymptotic','all'), 
-#'        inc.r = TRUE, inc.n = TRUE, df = FALSE)
 #'    
 #' @param r number of responses (successes)
 #' @param n number of observations (trials)
@@ -49,6 +44,7 @@
 #' @examples
 #' bincon(0:10, 10)
 #' bincon(5, 10, method = 'all')
+#' 
 #' @export
 
 bincon <- function(r, n, alpha = 0.05, round = NULL,
@@ -143,9 +139,6 @@ bincon <- function(r, n, alpha = 0.05, round = NULL,
 #' Function for sample sizes for single-stage designs in early clinical trial 
 #' phases (generally phases I and II) based on exact binomial method.
 #' 
-#' @usage bintest(p0low, p0high = p0low, p1low, p1high = p1low, n.max, 
-#'    r = n.max, alpha = 0.1, beta = 0.1)
-#' 
 #' @param p0low start value of p0
 #' @param p0high highest value of p0
 #' @param p1low start value of p1
@@ -172,6 +165,7 @@ bincon <- function(r, n, alpha = 0.05, round = NULL,
 #' 
 #' # example in sas macro
 #' bintest(.1, .15, .2, .2, n.max = 80, alpha = .08, beta = .24)
+#' 
 #' @export
 
 bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max, 
@@ -229,9 +223,7 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
 #' DLT table
 #' 
 #' Creates a standard dose-limiting toxicity table with probabilities of 
-#' dose-escalation
-#' 
-#' @usage dlt.table(low, high, delta = 10)
+#' dose-escalation.
 #' 
 #' @param low lowest true DLT rate, percent
 #' @param high highest true DLT rate, percent
@@ -264,11 +256,6 @@ dlt.table <- function(low, high, delta = 10) {
 #' Compute power of test using mean ratios and coefficients of variation or 
 #' determine other parameters to obtain target power.
 #' 
-#' @usage power.cv(n = NULL, f = NULL, cv = NULL, sig.level = NULL, 
-#'    power = NULL, type = c('two.sample', 'one.sample', 'paired'), 
-#'    alternative = c('two.sided', 'less', 'greater'), 
-#'    distribution = c('t', 'normal', 'log.normal'))
-#' 
 #' @param n number of observations (per group)
 #' @param f ratio of means (>1)
 #' @param cv coefficient of variation
@@ -279,8 +266,8 @@ dlt.table <- function(low, high, delta = 10) {
 #' @param distribution underlying distribution assumption
 #' 
 #' @details Exactly one of n, f, cv, sig.level, and power must be NULL
-#' @return Object of class "power.htest," a list of the arguments (including 
-#' the computed one) augmented with method and note elements
+#' @return Object of class "\code{power.htest}," a list of the arguments
+#' (including the computed one) augmented with method and note elements
 #' @note \code{\link{uniroot}} is used to solve power equation for unknowns, 
 #' so you may see errors from it, notably about inability to bracket the root 
 #' when invalid arguments are given.
@@ -295,6 +282,7 @@ dlt.table <- function(low, high, delta = 10) {
 #' power.cv(n = NULL, 1.25, .2, .05, .8, distribution = 'normal')
 #' power.cv(13, 1.25, .2, .05, power = NULL, distribution = 't')
 #' power.cv(13, 1.25, .2, .05, power = NULL, distribution = 'log.normal')
+#' 
 #' @export
 
 power.cv <- function(n = NULL, f = NULL, cv = NULL, 
@@ -433,11 +421,7 @@ power.cv <- function(n = NULL, f = NULL, cv = NULL,
 
 #' Simon two-stage designs
 #' 
-#' Function for sample sizes for Simon optimal two-stage, single-arm designs
-#' 
-#' @usage 
-#' simon2(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,
-#'        del = 1, minimax = FALSE)
+#' Function for sample sizes for Simon optimal two-stage, single-arm designs.
 #'    
 #' @param p0 null hypothesis response probability
 #' @param pa alternative hypothesis response probability
@@ -480,15 +464,6 @@ power.cv <- function(n = NULL, f = NULL, cv = NULL,
 #' \code{\link[desmon]{twostg}}, \code{\link[desmon]{bin1samp}}, 
 #' \code{\link[desmon]{pickwin}}, \code{\link[desmon]{rp21}}
 #' 
-#' @note To install the desmon package in a win \code{R} (for mac, replace 
-#' \code{.zip} file with appropriate \code{.tgz} file); in terminal:
-#' @note \code{cd ~}
-#' @note \code{mkdir r.packages}
-#' @note \code{cp ~rredd/r.packages/desmon.zip ./r.packages}
-#' @note \code{R} console:
-#' @note \code{install.packages('z:/r.packages/desmon.zip', repos = NULL,
-#' type = 'source')}
-#' 
 #' @examples
 #' \donttest{
 #' simon2(.2, c(.4, .5))
@@ -499,6 +474,7 @@ power.cv <- function(n = NULL, f = NULL, cv = NULL,
 #' ## requires desmon package
 #' simon(.4, .6)
 #' }
+#' 
 #' @export
 
 simon2 <- function(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,
@@ -690,8 +666,6 @@ bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20) {
 #' package which tests for a difference in \emph{scale parameters} rather than 
 #' medians.
 #' 
-#' @usage moods.test(X, ...)
-#' 
 #' @param X a list of two or more numeric vectors
 #' @param ... additional parameters passed to \code{\link{fisher.test}}
 #' 
@@ -705,6 +679,7 @@ bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20) {
 #' 
 #' plot(density(X[[1]]), xlim = range(unlist(X)), ylim = c(0, .5))
 #' for (x in 2:3) lines(density(X[[x]]), col = x)
+#' 
 #' @export
 
 moods.test <- function(X, ...) {
