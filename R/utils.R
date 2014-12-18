@@ -3,7 +3,7 @@
 # ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
 # show.colors, show.pch, %inside%, try_require, clist, binconr, num2char, 
 # iprint, list2file, match_ctc, Reload, clc, clear, writeftable, helpExtract,
-# Round, bind_all, interleave, outer2, merge2, locf, roll_fun
+# Round, bind_all, interleave, outer2, merge2, locf, roll_fun, round2
 ###
 
 
@@ -1561,13 +1561,16 @@ helpExtract <- function(f, show.sections = FALSE, section = 'Usage',
 #' Rounds a numeric vector constrained to sum to a \code{target} value.
 #' 
 #' @param x numeric values
-#' @param target desired sum of code{x} after rounding
+#' @param target desired sum of \code{x} after rounding
 #' 
 #' @examples
 #' pcts <- data.frame(pct1 = c(33.3, 21.5, 45.51),
 #'                    pct2 = c(33.3,33.3,33.3))
 #' 
+#' ## base round                                     
 #' Map(round, pcts); sapply(.Last.value, sum)
+#' 
+#' ## round to target
 #' Map(Round, pcts, 100); sapply(.Last.value, sum)
 #' 
 #' @export
@@ -1843,3 +1846,18 @@ roll_fun <- function(x, n = 5, FUN = mean, ..., fromLast = FALSE, keep = FALSE) 
     l[1:n] <- lapply(1:n, function(x) l[[n]])
   sapply(if (fromLast) rev(l) else l, FUN, ...)
 }
+
+#' Round to nearest
+#' 
+#' Round numerics to nears multiple of \code{to}
+#' 
+#' @param x a numeric vector
+#' @param to nearest fraction or integer
+#' 
+#' @examples
+#' round2(mtcars$mpg, 5)
+#' round2(mtcars$mpg, .5)
+#' 
+#' @export
+
+round2 <- function(x, to = 1) round(x / to) * to
