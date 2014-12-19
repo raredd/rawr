@@ -1873,26 +1873,27 @@ round2 <- function(x, to = 1) round(x / to) * to
 #' updates, downloads, and installs
 #' 
 #' @seealso \code{\link{update.packages}}
-#' @aliases updateR
+#' 
+#' @export
 
 updateR <- function(update = TRUE) {
   path <- file.path(R.home(), '..', '..')
   v <- tail(sort(list.files(path, pattern = '^\\d{1}.\\d{1}$')), 2)
   if (!grepl(v[2], .libPaths()))
-    stop("A more recent version of R was found on your system")
+    stop("A more recent version of R was found on your system\n")
   if (file.exists(v_last <- sub(v[2], v[1], .libPaths()))) {
     pkg <- list.files(.libPaths())
     pkg <- setdiff(list.files(v_last), pkg)
     if (length(pkg) > 0) {
-      cat(sprintf("Copying %s package%s to %s", length(pkg),
+      cat(sprintf("Copying %s package%s to %s\n", length(pkg),
                   ifelse(length(pkg) > 1, 's', ''), .libPaths()))
       file.copy(file.path(v_last, pkg), .libPaths(), recursive = TRUE)
-    } else cat("No packages to copy")
+    } else cat("No packages to copy\n")
   }
   if (update) {
     if ((up <- table(packageStatus()$inst$Status)['upgrade']) > 0) {
-      cat(sprintf("%s packages are being updated", up))
+      cat(sprintf("Updating %s package%s\n", up, ifelse(up > 1, 's', '')))
       update.packages(ask = FALSE)
-    } else cat("All packages are up-to-date")
+    } else cat("All packages are up-to-date\n")
   }
 }
