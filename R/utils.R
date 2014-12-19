@@ -3,7 +3,7 @@
 # ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
 # show.colors, show.pch, %inside%, try_require, clist, binconr, num2char, 
 # iprint, list2file, match_ctc, Reload, clc, clear, writeftable, helpExtract,
-# Round, bind_all, interleave, outer2, merge2, locf, roll_fun, round2
+# Round, bind_all, interleave, outer2, merge2, locf, roll_fun, round2, .updateR
 ###
 
 
@@ -1849,7 +1849,7 @@ roll_fun <- function(x, n = 5, FUN = mean, ..., fromLast = FALSE, keep = FALSE) 
 
 #' Round to nearest
 #' 
-#' Round numerics to nears multiple of \code{to}
+#' Round numerics to nearest multiple of \code{to}.
 #' 
 #' @param x a numeric vector
 #' @param to nearest fraction or integer
@@ -1861,3 +1861,38 @@ roll_fun <- function(x, n = 5, FUN = mean, ..., fromLast = FALSE, keep = FALSE) 
 #' @export
 
 round2 <- function(x, to = 1) round(x / to) * to
+
+#' Update R
+#' 
+#' Copies and updates \code{R} libraries from most recent installed version
+#' into the current \code{\link{.libPaths}} directory. This assumes that the
+#' user has installed a new \code{X.x} version of \code{R} but will not copy
+#' any libraries from previous frameworks into the new library.
+#' 
+#' @param update logical; if \code{TRUE}, checks for available packages
+#' updates, downloads, and installs
+#' 
+#' @seealso \code{\link{update.packages}}
+#' @aliases updateR
+
+updateR <- function(update = TRUE) {
+  path <- file.path(R.home(), '..', '..')
+  v <- tail(sort(list.files(path, pattern = '^\\d{1}.\\d{1}$')), 2)
+  if (!grepl(v[2], .libPaths()))
+    stop("A more recent version of R was found on your system")
+  if (file.exists(v_last <- sub(v[2], v[1], .libPaths()))) {
+    pkg <- list.files(.libPaths())
+    pkg <- setdiff(list.files(v_last), pkg)
+    if (length(pkg) > 0) {
+      cat(sprintf("Copying %s package%s to %s", length(pkg),
+                  ifelse(length(pkg) > 1, 's', ''), .libPaths()))
+      file.copy(file.path(v_last, pkg), .libPaths(), recursive = TRUE)
+    } else cat("No packages to copy")
+  }
+  if (update) {
+    if ((up <- table(packageStatus()$inst$Status)['upgrade']) > 0) {
+      cat(sprintf("%s packages are being updated", up))
+      update.packages(ask = FALSE)
+    } else cat("All packages are up-to-date")
+  }
+}

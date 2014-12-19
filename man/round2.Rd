@@ -12,7 +12,7 @@ round2(x, to = 1)
 \item{to}{nearest fraction or integer}
 }
 \description{
-Round numerics to nears multiple of \code{to}
+Round numerics to nearest multiple of \code{to}.
 }
 \examples{
 round2(mtcars$mpg, 5)
