@@ -2,8 +2,8 @@
 # lsp, %ni%, ht, oror, progress, recoder, psum, ident, search.df, search.hist, 
 # ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
 # show.colors, show.pch, %inside%, try_require, clist, binconr, num2char, 
-# iprint, list2file, match_ctc, Reload, clc, clear, writeftable, helpExtract,
-# Round, bind_all, interleave, outer2, merge2, locf, roll_fun, round2, .updateR
+# iprint, list2file, match_ctc, Restart, clc, clear, writeftable, helpExtract,
+# Round, bind_all, interleave, outer2, merge2, locf, roll_fun, round2, updateR
 ###
 
 
@@ -1352,26 +1352,32 @@ match_ctc <- function(..., version = 4) {
               version = sprintf('CTCAE v%s', version)))
 }
 
-#' Reload
+#' Restart
 #' 
-#' Emulate starting a fresh \code{R} session.
+#' Ends current and restarts a clean \code{R} session.
 #' 
-#' @param ... ignored
+#' @param afterRestartCommand command to be executed after restart
 #' 
 #' @export
 
-Reload <- function(...) {
-  ## clean (rstudio) r session packages:
-  pkgs <- c(".GlobalEnv", "tools:rstudio", "package:stats", "package:graphics",
-            "package:grDevices", "package:utils", "package:datasets",
-            "package:methods", "Autoloads", "package:base")
-  to_unload <- setdiff(search(), pkgs)
-  for (pkg in to_unload)
-    try(detach(pkg, unload = TRUE, character.only = TRUE), silent = TRUE)
-  rm(list = ls(envir = .GlobalEnv), envir = .GlobalEnv)
-  cat('\014')
-  invisible(NULL)
+Restart <- function(afterRestartCommand = "") {
+  afterRestartCommand <- paste(as.character(afterRestartCommand), 
+                               collapse = "\n")
+  .Call("rs_restartR", afterRestartCommand)
 }
+
+# Reload <- function(...) {
+#   ## clean (rstudio) r session packages:
+#   pkgs <- c(".GlobalEnv", "tools:rstudio", "package:stats", "package:graphics",
+#             "package:grDevices", "package:utils", "package:datasets",
+#             "package:methods", "Autoloads", "package:base")
+#   to_unload <- setdiff(search(), pkgs)
+#   for (pkg in to_unload)
+#     try(detach(pkg, unload = TRUE, character.only = TRUE), silent = TRUE)
+#   rm(list = ls(envir = .GlobalEnv), envir = .GlobalEnv)
+#   cat('\014')
+#   invisible(NULL)
+# }
 
 #' clc
 #' 

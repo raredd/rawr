@@ -1,6 +1,6 @@
-#' rawr-package
+#' rawr
 #' 
-#' @name rawr-package
+#' @name rawr
 #' @docType package
 NULL
 
