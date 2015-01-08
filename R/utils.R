@@ -1,7 +1,7 @@
 ### utilities
-# lsp, %ni%, ht, oror, progress, recoder, psum, ident, search.df, search.hist, 
-# ggcols, grcols, tcol, fapply, lss, rescaler, html.test, roundr, pvalr, intr, 
-# show.colors, show.pch, %inside%, try_require, clist, binconr, num2char, 
+# lsp, %ni%, ht, oror, progress, recoder, psum, ident, search_df, search_hist, 
+# ggcols, grcols, tcol, fapply, lss, rescaler, html_test, roundr, pvalr, intr, 
+# show_colors, show_pch, %inside%, try_require, clist, binconr, num2char, 
 # iprint, list2file, match_ctc, Restart, clc, clear, writeftable, helpExtract,
 # Round, bind_all, interleave, outer2, merge2, locf, roll_fun, round2, updateR
 ###
@@ -462,16 +462,16 @@ ident <- function(..., num.eq = TRUE, single.NA = TRUE, attrib.as.set = TRUE,
 #' 
 #' @examples
 #' df <- data.frame(islands = names(islands)[1:32], mtcars)
-#' search.df(New, df, islands)
-#' search.df(ho, df, islands, var = 0.2) # too much variation
-#' search.df(ho, df, islands, var = 0)
-#' search.df('Axel Hieberg', df, islands) # misspelled, not enough variation
-#' search.df('Axel Hieberg', df, islands, var = 2)
-#' search.df(19, df, mpg)
+#' search_df(New, df, islands)
+#' search_df(ho, df, islands, var = 0.2) # too much variation
+#' search_df(ho, df, islands, var = 0)
+#' search_df('Axel Hieberg', df, islands) # misspelled, not enough variation
+#' search_df('Axel Hieberg', df, islands, var = 2)
+#' search_df(19, df, mpg)
 #' 
 #' @export
 
-search.df <- function(pattern, df, col.name, var = 0, ignore.case = TRUE, ...) {
+search_df <- function(pattern, df, col.name, var = 0, ignore.case = TRUE, ...) {
   
   tmp1 <- as.character(substitute(pattern))
   tmp2 <- as.character(substitute(col.name))
@@ -492,16 +492,16 @@ search.df <- function(pattern, df, col.name, var = 0, ignore.case = TRUE, ...) {
 #' 
 #' @examples
 #' \dontrun{
-#' search.hist()
-#' search.hist(25)
-#' search.hist('?')
-#' search.hist('?', fixed = TRUE)
-#' search.hist('\\?')
+#' search_hist()
+#' search_hist(25)
+#' search_hist('?')
+#' search_hist('?', fixed = TRUE)
+#' search_hist('\\?')
 #' }
 #' 
 #' @export
 
-search.hist <- function (x, ...) {
+search_hist <- function (x, ...) {
   
   hist <- tryCatch(readLines('.Rhistory'),
                    warning = function(w) message("No history found"),
@@ -765,18 +765,18 @@ rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
 #' 
 #' @examples
 #' \dontrun{
-#' html.test("
+#' html_test("
 #' <div align = center><h1>A heading<sup>&dagger;</sup><h1></div>
 #' <font size = 1><sup>&dagger;</sup>That was the heading</font>
 #' ")
 #' 
-#' library(Gmisc)
-#' html.test(htmlTable(mtcars, output = FALSE))
+#' library(htmlTable)
+#' html_test(htmlTable(mtcars, output = FALSE))
 #' }
 #' 
 #' @export
 
-html.test <- function(x) {
+html_test <- function(x) {
   htmlFile <- tempfile(fileext = '.html')
   writeLines(x, con = htmlFile)
   if ((Sys.getenv('RSTUDIO') != '') && ('rstudio' %in% .packages(TRUE)))
@@ -949,15 +949,15 @@ pvalr <- function(pvals, sig.limit = .001, digits = 3, html = FALSE,
 #' and their respective numbers. Find a color by number in the plot or find the
 #' name of the color with \code{colors()[n]}
 #' 
-#' @seealso \code{\link{show.pch}}
+#' @seealso \code{\link{show_pch}}
 #' 
 #' @examples
-#' show.colors()
+#' show_colors()
 #' colors()[81]
 #' # [1] "darkgreen"
 #' @export
 
-show.colors <- function() {
+show_colors <- function() {
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
   par(mfrow = c(1,1),
@@ -986,13 +986,13 @@ show.colors <- function() {
 #' both the border and fill color (if applicable) for \code{0:20}; \code{pch}s
 #' \code{21:25} can be filled with \code{bg}.
 #' 
-#' @seealso \code{\link{show.colors}}
+#' @seealso \code{\link{show_colors}}
 #' 
 #' @examples
-#' show.pch()
+#' show_pch()
 #' @export
 
-show.pch <- function() {
+show_pch <- function() {
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
   par(xpd = TRUE,
@@ -1338,8 +1338,8 @@ match_ctc <- function(..., version = 4) {
   if (version %ni% 3:4)
     stop('CTCAE version should be 3 or 4')
   else if (version == 3)
-    dat <- ctcae_v3
-  else dat <- ctcae_v4
+    dat <- rawr::ctcae_v3
+  else dat <- rawr::ctcae_v4
   
   if (any(grepl('([A-Za-z -])([0-9])', x))) {
     idx <- 'tox_code'
@@ -1356,15 +1356,18 @@ match_ctc <- function(..., version = 4) {
 #' 
 #' Ends current and restarts a clean \code{R} session.
 #' 
-#' @param afterRestartCommand command to be executed after restart
+#' @param afterRestartCommand character string of command(s) to be 
+#' executed after restarting
+#' 
+#' @examples
+#' \donttest{
+#' Restart("clear(); cat('Here is a clean session just for you')")
+#' }
 #' 
 #' @export
 
-Restart <- function(afterRestartCommand = "") {
-  afterRestartCommand <- paste(as.character(afterRestartCommand), 
-                               collapse = "\n")
-  .Call("rs_restartR", afterRestartCommand)
-}
+Restart <- function(afterRestartCommand = '')
+  (getOption('restart'))(afterRestartCommand)
 
 # Reload <- function(...) {
 #   ## clean (rstudio) r session packages:

@@ -1,5 +1,5 @@
 ### survival stuff
-# kmplot, ggsurv, survdat, surv_summary, surv_table, local.coxph.test, surv_cp
+# kmplot, ggsurv, survdat, surv_summary, surv_table, local_coxph_test, surv_cp
 ###
 
 
@@ -38,6 +38,7 @@
 #' @param strata.order order of strata in legend and at risk table
 #' @param extra.margin increase left margin when strata labels in at risk table
 #' are long
+#' @param xaxs style of axis; see details
 #' @param xlim x-axis limits
 #' @param ylim y-axis limits
 #' @param xaxis.at positions for x-axis labels and ticks
@@ -63,39 +64,37 @@
 #' Line specifications (\code{lty.surv}, \code{lwd.surv}, etc) will be recycled
 #' if needed.
 #' 
+#' \code{xaxs} is the style of the x-axis; see \code{\link{par}}. The default
+#' for \code{kmplot} is \code{"S"} which is equivalent to \code{xaxs = "i"}
+#' but with the maximum \code{xlim} value increased by 4\%. Other styles for
+#' \code{xaxs} currently implemented in \code{R} are \code{"r"} (default for
+#' plotting and the previous value for \code{kmplot}) and \code{"i"} which will
+#' \emph{not} add padding to the ends of the axes.
+#' 
 #' If \code{col.band != NULL}, a confidence band is plotted; however, this is
 #' not a confidence band in the statistical sense, i.e., a xx-percent chance 
 #' of containing the entire population of the survival curve which are wider 
-#' than the point-wise confidence limits. Rather, it refers to a band of color 
-#' plotted between the confidence limits calculated in the survfit object. That
-#' is, the xx-percent confidence interval (plotted when \code{lty.ci != 0}) and
-#' the confidence bands are identical, just two ways of plotting the same 
-#' invervals.
+#' than the point-wise confidence limits.
 #' 
-#' When \code{dev = TRUE}, a platform-specific graphics device is used to 
-#' displace the plot. Defaults are \code{\link{quartz}} for apple and 
-#' \code{\link{x11}} for windows and unix platforms.
-#' 
-#' However, any device can be used by setting \code{dev = FALSE} and opening
-#' a device before \code{kmplot}. If \code{dev} is \code{FALSE}, the
-#' plot will open in the current device; see \code{\link{.Device}}. Close the
-#' device pane or use \code{dev.off()} to turn off the current device.
+#' Rather, it refers to a band of color plotted between the confidence 
+#' limits calculated in the survfit object. That is, the xx-percent 
+#' confidence interval (plotted when \code{lty.ci != 0}) and the confidence
+#' bands are identical, just two ways of plotting the same invervals.
 #' 
 #' When saving plots, it is highly recommended to use \code{\link{png}}, 
 #' \code{\link{svg}}, \code{\link{pdf}}, etc instead of exporting directly from
 #' the \code{R} graphics device. Doing so may cause the at risk table or 
-#' legend to be mis-aligned. Be sure to set \code{dev = FALSE} when saving
-#' an image to another device.
+#' legend to be mis-aligned.
 #' 
 #' @references \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
 #' @seealso \code{\link[rawr]{ggsurv}}; \code{survival:::plot.survfit}
 #' 
 #' @examples
+#' \dontrun{
 #' library(survival)
 #' kmfit1 <- survfit(Surv(time, status) ~ sex, data = colon)
 #' kmfit2 <- survfit(Surv(time, status) ~ rx + adhere, data = colon)
 #' 
-#' \dontrun{
 #' ## simple example, draw in r window
 #' kmplot(kmfit1)
 #' 
@@ -105,7 +104,6 @@
 #'                                 phantom() >= Male))
 #' 
 #' ## using mfrow options, use ADD = TRUE
-#' ## when saving to another device, use dev = FALSE (see details)
 #' png('./desktop/kmplot2.png', width = 750, height = 1200, pointsize = 14)
 #' par(mfrow = c(2, 1))
 #' kmplot(kmfit1, add = TRUE)
@@ -153,6 +151,7 @@ kmplot <- function(s,
                    extra.margin = 5, 
                    
                    # aesthetics
+                   xaxs = 'S',
                    xlim = c(0, max(s$time)), ylim = c(0, 1),
                    xaxis.at = pretty(s$time), xaxis.lab = xaxis.at, 
                    yaxis.at = pretty(ylim), yaxis.lab = yaxis.at, 
@@ -237,6 +236,12 @@ kmplot <- function(s,
   }
   if (!is.null(mar)) 
     par(mar = mar)
+
+  ## as in plot.survfit to adjust x-axis to start at 0
+  if (xaxs == 'S') {
+    xaxs <- 'i'
+    xlim[2] <- xlim[2] * 1.04
+  } else xaxs <- 'r'
   
   ## reformat survival estimates
   dat <- with(s, data.frame(time = time, 
@@ -252,7 +257,7 @@ kmplot <- function(s,
   
   ## plot (but not survival curves) 
   plot(0, type = 'n', xlim = xlim, ylim = ylim, ann = FALSE,
-       xaxt = 'n', yaxt = 'n')
+       xaxt = 'n', yaxt = 'n', xaxs = xaxs)
   box(bty = par('bty'))
   if (grid) {
     par('xpd' = FALSE)
@@ -453,6 +458,9 @@ kmplot <- function(s,
 #' @seealso \code{\link[rawr]{kmplot}}; \code{survival:::plot.survfit}
 #'
 #' @examples
+#' library(ggplot2)
+#' library(grid)
+#' library(gridExtra)
 #' library(survival)
 #' data(cancer)
 #' 
@@ -478,7 +486,6 @@ kmplot <- function(s,
 #'   data = cancer))
 #' 
 #' ### example plots
-#' library(ggplot2)
 #' ggsurv(kmfit0)
 #' 
 #' ggsurv(kmfit1, confin = FALSE, lty.surv = 1:2, col.cens = 'blue', 
@@ -532,9 +539,6 @@ ggsurv <- function(s,
   # y axis ticks
   # specific axes ticks?, eg, at = c(.5, 1, 4, 10)
   # ticks labels with atrisk and median?
-  
-  require(ggplot2)
-  require(survival)
   
   #### error checks
   if (!inherits(s, 'survfit')) 
@@ -882,8 +886,6 @@ ggsurv <- function(s,
   
   if (atrisk) {
     
-    require(gridExtra)
-    
     # fix legend
     if (!(legend %in% c(FALSE, 'none', 'bottom', 'top'))) {
       legend <- 'bottom'
@@ -1024,8 +1026,6 @@ ggsurv <- function(s,
 
 surv_summary <- function(s, digits = max(options()$digits - 4, 3), ...) {
   
-  require(survival)
-  
   ## error checks
   if (!inherits(s, 'survfit')) 
     stop('s must be a survfit object')
@@ -1131,7 +1131,7 @@ surv_summary <- function(s, digits = max(options()$digits - 4, 3), ...) {
 #' surv_table(fit1)
 #' 
 #' \dontrun{
-#' library(Gmisc)
+#' library(htmlTable)
 #' s <- `colnames<-`(surv_table(fit0, times = c(0, 200, 400, 600, 800), 
 #'                              digits = 2)[ , -4], 
 #'                   c('Time','No. at risk','No. of events','OS (95% CI)'))
@@ -1188,12 +1188,12 @@ surv_table <- function(s, digits = 3, times = pretty(range(s$time)), ...) {
 #' fit <- coxph(Surv(time, status) ~ sex + ph.ecog, data = cancer)
 #' 
 #' ## compare to summary(fit)
-#' local.coxph.test(fit)
-#' local.coxph.test(fit, 2)
+#' local_coxph_test(fit)
+#' local_coxph_test(fit, 2)
 #' 
 #' @export
 
-local.coxph.test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
+local_coxph_test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
   if (missing(pos))
     pos <- 1:length(coef(s))
   n <- length(pos)

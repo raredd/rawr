@@ -115,6 +115,9 @@ the number of "lines" of padding (see \code{\link{unit}}). Note that the
 default for \code{ggplot} is \code{unit(.25, "lines")}.
 }
 \examples{
+library(ggplot2)
+library(grid)
+library(gridExtra)
 library(survival)
 data(cancer)
 
@@ -140,7 +143,6 @@ coxfit1 <- survfit(coxph(Surv(time = time, event = status) ~ strata(I(age > 45))
   data = cancer))
 
 ### example plots
-library(ggplot2)
 ggsurv(kmfit0)
 
 ggsurv(kmfit1, confin = FALSE, lty.surv = 1:2, col.cens = 'blue',

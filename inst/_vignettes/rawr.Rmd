@@ -44,8 +44,8 @@ opts_chunk$set(dev.args = list(antialias = 'none',
  name           | function
 ----------------|---------------
 `bpCI`          | add error bars/sig stars to barplots
-`click.shape`   | add shapes interactively
-`click.text`    | add text interactively
+`click_shape`   | add shapes interactively
+`click_text`    | add text interactively
 `dodge`         | dodge points (alternative to jitter)
 `dsplot`        | discrete scatter plot
 `facet_adjust`  | ggplot facet adjust
@@ -197,9 +197,9 @@ plot(rnorm(100), col = tcol(ggcols(10), 100), main = "tcol", cex = 6)
 ```{r, eval=FALSE}
 ## add shapes or text (and expressions) interactively
 
-?click.shape
+?click_shape
 
-?click.text
+?click_text
 ```
 
 
@@ -310,8 +310,8 @@ ggsurv(coxfit, legend.labels = c('< 45','> 45'), legend = FALSE, median = TRUE)
 `recoder`     | recode data frames
 `Reload`      | emulate new r session
 `rescaler`    | rescale numeric vectors
-`search.df`   | search data frames
-`search.hist` | search history
+`search_df`   | search data frames
+`search_hist` | search history
 `try_require` | load packages silently
 
 
@@ -323,14 +323,14 @@ lsp(rawr, pat = 'plot')
 
 ```{r}
 ## search functions for data frames and R history
-#? search.hist
+#? search_hist
 df <- within(mtcars, make <- rownames(mtcars))
-search.df(110, df, hp)
+search_df(110, df, hp)
 ```
 
 
 ```{r}
-search.df("Posch", df, make, var = 1)  # inexact matching
+search_df("Posch", df, make, var = 1)  # inexact matching
 ```
 
 
@@ -357,11 +357,11 @@ lss()
 `bin1samp`         | one-stage exact binomial designs
 `bincon`           | exact binomial confidence intervals
 `bintest`          | one-stage exact binomial designs
-`dlt.table`        | dlt table  
-`local.coxph.test` | local coxph p-value
+`dlt_table`        | dlt table  
+`local_coxph_test` | local coxph p-value
 `match_ctc`        | convert ctc toxicity codes to descriptions
-`moods.test`       | mood's median test
-`power.cv`         | coefficient of variation power calculation
+`moods_test`       | mood's median test
+`power_cv`         | coefficient of variation power calculation
 `simon`            | simon optional two-stage designs  
 `simon2`           | simon optional two-stage designs  
 `surv_cp`          | convert survival to counting process
@@ -414,7 +414,7 @@ bintest(p0low = 0.2, p1low = 0.5, n.max = 25)
 
 ```{r}
 ## coefficient of variation power test
-power.cv(n = NULL, f = 1.25, cv = 0.2, sig.level = 0.05, power = 0.8, 
+power_cv(n = NULL, f = 1.25, cv = 0.2, sig.level = 0.05, power = 0.8, 
          distribution = "normal")
 ```
 

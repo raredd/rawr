@@ -39,7 +39,7 @@ fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)),
 surv_table(fit1)
 
 \dontrun{
-library(Gmisc)
+library(htmlTable)
 s <- `colnames<-`(surv_table(fit0, times = c(0, 200, 400, 600, 800),
                              digits = 2)[ , -4],
                   c('Time','No. at risk','No. of events','OS (95\% CI)'))

@@ -1,5 +1,5 @@
 ### plot functions
-# ggmultiplot, click.text, click.shape, facet_adjust, facet_adjust.print, 
+# ggmultiplot, click_text, click_shape, facet_adjust, facet_adjust.print, 
 # ggcaterpillar, ggheat, dodge, jmplot, tplot, dsplot, bpCI, inset
 ###
 
@@ -37,9 +37,6 @@
 #' @export
 
 ggmultiplot <- function(..., plotlist = NULL, cols = 1, layout = NULL) {
-  
-  require(grid)
-  require(ggplot2)
   
   # make a list from the ... arguments and plotlist
   plots <- c(list(...), plotlist)
@@ -90,19 +87,19 @@ ggmultiplot <- function(..., plotlist = NULL, cols = 1, layout = NULL) {
 #' @param ... additional graphical parameters passed to \code{\link{text}} (or 
 #' \code{\link{par}})
 #'
-#' @seealso \code{\link{click.shape}}; \code{\link{plotmath}} for help with 
+#' @seealso \code{\link{click_shape}}; \code{\link{plotmath}} for help with 
 #' mathematical expressions
 #' 
 #' @examples
 #' \dontrun{
 #' plot.new()
-#' click.text('hello', col = 'red', cex = .5)
-#' click.text('goodbye', family = 'HersheyScript', cex = 3)
-#' click.text(expression(sum(x ^ 2) == 5 ^ hat(x)), srt = 45)
+#' click_text('hello', col = 'red', cex = .5)
+#' click_text('goodbye', family = 'HersheyScript', cex = 3)
+#' click_text(expression(sum(x ^ 2) == 5 ^ hat(x)), srt = 45)
 #' }
 #' @export
 
-click.text <- function(express, col = 'black', cex = NULL, srt = 0, 
+click_text <- function(express, col = 'black', cex = NULL, srt = 0, 
                        trans = NULL, family = 'sans', ...) {
   
   op <- par(no.readonly = TRUE) 
@@ -144,21 +141,21 @@ click.text <- function(express, col = 'black', cex = NULL, srt = 0,
 #' @examples
 #' \dontrun{
 #' plot.new()
-#' click.shape() # a line segment
-#' click.shape('arrow', col = 'blue', code = 2, lwd = 2, length = .15)
-#' click.shape('box', border = 'purple', col = 'pink', lwd = 2)
-#' click.shape('box', col = NULL, border = 'purple', lwd = 2)
-#' click.shape('line', col = 'orange', lty = 3, lwd = 3)
-#' click.shape('poly', corners = 5, border = 'green', col = 'orange', 
+#' click_shape() # a line segment
+#' click_shape('arrow', col = 'blue', code = 2, lwd = 2, length = .15)
+#' click_shape('box', border = 'purple', col = 'pink', lwd = 2)
+#' click_shape('box', col = NULL, border = 'purple', lwd = 2)
+#' click_shape('line', col = 'orange', lty = 3, lwd = 3)
+#' click_shape('poly', corners = 5, border = 'green', col = 'orange', 
 #'   lty = 1, lwd = 3)
-#' click.shape('poly', corners = 3, border = 'red', col = 'yellow', lty = 1, 
+#' click_shape('poly', corners = 3, border = 'red', col = 'yellow', lty = 1, 
 #'   lwd = 2)
-#' click.shape('cyl', col = 'orange')
-#' click.shape('circle', col = 'orange', border = 'black', lty = 3, lwd = 3)
+#' click_shape('cyl', col = 'orange')
+#' click_shape('circle', col = 'orange', border = 'black', lty = 3, lwd = 3)
 #' }
 #' @export
 
-click.shape <- function(shape = 'line', col = 'black', border = col, trans = NULL,
+click_shape <- function(shape = 'line', col = 'black', border = col, trans = NULL,
                         corners = NULL, lty = par('lty'), lwd = par('lwd'), 
                         density = NULL, length = 1, code = 2, ...) {
   
@@ -190,14 +187,12 @@ click.shape <- function(shape = 'line', col = 'black', border = col, trans = NUL
             border = border, lty = lty, lwd = lwd, length = NULL)
   }
   CIRCLE <- function(...) {
-    require(plotrix)
     coords <- c(unlist(locator(1)), unlist(locator(1)))
     rad <- sqrt(((coords[3] - coords[1]) ** 2) + ((coords[4] - coords[2]) ** 2))
     draw.circle(coords[1], coords[2], radius = rad, col = col,
                 border = border, lty = lty, lwd = lwd)
   }
   CYLINDER <- function(...) {
-    require(plotrix)
     coor <- unlist(locator(2))
     cylindrect(coor[1], coor[3], coor[2], coor[4], col = col, border = border)
   }
@@ -237,9 +232,6 @@ click.shape <- function(shape = 'line', col = 'black', border = col, trans = NUL
 
 facet_adjust <- function(x, pos = c('up', 'down'), 
                          newpage = is.null(vp), vp = NULL) {
-  
-  require(grid)
-  require(ggplot2)
   
   pos <- match.arg(pos)
   p <- ggplot_build(x)
@@ -283,10 +275,6 @@ facet_adjust <- function(x, pos = c('up', 'down'),
 #' @seealso \code{\link{facet_adjust}}
 
 print.facet_adjust <- function(x, newpage = is.null(vp), vp = NULL) {
-  
-  require(grid)
-  require(ggplot2)
-  
   if (newpage)
     grid.newpage()
   if (is.null(vp)){
@@ -329,7 +317,6 @@ print.facet_adjust <- function(x, newpage = is.null(vp), vp = NULL) {
 
 ggcaterpillar <- function(re, qq  =  TRUE, likeDotplot  =  TRUE) {
   
-  require(ggplot2)
   ## no visible binding note
   nQQ <- y <- ID <- ci <- NULL
   
@@ -413,7 +400,6 @@ ggheat <- function(cors = NULL, data = NULL,
                    gradn = rev(heat.colors(10)),
                    gradc = c('white', 'steelblue')) {
   
-  require(ggplot2)
   ## no visible binding note
   corr <- NULL
   

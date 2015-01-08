@@ -8,8 +8,8 @@ kmplot(s, lty.surv = 1, lwd.surv = 1, col.surv = 1, mark = 3,
   mar = NULL, lty.ci = 0, lwd.ci = 1, col.ci = col.surv,
   col.band = col.surv, atrisk = TRUE, atrisk.lab = "Number at risk",
   atrisk.lines = TRUE, strata.lab = NULL, strata.expr = NULL,
-  strata.order = seq(length(s$n)), extra.margin = 5, xlim = c(0,
-  max(s$time)), ylim = c(0, 1), xaxis.at = pretty(s$time),
+  strata.order = seq(length(s$n)), extra.margin = 5, xaxs = "S",
+  xlim = c(0, max(s$time)), ylim = c(0, 1), xaxis.at = pretty(s$time),
   xaxis.lab = xaxis.at, yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
   xlab = "Time", ylab = "Survival probability", main = "", cex.axis = 1,
   legend = !is.null(s$strata), legend.pos = "bottomleft", grid = TRUE,
@@ -63,6 +63,8 @@ at risk table; note that \code{strata.expr} trumps \code{strata.lab}}
 \item{extra.margin}{increase left margin when strata labels in at risk table
 are long}
 
+\item{xaxs}{style of axis; see details}
+
 \item{xlim}{x-axis limits}
 
 \item{ylim}{y-axis limits}
@@ -109,36 +111,34 @@ optional at risk table in base graphics.
 Line specifications (\code{lty.surv}, \code{lwd.surv}, etc) will be recycled
 if needed.
 
+\code{xaxs} is the style of the x-axis; see \code{\link{par}}. The default
+for \code{kmplot} is \code{"S"} which is equivalent to \code{xaxs = "i"}
+but with the maximum \code{xlim} value increased by 4\%. Other styles for
+\code{xaxs} currently implemented in \code{R} are \code{"r"} (default for
+plotting and the previous value for \code{kmplot}) and \code{"i"} which will
+\emph{not} add padding to the ends of the axes.
+
 If \code{col.band != NULL}, a confidence band is plotted; however, this is
 not a confidence band in the statistical sense, i.e., a xx-percent chance
 of containing the entire population of the survival curve which are wider
-than the point-wise confidence limits. Rather, it refers to a band of color
-plotted between the confidence limits calculated in the survfit object. That
-is, the xx-percent confidence interval (plotted when \code{lty.ci != 0}) and
-the confidence bands are identical, just two ways of plotting the same
-invervals.
+than the point-wise confidence limits.
 
-When \code{dev = TRUE}, a platform-specific graphics device is used to
-displace the plot. Defaults are \code{\link{quartz}} for apple and
-\code{\link{x11}} for windows and unix platforms.
-
-However, any device can be used by setting \code{dev = FALSE} and opening
-a device before \code{kmplot}. If \code{dev} is \code{FALSE}, the
-plot will open in the current device; see \code{\link{.Device}}. Close the
-device pane or use \code{dev.off()} to turn off the current device.
+Rather, it refers to a band of color plotted between the confidence
+limits calculated in the survfit object. That is, the xx-percent
+confidence interval (plotted when \code{lty.ci != 0}) and the confidence
+bands are identical, just two ways of plotting the same invervals.
 
 When saving plots, it is highly recommended to use \code{\link{png}},
 \code{\link{svg}}, \code{\link{pdf}}, etc instead of exporting directly from
 the \code{R} graphics device. Doing so may cause the at risk table or
-legend to be mis-aligned. Be sure to set \code{dev = FALSE} when saving
-an image to another device.
+legend to be mis-aligned.
 }
 \examples{
+\dontrun{
 library(survival)
 kmfit1 <- survfit(Surv(time, status) ~ sex, data = colon)
 kmfit2 <- survfit(Surv(time, status) ~ rx + adhere, data = colon)
 
-\dontrun{
 ## simple example, draw in r window
 kmplot(kmfit1)
 
@@ -148,7 +148,6 @@ kmplot(kmfit1, strata.lab = c('Female','Male'),
                                 phantom() >= Male))
 
 ## using mfrow options, use ADD = TRUE
-## when saving to another device, use dev = FALSE (see details)
 png('./desktop/kmplot2.png', width = 750, height = 1200, pointsize = 14)
 par(mfrow = c(2, 1))
 kmplot(kmfit1, add = TRUE)

@@ -7,9 +7,15 @@
 Restart(afterRestartCommand = "")
 }
 \arguments{
-\item{afterRestartCommand}{command to be executed after restart}
+\item{afterRestartCommand}{character string of command(s) to be
+executed after restarting}
 }
 \description{
 Ends current and restarts a clean \code{R} session.
+}
+\examples{
+\donttest{
+Restart("clear(); cat('Here is a clean session just for you')")
+}
 }
 

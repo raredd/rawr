@@ -2,6 +2,7 @@
 #' 
 #' @name rawr
 #' @docType package
+#' @import desmon ggplot2 grid gridExtra htmlTable knitr plotrix survival testthat
 NULL
 
 #' Common Terminology Criteria for Adverse Events, v3

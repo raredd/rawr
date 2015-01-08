@@ -1,5 +1,5 @@
 ### statistical functions
-# bincon, bintest, dlt.table, power.cv, simon2, moods.test
+# bincon, bintest, dlt_table, power_cv, simon2, moods_test
 ###
 
 
@@ -230,12 +230,12 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
 #' @param delta interval of DLT rate sequence; default is 10
 #' 
 #' @examples
-#' dlt.table(10, 50)
-#' dlt.table(10, 50, 5)
+#' dlt_table(10, 50)
+#' dlt_table(10, 50, 5)
 #' 
 #' @export 
 
-dlt.table <- function(low, high, delta = 10) {
+dlt_table <- function(low, high, delta = 10) {
   
   int <- seq(low, high, by = delta)
   mat <- matrix(NA, nrow = length(int), ncol = 2)
@@ -279,13 +279,13 @@ dlt.table <- function(low, high, delta = 10) {
 #' Washington, Dept. of Biostatistics.
 #' 
 #' @examples
-#' power.cv(n = NULL, 1.25, .2, .05, .8, distribution = 'normal')
-#' power.cv(13, 1.25, .2, .05, power = NULL, distribution = 't')
-#' power.cv(13, 1.25, .2, .05, power = NULL, distribution = 'log.normal')
+#' power_cv(n = NULL, 1.25, .2, .05, .8, distribution = 'normal')
+#' power_cv(13, 1.25, .2, .05, power = NULL, distribution = 't')
+#' power_cv(13, 1.25, .2, .05, power = NULL, distribution = 'log.normal')
 #' 
 #' @export
 
-power.cv <- function(n = NULL, f = NULL, cv = NULL, 
+power_cv <- function(n = NULL, f = NULL, cv = NULL, 
                      sig.level = NULL, power = NULL, 
                      type = c('two.sample', 'one.sample', 'paired'),
                      alternative = c('two.sided', 'less', 'greater'),
@@ -675,14 +675,14 @@ bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20) {
 #' @examples
 #' set.seed(1618)
 #' X <- list(rnorm(10), rnorm(10, 1), rnorm(20, 2))
-#' moods.test(X)
+#' moods_test(X)
 #' 
 #' plot(density(X[[1]]), xlim = range(unlist(X)), ylim = c(0, .5))
 #' for (x in 2:3) lines(density(X[[x]]), col = x)
 #' 
 #' @export
 
-moods.test <- function(X, ...) {
+moods_test <- function(X, ...) {
   x <- unlist(X)
   g <- rep(ng <- seq_len(length(X)), times = sapply(X, length))
   m <- median(x)
