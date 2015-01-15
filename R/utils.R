@@ -1328,7 +1328,7 @@ list2file <- function(l, targetdir = getwd(), sep, ...) {
 #' match_ctc(codes)
 #' 
 #' match_ctc('injury', version = 3)
-#' match_ctc('aortic','arterial')
+#' match_ctc('aortic', 'arterial')
 #' 
 #' @export
 
@@ -1337,19 +1337,18 @@ match_ctc <- function(..., version = 4) {
   x <- c(...)
   if (version %ni% 3:4)
     stop('CTCAE version should be 3 or 4')
-  else if (version == 3)
-    dat <- rawr::ctcae_v3
-  else dat <- rawr::ctcae_v4
+  else {
+    if (version == 3)
+      dat <- rawr::ctcae_v3
+    else dat <- rawr::ctcae_v4
+  }
   
-  if (any(grepl('([A-Za-z -])([0-9])', x))) {
-    idx <- 'tox_code'
-    x <- gsub('\\s*|-', '', x)
-  } else idx <- 'tox_desc'
+  if (any(grepl('([A-Za-z -])([0-9])', x)))
+    idx <- match(gsub('\\s*|-', '', x, perl = TRUE), dat[, 'tox_code'])
+  else idx <- grep(paste(x, collapse = '|'), dat[, 'tox_desc'],
+                   ignore.case = TRUE)
   
-  idx <- grep(paste(x, collapse = '|'), dat[ , idx], ignore.case = TRUE)
-  
-  return(list(matches = dat[idx, ],
-              version = sprintf('CTCAE v%s', version)))
+  return(list(matches = dat[idx, ], version = sprintf('CTCAE v%s', version)))
 }
 
 #' Restart

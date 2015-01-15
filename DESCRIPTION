@@ -1,7 +1,7 @@
 Package: rawr
 Type: Package
 Title: A personal package with miscellaneous tools.
-Version: 0.5.0
+Version: 0.5.1
 Authors@R: person("Robert", "Redd", email = "raredd01@gmail.com",
     role = c("aut", "cre"))
 Description: Personal package with miscellaneous functions, stuff in progress,

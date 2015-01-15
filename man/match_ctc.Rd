@@ -32,6 +32,6 @@ codes <- sample(ctcae_v4$tox_code, 10)
 match_ctc(codes)
 
 match_ctc('injury', version = 3)
-match_ctc('aortic','arterial')
+match_ctc('aortic', 'arterial')
 }
 
