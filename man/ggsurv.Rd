@@ -8,7 +8,7 @@ ggsurv(s, col.surv = 1, lty.surv = 1, censor = TRUE, col.cens = 1,
   mark = 3, confin = TRUE, confband = FALSE, col.band = NA,
   median = FALSE, atrisk = TRUE, col.atrisk, pval, basehaz = FALSE, ticks,
   median.ticks = TRUE, xlab, ylab, main, xlim, ylim, legend = "right",
-  legend.labels, grid = TRUE, ggdefault = FALSE, plot.margin = NULL,
+  legend.labels, grid = FALSE, ggdefault = FALSE, plot.margin = NULL,
   table.margin = NULL, ...)
 }
 \arguments{

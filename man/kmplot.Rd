@@ -12,7 +12,7 @@ kmplot(s, lty.surv = 1, lwd.surv = 1, col.surv = 1, mark = 3,
   xlim = c(0, max(s$time)), ylim = c(0, 1), xaxis.at = pretty(s$time),
   xaxis.lab = xaxis.at, yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
   xlab = "Time", ylab = "Survival probability", main = "", cex.axis = 1,
-  legend = !is.null(s$strata), legend.pos = "bottomleft", grid = TRUE,
+  legend = !is.null(s$strata), legend.pos = "bottomleft", grid = FALSE,
   lty.grid = 1, lwd.grid = 1, col.grid = grey(0.9), add = FALSE, ...)
 }
 \arguments{

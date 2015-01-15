@@ -160,7 +160,7 @@ kmplot <- function(s,
                    legend = !is.null(s$strata), legend.pos = 'bottomleft', 
                    
                    # other options
-                   grid = TRUE, lty.grid = 1, lwd.grid = 1, 
+                   grid = FALSE, lty.grid = 1, lwd.grid = 1, 
                    col.grid = grey(.9),
                    add = FALSE, ...) {
   
@@ -530,7 +530,7 @@ ggsurv <- function(s,
                    ticks, median.ticks = TRUE,
                    xlab, ylab, main, xlim, ylim,
                    legend = 'right', legend.labels,
-                   grid = TRUE, ggdefault = FALSE,
+                   grid = FALSE, ggdefault = FALSE,
                    
                    # other options
                    plot.margin = NULL, table.margin = NULL, ...) {
@@ -840,7 +840,7 @@ ggsurv <- function(s,
   
   # background options
   if (ggdefault == FALSE) tmp <- tmp + theme_bw()
-  if (grid == FALSE) 
+  if (!grid) 
     tmp <- tmp + theme(panel.grid.major = element_blank(),
                        panel.grid.minor = element_blank(),
                        axis.line = element_line(colour = 'black'))
@@ -850,8 +850,8 @@ ggsurv <- function(s,
     tmp <- tmp + theme(legend.position = 'none')
   } else { 
     if (is.logical(legend)) {
-      if (legend == FALSE) legend <- 'none'
-      if (legend == TRUE) legend <- 'right'
+      if (!legend) legend <- 'none'
+      if (legend) legend <- 'right'
     }
     tmp <- tmp + theme(legend.position = legend)
   }
