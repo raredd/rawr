@@ -3,7 +3,8 @@
 # ggcols, grcols, tcol, fapply, lss, rescaler, html_test, roundr, pvalr, intr, 
 # show_colors, show_pch, %inside%, try_require, clist, binconr, num2char, 
 # iprint, list2file, match_ctc, Restart, clc, clear, writeftable, helpExtract,
-# Round, bind_all, interleave, outer2, merge2, locf, roll_fun, round2, updateR
+# Round, bind_all, interleave, outer2, merge2, locf, roll_fun, round2, updateR,
+# table_by
 ###
 
 
@@ -1904,4 +1905,110 @@ updateR <- function(update = TRUE) {
       update.packages(ask = FALSE)
     } else cat("All packages are up-to-date\n")
   }
+}
+
+#' table_by
+#' 
+#' This function is helpful to make simple stratified tables, faster and 
+#' easier to use than \code{\link[tables]{tablular}}.
+#' 
+#' \code{varname} and \code{byvar} should be factors, and the levels will
+#' appear in the output as they occur in \code{levels(x)}.
+#' 
+#' \code{n} is used to calculate the percentages. If missing, the output will
+#' only show counts in the table. If given, \code{length(n)} should be one or
+#' equal to the number of levels of \code{byvar}.
+#' 
+#' If one \code{n} is given, \code{tabler_by} assumes that this is the total
+#' population for a subgroup, i.e., if creating a table for a subset of the 
+#' data, it is only necessary to provide the total \code{n} for that group.
+#' 
+#' If more than one \code{n} is given, \code{tabler_by} assumes that the
+#' entire data set is given to \code{dat} and will use the corresponding 
+#' \code{n} to show percentages out of each respective subgroup.
+#' 
+#' @param dat a data frame; variables \code{varname} and \code{byvar} should
+#' be factors
+#' @param varname variable with subgroups to count
+#' @param byvar stratification variable
+#' @param n number in each group; see details
+#' @param order logical; order the result by decreasing frequency
+#' @param zeros optional character string replacement for cells which have zero
+#' counts; will appear as \code{0 (0\%)} if not given
+#' 
+#' @examples
+#' \dontrun{
+#' options(stringsAsFactors = FALSE)
+#' set.seed(1618)
+#' 
+#' f <- function(x, ...) sample(x, 100, replace = TRUE, ...)
+#' tox <- data.frame(casenum = rep(1:10, 10), phase = f(1:2),
+#'                   tox_code = f(rawr::ctcae_v4$tox_code[1:25]),
+#'                   tox_grade = f(1:3, prob = c(.6, .3, .1)))
+#' 
+#' n <- table(tox$phase)
+#' tox <- cbind(tox, match_ctc(tox$tox_code)$matches[, c('tox_cat', 'tox_desc')])
+#' 
+#' tox <- within(tox, {
+#'   phase <- factor(phase)
+#'   tox_grade <- factor(tox_grade)
+#'   tox_cat <- factor(tox_cat)
+#'   tox_desc <- factor(tox_desc)
+#' })
+#' 
+#' 
+#' out <- cbind(tabler_by(tox, 'tox_desc', 'phase', n = n, zeros = '-')[, 1, drop = FALSE],
+#' tabler_by(tox[tox$phase == '1', ], 'tox_desc', 'tox_grade', n = n[1], zeros = '-'),
+#' tabler_by(tox[tox$phase == '2', ], 'tox_desc', 'tox_grade', n = n[2], zeros = '-'))
+#' 
+#' library(htmlTable)
+#' cgroup <- c(sprintf('Total<br /><font size=1>n = %s</font>', sum(n)),
+#'             sprintf('Phase I<br /><font size=1>n = %s</font>', n[1]),
+#'             sprintf('Phase II<br /><font size=1>n = %s</font>', n[2]))
+#' htmlTable(out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
+#'           caption = 'Table 1: Toxicities<sup>&dagger;</sup> by phase and grade.',
+#'           col.columns = rep(c('grey97','none','grey97'), times = c(1, 4, 4)),
+#'           col.rgroup = rep(rep(c('none', 'grey97'), each = 5), 10),
+#'           tfoot = paste0('<font size=1><sup>&dagger;</sup>Percentages represent ',
+#'                   'proportion of patients out of respective phase total.</font>'))
+#' }
+#' @export
+
+tabler_by <- function(dat, varname, byvar, n, order = TRUE, zeros) {
+  if (!all(sapply(dat[, c(varname, byvar)], is.factor)))
+    stop('\'varname\' and \'byvar\' must be factors')
+  
+  ## split data by varname, get totals overall and for each level of byvar
+  l <- split(dat, dat[, varname])
+  res <- do.call('rbind', lapply(l, function(x)
+    c(Total = length(x[, varname]), tapply(x[, varname], x[, byvar], length))))
+  res1 <- res[, -1]
+  res1[is.na(res1)] <- 0
+  
+  ## this will add percents: N (x%) to each column where n for each group
+  if (!missing(n)) {
+    nr <- nrow(res1)
+    ## if one n is given, assume this is the total of a subgroup
+    ## if > 1, assume that these correspond to the size of each level of byvar
+    ## eg, if calculating overall totals, give the n for each group
+    ## if calculating totals for a subgroup, give one n since this group
+    ## will have the same overall n
+    if (length(n) == 1L)
+      n <- rep(n, ncol(res1))
+    if (length(n) != nlevels(dat[, byvar]))
+      stop('\'n\' should be 1 or equal to nlevels(byvar)')
+    res1 <- matrix(res1)
+    mat <- round(res1 / matrix(rep(n, each = nr)) * 100)
+    res1 <- matrix(sprintf('%s (%s%%)', res1, mat),
+                   nrow = nr, ncol = length(n))
+    if (!missing(zeros))
+      res1 <- gsub('0 \\(0%\\)', zeros, res1)
+  }
+  zzz <- cbind(Total = res[, 1], res1)
+  
+  if (order) {
+    zzz[, 1] <- as.numeric(zzz[, 1])
+    zzz <- zzz[order(zzz[, 1], decreasing = TRUE), ]
+  }
+  return(`colnames<-`(zzz, colnames(res)))
 }
