@@ -10,7 +10,9 @@ tox_worst(dat, id = "casenum", tox_desc = "tox_desc",
 \arguments{
 \item{dat}{toxicity data frame}
 
-\item{tox_desc}{column name with toxicity descriptions (or tox codes)}
+\item{id}{column name with identifier}
+
+\item{tox_desc}{column name with toxicity descriptions (or codes)}
 
 \item{tox_grade}{column name with toxiticity grades; should be a factor
 with the desired order to be properly sorted}

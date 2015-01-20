@@ -1,6 +1,7 @@
 ### plot functions
-# ggmultiplot, click_text, click_shape, facet_adjust, facet_adjust.print, 
-# ggcaterpillar, ggheat, dodge, jmplot, tplot, dsplot, bpCI, inset
+# ggmultiplot, click_text, click_shape, facet_adjust, print.facet_adjust, 
+# ggcaterpillar, ggheat, dodge, jmplot, tplot, dsplot, bpCI, inset, 
+# show_colors, show_pch, tcol, grcols, ggcols
 ###
 
 
@@ -1537,4 +1538,169 @@ inset <- function(x, y = NULL, pct = .25, ...) {
     par(fig = c(xx, yy), new = TRUE, mar = c(0,0,0,0), ...)
   else par(fig = c(xx, yy), new = TRUE, ...)
   invisible(c(xx, yy))
+}
+
+#' Show colors
+#' 
+#' In \code{R}, there are 657 named colors. This function shows these colors 
+#' and their respective numbers. Find a color by number in the plot or find the
+#' name of the color with \code{colors()[n]}
+#' 
+#' @seealso \code{\link{show_pch}}
+#' 
+#' @examples
+#' show_colors()
+#' colors()[81]
+#' # [1] "darkgreen"
+#' @export
+
+show_colors <- function() {
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
+  par(mfrow = c(1,1),
+      mai=c(.4,.4,.4,.4),
+      oma=c(.2,0,0,.2))
+  x <- 22
+  y <- 30
+  plot(c(-1, x), c(-1, y), xlab = '', ylab = '', type = 'n', xaxt = 'n', 
+       yaxt = 'n', bty = 'n')
+  sapply(1:x, function(i) {
+    sapply(1:y, function(j) {
+      k <- y * (i - 1) + j
+      co <- colors()[k]
+      rect(i - 1, j - 1, i, j, col = co, border = grey(.5))
+    })
+  })
+  text(rep(-.5, y), (1:y) - .5, 1:y, cex = 1.2 - .016 * y)
+  text((1:x) - .5, rep(-.5, x), y * (0:(x - 1)), cex = 1.2 - .022 * x)
+  title('col = colors()[n]')
+}
+
+#' Show plotting characters
+#' 
+#' In \code{R}, there are 26 numeric plotting characters. This function shows 
+#' these options and their respective numbers. Note that \code{col} specifies
+#' both the border and fill color (if applicable) for \code{0:20}; \code{pch}s
+#' \code{21:25} can be filled with \code{bg}.
+#' 
+#' @seealso \code{\link{show_colors}}
+#' 
+#' @examples
+#' show_pch()
+#' @export
+
+show_pch <- function() {
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
+  par(xpd = TRUE,
+      mfrow = c(1, 1),
+      mai = c(.4,.4,.4,.4),
+      oma = c(.2,0,0,.2))
+  x <- rep(1:5, 6)[1:26]
+  y <- c(rep(5:1, each = 5)[1:25], 0)
+  plot(x, y, pch = 0:25, axes = FALSE, bg = 'gray', cex = 2, col = 'red')
+  text(x = x, y = y, labels = 0:25, pos = 4, cex = 1.5, offset = 1)
+  text(x = 4, y = 0, labels = 'plotting characters 0:25', cex = 1.5)
+}
+
+#' Transparent colors
+#' 
+#' Add transparency to colors.
+#' 
+#' @param color single or string of color names (or hexadecimal format) 
+#' @param trans transparency defined as an integer in the range 
+#' \code{[0, 255]} where \code{0} is fully transparent and \code{255} is fully
+#' visible; see details
+#' 
+#' @details This is a vectorized function to add transparency to colors. 
+#' \code{color} and \code{trans} must either be the same length or one of the 
+#' two must have length one. 
+#' 
+#' The function adds integers (in hex) between 0 (fully transparent) and 255
+#' (fully visible) to the color(s) given. \code{color} values are converted to
+#' RGB with transparency.
+#' 
+#' @seealso \code{\link{as.hexmode}}, \code{\link{col2rgb}}, 
+#' \code{\link{adjustcolor}}
+#' 
+#' @examples
+#' cols <- c('red','green','blue')
+#' 
+#' # a normal plot
+#' plot(rnorm(100), col = tcol(cols), pch = 16, cex = 4)
+#' 
+#' # more transparent
+#' plot(rnorm(100), col = tcol(cols, 100), pch = 16, cex = 4)
+#' 
+#' # hexadecimal colors also work
+#' cols <- c('#FF0000','#00FF00','#0000FF')
+#' plot(rnorm(100), col = tcol(cols, c(50, 100, 255)), pch= 16, cex = 4)
+#' 
+#' @export
+
+tcol <- function(color, trans = 255) {
+  
+  if (length(color) != length(trans) & 
+        !any(c(length(color), length(trans)) == 1)) 
+    stop('Vector lengths not correct')
+  if (length(color) == 1 & length(trans) > 1) 
+    color <- rep(color, length(trans))
+  if (length(trans) == 1 & length(color) > 1) 
+    trans <- rep(trans, length(color))
+  
+  res <- paste0('#', apply(apply(rbind(col2rgb(color)), 2, function(x) 
+    format(as.hexmode(x), 2)), 2, paste, collapse = ''))
+  res <- unlist(unname(Map(paste0, res, as.character(as.hexmode(trans)))))
+  res[is.na(color)] <- NA
+  return(res)
+}
+
+#' ggplot colors
+#' 
+#' A function to replicate default \code{\link[ggplot2]{ggplot}} colors
+#' 
+#' @param n number of colors
+#' @param c the chroma of the color; the upper bound for chroma depends on hue
+#' and luminance
+#' @param l a value in the range \code{[0, 100]} giving the luminance of the 
+#' color; for a given combination of hue and chroma, only a subset of this 
+#' range is possible
+#' @seealso \code{\link{hcl}}
+#' 
+#' @examples
+#' plot(rnorm(1000), col = ggcols(1000), pch = 19)
+#' 
+#' @export
+
+ggcols <- function(n, l = 65, c = 100) {
+  hues <- seq(15, 375, length = n + 1)
+  hcl(h = hues, l = l, c = c)[1:n]
+}
+
+#' Choose n colors using the golden ratio
+#'
+#' This chooses \code{n} colour hues using a sequence generated by the Golden
+#' Ratio.
+#'
+#' @param n number of colors
+#' @param s,v numeric vectors of values in the range \code{[0, 1]} for 
+#' "saturation" and "value," respectively, to be combined to form a vector of
+#' colors; values in shorter arguments are recycled
+#' @param alpha  numeric vector of values in the range \code{[0, 1]} for alpha 
+#' transparency channel (0 is transparent and 1 is opaque)
+#' @seealso \code{\link{hsv}}
+#' 
+#' @examples
+#' plot(1:5, 1:5, col = grcols(5), pch = 20, cex = 3)
+#' 
+#' plot(c(1, 6), c(0, 1), type = 'n', axes = FALSE, 
+#'      bty = 'n', xlab = '', ylab = '')
+#' rect(1:5, 0, 2:6, 1, col = grcols(5), border = NA)
+#' 
+#' @export
+
+grcols <- function(n, s = .5, v = 1, alpha = 1) {
+  GR <- 2 / (1 + sqrt(5))
+  hues <- (seq(0, n - 1) * GR) %% 1
+  hsv(hues, s = s, v = v, alpha = alpha)
 }
