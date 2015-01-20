@@ -1,3 +1,13 @@
+rawr 0.5.2
+--------
+  * reorganized
+  * added tox_worst and countr
+
+rawr 0.5.1
+--------
+  * changed defaults of kmplot, ggsurv
+  * fixed match_ctc matching and handling duplicates
+
 rawr 0.5.0
 --------
   * added imports
