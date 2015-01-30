@@ -1,6 +1,6 @@
 ### formatting and miscellaneous utilities
 # html_test, roundr, intr, pvalr, clist, binconr, num2char, iprint, match_ctc,
-# writeftable, surv_summary, surv_table, tabler, tabler_by
+# writeftable, surv_summary, surv_table, tabler, tabler_by, countr, tox_worst
 ###
 
 
@@ -59,7 +59,6 @@ roundr <- function(x, digits = 1) UseMethod('roundr')
 
 #' @rdname roundr
 #' @export
-
 roundr.default <- function(x, digits = 1) {
   mode.ok <- vapply(x, function(x) is.numeric(x) || is.complex(x), NA)
   if (!all(mode.ok))
@@ -72,7 +71,6 @@ roundr.default <- function(x, digits = 1) {
 
 #' @rdname roundr
 #' @export
-
 roundr.data.frame <- function(x, digits = 1) {
   mode.ok <- vapply(x, function(x) is.numeric(x) || is.complex(x), NA)
   if (!all(mode.ok))
@@ -83,7 +81,6 @@ roundr.data.frame <- function(x, digits = 1) {
 
 #' @rdname roundr
 #' @export
-
 roundr.matrix <- function(x, digits = 1) {
   mode.ok <- vapply(x, function(x) is.numeric(x) || is.complex(x), NA)
   if (!all(mode.ok))
@@ -672,12 +669,10 @@ tabler <- function(x, ...) UseMethod('tabler')
 
 #' @rdname tabler
 #' @export
-
 tabler.default <- function(x, ...) summary(x, ...)
 
 #' @rdname tabler
 #' @export
-
 tabler.lm <- function(x, digits = 3, ...) {
   res <- round(summary(x, ...)$coefficients, digits = digits)
   return(res)
@@ -685,22 +680,22 @@ tabler.lm <- function(x, digits = 3, ...) {
 
 #' @rdname tabler
 #' @export
-
 tabler.glm <- function(x, digits = 3, level = 0.95, type = '', ...) {
   res <- summary(x, ...)$coefficients
   if (tolower(type) == 'or') {
     res <- round(cbind(exp(cbind(coef(x), confint(x, level = level))),
-                       res[, 4]), digits)
+                       res[, 4]), digits = digits)
+    res <- cbind(res, sprintf('%s (%s, %s)', res[, 1], res[, 2], res[, 3]))
+    ci <- sprintf('%s%% CI', level * 100)
     res <- setNames(as.data.frame(res), 
-                    c('Odds Ratio', sprintf('L%s%% CI', level * 100), 
-                      sprintf('U%s%% CI', level * 100), 'Pr(>|z)'))
-  }
+                    c('Odds Ratio', paste0('L ', ci),
+                      paste0('U ', ci), 'Pr(>|z)', sprintf('OR (%s)', ci)))
+  } else res <- round(res, digits = digits)
   return(res)
 }
 
 #' @rdname tabler
 #' @export
-
 tabler.survfit <- function(x, ...) {
   surv_table(x, ...)
 }
@@ -818,6 +813,8 @@ tabler_by <- function(dat, varname, byvar, n, order = FALSE, zeros) {
 #' 
 #' @param top named vector of counts
 #' @param n total number of observations
+#' @param lowcase logical; names will be lowercase if \code{TRUE}, upper
+#' case if \code{FALSE}, and unchanged otherwise (do not use \code{\link{NA}})
 #' 
 #' @examples
 #' top <- setNames(3:1, c('gold','silver','bronze'))
@@ -826,7 +823,10 @@ tabler_by <- function(dat, varname, byvar, n, order = FALSE, zeros) {
 #' @export
 
 countr <- function(top, n)
-  iprint(sprintf('%s (n = %s, %s%%)', tolower(names(top)),
+  iprint(sprintf('%s (n = %s, %s%%)', 
+                 if (is.logical(lowcase))
+                   if (lowcase) tolower(names(top)) else toupper(names(top))
+                 else names(top),
                  top, round(as.numeric(top) / n * 100)))
 
 #' Find most severe toxicities

@@ -10,6 +10,9 @@ countr(top, n)
 \item{top}{named vector of counts}
 
 \item{n}{total number of observations}
+
+\item{lowcase}{logical; names will be lowercase if \code{TRUE}, upper
+case if \code{FALSE}, and unchanged otherwise (do not use \code{\link{NA}})}
 }
 \description{
 Formats and prints a \emph{named} vector of counts with percentages.
