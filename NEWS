@@ -1,3 +1,8 @@
+rawr 0.5.3
+--------
+  * reorganized operators
+  * fixed some docs for R CMD check
+
 rawr 0.5.2
 --------
   * reorganized
