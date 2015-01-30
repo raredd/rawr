@@ -1,10 +1,136 @@
 ### utilities
-# lsp, %ni%, ht, oror, progress, recoder, psum, ident, search_df, search_hist, 
-# fapply, lss, rescaler, %inside%, try_require, list2file, Restart, clc, clear,
+# rawrops: %ni%, %=%, %||%, %inside%
+# misc: lss, lsp, ht, progress, recoder, psum, ident, search_df, search_hist, 
+# fapply, rescaler, try_require, list2file, Restart, clc, clear,
 # helpExtract, Round, bind_all, interleave, outer2, merge2, locf, roll_fun,
 # round2, updateR
 ###
 
+#' rawr operators
+#' 
+#' Some useful binary operators.
+#' 
+#' \code{\%ni\%} is the negation of \code{\link[base]{\%in\%}}.
+#' 
+#' \code{\%inside\%} returns a logical vector indicating if \code{x} is inside
+#' the \code{interval}.
+#' 
+#'
+#' \code{\%=\%} is an operator combining the qualities of \code{\link{==}} and
+#' \code{\link{\%in\%}} to compare vectors in a pairwise manner which may
+#' include \code{\link{NA}}s.
+#' 
+#' \code{\%||\%} is useful for a function, \code{f}, that may return a value
+#' or \code{NULL}, but if \code{NULL} is the result of \code{f}, it is
+#' desirable to return some other default value without errors.
+#' 
+#' @param a,b raw, logical, "number-like" vectors or objects
+#' @param x vector or \code{NULL}; the values to be matched
+#' @param table vector or \code{NULL}; the values to be matched against
+#' @param interval numeric vector of length two representing the interval
+#' 
+#' @aliases oror %||% notin %ni% inside %inside% %=%
+#' @seealso \code{\link{==}}, \code{\link{\%in\%}}, \code{\link{||}}
+#' @name rawrops
+#' 
+#' @examples
+#' \dontrun{
+#' 1:5 %ni% 3:5
+#' 
+#' -5:5 %inside% c(0,5)
+#' 
+#' a <- c(1, NA, 2)
+#' b <- c(2, NA, 1)
+#' ## not desired
+#' a == b     # FALSE NA   FALSE
+#' a %in% b   # TRUE  TRUE TRUE
+#' ## desired results
+#' a %=% b    # FALSE TRUE FALSE
+#' 
+#' f <- function(x0 = TRUE) NULL || x0
+#' f() # error
+#' f <- function(x0 = TRUE) NULL %||% x0
+#' f() # TRUE
+#' }
+#' 
+#' @export
+
+#' @rdname rawrops
+#' @export
+`%ni%` <- function(x, table) !(match(x, table, nomatch = 0) > 0)
+
+#' @rdname rawrops
+#' @export
+`%inside%` <- function(x, interval) x >= interval[1] & x <= interval[2]
+
+#' @rdname rawrops
+#' @export
+`%=%` <- function(a, b)
+  (is.na(a) & is.na(b)) | (!is.na(a) & !is.na(b) & a == b)
+
+#' @rdname rawrops
+#' @export
+`%||%` <- function(a, b) if (!is.null(a)) a else b
+
+#' Improved list of objects
+#' 
+#' Provides more details of objects in workspace.
+#' 
+#' @param pos argument specifying the environment as a position in search list
+#' @param pattern optional \code{\link{regex}}; only names matching 
+#' \code{pattern} are returned; \code{\link{glob2rx}} can be used to convert
+#' wildcard patterns to regular expressions
+#' @param by variable to order output ('type', 'size' (default), 'sizef', 
+#' 'nrow', or 'ncol')
+#' @param decreasing logical; if \code{TRUE}, displays output in decreasing 
+#' order
+#' @param all.names logical; if \code{TRUE}, all object names are returned; if
+#' \code{FALSE}, names which begin with a \code{.} are omitted
+#' @param head logical; if \code{TRUE}, only shows first \code{n} objects of 
+#' output
+#' @param n number of objects to displace if \code{head} is \code{TRUE}
+#' 
+#' @seealso \code{\link{ls}}, \code{\link{ls.str}}, \code{\link{objects}}
+#' 
+#' @examples
+#' lss()
+#' \dontrun{
+#' a <- rnorm(100000)
+#' b <- matrix(1, 1000, 100)
+#' lss()
+#' }
+#' 
+#' @export
+
+lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
+                 decreasing = TRUE, head = TRUE, n = 15) {
+  
+  if (length(ls(envir = as.environment(pos))) < 1L)
+    stop(return(character(0)))
+  
+  napply <- function(names, fn) 
+    sapply(names, function(x) fn(get(x, pos = pos)))
+  
+  names <- ls(pos = pos, pattern = pattern, all.names = all.names)
+  obj.class <- napply(names, function(x) as.character(class(x))[1])
+  obj.mode <- napply(names, mode)
+  obj.type <- ifelse(is.na(obj.class), obj.mode, obj.class)
+  obj.prettysize <- napply(names, function(x)
+    capture.output(print(object.size(x), units = 'auto')))
+  obj.size <- napply(names, object.size)
+  obj.dim <- t(napply(names, function(x)
+    as.numeric(dim(x))[1:2]))
+  vec <- is.na(obj.dim)[ , 1] & (obj.type != 'function')
+  obj.dim[vec, 1] <- napply(names, length)[vec]
+  
+  out <- setNames(data.frame(obj.type, obj.size, obj.prettysize, obj.dim),
+                  c('type', 'size', 'sizef', 'nrow', 'ncol'))
+  if (!is.null(by))
+    out <- out[order(out[[by]], decreasing = decreasing), ]
+  if (head)
+    out <- head(out, n)
+  out
+}
 
 #' List package
 #' 
@@ -97,20 +223,6 @@ lsp <- function(package, what, pattern) {
   }
 }
 
-#' not in
-#' 
-#' Negation of \code{\link[base]{\%in\%}}
-#' @name notin
-#' @usage x \%ni\% table
-#' @param x vector or \code{NULL}; the values to be matched
-#' @param table vector or \code{NULL}; the values to be matched against
-#' @aliases %ni%
-#' @examples
-#' 1:5 %ni% 3:5
-#' @export
-
-`%ni%` <- function(x, table) !(match(x, table, nomatch = 0) > 0)
-
 #' head/tail
 #' 
 #' @param x an object
@@ -120,21 +232,6 @@ lsp <- function(package, what, pattern) {
 #' @export
 
 ht <- function(x, ..., sep = NULL) rbind(head(x, ...), sep, tail(x, ...))
-
-#' oror
-#' 
-#' \code{function_that_may_return_null()} \code{oror} default value
-#' @name oror
-#' @param e1,e2 raw or logical or "number-like" vectors or objects
-#' @aliases %||%
-#' @examples
-#' \dontrun{
-#' NULL || TRUE    # error
-#' NULL %||% TRUE  # no error
-#' }
-#' @export
-
-`%||%` <- function(e1, e2) if (!is.null(e1)) e1 else e2
 
 #' Progress function
 #' 
@@ -552,66 +649,6 @@ fapply <- function(X, FUN, ...) {
   setNames(as.data.frame(out), fn)
 }
 
-#' Improved list of objects
-#' 
-#' Provides more details of objects in workspace.
-#' 
-#' @param pos argument specifying the environment as a position in search list
-#' @param pattern optional \code{\link{regex}}; only names matching 
-#' \code{pattern} are returned; \code{\link{glob2rx}} can be used to convert
-#' wildcard patterns to regular expressions
-#' @param by variable to order output ('type', 'size' (default), 'sizef', 
-#' 'nrow', or 'ncol')
-#' @param decreasing logical; if \code{TRUE}, displays output in decreasing 
-#' order
-#' @param all.names logical; if \code{TRUE}, all object names are returned; if
-#' \code{FALSE}, names which begin with a \code{.} are omitted
-#' @param head logical; if \code{TRUE}, only shows first \code{n} objects of 
-#' output
-#' @param n number of objects to displace if \code{head} is \code{TRUE}
-#' 
-#' @seealso \code{\link{ls}}, \code{\link{ls.str}}, \code{\link{objects}}
-#' 
-#' @examples
-#' lss()
-#' \dontrun{
-#' a <- rnorm(100000)
-#' b <- matrix(1, 1000, 100)
-#' lss()
-#' }
-#' 
-#' @export
-
-lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
-                 decreasing = TRUE, head = TRUE, n = 15) {
-  
-  if (length(ls(envir = as.environment(pos))) < 1L)
-    stop(return(character(0)))
-  
-  napply <- function(names, fn) 
-    sapply(names, function(x) fn(get(x, pos = pos)))
-  
-  names <- ls(pos = pos, pattern = pattern, all.names = all.names)
-  obj.class <- napply(names, function(x) as.character(class(x))[1])
-  obj.mode <- napply(names, mode)
-  obj.type <- ifelse(is.na(obj.class), obj.mode, obj.class)
-  obj.prettysize <- napply(names, function(x)
-    capture.output(print(object.size(x), units = 'auto')))
-  obj.size <- napply(names, object.size)
-  obj.dim <- t(napply(names, function(x)
-    as.numeric(dim(x))[1:2]))
-  vec <- is.na(obj.dim)[ , 1] & (obj.type != 'function')
-  obj.dim[vec, 1] <- napply(names, length)[vec]
-  
-  out <- setNames(data.frame(obj.type, obj.size, obj.prettysize, obj.dim),
-                  c('type', 'size', 'sizef', 'nrow', 'ncol'))
-  if (!is.null(by))
-    out <- out[order(out[[by]], decreasing = decreasing), ]
-  if (head)
-    out <- head(out, n)
-  out
-}
-
 #' Rescale numeric vector
 #' 
 #' Rescale a numeric vector to have specified maximum and minimum; shamelessly
@@ -653,20 +690,6 @@ rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
     return(rep(mean(to), length(x)))
   (x - from[1]) / diff(from) * diff(to) + to[1]
 }
-
-#' Inside
-#' 
-#' Return logical vector indicating if \code{x} is inside the \code{interval}
-#' @name inside
-#' @usage x \%inside\% interval
-#' @param x numeric
-#' @param interval numeric interval
-#' @aliases %inside%
-#' @examples
-#' -5:5 %inside% c(0,5)
-#' @export
-
-`%inside%` <- function(x, interval) x >= interval[1] & x <= interval[2]
 
 #' Quietly try to require a package
 #' 
