@@ -822,7 +822,7 @@ tabler_by <- function(dat, varname, byvar, n, order = FALSE, zeros) {
 #' 
 #' @export
 
-countr <- function(top, n)
+countr <- function(top, n, lowcase = TRUE)
   iprint(sprintf('%s (n = %s, %s%%)', 
                  if (is.logical(lowcase))
                    if (lowcase) tolower(names(top)) else toupper(names(top))

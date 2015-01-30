@@ -4,7 +4,7 @@
 \alias{countr}
 \title{Count formatter}
 \usage{
-countr(top, n)
+countr(top, n, lowcase = TRUE)
 }
 \arguments{
 \item{top}{named vector of counts}
