@@ -24,10 +24,16 @@
 #' or \code{NULL}, but if \code{NULL} is the result of \code{f}, it is
 #' desirable to return some other default value without errors.
 #' 
+#' \code{\%:\%} is useful for obtaining a range of \code{colnames} or 
+#' \code{names} by literal character strings rather than by index.
+#' 
 #' @param a,b raw, logical, "number-like" vectors or objects
 #' @param x vector or \code{NULL}; the values to be matched
 #' @param table vector or \code{NULL}; the values to be matched against
 #' @param interval numeric vector of length two representing the interval
+#' @param object a \emph{named} vector or list, a matrix or data frame
+#' @param range a numeric or character vector of length two with the indices
+#' or names from \code{object}, generally of the structure \code{c(from, to)}
 #' 
 #' @aliases oror %||% notin %ni% inside %inside% %=%
 #' @seealso \code{\link{==}}, \code{\link{\%in\%}}, \code{\link{||}}
@@ -51,6 +57,9 @@
 #' f() # error
 #' f <- function(x0 = TRUE) NULL %||% x0
 #' f() # TRUE
+#' 
+#' mtcars %:% c('hp','vs')
+#' mtcars %:% c(4, 8)
 #' }
 #' 
 #' @export
@@ -71,6 +80,14 @@
 #' @rdname rawrops
 #' @export
 `%||%` <- function(a, b) if (!is.null(a)) a else b
+
+#' @rdname rawrops
+#' @export
+`%:%` <- function(object, range) {
+  FUN <- if (is.matrix(object)) colnames else names
+  wh <- if (is.numeric(range)) range else which(FUN(object) %in% range)
+  FUN(object)[seq(wh[1], wh[2])]
+}
 
 #' Improved list of objects
 #' 
