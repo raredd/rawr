@@ -117,7 +117,7 @@ roundr.matrix <- function(x, digits = 1) {
 #' 
 #' @export
 
-intr <- function(..., fun = median, conf = NULL, digits = 2, na.rm = FALSE) {
+intr <- function(..., fun = median, conf = NULL, digits = 0, na.rm = FALSE) {
   
   lst <- list(...)
   if (is.null(conf) || conf == 0 || 
@@ -129,10 +129,10 @@ intr <- function(..., fun = median, conf = NULL, digits = 2, na.rm = FALSE) {
     bounds <- roundr(bounds, digits = digits)
     val <- roundr(fun(x, na.rm = na.rm), digits = digits)
     
-    if (! conf %in% c(0, 1))
+    if (!conf %in% c(0, 1))
       sprintf('%s (%s%% CI: %s - %s)', val, conf * 100, bounds[1], bounds[2])
     else
-      sprintf('%s (%s - %s)', val, bounds[1], bounds[2])
+      sprintf('%s (range: %s - %s)', val, bounds[1], bounds[2])
   })
 }
 
@@ -221,7 +221,7 @@ clist <- function(l)
 #' 
 #' @export
 
-binconr <- function(r, n, conf = 0.95, digits = 2, 
+binconr <- function(r, n, conf = 0.95, digits = 0,
                     est = TRUE, method = 'exact') {
   res <- roundr(bincon(r, n, alpha = 1 - conf, method = method) * 100, 
                 digits = digits)
@@ -497,7 +497,7 @@ writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
 #' 
 #' @export
 
-surv_summary <- function(s, digits = max(options()$digits - 4, 3), ...) {
+surv_summary <- function(s, digits = max(getOption('digits') - 4, 3), ...) {
   
   ## error checks
   if (!inherits(s, 'survfit')) 

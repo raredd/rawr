@@ -4,7 +4,7 @@
 \alias{intr}
 \title{Confidence interval formatter}
 \usage{
-intr(..., fun = median, conf = NULL, digits = 2, na.rm = FALSE)
+intr(..., fun = median, conf = NULL, digits = 0, na.rm = FALSE)
 }
 \arguments{
 \item{...}{numeric vector or string of numeric vectors}

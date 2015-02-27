@@ -5,7 +5,7 @@
 \title{Improved list of objects}
 \usage{
 lss(pos = 1, pattern, by = NULL, all.names = FALSE, decreasing = TRUE,
-  head = TRUE, n = 15)
+  n = 15)
 }
 \arguments{
 \item{pos}{argument specifying the environment as a position in search list}
@@ -23,10 +23,10 @@ wildcard patterns to regular expressions}
 \item{decreasing}{logical; if \code{TRUE}, displays output in decreasing
 order}
 
+\item{n}{number of objects to displace if \code{head} is \code{TRUE}}
+
 \item{head}{logical; if \code{TRUE}, only shows first \code{n} objects of
 output}
-
-\item{n}{number of objects to displace if \code{head} is \code{TRUE}}
 }
 \description{
 Provides more details of objects in workspace.

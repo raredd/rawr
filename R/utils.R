@@ -120,14 +120,13 @@
 #' @export
 
 lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
-                 decreasing = TRUE, head = TRUE, n = 15) {
+                 decreasing = TRUE, n = 15) {
   
   if (length(ls(envir = as.environment(pos))) < 1L)
     stop(return(character(0)))
   
   napply <- function(names, fn) 
     sapply(names, function(x) fn(get(x, pos = pos)))
-  
   names <- ls(pos = pos, pattern = pattern, all.names = all.names)
   obj.class <- napply(names, function(x) as.character(class(x))[1])
   obj.mode <- napply(names, mode)
@@ -144,9 +143,7 @@ lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
                   c('type', 'size', 'sizef', 'nrow', 'ncol'))
   if (!is.null(by))
     out <- out[order(out[[by]], decreasing = decreasing), ]
-  if (head)
-    out <- head(out, n)
-  out
+  head(out, n)
 }
 
 #' List package

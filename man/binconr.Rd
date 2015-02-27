@@ -4,7 +4,7 @@
 \alias{binconr}
 \title{binconr}
 \usage{
-binconr(r, n, conf = 0.95, digits = 2, est = TRUE, method = "exact")
+binconr(r, n, conf = 0.95, digits = 0, est = TRUE, method = "exact")
 }
 \arguments{
 \item{r}{number of responses (successes)}
