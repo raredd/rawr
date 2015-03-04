@@ -24,9 +24,6 @@ wildcard patterns to regular expressions}
 order}
 
 \item{n}{number of objects to displace if \code{head} is \code{TRUE}}
-
-\item{head}{logical; if \code{TRUE}, only shows first \code{n} objects of
-output}
 }
 \description{
 Provides more details of objects in workspace.
