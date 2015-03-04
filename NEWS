@@ -1,6 +1,7 @@
 rawr 0.5.3
 --------
   * reorganized operators
+  * added read.clip and fcols
   * fixed some docs for R CMD check
 
 rawr 0.5.2

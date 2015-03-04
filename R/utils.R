@@ -3,7 +3,7 @@
 # misc: lss, lsp, ht, progress, recoder, psum, ident, search_df, search_hist, 
 # fapply, rescaler, try_require, list2file, Restart, clc, clear,
 # helpExtract, Round, bind_all, interleave, outer2, merge2, locf, roll_fun,
-# round2, updateR
+# round2, updateR, read.clip, fcols
 ###
 
 #' rawr operators
@@ -103,8 +103,6 @@
 #' order
 #' @param all.names logical; if \code{TRUE}, all object names are returned; if
 #' \code{FALSE}, names which begin with a \code{.} are omitted
-#' @param head logical; if \code{TRUE}, only shows first \code{n} objects of 
-#' output
 #' @param n number of objects to displace if \code{head} is \code{TRUE}
 #' 
 #' @seealso \code{\link{ls}}, \code{\link{ls.str}}, \code{\link{objects}}
@@ -1243,4 +1241,65 @@ updateR <- function(update = TRUE) {
       update.packages(ask = FALSE)
     } else cat("All packages are up-to-date\n")
   }
+}
+
+#' Read data from clipboard
+#' 
+#' Reads data (comma-, tab-, or fixed-width separated) data from clipboard and
+#' returns as a data frame.
+#' 
+#' @param header logical; indicates if variable names are in first line
+#' @param ... additional arguments passed to \code{\link{read.table}}
+#' 
+#' @seealso \code{\link[psych]{read.clipboard}}, \code{\link{read.table}},
+#' \code{\link{read.fwf}}
+#' 
+#' @export
+
+read.clip <- function(header = TRUE, ...) {
+  if (Sys.info()['sysname'] %ni% 'Darwin')
+    read.table(file = 'clipboard', header = header, ...)
+  else read.table(file = pipe('pbpaste'), header = header, ...)
+}
+
+#' @rdname read.clip
+#' @param sep separator as a character string
+#' @export
+read.clip.csv <- function(header = TRUE, sep = ',', ...)
+  read.clip(header = header, sep = sep, ...)
+
+#' @rdname read.clip
+#' @export
+read.clip.tab <- function(header = TRUE, sep = '\t', ...)
+  read.clip(header = header, sep = sep, ...)
+
+#' @rdname read.clip
+#' @param widths a vector of widths of the fixed-width fields or a list of
+#' vectors giving the widths for multiple lines
+#' @export
+read.clip.fwf <- function(header = TRUE, widths, ...) {
+  if (Sys.info()['sysname'] %ni% 'Darwin')
+    read.fwf(file = 'clipboard', header = header, widths = widths, ...)
+  else read.fwf(file = pipe('pbpaste'), header = header, widths = widths, ...)
+}
+
+#' Find columns by pattern
+#' 
+#' Quickly selects and returns columns from a matrix or data frame by
+#' \code{\link{grep}}'ing for a desired \code{pattern}.
+#' 
+#' @param x a matrix or data frame
+#' @param pattern pattern to match
+#' @param keep optional vector of names of other columns to keep
+#' @param ... additional parameters passed to \code{\link{grep}}
+#' 
+#' @examples
+#' fcols(iris, 'Petal')
+#' fcols(iris, '\\.')
+#' 
+#' @export
+
+fcols <- function(x, pattern, keep, ...) {
+  keep <- if (missing(keep)) NULL else which(colnames(x) %in% keep)
+  x[, c(keep, grep(pattern, colnames(x), ...)), drop = FALSE]
 }
