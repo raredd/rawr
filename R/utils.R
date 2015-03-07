@@ -1,5 +1,5 @@
 ### utilities
-# rawrops: %ni%, %=%, %||%, %inside%
+# rawrops: %ni%, %==%, %||%, %inside%, %:%
 # misc: lss, lsp, ht, progress, recoder, psum, ident, search_df, search_hist, 
 # fapply, rescaler, try_require, list2file, Restart, clc, clear,
 # helpExtract, Round, bind_all, interleave, outer2, merge2, locf, roll_fun,
@@ -35,7 +35,7 @@
 #' @param range a numeric or character vector of length two with the indices
 #' or names from \code{object}, generally of the structure \code{c(from, to)}
 #' 
-#' @aliases oror %||% notin %ni% inside %inside% %=%
+#' @aliases oror %||% notin %ni% inside %inside% %==%
 #' @seealso \code{\link{==}}, \code{\link{\%in\%}}, \code{\link{||}}
 #' @name rawrops
 #' 
@@ -51,7 +51,7 @@
 #' a == b     # FALSE NA   FALSE
 #' a %in% b   # TRUE  TRUE TRUE
 #' ## desired results
-#' a %=% b    # FALSE TRUE FALSE
+#' a %==% b    # FALSE TRUE FALSE
 #' 
 #' f <- function(x0 = TRUE) NULL || x0
 #' f() # error
@@ -74,7 +74,7 @@
 
 #' @rdname rawrops
 #' @export
-`%=%` <- function(a, b)
+`%==%` <- function(a, b)
   (is.na(a) & is.na(b)) | (!is.na(a) & !is.na(b) & a == b)
 
 #' @rdname rawrops

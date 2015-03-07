@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{rawrops}
 \alias{\%:\%}
-\alias{\%=\%}
+\alias{\%==\%}
 \alias{\%inside\%}
 \alias{\%ni\%}
 \alias{\%||\%}
@@ -16,7 +16,7 @@ x \%ni\% table
 
 x \%inside\% interval
 
-a \%=\% b
+a \%==\% b
 
 a \%||\% b
 
@@ -68,7 +68,7 @@ b <- c(2, NA, 1)
 a == b     # FALSE NA   FALSE
 a \%in\% b   # TRUE  TRUE TRUE
 ## desired results
-a \%=\% b    # FALSE TRUE FALSE
+a \%==\% b    # FALSE TRUE FALSE
 
 f <- function(x0 = TRUE) NULL || x0
 f() # error
