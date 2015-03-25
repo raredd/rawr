@@ -3,7 +3,7 @@
 # misc: lss, lsp, ht, progress, recoder, psum, ident, search_df, search_hist, 
 # fapply, rescaler, try_require, list2file, Restart, clc, clear,
 # helpExtract, Round, bind_all, interleave, outer2, merge2, locf, roll_fun,
-# round2, updateR, read.clip, fcols
+# round2, updateR, read_clip, fcols
 ###
 
 #' rawr operators
@@ -1256,28 +1256,28 @@ updateR <- function(update = TRUE) {
 #' 
 #' @export
 
-read.clip <- function(header = TRUE, ...) {
+read_clip <- function(header = TRUE, ...) {
   if (Sys.info()['sysname'] %ni% 'Darwin')
     read.table(file = 'clipboard', header = header, ...)
   else read.table(file = pipe('pbpaste'), header = header, ...)
 }
 
-#' @rdname read.clip
+#' @rdname read_clip
 #' @param sep separator as a character string
 #' @export
-read.clip.csv <- function(header = TRUE, sep = ',', ...)
-  read.clip(header = header, sep = sep, ...)
+read_clip.csv <- function(header = TRUE, sep = ',', ...)
+  read_clip(header = header, sep = sep, ...)
 
-#' @rdname read.clip
+#' @rdname read_clip
 #' @export
-read.clip.tab <- function(header = TRUE, sep = '\t', ...)
-  read.clip(header = header, sep = sep, ...)
+read_clip.tab <- function(header = TRUE, sep = '\t', ...)
+  read_clip(header = header, sep = sep, ...)
 
-#' @rdname read.clip
+#' @rdname read_clip
 #' @param widths a vector of widths of the fixed-width fields or a list of
 #' vectors giving the widths for multiple lines
 #' @export
-read.clip.fwf <- function(header = TRUE, widths, ...) {
+read_clip.fwf <- function(header = TRUE, widths, ...) {
   if (Sys.info()['sysname'] %ni% 'Darwin')
     read.fwf(file = 'clipboard', header = header, widths = widths, ...)
   else read.fwf(file = pipe('pbpaste'), header = header, widths = widths, ...)
