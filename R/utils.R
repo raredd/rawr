@@ -3,7 +3,7 @@
 # misc: lss, lsp, ht, progress, recoder, psum, ident, search_df, search_hist, 
 # fapply, rescaler, try_require, list2file, Restart, clc, clear,
 # helpExtract, Round, bind_all, interleave, outer2, merge2, locf, roll_fun,
-# round2, updateR, read_clip, fcols
+# round2, updateR, read_clip, fcols, classMethods, regcaptures
 ###
 
 #' rawr operators
@@ -70,7 +70,10 @@
 
 #' @rdname rawrops
 #' @export
-`%inside%` <- function(x, interval) x >= interval[1] & x <= interval[2]
+`%inside%` <- function(x, interval) {
+  interval <- sort(interval)
+  x >= interval[1] & x <= interval[2]
+}
 
 #' @rdname rawrops
 #' @export
@@ -1302,4 +1305,111 @@ read_clip.fwf <- function(header = TRUE, widths, ...) {
 fcols <- function(x, pattern, keep, ...) {
   keep <- if (missing(keep)) NULL else which(colnames(x) %in% keep)
   x[, c(keep, grep(pattern, colnames(x), ...)), drop = FALSE]
+}
+
+#' Show class methods
+#' 
+#' Lists available methods for a given class.
+#' 
+#' @param class an object or classes as character strings
+#' 
+#' @seealso \code{\link{methods}}, \code{\link{S3Methods}}, \code{\link{class}}
+#' @references \url{https://gist.github.com/MrFlick/55ed854eb935e5c21f71}
+#' 
+#' @examples
+#' fit <- glm(vs ~ mpg, data = mtcars)
+#' classMethods(fit)
+#' classMethods(c('glm','lm'))
+#' 
+#' @export
+
+classMethods <- function(class) {
+  if (!is.character(class)) 
+    class <- class(class)
+  cat(sprintf('class methods for %s:\n\n', paste0(class, collapse = ', ')))
+  
+  ml <- lapply(class, function(x) {
+    sname <- gsub('([.[])', '\\\\\\1', paste0('.', x, '$'))
+    m <- methods(class = x)
+    if (length(m)) {
+      data.frame(m = as.vector(m), c = x, n = sub(sname, '', as.vector(m)),
+                 attr(m, 'info'), stringsAsFactors = FALSE)
+    } else {
+      NULL
+    }
+  })
+  df <- do.call('rbind', ml)
+  df <- df[!duplicated(df$n), ]
+  structure(df$m, info = data.frame(visible = df$visible, from = df$from),
+            class = 'MethodsFunction')
+}
+
+#' Extract captured substrings
+#' 
+#' Extract the captured substrings from match data obtained by 
+#' \code{\link{regexpr}}, \code{\link{gregexpr}}, or \code{\link{regexec}}.
+#' 
+#' @param x a character vector
+#' @param m an object with match data
+#' 
+#' @return
+#' A list with captures for each string in \code{x}.
+#' 
+#' @seealso \code{\link{regmatches}}
+#' @references \url{https://gist.github.com/MrFlick/10413321}
+#' 
+#' @examples
+#' x <- c('larry:35,M', 'alison:22,F', 'dave', 'lily:55,F')
+#' m <- regexpr('(.*):(\\d+),([MF])', x, perl = TRUE)
+#' regcaptures(x, m)
+#' 
+#' x <- 'ACCACCACCAC'
+#' m <- gregexpr('(?=([AC]C))', x, perl = TRUE)
+#' regcaptures(x, m)[[1]]
+#' 
+#' ## compare:
+#' mapply(function(xx) substr(x, xx, xx + 1), m[[1]])
+#' 
+#' @export
+
+regcaptures <- function(x, m) {
+  if (length(x) != length(m))
+    stop('\'x\' and \'m\' must have the same length')
+  msg <- 'No capture data found. Did you use \'perl = TRUE\'?'
+  ili <- is.list(m)
+  useBytes <- if (ili)
+    any(unlist(lapply(m, attr, 'useBytes')))
+  else
+    any(attr(m, 'useBytes'))
+  if (useBytes) {
+    asc <- iconv(x, 'latin1', 'ASCII')
+    ind <- is.na(asc) | (asc != x)
+    if (any(ind))
+      Encoding(x[ind]) <- 'bytes'
+  }
+  if (ili) {
+    if (any(sapply(m, function(x) is.null(attr(x, 'capture.start')))))
+      stop(msg)
+    starts <- lapply(m, function(x) attr(x, 'capture.start'))
+    lengths <- lapply(m, function(x) attr(x, 'capture.length'))
+  } else {
+    if (is.null(attr(m, 'capture.start')))
+      stop(msg)
+    starts <- data.frame(t(attr(m, 'capture.start')))
+    lengths <- data.frame(t(attr(m, 'capture.length')))
+  }
+  
+  Substring <- function(x, starts, lens) {
+    if (all(starts < 0)) {
+      return(character())
+    } else {
+      return(t(mapply(function(x, st, ln)
+        substring(x, st, st + ln - 1), x, data.frame(t(starts)),
+        data.frame(t(lens)), USE.NAMES = FALSE)
+      ))
+    }
+  }
+  
+  Map(function(x, sos, mls) Substring(x, sos, mls), 
+      x, starts, lengths, USE.NAMES = FALSE)
 }

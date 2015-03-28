@@ -1,5 +1,5 @@
 ### statistical functions
-# bincon, bintest, dlt_table, power_cv, simon2, moods_test
+# bincon, bintest, dlt_table, power_cv, simon2, moods_test, fakeglm
 ###
 
 
@@ -690,4 +690,117 @@ moods_test <- function(X, ...) {
   zzz$method <- sprintf('Mood\'s median test of %s groups', length(ng))
   zzz$data <- table(x < m, g, dnn = c('< median', 'group'))
   return(zzz)
+}
+
+#' Fake GLM
+#' 
+#' Creates a "fake" \code{\link{glm}} object using specific coefficients
+#' which can be used with \code{predict.glm} without fitting a model first.
+#' 
+#' Using \code{data} a \code{glm} object will be created with a series of the
+#' desired coefficients passed in \dots in the order that they would appear
+#' in \code{names(coef(glm(...)))}. An unnamed value will be treated as
+#' the intercept and all other coefficients must be named in the order given
+#' in \code{formula}, eg, \code{1, x1 = 1, x2 = 3}, etc.
+#' 
+#' Also note that factor variables must already be factors in \code{data},
+#' that is, it is not possible to use \code{y ~ factor(x)} currently in
+#' \code{fakeglm}.
+#' 
+#' @param formula a \code{\link{formula}}
+#' @param ... coefficients for new model; see details
+#' @param family a description of the error distribution and link to be used
+#' in the model; this can be a character string naming a family function or
+#' the result of a clall to a family function; see \code{\link{family}}
+#' @param data a data frame
+#' 
+#' @references \url{https://gist.github.com/MrFlick/ae299d8f3760f02de6bf}
+#' 
+#' @examples
+#' f1 <- glm(vs ~ mpg + wt + disp, data = mtcars, family = 'binomial')
+#' p1 <- predict(f1, type = 'response')
+#' 
+#' f2 <- fakeglm(vs ~ mpg + wt + disp, data = mtcars, family = 'binomial',
+#'               -21.9020, mpg = 0.6470, wt = 5.3315, disp = -0.0403)
+#' p2 <- predict(f2, newdata = mtcars, type = 'response')
+#' 
+#' all.equal(p1, p2, tolerance = .0001) ## TRUE
+#' 
+#' dat <- within(mtcars, gear <- factor(gear))
+#' fakeglm(vs ~ mpg + gear, data = dat, family= 'binomial', 0, mpg = 1,
+#'         gear4 = 3, gear5 = 1)
+#'
+#' @export
+
+fakeglm <- function(formula, ..., family, data = NULL) {
+  dots <- list(...)
+  out <- list()
+  ## stats:::.MFclass
+  .MFclass <- function (x) {
+    if (is.logical(x)) return('logical')
+    if (is.ordered(x)) return('ordered')
+    if (is.factor(x)) return('factor')
+    if (is.character(x)) return('character')
+    if (is.matrix(x) && is.numeric(x)) 
+      return(paste('nmatrix', ncol(x), sep = '.'))
+    if (is.numeric(x)) return('numeric')
+    return('other')
+  }
+  tt <- terms(formula, data = data)
+  if (!is.null(data)) {
+    mf <- model.frame(tt, data)
+    vn <- sapply(attr(tt, 'variables')[-1], deparse)
+    if ((yvar <- attr(tt, 'response')) > 0)
+      vn <- vn[-yvar]
+    xlvl <- lapply(data[vn], function(x)
+      if (is.factor(x))
+        levels(x)
+      else if (is.character(x))
+        levels(as.factor(x))
+      else NULL)
+    attr(out, 'xlevels') <- xlvl[!vapply(xlvl, is.null, NA)]
+    attr(tt, 'dataClasses') <- sapply(data[vn], .MFclass)
+  }
+  out$terms <- tt
+  coef <- numeric(0)
+  stopifnot(length(dots) > 1 & !is.null(names(dots)))
+  for (ii in seq_along(dots)) {
+    if ((n <- names(dots)[ii]) != '') {
+      v <- dots[[ii]]
+      if (!is.null(names(v))) {
+        coef[paste0(n, names(v))] <- v
+      } else {
+        stopifnot(length(v) == 1)
+        coef[n] <- v
+      }
+    } else {
+      coef['(Intercept)'] <- dots[[ii]]
+    }
+  }
+  out$coefficients <- coef
+  out$rank <- length(coef)
+  if (!missing(family)) {
+    out$family <- if (class(family) == 'family') {
+      family
+    } else if (class(family) == 'function') {
+      family()
+    } else if (class(family) == 'character') {
+      get(family)()
+    } else {
+      stop(paste('Invalid family class:', class(family)))
+    }
+    out$qr <- list(pivot = seq_len(out$rank))
+    out$deviance <- 1
+    out$null.deviance <- 1
+    out$aic <- 1
+    class(out) <- c('glm','lm')
+  } else {
+    class(out) <- 'lm'
+    out$fitted.values <- predict(out, newdata = data)
+    out$residuals <- out$mf[attr(tt, 'response')] - out$fitted.values
+    out$df.residual <- nrow(data) - out$rank
+    out$model <- data
+    ## qr doesn't work
+  }
+  out
 }
