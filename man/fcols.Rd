@@ -22,5 +22,6 @@ Quickly selects and returns columns from a matrix or data frame by
 \examples{
 fcols(iris, 'Petal')
 fcols(iris, '\\\\.')
+fcols(mtcars, '^[\\\\w]{2}$')
 }
 

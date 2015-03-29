@@ -43,7 +43,7 @@ Some useful binary operators.
 \code{\%ni\%} is the negation of \code{\link[base]{\%in\%}}.
 
 \code{\%inside\%} returns a logical vector indicating if \code{x} is inside
-the \code{interval}.
+the \code{interval} (inclusive).
 
 \code{\%=\%} is an operator combining the qualities of \code{\link{==}} and
 \code{\link{\%in\%}} to compare vectors in a pairwise manner which may
@@ -60,7 +60,9 @@ desirable to return some other default value without errors.
 \dontrun{
 1:5 \%ni\% 3:5
 
+c(0,4) \%inside\% c(0, 4)
 -5:5 \%inside\% c(0,5)
+-5:5 \%inside\% c(5,0)
 
 a <- c(1, NA, 2)
 b <- c(2, NA, 1)
@@ -68,15 +70,17 @@ b <- c(2, NA, 1)
 a == b     # FALSE NA   FALSE
 a \%in\% b   # TRUE  TRUE TRUE
 ## desired results
-a \%==\% b    # FALSE TRUE FALSE
+a \%==\% b   # FALSE TRUE FALSE
 
 f <- function(x0 = TRUE) NULL || x0
 f() # error
 f <- function(x0 = TRUE) NULL \%||\% x0
 f() # TRUE
 
+## these are equivalent
 mtcars \%:\% c('hp','vs')
 mtcars \%:\% c(4, 8)
+names(mtcars[, 4:8])
 }
 }
 \seealso{

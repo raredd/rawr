@@ -13,7 +13,7 @@
 #' \code{\%ni\%} is the negation of \code{\link[base]{\%in\%}}.
 #' 
 #' \code{\%inside\%} returns a logical vector indicating if \code{x} is inside
-#' the \code{interval}.
+#' the \code{interval} (inclusive).
 #' 
 #'
 #' \code{\%=\%} is an operator combining the qualities of \code{\link{==}} and
@@ -43,7 +43,9 @@
 #' \dontrun{
 #' 1:5 %ni% 3:5
 #' 
+#' c(0,4) %inside% c(0, 4)
 #' -5:5 %inside% c(0,5)
+#' -5:5 %inside% c(5,0)
 #' 
 #' a <- c(1, NA, 2)
 #' b <- c(2, NA, 1)
@@ -51,15 +53,17 @@
 #' a == b     # FALSE NA   FALSE
 #' a %in% b   # TRUE  TRUE TRUE
 #' ## desired results
-#' a %==% b    # FALSE TRUE FALSE
+#' a %==% b   # FALSE TRUE FALSE
 #' 
 #' f <- function(x0 = TRUE) NULL || x0
 #' f() # error
 #' f <- function(x0 = TRUE) NULL %||% x0
 #' f() # TRUE
 #' 
+#' ## these are equivalent
 #' mtcars %:% c('hp','vs')
 #' mtcars %:% c(4, 8)
+#' names(mtcars[, 4:8])
 #' }
 #' 
 #' @export
@@ -1299,12 +1303,13 @@ read_clip.fwf <- function(header = TRUE, widths, ...) {
 #' @examples
 #' fcols(iris, 'Petal')
 #' fcols(iris, '\\.')
+#' fcols(mtcars, '^[\\w]{2}$')
 #' 
 #' @export
 
 fcols <- function(x, pattern, keep, ...) {
   keep <- if (missing(keep)) NULL else which(colnames(x) %in% keep)
-  x[, c(keep, grep(pattern, colnames(x), ...)), drop = FALSE]
+  x[, c(keep, grep(pattern, colnames(x), perl = TRUE, ...)), drop = FALSE]
 }
 
 #' Show class methods
@@ -1375,7 +1380,7 @@ classMethods <- function(class) {
 regcaptures <- function(x, m) {
   if (length(x) != length(m))
     stop('\'x\' and \'m\' must have the same length')
-  msg <- 'No capture data found. Did you use \'perl = TRUE\'?'
+  msg <- 'No capture data found'
   ili <- is.list(m)
   useBytes <- if (ili)
     any(unlist(lapply(m, attr, 'useBytes')))

@@ -1,7 +1,7 @@
 ### plot functions
 # ggmultiplot, click_text, click_shape, facet_adjust, print.facet_adjust, 
 # ggcaterpillar, ggheat, dodge, jmplot, tplot, dsplot, bpCI, inset, 
-# show_colors, show_pch, tcol, grcols, ggcols
+# show_colors, show_pch, tcol, ggcols, grcols
 ###
 
 
@@ -1557,13 +1557,10 @@ inset <- function(x, y = NULL, pct = .25, ...) {
 show_colors <- function() {
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
-  par(mfrow = c(1,1),
-      mai=c(.4,.4,.4,.4),
-      oma=c(.2,0,0,.2))
+  par(mfrow = c(1,1), mai=c(.4,.4,.4,.4), oma=c(.2,0,0,.2))
   x <- 22
   y <- 30
-  plot(c(-1, x), c(-1, y), xlab = '', ylab = '', type = 'n', xaxt = 'n', 
-       yaxt = 'n', bty = 'n')
+  plot(c(-1, x), c(-1, y), ann = FALSE, type = 'n', bty = 'n', axes = FALSE)
   sapply(1:x, function(i) {
     sapply(1:y, function(j) {
       k <- y * (i - 1) + j
@@ -1592,10 +1589,7 @@ show_colors <- function() {
 show_pch <- function() {
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
-  par(xpd = TRUE,
-      mfrow = c(1, 1),
-      mai = c(.4,.4,.4,.4),
-      oma = c(.2,0,0,.2))
+  par(xpd = TRUE, mfrow = c(1, 1), mai = c(.4,.4,.4,.4), oma = c(.2,0,0,.2))
   x <- rep(1:5, 6)[1:26]
   y <- c(rep(5:1, each = 5)[1:25], 0)
   plot(x, y, pch = 0:25, axes = FALSE, bg = 'gray', cex = 2, col = 'red')
