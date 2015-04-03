@@ -9,11 +9,19 @@
 \usage{
 path_extract(path)
 
-fname(x)
+fname(path)
 
 file_name(path)
 
 file_ext(path)
+}
+\arguments{
+\item{path}{file path as character string
+
+Examples where this function fails:
+\itemize{
+ \item{\code{.tar.gz}}{files with compound file extensions}
+}}
 }
 \description{
 These functions will extract the directory, file name, and file extension
@@ -25,11 +33,6 @@ the results fail to match the input.
 \code{fname} and \code{path_extract} do the text processing;
 \code{file_name} and \code{file_ext} are convenience functions that only
 return the file name or file extension, respectively.
-
-Examples where this function fails:
-\itemize{
- \item{\code{.tar.gz}}{files with compound file extensions}
-}
 }
 \examples{
 l <- list('~/desktop/tmp.csv',               ## normal file with directory
