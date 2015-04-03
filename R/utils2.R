@@ -1,6 +1,7 @@
 ### formatting and miscellaneous utilities
-# html_test, roundr, intr, pvalr, clist, binconr, num2char, iprint, match_ctc,
-# writeftable, surv_summary, surv_table, tabler, tabler_by, countr, tox_worst
+# html_test, roundr, intr, pvalr, pvalr2, clist, binconr, num2char, iprint,
+# match_ctc, writeftable, surv_summary, surv_table, tabler, tabler_by,
+# countr, tox_worst
 ###
 
 
@@ -140,22 +141,25 @@ intr <- function(..., fun = median, conf = NULL, digits = 0, na.rm = FALSE) {
 #' 
 #' Formats several cases of p-values; see details.
 #' 
-#' @param pvals numeric value or vector of p-values
-#' @param sig.limit lower bound for precision
-#' @param digits integer; number of decimal places; see also 
-#' \code{\link[rawr]{roundr}}
-#' @param html logical; if \code{TRUE}, uses \code{&lt;} instead of \code{<}
-#' @param show.p logical; if \code{TRUE}, inserts \code{p = } or \code{p < }
-#' where appropriate
-#' 
-#' @details
-#' This function will deal with several cases of common p-values: 1) p-values
+#' \code{pvalr} will deal with several cases of common p-values: 1) p-values
 #' which are > 0.1 will be rounded to two decimal places (and keep any trailing
 #' 0s) since we are not usually interested in precision of insignificant
 #' values; 2) p-values which are less than the specified \code{sig.level} will
 #' be formatted as \code{< 0.001}, for example; 3) p-values that are less than
 #' 0.01 but greater than \code{sig.level} will be precise to \code{digits} and
 #' keep any trailing 0s.
+#' 
+#' \code{pvalr2} deals with common cases of character string p-values which are
+#' not ideal (0.000, 1.00, etc) and will leave others unchanged.
+#' 
+#' @param pvals for \code{pvalr}, a numeric value or vector of p-values; for
+#' \code{pvalr2}, a vector of p-values as character strings
+#' @param sig.limit lower bound for precision
+#' @param digits integer; number of decimal places; see also 
+#' \code{\link[rawr]{roundr}}
+#' @param html logical; if \code{TRUE}, uses \code{&lt;} instead of \code{<}
+#' @param show.p logical; if \code{TRUE}, inserts \code{p = } or \code{p < }
+#' where appropriate
 #' 
 #' @seealso \code{\link[rawr]{roundr}}
 #' 
@@ -185,6 +189,27 @@ pvalr <- function(pvals, sig.limit = .001, digits = 3, html = FALSE,
           return(sprintf('%s%s', p, roundr(x, digits = digits)))
     }
   }, sig.limit = sig.limit)
+}
+
+#' @rdname pvalr
+#' @examples
+#' pvals <- c('1.000','1.0','1','0.00000','0.123','0.6','0.0', '< 0.001')
+#' pvalr2(pvals)
+#' 
+#' @export
+
+pvalr2 <- function(pvals, html = FALSE, show.p = FALSE) {
+  x <- gsub('^1$', '1.0', pvals)
+  x <- gsub('(?:^1\\.|\\G)\\K0(?=0*$)', '9', x, perl = TRUE)
+  x <- gsub('^1\\.', '> 0.', x)
+  x <- gsub('^(0\\.0*)0$', '< \\11', x)
+  if (html) {
+    x <- gsub('>', '&gt;', x)
+    x <- gsub('<', '&lt;', x)
+  }
+  if (show.p)
+    ifelse(grepl('[<>]', pvalr2(pvals)), paste0('p ', x), paste0('p = ', x))
+  else x
 }
 
 #' Concatenate a named list for output

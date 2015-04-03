@@ -2,13 +2,17 @@
 % Please edit documentation in R/utils2.R
 \name{pvalr}
 \alias{pvalr}
+\alias{pvalr2}
 \title{p-value formatter}
 \usage{
 pvalr(pvals, sig.limit = 0.001, digits = 3, html = FALSE,
   show.p = FALSE)
+
+pvalr2(pvals, html = FALSE, show.p = FALSE)
 }
 \arguments{
-\item{pvals}{numeric value or vector of p-values}
+\item{pvals}{for \code{pvalr}, a numeric value or vector of p-values; for
+\code{pvalr2}, a vector of p-values as character strings}
 
 \item{sig.limit}{lower bound for precision}
 
@@ -24,18 +28,23 @@ where appropriate}
 Formats several cases of p-values; see details.
 }
 \details{
-This function will deal with several cases of common p-values: 1) p-values
+\code{pvalr} will deal with several cases of common p-values: 1) p-values
 which are > 0.1 will be rounded to two decimal places (and keep any trailing
 0s) since we are not usually interested in precision of insignificant
 values; 2) p-values which are less than the specified \code{sig.level} will
 be formatted as \code{< 0.001}, for example; 3) p-values that are less than
 0.01 but greater than \code{sig.level} will be precise to \code{digits} and
 keep any trailing 0s.
+
+\code{pvalr2} deals with common cases of character string p-values which are
+not ideal (0.000, 1.00, etc) and will leave others unchanged.
 }
 \examples{
 pvals <- c(.13354, .060123, .004233, .00000016223)
 pvalr(pvals, digits = 3)
 pvalr(pvals, digits = 3, show.p = TRUE)
+pvals <- c('1.000','1.0','1','0.00000','0.123','0.6','0.0', '< 0.001')
+pvalr2(pvals)
 }
 \seealso{
 \code{\link[rawr]{roundr}}
