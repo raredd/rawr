@@ -1418,3 +1418,66 @@ regcaptures <- function(x, m) {
   Map(function(x, sos, mls) Substring(x, sos, mls), 
       x, starts, lengths, USE.NAMES = FALSE)
 }
+
+
+#' Extract parts of file path
+#' 
+#' These functions will extract the directory, file name, and file extension
+#' of some common types of files. Additionally, \code{path_extract} will
+#' check its results by recreating \code{path} and will give warnings if
+#' the results fail to match the input.
+#' 
+#' \code{fname} and \code{path_extract} do the text processing; 
+#' \code{file_name} and \code{file_ext} are convenience functions that only
+#' return the file name or file extension, respectively.
+#' 
+#' Examples where this function fails:
+#' \itemize{
+#'  \item{\code{.tar.gz}}{files with compound file extensions}
+#' }
+#' 
+#' @seealso \code{\link[rawr]{regcaptures}}, \code{\link{basename}},
+#' \code{\link{dirname}}
+#' 
+#' @examples
+#' l <- list('~/desktop/tmp.csv',               ## normal file with directory
+#'           '.dotfile.txt',                    ## dotfile with extension
+#'           '.vimrc',                          ## dotfile with no extension
+#'           '~/file.',                         ## file name ending in .
+#'           '~/DESCRIPTION',                   ## no extension
+#'           '~/desktop/tmp/a.filename.tar.gz') ## fails
+#' 
+#' setNames(lapply(l, fname), l)
+#' setNames(lapply(l, path_extract), l)
+#' setNames(lapply(l, file_name), l)
+#' setNames(lapply(l, file_ext), l)
+#' 
+#' @export
+
+path_extract <- function(path) {
+  p <- normalizePath(path, mustWork = FALSE)
+  m <- cbind(dirname = dirname(p), basename = basename(p), fname(p))
+  mm <- file.path(m[, 'dirname'],
+                  paste(m[, 'filename'], m[, 'extension'],
+                        sep = ifelse(nzchar(m[, 'extension']), '.', '')))
+  if (gsub('\\./', '', mm) != p || !nzchar(m[, 'filename']))
+    warning('Results could not be validated')
+  m
+}
+
+#' @rdname path_extract
+#' @export
+fname <- function(x) {
+  xx <- basename(x)
+  pattern <- '(^\\.[^ .]+$|[^:\\/]*?[.$]?)(?:\\.([^ :\\/.]*))?$'
+  m <- gregexpr(pattern, xx, perl = TRUE)
+  `colnames<-`(regcaptures(xx, m)[[1]], c('filename','extension'))
+}
+
+#' @rdname path_extract
+#' @export
+file_name <- function(path) path_extract(path)[, 'filename']
+
+#' @rdname path_extract
+#' @export
+file_ext <- function(path) path_extract(path)[, 'extension']
