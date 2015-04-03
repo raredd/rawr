@@ -1,3 +1,7 @@
+rawr 0.5.4
+--------
+  * move desmon (internal package) to suggests
+
 rawr 0.5.3
 --------
   * reorganized operators

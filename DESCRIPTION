@@ -1,7 +1,7 @@
 Package: rawr
 Type: Package
 Title: A personal package with miscellaneous tools.
-Version: 0.5.3
+Version: 0.5.4
 Authors@R: person("Robert", "Redd", email = "raredd01@gmail.com",
     role = c("aut", "cre"))
 Description: Personal package with miscellaneous functions, stuff in progress,
@@ -9,7 +9,6 @@ Description: Personal package with miscellaneous functions, stuff in progress,
 Depends:
     R (>= 3.0.2)
 Imports:
-    desmon,
     ggplot2,
     grid,
     gridExtra,
@@ -20,6 +19,8 @@ Imports:
     rstudio,
     survival,
     testthat
+Suggests:
+    desmon
 License: GPL-2
 LazyData: yes
 URL: https://github.com/raredd/rawr
