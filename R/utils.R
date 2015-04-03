@@ -1431,6 +1431,8 @@ regcaptures <- function(x, m) {
 #' \code{file_name} and \code{file_ext} are convenience functions that only
 #' return the file name or file extension, respectively.
 #' 
+#' @param path file path as character string
+#' 
 #' Examples where this function fails:
 #' \itemize{
 #'  \item{\code{.tar.gz}}{files with compound file extensions}
@@ -1445,7 +1447,7 @@ regcaptures <- function(x, m) {
 #'           '.vimrc',                          ## dotfile with no extension
 #'           '~/file.',                         ## file name ending in .
 #'           '~/DESCRIPTION',                   ## no extension
-#'           '~/desktop/tmp/a.filename.tar.gz') ## fails
+#'           '~/desktop/tmp/a.filename.tar.gz') ## compound extension fails
 #' 
 #' setNames(lapply(l, fname), l)
 #' setNames(lapply(l, path_extract), l)
@@ -1467,8 +1469,8 @@ path_extract <- function(path) {
 
 #' @rdname path_extract
 #' @export
-fname <- function(x) {
-  xx <- basename(x)
+fname <- function(path) {
+  xx <- basename(path)
   pattern <- '(^\\.[^ .]+$|[^:\\/]*?[.$]?)(?:\\.([^ :\\/.]*))?$'
   m <- gregexpr(pattern, xx, perl = TRUE)
   `colnames<-`(regcaptures(xx, m)[[1]], c('filename','extension'))
