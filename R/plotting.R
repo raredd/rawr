@@ -1347,7 +1347,7 @@ dsplot.formula <- function(formula, data = NULL, ..., subset,
   #   m$na.action <- na.pass
   subset.expr <- m$subset
   m$subset <- NULL
-  require(stats, quietly = TRUE) || stop("package 'stats' is missing")
+#   require(stats, quietly = TRUE) || stop("package 'stats' is missing")
   m[[1]] <- as.name('model.frame')
   m <- as.call(c(as.list(m), list(na.action = NULL)))
   mf <- eval(m, parent.frame())

@@ -455,14 +455,12 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
 #' \item{\code{$description}}{a text string giving a brief description of 
 #' the columns in \code{$designs}.}
 #' 
-#' @author Robert Gray (\code{\link[desmon]{simon}}); Robert Redd 
-#' (\code{simon2})
+#' @author Robert Gray (\code{simon}); Robert Redd (\code{simon2})
 #' @references Simon R (1989). Optimal two-stage designs for phase II clinical 
 #' trials. \emph{Controlled Clinical Trials}, 10:1-10.
 #' 
-#' @seealso desmon package: \code{\link[desmon]{simon}}, 
-#' \code{\link[desmon]{twostg}}, \code{\link[desmon]{bin1samp}}, 
-#' \code{\link[desmon]{pickwin}}, \code{\link[desmon]{rp21}}
+#' @seealso desmon package: \code{simon}, \code{twostg}, \code{bin1samp},
+#' \code{pickwin}, \code{rp21}
 #' 
 #' @examples
 #' \donttest{

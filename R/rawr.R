@@ -1,6 +1,9 @@
 #' rawr
 #' 
+#' Personal package with miscellaneous functions, stuff in progress, and
+#' tools I use regularly.
+#' 
 #' @name rawr
 #' @docType package
-#' @import desmon ggplot2 grid gridExtra htmlTable knitr plotrix survival testthat
+#' @import ggplot2 grid gridExtra knitr plotrix survival testthat
 NULL
