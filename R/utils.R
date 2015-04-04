@@ -3,7 +3,8 @@
 # misc: lss, lsp, ht, progress, recoder, psum, ident, search_df, search_hist, 
 # fapply, rescaler, try_require, list2file, Restart, clc, clear,
 # helpExtract, Round, bind_all, interleave, outer2, merge2, locf, roll_fun,
-# round2, updateR, read_clip, fcols, classMethods, regcaptures
+# round2, updateR, read_clip, fcols, classMethods, regcaptures, path_extract,
+# fname, file_name, file_ext, cast, melt
 ###
 
 #' rawr operators
@@ -1483,3 +1484,130 @@ file_name <- function(path) path_extract(path)[, 'filename']
 #' @rdname path_extract
 #' @export
 file_ext <- function(path) path_extract(path)[, 'extension']
+
+#' Reshape data
+#' 
+#' Convenience wrappers for \code{\link{reshape}} where \code{direction}
+#' is \code{"long"} (\code{melt}) or \code{"wide"} (\code{cast}).
+#' 
+#' These functions set defaults for reshaping data; any defaults may be
+#' overwritten by simply passing arguments to \dots (names must match exactly
+#' and no partial matching is allowed or they will be ignored).
+#' 
+#' By default, \code{cast} assumes data is at least three columns with id,
+#' time point, and value variable (any additional columns will be considered
+#' values as well). \code{melt} by default assumes no id variables and will
+#' melt all columns.
+#' 
+#' \code{idvar}, \code{timevar}, \code{v.names}, and \code{varying} can be
+#' passed as a \emph{vector} of column indices or character strings of
+#' variable names or as a \emph{list} of indices or character strings names
+#' for convenience.
+#' 
+#' @param data a data frame
+#' @param idvar id variable(s)
+#' @param timevar time point variable(s)
+#' @param v.names long variable(s) to be flattened
+#' @param varying variable(s) to melt into column(s)
+#' @param ... additional arguments passed to \code{reshape}
+#' 
+#' @return
+#' The reshaped data frame with added attributes to simplify reshaping back
+#' to the original form.
+#' @seealso \code{\link{reshape}}
+#' 
+#' @examples
+#' ## default of melt is no id variable so all are melted
+#' melt(mtcars)
+#' melt(mtcars, list(2:3, 4:5))
+#' 
+#' dat <- data.frame(id = rep(1:4, rep(2, 4)),
+#'                   visit = I(rep(c('Before', 'After'), 4)),
+#'                   x = abs(rpois(4, 10)), y = -runif(4))
+#' 
+#' melt(dat, list(3:4))
+#' melt(dat, 3:4)
+#' l <- melt(dat, c('x','y'))
+#' 
+#' cast(l, c('id','visit'), 'variable', 'value')
+#' ## or
+#' cast(l, list('id','visit'), 3, 4)
+#' cast(l, 1:2, 3, list('value'))
+#' 
+#' ## cast assumes columns are id, time, followed by all varying:
+#' cast(dat)
+#' 
+#' dat <- within(dat, {
+#'   xx <- abs(rpois(4, 10))
+#'   yy <- -runif(4, 1, 2)
+#' })
+#' 
+#' ## melting multiple variables simultaneously
+#' melt(dat, list(c(3,6), c(4:5)))
+#' 
+#' ## note that a vector cannot be used here for the same results
+#' melt(dat, c('x','xx','y','yy'))
+#' 
+#' ## use a list instead
+#' melt(dat, list(c('x','xx'), c('y','yy')))
+#' 
+#' ## melt or cast can also be undone as other reshape objects
+#' w1 <- reshape(Indometh, v.names = "conc", idvar = "Subject",
+#'               timevar = "time", direction = "wide")
+#' w2 <- cast(Indometh, v.names = "conc", idvar = "Subject",
+#'            timevar = "time", direction = "wide")
+#' 
+#' identical(w1, w2) ## TRUE
+#' identical(reshape(w1), reshape(w2)) ## TRUE
+#' 
+#' @name Reshape
+NULL
+
+#' @rdname Reshape
+#' @export
+cast <- function(data, idvar = list(1), timevar = list(2),
+                 v.names = list(3:ncol(data)), ...) {
+  n <- names(data)
+  f <- function(x) if (is.numeric(y <- unlist(x))) n[y] else y
+  idvar <- f(idvar)
+  timevar <- f(timevar)
+  v.names <- f(v.names)
+  ## use reshape defaults and set cast defaults
+  l <- c(as.list(formals(reshape)), list(...))
+  l$direction <- 'wide'
+  l$idvar <- idvar
+  l$v.names <- v.names
+  l$data <- data
+  l$timevar <- timevar
+  l$times <- l$ids <- NULL
+  ## also allow any cast defaults to be overridden, ie, direction = 'long'
+  ## but names must match exactly, ie, dir = 'long' will not work
+  l <- l[!duplicated(names(l), fromLast = TRUE)]
+  res <- do.call('reshape', l)
+  res
+}
+
+#' @rdname Reshape
+#' @export
+melt <- function(data, varying = list(1:ncol(data)), ...) {
+  n <- names(data)
+  if (!is.list(varying))
+    varying <- if (is.numeric(varying)) 
+      list(varying) else list(which(n %in% varying))
+  vl <- length(varying) == 1L
+  ## use reshape defaults and set melt defaults
+  l <- c(as.list(formals(reshape)), list(...))
+  l$direction <- 'long'
+  l$varying <- varying
+  l$times <- if (vl) n[varying[[1L]]] else seq_along(varying[[1L]])
+  l$data <- data
+  l$idvar <- '_id_'
+  l$timevar <- if (vl) 'variable' else 'time'
+  l$v.names <- if (vl) 'value' else paste0('value', 1:length(varying))
+  ## also allow any melt defaults to be overridden, ie, direction = 'wide'
+  ## but names must match exactly, ie, dir = 'wide' will not work
+  l <- l[!duplicated(names(l), fromLast = TRUE)]
+  res <- do.call('reshape', l)
+  res$'_id_' <- NULL
+  `rownames<-`(res, NULL)
+}
