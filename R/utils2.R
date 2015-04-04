@@ -751,8 +751,8 @@ tabler.survfit <- function(x, ...) {
 #' @param byvar stratification variable
 #' @param n number in each group; see details
 #' @param order logical; order the result by decreasing frequency
-#' @param zeros optional character string replacement for cells which have zero
-#' counts; will appear as \code{0 (0\%)} if not given
+#' @param zeros optional character string replacement for cells which have
+#' zero counts; will appear as \code{0 (0\%)} if not given
 #' 
 #' @examples
 #' \dontrun{
@@ -775,9 +775,12 @@ tabler.survfit <- function(x, ...) {
 #' })
 #' 
 #' 
-#' out <- cbind(tabler_by(tox, 'tox_desc', 'phase', n = n, zeros = '-')[, 1, drop = FALSE],
-#'              tabler_by(tox[tox$phase == '1', ], 'tox_desc', 'tox_grade', n = n[1], zeros = '-'),
-#'              tabler_by(tox[tox$phase == '2', ], 'tox_desc', 'tox_grade', n = n[2], zeros = '-'))
+#' out <- cbind(tabler_by(tox, 'tox_desc',
+#'                        'phase', n = n, zeros = '-')[, 1, drop = FALSE],
+#'              tabler_by(tox[tox$phase == '1', ], 'tox_desc',
+#'                        'tox_grade', n = n[1], zeros = '-'),
+#'              tabler_by(tox[tox$phase == '2', ], 'tox_desc',
+#'                        'tox_grade', n = n[2], zeros = '-'))
 #' out <- out[order(as.numeric(out[, 1]), decreasing = TRUE), ]
 #' 
 #' library(htmlTable)
@@ -785,11 +788,11 @@ tabler.survfit <- function(x, ...) {
 #'             sprintf('Phase I<br /><font size=1>n = %s</font>', n[1]),
 #'             sprintf('Phase II<br /><font size=1>n = %s</font>', n[2]))
 #' htmlTable(out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
-#'           caption = 'Table 1: Toxicities<sup>&dagger;</sup> by phase and grade.',
-#'           col.columns = rep(c('grey97','none','grey97'), times = c(1, 4, 4)),
-#'           col.rgroup = rep(rep(c('none', 'grey97'), each = 5), 10),
-#'           tfoot = paste0('<font size=1><sup>&dagger;</sup>Percentages represent ',
-#'                   'proportion of patients out of respective phase total.</font>'))
+#'     caption = 'Table 1: Toxicities<sup>&dagger;</sup> by phase and grade.',
+#'     col.columns = rep(c('grey97','none','grey97'), times = c(1, 4, 4)),
+#'     col.rgroup = rep(rep(c('none', 'grey97'), each = 5), 10),
+#'     tfoot = paste0('<font size=1><sup>&dagger;</sup>Percentages represent ',
+#'             'proportion of patients out of respective phase total.</font>'))
 #' }
 #' @export
 
