@@ -1,6 +1,12 @@
+rawr 0.6.0
+--------
+  * moved unneed packages to suggests
+  * added cast, melt
+  * organized some code, minor fixes, latex
+
 rawr 0.5.4
 --------
-  * move desmon (internal package) to suggests
+  * moved desmon (internal package) to suggests
 
 rawr 0.5.3
 --------

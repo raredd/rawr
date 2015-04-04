@@ -1,11 +1,11 @@
 Package: rawr
 Type: Package
 Title: A personal package with miscellaneous tools.
-Version: 0.5.4
+Version: 0.6.0
 Authors@R: person("Robert", "Redd", email = "raredd01@gmail.com",
     role = c("aut", "cre"))
 Description: Personal package with miscellaneous functions, stuff in progress,
-    and tools I use regularly
+    and tools I use regularly.
 Depends:
     R (>= 3.0.2)
 Imports:
@@ -13,14 +13,16 @@ Imports:
     grid,
     gridExtra,
     Hmisc,
-    htmlTable,
     knitr,
     plotrix,
     rstudio,
     survival,
     testthat
 Suggests:
-    desmon
+    desmon,
+    htmlTable,
+    lattice,
+    lme4
 License: GPL-2
 LazyData: yes
 URL: https://github.com/raredd/rawr
