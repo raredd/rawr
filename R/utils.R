@@ -2,9 +2,9 @@
 # rawrops: %ni%, %==%, %||%, %inside%, %:%
 # misc: lss, lsp, ht, progress, recoder, psum, ident, search_df, search_hist, 
 # fapply, rescaler, try_require, list2file, Restart, clc, clear,
-# helpExtract, Round, bind_all, interleave, outer2, merge2, locf, roll_fun,
-# round2, updateR, read_clip, fcols, classMethods, regcaptures, path_extract,
-# fname, file_name, file_ext, cast, melt
+# helpExtract, Round, bind_all, cbindx, rbindx, rbindfill, interleave, outer2,
+# merge2, locf, roll_fun, round2, updateR, read_clip, fcols, classMethods,
+# regcaptures, path_extract, fname, file_name, file_ext, cast, melt
 ###
 
 #' rawr operators
@@ -1010,25 +1010,279 @@ Round <- function(x, target) {
   }
 }
 
-#' Bind objects with unequal number of rows or columns
+#' Bind objects
 #' 
-#' Bind objects with unequal number of rows or columns.
+#' Utilities for binding objects with inconsistent dimensions. \code{bind_all}
+#' and \code{rbindfill} are used for binding vectors, the latter specifically
+#' for \code{\link{rbind}}ing \emph{named} vectors a la a "stacking" merge.
+#' \code{cbindx} and \code{rbindx} take vector-, matrix-, and data frame-like
+#' objects and bind normally, filling with \code{NA}s where dimensions are
+#' not equal.
 #' 
-#' @param ... vectors
+#' @param ... for \code{bind_all} and \code{rbindfill}, vectors;
+#' \code{cbindx} and \code{rbindx} will accept vectors, matrices, data frames
 #' @param which joining method; \code{'rbind'} or \code{'cbind'}
+#' @param deparse.level integer controlling the construction of labels in
+#' the case of non-matrix-like arguments (for the default method):\cr
+#' deparse.level = 0 constructs no labels; the default; \cr
+#' deparse.level = 1 or 2 constructs labels from the argument names
+#' 
+#' @seealso \pkg{qpcR}, \code{\link{cbind}}, \code{\link{rbind}}
 #' 
 #' @examples
 #' bind_all(1:5, 1:3, which = 'cbind')
 #' bind_all(1:5, 1:3, which = 'rbind')
 #' 
-#' @export
+#' m1 <- matrix(1:4)
+#' m2 <- matrix(1:4, 1)
+#' 
+#' cbindx(m1, m2)
+#' rbindx(m1, m2)
+#' rbindx(mtcars, m2)
+#' 
+#' f <- function(x) setNames(letters[x], LETTERS[x])
+#' x <- lapply(list(1:5, 3:6, 2:7, 26), f)
+#' do.call('rbindfill', x)
+#' 
+#' @name bindx
+NULL
 
+#' @rdname bindx
+#' @export
 bind_all <- function(..., which) {
   if (missing(which))
     stop('specify which: \'rbind\' or \'cbind\'')
   l <- list(...)
+  if (any(sapply(l, function(x) !is.null(dim(x)))))
+    warning('This function is intended for vector inputs. ',
+            'Use ?cbindx or ?rbindx instead.')
   l <- lapply(l, `length<-`, max(sapply(l, length)))
-  return(do.call(which, l))
+  do.call(which, l)
+}
+
+#' @rdname bindx
+#' @export
+cbindx <- function (..., deparse.level = 1) {
+  na <- nargs() - (!missing(deparse.level))    
+  deparse.level <- as.integer(deparse.level)
+  stopifnot(0 <= deparse.level, deparse.level <= 2)
+  argl <- list(...)   
+  while (na > 0 && is.null(argl[[na]])) {
+    argl <- argl[-na]
+    na <- na - 1
+  }
+  if (na == 0)
+    return(NULL)
+  if (na == 1) {
+    if (isS4(..1))
+      return(cbind2(..1))
+    else return(matrix(...))  ##.Internal(cbind(deparse.level, ...)))
+  }
+  
+  if (deparse.level) {
+    symarg <- as.list(sys.call()[-1L])[1L:na]
+    Nms <- function(i) {
+      if (is.null(r <- names(symarg[i])) || r == '') {
+        if (is.symbol(r <- symarg[[i]]) || deparse.level == 2)
+          deparse(r)
+      } else r
+    }
+  }
+  ## deactivated, otherwise no fill in with two arguments
+  if (na == 0) {
+    r <- argl[[2]]
+    fix.na <- FALSE
+  } else {
+    nrs <- unname(lapply(argl, nrow))
+    iV <- sapply(nrs, is.null)
+    fix.na <- identical(nrs[(na - 1):na], list(NULL, NULL))
+    ## deactivated, otherwise data will be recycled
+    #if (fix.na) {
+    #    nr <- max(if (all(iV)) sapply(argl, length) else unlist(nrs[!iV]))
+    #    argl[[na]] <- cbind(rep(argl[[na]], length.out = nr),
+    #        deparse.level = 0)
+    #}
+    if (deparse.level) {
+      if (fix.na)
+        fix.na <- !is.null(Nna <- Nms(na))
+      if (!is.null(nmi <- names(argl)))
+        iV <- iV & (nmi == '')
+      ii <- if (fix.na)
+        2:(na - 1) else 2:na
+      if (any(iV[ii])) {
+        for (i in ii[iV[ii]]) 
+          if (!is.null(nmi <- Nms(i)))
+            names(argl)[i] <- nmi
+      }
+    }
+    
+    ## filling with NA's to maximum occuring nrows
+    nRow <- as.numeric(sapply(argl, function(x) NROW(x)))
+    maxRow <- max(nRow, na.rm = TRUE)
+    argl <- lapply(argl, function(x) 
+      if (is.null(nrow(x))) {
+        c(x, rep(NA, maxRow - length(x)))
+      } else rbindx(x, matrix(, maxRow - nrow(x), ncol(x))))
+    r <- do.call('cbind', c(argl[-1L], list(deparse.level = deparse.level)))
+  }
+  d2 <- dim(r)
+  r <- cbind2(argl[[1]], r)
+  if (deparse.level == 0)
+    return(r)
+  ism1 <- !is.null(d1 <- dim(..1)) && length(d1) == 2L
+  ism2 <- !is.null(d2) && length(d2) == 2L && !fix.na
+  if (ism1 && ism2)
+    return(r)
+  Ncol <- function(x) {
+    d <- dim(x)
+    if (length(d) == 2L)
+      d[2L]
+    else as.integer(length(x) > 0L)
+  }
+  nn1 <- !is.null(N1 <- if ((l1 <- Ncol(..1)) && !ism1) Nms(1))
+  nn2 <- !is.null(N2 <- if (na == 2 && Ncol(..2) && !ism2) Nms(2))
+  if (nn1 || nn2 || fix.na) {
+    if (is.null(colnames(r)))
+      colnames(r) <- rep.int('', ncol(r))
+    setN <- function(i, nams) colnames(r)[i] <<- if (is.null(nams)) ''
+    else nams
+    if (nn1)
+      setN(1, N1)
+    if (nn2)
+      setN(1 + l1, N2)
+    if (fix.na)
+      setN(ncol(r), Nna)
+  }
+  r
+}
+
+#' @rdname bindx
+#' @export
+rbindx <- function (..., deparse.level = 1) {
+  na <- nargs() - (!missing(deparse.level))
+  deparse.level <- as.integer(deparse.level)
+  stopifnot(0 <= deparse.level, deparse.level <= 2)
+  argl <- list(...)
+  while (na > 0 && is.null(argl[[na]])) {
+    argl <- argl[-na]
+    na <- na - 1
+  }
+  if (na == 0)
+    return(NULL)
+  if (na == 1) {
+    if (isS4(..1))
+      return(rbind2(..1))
+    else return(matrix(..., nrow = 1)) ##.Internal(rbind(deparse.level, ...)))
+  }
+  
+  if (deparse.level) {
+    symarg <- as.list(sys.call()[-1L])[1L:na]
+    Nms <- function(i) {
+      if (is.null(r <- names(symarg[i])) || r == '') {
+        if (is.symbol(r <- symarg[[i]]) || deparse.level == 2)
+          deparse(r)
+      } else r
+    }
+  }
+  ## deactivated, otherwise no fill in with two arguments
+  if (na == 0) {
+    r <- argl[[2]]
+    fix.na <- FALSE
+  } else {
+    nrs <- unname(lapply(argl, ncol))
+    iV <- sapply(nrs, is.null)
+    fix.na <- identical(nrs[(na - 1):na], list(NULL, NULL))
+    ## deactivated, otherwise data will be recycled
+    #if (fix.na) {
+    #    nr <- max(if (all(iV)) sapply(argl, length) else unlist(nrs[!iV]))
+    #    argl[[na]] <- rbind(rep(argl[[na]], length.out = nr),
+    #        deparse.level = 0)
+    #}
+    if (deparse.level) {
+      if (fix.na)
+        fix.na <- !is.null(Nna <- Nms(na))
+      if (!is.null(nmi <- names(argl)))
+        iV <- iV & (nmi == '')
+      ii <- if (fix.na)
+        2:(na - 1) else 2:na
+      if (any(iV[ii])) {
+        for (i in ii[iV[ii]])
+          if (!is.null(nmi <- Nms(i)))
+            names(argl)[i] <- nmi
+      }
+    }
+    
+    ## filling with NAs to maximum occuring ncols
+    nCol <- as.numeric(sapply(argl, function(x)
+      if (is.null(ncol(x)))
+        length(x) else ncol(x)))
+    maxCol <- max(nCol, na.rm = TRUE)
+    argl <- lapply(argl, function(x)
+      if (is.null(ncol(x))) {
+        c(x, rep(NA, maxCol - length(x)))
+      } else cbind(x, matrix(, nrow(x), maxCol - ncol(x))))
+    
+    ## create a common name vector from the
+    ## column names of all 'argl' items
+    namesVEC <- rep(NA, maxCol)
+    for (i in 1:length(argl)) {
+      CN <- colnames(argl[[i]])
+      m <- !(CN %in% namesVEC)
+      namesVEC[m] <- CN[m]
+    }
+    
+    ## make all column names from common 'namesVEC'
+    for (j in 1:length(argl)) {
+      if (!is.null(ncol(argl[[j]]))) colnames(argl[[j]]) <- namesVEC
+    } 
+    r <- do.call('rbind', c(argl[-1L], list(deparse.level = deparse.level)))
+  }  
+  d2 <- dim(r)
+  
+  ## make all column names from common 'namesVEC'
+  colnames(r) <- colnames(argl[[1]])
+  r <- rbind2(argl[[1]], r)
+  
+  if (deparse.level == 0)
+    return(r)
+  ism1 <- !is.null(d1 <- dim(..1)) && length(d1) == 2L
+  ism2 <- !is.null(d2) && length(d2) == 2L && !fix.na
+  if (ism1 && ism2)
+    return(r)
+  Nrow <- function(x) {
+    d <- dim(x)
+    if (length(d) == 2L)
+      d[1L] else as.integer(length(x) > 0L)
+  }
+  nn1 <- !is.null(N1 <- if ((l1 <- Nrow(..1)) && !ism1) Nms(1))
+  nn2 <- !is.null(N2 <- if (na == 2 && Nrow(..2) && !ism2) Nms(2))
+  if (nn1 || nn2 || fix.na) {
+    if (is.null(rownames(r)))
+      rownames(r) <- rep.int('', nrow(r))
+    setN <- function(i, nams) rownames(r)[i] <<- if (is.null(nams)) ''
+    else nams
+    if (nn1)
+      setN(1, N1)
+    if (nn2)
+      setN(1 + l1, N2)
+    if (fix.na)
+      setN(nrow(r), Nna)
+  }
+  r
+}
+
+#' @rdname bindx
+#' @export
+rbindfill <- function(...) {
+  l <- list(...)
+  nn <- sapply(l, names)
+  un <- unique(unlist(nn))
+  len <- sapply(l, length)
+  out <- vector('list', length(len))
+  for (ii in seq_along(len)) {
+    out[[ii]] <- unname(l[[ii]])[match(un, nn[[ii]])]
+  }
+  `colnames<-`(do.call('rbind', out), un)
 }
 
 #' Interleave rows or columns
@@ -1420,7 +1674,6 @@ regcaptures <- function(x, m) {
       x, starts, lengths, USE.NAMES = FALSE)
 }
 
-
 #' Extract parts of file path
 #' 
 #' These functions will extract the directory, file name, and file extension
@@ -1494,10 +1747,10 @@ file_ext <- function(path) path_extract(path)[, 'extension']
 #' overwritten by simply passing arguments to \dots (names must match exactly
 #' and no partial matching is allowed or they will be ignored).
 #' 
-#' By default, \code{cast} assumes data is at least three columns with id,
-#' time point, and value variable (any additional columns will be considered
-#' values as well). \code{melt} by default assumes no id variables and will
-#' melt all columns.
+#' By default, \code{cast} assumes\code{data} is a data frame with at least
+#' three columns representing id, time point, and value variables (any
+#' additional columns will be considered value variables as well). \code{melt}
+#' by default assumes no id variables and will melt all columns.
 #' 
 #' \code{idvar}, \code{timevar}, \code{v.names}, and \code{varying} can be
 #' passed as a \emph{vector} of column indices or character strings of
@@ -1573,7 +1826,8 @@ cast <- function(data, idvar = list(1), timevar = list(2),
   timevar <- f(timevar)
   v.names <- f(v.names)
   ## use reshape defaults and set cast defaults
-  l <- c(as.list(formals(reshape)), list(...))
+  # l <- c(as.list(formals(reshape)), list(...))
+  l <- as.list(formals(reshape))
   l$direction <- 'wide'
   l$idvar <- idvar
   l$v.names <- v.names
@@ -1582,9 +1836,10 @@ cast <- function(data, idvar = list(1), timevar = list(2),
   l$times <- l$ids <- NULL
   ## also allow any cast defaults to be overridden, ie, direction = 'long'
   ## but names must match exactly, ie, dir = 'long' will not work
-  l <- l[!duplicated(names(l), fromLast = TRUE)]
+  # l <- l[!duplicated(names(l), fromLast = TRUE)]
+  l <- modifyList(l, list(...))
   res <- do.call('reshape', l)
-  res
+  `rownames<-`(res, NULL)
 }
 
 #' @rdname Reshape
@@ -1596,7 +1851,8 @@ melt <- function(data, varying = list(1:ncol(data)), ...) {
       list(varying) else list(which(n %in% varying))
   vl <- length(varying) == 1L
   ## use reshape defaults and set melt defaults
-  l <- c(as.list(formals(reshape)), list(...))
+  # l <- c(as.list(formals(reshape)), list(...))
+  l <- as.list(formals(reshape))
   l$direction <- 'long'
   l$varying <- varying
   l$times <- if (vl) n[varying[[1L]]] else seq_along(varying[[1L]])
@@ -1606,7 +1862,8 @@ melt <- function(data, varying = list(1:ncol(data)), ...) {
   l$v.names <- if (vl) 'value' else paste0('value', 1:length(varying))
   ## also allow any melt defaults to be overridden, ie, direction = 'wide'
   ## but names must match exactly, ie, dir = 'wide' will not work
-  l <- l[!duplicated(names(l), fromLast = TRUE)]
+  # l <- l[!duplicated(names(l), fromLast = TRUE)]
+  l <- modifyList(l, list(...))
   res <- do.call('reshape', l)
   res$'_id_' <- NULL
   `rownames<-`(res, NULL)
