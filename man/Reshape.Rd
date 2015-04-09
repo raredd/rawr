@@ -37,10 +37,10 @@ These functions set defaults for reshaping data; any defaults may be
 overwritten by simply passing arguments to \dots (names must match exactly
 and no partial matching is allowed or they will be ignored).
 
-By default, \code{cast} assumes data is at least three columns with id,
-time point, and value variable (any additional columns will be considered
-values as well). \code{melt} by default assumes no id variables and will
-melt all columns.
+By default, \code{cast} assumes\code{data} is a data frame with at least
+three columns representing id, time point, and value variables (any
+additional columns will be considered value variables as well). \code{melt}
+by default assumes no id variables and will melt all columns.
 
 \code{idvar}, \code{timevar}, \code{v.names}, and \code{varying} can be
 passed as a \emph{vector} of column indices or character strings of
