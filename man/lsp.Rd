@@ -57,4 +57,7 @@ lsp('rawr', NULL)
 ## data sets
 lsp('ggplot2', 'lazydata')
 }
+\seealso{
+\code{\link{lsf}}, \code{\link{ls}}, \code{\link{search}}
+}
 
