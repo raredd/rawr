@@ -10,10 +10,18 @@ clist(l)
 \item{l}{list to concatenate}
 }
 \description{
-Print a \code{list(a = 1, b = 2)} as \code{(a = 1, b = 2)}
+Print a \emph{named} \code{list} as a character string with values.
 }
 \examples{
-clist(list(a = 1, b = 2))
+(l <- list(a = 1, b = 2))
+
+# $a
+# [1] 1
+#
+# $b
+# [1] 2
+
+clist(l) # [1] "a = 1, b = 2"
 clist(par()[1:5])
 }
 

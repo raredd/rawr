@@ -24,8 +24,9 @@ rbindfill(...)
 
 \item{deparse.level}{integer controlling the construction of labels in
 the case of non-matrix-like arguments (for the default method):\cr
-deparse.level = 0 constructs no labels; the default; \cr
-deparse.level = 1 or 2 constructs labels from the argument names}
+\code{deparse.level = 0} constructs no labels; the default; \cr
+\code{deparse.level = 1} or \code{2} constructs labels from the argument
+names \cr see \code{\link{cbind}}}
 }
 \description{
 Utilities for binding objects with inconsistent dimensions. \code{bind_all}
