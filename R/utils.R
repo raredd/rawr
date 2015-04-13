@@ -1,10 +1,11 @@
 ### utilities
 # rawrops: %ni%, %==%, %||%, %inside%, %:%
-# misc: lss, lsp, ht, progress, recoder, psum, ident, search_df, search_hist, 
-# fapply, rescaler, try_require, list2file, Restart, clc, clear,
+# misc: lss, lsp, lsf, ht, progress, recoder, psum, ident, search_df,
+# search_hist, fapply, rescaler, try_require, list2file, Restart, clc, clear,
 # helpExtract, Round, bind_all, cbindx, rbindx, rbindfill, interleave, outer2,
-# merge2, locf, roll_fun, round2, updateR, read_clip, fcols, classMethods,
-# regcaptures, path_extract, fname, file_name, file_ext, cast, melt
+# merge2, locf, roll_fun, round_to, updateR, read_clip, fcols, classMethods,
+# regcaptures, path_extract, fname, file_name, file_ext, cast, melt,
+# install_temp
 ###
 
 #' rawr operators
@@ -156,14 +157,6 @@ lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
 #' 
 #' List all exported and/or non exported objects in a package.
 #' 
-#' @param package package name, as \code{\link{name}} or literal character 
-#' string
-#' @param what what to get; \code{'all'} is default which returns all exported
-#' and non exported functions in \code{package}; see details for more
-#' @param pattern text pattern or regular expression passed to 
-#' \code{\link{grep}} to filter results
-#' 
-#' @details
 #' This is a helper/wrapper function to list exported (\code{?'::'}) and
 #' non exported (\code{?':::'}) functions (and other features from a package's 
 #' \code{NAMESPACE} file).
@@ -181,6 +174,15 @@ lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
 #' \code{lsp(packagename, '?')} to see options for a specific package.
 #' 
 #' \code{lsp(packagename, NULL)} to return all information in a list.
+#' 
+#' @param package package name, as \code{\link{name}} or literal character 
+#' string
+#' @param what what to get; \code{'all'} is default which returns all exported
+#' and non exported functions in \code{package}; see details for more
+#' @param pattern text pattern or regular expression passed to 
+#' \code{\link{grep}} to filter results
+#' 
+#' @seealso \code{\link{lsf}}, \code{\link{ls}}, \code{\link{search}}
 #' 
 #' @examples
 #' ## see the contents of this package
@@ -241,6 +243,32 @@ lsp <- function(package, what, pattern) {
       }
     } else stop(sprintf('no NAMESPACE file found for package %s', package))
   }
+}
+
+#' List package files
+#' 
+#' Prints package files (\code{DESCRIPTION}, \code{NEWS}, \code{INDEX},
+#' \code{NAMESPACE}, etc.) to console.
+#' 
+#' @param package package name, as a \code{\link{name}} or literal character
+#' string
+#' @param file file to return as a character string; usual options are
+#' \code{'DESCRIPTION'}, \code{'NEWS'}, \code{'INDEX'}, \code{'NAMESPACE'}
+#' 
+#' @seealso \code{\link{lsp}}
+#' 
+#' @examples
+#' lsf(rawr, 'DESCRIPTION')
+#' 
+#' @export
+
+lsf <- function(package, file = 'DESCRIPTION') {
+  ## DESCRIPTION, INDEX, NEWS, NAMESPACE
+  package <- as.character(substitute(package))
+  p <- do.call('lsp', list(package = package, what = 'path'))
+  f <- readLines(con <- file(file.path(p, file)))
+  on.exit(close(con))
+  cat(f, sep = '\n')
 }
 
 #' head/tail
@@ -1001,12 +1029,12 @@ Round <- function(x, target) {
     select <- seq_along(x)[diff.x != 0]
     wh <- which.max(diff.x[select])
     x[select[wh]] <- r.x[select[wh]] - 1
-    Round(x, target)
+    Recall(x, target)
   } else {
     select <- seq_along(x)[diff.x != 0]
     wh <- which.min(diff.x[select])
     x[select[wh]] <- r.x[select[wh]] + 1
-    Round(x, target)
+    Recall(x, target)
   }
 }
 
@@ -1024,8 +1052,9 @@ Round <- function(x, target) {
 #' @param which joining method; \code{'rbind'} or \code{'cbind'}
 #' @param deparse.level integer controlling the construction of labels in
 #' the case of non-matrix-like arguments (for the default method):\cr
-#' deparse.level = 0 constructs no labels; the default; \cr
-#' deparse.level = 1 or 2 constructs labels from the argument names
+#' \code{deparse.level = 0} constructs no labels; the default; \cr
+#' \code{deparse.level = 1} or \code{2} constructs labels from the argument
+#' names \cr see \code{\link{cbind}}
 #' 
 #' @seealso \pkg{qpcR}, \code{\link{cbind}}, \code{\link{rbind}}
 #' 
@@ -1454,7 +1483,7 @@ roll_fun <- function(x, n = 5, FUN = mean, ..., fromLast = FALSE, keep = FALSE) 
   sapply(if (fromLast) rev(l) else l, FUN, ...)
 }
 
-#' Round to nearest
+#' Round to
 #' 
 #' Round numerics to nearest multiple of \code{to}.
 #' 
@@ -1462,12 +1491,12 @@ roll_fun <- function(x, n = 5, FUN = mean, ..., fromLast = FALSE, keep = FALSE) 
 #' @param to nearest fraction or integer
 #' 
 #' @examples
-#' round2(mtcars$mpg, 5)
-#' round2(mtcars$mpg, .5)
+#' round_to(mtcars$mpg, 5)
+#' round_to(mtcars$mpg, .5)
 #' 
 #' @export
 
-round2 <- function(x, to = 1) round(x / to) * to
+round_to <- function(x, to = 1) round(x / to) * to
 
 #' Update R
 #' 
@@ -1847,7 +1876,7 @@ cast <- function(data, idvar = list(1), timevar = list(2),
 melt <- function(data, varying = list(1:ncol(data)), ...) {
   n <- names(data)
   if (!is.list(varying))
-    varying <- if (is.numeric(varying)) 
+    varying <- if (is.numeric(varying))
       list(varying) else list(which(n %in% varying))
   vl <- length(varying) == 1L
   ## use reshape defaults and set melt defaults
@@ -1867,4 +1896,38 @@ melt <- function(data, varying = list(1:ncol(data)), ...) {
   res <- do.call('reshape', l)
   res$'_id_' <- NULL
   `rownames<-`(res, NULL)
+}
+
+#' Install packages temporarily
+#' 
+#' This function will create a temporary \code{.libPath}, install, and load
+#' packages for use in a single \code{R} session. \cr \cr To install a repo
+#' from github temporarily, use \code{\link[devtools]{with_libpaths}}.
+#' 
+#' @param pkgs character vector of the names of packages whose current
+#' versions should be downloaded from the repositories
+#' @param lib character vector giving the library directories where to install
+#' \code{pkgs}; recycled as needed; if missing (default), a 
+#' \code{\link{tempdir}} will be created
+#' @param ... additional arguments passed to 
+#' \code{\link[utils]{install.packages}}
+#' 
+#' @examples
+#' \dontrun{
+#' install_temp(c('devtools','testthat'))
+#' }
+#' 
+#' @export
+
+install_temp <- function(pkgs, lib, ...) {
+  if (missing(lib))
+    lib <- tempdir()
+  lp <- .libPaths()
+  ## reset libPaths before restarting r session may not be desired
+  # on.exit(.libPaths(lp))
+  .libPaths(c(lp, lib))
+  utils::install.packages(pkgs = pkgs, lib = lib, ...)
+  for (ii in pkgs)
+    require(ii, character.only = TRUE)
+  invisible()
 }
