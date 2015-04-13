@@ -253,12 +253,14 @@ lsp <- function(package, what, pattern) {
 #' @param package package name, as a \code{\link{name}} or literal character
 #' string
 #' @param file file to return as a character string; usual options are
-#' \code{'DESCRIPTION'}, \code{'NEWS'}, \code{'INDEX'}, \code{'NAMESPACE'}
+#' \code{'DESCRIPTION'}, \code{'NEWS'}, \code{'INDEX'}, \code{'NAMESPACE'};
+#' partial matching is supported and case is ignored
 #' 
 #' @seealso \code{\link{lsp}}
 #' 
 #' @examples
 #' lsf(rawr, 'DESCRIPTION')
+#' lsf('rawr', 'des')
 #' 
 #' @export
 
@@ -266,8 +268,15 @@ lsf <- function(package, file = 'DESCRIPTION') {
   ## DESCRIPTION, INDEX, NEWS, NAMESPACE
   package <- as.character(substitute(package))
   p <- do.call('lsp', list(package = package, what = 'path'))
-  f <- readLines(con <- file(file.path(p, file)))
+  lf <- list.files(p)
+  ff <- lf[grepl(sprintf('(?i)^%s.*$', file), lf, perl = TRUE)]
+  if (!length(ff)) {
+    message(sprintf('File \'%s\' not found', file))
+    return(invisible())
+  }
+  f <- readLines(con <- file(fp <- file.path(p, ff)))
   on.exit(close(con))
+  message(sprintf('Showing file:\n%s\n', fp))
   cat(f, sep = '\n')
 }
 

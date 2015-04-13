@@ -11,7 +11,8 @@ lsf(package, file = "DESCRIPTION")
 string}
 
 \item{file}{file to return as a character string; usual options are
-\code{'DESCRIPTION'}, \code{'NEWS'}, \code{'INDEX'}, \code{'NAMESPACE'}}
+\code{'DESCRIPTION'}, \code{'NEWS'}, \code{'INDEX'}, \code{'NAMESPACE'};
+partial matching is supported and case is ignored}
 }
 \description{
 Prints package files (\code{DESCRIPTION}, \code{NEWS}, \code{INDEX},
@@ -19,6 +20,7 @@ Prints package files (\code{DESCRIPTION}, \code{NEWS}, \code{INDEX},
 }
 \examples{
 lsf(rawr, 'DESCRIPTION')
+lsf('rawr', 'des')
 }
 \seealso{
 \code{\link{lsp}}
