@@ -5,7 +5,7 @@
 # helpExtract, Round, bind_all, cbindx, rbindx, rbindfill, interleave, outer2,
 # merge2, locf, roll_fun, round_to, updateR, read_clip, fcols, classMethods,
 # regcaptures, path_extract, fname, file_name, file_ext, cast, melt,
-# install_temp
+# install_temp, nestedMerge
 ###
 
 #' rawr operators
@@ -1939,4 +1939,82 @@ install_temp <- function(pkgs, lib, ...) {
   for (ii in pkgs)
     require(ii, character.only = TRUE)
   invisible()
+}
+
+#' Merge nested lists
+#' 
+#' Recursive functions to merge nested lists.
+#' 
+#' \code{nestedmerge} recursively calls itself to merge similarly-structured
+#' named \emph{or} unnamed lists. Unnamed lists results in a "horizontal" 
+#' merge; named lists will be matched based on names. In either case, the
+#' matching element (or list(s) of elements(s)) should also have the same
+#' structure.
+#' 
+#' \code{nestedMerge} is a convenience wrapper for \code{nestedmerge} in cases
+#' where list \code{a} contains elements not in list \code{b}. If using 
+#' \code{nestedmerge} in this case, only elements of list \code{a} will be
+#' merged and returned.
+#' 
+#' @param a,b lists
+#' @seealso
+#' Adapted from \url{http://stackoverflow.com/questions/23483421/combine-merge-lists-by-elements-names-list-in-list}
+#' 
+#' @examples
+#' ## `l1` and `l2` have similar structures
+#' l1 <- list(a = list(1:2, NULL), b = list(1:3, NULL), c = list(1:5))
+#' l2 <- list(a = list(NULL, 0:1), b = list(NULL, 4:6))
+#' l3 <- list(a = list(NULL, 0:1), b = list(4:6))
+#' 
+#' nestedMerge(l1, l2)
+#' 
+#' ## "fails" for `b` since `l1$b` and `l3$b` are not structured similarly
+#' nestedMerge(l1, l3)
+#' 
+#' l1 <- list(integers = 1:3, letters = letters[1:3], words = c('two','strings'),
+#'            random = rnorm(5))
+#' l2 <- list(letters = letters[24:26], booleans = c(TRUE, TRUE, FALSE),
+#'            words = 'another', floating = c(1.2, 2.4), integers = 1:3 * 10)
+#'            
+#' nestedMerge(l1, l2)
+#' 
+#' ## compare to
+#' nestedmerge(l1, l2)
+#' 
+#' @export
+
+nestedMerge <- function(a, b) {
+  if (is.list(a) & is.list(b)) {
+    nn <- setdiff(names(b), names(a))
+    a <- c(a, setNames(vector('list', length(nn)), nn))
+  }
+  nestedmerge(a, b)
+}
+
+#' @rdname nestedMerge
+#' @export
+nestedmerge <- function(a, b) {
+  if (is.list(a) & is.list(b)) {
+    out <- list()
+    if (!is.null(names(a))) {
+      for (n in names(a)) {
+        if (n %in% names(b) && !is.null(b[[n]])) {
+          out <- append(out, list(Recall(a[[n]], b[[n]])))
+        } else {
+          out <- append(out, list(a[[n]]))
+        }
+        names(out)[length(out)] <- n
+      }
+    } else {
+      for (i in seq_along(a))
+        if (i <= length(b) && !is.null(b[[i]])) {
+          out <- append(out, Recall(a[[i]], b[[i]]))
+        } else {
+          out <- append(out, list(a[[i]]))
+        }
+    }
+    return(out)
+  } else {
+    return(list(c(a, b)))
+  }
 }
