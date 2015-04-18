@@ -10,6 +10,6 @@ clear(...)
 \item{...}{ignored}
 }
 \description{
-Clear the console window
+Clear the console window.
 }
 

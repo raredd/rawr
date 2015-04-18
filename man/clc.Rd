@@ -10,6 +10,6 @@ clc(all = FALSE)
 \item{all}{logical; if \code{TRUE}, also removes hidden files}
 }
 \description{
-Clear the workspace
+Clear the workspace by removing all objects in \code{\link{ls}}.
 }
 

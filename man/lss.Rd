@@ -30,11 +30,9 @@ Provides more details of objects in workspace.
 }
 \examples{
 lss()
-\dontrun{
 a <- rnorm(100000)
 b <- matrix(1, 1000, 100)
 lss()
-}
 }
 \seealso{
 \code{\link{ls}}, \code{\link{ls.str}}, \code{\link{objects}}

@@ -40,7 +40,7 @@ equal; returns \code{TRUE} in this case, \code{FALSE} in every other case.
 }
 \examples{
 ident(1, 1.)
-ident(1, 1., as.integer(1))
+ident(1, 1., 1L)
 
 # for unusual R objects:
 ident(.GlobalEnv, environment(), globalenv(), as.environment(1))

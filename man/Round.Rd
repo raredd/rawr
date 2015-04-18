@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{Round}
 \alias{Round}
-\title{Round to specified target}
+\title{Round vector to target sum}
 \usage{
 Round(x, target)
 }

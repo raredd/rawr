@@ -4,14 +4,14 @@
 \alias{search_df}
 \title{Search function for data frames}
 \usage{
-search_df(pattern, df, col.name, var = 0, ignore.case = TRUE, ...)
+search_df(pattern, data, col.name, var = 0, ignore.case = TRUE, ...)
 }
 \arguments{
 \item{pattern}{string to find}
 
-\item{df}{data frame to search}
+\item{data}{data frame to search}
 
-\item{col.name}{column name in \code{df} to search}
+\item{col.name}{column name in \code{data} to search}
 
 \item{var}{variation; maximum distance allowed for a match; see
 \code{\link{agrep}}}
@@ -19,14 +19,14 @@ search_df(pattern, df, col.name, var = 0, ignore.case = TRUE, ...)
 \item{ignore.case}{logical; if \code{FALSE}, the pattern matching is
 \emph{case-sensitive}, and if \code{TRUE}, case is ignored during matching}
 
-\item{...}{other arguments passed to \code{\link{agrep}}}
+\item{...}{additional arguments passed to \code{\link{agrep}}}
 }
 \value{
-Subset of the original \code{df} where the \code{pattern} was
-found in the specificed \code{col.name}
+Subset of the original \code{data} where the \code{pattern} was found in
+the specified \code{col.name}.
 }
 \description{
-Searches a data frame column for matches
+Searches a data frame column for matches.
 }
 \examples{
 df <- data.frame(islands = names(islands)[1:32], mtcars)

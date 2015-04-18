@@ -29,9 +29,13 @@ the case of non-matrix-like arguments (for the default method):\cr
 names \cr see \code{\link{cbind}}}
 }
 \description{
-Utilities for binding objects with inconsistent dimensions. \code{bind_all}
-and \code{rbindfill} are used for binding vectors, the latter specifically
-for \code{\link{rbind}}ing \emph{named} vectors a la a "stacking" merge.
+Utilities for binding objects with inconsistent dimensions.
+}
+\details{
+\code{bind_all} and \code{rbindfill} are used for binding vectors,
+the latter specifically for \code{\link{rbind}}ing \emph{named} vectors
+a la a "stacking" merge.
+
 \code{cbindx} and \code{rbindx} take vector-, matrix-, and data frame-like
 objects and bind normally, filling with \code{NA}s where dimensions are
 not equal.

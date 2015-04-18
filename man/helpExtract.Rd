@@ -4,18 +4,18 @@
 \alias{helpExtract}
 \title{Extract R help files}
 \usage{
-helpExtract(f, show.sections = FALSE, section = "Usage", type = "m_code",
-  ...)
+helpExtract(FUN, show.sections = FALSE, section = "Usage",
+  type = "m_code", ...)
 }
 \arguments{
-\item{f}{a function}
+\item{FUN}{a function}
 
 \item{show.sections}{logical; if \code{TRUE}, returns \code{section} options
-for \code{f}}
+for \code{FUN}}
 
 \item{section}{section to extract (default is \code{"Usage"}}
 
-\item{type}{type of character vector you want returned; deefaults is
+\item{type}{type of character vector you want returned; default is
 \code{"m_code"}, see details}
 
 \item{...}{additional arguments passed to \code{utils:::.getHelpFile}}

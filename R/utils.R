@@ -118,11 +118,9 @@
 #' 
 #' @examples
 #' lss()
-#' \dontrun{
 #' a <- rnorm(100000)
 #' b <- matrix(1, 1000, 100)
 #' lss()
-#' }
 #' 
 #' @export
 
@@ -551,7 +549,8 @@ psum <- function(..., na.rm = FALSE) {
 #' @param ignore.environment logical indicating if their environments should be
 #' ignored when comparing \code{closure}s.
 #' 
-#' @return A single logical value, \code{TRUE} or \code{FALSE}, never \code{NA}
+#' @return
+#' A single logical value, \code{TRUE} or \code{FALSE}, never \code{NA}
 #' and never anything other than a single value.
 #' 
 #' @seealso \code{\link{identical}}; \code{\link{all.equal}} for 
@@ -561,7 +560,7 @@ psum <- function(..., na.rm = FALSE) {
 #' 
 #' @examples
 #' ident(1, 1.)
-#' ident(1, 1., as.integer(1))
+#' ident(1, 1., 1L)
 #' 
 #' # for unusual R objects:
 #' ident(.GlobalEnv, environment(), globalenv(), as.environment(1))
@@ -582,11 +581,9 @@ psum <- function(..., na.rm = FALSE) {
 
 ident <- function(..., num.eq = TRUE, single.NA = TRUE, attrib.as.set = TRUE,
                   ignore.bytecode = TRUE, ignore.environment = FALSE) {
-  
   lst <- list(...)
   if (length(lst) < 2L)
     stop('must provide at least two objects')
-  
   zzz <- sapply(1:(length(lst) - 1), 
                 function(x) 
                   identical(lst[x], lst[x + 1], 
@@ -595,23 +592,25 @@ ident <- function(..., num.eq = TRUE, single.NA = TRUE, attrib.as.set = TRUE,
                             attrib.as.set = attrib.as.set,
                             ignore.bytecode = ignore.bytecode, 
                             ignore.environment = ignore.environment))
-  return(all(zzz))
+  all(zzz)
 }
 
 #' Search function for data frames
 #' 
-#' Searches a data frame column for matches
+#' Searches a data frame column for matches.
 #' 
 #' @param pattern string to find
-#' @param df data frame to search
-#' @param col.name column name in \code{df} to search
+#' @param data data frame to search
+#' @param col.name column name in \code{data} to search
 #' @param var variation; maximum distance allowed for a match; see 
 #' \code{\link{agrep}}
 #' @param ignore.case logical; if \code{FALSE}, the pattern matching is 
 #' \emph{case-sensitive}, and if \code{TRUE}, case is ignored during matching
-#' @param ... other arguments passed to \code{\link{agrep}}
-#' @return Subset of the original \code{df} where the \code{pattern} was
-#' found in the specificed \code{col.name}
+#' @param ... additional arguments passed to \code{\link{agrep}}
+#' 
+#' @return
+#' Subset of the original \code{data} where the \code{pattern} was found in 
+#' the specified \code{col.name}.
 #' 
 #' @examples
 #' df <- data.frame(islands = names(islands)[1:32], mtcars)
@@ -624,43 +623,40 @@ ident <- function(..., num.eq = TRUE, single.NA = TRUE, attrib.as.set = TRUE,
 #' 
 #' @export
 
-search_df <- function(pattern, df, col.name, var = 0, ignore.case = TRUE, ...) {
-  
-  tmp1 <- as.character(substitute(pattern))
-  tmp2 <- as.character(substitute(col.name))
-  FIND <- agrep(tmp1, df[ , tmp2],
-                ignore.case = ignore.case, max.distance = var, ...)
-  df[c(FIND), ]
+search_df <- function(pattern, data, col.name, var = 0,
+                      ignore.case = TRUE, ...) {
+  p <- as.character(substitute(pattern))
+  x <- as.character(substitute(col.name))
+  zzz <- agrep(p, data[, x], ignore.case = ignore.case,
+               max.distance = var, ...)
+  df[zzz, ]
 }
 
 #' Search history
 #' 
-#' Searches Rhistory file for pattern matches
+#' Searches Rhistory file for pattern matches.
 #' 
 #' @param x numeric or character; if numeric, shows the most recent \code{n} 
 #' lines in \code{.Rhistory}; if character, searches for pattern matches
 #' @param ... additional arguments passed to \code{\link{grep}}
 #' 
-#' @return Returns a list of recent commands that match \code{pattern}
+#' @return
+#' A list of recent commands that match \code{pattern}.
 #' 
 #' @examples
-#' \dontrun{
 #' search_hist()
 #' search_hist(25)
 #' search_hist('?')
 #' search_hist('?', fixed = TRUE)
 #' search_hist('\\?')
-#' }
 #' 
 #' @export
 
 search_hist <- function (x, ...) {
-  
   hist <- tryCatch(readLines('.Rhistory'),
                    warning = function(w) message("No history found"),
                    finally = return(invisible()))
   lhist <- length(hist)
-  
   if (is.numeric(x))
     return(hist[lhist:(lhist - x + 1)])
   if (is.character(x))
@@ -690,8 +686,8 @@ search_hist <- function (x, ...) {
 #' fapply(tmp, list(mean, median), na.rm = TRUE)
 #' 
 #' ## define a new function
-#' `95% CI` <- function(x) 
-#'      paste0('(', paste0(quantile(x, c(.025, .975)), collapse = ', '), ')')
+#' `95% CI` <- function(x)
+#'   sprintf('(%s)', paste0(quantile(x, c(.025, .975)), collapse = ', '))
 #' fapply(mtcars, list(median, `95% CI`))
 #' 
 #' ## compare: 
@@ -709,7 +705,7 @@ fapply <- function(X, FUN, ...) {
 #' Rescale numeric vector
 #' 
 #' Rescale a numeric vector to have specified maximum and minimum; shamelessly
-#' stolen from hadley's \code{scales} package
+#' stolen from hadley's \code{scales} package.
 #' 
 #' @param x numeric vector of values
 #' @param to output range (numeric vector of length two)
@@ -717,6 +713,7 @@ fapply <- function(X, FUN, ...) {
 #' \code{from} is calculated from the range of \code{x}
 #' 
 #' @seealso \code{\link[scales]{rescale}}; \code{\link[scales]{zero_range}}
+#' 
 #' @examples
 #' rescaler(1:100)
 #' rescaler(runif(10))
@@ -725,25 +722,17 @@ fapply <- function(X, FUN, ...) {
 #' @export
 
 rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
-  
   zero_range <- function (x, tol = .Machine$double.eps * 100) {
-    if (length(x) == 1) 
-      return(TRUE)
-    if (length(x) != 2) 
-      stop('x must be length one or two')
-    if (any(is.na(x))) 
-      return(NA)
-    if (x[1] == x[2]) 
-      return(TRUE)
-    if (all(is.infinite(x))) 
-      return(FALSE)
+    if (length(x) == 1) return(TRUE)
+    if (length(x) != 2) stop('x must be length one or two')
+    if (any(is.na(x))) return(NA)
+    if (x[1] == x[2]) return(TRUE)
+    if (all(is.infinite(x))) return(FALSE)
     m <- min(abs(x))
-    if (m == 0) 
-      return(FALSE)
+    if (m == 0) return(FALSE)
     abs((x[1] - x[2]) / m) < tol
   }
-  
-  if (zero_range(from) || zero_range(to)) 
+  if (zero_range(from) || zero_range(to))
     return(rep(mean(to), length(x)))
   (x - from[1]) / diff(from) * diff(to) + to[1]
 }
@@ -765,9 +754,9 @@ try_require <- function(package) {
       sapply(package, require, quietly = TRUE, 
              character.only = TRUE, warn.conflicts=FALSE)))
   missing <- package[!available]
-  
   if (length(missing) > 0)
-    stop(paste(package, collapse = ', '), ' package not found.', call. = FALSE)
+    stop(paste(package, collapse = ', '), ' package not found.',
+         call. = FALSE)
 }
 
 #' List to file
@@ -800,7 +789,6 @@ try_require <- function(package) {
 #' @export
 
 list2file <- function(l, targetdir = getwd(), sep, ...) {
-  
   if (!is.list(l))
     stop('\'l\' must be a list')
   if (is.null(names(l)) || any(is.na(names(l))))
@@ -824,7 +812,7 @@ list2file <- function(l, targetdir = getwd(), sep, ...) {
                                  ifelse(sep == ',','csv','dat')),
                   row.names = FALSE, quote = FALSE, ...))
   message(sprintf('NOTE: %s written to %s', iprint(names(l)), targetdir))
-  return(invisible())
+  invisible()
 }
 
 #' Restart
@@ -859,7 +847,7 @@ Restart <- function(afterRestartCommand = '')
 
 #' clc
 #' 
-#' Clear the workspace
+#' Clear the workspace by removing all objects in \code{\link{ls}}.
 #' 
 #' @param all logical; if \code{TRUE}, also removes hidden files
 #' 
@@ -870,7 +858,7 @@ clc <- function(all = FALSE)
 
 #' clear
 #' 
-#' Clear the console window
+#' Clear the console window.
 #' 
 #' @param ... ignored
 #' 
@@ -883,15 +871,6 @@ clear <- function(...) cat('\014')
 #' Extracts specified portions of R help files (from \emph{loaded} libraries)
 #' for use in Sweave or R-markdown documents.
 #' 
-#' @param f a function
-#' @param show.sections logical; if \code{TRUE}, returns \code{section} options
-#' for \code{f}
-#' @param section section to extract (default is \code{"Usage"}
-#' @param type type of character vector you want returned; deefaults is 
-#' \code{"m_code"}, see details
-#' @param ... additional arguments passed to \code{utils:::.getHelpFile}
-#' 
-#' @details
 #' The \code{type} argument accepts:
 #' \itemize{ 
 #' \item \code{"m_code"}: Markdown code chunks; for use with markdown documents
@@ -923,11 +902,18 @@ clear <- function(...) cat('\014')
 #'      options = list(tidy = FALSE, eval = FALSE))}
 #' }
 #' 
+#' @param FUN a function
+#' @param show.sections logical; if \code{TRUE}, returns \code{section} options
+#' for \code{FUN}
+#' @param section section to extract (default is \code{"Usage"}
+#' @param type type of character vector you want returned; default is 
+#' \code{"m_code"}, see details
+#' @param ... additional arguments passed to \code{utils:::.getHelpFile}
+#' 
 #' @return 
 #' A character vector to be used in a Sweave or R-markdown document.
 #' 
 #' @examples
-#' 
 #' cat(helpExtract(print), sep = "\n")
 #' 
 #' cat(helpExtract(print, type = 'm_text'))
@@ -936,9 +922,8 @@ clear <- function(...) cat('\014')
 #' 
 #' @export
 
-helpExtract <- function(f, show.sections = FALSE, section = 'Usage', 
+helpExtract <- function(FUN, show.sections = FALSE, section = 'Usage', 
                         type = 'm_code', ...) {
-  
   ## helpers 
   # tools:::fetchRdDB
   fetchRdDB <- function (filebase, key = NULL) {
@@ -980,12 +965,11 @@ helpExtract <- function(f, show.sections = FALSE, section = 'Usage',
     fetchRdDB(RdDB, basename(file))
   }
   
-  A <- deparse(substitute(f))
+  A <- deparse(substitute(FUN))
   x <- capture.output(tools::Rd2txt(getHelpFile(utils::help(A, ...)),
                                      options = list(sectionIndent = 0)))
   ## section start lines
   B <- grep('^_', x)
-  ## remove "_\b"
   x <- gsub('_\b', '', x, fixed = TRUE)
   if (show.sections)
     return(gsub(':','', x[B]))
@@ -993,7 +977,7 @@ helpExtract <- function(f, show.sections = FALSE, section = 'Usage',
   X[B] <- 1
   out <- split(x, cumsum(X))
   out <- out[[which(sapply(out, function(x) 
-    grepl(section, x[1], fixed = F, ignore.case = TRUE)))]][-c(1, 2)]
+    grepl(section, x[1], fixed = FALSE, ignore.case = TRUE)))]][-c(1, 2)]
   while (TRUE) {
     out <- out[-length(out)]
     if (out[length(out)] != '')
@@ -1010,7 +994,7 @@ helpExtract <- function(f, show.sections = FALSE, section = 'Usage',
   )
 }
 
-#' Round to specified target
+#' Round vector to target sum
 #' 
 #' Rounds a numeric vector constrained to sum to a \code{target} value.
 #' 
@@ -1049,9 +1033,12 @@ Round <- function(x, target) {
 
 #' Bind objects
 #' 
-#' Utilities for binding objects with inconsistent dimensions. \code{bind_all}
-#' and \code{rbindfill} are used for binding vectors, the latter specifically
-#' for \code{\link{rbind}}ing \emph{named} vectors a la a "stacking" merge.
+#' Utilities for binding objects with inconsistent dimensions.
+#' 
+#' \code{bind_all} and \code{rbindfill} are used for binding vectors,
+#' the latter specifically for \code{\link{rbind}}ing \emph{named} vectors
+#' a la a "stacking" merge.
+#' 
 #' \code{cbindx} and \code{rbindx} take vector-, matrix-, and data frame-like
 #' objects and bind normally, filling with \code{NA}s where dimensions are
 #' not equal.
@@ -1332,9 +1319,15 @@ rbindfill <- function(...) {
 #' \code{...} are matrices or data frames
 #' 
 #' @examples
-#' interleave(letters[1:3], LETTERS[3:1], letters[26:24])
-#' interleave(t(matrix(1:9, 3, 3)), t(matrix(letters[1:9], 3, 3)), which = 'rbind')
-#' interleave(matrix(1:9, 3, 3), matrix(letters[1:9], 3, 3), which = 'cbind')
+#' interleave(letters[1:3],
+#'            LETTERS[3:1],
+#'            letters[26:24])
+#' interleave(t(matrix(1:9, 3, 3)),
+#'            t(matrix(1:9 * 10, 3, 3)),
+#'            which = 'rbind')
+#' interleave(matrix(1:9, 3, 3),
+#'            matrix(1:9 * 10, 3, 3),
+#'            which = 'cbind')
 #' 
 #' @export
 
@@ -1383,7 +1376,7 @@ outer2 <- function(..., FUN) {
 
 #' Recursively merge a list of data frames
 #' 
-#' Use \code{\link{merge}} to join \code{n} data frames
+#' Use \code{\link{merge}} to join \code{n} data frames.
 #' 
 #' @param l list of data frames or objects to be coerced
 #' @param ... additional arguments passed to \code{merge} (eg, \code{by}, 
@@ -1395,7 +1388,8 @@ outer2 <- function(..., FUN) {
 #' a <- data.frame(id = 1:10, a = rnorm(10))
 #' b <- data.frame(id = 4:6, b = rnorm(3))
 #' c <- data.frame(id = 4:14, c = rpois(11, 1))
-#' d <- matrix(c(1:5, rnorm(5)), nrow = 5, dimnames = list(NULL, c('id', 'd')))
+#' d <- matrix(c(1:5, rnorm(5)), nrow = 5,
+#'             dimnames = list(NULL, c('id', 'd')))
 #' 
 #' merge2(list(a, b, c))
 #' merge2(list(a, b, c), all = TRUE)
@@ -1723,12 +1717,12 @@ regcaptures <- function(x, m) {
 #' \code{file_name} and \code{file_ext} are convenience functions that only
 #' return the file name or file extension, respectively.
 #' 
-#' @param path file path as character string
-#' 
-#' Examples where this function fails:
+#' Known examples where this function fails:
 #' \itemize{
-#'  \item{\code{.tar.gz}}{files with compound file extensions}
+#'  \item{\code{.tar.gz} }{files with compound file extensions}
 #' }
+#' 
+#' @param path file path as character string
 #' 
 #' @seealso \code{\link[rawr]{regcaptures}}, \code{\link{basename}},
 #' \code{\link{dirname}}
@@ -1785,7 +1779,7 @@ file_ext <- function(path) path_extract(path)[, 'extension']
 #' overwritten by simply passing arguments to \dots (names must match exactly
 #' and no partial matching is allowed or they will be ignored).
 #' 
-#' By default, \code{cast} assumes\code{data} is a data frame with at least
+#' By default, \code{cast} assumes \code{data} is a data frame with at least
 #' three columns representing id, time point, and value variables (any
 #' additional columns will be considered value variables as well). \code{melt}
 #' by default assumes no id variables and will melt all columns.
@@ -1810,18 +1804,18 @@ file_ext <- function(path) path_extract(path)[, 'extension']
 #' @examples
 #' ## default of melt is no id variable so all are melted
 #' melt(mtcars)
-#' melt(mtcars, list(2:3, 4:5))
 #' 
 #' dat <- data.frame(id = rep(1:4, rep(2, 4)),
 #'                   visit = I(rep(c('Before', 'After'), 4)),
 #'                   x = abs(rpois(4, 10)), y = -runif(4))
 #' 
+#' ## equivalent ways to give `varying`
 #' melt(dat, list(3:4))
 #' melt(dat, 3:4)
-#' l <- melt(dat, c('x','y'))
+#' (l <- melt(dat, c('x','y')))
 #' 
+#' ## equivalent ways to give `idvar`, `timevar`, `v.names`
 #' cast(l, c('id','visit'), 'variable', 'value')
-#' ## or
 #' cast(l, list('id','visit'), 3, 4)
 #' cast(l, 1:2, 3, list('value'))
 #' 
@@ -1844,7 +1838,7 @@ file_ext <- function(path) path_extract(path)[, 'extension']
 #' 
 #' ## melt or cast can also be undone as other reshape objects
 #' w1 <- reshape(Indometh, v.names = "conc", idvar = "Subject",
-#'               timevar = "time", direction = "wide")
+#'               timevar = "time", direction = "wide", new.row.names = 1:6)
 #' w2 <- cast(Indometh, v.names = "conc", idvar = "Subject",
 #'            timevar = "time", direction = "wide")
 #' 
@@ -1971,10 +1965,11 @@ install_temp <- function(pkgs, lib, ...) {
 #' ## "fails" for `b` since `l1$b` and `l3$b` are not structured similarly
 #' nestedMerge(l1, l3)
 #' 
-#' l1 <- list(integers = 1:3, letters = letters[1:3], words = c('two','strings'),
-#'            random = rnorm(5))
+#' l1 <- list(integers = 1:3, letters = letters[1:3],
+#'            words = c('two','strings'), rand = rnorm(5))
 #' l2 <- list(letters = letters[24:26], booleans = c(TRUE, TRUE, FALSE),
-#'            words = 'another', floating = c(1.2, 2.4), integers = 1:3 * 10)
+#'            words = 'another', floating = c(1.2, 2.4),
+#'            integers = 1:3 * 10)
 #'            
 #' nestedMerge(l1, l2)
 #' 
@@ -1999,7 +1994,7 @@ nestedmerge <- function(a, b) {
     if (!is.null(names(a))) {
       for (n in names(a)) {
         if (n %in% names(b) && !is.null(b[[n]])) {
-          out <- append(out, list(Recall(a[[n]], b[[n]])))
+          out <- append(out, c(Recall(a[[n]], b[[n]])))
         } else {
           out <- append(out, list(a[[n]]))
         }
@@ -2014,7 +2009,5 @@ nestedmerge <- function(a, b) {
         }
     }
     return(out)
-  } else {
-    return(list(c(a, b)))
-  }
+  } else return(list(c(a, b)))
 }

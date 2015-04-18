@@ -33,7 +33,7 @@ fapply(tmp, list(mean, median), na.rm = TRUE)
 
 ## define a new function
 `95\% CI` <- function(x)
-     paste0('(', paste0(quantile(x, c(.025, .975)), collapse = ', '), ')')
+  sprintf('(\%s)', paste0(quantile(x, c(.025, .975)), collapse = ', '))
 fapply(mtcars, list(median, `95\% CI`))
 
 ## compare:

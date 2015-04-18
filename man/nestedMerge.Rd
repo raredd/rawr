@@ -38,10 +38,11 @@ nestedMerge(l1, l2)
 ## "fails" for `b` since `l1$b` and `l3$b` are not structured similarly
 nestedMerge(l1, l3)
 
-l1 <- list(integers = 1:3, letters = letters[1:3], words = c('two','strings'),
-           random = rnorm(5))
+l1 <- list(integers = 1:3, letters = letters[1:3],
+           words = c('two','strings'), rand = rnorm(5))
 l2 <- list(letters = letters[24:26], booleans = c(TRUE, TRUE, FALSE),
-           words = 'another', floating = c(1.2, 2.4), integers = 1:3 * 10)
+           words = 'another', floating = c(1.2, 2.4),
+           integers = 1:3 * 10)
 
 nestedMerge(l1, l2)
 

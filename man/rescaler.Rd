@@ -16,7 +16,7 @@ rescaler(x, to = c(0, 1), from = range(x, na.rm = TRUE))
 }
 \description{
 Rescale a numeric vector to have specified maximum and minimum; shamelessly
-stolen from hadley's \code{scales} package
+stolen from hadley's \code{scales} package.
 }
 \examples{
 rescaler(1:100)

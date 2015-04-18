@@ -13,18 +13,16 @@ lines in \code{.Rhistory}; if character, searches for pattern matches}
 \item{...}{additional arguments passed to \code{\link{grep}}}
 }
 \value{
-Returns a list of recent commands that match \code{pattern}
+A list of recent commands that match \code{pattern}.
 }
 \description{
-Searches Rhistory file for pattern matches
+Searches Rhistory file for pattern matches.
 }
 \examples{
-\dontrun{
 search_hist()
 search_hist(25)
 search_hist('?')
 search_hist('?', fixed = TRUE)
 search_hist('\\\\?')
-}
 }
 

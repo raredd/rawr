@@ -37,7 +37,7 @@ These functions set defaults for reshaping data; any defaults may be
 overwritten by simply passing arguments to \dots (names must match exactly
 and no partial matching is allowed or they will be ignored).
 
-By default, \code{cast} assumes\code{data} is a data frame with at least
+By default, \code{cast} assumes \code{data} is a data frame with at least
 three columns representing id, time point, and value variables (any
 additional columns will be considered value variables as well). \code{melt}
 by default assumes no id variables and will melt all columns.
@@ -50,18 +50,18 @@ for convenience.
 \examples{
 ## default of melt is no id variable so all are melted
 melt(mtcars)
-melt(mtcars, list(2:3, 4:5))
 
 dat <- data.frame(id = rep(1:4, rep(2, 4)),
                   visit = I(rep(c('Before', 'After'), 4)),
                   x = abs(rpois(4, 10)), y = -runif(4))
 
+## equivalent ways to give `varying`
 melt(dat, list(3:4))
 melt(dat, 3:4)
-l <- melt(dat, c('x','y'))
+(l <- melt(dat, c('x','y')))
 
+## equivalent ways to give `idvar`, `timevar`, `v.names`
 cast(l, c('id','visit'), 'variable', 'value')
-## or
 cast(l, list('id','visit'), 3, 4)
 cast(l, 1:2, 3, list('value'))
 
@@ -84,7 +84,7 @@ melt(dat, list(c('x','xx'), c('y','yy')))
 
 ## melt or cast can also be undone as other reshape objects
 w1 <- reshape(Indometh, v.names = "conc", idvar = "Subject",
-              timevar = "time", direction = "wide")
+              timevar = "time", direction = "wide", new.row.names = 1:6)
 w2 <- cast(Indometh, v.names = "conc", idvar = "Subject",
            timevar = "time", direction = "wide")
 

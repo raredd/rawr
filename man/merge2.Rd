@@ -13,13 +13,14 @@ merge2(l, ...)
 \code{all}, etc)}
 }
 \description{
-Use \code{\link{merge}} to join \code{n} data frames
+Use \code{\link{merge}} to join \code{n} data frames.
 }
 \examples{
 a <- data.frame(id = 1:10, a = rnorm(10))
 b <- data.frame(id = 4:6, b = rnorm(3))
 c <- data.frame(id = 4:14, c = rpois(11, 1))
-d <- matrix(c(1:5, rnorm(5)), nrow = 5, dimnames = list(NULL, c('id', 'd')))
+d <- matrix(c(1:5, rnorm(5)), nrow = 5,
+            dimnames = list(NULL, c('id', 'd')))
 
 merge2(list(a, b, c))
 merge2(list(a, b, c), all = TRUE)

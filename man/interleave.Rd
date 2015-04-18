@@ -16,8 +16,14 @@ interleave(..., which)
 Interleave rows (or columns) of vectors, matrices, or data frames.
 }
 \examples{
-interleave(letters[1:3], LETTERS[3:1], letters[26:24])
-interleave(t(matrix(1:9, 3, 3)), t(matrix(letters[1:9], 3, 3)), which = 'rbind')
-interleave(matrix(1:9, 3, 3), matrix(letters[1:9], 3, 3), which = 'cbind')
+interleave(letters[1:3],
+           LETTERS[3:1],
+           letters[26:24])
+interleave(t(matrix(1:9, 3, 3)),
+           t(matrix(1:9 * 10, 3, 3)),
+           which = 'rbind')
+interleave(matrix(1:9, 3, 3),
+           matrix(1:9 * 10, 3, 3),
+           which = 'cbind')
 }
 
