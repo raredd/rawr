@@ -22,7 +22,7 @@
 #' 
 #' @examples
 #' data(mtcars)
-#' library(ggplot2)
+#' library('ggplot2')
 #' 
 #' tmp <- ggplot(mtcars, aes(factor(1), fill = factor(cyl))) + 
 #'   geom_bar(width = 1)
@@ -219,10 +219,11 @@ click_shape <- function(shape = 'line', col = 'black', border = col, trans = NUL
 #' @param newpage draw new (empty) page first; see 
 #' \code{\link[ggplot2]{print.ggplot}}
 #' @param vp viewport to draw plot in; see \code{\link[ggplot2]{print.ggplot}}
+#' 
 #' @return facet_adjust object that inherits \code{\link[gtable]{gtable}} class
 #' 
 #' @examples
-#' library(ggplot2)
+#' library('ggplot2')
 #' # missing some labels 
 #' (tmp <- ggplot(diamonds[1:100, ], aes(carat, price, colour = clarity)) + 
 #'   geom_point() + facet_wrap( ~ cut))
@@ -237,7 +238,7 @@ facet_adjust <- function(x, pos = c('up', 'down'),
   pos <- match.arg(pos)
   p <- ggplot_build(x)
   gtable <- ggplot_gtable(p)
-#   dev.off() # this prevented plots from being rendered in knitr
+  # dev.off() # this prevented plots from being rendered in knitr
   # finding dimensions
   dims <- apply(p$panel$layout[2:3], 2, max)
   nrow <- dims[1]
@@ -262,7 +263,6 @@ facet_adjust <- function(x, pos = c('up', 'down'),
     }
   }
   class(gtable) <- c('facet_adjust','gtable','ggplot','gg')
-  
   gtable
 }
 
@@ -294,24 +294,24 @@ print.facet_adjust <- function(x, newpage = is.null(vp), vp = NULL) {
 #' 
 #' Caterpillar plots for random effects models using ggplot.
 #' 
+#' Behaves like \code{\link[lattice]{qqmath}} and 
+#' \code{\link[lattice]{dotplot}} from the lattice package; also handles models
+#' with multiple correlated random effects
+#' 
 #' @param re random effects from lmer object
 #' @param qq if \code{TRUE}, returns normal q/q plot; else returns caterpillar 
 #' dotplot
 #' @param likeDotplot if \code{TRUE}, uses different scales for random effects,
 #' i.e., \code{\link[ggplot2]{facet_wrap}}
-#' @details Behaves like \code{\link[lattice]{qqmath}} and 
-#' \code{\link[lattice]{dotplot}} from the lattice package; also handles models
-#' with multiple correlated random effects
 #' 
 #' @examples
 #' \donttest{
-#' library(lme4)
+#' library('lme4')
 #' fit <- lmer(Reaction ~ Days + (Days | Subject), data = sleepstudy)
 #' 
-#' # this function
 #' ggcaterpillar(ranef(fit, condVar = TRUE))
 #' 
-#' # for comparison (requires lattice package)
+#' # compare (requires lattice package)
 #' lattice::qqmath(ranef(fit, condVar = TRUE))
 #' }
 #' @export
@@ -328,12 +328,11 @@ ggcaterpillar <- function(re, qq  =  TRUE, likeDotplot  =  TRUE) {
     ord  <- unlist(lapply(x, order)) + 
       rep((0:(ncol(x) - 1)) * nrow(x), each = nrow(x))
     pDf  <- data.frame(y = unlist(x)[ord],
-                       ci = 1.96*se[ord],
+                       ci = 1.96 * se[ord],
                        nQQ = rep(qnorm(ppoints(nrow(x))), ncol(x)),
                        ID = factor(rep(rownames(x), ncol(x))[ord], 
                                    levels = rownames(x)[ord]),
                        ind = gl(ncol(x), nrow(x), labels = names(x)))
-    
     if (qq) {
       ## normal q/q plot
       p <- ggplot(pDf, aes(nQQ, y)) + 
@@ -353,22 +352,25 @@ ggcaterpillar <- function(re, qq  =  TRUE, likeDotplot  =  TRUE) {
       p <- p + xlab('Levels') + ylab('Random effects')
     }
     
-    p <- p + theme_bw() + 
+    p + theme_bw() + 
       theme(legend.position = 'none') + 
       geom_hline(yintercept = 0) + 
       geom_errorbar(aes(ymin = y - ci, ymax = y + ci), 
                     width = 0, colour = 'black') + 
-      geom_point(aes(size = 1.2), colour = 'blue') 
-    
-    return(p)
+      geom_point(aes(size = 1.2), colour = 'blue')
   }
-  
   lapply(re, f)
 }
 
 #' ggHeatmap
 #' 
-#' Function to plot a heat map using \code{ggplot}
+#' Function to plot a heat map using \code{ggplot}.
+#' 
+#' \code{gradn} takes a vector of \code{n} colors: either a list of names, a 
+#' list of hexadecimal values, an existing color palette (i.e., 
+#' \code{\link{heat.colors}}, \code{\link{rainbow}}, etc); see also 
+#' \code{\link{palette}}, \code{\link{colors}}, the \code{RColorBrewer} 
+#' package, etc.
 #' 
 #' @param cors matrix (or matrix-like object) of correlations
 #' @param data data frame of data (in progress)
@@ -377,23 +379,18 @@ ggcaterpillar <- function(re, qq  =  TRUE, likeDotplot  =  TRUE) {
 #' @param gradn vector of \code{n} colors to use, from low to high; see details
 #' @param gradc vector of length two, low color and high color; see details
 #' 
-#' @details
-#' \code{gradn} takes a vector of \code{n} colors: either a list of names, a 
-#' list of hexadecimal values, an existing color palette (i.e., 
-#' \code{\link{heat.colors}}, \code{\link{rainbow}}, etc); see also 
-#' \code{\link{palette}}, \code{\link{colors}}, the \code{RColorBrewer} 
-#' package, etc.
-#' 
 #' \code{gradc} takes a low color and a high color, respectively, and generates
 #' a continuous scale between those colors; see 
 #' \code{\link[ggplot2]{scale_fill_gradient}}
 #' 
 #' @examples
+#' library('ggplot2')
 #' tmp <- rescaler(matrix(1:25, 5))
 #' diag(tmp) <- 1
 #' colnames(tmp) <- rownames(tmp) <- LETTERS[1:5]
 #' ggheat(cors = tmp, limits = c(0, 1))
 #' ggheat(cors = tmp, gradn = NULL, gradc = c('white','red'))
+#' 
 #' @export
 
 ggheat <- function(cors = NULL, data = NULL, 
@@ -439,6 +436,13 @@ ggheat <- function(cors = NULL, data = NULL,
 #' 
 #' Dodge and center overlapping points (in progress; see details).
 #' 
+#' Still in progress. First attempt uses \code{\link{floor}} to find points 
+#' that are close, i.e., within 1 unit, and only spreads those within the range.
+#' This is desirable if \code{x} values are close but not exact. For example, 
+#' points \code{1.1} and \code{1.0} may overlap and will not be offset if 
+#' \code{spread} is \code{FALSE}. If \code{TRUE}, both values will be treated 
+#' as \code{1.0} and will be offset; see boxplot example below.
+#' 
 #' @param formula an object of class \code{\link{formula}} (or an object which 
 #' can be coerced to a formula) having the form \code{var1 ~ var2}; interactions
 #' are not allowed and \code{> 1} variable per side are not allowed.
@@ -450,14 +454,6 @@ ggheat <- function(cors = NULL, data = NULL,
 #' @param spread logical; if values are close but not identical and points still
 #' overlap, if \code{TRUE}, decimal places will be ignored to creater larger 
 #' neighborhoods from which the point offset will be calculated; see details
-#' 
-#' @details
-#' Still in progress. First attempt uses \code{\link{floor}} to find points 
-#' that are close, i.e., within 1 unit, and only spreads those within the range.
-#' This is desirable if \code{x} values are close but not exact. For example, 
-#' points \code{1.1} and \code{1.0} may overlap and will not be offset if 
-#' \code{spread} is \code{FALSE}. If \code{TRUE}, both values will be treated 
-#' as \code{1.0} and will be offset; see boxplot example below.
 #' 
 #' @seealso \code{\link{jitter}}
 #' 
@@ -488,6 +484,7 @@ ggheat <- function(cors = NULL, data = NULL,
 #'             col = 'black', pch = 4))
 #' legend('topleft', pch = c(4, 19), 
 #'        legend = c('TRUE','FALSE'), title = 'spread = ')
+#'
 #' @export
 
 dodge <- function(formula, data = parent.frame(), z = .5, spread = FALSE) {
@@ -796,7 +793,6 @@ tplot <- function(x, ...) UseMethod('tplot')
 
 #' @rdname tplot
 #' @export
-
 tplot.default <- function(x, ..., 
                           type = c('d','db','bd','b'),
                           jit = 0.1, 
@@ -1111,7 +1107,6 @@ tplot.default <- function(x, ...,
 
 #' @rdname tplot
 #' @export
-
 tplot.formula <- function(formula, data = NULL, ..., subset, 
                           na.action = NULL) {
   
@@ -1210,7 +1205,6 @@ dsplot <- function(x, ...) UseMethod('dsplot')
 
 #' @rdname dsplot
 #' @export
-
 dsplot.default <- function(x, y, ...,
                            bkgr = TRUE,
                            col = 1, 
@@ -1320,7 +1314,6 @@ dsplot.default <- function(x, y, ...,
 
 #' @rdname dsplot
 #' @export
-
 dsplot.formula <- function(formula, data = NULL, ..., subset,
                            na.action = NULL) {
   if (missing(formula) || (length(formula) != 3))
@@ -1528,8 +1521,8 @@ inset <- function(x, y = NULL, pct = .25, ...) {
                right = mean(plt[3:4]) + c(-1, 1) * pcty / 2,
                center = mean(plt[3:4]) + c(-1, 1) * pcty / 2,)
   
-  #   xx <- rescaler(xx, plt[1:2], usr[1:2])
-  #   yy <- rescaler(yy, plt[3:4], usr[3:4])
+  # xx <- rescaler(xx, plt[1:2], usr[1:2])
+  # yy <- rescaler(yy, plt[3:4], usr[3:4])
   if (is.na(auto)) {
     xx <- grconvertX(x, 'user', 'ndc')
     yy <- grconvertY(y, 'user', 'ndc')
@@ -1544,7 +1537,7 @@ inset <- function(x, y = NULL, pct = .25, ...) {
 #' 
 #' In \code{R}, there are 657 named colors. This function shows these colors 
 #' and their respective numbers. Find a color by number in the plot or find the
-#' name of the color with \code{colors()[n]}
+#' name of the color with \code{colors()[n]}.
 #' 
 #' @seealso \code{\link{show_pch}}
 #' 
@@ -1552,6 +1545,7 @@ inset <- function(x, y = NULL, pct = .25, ...) {
 #' show_colors()
 #' colors()[81]
 #' # [1] "darkgreen"
+#' 
 #' @export
 
 show_colors <- function() {
@@ -1584,6 +1578,7 @@ show_colors <- function() {
 #' 
 #' @examples
 #' show_pch()
+#' 
 #' @export
 
 show_pch <- function() {
@@ -1601,12 +1596,7 @@ show_pch <- function() {
 #' 
 #' Add transparency to colors.
 #' 
-#' @param color single or string of color names (or hexadecimal format) 
-#' @param trans transparency defined as an integer in the range 
-#' \code{[0, 255]} where \code{0} is fully transparent and \code{255} is fully
-#' visible; see details
-#' 
-#' @details This is a vectorized function to add transparency to colors. 
+#' This is a vectorized function to add transparency to colors. 
 #' \code{color} and \code{trans} must either be the same length or one of the 
 #' two must have length one. 
 #' 
@@ -1614,7 +1604,12 @@ show_pch <- function() {
 #' (fully visible) to the color(s) given. \code{color} values are converted to
 #' RGB with transparency.
 #' 
-#' @seealso \code{\link{as.hexmode}}, \code{\link{col2rgb}}, 
+#' @param color single or string of color names (or hexadecimal format) 
+#' @param trans transparency defined as an integer in the range 
+#' \code{[0, 255]} where \code{0} is fully transparent and \code{255} is fully
+#' visible; see details
+#' 
+#' @seealso \code{\link{as.hexmode}}, \code{\link{col2rgb}},
 #' \code{\link{adjustcolor}}
 #' 
 #' @examples
@@ -1651,7 +1646,7 @@ tcol <- function(color, trans = 255) {
 
 #' ggplot colors
 #' 
-#' A function to replicate default \code{\link[ggplot2]{ggplot}} colors
+#' A function to replicate default \code{\link[ggplot2]{ggplot}} colors.
 #' 
 #' @param n number of colors
 #' @param c the chroma of the color; the upper bound for chroma depends on hue

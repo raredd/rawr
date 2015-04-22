@@ -26,7 +26,7 @@ Uses functions in \pkg{grid} to arrange one or more
 }
 \examples{
 data(mtcars)
-library(ggplot2)
+library('ggplot2')
 
 tmp <- ggplot(mtcars, aes(factor(1), fill = factor(cyl))) +
   geom_bar(width = 1)

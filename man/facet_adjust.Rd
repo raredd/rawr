@@ -23,7 +23,7 @@ facet_adjust object that inherits \code{\link[gtable]{gtable}} class
 Adjusts labels on x-axes when using \code{\link[ggplot2]{facet_wrap}}.
 }
 \examples{
-library(ggplot2)
+library('ggplot2')
 # missing some labels
 (tmp <- ggplot(diamonds[1:100, ], aes(carat, price, colour = clarity)) +
   geom_point() + facet_wrap( ~ cut))

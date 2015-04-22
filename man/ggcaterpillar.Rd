@@ -25,13 +25,12 @@ with multiple correlated random effects
 }
 \examples{
 \donttest{
-library(lme4)
+library('lme4')
 fit <- lmer(Reaction ~ Days + (Days | Subject), data = sleepstudy)
 
-# this function
 ggcaterpillar(ranef(fit, condVar = TRUE))
 
-# for comparison (requires lattice package)
+# compare (requires lattice package)
 lattice::qqmath(ranef(fit, condVar = TRUE))
 }
 }
