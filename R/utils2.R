@@ -1,7 +1,7 @@
 ### formatting and miscellaneous utilities
 # html_test, roundr, intr, pvalr, pvalr2, clist, binconr, num2char, iprint,
 # match_ctc, writeftable, surv_summary, surv_table, tabler, tabler_by,
-# countr, tox_worst
+# countr, tox_worst, gcd, dmy
 ###
 
 
@@ -917,4 +917,53 @@ tox_worst <- function(dat, id = 'casenum', tox_desc = 'tox_desc', tox_grade = 't
   idx <- which(duplicated(dat[, c(id, tox_desc)]))
   
   return(list(tox_worst = dat[-idx, ], dat = dat, duplicates = idx))
+}
+
+#' GCD
+#' 
+#' Find greatest common divisor of two integers.
+#' 
+#' @param x,y integers
+#' @examples
+#' gcd(99, 2048)
+#' gcd(2 ** (1:12), 2048)
+#' @export
+gcd <- function(x, y) ifelse(r <- x%%y, Recall(y, r), y)
+
+#' Date parse
+#' 
+#' Parses day, month, year columns to the standard date format. Assumes two-
+#' digit years are 1900s dates; converts \code{NA} days, months, and years
+#' to \code{01}, \code{01}, and \code{1900}, respectively.
+#' 
+#' @param d,m,y day, month, year as single integers or vectors
+#' 
+#' @examples
+#' dmy(25, 7, 87)
+#' 
+#' set.seed(1)
+#' dd <- data.frame(id = 1:10,
+#'                  day = sample(1:31, 10),
+#'                  month = sample(1:12, 10),
+#'                  year = sample(1000:2500, 10))
+#' 
+#' cbind(dd, dt = with(dd, dmy(day, month, year)))
+#' 
+#' dd1 <- within(dd, {
+#'   day[sample(1:10, 5)] <- NA
+#'   month[sample(1:10, 2)] <- NA
+#'   year[sample(1:10, 2)] <- NA
+#' })
+#' 
+#' cbind(dd1, dt = with(dd1, dmy(day, month, year)))
+#' 
+#' @export
+
+dmy <- function(d, m, y) {
+  f <- function(a, b) {
+    suppressWarnings(a <- as.numeric(a))
+    ifelse(is.na(a), b, a)
+  }
+  y <- ifelse(nchar(y) <= 2, f(y, 0) + 1900, f(y, 0))
+  as.Date(sprintf('%04s-%02s-%02s', y, f(m, 1), f(d, 1)))
 }
