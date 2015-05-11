@@ -26,4 +26,7 @@ interleave(matrix(1:9, 3, 3),
            matrix(1:9 * 10, 3, 3),
            which = 'cbind')
 }
+\seealso{
+\code{\link{bindx}}
+}
 
