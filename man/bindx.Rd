@@ -5,6 +5,7 @@
 \alias{bindx}
 \alias{cbindx}
 \alias{rbindfill}
+\alias{rbindfill2}
 \alias{rbindx}
 \title{Bind objects}
 \usage{
@@ -15,6 +16,8 @@ cbindx(..., deparse.level = 1)
 rbindx(..., deparse.level = 1)
 
 rbindfill(...)
+
+rbindfill2(..., use.rownames = FALSE)
 }
 \arguments{
 \item{...}{for \code{bind_all} and \code{rbindfill}, vectors;
@@ -27,6 +30,10 @@ the case of non-matrix-like arguments (for the default method):\cr
 \code{deparse.level = 0} constructs no labels; the default; \cr
 \code{deparse.level = 1} or \code{2} constructs labels from the argument
 names \cr see \code{\link{cbind}}}
+
+\item{use.rownames}{logical; if \code{TRUE}, data frames in a \emph{named}
+list will retain corresponding rownames; the default is to remove rownames
+(note that this parameter is ignored if \dots is not a named list)}
 }
 \description{
 Utilities for binding objects with inconsistent dimensions.
@@ -39,6 +46,13 @@ a la a "stacking" merge.
 \code{cbindx} and \code{rbindx} take vector-, matrix-, and data frame-like
 objects and bind normally, filling with \code{NA}s where dimensions are
 not equal.
+
+\code{rbindfill2} row-binds data frames with zero or more common column
+names. \code{rbindfill2} starts with the first data frame given and
+\code{rbind}s subsequent data frames adding new columns of \code{NA} as
+needed to bind. Any columns with matching names will be aggregated;
+otherwise, data frames without a matching column of data will be filled
+with \code{NA}.
 }
 \examples{
 bind_all(1:5, 1:3, which = 'cbind')
@@ -54,8 +68,21 @@ rbindx(mtcars, m2)
 f <- function(x) setNames(letters[x], LETTERS[x])
 x <- lapply(list(1:5, 3:6, 2:7, 26), f)
 do.call('rbindfill', x)
+
+set.seed(1)
+dd <- matrix(NA, nrow = 1, ncol = 10)
+dd <- as.data.frame(col(dd))
+l <- setNames(lapply(1:5, function(x) dd[, sample(x), drop = FALSE]),
+              letters[1:5])
+
+Reduce(rbindfill2, l) ## or do.call('rbindfill2', l)
+do.call('rbindfill2', c(l, use.rownames = TRUE))
+rbindfill2(l$c, l$e)
+
+rbindfill2(mtcars, cars)
 }
 \seealso{
-\pkg{qpcR}, \code{\link{cbind}}, \code{\link{rbind}}
+\code{\link{interleave}}, \pkg{qpcR}, \code{\link{cbind}},
+\code{\link{rbind}}
 }
 

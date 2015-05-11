@@ -1043,6 +1043,13 @@ Round <- function(x, target) {
 #' objects and bind normally, filling with \code{NA}s where dimensions are
 #' not equal.
 #' 
+#' \code{rbindfill2} row-binds data frames with zero or more common column
+#' names. \code{rbindfill2} starts with the first data frame given and
+#' \code{rbind}s subsequent data frames adding new columns of \code{NA} as
+#' needed to bind. Any columns with matching names will be aggregated;
+#' otherwise, data frames without a matching column of data will be filled
+#' with \code{NA}.
+#' 
 #' @param ... for \code{bind_all} and \code{rbindfill}, vectors;
 #' \code{cbindx} and \code{rbindx} will accept vectors, matrices, data frames
 #' @param which joining method; \code{'rbind'} or \code{'cbind'}
@@ -1051,8 +1058,12 @@ Round <- function(x, target) {
 #' \code{deparse.level = 0} constructs no labels; the default; \cr
 #' \code{deparse.level = 1} or \code{2} constructs labels from the argument
 #' names \cr see \code{\link{cbind}}
+#' @param use.rownames logical; if \code{TRUE}, data frames in a \emph{named}
+#' list will retain corresponding rownames; the default is to remove rownames
+#' (note that this parameter is ignored if \dots is not a named list)
 #' 
-#' @seealso \pkg{qpcR}, \code{\link{cbind}}, \code{\link{rbind}}
+#' @seealso \code{\link{interleave}}, \pkg{qpcR}, \code{\link{cbind}},
+#' \code{\link{rbind}}
 #' 
 #' @examples
 #' bind_all(1:5, 1:3, which = 'cbind')
@@ -1068,6 +1079,18 @@ Round <- function(x, target) {
 #' f <- function(x) setNames(letters[x], LETTERS[x])
 #' x <- lapply(list(1:5, 3:6, 2:7, 26), f)
 #' do.call('rbindfill', x)
+#' 
+#' set.seed(1)
+#' dd <- matrix(NA, nrow = 1, ncol = 10)
+#' dd <- as.data.frame(col(dd))
+#' l <- setNames(lapply(1:5, function(x) dd[, sample(x), drop = FALSE]),
+#'               letters[1:5])
+#' 
+#' Reduce(rbindfill2, l) ## or do.call('rbindfill2', l)
+#' do.call('rbindfill2', c(l, use.rownames = TRUE))
+#' rbindfill2(l$c, l$e)
+#' 
+#' rbindfill2(mtcars, cars)
 #' 
 #' @name bindx
 NULL
@@ -1310,6 +1333,25 @@ rbindfill <- function(...) {
   `colnames<-`(do.call('rbind', out), un)
 }
 
+#' @rdname bindx
+#' @export
+rbindfill2 <- function(..., use.rownames = FALSE) {
+  l <- list(...)
+  nn <- sapply(l, names)
+  un <- unique(unlist(nn))
+  out <- lapply(l, function(x) {
+    if (!all(wh <- un %in% names(x))) {
+      tmp <- as.data.frame(matrix(NA, nrow = nrow(x), ncol = sum(!wh),
+                                  dimnames = list(NULL, un[!wh])))
+      res <- do.call('cbind.data.frame', list(x, tmp))
+      res[, un]
+    } else x[, un]
+  })
+  res <- do.call('rbind.data.frame', out)
+  if (use.rownames)
+    res else `rownames<-`(res, NULL)
+}
+
 #' Interleave rows or columns
 #' 
 #' Interleave rows (or columns) of vectors, matrices, or data frames.
@@ -1317,6 +1359,7 @@ rbindfill <- function(...) {
 #' @param ... vectors, matrices, or data frames
 #' @param which joining method to use (\code{'rbind'} or \code{'cbind'}) when
 #' \code{...} are matrices or data frames
+#' @seealso \code{\link{bindx}}
 #' 
 #' @examples
 #' interleave(letters[1:3],
