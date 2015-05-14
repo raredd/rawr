@@ -708,7 +708,7 @@ tabler.default <- function(x, ...) summary(x, ...)
 #' @export
 tabler.lm <- function(x, digits = 3, ...) {
   res <- round(summary(x, ...)$coefficients, digits = digits)
-  return(res)
+  res
 }
 
 #' @rdname tabler
@@ -724,14 +724,12 @@ tabler.glm <- function(x, digits = 3, level = 0.95, type = '', ...) {
                     c('Odds Ratio', paste0('L ', ci),
                       paste0('U ', ci), 'Pr(>|z)', sprintf('OR (%s)', ci)))
   } else res <- round(res, digits = digits)
-  return(res)
+  res
 }
 
 #' @rdname tabler
 #' @export
-tabler.survfit <- function(x, ...) {
-  surv_table(x, ...)
-}
+tabler.survfit <- function(x, ...) surv_table(x, ...)
 
 #' tabler_by
 #' 
@@ -761,16 +759,17 @@ tabler.survfit <- function(x, ...) {
 #' @param order logical; order the result by decreasing frequency
 #' @param zeros optional character string replacement for cells which have
 #' zero counts; will appear as \code{0 (0\%)} if not given
+#' @param pct.col logical; if \code{TRUE}, percents are separated into new
+#' columns
 #' 
 #' @examples
-#' \dontrun{
-#' options(stringsAsFactors = FALSE)
 #' set.seed(1618)
 #' 
 #' f <- function(x, ...) sample(x, 100, replace = TRUE, ...)
 #' tox <- data.frame(casenum = rep(1:10, 10), phase = 1:2,
 #'                   tox_code = f(rawr::ctcae_v4$tox_code[1:25]),
-#'                   tox_grade = f(1:3, prob = c(.6, .3, .1)))
+#'                   tox_grade = f(1:3, prob = c(.6, .3, .1)),
+#'                   stringsAsFactors = FALSE)
 #' 
 #' n <- table(tox[1:10, ]$phase)
 #' tox <- cbind(tox, match_ctc(tox$tox_code)$matches[, c('tox_cat', 'tox_desc')])
@@ -782,6 +781,8 @@ tabler.survfit <- function(x, ...) {
 #'   tox_desc <- factor(tox_desc)
 #' })
 #' 
+#' ## get worst toxicities by casenum by grade
+#' tox <- tox_worst(tox)$tox_worst
 #' 
 #' out <- cbind(tabler_by(tox, 'tox_desc',
 #'                        'phase', n = n, zeros = '-')[, 1, drop = FALSE],
@@ -791,7 +792,7 @@ tabler.survfit <- function(x, ...) {
 #'                        'tox_grade', n = n[2], zeros = '-'))
 #' out <- out[order(as.numeric(out[, 1]), decreasing = TRUE), ]
 #' 
-#' library(htmlTable)
+#' library('htmlTable')
 #' cgroup <- c(sprintf('Total<br /><font size=1>n = %s</font>', sum(n)),
 #'             sprintf('Phase I<br /><font size=1>n = %s</font>', n[1]),
 #'             sprintf('Phase II<br /><font size=1>n = %s</font>', n[2]))
@@ -801,10 +802,11 @@ tabler.survfit <- function(x, ...) {
 #'     col.rgroup = rep(rep(c('none', 'grey97'), each = 5), 10),
 #'     tfoot = paste0('<font size=1><sup>&dagger;</sup>Percentages represent ',
 #'             'proportion of patients out of respective phase total.</font>'))
-#' }
+#'             
 #' @export
 
-tabler_by <- function(dat, varname, byvar, n, order = FALSE, zeros) {
+tabler_by <- function(dat, varname, byvar, n, order = FALSE, zeros,
+                      pct.col = FALSE) {
   if (!all(sapply(dat[, c(varname, byvar)], is.factor)))
     stop('\'varname\' and \'byvar\' must be factors')
   
@@ -820,7 +822,7 @@ tabler_by <- function(dat, varname, byvar, n, order = FALSE, zeros) {
     nr <- nrow(res1)
     ## if one n is given, assume this is the total of a subgroup
     ## if > 1, assume that these correspond to the size of each level of byvar
-    ## eg, if calculating overall totals, give the n for each group
+    ## i.e., if calculating overall totals, give the n for each group
     ## if calculating totals for a subgroup, give one n since this group
     ## will have the same overall n
     if (length(n) == 1L)
@@ -831,16 +833,26 @@ tabler_by <- function(dat, varname, byvar, n, order = FALSE, zeros) {
     mat <- round(res1 / matrix(rep(n, each = nr)) * 100)
     res1 <- matrix(sprintf('%s (%s%%)', res1, mat),
                    nrow = nr, ncol = length(n))
-    if (!missing(zeros))
-      res1 <- gsub('0 \\(0%\\)', zeros, res1)
+    # if (!missing(zeros))
+    #   res1 <- gsub('0 \\(0%\\)', zeros, res1)
   }
-  zzz <- cbind(Total = res[, 1], res1)
   
+  zzz <- if (pct) {
+    res2 <- apply(res1, 1, paste0, collapse = ' ')
+    res2 <- as.matrix(setNames(read.table(text = gsub('\\(|\\)|%', '', res2),
+                                          colClasses = 'character'),
+                       interleave(colnames(res)[-1],
+                                  rep('%', ncol(res1)))))
+    cbind(Total = res[, 1, drop = FALSE], res2)
+  } else `colnames<-`(cbind(Total = res[, 1], res1), colnames(res))
+
   if (order) {
     zzz[, 1] <- as.numeric(zzz[, 1])
     zzz <- zzz[order(zzz[, 1], decreasing = TRUE), ]
   }
-  return(`colnames<-`(zzz, colnames(res)))
+   if (!missing(zeros))
+     zzz <- gsub('0 \\(0%\\)|^0$', zeros, zzz)
+  zzz
 }
 
 #' Count formatter
@@ -915,8 +927,7 @@ tox_worst <- function(dat, id = 'casenum', tox_desc = 'tox_desc', tox_grade = 't
   ## sort by id, toxicity, and grade
   dat <- dat[order(dat[, id], dat[, tox_desc], -xtfrm(dat[, tox_grade])), ]
   idx <- which(duplicated(dat[, c(id, tox_desc)]))
-  
-  return(list(tox_worst = dat[-idx, ], dat = dat, duplicates = idx))
+  list(tox_worst = dat[-idx, ], dat = dat, duplicates = idx)
 }
 
 #' GCD
