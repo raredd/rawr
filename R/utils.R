@@ -1675,8 +1675,10 @@ classMethods <- function(class) {
   })
   df <- do.call('rbind', ml)
   df <- df[!duplicated(df$n), ]
-  structure(df$m, info = data.frame(visible = df$visible, from = df$from),
-            class = 'MethodsFunction')
+  structure(df$m, byclass = FALSE, class = 'MethodsFunction',
+            info = data.frame(visible = df$visible, from = df$from,
+                              generic = df$generic, isS4 = df$isS4,
+                              row.names = df$m))
 }
 
 #' Extract captured substrings
