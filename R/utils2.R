@@ -932,14 +932,23 @@ gcd <- function(x, y) ifelse(r <- x%%y, Recall(y, r), y)
 
 #' Date parse
 #' 
-#' Parses day, month, year columns to the standard date format. Assumes two-
-#' digit years are 1900s dates; converts \code{NA} days, months, and years
-#' to \code{01}, \code{01}, and \code{1900}, respectively.
+#' Parses day, month, year columns to the standard date format.
+#' 
+#' For two-digit years, the \code{origin} year should be specified; otherwise,
+#' the default of 1900 will be used. For \code{NA} year, month, or day,
+#' \code{origin} is used for defaults, i.e., \code{origin = c(15, 6, 2000)}
+#' will convert missing days to day 15, missing months to June, and missing
+#' years to 2000.
 #' 
 #' @param d,m,y day, month, year as single integers or vectors
+#' @param origin a vector of length three giving the origins for \code{d},
+#' \code{m}, and \code{y}, respectively; see details
 #' 
 #' @examples
-#' dmy(25, 7, 87)
+#' dmy(25, 7, 13)
+#' 
+#' ## this function is vectorized:
+#' dmy(NA, NA, 2000:2009)
 #' 
 #' set.seed(1)
 #' dd <- data.frame(id = 1:10,
@@ -955,15 +964,16 @@ gcd <- function(x, y) ifelse(r <- x%%y, Recall(y, r), y)
 #'   year[sample(1:10, 2)] <- NA
 #' })
 #' 
-#' cbind(dd1, dt = with(dd1, dmy(day, month, year)))
+#' cbind(dd1,
+#'       new_date = with(dd1, dmy(day, month, year, origin = c(15, 6, 2000))))
 #' 
 #' @export
 
-dmy <- function(d, m, y) {
+dmy <- function(d, m, y, origin = c(1, 1, 1900)) {
   f <- function(a, b) {
     suppressWarnings(a <- as.numeric(a))
     ifelse(is.na(a), b, a)
   }
-  y <- ifelse(nchar(y) <= 2, f(y, 0) + 1900, f(y, 0))
-  as.Date(sprintf('%04s-%02s-%02s', y, f(m, 1), f(d, 1)))
+  y <- ifelse(nchar(y) <= 2, f(y, 0) + origin[3], f(y, 0))
+  as.Date(sprintf('%04s-%02s-%02s', y, f(m, origin[2]), f(d, origin[1])))
 }

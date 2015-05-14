@@ -4,10 +4,12 @@
 \alias{dmy}
 \title{Date parse}
 \usage{
-dmy(d, m, y)
+dmy(d, m, y, origin = 1900)
 }
 \arguments{
 \item{d,m,y}{day, month, year as single integers or vectors}
+
+\item{origin}{the origin for two-digit years; ignored otherwise}
 }
 \description{
 Parses day, month, year columns to the standard date format. Assumes two-
@@ -15,7 +17,7 @@ digit years are 1900s dates; converts \code{NA} days, months, and years
 to \code{01}, \code{01}, and \code{1900}, respectively.
 }
 \examples{
-dmy(25, 7, 87)
+dmy(25, 7, 13, origin = 2000)
 
 set.seed(1)
 dd <- data.frame(id = 1:10,
