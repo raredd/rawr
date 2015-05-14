@@ -1646,7 +1646,7 @@ fcols <- function(x, pattern, keep, ...) {
 #' 
 #' Lists available methods for a given class.
 #' 
-#' @param class an object or classes as character strings
+#' @param class an object or classes as a vector of character strings
 #' 
 #' @seealso \code{\link{methods}}, \code{\link{S3Methods}}, \code{\link{class}}
 #' @references \url{https://gist.github.com/MrFlick/55ed854eb935e5c21f71}
@@ -1654,7 +1654,7 @@ fcols <- function(x, pattern, keep, ...) {
 #' @examples
 #' fit <- glm(vs ~ mpg, data = mtcars)
 #' classMethods(fit)
-#' classMethods(c('glm','lm'))
+#' classMethods(c('glm', 'lm'))
 #' 
 #' @export
 
