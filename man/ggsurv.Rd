@@ -94,8 +94,8 @@ table; see details}
 \item{...}{for backwards compatibility with deprecated arguments}
 }
 \description{
-Function to plot Kaplan-Meier or Cox proportional hazards plots with
-optional at risk table using \code{\link[ggplot2]{ggplot}}.
+Plot Kaplan-Meier or Cox proportional hazards models with at-risk table
+using \code{\link[ggplot2]{ggplot}}.
 }
 \details{
 The argument \code{confband = TRUE} does not plot a confidence band in the
@@ -115,13 +115,12 @@ the number of "lines" of padding (see \code{\link{unit}}). Note that the
 default for \code{ggplot} is \code{unit(.25, "lines")}.
 }
 \examples{
-library(ggplot2)
-library(grid)
-library(gridExtra)
-library(survival)
+library('ggplot2')
+library('grid')
+library('gridExtra')
+library('survival')
 data(cancer)
 
-### data to use
 cancer <- within(cancer, {
   age.cat <- factor(as.numeric(cut(age, c(-Inf, 50, 60, 70, Inf))))
   meal.cat <- factor(as.numeric(cut(meal.cal,
@@ -130,19 +129,19 @@ cancer <- within(cancer, {
     c(.25,.5,.75), na.rm = TRUE),Inf))))
 })
 
-### fitting models
+## fitting models
 # kaplan-meier
 kmfit0 <- survfit(Surv(time = time, event = status) ~ 1, data = cancer,
   conf.type = 'log-log')
 kmfit1 <- survfit(Surv(time = time, event = status) ~ sex, data = cancer,
   conf.type = 'log-log')
+
 # cox proportional hazards
 coxfit0 <- survfit(coxph(Surv(time = time, event = status) ~ strata(age.cat),
   data = cancer))
 coxfit1 <- survfit(coxph(Surv(time = time, event = status) ~ strata(I(age > 45)),
   data = cancer))
 
-### example plots
 ggsurv(kmfit0)
 
 ggsurv(kmfit1, confin = FALSE, lty.surv = 1:2, col.cens = 'blue',
@@ -154,15 +153,15 @@ ggsurv(kmfit1, confin = FALSE, lty.surv = 1:2, col.cens = 'red',
 
 ggsurv(coxfit0, basehaz = TRUE)
 
-# this long label mis-aligns the table numbers, so we can use plot.margin
-# to adjust; it may be easier to adjust plot.margin instead of table.margin
+## this long label mis-aligns the table numbers, so we can use plot.margin
+## to adjust; it may be easier to adjust plot.margin instead of table.margin
 ggsurv(coxfit0, confin = FALSE, col.atrisk = 'black',
   col.surv = c('red','green','blue','black'),
   legend.labels = c('Less than 50','50-60','60-70','70+'),
   plot.margin = 3)
 
 \dontrun{
-png('./plot.png', height = 600, width = 750)
+png('plot.png', height = 600, width = 750)
 ggsurv(coxfit1, confin = FALSE, median = TRUE, confband = FALSE,
   legend.labels = c('< 45','> 45'),
   col.surv = c('red','green'), mark = '#', col.cens = 'black',

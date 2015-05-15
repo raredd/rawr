@@ -2,7 +2,7 @@
 % Please edit documentation in R/surv.R
 \name{kmplot}
 \alias{kmplot}
-\title{Survival curves in base graphics}
+\title{Survival curves}
 \usage{
 kmplot(s, lty.surv = 1, lwd.surv = 1, col.surv = 1, mark = 3,
   mar = NULL, lty.ci = 0, lwd.ci = 1, col.ci = col.surv,
@@ -104,19 +104,18 @@ multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}}
 \code{tcl}, \code{cex.lab}, \code{xaxs}, etc) passed to \code{par}}
 }
 \description{
-Function to plot Kaplan-Meier or Cox proportional hazards plots with
-optional at risk table in base graphics.
+Plot Kaplan-Meier or Cox proportional hazards models with at-risk table.
 }
 \details{
-Line specifications (\code{lty.surv}, \code{lwd.surv}, etc) will be recycled
-if needed.
+Line specifications (\code{lty.surv}, \code{lwd.surv}, etc) will be
+recycled if needed.
 
 \code{xaxs} is the style of the x-axis; see \code{\link{par}}. The default
 for \code{kmplot} is \code{"S"} which is equivalent to \code{xaxs = "i"}
 but with the maximum \code{xlim} value increased by 4\%. Other styles for
 \code{xaxs} currently implemented in \code{R} are \code{"r"} (default for
-plotting and the previous value for \code{kmplot}) and \code{"i"} which will
-\emph{not} add padding to the ends of the axes.
+plotting and the previous value for \code{kmplot}) and \code{"i"} which
+will \emph{not} add padding to the ends of the axes.
 
 If \code{col.band != NULL}, a confidence band is plotted; however, this is
 not a confidence band in the statistical sense, i.e., a xx-percent chance
@@ -129,13 +128,13 @@ confidence interval (plotted when \code{lty.ci != 0}) and the confidence
 bands are identical, just two ways of plotting the same invervals.
 
 When saving plots, it is highly recommended to use \code{\link{png}},
-\code{\link{svg}}, \code{\link{pdf}}, etc instead of exporting directly from
-the \code{R} graphics device. Doing so may cause the at risk table or
+\code{\link{svg}}, \code{\link{pdf}}, etc instead of exporting directly
+from the \code{R} graphics device. Doing so may cause the at risk table or
 legend to be mis-aligned.
 }
 \examples{
 \dontrun{
-library(survival)
+library('survival')
 kmfit1 <- survfit(Surv(time, status) ~ sex, data = colon)
 kmfit2 <- survfit(Surv(time, status) ~ rx + adhere, data = colon)
 
@@ -148,30 +147,29 @@ kmplot(kmfit1, strata.lab = c('Female','Male'),
                                 phantom() >= Male))
 
 ## using mfrow options, use ADD = TRUE
-png('./desktop/kmplot2.png', width = 750, height = 1200, pointsize = 14)
+png('kmplot2.png', width = 750, height = 1200, pointsize = 14)
 par(mfrow = c(2, 1))
 kmplot(kmfit1, add = TRUE)
 kmplot(kmfit2, add = TRUE, extra.margin = 8)
 dev.off()
 
 ## more complex example
-pdf('./tmp.pdf', height = 8, width = 11, pointsize = 12)
+pdf('tmp.pdf', height = 8, width = 11, pointsize = 12)
 kmplot(kmfit2,
-       mark = '',    # no censor mark
-       lty.ci = 2,   # dashed line for CIs
+       mark = '',                         # no censor mark
+       lty.ci = 2,                        # dashed line for CIs
        xaxis.at = c(0, .5, 1:9) * 365,    # change days to years
        xaxis.lab = c(0, .5, 1:9),         # label years
        yaxis.lab = pretty(c(0, 1)) * 100, # change to percent
-       xlab = 'Time (years)',
-       ylab = 'Percent survival',
+       xlab = 'Time (years)', ylab = 'Percent survival',
        col.surv = c('blue', 'red', 'green', 'black','purple','orange'),
        strata.lab = c('Obs ','Obs+ ','Lev ','Lev+ ','Lev5fu','Lev5fu+'),
-       extra.margin = 6, # increase margin for long strata labels
+       extra.margin = 6,        # increase margin for long strata labels
        strata.order = c(5, 6, 3, 1, 4, 2),
-       # col.band = NULL, # remove confidence bands
-       font = 2,  # bold table text
-       bty = 'l', # L box type around plot
-       tcl = .5)  # change length/direction of ticks
+       # col.band = NULL,       # remove confidence bands
+       font = 2,                # bold table text
+       bty = 'l',               # L box type around plot
+       tcl = .5)                # change length/direction of ticks
 title(main='Chemotherapy for stage B/C colon cancer',
       adj = .5, font.main = 1, line = 0.5, cex.main = 1)
 dev.off()
