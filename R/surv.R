@@ -3,10 +3,34 @@
 ###
 
 
-#' Survival curves in base graphics
+#' Survival curves
 #' 
-#' Function to plot Kaplan-Meier or Cox proportional hazards plots with 
-#' optional at risk table in base graphics.
+#' Plot Kaplan-Meier or Cox proportional hazards models with at-risk table.
+#' 
+#' Line specifications (\code{lty.surv}, \code{lwd.surv}, etc) will be
+#' recycled if needed.
+#' 
+#' \code{xaxs} is the style of the x-axis; see \code{\link{par}}. The default
+#' for \code{kmplot} is \code{"S"} which is equivalent to \code{xaxs = "i"}
+#' but with the maximum \code{xlim} value increased by 4\%. Other styles for
+#' \code{xaxs} currently implemented in \code{R} are \code{"r"} (default for
+#' plotting and the previous value for \code{kmplot}) and \code{"i"} which
+#' will \emph{not} add padding to the ends of the axes.
+#' 
+#' If \code{col.band != NULL}, a confidence band is plotted; however, this is
+#' not a confidence band in the statistical sense, i.e., a xx-percent chance 
+#' of containing the entire population of the survival curve which are wider 
+#' than the point-wise confidence limits.
+#' 
+#' Rather, it refers to a band of color plotted between the confidence 
+#' limits calculated in the survfit object. That is, the xx-percent 
+#' confidence interval (plotted when \code{lty.ci != 0}) and the confidence
+#' bands are identical, just two ways of plotting the same invervals.
+#' 
+#' When saving plots, it is highly recommended to use \code{\link{png}}, 
+#' \code{\link{svg}}, \code{\link{pdf}}, etc instead of exporting directly
+#' from the \code{R} graphics device. Doing so may cause the at risk table or
+#' legend to be mis-aligned.
 #' 
 #' @param s object of class \code{\link[survival]{survfit}} or 
 #' \code{survfit.cox}
@@ -60,38 +84,12 @@
 #' @param ... additional parameters (\code{font}, \code{mfrow}, \code{bty}, 
 #' \code{tcl}, \code{cex.lab}, \code{xaxs}, etc) passed to \code{par}
 #' 
-#' @details
-#' Line specifications (\code{lty.surv}, \code{lwd.surv}, etc) will be recycled
-#' if needed.
-#' 
-#' \code{xaxs} is the style of the x-axis; see \code{\link{par}}. The default
-#' for \code{kmplot} is \code{"S"} which is equivalent to \code{xaxs = "i"}
-#' but with the maximum \code{xlim} value increased by 4\%. Other styles for
-#' \code{xaxs} currently implemented in \code{R} are \code{"r"} (default for
-#' plotting and the previous value for \code{kmplot}) and \code{"i"} which will
-#' \emph{not} add padding to the ends of the axes.
-#' 
-#' If \code{col.band != NULL}, a confidence band is plotted; however, this is
-#' not a confidence band in the statistical sense, i.e., a xx-percent chance 
-#' of containing the entire population of the survival curve which are wider 
-#' than the point-wise confidence limits.
-#' 
-#' Rather, it refers to a band of color plotted between the confidence 
-#' limits calculated in the survfit object. That is, the xx-percent 
-#' confidence interval (plotted when \code{lty.ci != 0}) and the confidence
-#' bands are identical, just two ways of plotting the same invervals.
-#' 
-#' When saving plots, it is highly recommended to use \code{\link{png}}, 
-#' \code{\link{svg}}, \code{\link{pdf}}, etc instead of exporting directly from
-#' the \code{R} graphics device. Doing so may cause the at risk table or 
-#' legend to be mis-aligned.
-#' 
 #' @references \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
 #' @seealso \code{\link[rawr]{ggsurv}}; \code{survival:::plot.survfit}
 #' 
 #' @examples
 #' \dontrun{
-#' library(survival)
+#' library('survival')
 #' kmfit1 <- survfit(Surv(time, status) ~ sex, data = colon)
 #' kmfit2 <- survfit(Surv(time, status) ~ rx + adhere, data = colon)
 #' 
@@ -104,30 +102,29 @@
 #'                                 phantom() >= Male))
 #' 
 #' ## using mfrow options, use ADD = TRUE
-#' png('./desktop/kmplot2.png', width = 750, height = 1200, pointsize = 14)
+#' png('kmplot2.png', width = 750, height = 1200, pointsize = 14)
 #' par(mfrow = c(2, 1))
 #' kmplot(kmfit1, add = TRUE)
 #' kmplot(kmfit2, add = TRUE, extra.margin = 8)
 #' dev.off()
 #' 
 #' ## more complex example
-#' pdf('./tmp.pdf', height = 8, width = 11, pointsize = 12)
+#' pdf('tmp.pdf', height = 8, width = 11, pointsize = 12)
 #' kmplot(kmfit2, 
-#'        mark = '',    # no censor mark
-#'        lty.ci = 2,   # dashed line for CIs
+#'        mark = '',                         # no censor mark
+#'        lty.ci = 2,                        # dashed line for CIs
 #'        xaxis.at = c(0, .5, 1:9) * 365,    # change days to years
 #'        xaxis.lab = c(0, .5, 1:9),         # label years
 #'        yaxis.lab = pretty(c(0, 1)) * 100, # change to percent
-#'        xlab = 'Time (years)', 
-#'        ylab = 'Percent survival', 
+#'        xlab = 'Time (years)', ylab = 'Percent survival', 
 #'        col.surv = c('blue', 'red', 'green', 'black','purple','orange'), 
 #'        strata.lab = c('Obs ','Obs+ ','Lev ','Lev+ ','Lev5fu','Lev5fu+'),
-#'        extra.margin = 6, # increase margin for long strata labels
+#'        extra.margin = 6,        # increase margin for long strata labels
 #'        strata.order = c(5, 6, 3, 1, 4, 2), 
-#'        # col.band = NULL, # remove confidence bands
-#'        font = 2,  # bold table text
-#'        bty = 'l', # L box type around plot
-#'        tcl = .5)  # change length/direction of ticks
+#'        # col.band = NULL,       # remove confidence bands
+#'        font = 2,                # bold table text
+#'        bty = 'l',               # L box type around plot
+#'        tcl = .5)                # change length/direction of ticks
 #' title(main='Chemotherapy for stage B/C colon cancer', 
 #'       adj = .5, font.main = 1, line = 0.5, cex.main = 1)
 #' dev.off()
@@ -195,13 +192,12 @@ kmplot <- function(s,
   ## between strata by using band color
   if (is.null(col.band))
     col.band <- NA
-  if (all(sapply(1:(length(col.surv) - 1), function(x) 
+  col.lines <- if (all(sapply(1:(length(col.surv) - 1), function(x)
     identical(col.surv[x], col.surv[x + 1]))) && !(is.na(col.band)))
-    col.lines <- col.band
-  else 
-    col.lines <- col.surv
-#   if (any(is.na(col.band)))
-#     col.lines <- ifelse(is.na(col.band), col.surv, col.band)
+    col.band else col.surv
+  # if (any(is.na(col.band)))
+  #   col.lines <- ifelse(is.na(col.band), col.surv, col.band)
+  
   ## test:
   ## atrisk lines inherit from col.surv if is.na(col.band)
   ## but inherits col.band if given and not NA
@@ -327,12 +323,12 @@ kmplot <- function(s,
       mtext(side = 1, at = tmp$time + w.adj, text = tmp$n.risk, 
             line = line.pos[i], cex = cex.axis, adj = 1, col = 1, las = 1)
     }
-    if (!is.null(atrisk.lab)) 
-#       mtext(side = 1, text = atrisk.lab, at = group.name.pos, 
-#             line = 1.5, adj = 1, col = 1, las = 1, cex = cex.axis)
-      mtext(side = 1, text = atrisk.lab, at = par('usr')[1], 
+    if (!is.null(atrisk.lab))
+      # mtext(side = 1, text = atrisk.lab, at = group.name.pos,
+      #       line = 1.5, adj = 1, col = 1, las = 1, cex = cex.axis)
+      mtext(side = 1, text = atrisk.lab, at = par('usr')[1],
             line = 1.5, adj = 1, col = 1, las = 1, cex = cex.axis)
-  } ## /if (atrisk)  
+  } ## /if (atrisk)
 
   ## legend
   rlp <- strata.order
@@ -351,22 +347,27 @@ kmplot <- function(s,
     }
   }
 
+  ## survival and confidence lines
   for (i in 1:ng) {
     tmp <- dat.list[[i]]
-    x <- tmp$time
-    L <- tmp$lower
-    U <- tmp$upper
-    S <- tmp$survival
-    naL <- which(is.na(L))
-    L[naL] <- L[naL - 1]
-    U[naL] <- U[naL - 1]
-    lines(x, L, type = 's', col = col.ci[i], lty = lty.ci[i], lwd = lwd.ci[i])
-    lines(x, U, type = 's', col = col.ci[i], lty = lty.ci[i], lwd = lwd.ci[i])
-    
-    ## confidence bands
-    if (any(!is.na(col.band))) {
-      col.band[i] <- tcol(col.band[i], 100)
-      polygon(c(x, rev(x)), c(U, rev(L)), border = NA, col = col.band[i])
+    if (nrow(tmp) < 2) {
+      message('Note: strata level with one observation - no CI plotted.')
+    } else {
+      x <- tmp$time
+      L <- tmp$lower
+      U <- tmp$upper
+      S <- tmp$survival
+      naL <- which(is.na(L))
+      L[naL] <- L[naL - 1]
+      U[naL] <- U[naL - 1]
+      lines(x, L, type = 's', col = col.ci[i], lty = lty.ci[i], lwd = lwd.ci[i])
+      lines(x, U, type = 's', col = col.ci[i], lty = lty.ci[i], lwd = lwd.ci[i])
+      
+      ## confidence bands
+      if (any(!is.na(col.band))) {
+        col.band[i] <- tcol(col.band[i], 100)
+        polygon(c(x, rev(x)), c(U, rev(L)), border = NA, col = col.band[i])
+      }
     }
     
     ## survival curves
@@ -381,8 +382,24 @@ kmplot <- function(s,
 
 #' Survival curves with ggplot
 #' 
-#' Function to plot Kaplan-Meier or Cox proportional hazards plots with 
-#' optional at risk table using \code{\link[ggplot2]{ggplot}}.
+#' Plot Kaplan-Meier or Cox proportional hazards models with at-risk table
+#' using \code{\link[ggplot2]{ggplot}}.
+#' 
+#' The argument \code{confband = TRUE} does not plot a confidence band in the 
+#' statistical sense, i.e., xx-percent chance of containing entire population 
+#' of the survival curve which are wider than the point-wise confidence limits.
+#' Rather, it refers to a band of color in \code{ggplot} objects, specifically 
+#' the use of a \code{\link[ggplot2]{geom_ribbon}} geometric shape. The band is
+#' bounded by the confidence limits calculated in the \code{survfit} object
+#' which is passed to \code{ggsurv} in the initial function call.
+#' 
+#' Long strata labels can mis-align the at risk numbers and plot ticks. If the
+#' arguments \code{plot.margin} and \code{table.margin} are \code{NULL}, the
+#' function will make a guess based on the number of characters in the strata
+#' labels. If this is not perfect, \code{plot.margin} and \code{table.margin}
+#' can be specified explicitly by providing a single numeric corresponding to
+#' the number of "lines" of padding (see \code{\link{unit}}). Note that the 
+#' default for \code{ggplot} is \code{unit(.25, "lines")}.
 #' 
 #' @param s \code{\link{survfit}} or \code{survfit.cox} object
 #' @param col.surv color of survival lines; should be one color or match 
@@ -438,33 +455,15 @@ kmplot <- function(s,
 #' table; see details
 #' @param ... for backwards compatibility with deprecated arguments
 #' 
-#' @details
-#' The argument \code{confband = TRUE} does not plot a confidence band in the 
-#' statistical sense, i.e., xx-percent chance of containing entire population 
-#' of the survival curve which are wider than the point-wise confidence limits.
-#' Rather, it refers to a band of color in \code{ggplot} objects, specifically 
-#' the use of a \code{\link[ggplot2]{geom_ribbon}} geometric shape. The band is
-#' bounded by the confidence limits calculated in the \code{survfit} object
-#' which is passed to \code{ggsurv} in the initial function call.
-#' 
-#' Long strata labels can mis-align the at risk numbers and plot ticks. If the
-#' arguments \code{plot.margin} and \code{table.margin} are \code{NULL}, the
-#' function will make a guess based on the number of characters in the strata
-#' labels. If this is not perfect, \code{plot.margin} and \code{table.margin}
-#' can be specified explicitly by providing a single numeric corresponding to
-#' the number of "lines" of padding (see \code{\link{unit}}). Note that the 
-#' default for \code{ggplot} is \code{unit(.25, "lines")}.
-#' 
 #' @seealso \code{\link[rawr]{kmplot}}; \code{survival:::plot.survfit}
 #'
 #' @examples
-#' library(ggplot2)
-#' library(grid)
-#' library(gridExtra)
-#' library(survival)
+#' library('ggplot2')
+#' library('grid')
+#' library('gridExtra')
+#' library('survival')
 #' data(cancer)
 #' 
-#' ### data to use
 #' cancer <- within(cancer, {
 #'   age.cat <- factor(as.numeric(cut(age, c(-Inf, 50, 60, 70, Inf))))
 #'   meal.cat <- factor(as.numeric(cut(meal.cal, 
@@ -473,19 +472,19 @@ kmplot <- function(s,
 #'     c(.25,.5,.75), na.rm = TRUE),Inf))))
 #' })
 #' 
-#' ### fitting models
+#' ## fitting models
 #' # kaplan-meier
 #' kmfit0 <- survfit(Surv(time = time, event = status) ~ 1, data = cancer, 
 #'   conf.type = 'log-log')
 #' kmfit1 <- survfit(Surv(time = time, event = status) ~ sex, data = cancer, 
 #'   conf.type = 'log-log')
+#'   
 #' # cox proportional hazards
 #' coxfit0 <- survfit(coxph(Surv(time = time, event = status) ~ strata(age.cat),
 #'   data = cancer))
 #' coxfit1 <- survfit(coxph(Surv(time = time, event = status) ~ strata(I(age > 45)),
 #'   data = cancer))
 #' 
-#' ### example plots
 #' ggsurv(kmfit0)
 #' 
 #' ggsurv(kmfit1, confin = FALSE, lty.surv = 1:2, col.cens = 'blue', 
@@ -497,15 +496,15 @@ kmplot <- function(s,
 #'   
 #' ggsurv(coxfit0, basehaz = TRUE)
 #' 
-#' # this long label mis-aligns the table numbers, so we can use plot.margin
-#' # to adjust; it may be easier to adjust plot.margin instead of table.margin
+#' ## this long label mis-aligns the table numbers, so we can use plot.margin
+#' ## to adjust; it may be easier to adjust plot.margin instead of table.margin
 #' ggsurv(coxfit0, confin = FALSE, col.atrisk = 'black',
 #'   col.surv = c('red','green','blue','black'),
 #'   legend.labels = c('Less than 50','50-60','60-70','70+'),
 #'   plot.margin = 3)
 #' 
 #' \dontrun{
-#' png('./plot.png', height = 600, width = 750)
+#' png('plot.png', height = 600, width = 750)
 #' ggsurv(coxfit1, confin = FALSE, median = TRUE, confband = FALSE,
 #'   legend.labels = c('< 45','> 45'), 
 #'   col.surv = c('red','green'), mark = '#', col.cens = 'black', 
