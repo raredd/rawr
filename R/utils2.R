@@ -859,23 +859,32 @@ tabler_by <- function(dat, varname, byvar, n, order = FALSE, zeros,
 #' 
 #' Formats and prints a \emph{named} vector of counts with percentages.
 #' 
-#' @param top named vector of counts
-#' @param n total number of observations
+#' @param top named vector of counts (a summary or table) or a long vector of
+#' character strings or factors
+#' @param n total number of observations; if not given, the length of
+#' \code{top} is used
 #' @param lowcase logical; names will be lowercase if \code{TRUE}, upper
 #' case if \code{FALSE}, and unchanged otherwise (do not use \code{\link{NA}})
 #' 
 #' @examples
 #' top <- setNames(3:1, c('gold','silver','bronze'))
+#' countr(names(top))
 #' countr(top, 10)
 #' 
 #' @export
 
-countr <- function(top, n, lowcase = TRUE)
+countr <- function(top, n, lowcase = TRUE) {
+  ## if top is a vector of names, get table
+  if (class(top) %in% c('character','factor')) {
+    n <- length(top)
+    top <- table(top)
+  }
   iprint(sprintf('%s (n = %s, %s%%)', 
                  if (is.logical(lowcase))
                    if (lowcase) tolower(names(top)) else toupper(names(top))
                  else names(top),
                  top, round(as.numeric(top) / n * 100)))
+}
 
 #' Find most severe toxicities
 #' 

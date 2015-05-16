@@ -7,9 +7,11 @@
 countr(top, n, lowcase = TRUE)
 }
 \arguments{
-\item{top}{named vector of counts}
+\item{top}{named vector of counts (a summary or table) or a long vector of
+character strings or factors}
 
-\item{n}{total number of observations}
+\item{n}{total number of observations; if not given, the length of
+\code{top} is used}
 
 \item{lowcase}{logical; names will be lowercase if \code{TRUE}, upper
 case if \code{FALSE}, and unchanged otherwise (do not use \code{\link{NA}})}
@@ -19,6 +21,7 @@ Formats and prints a \emph{named} vector of counts with percentages.
 }
 \examples{
 top <- setNames(3:1, c('gold','silver','bronze'))
+countr(names(top))
 countr(top, 10)
 }
 
