@@ -7,21 +7,20 @@
 psum(..., na.rm = FALSE)
 }
 \arguments{
-\item{...}{string of vectors}
+\item{...}{numeric vectors}
 
-\item{na.rm}{logical; should missing values (including \code{NaN}) be
-omitted from calculations}
+\item{na.rm}{logical; if \code{TRUE}, omits missing values (including
+\code{\link{NaN}}) from calculations}
 }
 \value{
 A single vector of element-wise sums.
 }
 \description{
-Compute the pairwise sum of two or more vectors
+Compute the pairwise sum of two or more vectors.
 }
 \details{
-Each vector passed in \code{...} must be equal in length. The
-function coerces the vectors into a matrix and performs
-\code{\link{rowSums}} on the resulting rows.
+Each vector passed in \code{...} must be equal in length. The function
+coerces the vectors into a matrix and \code{\link{rowSums}} the rows.
 }
 \examples{
 x <- c(-1, NA, 4, 5)

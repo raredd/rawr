@@ -250,7 +250,7 @@ clist <- function(l)
 #' 
 #' @examples
 #' binconr(5, 10, .90, est = FALSE)
-#' binconr(45, 53, .95, digits = 1)
+#' binconr(45, 53, digits = 1)
 #' 
 #' @export
 
@@ -258,10 +258,10 @@ binconr <- function(r, n, conf = 0.95, digits = 0,
                     est = TRUE, method = 'exact') {
   res <- roundr(bincon(r, n, alpha = 1 - conf, method = method) * 100, 
                 digits = digits)
-  zzz <- paste0('(', conf * 100, '% CI: ', res[4], ' - ', res[5], ')')
-  if (est) 
-    zzz <- paste0(res[3], ' ', zzz)
-  return(zzz)
+  zzz <- sprintf('%s%% CI: %s - %s%%', conf * 100, res[4], res[5])
+  if (est)
+    zzz <- sprintf('%s%% (%s)', res[3], zzz)
+  zzz
 }
 
 #' Numeric to character string
@@ -649,7 +649,6 @@ surv_summary <- function(s, digits = max(getOption('digits') - 4, 3), ...) {
 surv_table <- function(s, digits = 3, times = pretty(range(s$time)), ...) {
   tmp <- capture.output(summ <- surv_summary(s, digits = digits, 
                                              times = times, ...))
-  
   f <- function(x, d = digits, vars = vars) {
     vars = colnames(x)
     tmpvar <- colnames(x)[grep('survival|std.err|lower|upper', 
@@ -657,15 +656,13 @@ surv_table <- function(s, digits = 3, times = pretty(range(s$time)), ...) {
     x[ , tmpvar] <- roundr(x[ , tmpvar], digits = d)
     
     surv <- sprintf('%s (%s, %s)', 
-                    x[ , colnames(x)[grepl('survival', colnames(x))]],
-                    x[ , colnames(x)[grepl('lower', colnames(x))]],
-                    x[ , colnames(x)[grepl('upper', colnames(x))]])
-    
-    `colnames<-`(cbind(x[ , c(setdiff(vars, tmpvar), 'std.err')], surv),
+                    x[, colnames(x)[grepl('survival', colnames(x))]],
+                    x[, colnames(x)[grepl('lower', colnames(x))]],
+                    x[, colnames(x)[grepl('upper', colnames(x))]])
+    `colnames<-`(cbind(x[, c(setdiff(vars, tmpvar), 'std.err')], surv),
                  c('Time','No. at risk','No. event','Std.Error',
                    sprintf('OR (%s%% CI)', s$conf.int * 100)))
   }
-  
   if (is.list(summ))
     Map(f = f, summ)
   else f(summ)
@@ -734,7 +731,7 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' tabler_by
 #' 
 #' This function is helpful to make simple stratified tables, faster and 
-#' easier to use than \code{\link[tables]{tabular}}.
+#' easier to use for simple tables than \code{\link[tables]{tabular}}.
 #' 
 #' \code{varname} and \code{byvar} should be factors, and the levels will
 #' appear in the output as they occur in \code{levels(x)}.
@@ -796,6 +793,7 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' cgroup <- c(sprintf('Total<br /><font size=1>n = %s</font>', sum(n)),
 #'             sprintf('Phase I<br /><font size=1>n = %s</font>', n[1]),
 #'             sprintf('Phase II<br /><font size=1>n = %s</font>', n[2]))
+#'             
 #' htmlTable(out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
 #'     caption = 'Table 1: Toxicities<sup>&dagger;</sup> by phase and grade.',
 #'     col.columns = rep(c('grey97','none','grey97'), times = c(1, 4, 4)),
@@ -837,7 +835,7 @@ tabler_by <- function(dat, varname, byvar, n, order = FALSE, zeros,
     #   res1 <- gsub('0 \\(0%\\)', zeros, res1)
   }
   
-  zzz <- if (pct) {
+  zzz <- if (pct.col) {
     res2 <- apply(res1, 1, paste0, collapse = ' ')
     res2 <- as.matrix(setNames(read.table(text = gsub('\\(|\\)|%', '', res2),
                                           colClasses = 'character'),
@@ -963,6 +961,9 @@ gcd <- function(x, y) ifelse(r <- x%%y, Recall(y, r), y)
 #' @param d,m,y day, month, year as single integers or vectors
 #' @param origin a vector of length three giving the origins for \code{d},
 #' \code{m}, and \code{y}, respectively; see details
+#' 
+#' @return
+#' A vector of \code{\link{Date}}-formatted strings.
 #' 
 #' @examples
 #' dmy(25, 7, 13)

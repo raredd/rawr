@@ -24,7 +24,7 @@ Binomial confidence interval formatter.
 }
 \examples{
 binconr(5, 10, .90, est = FALSE)
-binconr(45, 53, .95, digits = 1)
+binconr(45, 53, digits = 1)
 }
 \seealso{
 \code{\link{bincon}}; \code{\link[Hmisc]{binconf}}

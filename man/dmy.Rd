@@ -12,6 +12,9 @@ dmy(d, m, y, origin = c(1, 1, 1900))
 \item{origin}{a vector of length three giving the origins for \code{d},
 \code{m}, and \code{y}, respectively; see details}
 }
+\value{
+A vector of \code{\link{Date}}-formatted strings.
+}
 \description{
 Parses day, month, year columns to the standard date format.
 }

@@ -26,7 +26,7 @@ columns}
 }
 \description{
 This function is helpful to make simple stratified tables, faster and
-easier to use than \code{\link[tables]{tabular}}.
+easier to use for simple tables than \code{\link[tables]{tabular}}.
 }
 \details{
 \code{varname} and \code{byvar} should be factors, and the levels will
@@ -78,6 +78,7 @@ library('htmlTable')
 cgroup <- c(sprintf('Total<br /><font size=1>n = \%s</font>', sum(n)),
             sprintf('Phase I<br /><font size=1>n = \%s</font>', n[1]),
             sprintf('Phase II<br /><font size=1>n = \%s</font>', n[2]))
+
 htmlTable(out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
     caption = 'Table 1: Toxicities<sup>&dagger;</sup> by phase and grade.',
     col.columns = rep(c('grey97','none','grey97'), times = c(1, 4, 4)),

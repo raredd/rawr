@@ -499,15 +499,15 @@ recoder <- function(object, pattern, replacement, ...) {
 
 #' Pairwise sum
 #' 
-#' Compute the pairwise sum of two or more vectors
+#' Compute the pairwise sum of two or more vectors.
 #' 
-#' @param ... string of vectors
-#' @param na.rm logical; should missing values (including \code{NaN}) be 
-#' omitted from calculations
+#' Each vector passed in \code{...} must be equal in length. The function
+#' coerces the vectors into a matrix and \code{\link{rowSums}} the rows.
 #' 
-#' @details Each vector passed in \code{...} must be equal in length. The 
-#' function coerces the vectors into a matrix and performs 
-#' \code{\link{rowSums}} on the resulting rows.
+#' @param ... numeric vectors
+#' @param na.rm logical; if \code{TRUE}, omits missing values (including
+#' \code{\link{NaN}}) from calculations
+#' 
 #' @return A single vector of element-wise sums.
 #' @seealso \code{\link{pmin}}, \code{\link{pmax}}
 #' 
