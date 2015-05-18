@@ -90,9 +90,9 @@ roundr.matrix <- function(x, digits = 1) {
     apply(x, 2, roundr, digits)
 }
 
-#' Confidence interval formatter
+#' Interval formatter
 #' 
-#' Automatically calculate summary statistic and interval for numeric vectors
+#' Calculate summary statistic with range or confidence interval.
 #' 
 #' @param ... numeric vector or string of numeric vectors
 #' @param fun summary stat function, usually \code{\link{mean}} or 

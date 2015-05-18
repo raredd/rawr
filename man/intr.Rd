@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils2.R
 \name{intr}
 \alias{intr}
-\title{Confidence interval formatter}
+\title{Interval formatter}
 \usage{
 intr(..., fun = median, conf = NULL, digits = 0, na.rm = FALSE)
 }
@@ -22,7 +22,7 @@ are removed from \code{...} before \code{fun} and \code{\link{quantile}} are
 computed}
 }
 \description{
-Automatically calculate summary statistic and interval for numeric vectors
+Calculate summary statistic with range or confidence interval.
 }
 \examples{
 intr(1:10)
