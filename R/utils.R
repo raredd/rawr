@@ -323,7 +323,9 @@ ht <- function(x, ..., sep = NULL) rbind(head(x, ...), sep, tail(x, ...))
 #' @export
 
 progress <- function (value, max.value, textbar = FALSE) {
-  
+  oo <- options()
+  on.exit(options(oo))
+  options(scipen = 10)
   if (!is.numeric(value)) 
     stop("\'value\' must be numeric")
   if (missing(max.value)) {
@@ -331,11 +333,12 @@ progress <- function (value, max.value, textbar = FALSE) {
     percent <- TRUE
   } else percent <- FALSE
   
+  f <- function(...) paste0(..., collapse = '')
   erase.only <- value > max.value
   max.value <- as.character(round(max.value))
   l <- nchar(max.value)
-  value <- formatC(round(value), width = l, format = 'd')
-  f <- function(...) paste0(..., collapse = '')
+  # value <- formatC(round(value), width = l, format = 'd')
+  # max.value <- formatC(max.value, width = l, format = 'd')
   
   if (textbar) {
     # m <- getOption('width')
