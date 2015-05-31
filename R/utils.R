@@ -334,18 +334,20 @@ progress <- function (value, max.value, textbar = FALSE) {
   erase.only <- value > max.value
   max.value <- as.character(round(max.value))
   l <- nchar(max.value)
-  value <- formatC(round(value), width = l)
+  value <- formatC(round(value), width = l, format = 'd')
   f <- function(...) paste0(..., collapse = '')
   
   if (textbar) {
-#     m <- getOption('width')
-#     r <- floor(as.numeric(value) / as.numeric(max.value) * m)
-#     backspaces <- f(rep('\b', m * 2))
-#     if (erase.only) message <- ''
-#     else {
-#       message <- f('|', f(rep('=', max(0, r - 1))), 
-#                    f(rep(' ', max(0, m - r))), '|')
-#       cat(backspaces, message, sep = '')
+    # m <- getOption('width')
+    # r <- floor(as.numeric(value) / as.numeric(max.value) * m)
+    # backspaces <- f(rep('\b', m * 2))
+    #
+    # if (erase.only) message <- ''
+    # else {
+    #   message <- f('|', f(rep('=', max(0, r - 1))),
+    #                f(rep(' ', max(0, m - r))), '|')
+    #   cat(backspaces, message, sep = '')
+    # }
     m <- getOption('width') - 5
     pct <- as.numeric(value) / as.numeric(max.value)
     r <- floor(pct * m)
@@ -371,7 +373,6 @@ progress <- function (value, max.value, textbar = FALSE) {
   }
   if (.Platform$OS.type == 'windows') 
     flush.console()
-  invisible(NULL)
   cat('\n')
 }
 
