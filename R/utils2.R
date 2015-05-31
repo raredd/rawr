@@ -32,7 +32,7 @@ html_test <- function(x) {
   else browseURL(htmlFile)
 }
 
-#  roundr
+#' roundr
 #'
 #' Improved rounding formatter
 #'

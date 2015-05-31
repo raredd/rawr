@@ -5,7 +5,7 @@
 \alias{roundr.data.frame}
 \alias{roundr.default}
 \alias{roundr.matrix}
-\title{Improved rounding formatter}
+\title{roundr}
 \usage{
 roundr(x, digits = 1)
 

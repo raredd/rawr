@@ -7,7 +7,7 @@
 tcol(color, trans = 255)
 }
 \arguments{
-\item{color}{single or string of color names (or hexadecimal format)}
+\item{color}{vector of color names (or hexadecimal)}
 
 \item{trans}{transparency defined as an integer in the range
 \code{[0, 255]} where \code{0} is fully transparent and \code{255} is fully

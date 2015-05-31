@@ -1604,7 +1604,7 @@ show_pch <- function() {
 #' (fully visible) to the color(s) given. \code{color} values are converted to
 #' RGB with transparency.
 #' 
-#' @param color single or string of color names (or hexadecimal format) 
+#' @param color vector of color names (or hexadecimal)
 #' @param trans transparency defined as an integer in the range 
 #' \code{[0, 255]} where \code{0} is fully transparent and \code{255} is fully
 #' visible; see details

@@ -626,8 +626,8 @@ ggsurv <- function(s,
   }
   
   survdat <- outdata <- survdat(s)
-#   if (data) 
-#     return(outdata)
+  # if (data) 
+  #   return(outdata)
   
   #### for custom ribbon color with no strata present
   if (is.null(survdat$strata) && !missing(col.band)) 
@@ -939,8 +939,8 @@ ggsurv <- function(s,
       theme_bw() + 
       scale_y_discrete(breaks = as.character(levels(risk.table$strata)), 
                        labels = rev(unique(survdat$strata))) +
-#       scale_y_discrete(breaks = as.character(levels(risk.table$strata)), 
-#                        labels = rep('', length(unique(survdat$strata)))) +
+      # scale_y_discrete(breaks = as.character(levels(risk.table$strata)), 
+      #                  labels = rep('', length(unique(survdat$strata)))) +
       scale_x_continuous('Number at risk', breaks = tick.seq, 
                          limits = c(0, max(s$time))) + 
       theme(axis.title.x = element_text(size = 10, vjust = 1),
@@ -950,10 +950,10 @@ ggsurv <- function(s,
             axis.text.x = element_blank(),
             axis.ticks = element_blank(), 
             axis.text.y = element_text(face = 'bold', hjust = 1))
-#           annotate('text', x = 0, y = length(unique(risk.table$strata)) + .5, 
-#                    label = 'Number at risk')
-#           ggtitle('Number at risk') 
-#           theme(plot.title = element_text(size = rel(1)))
+          # annotate('text', x = 0, y = length(unique(risk.table$strata)) + .5, 
+          #          label = 'Number at risk')
+          # ggtitle('Number at risk') 
+          # theme(plot.title = element_text(size = rel(1)))
     if (!missing(col.atrisk))
       gg.table <- gg.table + geom_text(size = 3.5, colour = col.atrisk)
     else gg.table <- gg.table + geom_text(size = 3.5)
