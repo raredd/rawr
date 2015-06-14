@@ -575,8 +575,6 @@ ggsurv <- function(s,
                col.atrisk <- eval(m$...$atrisk.col)), 
         silent = TRUE)
   }
-  ## no visible binding note
-  surv <- n.censor <- upper <- lower <- quant <- group <- hazard <- n.risk <- NULL
   
   #### create data from survfit object in proper format for ggplot
   survdat <- function(s) {

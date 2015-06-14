@@ -2,6 +2,14 @@
 # ctcae_v3, ctcae_v4
 ###
 
+if (getRversion() >= '2.15.1') {
+  utils::globalVariables(c('corr','nQQ','y','ID','ci','surv','n.censor',
+                           'upper','lower','quant','group','hazard','n.risk'))
+}
+
+## no visible binding note
+surv <- n.censor <- upper <- lower <- quant <- group <- hazard <- n.risk <- NULL
+
 #' Common Terminology Criteria for Adverse Events, v3
 #'
 #' A dataset containing the CTCAE (version 3) toxicity codes, descriptions, and
@@ -15,7 +23,7 @@
 #' \tab \code{tox_cat} \tab category \cr
 #' \tab \code{ctc_version} \tab version number \cr
 #' }
-"ctcae_v3"
+'ctcae_v3'
 
 #' Common Terminology Criteria for Adverse Events, v4
 #'
@@ -35,4 +43,4 @@
 #' \tab \code{MedDRA_code_v12} \tab Medical Dictionary for Regulatory 
 #' Activities codes, v12 \cr
 #' }
-"ctcae_v4"
+'ctcae_v4'
