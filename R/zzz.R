@@ -2,13 +2,11 @@
 # ctcae_v3, ctcae_v4
 ###
 
+
 if (getRversion() >= '2.15.1') {
   utils::globalVariables(c('corr','nQQ','y','ID','ci','surv','n.censor',
                            'upper','lower','quant','group','hazard','n.risk'))
 }
-
-## no visible binding note
-surv <- n.censor <- upper <- lower <- quant <- group <- hazard <- n.risk <- NULL
 
 #' Common Terminology Criteria for Adverse Events, v3
 #'
