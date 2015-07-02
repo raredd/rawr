@@ -1,49 +1,110 @@
 ### formatting and miscellaneous utilities
-# html_test, roundr, intr, pvalr, pvalr2, clist, binconr, num2char, iprint,
-# match_ctc, writeftable, surv_summary, surv_table, tabler, tabler_by,
+# show_html, show_math, roundr, intr, pvalr, pvalr2, clist, binconr, num2char,
+# iprint, match_ctc, writeftable, surv_summary, surv_table, tabler, tabler_by,
 # countr, tox_worst, gcd, dmy
 ###
 
 
 #' html test
 #' 
-#' Render html in rstudio viewer
+#' Render html in rstudio viewer or default browser.
 #' 
-#' @param x character string of html code
+#' @param ... one or more character strings
+#' @param use_viewer logical; if \code{TRUE}, attempts to use
+#' \code{rstudio::viewer} or opens in default browser on error
 #' 
 #' @examples
 #' \dontrun{
-#' html_test("
+#' show_html("
 #' <div align = center><h1>A heading<sup>&dagger;</sup><h1></div>
 #' <font size = 1><sup>&dagger;</sup>That was the heading</font>
 #' ")
 #' 
-#' library(htmlTable)
-#' html_test(htmlTable(mtcars, output = FALSE))
+#' library('htmlTable')
+#' show_html(htmlTable(mtcars, output = FALSE), use_viewer = FALSE)
 #' }
 #' 
 #' @export
 
-html_test <- function(x) {
+show_html <- function(..., use_viewer = !is.null(getOption('viewer'))) {
   htmlFile <- tempfile(fileext = '.html')
+  x <- c(...)
   writeLines(x, con = htmlFile)
-  if ((Sys.getenv('RSTUDIO') != '') && ('rstudio' %in% .packages(TRUE)))
-      rstudio::viewer(htmlFile)
+  if (use_viewer)
+    tryCatch(rstudio::viewer(htmlFile),
+             error = function(e) {
+               message('Viewer not available - opening in browser.\n',
+                       'In RStudio, try installing the \'rstudio\' package.',
+                       domain = NA)
+               browseURL(htmlFile)
+             })
   else browseURL(htmlFile)
+}
+
+#' Show math
+#' 
+#' Displays math equations in \code{rstudio::viewer} or browser using the
+#' \href{http://www.mathjax.org}{MathJax} javascript engine.
+#' 
+#' @param ... one or more character strings
+#' @param css optional css formatting
+#' @param use_viewer logical; if \code{TRUE}, attempts to use
+#' \code{rstudio::viewer} or opens in default browser on error
+#' 
+#' @seealso
+#' \code{\link{show_html}},
+#' \href{http://stackoverflow.com/questions/31193843/display-r-formula-elegantly-as-in-latex}{SO question}
+#' 
+#' @examples
+#' \dontrun{
+#' form1 <- '$$A=\\frac{B}{C}$$'
+#' form2 <- '$$
+#'   \\frac{1}{\\displaystyle 1+
+#'   \\frac{1}{\\displaystyle 2+
+#'   \\frac{1}{\\displaystyle 3+x}}} +
+#'   \\frac{1}{1+\\frac{1}{2+\\frac{1}{3+x}}}
+#' $$'
+#' form3 <- '\\frac{d}{dx}\\left( \\int_{0}^{x} f(u)\\,du\\right)=f(x)'
+#' 
+#' show_math(form1)
+#' show_math(form2, use_viewer = FALSE)
+#' show_math(form1, form2, form3, css = 'color: red; font-size: 15px;')
+#' }
+#' 
+#' @export
+
+show_math <- function(..., css, use_viewer = !is.null(getOption('viewer'))) {
+  mj <- "<script>
+  (function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+  document.getElementsByTagName('head')[0].appendChild(script);
+  })();
+  </script>"
+  check_expr <- function(x)
+    sprintf('\\[%s\\]', gsub('^\\$+|\\$+$', '', x))
+  x <- paste(sapply(c(...), check_expr), collapse = '<br />')
+  if (missing(css))
+    css <- ''
+  show_html(sprintf('<span class="math" style="font-size: 24px; %s;">', css),
+            sprintf('%s</span>%s', x, mj), use_viewer = use_viewer)
 }
 
 #' roundr
 #'
-#' Improved rounding formatter
+#' Improved rounding formatter.
+#' 
+#' Uses \code{\link[base]{sprintf}} to round numeric value, retaining extra 0s.
 #'
 #' @param x numeric value, vector, matrix, or data frame
 #' @param digits number of digits past the decimal point to keep
 #'
-#' @details 
-#' Uses \code{\link[base]{sprintf}} to round numeric value, retaining extra 0s.
 #' @return
 #' A vector of character strings.
-#' @seealso \code{\link[base]{round}}; \code{\link[base]{sprintf}}
+#' 
+#' @seealso
+#' \code{\link[base]{round}}; \code{\link[base]{sprintf}}
 #'
 #' @examples
 #' roundr(51.01, 3)
@@ -104,7 +165,8 @@ roundr.matrix <- function(x, digits = 1) {
 #' are removed from \code{...} before \code{fun} and \code{\link{quantile}} are
 #' computed
 #' 
-#' @seealso \code{\link[rawr]{roundr}}
+#' @seealso
+#' \code{\link[rawr]{roundr}}
 #' 
 #' @examples
 #' intr(1:10)
@@ -161,7 +223,8 @@ intr <- function(..., fun = median, conf = NULL, digits = 0, na.rm = FALSE) {
 #' @param show.p logical; if \code{TRUE}, inserts \code{p = } or \code{p < }
 #' where appropriate
 #' 
-#' @seealso \code{\link[rawr]{roundr}}
+#' @seealso
+#' \code{\link[rawr]{roundr}}
 #' 
 #' @examples
 #' pvals <- c(.13354, .060123, .004233, .00000016223)
@@ -246,7 +309,8 @@ clist <- function(l)
 #' @param est logical; if \code{TRUE}, includes the point estimate
 #' @param method method to use; see \code{\link{bincon}}
 #' 
-#' @seealso \code{\link{bincon}}; \code{\link[Hmisc]{binconf}}
+#' @seealso
+#' \code{\link{bincon}}; \code{\link[Hmisc]{binconf}}
 #' 
 #' @examples
 #' binconr(5, 10, .90, est = FALSE)
@@ -266,13 +330,8 @@ binconr <- function(r, n, conf = 0.95, digits = 0,
 
 #' Numeric to character string
 #' 
-#' Convert a number to a character string.
+#' Convert a number to a character string representation.
 #' 
-#' @param num number; integer value in \code{(-1e08, 1e08)}
-#' @param informal logical; if \code{TRUE}, adds "and" before tens or ones
-#' @param cap logical; if \code{TRUE}, capitalizes the first word
-#' 
-#' @details
 #' Whole numbers twenty-one through ninety-nine are hyphenated when they are 
 #' written out whether used alone or as part of a larger number; for example: 
 #' twenty-one. Whole numbers are also hyphenated when they are part of larger 
@@ -284,7 +343,12 @@ binconr <- function(r, n, conf = 0.95, digits = 0,
 #' example, "one hundred," and not hyphenated. In a phrase like "one hundred 
 #' and ten years," no hyphenation should be added. 
 #' 
-#' @references \url{http://dictionary.reference.com/help/faq/language/g80.html}
+#' @param num number; integer value in \code{(-1e08, 1e08)}
+#' @param informal logical; if \code{TRUE}, adds "and" before tens or ones
+#' @param cap logical; if \code{TRUE}, capitalizes the first word
+#' 
+#' @references
+#' \url{http://dictionary.reference.com/help/faq/language/g80.html}
 #' 
 #' @examples
 #' num2char(19401, informal = TRUE)
