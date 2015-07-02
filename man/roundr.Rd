@@ -24,7 +24,7 @@ roundr(x, digits = 1)
 A vector of character strings.
 }
 \description{
-Improved rounding formatter
+Improved rounding formatter.
 }
 \details{
 Uses \code{\link[base]{sprintf}} to round numeric value, retaining extra 0s.
