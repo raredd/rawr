@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils2.R
 \name{show_math}
 \alias{show_math}
-\title{Show math}
+\title{Show math equations}
 \usage{
 show_math(..., css, use_viewer = !is.null(getOption("viewer")))
 }
@@ -32,10 +32,27 @@ form3 <- '\\\\frac{d}{dx}\\\\left( \\\\int_{0}^{x} f(u)\\\\,du\\\\right)=f(x)'
 show_math(form1)
 show_math(form2, use_viewer = FALSE)
 show_math(form1, form2, form3, css = 'color: red; font-size: 15px;')
+
+form4 <- "
+\\\\forall a,b,c \\\\in \\\\mathbb{R} \\\\\\\\
+\\\\begin{align}
+                      a + b &= c \\\\\\\\
+             (a + b)(a - b) &= c(a - b) \\\\\\\\
+                  a^2 - b^2 &= ca - cb \\\\\\\\
+                   a^2 - ca &= b^2 - cb \\\\\\\\
+  a^2 - ca + \\\\frac{c^2}{4} &= b^2 - cb + \\\\frac{c^2}{4} \\\\\\\\
+       (a - \\\\frac{c}{2})^2 &= (b - \\\\frac{c}{2})^2 \\\\\\\\
+           a - \\\\frac{c}{2} &= b - \\\\frac{c}{2} \\\\\\\\
+                          a &= b \\\\qquad \\\\qquad \\\\blacksquare \\\\\\\\
+ \\\\end{align}
+"
+
+cat(show_math(form4))
 }
 }
 \seealso{
 \code{\link{show_html}},
+\href{http://detexify.kirelabs.org/classify.html}{draw math symbols},
 \href{http://stackoverflow.com/questions/31193843/display-r-formula-elegantly-as-in-latex}{SO question}
 }
 

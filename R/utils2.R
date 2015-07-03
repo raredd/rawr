@@ -39,9 +39,10 @@ show_html <- function(..., use_viewer = !is.null(getOption('viewer'))) {
                browseURL(htmlFile)
              })
   else browseURL(htmlFile)
+  invisible(x)
 }
 
-#' Show math
+#' Show math equations
 #' 
 #' Displays math equations in \code{rstudio::viewer} or browser using the
 #' \href{http://www.mathjax.org}{MathJax} javascript engine.
@@ -53,6 +54,7 @@ show_html <- function(..., use_viewer = !is.null(getOption('viewer'))) {
 #' 
 #' @seealso
 #' \code{\link{show_html}},
+#' \href{http://detexify.kirelabs.org/classify.html}{draw math symbols},
 #' \href{http://stackoverflow.com/questions/31193843/display-r-formula-elegantly-as-in-latex}{SO question}
 #' 
 #' @examples
@@ -69,26 +71,43 @@ show_html <- function(..., use_viewer = !is.null(getOption('viewer'))) {
 #' show_math(form1)
 #' show_math(form2, use_viewer = FALSE)
 #' show_math(form1, form2, form3, css = 'color: red; font-size: 15px;')
+#' 
+#' form4 <- "
+#' \\forall a,b,c \\in \\mathbb{R} \\\\
+#' \\begin{align}
+#'                       a + b &= c \\\\
+#'              (a + b)(a - b) &= c(a - b) \\\\
+#'                   a^2 - b^2 &= ca - cb \\\\
+#'                    a^2 - ca &= b^2 - cb \\\\
+#'   a^2 - ca + \\frac{c^2}{4} &= b^2 - cb + \\frac{c^2}{4} \\\\
+#'        (a - \\frac{c}{2})^2 &= (b - \\frac{c}{2})^2 \\\\
+#'            a - \\frac{c}{2} &= b - \\frac{c}{2} \\\\
+#'                           a &= b \\qquad \\qquad \\blacksquare \\\\
+#'  \\end{align}
+#' "
+#' 
+#' cat(show_math(form4))
 #' }
 #' 
 #' @export
 
 show_math <- function(..., css, use_viewer = !is.null(getOption('viewer'))) {
-  mj <- "<script>
-  (function () {
-  var script = document.createElement('script');
-  script.type = 'text/javascript';
-  script.src  = 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-  document.getElementsByTagName('head')[0].appendChild(script);
-  })();
-  </script>"
+  mj <- "
+    <script>
+      (function () {
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src  = 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+        document.getElementsByTagName('head')[0].appendChild(script);
+      })();
+    </script>"
   check_expr <- function(x)
     sprintf('\\[%s\\]', gsub('^\\$+|\\$+$', '', x))
   x <- paste(sapply(c(...), check_expr), collapse = '<br />')
   if (missing(css))
     css <- ''
-  show_html(sprintf('<span class="math" style="font-size: 24px; %s;">', css),
-            sprintf('%s</span>%s', x, mj), use_viewer = use_viewer)
+  show_html(sprintf('<span class="math" style="font-size: 24px; %s;">\n', css),
+            x, '\n</span>\n', mj, use_viewer = use_viewer)
 }
 
 #' roundr
