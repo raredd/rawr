@@ -29,6 +29,7 @@
 show_html <- function(..., use_viewer = !is.null(getOption('viewer'))) {
   htmlFile <- tempfile(fileext = '.html')
   x <- c(...)
+  if (is.null(x)) return(invisible())
   writeLines(x, con = htmlFile)
   if (use_viewer)
     tryCatch(rstudio::viewer(htmlFile),
@@ -100,10 +101,14 @@ show_math <- function(..., css, use_viewer = !is.null(getOption('viewer'))) {
         script.src  = 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
         document.getElementsByTagName('head')[0].appendChild(script);
       })();
-    </script>"
+    </script>
+  "
   check_expr <- function(x)
+    ## use \[ expr \] instead of $$ expr $$
     sprintf('\\[%s\\]', gsub('^\\$+|\\$+$', '', x))
   x <- paste(sapply(c(...), check_expr), collapse = '<br />')
+  if (!nzchar(x))
+    return(invisible())
   if (missing(css))
     css <- ''
   show_html(sprintf('<span class="math" style="font-size: 24px; %s;">\n', css),
