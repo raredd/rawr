@@ -1,8 +1,11 @@
 rawr 0.6.0
 --------
   * moved unneed packages to suggests
-  * added cast, melt
+  * added cast, melt, show_html, show_math, show_markdown
   * organized some code, minor fixes, latex
+  * added stylesheets
+  * removed depends R > 3.0.2
+  * R CMD check succeeded, Status: OK
 
 rawr 0.5.4
 --------
