@@ -1,13 +1,11 @@
 Package: rawr
 Type: Package
-Title: A personal package with miscellaneous tools.
-Version: 0.6.0
+Title: rawr package
+Version: 0.6.1
 Authors@R: person("Robert", "Redd", email = "raredd01@gmail.com",
     role = c("aut", "cre"))
 Description: Personal package with miscellaneous functions, stuff in progress,
     and tools I use regularly.
-Depends:
-    R (>= 3.0.2)
 Imports:
     ggplot2,
     grid,
@@ -22,7 +20,8 @@ Suggests:
     desmon,
     htmlTable,
     lattice,
-    lme4
+    lme4,
+    markdown
 License: GPL-2
 LazyData: yes
 URL: https://github.com/raredd/rawr
