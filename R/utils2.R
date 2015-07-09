@@ -1,7 +1,7 @@
 ### formatting and miscellaneous utilities
-# show_html, show_math, roundr, intr, pvalr, pvalr2, clist, binconr, num2char,
-# iprint, match_ctc, writeftable, surv_summary, surv_table, tabler, tabler_by,
-# countr, tox_worst, gcd, dmy
+# show_html, show_markdown, show_math, roundr, intr, pvalr, pvalr2, clist,
+# binconr, num2char, iprint, match_ctc, writeftable, surv_summary, surv_table,
+# tabler, tabler_by, countr, tox_worst, gcd, dmy
 ###
 
 
@@ -12,6 +12,9 @@
 #' @param ... one or more character strings
 #' @param use_viewer logical; if \code{TRUE}, attempts to use
 #' \code{rstudio::viewer} or opens in default browser on error
+#' 
+#' @seealso
+#' \code{\link{show_math}}, \code{\link{show_markdown}}
 #' 
 #' @examples
 #' \dontrun{
@@ -43,6 +46,93 @@ show_html <- function(..., use_viewer = !is.null(getOption('viewer'))) {
   invisible(x)
 }
 
+#' Show markdown
+#' 
+#' Render markdown to html in rstudio viewer or default browser.
+#' 
+#' @param ... one or more character strings
+#' @param use_viewer logical; if \code{TRUE}, attempts to use
+#' \code{rstudio::viewer} or opens in default browser on error
+#' @param markArgs a list of addition arguments passed to
+#' \code{\link[markdown]{markdownToHTML}}
+#' 
+#' @seealso
+#' \code{\link{show_html}}, \code{\link{show_math}}
+#' 
+#' @examples
+#' \dontrun{
+#' library('markdown')
+#' 
+#' ## separate strings of markdown
+#' show_markdown('## this is a header','here is some *plain* text  ',
+#'               '<font color=red>ahhh</font>')
+#' 
+#' 
+#' ## or as a single character string
+#' mkd <- "
+#' 1. Here is some markdown I want to test
+#' 2. This is a list
+#'   + a sub-point
+#'   + another sub-point
+#' 
+#' ```
+#' This text is displayed verbatim / preformatted
+#' ```
+#' 
+#' and this text will be formatted using r syntax
+#' 
+#' ```r
+#' mean(1:5)
+#' ```
+#' 
+#' And now I will make a table:
+#' 
+#' First Header  | Second Header
+#' ------------- | -------------
+#' Content Cell  | Content Cell
+#' Content Cell  | Content Cell
+#' 
+#' ## ta-daaa!
+#' 
+#' > here's a picture with a [hyperlink](www.google.com):
+#' 
+#' <div align=center>
+#'     <a href='http://xkcd.com/710/'>
+#'         <img src='http://imgs.xkcd.com/comics/collatz_conjecture.png'
+#'              style='display: block; margin: auto;' />
+#'     </a>
+#' </div>
+#' "
+#' 
+#' show_markdown(mkd)
+#' 
+#' 
+#' ## the default stylesheet is
+#' getOption('markdown.HTML.stylesheet')
+#' 
+#' ## apply another style sheet by setting the option or passing
+#' ## arguments directly to markdown::markdownToHTML
+#' 
+#' ## here are two css files in this package
+#' kcss <- system.file(package = 'rawr', 'styles', 'knitr.css')
+#' gcss <- system.file(package = 'rawr', 'styles', 'github.css')
+#' ## file.show(gcss)
+#' 
+#' 
+#' show_markdown(mkd, markArgs = list(stylesheet = gcss))
+#' show_markdown(mkd, markArgs = list(stylesheet = kcss),
+#'               use_viewer = FALSE)
+#' }
+#' 
+#' @export
+
+show_markdown <- function(..., use_viewer = !is.null(getOption('viewer')),
+                          markArgs = list()) {
+  text <- list(text = c(...))
+  mdk <- do.call('markdownToHTML', c(text, markArgs))
+  show_html(mdk, use_viewer = use_viewer)
+}
+
 #' Show math equations
 #' 
 #' Displays math equations in \code{rstudio::viewer} or browser using the
@@ -54,7 +144,7 @@ show_html <- function(..., use_viewer = !is.null(getOption('viewer'))) {
 #' \code{rstudio::viewer} or opens in default browser on error
 #' 
 #' @seealso
-#' \code{\link{show_html}},
+#' \code{\link{show_html}}, \code{\link{show_markdown}},
 #' \href{http://detexify.kirelabs.org/classify.html}{draw math symbols},
 #' \href{http://stackoverflow.com/questions/31193843/display-r-formula-elegantly-as-in-latex}{SO question}
 #' 

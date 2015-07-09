@@ -26,4 +26,7 @@ library('htmlTable')
 show_html(htmlTable(mtcars, output = FALSE), use_viewer = FALSE)
 }
 }
+\seealso{
+\code{\link{show_math}}, \code{\link{show_markdown}}
+}
 
