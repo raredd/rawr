@@ -195,7 +195,7 @@ show_math <- function(..., css, use_viewer = !is.null(getOption('viewer'))) {
   "
   check_expr <- function(x)
     ## use \[ expr \] instead of $$ expr $$
-    sprintf('\\[%s\\]', gsub('^\\$+|\\$+$', '', x))
+    sprintf('\\[ %s \\]', gsub('\\\\\\[|\\\\]', '', gsub('^\\$+|\\$+$', '', x)))
   x <- paste(sapply(c(...), check_expr), collapse = '<br />')
   if (!nzchar(x))
     return(invisible())
