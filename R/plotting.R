@@ -764,7 +764,18 @@ jmplot <- function(x, y, z,
 #' @references \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
 #' 
 #' @examples
+#' ## equivalent ways to call tplot
+#' ## the formula method is a convenience function for the first case
+#' with(mtcars, tplot(split(mpg, gear)))
 #' tplot(mpg ~ gear, mtcars)
+#' 
+#' ## use panel.first/last in either method unlike in boxplot
+#' tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd',
+#'       panel.last = legend('topleft', legend = 3:5, col = 1:3, pch = 1),
+#'       panel.first = {
+#'         abline(h = mean(mtcars$mpg))
+#'         abline(h = 1:6 * 5 + 5, lty = 'dotted', col = 'grey70')
+#'       })
 #' 
 #' set.seed(1618)
 #' dat <- data.frame(age = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
@@ -1101,13 +1112,13 @@ tplot.default <- function(x, ...,
 
 #' @rdname tplot
 #' @export
-tplot.formula <- function(formula, data = NULL, ..., subset, 
-                          na.action = NULL) {
+tplot.formula <- function(formula, data = NULL, ..., subset, na.action = NULL,
+                          panel.first = NULL, panel.last = NULL) {
   
   if (missing(formula) || (length(formula) !=  3))
-    stop("'formula' missing or incorrect")
+    stop("\'formula\' missing or incorrect")
   
-  m <- match.call(expand.dots  =  FALSE)
+  m <- match.call(expand.dots = FALSE)
   if (is.matrix(eval(m$data, parent.frame())))
     m$data <- as.data.frame(data)
   
@@ -1117,11 +1128,12 @@ tplot.formula <- function(formula, data = NULL, ..., subset,
   if ('sub' %in% nmargs) args[['sub']] <- enquote(args[['sub']])
   if ('xlab' %in% nmargs) args[['xlab']] <- enquote(args[['xlab']])
   if ('ylab' %in% nmargs) args[['ylab']] <- enquote(args[['ylab']])
+  args[['panel.first']] <- substitute(panel.first)
+  args[['panel.last']] <- substitute(panel.last)
   
-  m$... <- NULL
+  m$... <- m$subset <- m$panel.first <- m$panel.last <- NULL
   m$na.action <- na.pass
   subset.expr <- m$subset
-  m$subset <- NULL
   
   m[[1]] <- as.name('model.frame')
   mf <- eval(m, parent.frame())

@@ -17,7 +17,8 @@ tplot(x, ...)
   axes = TRUE, frame.plot = axes, add = FALSE, at, horizontal = FALSE,
   panel.first = NULL, panel.last = NULL)
 
-\method{tplot}{formula}(formula, data = NULL, ..., subset, na.action = NULL)
+\method{tplot}{formula}(formula, data = NULL, ..., subset, na.action = NULL,
+  panel.first = NULL, panel.last = NULL)
 }
 \arguments{
 \item{x}{for specifying data from which the boxplots are to be produced;
@@ -124,7 +125,18 @@ An alternative to \code{\link{boxplot}}. The individual data can be shown
 (either in the foreground or background) with jittering if necessary.
 }
 \examples{
+## equivalent ways to call tplot
+## the formula method is a convenience function for the first case
+with(mtcars, tplot(split(mpg, gear)))
 tplot(mpg ~ gear, mtcars)
+
+## use panel.first/last in either method unlike in boxplot
+tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd',
+      panel.last = legend('topleft', legend = 3:5, col = 1:3, pch = 1),
+      panel.first = {
+        abline(h = mean(mtcars$mpg))
+        abline(h = 1:6 * 5 + 5, lty = 'dotted', col = 'grey70')
+      })
 
 set.seed(1618)
 dat <- data.frame(age = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
