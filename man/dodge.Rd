@@ -10,7 +10,7 @@ dodge(x, ...)
 
 \method{dodge}{formula}(formula, data = NULL, ...)
 
-\method{dodge}{default}(x, at, dist, jit)
+\method{dodge}{default}(x, at, dist, jit, ...)
 }
 \arguments{
 \item{x}{a numeric vector of data}

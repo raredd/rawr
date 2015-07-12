@@ -130,7 +130,7 @@ An alternative to \code{\link{boxplot}}. The individual data can be shown
 tplot(split(mtcars$mpg, mtcars$gear))
 tplot(mpg ~ gear, mtcars)
 
-## use panel.first/last in either method unlike in boxplot
+## use panel.first/panel.last like in `plot` (unavailable in `boxplot`)
 tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd',
       panel.last = legend('topleft', legend = 3:5, col = 1:3, pch = 1),
       panel.first = {
@@ -138,7 +138,7 @@ tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd',
         abline(h = 1:6 * 5 + 5, lty = 'dotted', col = 'grey70')
       })
 
-set.seed(1618)
+set.seed(1)
 dat <- data.frame(age = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
                   sex = sample(c('Female', 'Male'), 80, replace = TRUE),
                   group = paste0('Group ',

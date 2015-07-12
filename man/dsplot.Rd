@@ -37,9 +37,9 @@ symbols should be magnified relative to the default; this starts as 1 when
 a device is opened and is reset when the layout is changed, e.g., by setting
 \code{mfrow}}
 
-\item{formula}{a \code{\link{formula}}, such as \code{y ~ grp}, where y is
-a numeric vector of data values to be split into groups according to the
-grouping variable \code{grp} (usually a factor)}
+\item{formula}{a \code{\link{formula}}, such as \code{y ~ group}, where y
+is a numeric vector of data values to be split into groups according to the
+grouping variable \code{group} (usually a factor)}
 
 \item{data}{a data frame (or list) from which the variables in formula
 should be taken}
@@ -52,15 +52,14 @@ contain \code{\link{NA}}s; the default is to ignore missing values in either
 the response or the group}
 }
 \value{
-An \code{\link{invisible}} table corresponding to the plot cell
-counts.
+An \code{\link{invisible}} table corresponding to the plot cell counts.
 }
 \description{
 This creates a scatter plot (sort of) for discrete, bivariate data; an
 alternative to sunflower plots for integer-valued variables.
 }
 \examples{
-set.seed(1618)
+set.seed(1)
 x <- round(rnorm(400, 100, 4))
 y <- round(rnorm(400, 200, 4))
 sex <- sample(c('Female', 'Male'), 400, replace = TRUE)

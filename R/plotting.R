@@ -5,6 +5,50 @@
 ###
 
 
+## plotting utils
+dosub_ <- function(x) if (length(x) == n) x[s] else x
+
+dodge_ <- function(x, at, dist, jit) {
+  x <- x[nas <- !is.na(x)]
+  gr <- grouping_(x, dif = dist)
+  x <- rep(at, nrow(gr)) + jit_(gr$g.si, gr$hmsf) * jit
+  y <- gr$vs
+  data.frame(x, y)
+}
+
+## compute jittering
+jit_ <- function(g.si, hm.sf) hm.sf - (g.si + 1) / 2
+
+## turn values in each group into their plotting points
+grouping_ <- function(v, dif) {
+  vs <- sort(v)
+  together <- c(FALSE, diff(vs) <=  dif)
+  g.id <- cumsum(!together)
+  g.si <- rep(x <- as.vector(table(g.id)), x)
+  vg <- cbind(vs, g.id, g.si)[rank(v), ]
+  if (length(v) == 1) 
+    vg <- as.data.frame(t(vg))
+  hmsf <- hmsf_(vg[, 2])
+  data.frame(vg, hmsf)
+}
+
+## how many so far
+hmsf_ <- function(g) {
+  out <- NULL
+  u <- unique(g)
+  for (i in 1:length(u)) {
+    j <- g == u[i]
+    out[which(j)] <- 1:sum(j)
+  }
+  out
+}
+
+pstar_ <- function(pv, pch) {
+  symnum(pv, corr = FALSE, na = FALSE, 
+         cutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1), 
+         symbols = gsub('\\*', pch, c("***", "**", "*", ".", "NS")))
+}
+
 #' Draw multiple ggplot objects in a single layout
 #' 
 #' Uses functions in \pkg{grid} to arrange one or more 
@@ -474,42 +518,6 @@ ggheat <- function(cors = NULL, data = NULL,
 
 dodge <- function(x, ...) UseMethod('dodge')
 
-## these functions do all the work
-dodge_ <- function(x, at, dist, jit) {
-  x <- x[nas <- !is.na(x)]
-  gr <- grouping_(x, dif = dist)
-  x <- rep(at, nrow(gr)) + jit_(gr$g.si, gr$hmsf) * jit
-  y <- gr$vs
-  data.frame(x, y)
-}
-
-## compute jittering
-jit_ <- function(g.si, hm.sf) hm.sf - (g.si + 1) / 2
-
-## turn values in each group into their plotting points
-grouping_ <- function(v, dif) {
-  vs <- sort(v)
-  together <- c(FALSE, diff(vs) <=  dif)
-  g.id <- cumsum(!together)
-  g.si <- rep(x <- as.vector(table(g.id)), x)
-  vg <- cbind(vs, g.id, g.si)[rank(v), ]
-  if (length(v) == 1) 
-    vg <- as.data.frame(t(vg))
-  hmsf <- hmsf_(vg[, 2])
-  data.frame(vg, hmsf)
-}
-
-## how many so far
-hmsf_ <- function(g) {
-  out <- NULL
-  u <- unique(g)
-  for (i in 1:length(u)) {
-    j <- g == u[i]
-    out[which(j)] <- 1:sum(j)
-  }
-  out
-}
-
 #' @rdname dodge
 #' @export
 dodge.formula <- function(formula, data = NULL, ...) {
@@ -532,8 +540,7 @@ dodge.formula <- function(formula, data = NULL, ...) {
 
 #' @rdname dodge
 #' @export
-dodge.default <- function(x, at, dist, jit) {
-  ## defaults
+dodge.default <- function(x, at, dist, jit, ...) {
   if (missing(at))
     at <- 1
   at <- do.call('interaction', list(at))
@@ -783,7 +790,7 @@ jmplot <- function(x, y, z,
 #' tplot(split(mtcars$mpg, mtcars$gear))
 #' tplot(mpg ~ gear, mtcars)
 #' 
-#' ## use panel.first/last in either method unlike in boxplot
+#' ## use panel.first/panel.last like in `plot` (unavailable in `boxplot`)
 #' tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd',
 #'       panel.last = legend('topleft', legend = 3:5, col = 1:3, pch = 1),
 #'       panel.first = {
@@ -791,7 +798,7 @@ jmplot <- function(x, y, z,
 #'         abline(h = 1:6 * 5 + 5, lty = 'dotted', col = 'grey70')
 #'       })
 #' 
-#' set.seed(1618)
+#' set.seed(1)
 #' dat <- data.frame(age = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
 #'                   sex = sample(c('Female', 'Male'), 80, replace = TRUE),
 #'                   group = paste0('Group ', 
@@ -799,11 +806,11 @@ jmplot <- function(x, y, z,
 #'                                         replace = TRUE)))
 #' dat[1:5, 'age'] <- NA
 #' 
-#' tplot(age ~ group, data = dat, las = 1, cex.n = .8, cex.axis = 1, bty = 'L', 
+#' tplot(age ~ group, data = dat, las = 1, cex.n = .8, cex.axis = 1, bty = 'L',
 #'       type = c('db', 'db', 'db', 'd'), names = LETTERS[1:4],
-#'       group.pch = TRUE, pch = c(15, 17, 19, 8), 
+#'       group.pch = TRUE, pch = c(15, 17, 19, 8),
 #'       group.col = FALSE, col = c('darkred', 'darkblue')[c(sex)],
-#'       boxcol = c('lightsteelblue1', 'lightyellow1', grey(.9)), 
+#'       boxcol = c('lightsteelblue1', 'lightyellow1', grey(.9)),
 #'       boxplot.pars = list(notch = TRUE, boxwex = .5))
 #'
 #' @export
@@ -812,111 +819,95 @@ tplot <- function(x, ...) UseMethod('tplot')
 
 #' @rdname tplot
 #' @export
-tplot.default <- function(x, ..., 
-                          type = c('d','db','bd','b'),
-                          jit = 0.1, 
-                          dist,
-                          main,
-                          sub,
-                          xlab,
-                          ylab,
-                          names,
-                          xlim,
-                          ylim,
-                          col,
-                          group.col = TRUE,
-                          boxcol,
-                          boxborder ,
-                          pch = par('pch'), 
-                          group.pch = TRUE,
-                          median.line = FALSE, 
-                          mean.line = FALSE, 
+tplot.default <- function(x, ...,
+                          type = c('d','db','bd','b'), jit = 0.1, dist,
+                          ## labels/aesthetics
+                          main, sub, xlab, ylab, names, xlim, ylim,
+                          col, group.col = TRUE, boxcol, boxborder,
+                          pch = par('pch'), group.pch = TRUE,
+                          
+                          ## additional aesthetics
+                          median.line = FALSE, mean.line = FALSE, 
                           median.pars = list(col = par('col')), 
-                          mean.pars = median.pars, 
-                          boxplot.pars,
-                          show.n = TRUE,
-                          show.na = TRUE,
-                          cex.n,
-                          my.gray = gray(0.75),
-                          ann = par('ann'),
-                          axes = TRUE,
-                          frame.plot = axes,
-                          add = FALSE,
-                          at,
-                          horizontal = FALSE,
-                          panel.first = NULL,
-                          panel.last = NULL) {
+                          mean.pars = median.pars, boxplot.pars,
+                          
+                          ## n/missing for each group
+                          show.n = TRUE, show.na = TRUE, cex.n,
+                          
+                          ## extra stuff
+                          my.gray = gray(0.75), ann = par('ann'),
+                          axes = TRUE, frame.plot = axes,
+                          add = FALSE, at, horizontal = FALSE,
+                          
+                          panel.first = NULL, panel.last = NULL) {
   
   op <- par(no.readonly = TRUE)
   
   # helpers
   localPoints <- function(..., tick) points(...)
-  localAxis <- function(..., bg, cex, lty, lwd) axis(...)
-  localBox <- function(..., bg, cex, lty, lwd, tick) box(...)
+  localAxis   <- function(..., bg, cex, lty, lwd) axis(...)
+  localBox    <- function(..., bg, cex, lty, lwd, tick) box(...)
   localWindow <- function(..., bg, cex, lty, lwd, tick) plot.window(...)
-  localTitle <- function(..., bg, cex, lty, lwd, tick) title(...)
-  localMtext <- function(..., bg, cex, lty, lwd, tick) mtext(..., cex = cex.n)
+  localTitle  <- function(..., bg, cex, lty, lwd, tick) title(...)
+  localMtext  <- function(..., bg, cex, lty, lwd, tick) mtext(..., cex = cex.n)
   
   args <- list(x, ...)
   namedargs <- if (!is.null(attributes(args)$names))
-    attributes(args)$names !=  ''
-  else logical(length(args))
-  groups <- if (is.list(x)) x
-  else args[!namedargs]
+    attributes(args)$names !=  '' else logical(length(args))
+  groups <- if (is.list(x)) x else args[!namedargs]
   pars <- args[namedargs]
   if ((n <- length(groups)) == 0)
     stop('invalid first argument')
   if (length(class(groups)))
     groups <- unclass(groups)
   if (!missing(names))
-    attr(groups, 'names') <- names
-  else {
-    if (is.null(attr(groups, 'names')))
-      attr(groups, 'names') <- 1:n
-    names <- attr(groups, 'names')
-  }
+    attr(groups, 'names') <- names else {
+      if (is.null(attr(groups, 'names')))
+        attr(groups, 'names') <- 1:n
+      names <- attr(groups, 'names')
+    }
   
-  ng <- length(groups) # number of groups
-  l <- sapply(groups, length) # size of each group
+  ## number and size of groups
+  ng <- length(groups)
+  l <- sapply(groups, length)
   g <- factor(rep(1:ng, l), levels = 1:ng, labels = names(groups))
-  nv <- sum(l) # total count
+  nv <- sum(l)
   
-  if (missing(at)) at <- 1:ng
+  if (missing(at))
+    at <- 1:ng
   if (length(at) !=  ng)
-    stop("'at' must have same length as the number of groups")
+    stop("\'at\' must have same length as the number of groups")
   
-  # set y scale
+  ## scales
   if (missing(ylim)) {
     r <- range(groups, na.rm = TRUE, finite = TRUE)
     pm <- diff(r) / 20
-    ylim <- r + pm * c(-1,1)
+    ylim <- r + pm * c(-1, 1)
   }
-  # set x scale
   if (missing(xlim)) {
     if (missing(at))
       xlim <- c(0.5, ng + 0.5)
     else xlim <- c(0.5, max(at) + 0.5)
   }
   
-  if (missing(xlab)) xlab <- ''
-  if (missing(ylab)) ylab <- ''
-  if (missing(main)) main <- ''
-  if (missing(sub))   sub <- ''
+  if (missing(xlab))   xlab <- ''
+  if (missing(ylab))   ylab <- ''
+  if (missing(main))   main <- ''
+  if (missing(sub))    sub  <- ''
   if (missing(boxcol)) boxcol <- 'grey97'
   
   type <- match.arg(type, choices = c('d','db','bd','b'), several.ok = TRUE)
-  # type of plot for each group
+  ## type of plot for each group
   if ((length(type) > 1) && (length(type) !=  ng))
     warning("length of \'type\' does not match the number of groups")
   type <- rep(type, length.out = ng)
-  # type[l > 1000] <- 'b'
   
-  ## Handle default colors
+  ## default colors
   defcols <- c(my.gray, par('col'))
-  ## use 50% gray for box in back, otherwise default color
+  ## 50% gray for box in back, otherwise default color
   if (missing(boxborder))
     boxborder <- defcols[2 - grepl('.b', type)]
-  ## use 50% gray for dots in back, otherwise default color
+  ## 50% gray for dots in back, otherwise default color
   if (missing(col)) {
     col <- defcols[2 - grepl('.d', type)]
     group.col <- TRUE
@@ -932,26 +923,25 @@ tplot.default <- function(x, ...,
   #   warning('length of 'boxcol' does not match the number of groups')
   boxcol <- rep(boxcol, length.out = ng)
   
-  ## use colors by group
+  ## colors by group
   if (group.col) {
     if (length(col) !=  ng)
       warning("length of \'col\' does not match the number of groups")
     g.col <- rep(col, length.out = ng)
     col <- rep(g.col, l)
-    ## Use colors by individual or global
+    ## colors by individual or global
   } else {
     if ((length(col) > 1) && (length(col) !=  nv))
       warning("length of \'col\' does not match the number of data points")
     col   <- rep(col, length.out = nv)
     g.col <- rep(1, length.out = ng)
   }
-  
-  ## use plot characters by group
+  ## plot characters by group
   if (group.pch) {
     if (length(pch) !=  ng)
       warning("length of \'pch\' does not match the number of groups")
     pch <- rep(rep(pch, length.out = ng), l)
-    ## use plot characters by individual or global
+    ## plot characters by individual or global
   } else {
     if ((length(pch) > 1) && (length(pch) !=  nv))
       warning("length of \'pch\' does not match the number of data points")
@@ -969,17 +959,17 @@ tplot.default <- function(x, ...,
   col <- mapply('[', col, nonas, SIMPLIFY = FALSE)
   pch <- mapply('[', pch, nonas, SIMPLIFY = FALSE)
   
-  ## display a mean and median line for each group
+  ## mean and median line for each group
   mean.line   <- rep(mean.line, length.out = ng)
   median.line <- rep(median.line, length.out = ng)
   
-  ## set defaults for dist and jit
+  ## defaults for dist and jit for groups
   if (missing(dist) || is.na(dist) || is.null(dist)) 
     dist <- diff(range(ylim)) / 100
   if (missing(jit) || is.na(jit) || is.null(jit)) 
     jit <- 0.025 * ng
-  
   groups <- lapply(groups, grouping_, dif = dist)
+  ## rawr:::grouping_; rawr:::hmsf_; rawr:::jit_
   
   ## set up new plot unless adding to existing one
   if (!add) {
@@ -1011,13 +1001,12 @@ tplot.default <- function(x, ...,
                                    horizontal = horizontal), boxplot.pars))
       notoplot <- (y <=  boxplotout$stats[5,]) & (y >=  boxplotout$stats[1,])
       if (sum(notoplot) > 0)
-        col[[i]][notoplot] <- '#BFBFBF'
+        col[[i]][notoplot] <- '#bfbfbf'
       if (horizontal)
         do.call('localPoints', c(list(x = y, y = x, pch = pch[[i]], 
                                       col = col[[i]]), pars))
-      else
-        do.call('localPoints', c(list(x = x, y = y, pch = pch[[i]], 
-                                      col = col[[i]]), pars))
+      else do.call('localPoints', c(list(x = x, y = y, pch = pch[[i]],
+                                         col = col[[i]]), pars))
     }
     ## box in front
     if (type[i] %in% c('bd', 'b')) {
@@ -1028,54 +1017,49 @@ tplot.default <- function(x, ...,
                                    horizontal = horizontal), boxplot.pars))
       toplot <- (y > boxplotout$stats[5,]) | (y < boxplotout$stats[1,])
       if (sum(toplot) > 0) 
-        if (col[[i]][toplot][1] == '#BFBFBF') 
+        if (col[[i]][toplot][1] == '#bfbfbf') 
           col[[i]][toplot] <- 1
       if (horizontal)
         do.call('localPoints', 
                 c(list(x = y[toplot], y = x[toplot], pch = pch[[i]][toplot], 
                        col = col[[i]][toplot]), pars))
-      else
-        do.call('localPoints', 
-                c(list(x = x[toplot], y = y[toplot], pch = pch[[i]][toplot], 
-                       col = col[[i]][toplot]), pars))
+      else do.call('localPoints', c(list(x = x[toplot], y = y[toplot],
+                                         pch = pch[[i]][toplot],
+                                         col = col[[i]][toplot]), pars))
     }
     ## box behind
     if (type[i] == 'db')
-      do.call('boxplot', 
-              c(list(x = y, at = at[i], add = TRUE, axes = FALSE, 
-                     col = boxcol[i], border = boxborder[i], outline = FALSE, 
-                     horizontal = horizontal), boxplot.pars))
+      do.call('boxplot', c(list(x = y, at = at[i], add = TRUE, axes = FALSE,
+                                col = boxcol[i], border = boxborder[i],
+                                outline = FALSE, horizontal = horizontal),
+                           boxplot.pars))
     ## dots in front
     if (type[i] %in% c('db', 'd')) {
       if (horizontal)
         do.call('localPoints', c(list(x = y, y = x, pch = pch[[i]],
                                       col = col[[i]]), pars))
-      else
-        do.call('localPoints', c(list(x = x, y = y, pch = pch[[i]],
-                                      col = col[[i]]), pars))
+      else do.call('localPoints', c(list(x = x, y = y, pch = pch[[i]],
+                                         col = col[[i]]), pars))
     }
     
     ## mean and median lines
     if (mean.line[i]) {
       if (horizontal)
         do.call('lines', c(list(rep(mean(y), 2), at[i] + Lme), mean.pars))
-      else
-        do.call('lines', c(list(at[i]+Lme, rep(mean(y), 2)), mean.pars))
+      else do.call('lines', c(list(at[i] + Lme, rep(mean(y), 2)), mean.pars))
     }
     if (median.line[i]) {
       if (horizontal)
         do.call('lines', c(list(rep(median(y), 2), at[i] + Lme), median.pars))
-      else
-        do.call('lines', c(list(at[i]+Lme, rep(median(y), 2)), median.pars))
+      else do.call('lines', c(list(at[i] + Lme, rep(median(y), 2)), median.pars))
     }
-    
     out[[i]] <- data.frame(to.plot, col = col[[i]], pch = pch[[i]])
   }
   panel.last
   
   if (axes) {
-    do.call('localAxis',
-            c(list(side = 1 + horizontal, at = at, labels = names), pars))
+    do.call('localAxis', c(list(side = 1 + horizontal, at = at,
+                                labels = names), pars))
     do.call('localAxis', c(list(side = 2 - horizontal), pars))
   }
   
@@ -1089,8 +1073,7 @@ tplot.default <- function(x, ...,
               c(list(sprintf('n = %s\nmissing = %s', l, l2),
                      side = 3 + horizontal, at = at),
                 pars, list(xaxt = 's', yaxt = 's'))
-            else c(list(paste0('n = ', l),
-                        side = 3 + horizontal, at = at),
+            else c(list(paste0('n = ', l), side = 3 + horizontal, at = at),
                    pars, list(xaxt = 's', yaxt = 's')))
   }
   if (frame.plot)
@@ -1099,9 +1082,8 @@ tplot.default <- function(x, ...,
     if (horizontal)
       do.call('localTitle', c(list(main = main, sub = sub,
                                    xlab = ylab, ylab = xlab), pars))
-    else
-      do.call('localTitle', c(list(main = main, sub = sub,
-                                   xlab = xlab, ylab = ylab), pars))
+    else do.call('localTitle', c(list(main = main, sub = sub,
+                                      xlab = xlab, ylab = ylab), pars))
   }
   
   names(out) <- names(groups)
@@ -1124,11 +1106,13 @@ tplot.formula <- function(formula, data = NULL, ...,
   args <- lapply(m$..., eval, data, parent.frame())
   nmargs <- names(args)
   if ('main' %in% nmargs) args[['main']] <- enquote(args[['main']])
-  if ('sub' %in% nmargs) args[['sub']] <- enquote(args[['sub']])
+  if ('sub' %in% nmargs)  args[['sub']] <- enquote(args[['sub']])
   if ('xlab' %in% nmargs) args[['xlab']] <- enquote(args[['xlab']])
   if ('ylab' %in% nmargs) args[['ylab']] <- enquote(args[['ylab']])
+  
+  ## hacky way to pass panel.first/panel.last to tplot.default
   args[['panel.first']] <- substitute(panel.first)
-  args[['panel.last']] <- substitute(panel.last)
+  args[['panel.last']]  <- substitute(panel.last)
   
   m$... <- m$subset <- m$panel.first <- m$panel.last <- NULL
   m$na.action <- na.pass
@@ -1136,10 +1120,10 @@ tplot.formula <- function(formula, data = NULL, ...,
   
   m[[1]] <- as.name('model.frame')
   mf <- eval(m, parent.frame())
+  n <- nrow(mf)
   response <- attr(attr(mf, 'terms'), 'response')
   
   ## special handling of col and pch
-  n <- nrow(mf)
   ## pick out these options
   group.col <- if ('group.col' %in% names(args)) args$group.col else FALSE
   group.pch <- if ('group.pch' %in% names(args)) args$group.pch else FALSE
@@ -1151,9 +1135,9 @@ tplot.formula <- function(formula, data = NULL, ...,
   
   if (!missing(subset)) {
     s <- eval(subset.expr, data, parent.frame())
-    dosub <- function(x) { if (length(x) == n) x[s] else x }
-    args <- lapply(args, dosub)
-    mf <- mf[s,]
+    args <- lapply(args, dosub_)
+    ## rawr:::dosub_
+    mf <- mf[s, ]
   }
   do.call('tplot', c(list(split(mf[[response]], mf[-response])), args))
 }
@@ -1163,9 +1147,9 @@ tplot.formula <- function(formula, data = NULL, ...,
 #' This creates a scatter plot (sort of) for discrete, bivariate data; an
 #' alternative to sunflower plots for integer-valued variables.
 #' 
-#' @param formula a \code{\link{formula}}, such as \code{y ~ grp}, where y is 
-#' a numeric vector of data values to be split into groups according to the 
-#' grouping variable \code{grp} (usually a factor)
+#' @param formula a \code{\link{formula}}, such as \code{y ~ group}, where y
+#' is a numeric vector of data values to be split into groups according to the
+#' grouping variable \code{group} (usually a factor)
 #' @param data a data frame (or list) from which the variables in formula 
 #' should be taken
 #' @param subset an optional vector specifying a subset of observations to be 
@@ -1189,13 +1173,14 @@ tplot.formula <- function(formula, data = NULL, ...,
 #' a device is opened and is reset when the layout is changed, e.g., by setting
 #' \code{mfrow}
 #' 
-#' @return An \code{\link{invisible}} table corresponding to the plot cell 
-#' counts.
+#' @return
+#' An \code{\link{invisible}} table corresponding to the plot cell counts.
 #' 
-#' @references \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
+#' @references
+#' \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
 #' 
 #' @examples
-#' set.seed(1618)
+#' set.seed(1)
 #' x <- round(rnorm(400, 100, 4))
 #' y <- round(rnorm(400, 200, 4))
 #' sex <- sample(c('Female', 'Male'), 400, replace = TRUE)
@@ -1210,27 +1195,21 @@ dsplot <- function(x, ...) UseMethod('dsplot')
 
 #' @rdname dsplot
 #' @export
-dsplot.default <- function(x, y, ...,
-                           bkgr = TRUE,
-                           col = 1, 
-                           pch = 19, 
-                           cex = 0.8) {
+dsplot.default <- function(x, y, ..., bkgr = TRUE, col = 1,
+                           pch = 19, cex = 0.8) {
   
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
   
   # if (any(x != round(x), na.rm = TRUE) | any(y != round(y), na.rm = TRUE))
-  #   stop('x must be integer values', '\n')
+  #   stop('\'x\' must be integer values', '\n')
   
   L <- length(x)
   cc <- complete.cases(x, y)
   
-  if (length(pch) < L)
-    pch <- rep(pch, length.out = L)
-  if (length(col) < L)
-    col <- rep(col, length.out = L)
-  if (length(cex) < L)
-    cex <- rep(cex, length.out = L)
+  if (length(pch) < L) pch <- rep(pch, length.out = L)
+  if (length(col) < L) col <- rep(col, length.out = L)
+  if (length(cex) < L) cex <- rep(cex, length.out = L)
   
   x <- x[cc]
   y <- y[cc]
@@ -1257,12 +1236,10 @@ dsplot.default <- function(x, y, ...,
       segments(i, min(y), i, max(x), col = grey(.9))
   }
   
-  every.other.element.x <- function(n) {
-    ## to make 1,n,2,n,3,n, ..., n,n vector
-    c(rbind(1:n, rep(n, n)))[-(2 * n)]
-  }
-  every.other.element.y <- function(n)
-    c(rbind(rep(n, n), 1:n))[-(2 * n)]
+  ## vector 1,n,2,n,3,n, ...,  n, n for x
+  ## vector n,1,n,2,n,3, ..., n-1,n for y
+  every.other.element.x <- function(n) c(rbind(1:n, rep(n, n)))[-(2 * n)]
+  every.other.element.y <- function(n) c(rbind(rep(n, n), 1:n))[-(2 * n)]
   
   square.coordinates <- function(box.size) {
     x.c <- y.c <- 1
@@ -1276,15 +1253,14 @@ dsplot.default <- function(x, y, ...,
   sc <- square.coordinates(box.size)
   coord <- (1:box.size) / (box.size + 1)
   off.set <- coord[1] / 4
-  
   grey.scale <- rev(seq(.65, .95, length = max.freq))
   
-  dat <- data.frame(id=1:length(x), x, y)
+  dat <- data.frame(id = 1:length(x), x, y)
   dat <- dat[order(dat$x, dat$y), ]
   within <- c(t(tab))
   within <- within[within > 0]
-  idx <- NULL
-  hm <- NULL
+  idx <- hm <- NULL
+  
   for (i in within) {
     ## index within category
     idx <- c(idx, 1:i)
@@ -1310,11 +1286,9 @@ dsplot.default <- function(x, y, ...,
       }
     }
   }
-  
   points(dat$x + coord[sc[dat$idx, 1]] + dat$lx, dat$y + 
            coord[sc[dat$idx, 2]] + dat$ly, pch = dat$pch, 
          col = dat$col, cex = cex)
-  
   invisible(table(factor(y, levels = rev(min(y):max(y))), 
                   factor(x, levels = min(x):max(x))))
 }
@@ -1325,42 +1299,36 @@ dsplot.formula <- function(formula, data = NULL, ...,
                            subset, na.action = NULL) {
   if (missing(formula) || (length(formula) != 3))
     stop("\'formula\' missing or incorrect")
-  
   enquote <- function(x) as.call(list(as.name('quote'), x))
   
   m <- match.call(expand.dots = FALSE)
   if (is.matrix(eval(m$data, parent.frame())))
     m$data <- as.data.frame(data)
-  
   args <- lapply(m$..., eval, data, parent.frame())
   nmargs <- names(args)
-  if ('main' %in% nmargs) 
-    args[['main']] <- enquote(args[['main']])
-  if ('sub' %in% nmargs) 
-    args[['sub']] <- enquote(args[['sub']])
-  if ('xlab' %in% nmargs) 
-    args[['xlab']] <- enquote(args[['xlab']])
-  if ('ylab' %in% nmargs) 
-    args[['ylab']] <- enquote(args[['ylab']])
   
-  m$... <- NULL
+  if ('main' %in% nmargs) args[['main']] <- enquote(args[['main']])
+  if ('sub' %in% nmargs)  args[['sub']] <- enquote(args[['sub']])
+  if ('xlab' %in% nmargs) args[['xlab']] <- enquote(args[['xlab']])
+  if ('ylab' %in% nmargs) args[['ylab']] <- enquote(args[['ylab']])
+  
   # m$na.action <- na.pass
   subset.expr <- m$subset
-  m$subset <- NULL
-  # require(stats, quietly = TRUE) || stop("package 'stats' is missing")
+  m$... <- m$subset <- NULL
+  
   m[[1]] <- as.name('model.frame')
   m <- as.call(c(as.list(m), list(na.action = NULL)))
   mf <- eval(m, parent.frame())
+  n <- nrow(mf)
   response <- attr(attr(mf, 'terms'), 'response')
-  
+
   if (!missing(subset)) {
     s <- eval(subset.expr, data, parent.frame())
-    n <- nrow(mf)
-    dosub <- function(x) if (length(x) == n) x[s] else x
-    args <- lapply(args, dosub)
-    mf <- mf[s,]
+    args <- lapply(args, dosub_)
+    ## rawr:::dosub_
+    mf <- mf[s, ]
   }
-  do.call(dsplot, c(list(mf[[response]], mf[[-response]]), args))
+  do.call('dsplot', c(list(mf[[response]], mf[[-response]]), args))
 }
 
 #' Barplot confidence intervals
@@ -1431,24 +1399,19 @@ bpCI <- function(bp, horiz = FALSE, ci = TRUE, ci.u, ci.l, ci.width = .5,
       segments(bp - ci.width, ci.l, bp + ci.width, ci.l)
     }
     if (sig) {
+      if (horiz)
+        stop('\'sig\' is not supported when \'horiz = TRUE\'')
+      if (nrow(bp) > 2)
+        stop('\'sig\' is not supported for > 2 bars per group')
       if (missing(pch))
         pch <- '*'
-      pstar <- function(pv, pch) {
-        symnum(pv, corr = FALSE, na = FALSE, 
-               cutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1), 
-               symbols = gsub('\\*', pch, c("***", "**", "*", ".", "NS")))
-      }
-      if (horiz)
-        stop('sig is not supported when horiz = TRUE')
-      if (nrow(bp) > 2)
-        stop('sig is not supported for > 2 bars per group')
       yy <- rbind(c(ci.u[1, ] + 3), c(apply(ci.u, 2 , max) + 5),
                   c(apply(ci.u, 2, max) + 5), c(ci.u[2, ] + 3))
       xx <- apply(bp, 2, function(x) rep(x, each = nrow(bp)))
       sapply(1:ncol(bp), function(x) lines(xx[, x], yy[, x]))
       xt <- colMeans(bp)
       yt <- apply(ci.u, 2, max) + 7
-      text(pstar(pvals, pch), x = xt, y = yt)
+      text(pstar_(pvals, pch), x = xt, y = yt)
     }
   }
 }
@@ -1505,8 +1468,7 @@ inset <- function(x, y = NULL, pct = .25, ...) {
   
   auto <- if (is.character(x))
     match.arg(x, c("bottomright", "bottom", "bottomleft", "left",
-                   "topleft", "top", "topright", "right", "center"))
-  else NA
+                   "topleft", "top", "topright", "right", "center")) else NA
   
   xx <- switch(auto, bottomright = c(plt[2] - pctx, plt[2]),
                bottom = mean(plt[1:2]) + c(-1, 1) * pctx / 2,
@@ -1526,7 +1488,7 @@ inset <- function(x, y = NULL, pct = .25, ...) {
                top = c(plt[4] - pcty, plt[4]),
                topright = c(plt[4] - pcty, plt[4]),
                right = mean(plt[3:4]) + c(-1, 1) * pcty / 2,
-               center = mean(plt[3:4]) + c(-1, 1) * pcty / 2,)
+               center = mean(plt[3:4]) + c(-1, 1) * pcty / 2)
   
   # xx <- rescaler(xx, plt[1:2], usr[1:2])
   # yy <- rescaler(yy, plt[3:4], usr[3:4])
@@ -1635,20 +1597,18 @@ show_pch <- function() {
 #' @export
 
 tcol <- function(color, trans = 255) {
-  
   if (length(color) != length(trans) & 
         !any(c(length(color), length(trans)) == 1)) 
-    stop('Vector lengths not correct')
+    stop('Vector lengths are not comformable')
   if (length(color) == 1 & length(trans) > 1) 
     color <- rep(color, length(trans))
   if (length(trans) == 1 & length(color) > 1) 
     trans <- rep(trans, length(color))
-  
   res <- paste0('#', apply(apply(rbind(col2rgb(color)), 2, function(x) 
     format(as.hexmode(x), 2)), 2, paste, collapse = ''))
   res <- unlist(unname(Map(paste0, res, as.character(as.hexmode(trans)))))
   res[is.na(color)] <- NA
-  return(res)
+  res
 }
 
 #' ggplot colors
