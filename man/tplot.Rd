@@ -127,7 +127,7 @@ An alternative to \code{\link{boxplot}}. The individual data can be shown
 \examples{
 ## equivalent ways to call tplot
 ## the formula method is a convenience function for the first case
-with(mtcars, tplot(split(mpg, gear)))
+tplot(split(mtcars$mpg, mtcars$gear))
 tplot(mpg ~ gear, mtcars)
 
 ## use panel.first/last in either method unlike in boxplot

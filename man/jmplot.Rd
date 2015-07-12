@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting.R
 \name{jmplot}
 \alias{jmplot}
-\title{Joint/marginal plot}
+\title{Joint-marginal plot}
 \usage{
 jmplot(x, y, z, main, sub, xlab, ylab, names, xlim, ylim, axes = TRUE,
   frame.plot = axes, log = "", xratio = 0.8, yratio = xratio,
@@ -68,8 +68,8 @@ place but before the axes, title, and box are added; see the comments about
 etc) and/or \code{\link{tplot}} (\code{group.col}, \code{group.pch}, etc)}
 }
 \description{
-Joint distribution and marginal distributions plot; requires
-\code{\link{tplot}}.
+Joint and marginal distributions scatterplots with \code{\link{tplot}}s on
+margins.
 }
 \examples{
 set.seed(1618)
