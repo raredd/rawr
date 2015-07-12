@@ -428,117 +428,130 @@ ggheat <- function(cors = NULL, data = NULL,
 
 #' Point dodge
 #' 
-#' Dodge and center overlapping points (in progress; see details).
+#' Dodge and center overlapping points by group. Spreads scattered points
+#' similar to \code{jitter} but symmetrically. Although the default method
+#' can be used, it is recommended to use the formula method for ease of use
+#' and to set useful defaults for \code{jit} and \code{dist}.
 #' 
-#' Still in progress. First attempt uses \code{\link{floor}} to find points 
-#' that are close, i.e., within 1 unit, and only spreads those within the range.
-#' This is desirable if \code{x} values are close but not exact. For example, 
-#' points \code{1.1} and \code{1.0} may overlap and will not be offset if 
-#' \code{spread} is \code{FALSE}. If \code{TRUE}, both values will be treated 
-#' as \code{1.0} and will be offset; see boxplot example below.
-#' 
-#' @param formula an object of class \code{\link{formula}} (or an object which 
-#' can be coerced to a formula) having the form \code{var1 ~ var2}; interactions
-#' are not allowed and \code{> 1} variable per side are not allowed.
+#' @param formula a \code{\link{formula}}, such as \code{y ~ group}, where
+#' \code{y} is a numeric vector of data values to be split into groups
+#' according to the grouping variable, \code{group}
 #' @param data optional matrix or data frame containing the variables in 
 #' \code{formula}; by default, variables are taken from 
 #' \code{environment(formula)}
-#' @param z numeric scaling parameter for distance between points; \code{0} for
-#' no point dodge and larger values for more spread; default is \code{0.5}
-#' @param spread logical; if values are close but not identical and points still
-#' overlap, if \code{TRUE}, decimal places will be ignored to creater larger 
-#' neighborhoods from which the point offset will be calculated; see details
+#' @param x a numeric vector of data
+#' @param at grouping variables or, equivalently, positions along x-axis
+#' @param jit,dist jittering parameters; \code{jit} describes the spread of
+#' close points, and \code{dist} defines a range of data to declare points
+#' "close"
+#' @param ... ignored
 #' 
-#' @seealso \code{\link{jitter}}
+#' @seealso
+#' \code{\link{jitter}}, \code{\link{tplot}}
 #' 
 #' @examples
 #' ## these are equivalent ways to call dodge:
-#' dodge(mpg ~ cyl, mtcars)
-#' with(mtcars, dodge(cyl ~ mpg))
-#' dodge(mtcars[c('mpg', 'cyl')])
+#' dodge(mpg ~ gear + vs, mtcars)
+#' with(mtcars, dodge(mpg, list(gear, vs)))
+#' dodge(mtcars$mpg, mtcars[, c('gear', 'vs')])
 #' 
-#' set.seed(1618)
-#' dat <- data.frame(x = rpois(50, 1),
-#'                   grp = 1:5)
-#' op <- par(no.readonly = TRUE)
-#' par(list(mfrow = c(2, 2),
-#'          mar = c(3,1,2,2)))
-#' with(dat, plot(grp, x, main = 'overlapping points'))
-#' with(dat, plot(grp, x, cex = runif(100), main = 'still overlapping points'))
-#' with(dat, plot(jitter(grp), x, main = 'adding random noise'))
-#' with(dat, plot(grp + dodge(x ~ grp, dat), x, main = 'dodge points'))
-#' par(op)
+#' ## compare to overlapping points and jittering
+#' sp <- split(mtcars$mpg, do.call(interaction, mtcars[, c('gear','vs')]))
+#' plot.new()
+#' plot.window(c(.5,6.5),c(10,35))
+#' box()
+#' invisible(sapply(seq_along(sp), function(x)
+#'   points(rep(x, length(sp[[x]])), sp[[x]])))
+#' invisible(sapply(seq_along(sp), function(x)
+#'   points(jitter(rep(x, length(sp[[x]]))), sp[[x]], col = 'blue')))
+#' points(dodge(mpg ~ gear + vs, data = mtcars), col = 'red', pch = 4)
 #' 
-#' boxplot(mpg ~ gear, data = mtcars, xlab = 'gears', ylab = 'mpg')
-#' with(dat <- mtcars[order(mtcars$gear, mtcars$mpg), ], 
-#'      points(gear - 2 + dodge(mpg ~ gear, dat), mpg,
-#'             pch = 19, col = rep(c('red','green','blue'), table(dat$gear))))
-#' with(dat <- mtcars[order(mtcars$gear, mtcars$mpg), ],
-#'      points(gear - 2 + dodge(mpg ~ gear, dat, spread = TRUE), mpg,
-#'             col = 'black', pch = 4))
-#' legend('topleft', pch = c(4, 19), 
-#'        legend = c('TRUE','FALSE'), title = 'spread = ')
+#' ## practical use
+#' boxplot(mpg ~ vs + gear, data = mtcars)
+#' points(dodge(mpg ~ vs + gear, data = mtcars), col = 'red', pch = 19)
 #'
 #' @export
 
-dodge <- function(formula, data = parent.frame(), z = .5, spread = FALSE) {
-  if (missing(formula) && missing(data)) 
-    stop("must supply either 'formula' or 'data'")
-  if (!missing(formula)) {
-    formula <- as.formula(formula)
-    if (!inherits(formula, 'formula')) 
-      stop("'formula' missing or incorrect")
+dodge <- function(x, ...) UseMethod('dodge')
+
+## these functions do all the work
+dodge_ <- function(x, at, dist, jit) {
+  x <- x[nas <- !is.na(x)]
+  gr <- grouping_(x, dif = dist)
+  x <- rep(at, nrow(gr)) + jit_(gr$g.si, gr$hmsf) * jit
+  y <- gr$vs
+  data.frame(x, y)
+}
+
+## compute jittering
+jit_ <- function(g.si, hm.sf) hm.sf - (g.si + 1) / 2
+
+## turn values in each group into their plotting points
+grouping_ <- function(v, dif) {
+  vs <- sort(v)
+  together <- c(FALSE, diff(vs) <=  dif)
+  g.id <- cumsum(!together)
+  g.si <- rep(x <- as.vector(table(g.id)), x)
+  vg <- cbind(vs, g.id, g.si)[rank(v), ]
+  if (length(v) == 1) 
+    vg <- as.data.frame(t(vg))
+  hmsf <- hmsf_(vg[, 2])
+  data.frame(vg, hmsf)
+}
+
+## how many so far
+hmsf_ <- function(g) {
+  out <- NULL
+  u <- unique(g)
+  for (i in 1:length(u)) {
+    j <- g == u[i]
+    out[which(j)] <- 1:sum(j)
   }
-  if (any(attr(terms(formula, data = data), "order") > 1)) 
-    stop('interactions are not allowed')
-  m <- match.call()
-  if (is.matrix(eval(m$data, parent.frame()))) 
+  out
+}
+
+#' @rdname dodge
+#' @export
+dodge.formula <- function(formula, data = NULL, ...) {
+  if (missing(formula) || (length(formula) !=  3))
+    stop("\'formula\' missing or incorrect")
+  m <- match.call(expand.dots = FALSE)
+  if (is.matrix(eval(m$data, parent.frame())))
     m$data <- as.data.frame(data)
-  m$z <- m$spread <- NULL
-  m[[1L]] <- quote(stats::model.frame)
+  
+  args <- lapply(m$..., eval, data, parent.frame())
+  nmargs <- names(args)
+  m$... <- NULL
+  
+  m[[1]] <- as.name('model.frame')
   mf <- eval(m, parent.frame())
-  if (length(formula) == 2L) {
-    by <- mf
-    y <- NULL
-  } else {
-    i <- attr(attr(mf, 'terms'), 'response')
-    by <- mf[-i]
-    y <- mf[i]
-  }
-  dat <- cbind(by, y)
+  response <- attr(attr(mf, 'terms'), 'response')
   
-  if (spread)
-    dat[names(y)] <- floor(dat[names(y)])
-  
-  dat$offset <- ave(dat[[names(y)]], dat[ , 1:2], 
-                    FUN = function(x) seq_along(x) * z / 10)
-  dat$offset <- ave(dat$offset, dat[ , 1:2], FUN = function(x) x - mean(x))
-  dat$offset
+  dodge(mf[, response], mf[, -response])
 }
 
-dodge2 <- function(X, n, z = .5) {
-  nx <- length(X)
-  if (!missing(n))
-    df <- data.frame(x = X, gr = gl(n, nx / n))
-  else df <- setNames(X, c('x', 'gr'))
-  res <- with(df, ave(x, list(x, gr), FUN = function(xx) seq_along(xx) * z / 10))
-  df$x + ave(res, list(df$x, df$gr), FUN = function(xx) xx - mean(xx))
+#' @rdname dodge
+#' @export
+dodge.default <- function(x, at, dist, jit) {
+  ## defaults
+  if (missing(at))
+    at <- 1
+  at <- do.call('interaction', list(at))
+  if (missing(dist) || is.na(dist) || is.null(dist)) 
+    dist <- diff(range(x)) / 100
+  if (missing(jit) || is.na(jit) || is.null(jit)) 
+    jit <- 0.1
+  ## call dodge on each group
+  sp <- if (length(unique(at)) > 1) split(x, at) else list(x)
+  l <- lapply(seq_along(sp), function(xx)
+    dodge_(sp[[xx]], seq_along(sp)[xx], dist, jit))
+  do.call('rbind', l)
 }
 
-# boxplot(mpg ~ gear, data = mtcars, xlab = 'gears', ylab = 'mpg')
-# with(dat <- mtcars[order(mtcars$gear, mtcars$mpg), ],
-#      points(gear - 2 + dodge(mpg ~ gear, dat), mpg,
-#             pch = 19, col = rep(c('red','green','blue'), table(dat$gear))))
-# 
-# boxplot(mpg ~ gear, data = mtcars, xlab = 'gears',g ylab = 'mpg')
-# with(dat <- mtcars[order(mtcars$gear, mtcars$mpg), c('mpg','gear')],
-#      points(dodge2(rev(dat)) - 2, mpg,
-#             pch = 19, col = rep(c('red','green','blue'), table(dat$gear))))
-
-#' Joint/marginal plot
+#' Joint-marginal plot
 #' 
-#' Joint distribution and marginal distributions plot; requires 
-#' \code{\link{tplot}}.
+#' Joint and marginal distributions scatterplots with \code{\link{tplot}}s on
+#' margins.
 #' 
 #' @param x x-axis variable
 #' @param y y-axis variable
@@ -575,7 +588,8 @@ dodge2 <- function(X, n, z = .5) {
 #' @param ... further arguments passed to \code{par} (\code{las}, \code{pch}, 
 #' etc) and/or \code{\link{tplot}} (\code{group.col}, \code{group.pch}, etc)
 #' 
-#' @references \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
+#' @references
+#' \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
 #' 
 #' @examples
 #' set.seed(1618)
@@ -766,7 +780,7 @@ jmplot <- function(x, y, z,
 #' @examples
 #' ## equivalent ways to call tplot
 #' ## the formula method is a convenience function for the first case
-#' with(mtcars, tplot(split(mpg, gear)))
+#' tplot(split(mtcars$mpg, mtcars$gear))
 #' tplot(mpg ~ gear, mtcars)
 #' 
 #' ## use panel.first/last in either method unlike in boxplot
@@ -879,74 +893,75 @@ tplot.default <- function(x, ...,
   }
   # set x scale
   if (missing(xlim)) {
-    if (missing(at)) xlim <- c(0.5, ng+0.5)
-    else xlim <- c(0.5, max(at)+0.5)
+    if (missing(at))
+      xlim <- c(0.5, ng + 0.5)
+    else xlim <- c(0.5, max(at) + 0.5)
   }
   
   if (missing(xlab)) xlab <- ''
   if (missing(ylab)) ylab <- ''
   if (missing(main)) main <- ''
-  if (missing(sub)) sub <- ''
+  if (missing(sub))   sub <- ''
   if (missing(boxcol)) boxcol <- 'grey97'
   
   type <- match.arg(type, choices = c('d','db','bd','b'), several.ok = TRUE)
   # type of plot for each group
   if ((length(type) > 1) && (length(type) !=  ng))
-    warning("length of 'type' does not match the number of groups")
+    warning("length of \'type\' does not match the number of groups")
   type <- rep(type, length.out = ng)
-  #type[l > 1000] <- 'b'
+  # type[l > 1000] <- 'b'
   
-  # Handle default colors
+  ## Handle default colors
   defcols <- c(my.gray, par('col'))
-  # use 50% gray for box in back, otherwise default color
+  ## use 50% gray for box in back, otherwise default color
   if (missing(boxborder))
     boxborder <- defcols[2 - grepl('.b', type)]
-  # use 50% gray for dots in back, otherwise default color
+  ## use 50% gray for dots in back, otherwise default color
   if (missing(col)) {
-    col <- defcols[2-grepl('.d', type)]
+    col <- defcols[2 - grepl('.d', type)]
     group.col <- TRUE
   }
   if (missing(boxplot.pars))
     boxplot.pars <- NULL
   
-  #if (length(boxborder) !=  ng)
-  #    warning('length of 'boxborder' does not match the number of groups')
+  # if (length(boxborder) !=  ng)
+  #   warning('length of \'boxborder\' does not match the number of groups')
   boxborder <- rep(boxborder, length.out = ng)
   
   # if (!is.null(boxcol) && length(boxcol) !=  ng)
   #   warning('length of 'boxcol' does not match the number of groups')
   boxcol <- rep(boxcol, length.out = ng)
   
-  # Use colors by group
+  ## use colors by group
   if (group.col) {
     if (length(col) !=  ng)
-      warning("length of 'col' does not match the number of groups")
+      warning("length of \'col\' does not match the number of groups")
     g.col <- rep(col, length.out = ng)
     col <- rep(g.col, l)
-    # Use colors by individual or global
+    ## Use colors by individual or global
   } else {
-    if((length(col) > 1) && (length(col) !=  nv))
-      warning("length of 'col' does not match the number of data points")
-    col <- rep(col, length.out = nv)
+    if ((length(col) > 1) && (length(col) !=  nv))
+      warning("length of \'col\' does not match the number of data points")
+    col   <- rep(col, length.out = nv)
     g.col <- rep(1, length.out = ng)
   }
   
-  # Use plot characters by group
+  ## use plot characters by group
   if (group.pch) {
     if (length(pch) !=  ng)
-      warning("length of 'pch' does not match the number of groups")
+      warning("length of \'pch\' does not match the number of groups")
     pch <- rep(rep(pch, length.out = ng), l)
-    # Use plot characters by individual or global
+    ## use plot characters by individual or global
   } else {
-    if((length(pch) > 1) && (length(pch) !=  nv))
-      warning("length of 'pch' does not match the number of data points")
+    if ((length(pch) > 1) && (length(pch) !=  nv))
+      warning("length of \'pch\' does not match the number of data points")
     pch <- rep(pch, length.out = nv)
   }
   
-  # split colors and plot characters into groups
+  ## split colors and plot characters into groups
   col <- split(col, g)
   pch <- split(pch, g)
-  # remove any NAs from the data and options
+  ## remove any NAs from the data and options
   nonas <- lapply(groups, function(x) !is.na(x))
   l2 <- sapply(groups, function(x) sum(is.na(x)))
   groups <- mapply('[', groups, nonas, SIMPLIFY = FALSE)
@@ -954,40 +969,19 @@ tplot.default <- function(x, ...,
   col <- mapply('[', col, nonas, SIMPLIFY = FALSE)
   pch <- mapply('[', pch, nonas, SIMPLIFY = FALSE)
   
-  # whether or not to display a mean and median line for each group
-  mean.line <- rep(mean.line, length.out = ng)
+  ## display a mean and median line for each group
+  mean.line   <- rep(mean.line, length.out = ng)
   median.line <- rep(median.line, length.out = ng)
   
-  # set defaults for dist and jit
+  ## set defaults for dist and jit
   if (missing(dist) || is.na(dist) || is.null(dist)) 
     dist <- diff(range(ylim)) / 100
   if (missing(jit) || is.na(jit) || is.null(jit)) 
     jit <- 0.025 * ng
   
-  how.many.so.far <- function(g) {
-    out <- NULL
-    u <- unique(g)
-    for (i in 1:length(u)) {
-      j <- g == u[i]
-      out[which(j)] <- 1:sum(j)
-    }
-    out
-  }
-  # turns the values in each group into their plotting points
-  grouping <- function(v, dif) {
-    vs <- sort(v)
-    together <- c(FALSE, diff(vs) <=  dif)
-    g.id <- cumsum(!together)
-    g.si <- rep(x <- as.vector(table(g.id)), x)
-    vg <- cbind(vs, g.id, g.si)[rank(v), ]
-    if (length(v) == 1) 
-      vg <- as.data.frame(t(vg))
-    hmsf <- how.many.so.far(vg[ , 2])
-    data.frame(vg, hmsf)
-  }
-  groups <- lapply(groups, grouping, dif = dist)
+  groups <- lapply(groups, grouping_, dif = dist)
   
-  # set up new plot unless adding to existing one
+  ## set up new plot unless adding to existing one
   if (!add) {
     plot.new()
     if (horizontal)
@@ -997,20 +991,19 @@ tplot.default <- function(x, ...,
   }
   panel.first
   
-  # function to compute the jittering
-  jit.f2 <- function(g.si, hm.sf) hm.sf - (g.si + 1) / 2
-  
   out <- list()
-  
   Lme <- 0.2 * c(-1, 1)
+  
   for (i in 1:ng) {
     to.plot <- groups[[i]]
     gs <- to.plot$g.si
     hms <- to.plot$hmsf
-    x <- rep(at[i], nrow(to.plot)) + jit.f2(gs, hms) * jit
+    x <- rep(at[i], nrow(to.plot)) + jit_(gs, hms) * jit
     y <- to.plot$vs
     
-    if (type[i] == 'bd') { # dots behind
+    ## type of plot
+    ## dots behind
+    if (type[i] == 'bd') {
       boxplotout <- do.call('boxplot', 
                             c(list(x = y, at = at[i], plot = FALSE, add = FALSE,
                                    axes = FALSE, col = boxcol[i], 
@@ -1026,8 +1019,9 @@ tplot.default <- function(x, ...,
         do.call('localPoints', c(list(x = x, y = y, pch = pch[[i]], 
                                       col = col[[i]]), pars))
     }
-    if (type[i] %in% c('bd', 'b')) { # boxplot in front
-      boxplotout <- do.call('boxplot', 
+    ## box in front
+    if (type[i] %in% c('bd', 'b')) {
+      boxplotout <- do.call('boxplot',
                             c(list(x = y, at = at[i], add = TRUE, 
                                    axes = FALSE, col = boxcol[i], 
                                    border = boxborder[i], outline = FALSE, 
@@ -1045,28 +1039,32 @@ tplot.default <- function(x, ...,
                 c(list(x = x[toplot], y = y[toplot], pch = pch[[i]][toplot], 
                        col = col[[i]][toplot]), pars))
     }
-    if (type[i] == 'db') # boxplot behind
+    ## box behind
+    if (type[i] == 'db')
       do.call('boxplot', 
               c(list(x = y, at = at[i], add = TRUE, axes = FALSE, 
                      col = boxcol[i], border = boxborder[i], outline = FALSE, 
                      horizontal = horizontal), boxplot.pars))
-    if (type[i] %in% c('db', 'd')) { # dots in front
+    ## dots in front
+    if (type[i] %in% c('db', 'd')) {
       if (horizontal)
-        do.call('localPoints', c(list(x = y, y = x, pch = pch[[i]], 
+        do.call('localPoints', c(list(x = y, y = x, pch = pch[[i]],
                                       col = col[[i]]), pars))
       else
-        do.call('localPoints', c(list(x = x, y = y, pch = pch[[i]], 
+        do.call('localPoints', c(list(x = x, y = y, pch = pch[[i]],
                                       col = col[[i]]), pars))
     }
-    if (mean.line[i]) { # mean line
+    
+    ## mean and median lines
+    if (mean.line[i]) {
       if (horizontal)
-        do.call('lines', c(list(rep(mean(y), 2), at[i]+Lme), mean.pars))
+        do.call('lines', c(list(rep(mean(y), 2), at[i] + Lme), mean.pars))
       else
         do.call('lines', c(list(at[i]+Lme, rep(mean(y), 2)), mean.pars))
     }
-    if (median.line[i]) { # median line
+    if (median.line[i]) {
       if (horizontal)
-        do.call('lines', c(list(rep(median(y), 2), at[i]+Lme), median.pars))
+        do.call('lines', c(list(rep(median(y), 2), at[i] + Lme), median.pars))
       else
         do.call('lines', c(list(at[i]+Lme, rep(median(y), 2)), median.pars))
     }
@@ -1075,34 +1073,34 @@ tplot.default <- function(x, ...,
   }
   panel.last
   
-  # add axes
   if (axes) {
-    do.call('localAxis', c(list(side = 1 + horizontal, 
-                                at = at, labels = names), pars))
+    do.call('localAxis',
+            c(list(side = 1 + horizontal, at = at, labels = names), pars))
     do.call('localAxis', c(list(side = 2 - horizontal), pars))
   }
-  # optional sample sizes
+  
+  ## frame and text
+  ## optional sample sizes
   if (show.n) {
-    if (missing(cex.n)) cex.n <- 1
+    if (missing(cex.n))
+      cex.n <- 1
     do.call('localMtext', 
             if (show.na) 
-              c(list(paste0('n = ', l, '\nmissing = ', l2), 
-                     side = 3 + horizontal, at = at), 
+              c(list(sprintf('n = %s\nmissing = %s', l, l2),
+                     side = 3 + horizontal, at = at),
                 pars, list(xaxt = 's', yaxt = 's'))
-            else c(list(paste0('n = ', l), 
-                        side = 3 + horizontal, at = at), 
+            else c(list(paste0('n = ', l),
+                        side = 3 + horizontal, at = at),
                    pars, list(xaxt = 's', yaxt = 's')))
   }
-  # add bounding box
   if (frame.plot)
     do.call('localBox', pars)
-  # add titles
   if (ann) {
     if (horizontal)
-      do.call('localTitle', c(list(main = main, sub = sub, 
+      do.call('localTitle', c(list(main = main, sub = sub,
                                    xlab = ylab, ylab = xlab), pars))
     else
-      do.call('localTitle', c(list(main = main, sub = sub, 
+      do.call('localTitle', c(list(main = main, sub = sub,
                                    xlab = xlab, ylab = ylab), pars))
   }
   
@@ -1112,7 +1110,8 @@ tplot.default <- function(x, ...,
 
 #' @rdname tplot
 #' @export
-tplot.formula <- function(formula, data = NULL, ..., subset, na.action = NULL,
+tplot.formula <- function(formula, data = NULL, ...,
+                          subset, na.action = NULL,
                           panel.first = NULL, panel.last = NULL) {
   
   if (missing(formula) || (length(formula) !=  3))
@@ -1141,10 +1140,10 @@ tplot.formula <- function(formula, data = NULL, ..., subset, na.action = NULL,
   
   ## special handling of col and pch
   n <- nrow(mf)
-  # pick out these options
+  ## pick out these options
   group.col <- if ('group.col' %in% names(args)) args$group.col else FALSE
   group.pch <- if ('group.pch' %in% names(args)) args$group.pch else FALSE
-  # reorder if necessary
+  ## reorder if necessary
   if ('col' %in% names(args) && !group.col)
     args$col <- unlist(split(rep(args$col, length.out = n), mf[-response]))
   if ('pch' %in% names(args) && !group.pch)
@@ -1220,8 +1219,8 @@ dsplot.default <- function(x, y, ...,
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
   
-  #   if (any(x != round(x), na.rm = TRUE) | any(y != round(y), na.rm = TRUE))
-  #     stop('x must be integer values', '\n')
+  # if (any(x != round(x), na.rm = TRUE) | any(y != round(y), na.rm = TRUE))
+  #   stop('x must be integer values', '\n')
   
   L <- length(x)
   cc <- complete.cases(x, y)
@@ -1259,8 +1258,8 @@ dsplot.default <- function(x, y, ...,
   }
   
   every.other.element.x <- function(n) {
-    # to make 1,n,2,n,3,n, ..., n,n vector
-    c(rbind(1:n, rep(n, n)))[-(2*n)]
+    ## to make 1,n,2,n,3,n, ..., n,n vector
+    c(rbind(1:n, rep(n, n)))[-(2 * n)]
   }
   every.other.element.y <- function(n)
     c(rbind(rep(n, n), 1:n))[-(2 * n)]
@@ -1287,12 +1286,14 @@ dsplot.default <- function(x, y, ...,
   idx <- NULL
   hm <- NULL
   for (i in within) {
-    idx <- c(idx, 1:i) # index within category
+    ## index within category
+    idx <- c(idx, 1:i)
     hm <- c(hm, rep(i, i))
   }
   dat$idx <- idx
-  dat$ly <- (box.size - ceiling(sqrt(hm))) / (box.size + 1) / 2 # local offset
-  dat$lx <- dat$ly + ((ceiling(sqrt(hm - 1)) ** 2 == hm - 1) & (hm > 1)) / 
+  ## local offset
+  dat$ly <- (box.size - ceiling(sqrt(hm))) / (box.size + 1) / 2
+  dat$lx <- dat$ly + ((ceiling(sqrt(hm - 1)) ** 2 == hm - 1) & (hm > 1)) /
     (box.size + 1) / 2
   dat <- dat[order(dat$id), ]
   dat$col <- col
@@ -1320,10 +1321,10 @@ dsplot.default <- function(x, y, ...,
 
 #' @rdname dsplot
 #' @export
-dsplot.formula <- function(formula, data = NULL, ..., subset,
-                           na.action = NULL) {
+dsplot.formula <- function(formula, data = NULL, ...,
+                           subset, na.action = NULL) {
   if (missing(formula) || (length(formula) != 3))
-    stop("'formula' missing or incorrect")
+    stop("\'formula\' missing or incorrect")
   
   enquote <- function(x) as.call(list(as.name('quote'), x))
   
@@ -1343,10 +1344,10 @@ dsplot.formula <- function(formula, data = NULL, ..., subset,
     args[['ylab']] <- enquote(args[['ylab']])
   
   m$... <- NULL
-  #   m$na.action <- na.pass
+  # m$na.action <- na.pass
   subset.expr <- m$subset
   m$subset <- NULL
-#   require(stats, quietly = TRUE) || stop("package 'stats' is missing")
+  # require(stats, quietly = TRUE) || stop("package 'stats' is missing")
   m[[1]] <- as.name('model.frame')
   m <- as.call(c(as.list(m), list(na.action = NULL)))
   mf <- eval(m, parent.frame())
