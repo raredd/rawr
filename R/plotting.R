@@ -1,7 +1,7 @@
 ### plot functions
 # ggmultiplot, click_text, click_shape, facet_adjust, print.facet_adjust, 
 # ggcaterpillar, ggheat, dodge, jmplot, tplot, dsplot, bpCI, inset, 
-# show_colors, show_pch, tcol, ggcols, grcols
+# show_colors, show_pch, tcol, ggcols, grcols, ctext, cmtext, ctitle
 ###
 
 
@@ -47,6 +47,23 @@ pstar_ <- function(pv, pch) {
   symnum(pv, corr = FALSE, na = FALSE, 
          cutpoints = c(0, 0.001, 0.01, 0.05, 0.1, 1), 
          symbols = gsub('\\*', pch, c("***", "**", "*", ".", "NS")))
+}
+
+ctext_ <- function(text, cols, space) {
+  # (ctext_(c('one','two','three'), 3:4, TRUE))
+  if (space && (lt <- length(text)) > 1)
+    text[2:lt] <- paste0(' ', text[2:lt])
+  expr <- sprintf('expression(phantom(%s))',
+                  paste0(shQuote(text), collapse = ') * phantom('))
+  l <- lapply(seq_along(text), function(x) {
+    xx <- gsub(sprintf('phantom\\(\'%s\'\\)', text[x]), shQuote(text[x]), expr)
+    eval(parse(text = xx))
+  })
+  if ((lt <- length(text)) > (lc <- length(cols))) {
+    warning('colors will be recycled', domain = NA)
+    cols <- rep(cols, ceiling(lt / lc))
+  }
+  invisible(list(text = l, colors = cols))
 }
 
 #' Draw multiple ggplot objects in a single layout
@@ -1659,4 +1676,97 @@ grcols <- function(n, s = .5, v = 1, alpha = 1) {
   GR <- 2 / (1 + sqrt(5))
   hues <- (seq(0, n - 1) * GR) %% 1
   hsv(hues, s = s, v = v, alpha = alpha)
+}
+
+#' Color text
+#' 
+#' Add color to individual words in text functions. \code{ctext},
+#' \code{cmtext}, and \code{ctitle} are analogous to \code{\link{text}},
+#' \code{\link{mtext}}, and \code{\link{title}}, respectively. Note that
+#' \code{title} accepts some graphical parameters specific to the label type,
+#' e.g., \code{col.main}, but this is not implemented in \code{ctitle}--colors
+#' will be recycled if more than one label type is given. Similarly, further
+#' graphical parameters such as \code{cex} or \code{line} will be passed to
+#' all label types; see examples.
+#' 
+#' @param text vector of text
+#' @param cols vector of colors; should be the same lenght as \code{text} or
+#' will me recycled with a warning
+#' @param space logical; if \code{TRUE}, adds space between \code{text}
+#' @param ... additional parameters passed to \code{text} or \code{mtext}
+#' @param main,sub,xlab,ylab vector(s) of text for specific labels
+#' 
+#' @examples
+#' plot(1, ann = FALSE)
+#' ctext(x = 1, y = 1, text = c('hello','little','point'), cols = 1:3)
+#' cmtext(c('a','side','label'), 1:2, FALSE, side = 4, cex = 5)
+#' 
+#' ## note that line, cex, font, etc are recycled
+#' ctitle(main = c('the','main','label'), xlab = c('x','label'),
+#'        ylab = c('y','label'), sub = c('sub', 'label'), col = 3:5)
+#' ctitle(xlab = c('another','label'), ylab = c('another','label'),
+#'        font = 3, col = 1:2, line = 2, cex = 1.5)
+#'
+#' @export
+
+ctext <- function(text, cols, space = TRUE, ...) {
+  if (missing(cols))
+    cols <- rep(1, length(text))
+  l <- ctext_(text, cols, space)
+  for (ii in seq_along(l$text))
+    text(labels = l$text[[ii]], col = l$colors[ii], ...)
+  invisible(NULL)
+}
+
+#' @rdname ctext
+#' @export
+cmtext <- function(text, cols, space = TRUE, ...) {
+  if (missing(cols))
+    cols <- rep(1, length(text))
+  l <- ctext_(text, cols, space)
+  for (ii in seq_along(l$text))
+    mtext(text = l$text[[ii]], col = l$colors[ii], ...)
+  invisible(NULL)
+}
+
+#' @rdname ctext
+#' @export
+ctitle <- function(main = NULL, sub = NULL, xlab = NULL, ylab = NULL,
+                   cols, space = TRUE, ...) {
+  m <- match.call(expand.dots = FALSE)
+  dots <- m$...
+  ml <- dots$line
+  dots$line <- NULL
+  if (missing(cols))
+    cols <- rep(1, length(text))
+  wh <- c('main','sub','xlab','ylab')
+  l <- setNames(lapply(wh, function(x)
+    ## if c() not used to pass text, this could cause problems
+    ctext_(as.character(m[[x]])[-1], cols, space)), wh)
+  m <- par('mgp')
+  if (length(l$main$text)) {
+    ll <- l$main
+    for (ii in seq_along(ll$text))
+      do.call('mtext', c(list(text = ll$text[[ii]], col = ll$colors[ii],
+                     side = 3, font = 2, line = ml %||% (m[1] * .5)), dots))
+  }
+  if (length(l$sub$text)) {
+    ll <- l$sub
+    for (ii in seq_along(ll$text))
+      do.call('mtext', c(list(text = ll$text[[ii]], col = ll$colors[ii],
+                              side = 1, line = ml %||% (m[1] + 1)), dots))
+  }
+  if (length(l$xlab$text)) {
+    ll <- l$xlab
+    for (ii in seq_along(ll$text))
+      do.call('mtext', c(list(text = ll$text[[ii]], col = ll$colors[ii],
+                              side = 1, line = ml %||% m[1]), dots))
+  }
+  if (length(l$ylab$text)) {
+    ll <- l$ylab
+    for (ii in seq_along(ll$text))
+      do.call('mtext', c(list(text = ll$text[[ii]], col = ll$colors[ii],
+                         side = 2, line = ml %||% m[1]), dots))
+  }
+  invisible(NULL)
 }
