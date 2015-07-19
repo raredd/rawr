@@ -5,7 +5,7 @@
 # helpExtract, Round, bind_all, cbindx, rbindx, rbindfill, interleave, outer2,
 # merge2, locf, roll_fun, round_to, updateR, read_clip, fcols, classMethods,
 # regcaptures, path_extract, fname, file_name, file_ext, cast, melt,
-# install_temp, nestedMerge, fill_df
+# install_temp, nestedMerge, fill_df, kinda_sort
 ###
 
 #' rawr operators
@@ -2205,4 +2205,47 @@ fill_df <- function(dat, key, ids, fill, values) {
   }
   # dat[do.call('order', as.list(dat[, c(nnk, nnf)])), ]
   if (!is.null(keep)) cbind(dat, keep)[, ND] else dat[, ND]
+}
+
+#' Kinda sort
+#' 
+#' \code{\link{sort}} a vector but not very well. For a vector, \code{x},
+#' \code{n} elements will be randomly selected, and their positions will
+#' remain unchanced as all other elements are sorted.
+#' 
+#' @param x a vector
+#' @param n number of elements of x to remove from sorting; ignored if
+#' \code{indices} is given
+#' @param decreasing logical; if \code{FALSE} (default), vector is sorted in
+#' increasing order
+#' @param indices a vector of indices specifying which elemnts of \code{x}
+#' should \emph{not} be sorted
+#' 
+#' @return
+#' The vector \code{x} sorted approximately
+#' \code{(length(x) - n) / length(x) * 100} percent.
+#' 
+#' @examples
+#' set.seed(1)
+#' (x <- rnorm(5))
+#' # [1] -0.6264538  0.1836433 -0.8356286  1.5952808  0.3295078
+#' 
+#' kinda_sort(x)
+#' # [1] -0.8356286  0.1836433 -0.6264538  0.3295078  1.5952808
+#' 
+#' kinda_sort(x, indices = 2:3)
+#' # [1] -0.6264538  0.1836433 -0.8356286  0.3295078  1.5952808
+#' 
+#' @export
+
+kinda_sort <- function(x, n, decreasing = FALSE, indices) {
+  lx <- length(x)
+  n <- if (missing(n)) ceiling(0.1 * lx) else if (n > lx) lx else n 
+  wh <- if (!missing(indices)) indices else sample(seq.int(lx), size = n)
+  y <- x[wh]
+  x[wh] <- NA
+  rl <- with(rle(!is.na(x)), rep(values, lengths))
+  x[rl] <- sort(x, decreasing = decreasing)
+  x[!rl] <- y
+  x
 }
