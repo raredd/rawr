@@ -5,7 +5,7 @@
 # helpExtract, Round, bind_all, cbindx, rbindx, rbindfill, interleave, outer2,
 # merge2, locf, roll_fun, round_to, updateR, read_clip, fcols, classMethods,
 # regcaptures, path_extract, fname, file_name, file_ext, cast, melt,
-# install_temp, nestedMerge, fill_df, kinda_sort
+# install_temp, nestedMerge, fill_df, kinda_sort, rgene
 ###
 
 #' rawr operators
@@ -2248,4 +2248,31 @@ kinda_sort <- function(x, n, decreasing = FALSE, indices) {
   x[rl] <- sort(x, decreasing = decreasing)
   x[!rl] <- y
   x
+}
+
+#' Generate random gene names
+#' 
+#' @param n number of gene names to return
+#' @param alpha vector of letters to select from
+#' @param nalpha range of possible number of \code{alpha} to select
+#' @param num numerics to select from
+#' @param nnum range of possible number of \code{num} to select
+#' @param sep character to separate \code{alpha} and \code{num}
+#' @param seed seed; integer or \code{NULL}
+#' 
+#' @examples
+#' rgene()
+#' rgene(5, alpha = 'AB', nalpha = 1, nnum = 5:6)
+#' 
+#' @export
+
+rgene <- function(n = 1, alpha = LETTERS[1:5], nalpha = 2:5,
+                  num = 0:9, nnum = 1:5, sep = '-', seed = NULL) {
+  set.seed(seed)
+  p0 <- function(...) paste0(..., collapse = '')
+  alphas <- function()
+    sample(alpha, size = sample(nalpha, 1), replace = TRUE)
+  numerics <- function()
+    sample(num, size = sample(nnum, 1), replace = TRUE)
+  replicate(n, p0(p0(alphas()), sep, p0(numerics())))
 }
