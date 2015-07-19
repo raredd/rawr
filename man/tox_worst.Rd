@@ -29,8 +29,9 @@ Returns a subset of input data with worst toxicity grade per toxicity
 code per patient, ie, sorts and removes duplicates.
 }
 \examples{
+oo <- options()
 options(stringsAsFactors = FALSE)
-set.seed(1618)
+set.seed(1)
 
 f <- function(x, ...) sample(x, 100, replace = TRUE, ...)
 tox <- data.frame(casenum = rep(1:10, 10), phase = 1:2,
@@ -50,5 +51,6 @@ tox <- within(tox, {
 
 ## use tabler_by to summarize:
 tabler_by(out$tox_worst, 'tox_desc', 'tox_grade')
+options(oo)
 }
 

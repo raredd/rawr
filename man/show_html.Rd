@@ -12,6 +12,9 @@ show_html(..., use_viewer = !is.null(getOption("viewer")))
 \item{use_viewer}{logical; if \code{TRUE}, attempts to use
 \code{rstudio::viewer} or opens in default browser on error}
 }
+\value{
+The html code (invisibly) as a character string.
+}
 \description{
 Render html in rstudio viewer or default browser.
 }

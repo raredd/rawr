@@ -45,7 +45,7 @@ entire data set is given to \code{dat} and will use the corresponding
 \code{n} to show percentages out of each respective subgroup.
 }
 \examples{
-set.seed(1618)
+set.seed(1)
 
 f <- function(x, ...) sample(x, 100, replace = TRUE, ...)
 tox <- data.frame(casenum = rep(1:10, 10), phase = 1:2,

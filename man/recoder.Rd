@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{recoder}
 \alias{recoder}
-\title{Recode a variable}
+\title{Recode variables}
 \usage{
 recoder(object, pattern, replacement, ...)
 }
@@ -13,46 +13,45 @@ recoder(object, pattern, replacement, ...)
 
 \item{replacement}{what to replace \code{pattern} with}
 
-\item{...}{for future use}
+\item{...}{ignored}
 }
 \value{
-Returns an object with the same length (or dimensions) and class as
-\code{object}
+An object with the same length (or dimensions) and class as \code{object}
+with the recoded variables.
 }
 \description{
-A function for recoding numeric, character, and factor values in a vector,
-list, matrix, or data frame.
+Recodes numeric, character, and factor values in a vector, list, matrix,
+or data frame.
 }
 \details{
 When recoding a factor variable with a new level, \code{recoder}
-automatically adds the corresponding level to \code{levels(object)} to avoid
-errors.
-}
-\note{
+automatically adds the corresponding level to \code{levels(object)} to
+avoid errors.
+
 The function currently recursively replaces \code{pattern[i]} with
 \code{replacement[i]} in sequential order, so if you intend to swap values,
 say \code{a} and \code{b}, in an \code{object}, \code{recoder} will instead
 first replace all occurrences of \code{a} with \code{b} and then all
 occurrences of \code{b} with \code{a} resulting in the \code{object} with no
-\code{b} occurrences. See examples. I will fix this eventually.
+\code{b} occurrences; see examples. I will (may) fix this eventually.
 }
 \examples{
-data(mtcars)
 recoder(mtcars$carb, c(1, 2), c('A','B'))
 recoder(mtcars, c(1, 2), c('A', 'B'))
+
 mtcars <- within(mtcars, carb1 <- factor(carb))
 recoder(mtcars$carb1, 1, 999)
 
 tmp <- c(list(1:5), list(5), list(NA))
 recoder(tmp, 5, NA)
 
-# example from note
+## example from note
 tmp <- 1:10
 recoder(tmp, c(1, 2), c(2, 1))
-# [1]  1  1  3  4  5  6  7  8  9 10    # actual return
-# [1]  2  1  3  4  5  6  7  8  9 10    # intended return
+# [1]  1  1  3  4  5  6  7  8  9 10    ## actual return
+# [1]  2  1  3  4  5  6  7  8  9 10    ## desired return
 }
 \seealso{
-\code{\link[car]{recode}}
+\code{\link{fill_df}}, \code{\link[car]{recode}}
 }
 

@@ -17,7 +17,7 @@ facet_adjust(x, pos = c("up", "down"), newpage = is.null(vp), vp = NULL)
 \item{vp}{viewport to draw plot in; see \code{\link[ggplot2]{print.ggplot}}}
 }
 \value{
-facet_adjust object that inherits \code{\link[gtable]{gtable}} class
+\code{facet_adjust} object that inherits \code{\link[gtable]{gtable}} class
 }
 \description{
 Adjusts labels on x-axes when using \code{\link[ggplot2]{facet_wrap}}.

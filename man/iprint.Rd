@@ -4,7 +4,7 @@
 \alias{iprint}
 \title{In-line printing}
 \usage{
-iprint(..., wrap, sep, copula, digits = 2)
+iprint(..., wrap = "", sep = ", ", copula, digits = 2)
 }
 \arguments{
 \item{...}{one or more numeric or character elements to be converted into
@@ -20,7 +20,7 @@ character vectors}
 \code{\link{roundr}}}
 }
 \description{
-Modified \code{\link[pander]{p}} function from the \code{pander} package.
+Modified \code{\link[pander]{p}} function from the \pkg{pander} package.
 }
 \examples{
 iprint('fee','fi','fo','fum')

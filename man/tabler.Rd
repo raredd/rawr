@@ -41,10 +41,8 @@ tabler(lmfit)
 glmfit <- glm(vs ~ drat + factor(gear), data = mtcars, family = 'binomial')
 tabler(glmfit, type = 'or')
 
-\donttest{
-library(survival)
+library('survival')
 sfit <- survfit(Surv(time, status) ~ 1, data = cancer, conf.int = 0.9)
 tabler(sfit)
-}
 }
 

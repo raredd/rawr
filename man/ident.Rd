@@ -45,22 +45,22 @@ ident(1, 1., 1L)
 # for unusual R objects:
 ident(.GlobalEnv, environment(), globalenv(), as.environment(1))
 
-ident(0., 0, -0.) # not differentiated
+ident(0., 0, -0.) ## not differentiated
 ident(0., 0, -0., num.eq = FALSE)
 
 ident(NaN, -NaN)
-ident(NaN, -NaN, single.NA = FALSE) # differ on bit-level
+ident(NaN, -NaN, single.NA = FALSE) ## differ on bit-level
 
-# for functions
+## for functions
 f <- function(x) x
 g <- compiler::cmpfun(f)
 ident(f, g)
 ident(f, g, ignore.bytecode = FALSE)
 }
 \seealso{
-\code{\link{identical}}; \code{\link{all.equal}} for
-descriptions of how two objects differ; \code{\link{Comparison}} for
-operators that generate elementwise comparisons; \code{\link{isTRUE}} is a
-simple wrapper based on \code{identical}.
+\code{\link{identical}}; \code{\link{all.equal}} for descriptions of how
+two objects differ; \code{\link{Comparison}} for operators that generate
+elementwise comparisons; \code{\link{isTRUE}} is a simple wrapper based
+on \code{identical}.
 }
 
