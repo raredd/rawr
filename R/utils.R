@@ -1,11 +1,11 @@
 ### utilities
 # rawrops: %ni%, %==%, %||%, %inside%, %:%
-# misc: lss, lsp, lsf, ht, progress, recoder, psum, ident, search_df,
+# misc: lss, lsp, lsf, ht, progress, recoder, psum, ident, allequal, search_df,
 # search_hist, fapply, rescaler, try_require, list2file, Restart, clc, clear,
 # helpExtract, Round, bind_all, cbindx, rbindx, rbindfill, interleave, outer2,
 # merge2, locf, roll_fun, round_to, updateR, read_clip, fcols, classMethods,
 # regcaptures, path_extract, fname, file_name, file_ext, cast, melt,
-# install_temp, nestedMerge
+# install_temp, nestedMerge, fill_df
 ###
 
 #' rawr operators
@@ -379,44 +379,49 @@ progress <- function (value, max.value, textbar = FALSE) {
   cat('\n')
 }
 
-#' Recode a variable
+#' Recode variables
 #' 
-#' A function for recoding numeric, character, and factor values in a vector, 
-#' list, matrix, or data frame.
+#' Recodes numeric, character, and factor values in a vector, list, matrix,
+#' or data frame.
 #' 
-#' @param object object to recode
-#' @param pattern what to replace
-#' @param replacement what to replace \code{pattern} with
-#' @param ... for future use
+#' When recoding a factor variable with a new level, \code{recoder} 
+#' automatically adds the corresponding level to \code{levels(object)} to
+#' avoid errors.
 #' 
-#' @details When recoding a factor variable with a new level, \code{recoder} 
-#' automatically adds the corresponding level to \code{levels(object)} to avoid
-#' errors.
-#' @note The function currently recursively replaces \code{pattern[i]} with 
+#' The function currently recursively replaces \code{pattern[i]} with 
 #' \code{replacement[i]} in sequential order, so if you intend to swap values,
 #' say \code{a} and \code{b}, in an \code{object}, \code{recoder} will instead
 #' first replace all occurrences of \code{a} with \code{b} and then all 
 #' occurrences of \code{b} with \code{a} resulting in the \code{object} with no
-#' \code{b} occurrences. See examples. I will fix this eventually.
-#' @return Returns an object with the same length (or dimensions) and class as 
-#' \code{object}
-#' @seealso \code{\link[car]{recode}}
+#' \code{b} occurrences; see examples. I will (may) fix this eventually.
+#' 
+#' @param object object to recode
+#' @param pattern what to replace
+#' @param replacement what to replace \code{pattern} with
+#' @param ... ignored
+#' 
+#' @return
+#' An object with the same length (or dimensions) and class as \code{object}
+#' with the recoded variables.
+#' 
+#' @seealso
+#' \code{\link{fill_df}}, \code{\link[car]{recode}}
 #' 
 #' @examples
-#' data(mtcars)
 #' recoder(mtcars$carb, c(1, 2), c('A','B'))
 #' recoder(mtcars, c(1, 2), c('A', 'B'))
+#' 
 #' mtcars <- within(mtcars, carb1 <- factor(carb))
 #' recoder(mtcars$carb1, 1, 999)
 #' 
 #' tmp <- c(list(1:5), list(5), list(NA))
 #' recoder(tmp, 5, NA)
 #' 
-#' # example from note
+#' ## example from note
 #' tmp <- 1:10
 #' recoder(tmp, c(1, 2), c(2, 1))
-#' # [1]  1  1  3  4  5  6  7  8  9 10    # actual return
-#' # [1]  2  1  3  4  5  6  7  8  9 10    # intended return
+#' # [1]  1  1  3  4  5  6  7  8  9 10    ## actual return
+#' # [1]  2  1  3  4  5  6  7  8  9 10    ## desired return
 #' 
 #' @export
 
@@ -455,12 +460,12 @@ recoder <- function(object, pattern, replacement, ...) {
       f[is.na(f)] <- h
     } else {
       f[f == g] <- h }
-    return(f)
+    f
   } 
   superswitcher <- function(x, y, z){
     DF <- data.frame(y, z, stringsAsFactors = FALSE)
     z <- x
-    if (class(DF[ , 2]) %in% c('character', 'factor')) {
+    if (class(DF[, 2]) %in% c('character', 'factor')) {
       lapply(1:nrow(DF), function(i) {
         if (sum(z %in% DF[i, 1]) == 0) {
           z <<- z
@@ -473,28 +478,28 @@ recoder <- function(object, pattern, replacement, ...) {
         z <<- switcher(z, DF[i, 1], DF[i, 2]) 
       })
     }
-    return(z)
+    z
   }
-  ## end helper functions
   
   # treat certain object classes differently
   if (is.vector(object) & !is.list(object)) {
     sapply(object, superswitcher, pattern, replacement)
   } else {
     if (is.data.frame(object)) {
-      tmp <- do.call(data.frame, lapply(unclass(object)[1:ncol(object)], 
-                                        superswitcher, pattern, replacement))
+      tmp <- do.call('data.frame',
+                     lapply(unclass(object)[1:ncol(object)],
+                            superswitcher, pattern, replacement))
       rownames(tmp) <- attr(object, 'row.names')
       return(tmp)
     }
     if (is.matrix(object)) {
       nrow <- nrow(object)
-      tmp <- do.call(rbind, 
+      tmp <- do.call('rbind',
                      lapply(object, superswitcher, pattern, replacement))
       tmp <- matrix(tmp, nrow = nrow, byrow = FALSE)
       return(tmp)
     } else {
-      if (is.factor(object)) 
+      if (is.factor(object))
         unlist(lapply(object, superswitcher, pattern, replacement))
       else lapply(object, superswitcher, pattern, replacement)
     }
@@ -512,8 +517,11 @@ recoder <- function(object, pattern, replacement, ...) {
 #' @param na.rm logical; if \code{TRUE}, omits missing values (including
 #' \code{\link{NaN}}) from calculations
 #' 
-#' @return A single vector of element-wise sums.
-#' @seealso \code{\link{pmin}}, \code{\link{pmax}}
+#' @return
+#' A single vector of element-wise sums.
+#' 
+#' @seealso
+#' \code{\link{pmin}}, \code{\link{pmax}}
 #' 
 #' @examples
 #' x <- c(-1, NA, 4, 5)
@@ -557,10 +565,11 @@ psum <- function(..., na.rm = FALSE) {
 #' A single logical value, \code{TRUE} or \code{FALSE}, never \code{NA}
 #' and never anything other than a single value.
 #' 
-#' @seealso \code{\link{identical}}; \code{\link{all.equal}} for 
-#' descriptions of how two objects differ; \code{\link{Comparison}} for 
-#' operators that generate elementwise comparisons; \code{\link{isTRUE}} is a 
-#' simple wrapper based on \code{identical}.
+#' @seealso
+#' \code{\link{identical}}; \code{\link{all.equal}} for descriptions of how
+#' two objects differ; \code{\link{Comparison}} for operators that generate
+#' elementwise comparisons; \code{\link{isTRUE}} is a simple wrapper based
+#' on \code{identical}.
 #' 
 #' @examples
 #' ident(1, 1.)
@@ -569,13 +578,13 @@ psum <- function(..., na.rm = FALSE) {
 #' # for unusual R objects:
 #' ident(.GlobalEnv, environment(), globalenv(), as.environment(1))
 #' 
-#' ident(0., 0, -0.) # not differentiated
+#' ident(0., 0, -0.) ## not differentiated
 #' ident(0., 0, -0., num.eq = FALSE)
 #' 
 #' ident(NaN, -NaN)
-#' ident(NaN, -NaN, single.NA = FALSE) # differ on bit-level
+#' ident(NaN, -NaN, single.NA = FALSE) ## differ on bit-level
 #' 
-#' # for functions
+#' ## for functions
 #' f <- function(x) x
 #' g <- compiler::cmpfun(f)
 #' ident(f, g)
@@ -585,18 +594,65 @@ psum <- function(..., na.rm = FALSE) {
 
 ident <- function(..., num.eq = TRUE, single.NA = TRUE, attrib.as.set = TRUE,
                   ignore.bytecode = TRUE, ignore.environment = FALSE) {
-  lst <- list(...)
-  if (length(lst) < 2L)
+  if (length(l <- list(...)) < 2L)
     stop('must provide at least two objects')
-  zzz <- sapply(1:(length(lst) - 1), 
-                function(x) 
-                  identical(lst[x], lst[x + 1], 
-                            num.eq = num.eq, 
-                            single.NA = single.NA, 
-                            attrib.as.set = attrib.as.set,
-                            ignore.bytecode = ignore.bytecode, 
-                            ignore.environment = ignore.environment))
-  all(zzz)
+  l <- sapply(1:(length(l) - 1), function(x)
+    identical(l[x], l[x + 1], num.eq = num.eq, single.NA = single.NA,
+        attrib.as.set = attrib.as.set, ignore.bytecode = ignore.bytecode,
+        ignore.environment = ignore.environment))
+  all(l)
+}
+
+#' Test if two or more objects are (nearly) equal
+#' 
+#' A generalization of \code{\link{all.equal}} that allows more than two
+#' objects to be tested for near-equality.
+#' 
+#' @param ... any \code{R} objects
+#' @param tolerance numeric >= 0; differences smaller than \code{tolerance}
+#' are not reported (default value is close to 1.5e-8)
+#' @param scale numeric scalar > 0 (or \code{NULL}), see details in
+#' \code{\link{all.equal}}
+#' @param check.attributes logical indicating if the \code{\link{attributes}}
+#' should be compared
+#' @param use.names logical indicating if \code{\link{list}} comparison should
+#' report differing components by name (if matching) instead of integer index
+#' @param all.names logical passed to \code{\link{ls}} indicating if "hidden"
+#' objects should also be considered in the environments
+#' @param check.names logical indicating if the \code{\link{names}}\code{(.)}
+#' should be compared
+#' 
+#' @return
+#' If all \code{...} are nearly equal, \code{TRUE} otherwise returns a list
+#' with the objects that failed.
+#' 
+#' @seealso
+#' \code{\link{all.equal}}, \code{\link{ident}}, \code{\link{identical}}
+#' 
+#' @examples
+#' allequal(pi, 355/113, 22/7)
+#' allequal(pi, 355/113, 22/7, tolerance = 0.01)
+#' 
+#' allequal(cars[1], cars[, 1, drop = FALSE], cars[, -2, drop = TRUE])
+#' 
+#' @export
+
+allequal <- function(..., tolerance = .Machine$double.eps ^ 0.5, scale = NULL,
+                     check.attributes = TRUE, use.names = TRUE,
+                     all.names = TRUE, check.names = TRUE) {
+  dots <- substitute(...())
+  l <- setNames(list(...), dots)
+  if (length(l <- list(...)) < 2L)
+    stop('must provide at least two objects')
+  l <- lapply(1:(length(l) - 1), function(x)
+    # do.call('all.equal', c(list(target = l[[x]], current = l[[x + 1]]),
+    #                        moreArgs)))
+    do.call('all.equal', list(target = l[[x]], current = l[[x + 1]],
+              tolerance = tolerance, check.attributes = check.attributes,
+              scale = scale, use.names = use.names, all.names = all.names)))
+  trues <- c(TRUE, sapply(l, isTRUE))
+  trues[1] <- trues[2]
+  if (all(trues)) TRUE else dots[!trues]
 }
 
 #' Search function for data frames
@@ -2059,4 +2115,94 @@ nestedmerge <- function(a, b) {
     }
     return(out)
   } else return(list(c(a, b)))
+}
+
+#' Fill data frame
+#' 
+#' Fills data frame, \code{dat}, containing \code{NA} values using a look-up
+#' table, \code{key}. \code{ids} and \code{fill} columns must be in both
+#' \code{dat} and \code{key}. If neither are given, \code{fill_df} will
+#' smartly try to guess which columns need to be filled with the values from
+#' the look-up table.
+#' 
+#' @param dat a data frame to recode
+#' @param key a look-up table data frame
+#' @param ids columns treated as id variables, as character strings or indices
+#' @param fill columns to recode, as character strings or column indices
+#' @param values optional vector of values to recode with \code{fill}; if
+#' missing (default), \code{fill_df} only looks for \code{NA}s in \code{dat};
+#' otherwise, all occurrences of \code{values} will be replaced with
+#' \code{NA}, and \code{fill_df} will procede normally
+#' 
+#' @return
+#' A data frame with \code{NA}s from \code{fill}-columns recoded to match
+#' the values from \code{key}.
+#' 
+#' @seealso
+#' \code{\link{recoder}}
+#' 
+#' @examples
+#' dd <- mtcars
+#' dd[matrix(sample(c(TRUE, FALSE), 32 * 11, replace = TRUE), 32)] <- NA
+#' identical(mtcars, fill_df(dd, mtcars))  ## TRUE
+#' 
+#' ## recode other variables instead of NAs
+#' nn <- sum(is.na(dd))
+#' dd[is.na(dd)] <- sample(-10:-1, nn, replace = TRUE)
+#' identical(mtcars, fill_df(dd, mtcars, values = -1:-10)) ## TRUE
+#' 
+#' f <- function(x, n = 20) sample(x, size = n, replace = TRUE)
+#' set.seed(1)
+#' key_df <- data.frame(id = c(1,2,1,2), group = c(3,3,4,4),
+#'                      x = c(100, 200, 300, 400), y = I(LETTERS[1:4]))
+#' na_df <- data.frame(id = f(1:2), group = f(3:4),
+#'                     x = f(c(0, NA)), y = I(f(c('', NA))), z = 1)
+#' 
+#' ## auto: all cols with no NAs == ids; cols with any NAs = fill
+#' fill_df(na_df, key_df)
+#' 
+#' ## select which to be filled and returned
+#' fill_df(na_df, key_df, ids = 1:2, fill = 'x')
+#' fill_df(na_df, key_df, ids = 1:2, fill = 4)
+#' 
+#' @export
+
+fill_df <- function(dat, key, ids, fill, values) {
+  ND <- names(dat)
+  ## if given replace `values` with NAs
+  if (!missing(values)) {
+    idx <- dat
+    idx[] <- lapply(dat, function(x) x %in% values)
+    dat[as.matrix(idx)] <- NA
+  }
+  ## get columns names not defined as ids or fill
+  if (length(whk <- which(ND %ni% names(key)))) {
+    whk <- ND[whk]
+    keep <- dat[, whk, drop = FALSE]
+    dat[, whk] <- list(NULL)
+  } else keep <- NULL
+  ## error checks
+  nd <- names(dat)
+  nad <- vapply(dat, anyNA, logical(1))
+  ok <- all(nad)
+  if (all(!nad)) return(dat)
+  ## try to guess columns to use for ids/fill
+  ids <- if (missing(ids)) {
+    nd[which(!nad)]
+  } else if (is.numeric(ids)) nd[ids] else ids
+  fill <- if (missing(fill)) {
+    nd[which(nad)]
+  } else if (is.numeric(fill)) nd[fill] else fill
+  ## match current data rows with rows in key and fill NAs
+  nak <- if (ok) seq.int(nrow(dat)) else
+    do.call('paste0', c(key[, ids, drop = FALSE]))
+  dfk <- if (ok) seq.int(nrow(dat)) else
+    do.call('paste0', c(dat[, ids, drop = FALSE]))
+  mm <- match(dfk, nak)
+  for (col in fill) {
+    nnr <- which(is.na(dat[, col]))
+    dat[nnr, col] <- key[mm[nnr], col]
+  }
+  # dat[do.call('order', as.list(dat[, c(nnk, nnf)])), ]
+  if (!is.null(keep)) cbind(dat, keep)[, ND] else dat[, ND]
 }
