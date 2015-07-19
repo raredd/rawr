@@ -13,6 +13,9 @@
 #' @param use_viewer logical; if \code{TRUE}, attempts to use
 #' \code{rstudio::viewer} or opens in default browser on error
 #' 
+#' @return
+#' The html code (invisibly) as a character string.
+#' 
 #' @seealso
 #' \code{\link{show_math}}, \code{\link{show_markdown}}
 #' 
@@ -438,8 +441,8 @@ binconr <- function(r, n, conf = 0.95, digits = 0,
                 digits = digits)
   zzz <- sprintf('%s%% CI: %s - %s%%', conf * 100, res[4], res[5])
   if (est)
-    zzz <- sprintf('%s%% (%s)', res[3], zzz)
-  zzz
+    sprintf('%s%% (%s)', res[3], zzz)
+  else zzz
 }
 
 #' Numeric to character string
@@ -480,8 +483,6 @@ num2char <- function(num, informal = FALSE, cap = TRUE) {
   if (num < 0) {neg <- TRUE; num <- abs(num)}
   if (!num %inside% c(1, 99999999)) 
     stop("I can't count that high")
-  #   `%inside%` <- function(x, interval) # don't need as.numeric
-  #     as.numeric(x) >= interval[1] & as.numeric(x) <= interval[2]
   ## helpers
   key <- c('0'='','1'='one','2'='two','3'='three','4'='four','5'='five',
            '6'='six','7'='seven','8'='eight','9'='nine','10'='ten',
@@ -549,12 +550,12 @@ num2char <- function(num, informal = FALSE, cap = TRUE) {
   zzz <- ifelse(cap, upcase(gsub('And\ |\ and*$', '', zzz)),
                 gsub('And\ |\ and*$', '', zzz))
   zzz <- ifelse(neg, paste0('negative ', tolower(zzz)), tolower(zzz))
-  return(ifelse(cap, upcase(zzz), zzz))
+  ifelse(cap, upcase(zzz), zzz)
 }
 
 #' In-line printing
 #' 
-#' Modified \code{\link[pander]{p}} function from the \code{pander} package.
+#' Modified \code{\link[pander]{p}} function from the \pkg{pander} package.
 #' 
 #' @param ... one or more numeric or character elements to be converted into
 #' character vectors
@@ -575,31 +576,19 @@ num2char <- function(num, informal = FALSE, cap = TRUE) {
 #' 
 #' @export
 
-iprint <- function (..., wrap, sep, copula, digits = 2) {
-  
+iprint <- function (..., wrap = '', sep = ', ', copula, digits = 2) {
+  # x <- substitute(...())
   x <- c(...)
-  len <- length(x)
-  f <- function(x, wrap = '"') 
-    sprintf('%s%s%s', wrap, x, wrap)
-  
-  if (len == 0) 
-    return('')
-  if (missing(wrap))
-    wrap <- ''
-  if (missing(sep))
-    sep <- ', '
+  if (!(len <- length(x))) return('')
+  f <- function(x, wrap = '"') sprintf('%s%s%s', wrap, x, wrap)
   if (missing(copula))
-    copula <- ifelse(len == 2, ' and ', ', and ')
-  
+    copula <- ifelse(len == 2L, ' and ', ', and ')
   if (is.numeric(x))
     x <- roundr(x, digits = digits)
-  
-  if (len == 1) 
-    f(x, wrap)
-  else if (len == 2) 
-    paste(f(x, wrap), collapse = copula)
-  else paste0(paste(f(head(x, -1), wrap = wrap), collapse = sep), 
-              copula, f(tail(x, 1), wrap = wrap))
+  if (len == 1L) f(x, wrap) else
+    if (len == 2L) paste(f(x, wrap), collapse = copula) else
+      paste0(paste(f(head(x, -1), wrap = wrap), collapse = sep),
+             copula, f(tail(x, 1), wrap = wrap))
 }
 
 #' Match CTCAE codes
@@ -632,7 +621,6 @@ iprint <- function (..., wrap, sep, copula, digits = 2) {
 #' @export
 
 match_ctc <- function(..., version = 4) {
-  
   x <- c(...)
   if (version %ni% 3:4)
     stop('CTCAE version should be 3 or 4')
@@ -641,14 +629,12 @@ match_ctc <- function(..., version = 4) {
       dat <- rawr::ctcae_v3
     else dat <- rawr::ctcae_v4
   }
-  
   if (any(grepl('([A-Za-z -])([0-9])', x)))
     idx <- match(gsub('\\s*|-', '', x, perl = TRUE), dat[, 'tox_code'])
   else idx <- grep(paste(x, collapse = '|'), dat[, 'tox_desc'],
                    ignore.case = TRUE)
-  
-  return(list(matches = `rownames<-`(dat[idx, ], NULL),
-              version = sprintf('CTCAE v%s', version)))
+  list(matches = `rownames<-`(dat[idx, ], NULL),
+       version = sprintf('CTCAE v%s', version))
 }
 
 #' Write ftable
@@ -694,6 +680,7 @@ writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
 #' @return
 #' A list with summaries for each strata; see 
 #' \code{\link[survival]{summary.survfit}}
+#' 
 #' @seealso
 #' \code{\link[survival]{survfit}}, 
 #' \code{\link[survival]{print.summary.survfit}}
@@ -709,11 +696,9 @@ writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
 #' @export
 
 surv_summary <- function(s, digits = max(getOption('digits') - 4, 3), ...) {
-  
   ## error checks
   if (!inherits(s, 'survfit')) 
     stop('s must be a survfit object')
-  
   x <- summary(s, ...)
   
   savedig <- options(digits = digits)
@@ -825,14 +810,12 @@ surv_summary <- function(s, digits = max(getOption('digits') - 4, 3), ...) {
 #' @export
 
 surv_table <- function(s, digits = 3, times = pretty(range(s$time)), ...) {
-  tmp <- capture.output(summ <- surv_summary(s, digits = digits, 
+  tmp <- capture.output(summ <- surv_summary(s, digits = digits,
                                              times = times, ...))
   f <- function(x, d = digits, vars = vars) {
     vars = colnames(x)
-    tmpvar <- colnames(x)[grep('survival|std.err|lower|upper', 
-                               colnames(x))]
-    x[ , tmpvar] <- roundr(x[ , tmpvar], digits = d)
-    
+    tmpvar <- colnames(x)[grep('survival|std.err|lower|upper', colnames(x))]
+    x[, tmpvar] <- roundr(x[, tmpvar], digits = d)
     surv <- sprintf('%s (%s, %s)', 
                     x[, colnames(x)[grepl('survival', colnames(x))]],
                     x[, colnames(x)[grepl('lower', colnames(x))]],
@@ -841,9 +824,7 @@ surv_table <- function(s, digits = 3, times = pretty(range(s$time)), ...) {
                  c('Time','No. at risk','No. event','Std.Error',
                    sprintf('OR (%s%% CI)', s$conf.int * 100)))
   }
-  if (is.list(summ))
-    Map(f = f, summ)
-  else f(summ)
+  if (is.list(summ)) Map(f = f, summ) else f(summ)
 }
 
 #' Tabler
@@ -865,11 +846,9 @@ surv_table <- function(s, digits = 3, times = pretty(range(s$time)), ...) {
 #' glmfit <- glm(vs ~ drat + factor(gear), data = mtcars, family = 'binomial')
 #' tabler(glmfit, type = 'or')
 #' 
-#' \donttest{
-#' library(survival)
+#' library('survival')
 #' sfit <- survfit(Surv(time, status) ~ 1, data = cancer, conf.int = 0.9)
 #' tabler(sfit)
-#' }
 #' 
 #' @export
 
@@ -938,7 +917,7 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' columns
 #' 
 #' @examples
-#' set.seed(1618)
+#' set.seed(1)
 #' 
 #' f <- function(x, ...) sample(x, 100, replace = TRUE, ...)
 #' tox <- data.frame(casenum = rep(1:10, 10), phase = 1:2,
@@ -1027,8 +1006,7 @@ tabler_by <- function(dat, varname, byvar, n, order = FALSE, zeros,
     zzz <- zzz[order(zzz[, 1], decreasing = TRUE), ]
   }
    if (!missing(zeros))
-     zzz <- gsub('0 \\(0%\\)|^0$', zeros, zzz)
-  zzz
+     gsub('0 \\(0%\\)|^0$', zeros, zzz) else zzz
 }
 
 #' Count formatter
@@ -1055,7 +1033,7 @@ countr <- function(top, n, lowcase = TRUE) {
     n <- length(top)
     top <- table(top)
   }
-  iprint(sprintf('%s (n = %s, %s%%)', 
+  iprint(sprintf('%s (n = %s, %s%%)',
                  if (is.logical(lowcase))
                    if (lowcase) tolower(names(top)) else toupper(names(top))
                  else names(top),
@@ -1081,8 +1059,9 @@ countr <- function(top, n, lowcase = TRUE) {
 #' \code{tox_grade}.
 #' 
 #' @examples
+#' oo <- options()
 #' options(stringsAsFactors = FALSE)
-#' set.seed(1618)
+#' set.seed(1)
 #' 
 #' f <- function(x, ...) sample(x, 100, replace = TRUE, ...)
 #' tox <- data.frame(casenum = rep(1:10, 10), phase = 1:2,
@@ -1102,6 +1081,7 @@ countr <- function(top, n, lowcase = TRUE) {
 #' 
 #' ## use tabler_by to summarize:
 #' tabler_by(out$tox_worst, 'tox_desc', 'tox_grade')
+#' options(oo)
 #' 
 #' @export
 
@@ -1124,6 +1104,7 @@ tox_worst <- function(dat, id = 'casenum', tox_desc = 'tox_desc', tox_grade = 't
 #' gcd(99, 2048)
 #' gcd(2 ** (1:12), 2048)
 #' @export
+
 gcd <- function(x, y) ifelse(r <- x%%y, Recall(y, r), y)
 
 #' Date parse

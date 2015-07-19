@@ -281,7 +281,8 @@ click_shape <- function(shape = 'line', col = 'black', border = col, trans = NUL
 #' \code{\link[ggplot2]{print.ggplot}}
 #' @param vp viewport to draw plot in; see \code{\link[ggplot2]{print.ggplot}}
 #' 
-#' @return facet_adjust object that inherits \code{\link[gtable]{gtable}} class
+#' @return
+#' \code{facet_adjust} object that inherits \code{\link[gtable]{gtable}} class
 #' 
 #' @examples
 #' library('ggplot2')
