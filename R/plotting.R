@@ -1,7 +1,7 @@
 ### plot functions
 # ggmultiplot, click_text, click_shape, facet_adjust, print.facet_adjust, 
 # ggcaterpillar, ggheat, dodge, jmplot, tplot, dsplot, bpCI, inset, 
-# show_colors, show_pch, tcol, ggcols, grcols, ctext, cmtext, ctitle
+# show_colors, show_pch, tcol, ggcols, grcols, ctext, cmtext, ctitle, waffle
 ###
 
 
@@ -163,15 +163,11 @@ ggmultiplot <- function(..., plotlist = NULL, cols = 1, layout = NULL) {
 
 click_text <- function(express, col = 'black', cex = NULL, srt = 0, 
                        trans = NULL, family = 'sans', ...) {
-  
   op <- par(no.readonly = TRUE) 
   on.exit(par(op))
+  par(mar = rep(0, 4), xpd = NA)
   if (!is.null(trans))
     col <- tcol(col, trans)
-  
-  par(xpd = NA)
-  
-  par(mar = rep(0, 4), xpd = NA)
   x <- locator(1)
   X <- format(x, digits = 3)
   text(x[1], x[2], express, 
@@ -225,7 +221,6 @@ click_shape <- function(shape = 'line', col = 'black', border = col, trans = NUL
   on.exit(par(op))
   if (!is.null(trans))
     col <- tcol(col, trans)
-  
   par(xpd = NA)
   
   RECTANGLE <- function(...) {
@@ -1595,6 +1590,8 @@ show_pch <- function() {
 #' @param trans transparency defined as an integer in the range 
 #' \code{[0, 255]} where \code{0} is fully transparent and \code{255} is fully
 #' visible; see details
+#' @param alpha the alpha transparenct in \code{[0,1]}; \code{trans} is
+#' ignored if \code{alpha} is given
 #' 
 #' @seealso \code{\link{as.hexmode}}, \code{\link{col2rgb}},
 #' \code{\link{adjustcolor}}
@@ -1602,19 +1599,25 @@ show_pch <- function() {
 #' @examples
 #' cols <- c('red','green','blue')
 #' 
-#' # a normal plot
+#' ## a normal plot
 #' plot(rnorm(100), col = tcol(cols), pch = 16, cex = 4)
 #' 
-#' # more transparent
-#' plot(rnorm(100), col = tcol(cols, 100), pch = 16, cex = 4)
+#' ## more transparent
+#' plot(x <- rnorm(100), col = tcol(cols, 100), pch = 16, cex = 4)
+#' ## or equivalently using alpha
+#' plot(x, col = tcol(cols, alpha = .4), pch = 16, cex = 4)
 #' 
-#' # hexadecimal colors also work
+#' ## hexadecimal colors also work
 #' cols <- c('#FF0000','#00FF00','#0000FF')
 #' plot(rnorm(100), col = tcol(cols, c(50, 100, 255)), pch= 16, cex = 4)
 #' 
 #' @export
 
-tcol <- function(color, trans = 255) {
+tcol <- function(color, trans = 255, alpha) {
+  if (!missing(alpha)) {
+    stopifnot(alpha %inside% c(0,1))
+    trans <- round(rescaler(alpha, to = c(0,255), from = c(0,1)))
+  }
   if (length(color) != length(trans) & 
         !any(c(length(color), length(trans)) == 1)) 
     stop('Vector lengths are not comformable')
@@ -1622,7 +1625,7 @@ tcol <- function(color, trans = 255) {
     color <- rep(color, length(trans))
   if (length(trans) == 1 & length(color) > 1) 
     trans <- rep(trans, length(color))
-  res <- paste0('#', apply(apply(rbind(col2rgb(color)), 2, function(x) 
+  res <- paste0('#', apply(apply(rbind(col2rgb(color)), 2, function(x)
     format(as.hexmode(x), 2)), 2, paste, collapse = ''))
   res <- unlist(unname(Map(paste0, res, as.character(as.hexmode(trans)))))
   res[is.na(color)] <- NA
@@ -1770,4 +1773,57 @@ ctitle <- function(main = NULL, sub = NULL, xlab = NULL, ylab = NULL,
                          side = 2, line = ml %||% m[1]), dots))
   }
   invisible(NULL)
+}
+
+#' waffle
+#' 
+#' A waffle chart.
+#' 
+#' @param mat a matrix of integers or character strings of color names; if
+#' \code{mat} is a matrix of integers, the colors used will correspond to
+#' the current \code{\link{palette}}
+#' @param xpad,ypad amount of padding between \code{rect}s along axes
+#' @param ... additional graphical parameters passed to \code{\link{par}}
+#' @param reset_par logical; if \code{TRUE}, resets \code{par} to current
+#' settings after \code{waffle}
+#' 
+#' @examples
+#' waffle(matrix(1:8, 2))
+#' 
+#' ## heatmap
+#' cols <- c(cor(mtcars))
+#' cols <- tcol(c('blue','red')[(cols > 0) + 1L], alpha = c(abs(cols)))
+#' waffle(matrix(cols, 11)[11:1, ], reset_par = FALSE, ypad = 0)
+#' axis(3, at = 1:11 - .5, labels = names(mtcars), cex.axis = .8, lwd = 0)
+#' 
+#' ## adding to margins of another plot
+#' set.seed(1)
+#' n <- 100
+#' ng <- 3
+#' cols <- c('beige','dodgerblue2','green','orange')
+#' x <- sample(cols, n * ng, replace = TRUE, prob = c(.05,.31,.32,.32))
+#' x <- rawr::kinda_sort(x, n = 20)
+#' 
+#' par(fig = c(0,1,.2,.9), mar = c(0,5,0,1))
+#' plot(cumsum(rnorm(n)), type = 'l', ann = FALSE, xaxt = 'n')
+#' par(fig = c(0,1,0,.2), mar = c(1,5,0,1), new = TRUE)
+#' waffle(matrix(x, ng))
+#' par(fig = c(0,1,.9,1), mar = c(.5,5,.5,1), new = TRUE)
+#' waffle(matrix(x, ng)[1, , drop = FALSE], ypad = 0, reset_par = FALSE)
+#' box()
+#' 
+#' @export
+
+waffle <- function(mat, xpad = 0, ypad = .05, ..., reset_par = TRUE) {
+  op <- par(no.readonly = TRUE)
+  if (reset_par)
+    on.exit(par(op))
+  plot.new()
+  par(list(...))
+  o <- cbind(c(row(mat)), c(col(mat))) - 1
+  plot.window(xlim = c(0, max(o[, 2]) + 1), ylim = c(0, max(o[, 1]) + 1),
+              xaxs = 'i', yaxs = 'i')
+  rect(o[, 2], o[, 1], o[, 2] + (1 - xpad), o[, 1] + (1 - ypad),
+       col = c(mat), border = NA)
+  invisible(list(matrix = mat, origin = o))
 }

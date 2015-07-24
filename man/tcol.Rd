@@ -4,7 +4,7 @@
 \alias{tcol}
 \title{Transparent colors}
 \usage{
-tcol(color, trans = 255)
+tcol(color, trans = 255, alpha)
 }
 \arguments{
 \item{color}{vector of color names (or hexadecimal)}
@@ -12,6 +12,9 @@ tcol(color, trans = 255)
 \item{trans}{transparency defined as an integer in the range
 \code{[0, 255]} where \code{0} is fully transparent and \code{255} is fully
 visible; see details}
+
+\item{alpha}{the alpha transparenct in \code{[0,1]}; \code{trans} is
+ignored if \code{alpha} is given}
 }
 \description{
 Add transparency to colors.
@@ -28,13 +31,15 @@ RGB with transparency.
 \examples{
 cols <- c('red','green','blue')
 
-# a normal plot
+## a normal plot
 plot(rnorm(100), col = tcol(cols), pch = 16, cex = 4)
 
-# more transparent
-plot(rnorm(100), col = tcol(cols, 100), pch = 16, cex = 4)
+## more transparent
+plot(x <- rnorm(100), col = tcol(cols, 100), pch = 16, cex = 4)
+## or equivalently using alpha
+plot(x, col = tcol(cols, alpha = .4), pch = 16, cex = 4)
 
-# hexadecimal colors also work
+## hexadecimal colors also work
 cols <- c('#FF0000','#00FF00','#0000FF')
 plot(rnorm(100), col = tcol(cols, c(50, 100, 255)), pch= 16, cex = 4)
 }
