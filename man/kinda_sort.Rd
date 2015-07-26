@@ -9,33 +9,32 @@ kinda_sort(x, n, decreasing = FALSE, indices)
 \arguments{
 \item{x}{a vector}
 
-\item{n}{number of elements of x to remove from sorting; ignored if
-\code{indices} is given}
+\item{n}{number of elements of x to remove from sorting (the default is
+approximately 10\% of \code{x}), ignored if \code{indices} is given}
 
-\item{decreasing}{logical; if \code{FALSE} (default), vector is sorted in
-increasing order}
+\item{decreasing}{logical; if \code{FALSE} (default), \code{x} is sorted
+in increasing order}
 
 \item{indices}{a vector of indices specifying which elemnts of \code{x}
 should \emph{not} be sorted}
 }
 \value{
-The vector \code{x} sorted approximately
-\code{(length(x) - n) / length(x) * 100} percent.
+\code{x} sorted approximately \code{(length(x) - n)/length(x)*100} percent.
 }
 \description{
 \code{\link{sort}} a vector but not very well. For a vector, \code{x},
 \code{n} elements will be randomly selected, and their positions will
-remain unchanced as all other elements are sorted.
+remain unchanged as all other elements are sorted.
 }
 \examples{
 set.seed(1)
-(x <- rnorm(5))
-# [1] -0.6264538  0.1836433 -0.8356286  1.5952808  0.3295078
+(x <- sample(1:10))
+# [1]  3  4  5  7  2  8  9  6 10  1
 
 kinda_sort(x)
-# [1] -0.8356286  0.1836433 -0.6264538  0.3295078  1.5952808
+# [1]  1  2  5  3  4  6  7  8  9 10
 
-kinda_sort(x, indices = 2:3)
-# [1] -0.6264538  0.1836433 -0.8356286  0.3295078  1.5952808
+kinda_sort(x, indices = 2:5)
+# [1]  1  4  5  7  2  3  6  8  9 10
 }
 
