@@ -8,5 +8,3 @@ to install:
 # install.packages('devtools')
 devtools::install_github('raredd/rawr')
 ```
-
-moved to vignette
