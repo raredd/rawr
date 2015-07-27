@@ -28,7 +28,8 @@ the results fail to match the input.
 \code{fname} and \code{path_extract} do the text processing;
 \code{file_name} and \code{file_ext} are convenience functions that only
 return the file name or file extension, respectively.
-
+}
+\note{
 Known examples where this function fails:
 \itemize{
  \item{\code{.tar.gz} }{files with compound file extensions}

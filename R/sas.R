@@ -320,8 +320,8 @@ get_margs <- function(mpath, mname) {
   if (!missing(mname) && any(mname %ni% mnames))
     stop(sprintf('%s not found in %s', 
                  paste(mname[mname %ni% mnames], collapse = ', '), mpath))
-  margs <- setNames(gsub(',',', ', args), mnames)
-  return(as.list(margs)[mname])
+  margs <- setNames(gsub(',', ', ', args), mnames)
+  as.list(margs)[mname]
 }
 
 #' Convert multiple SAS data sets to R data frame
@@ -453,14 +453,12 @@ sas.mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
   ## // initial error checks
   
   ## create formats native to host
-  ## sas doesn't seem to like using unix format catalogs
-  ## so we have to make a copy using windows
-  ## to do so, user must specify the .sas macro (INFORM)
+  ## sas doesn't seem to like using unix format catalogs so make a copy
+  ## using windows. to do so, user must specify the .sas macro (INFORM)
   ## or a proc format .sas file with defined formats
   if (!catalog) {
-    ## if not using the catalog and one exists in the dir,
-    ## move it to a new dir since we assume this catalog
-    ## was made in unix and unusable on windows
+    ## if not using the catalog and one exists in the dir, move it to a new
+    ## dir since assume this catalog was made in unix and unusable on windows
     if (length(dcf) == 1 && file.exists(dcf)) {
       newdir <- paste0(dirname(dcf), '/old_format')
       message(sprintf('NOTE: moving old format catalog to %s\n', newdir))
@@ -512,11 +510,9 @@ sas.mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
     cat('\nread summary:\n\n')
     dims <- sapply(zzz, dim)
     print(`rownames<-`(dims, c('rows','columns')))
-    
     message(sprintf('see log, %s\n', paste(libpath, log.file, sep = '/')))
-    
-    return(zzz)
-  } else return(invisible())
+    zzz
+  } else invisible()
 }
 
 #' Source SAS code

@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{lsp}
 \alias{lsp}
-\title{List package}
+\title{List package contents}
 \usage{
 lsp(package, what, pattern)
 }

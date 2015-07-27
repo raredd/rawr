@@ -14,11 +14,17 @@ string}
 \code{'DESCRIPTION'}, \code{'NEWS'}, \code{'INDEX'}, \code{'NAMESPACE'};
 partial matching is supported and case is ignored}
 }
+\value{
+Returns (invisibly) the contents of \code{file} as a vector of character
+strings.
+}
 \description{
 Prints package files (\code{DESCRIPTION}, \code{NEWS}, \code{INDEX},
 \code{NAMESPACE}, etc.) to console.
 }
 \examples{
+## these are equivalent
+lsf(rawr)
 lsf(rawr, 'DESCRIPTION')
 lsf('rawr', 'des')
 }

@@ -60,7 +60,7 @@ To insert a (highlighted) chunk into a Sweave document:
 }
 }
 \examples{
-cat(helpExtract(print), sep = "\\n")
+cat(helpExtract(print), sep = '\\n')
 
 cat(helpExtract(print, type = 'm_text'))
 

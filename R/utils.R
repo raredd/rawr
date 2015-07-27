@@ -151,7 +151,7 @@ lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
   head(out, n)
 }
 
-#' List package
+#' List package contents
 #' 
 #' List all exported and/or non exported objects in a package.
 #' 
@@ -256,7 +256,13 @@ lsp <- function(package, what, pattern) {
 #' 
 #' @seealso \code{\link{lsp}}
 #' 
+#' @return
+#' Returns (invisibly) the contents of \code{file} as a vector of character
+#' strings.
+#' 
 #' @examples
+#' ## these are equivalent
+#' lsf(rawr)
 #' lsf(rawr, 'DESCRIPTION')
 #' lsf('rawr', 'des')
 #' 
@@ -276,6 +282,7 @@ lsf <- function(package, file = 'DESCRIPTION') {
   on.exit(close(con))
   message(sprintf('Showing file:\n%s\n', fp))
   cat(f, sep = '\n')
+  invisible(f)
 }
 
 #' head/tail
@@ -450,16 +457,10 @@ recoder <- function(object, pattern, replacement, ...) {
     replacement <- rep(replacement, length(pattern))
   
   ## helper functions
-  splitter <- function(df){
-    LIST <- split(t(df), 1:ncol(df))
-    names(LIST) <- names(df)
-    return(LIST)
-  }
-  switcher <- function(f, g, h){ 
-    if (is.na(g)) {
-      f[is.na(f)] <- h
-    } else {
-      f[f == g] <- h }
+  splitter <- function(df) setNames(split(t(df), 1:ncol(df)), names(df))
+  switcher <- function(f, g, h) {
+    if (is.na(g))
+      f[is.na(f)] <- h else f[f == g] <- h
     f
   } 
   superswitcher <- function(x, y, z){
@@ -532,7 +533,7 @@ recoder <- function(object, pattern, replacement, ...) {
 #' @export
 
 psum <- function(..., na.rm = FALSE) {
-  dat <- do.call(cbind, list(...))
+  dat <- do.call('cbind', list(...))
   res <- rowSums(dat, na.rm = na.rm) 
   idx_na <- !rowSums(!is.na(dat))
   res[idx_na] <- NA
@@ -714,13 +715,13 @@ search_df <- function(pattern, data, col.name, var = 0,
 
 search_hist <- function (x, ...) {
   hist <- tryCatch(readLines('.Rhistory'),
-                   warning = function(w) message("No history found"),
+                   warning = function(w) message('No history found'),
                    finally = return(invisible()))
   lhist <- length(hist)
   if (is.numeric(x))
     return(hist[lhist:(lhist - x + 1)])
   if (is.character(x))
-    return(grep(x, readLines(".Rhistory"), value = TRUE, ...))
+    return(grep(x, readLines('.Rhistory'), value = TRUE, ...))
 }
 
 #' Apply list of functions over list or vector
@@ -772,7 +773,8 @@ fapply <- function(X, FUN, ...) {
 #' @param from input range (numeric vector of length two); if not given, 
 #' \code{from} is calculated from the range of \code{x}
 #' 
-#' @seealso \code{\link[scales]{rescale}}; \code{\link[scales]{zero_range}}
+#' @seealso
+#' \code{\link[scales]{rescale}}; \code{\link[scales]{zero_range}}
 #' 
 #' @examples
 #' rescaler(1:100)
@@ -784,9 +786,9 @@ fapply <- function(X, FUN, ...) {
 rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
   zero_range <- function (x, tol = .Machine$double.eps * 100) {
     if (length(x) == 1) return(TRUE)
-    if (length(x) != 2) stop('x must be length one or two')
-    if (any(is.na(x))) return(NA)
-    if (x[1] == x[2]) return(TRUE)
+    if (length(x) != 2) stop('\'x\' must be length one or two')
+    if (any(is.na(x)))  return(NA)
+    if (x[1] == x[2])   return(TRUE)
     if (all(is.infinite(x))) return(FALSE)
     m <- min(abs(x))
     if (m == 0) return(FALSE)
@@ -807,16 +809,13 @@ rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
 
 try_require <- function(package) {
   package <- ifelse(!is.character(substitute(package)), 
-                    as.character(substitute(package)),
-                    package)
+                    as.character(substitute(package)), package)
   available <- suppressMessages(
-    suppressWarnings(
-      sapply(package, require, quietly = TRUE, 
-             character.only = TRUE, warn.conflicts=FALSE)))
+    suppressWarnings(sapply(package, require, quietly = TRUE,
+                            character.only = TRUE, warn.conflicts = FALSE)))
   missing <- package[!available]
   if (length(missing) > 0)
-    stop(paste(package, collapse = ', '), ' package not found.',
-         call. = FALSE)
+    stop(paste(package, collapse = ', '), ' package not found.', call. = FALSE)
 }
 
 #' List to file
@@ -974,7 +973,7 @@ clear <- function(...) cat('\014')
 #' A character vector to be used in a Sweave or R-markdown document.
 #' 
 #' @examples
-#' cat(helpExtract(print), sep = "\n")
+#' cat(helpExtract(print), sep = '\n')
 #' 
 #' cat(helpExtract(print, type = 'm_text'))
 #' 
@@ -1230,7 +1229,7 @@ cbindx <- function (..., deparse.level = 1) {
     argl <- lapply(argl, function(x) 
       if (is.null(nrow(x))) {
         c(x, rep(NA, maxRow - length(x)))
-      } else rbindx(x, matrix(, maxRow - nrow(x), ncol(x))))
+      } else rbindx(x, matrix(nrow = maxRow - nrow(x), ncol = ncol(x))))
     r <- do.call('cbind', c(argl[-1L], list(deparse.level = deparse.level)))
   }
   d2 <- dim(r)
@@ -1328,7 +1327,7 @@ rbindx <- function (..., deparse.level = 1) {
     argl <- lapply(argl, function(x)
       if (is.null(ncol(x))) {
         c(x, rep(NA, maxCol - length(x)))
-      } else cbind(x, matrix(, nrow(x), maxCol - ncol(x))))
+      } else cbind(x, matrix(nrow = nrow(x), ncol = maxCol - ncol(x))))
     
     ## create a common name vector from the
     ## column names of all 'argl' items
@@ -1541,8 +1540,7 @@ locf <- function(x, fromLast = FALSE) {
     }
   })
   if (ok)
-    return(x)
-  else return(x[, 1])
+    x else x[, 1]
 }
 
 #' Rolling functions
@@ -1775,9 +1773,7 @@ regcaptures <- function(x, m) {
   msg <- 'No capture data found'
   ili <- is.list(m)
   useBytes <- if (ili)
-    any(unlist(lapply(m, attr, 'useBytes')))
-  else
-    any(attr(m, 'useBytes'))
+    any(unlist(lapply(m, attr, 'useBytes'))) else any(attr(m, 'useBytes'))
   if (useBytes) {
     asc <- iconv(x, 'latin1', 'ASCII')
     ind <- is.na(asc) | (asc != x)
@@ -1797,14 +1793,11 @@ regcaptures <- function(x, m) {
   }
   
   Substring <- function(x, starts, lens) {
-    if (all(starts < 0)) {
-      return(character())
-    } else {
-      return(t(mapply(function(x, st, ln)
+    if (!all(starts < 0)) {
+      t(mapply(function(x, st, ln)
         substring(x, st, st + ln - 1), x, data.frame(t(starts)),
-        data.frame(t(lens)), USE.NAMES = FALSE)
-      ))
-    }
+        data.frame(t(lens)), USE.NAMES = FALSE))
+    } else character()
   }
   
   Map(function(x, sos, mls) Substring(x, sos, mls), 
@@ -1822,6 +1815,7 @@ regcaptures <- function(x, m) {
 #' \code{file_name} and \code{file_ext} are convenience functions that only
 #' return the file name or file extension, respectively.
 #' 
+#' @note
 #' Known examples where this function fails:
 #' \itemize{
 #'  \item{\code{.tar.gz} }{files with compound file extensions}
