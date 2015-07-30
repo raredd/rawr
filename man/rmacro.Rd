@@ -56,15 +56,15 @@ separated by semicolons to be excuted \emph{before} the macro; for example,
 \dontrun{
 rmacro('./tests/testfiles/onemacro.sas',
        args = 'arg1 = 1, arg2 = 2',
-       firstArgs = 'options nodate no center ; x \\'cd ~/desktop\\';',
+       firstArgs = 'options nodate no center; x \\'cd ~/desktop\\';',
        lastArgs = 'endsas;')
 
-## options nodate no center  ;
-## x 'cd ~/desktop' ;
+## options nodate no center;
+## x 'cd ~/desktop';
 ##
-## \%include "./tests/testfiles/onemacro.sas" ;
-## \%macro1(arg1 = 1, arg2 = 2) ;
-## endsas ;
+## \%include "./tests/testfiles/onemacro.sas";
+## \%macro1(arg1 = 1, arg2 = 2);
+## endsas;
 ##
 ##
 ##

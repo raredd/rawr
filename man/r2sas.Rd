@@ -44,34 +44,34 @@ To convert \code{.sas7bdat} files, \code{\link{sas.mget}}.
 \examples{
 \dontrun{
 code <- "
-* this is a sas program file : ;
+* this is a sas program file :;
 
-options nodate nocenter nonumber ;
+options nodate nocenter nonumber;
 
-x 'cd ./newfolder' ;
+x 'cd ./newfolder';
 
-libname lib './newfolder' ;
+libname lib './newfolder';
 
-data data ;
-  set data ;
-if x = 1 then delete ;
-run ;
+data data;
+  set data;
+if x = 1 then delete;
+run;
 "
 
 r2sas(code)
 
-## * this is a sas program file : ;
+## * this is a sas program file :;
 ##
-## options nodate nocenter nonumber ;
+## options nodate nocenter nonumber;
 ##
-## x 'cd ./newfolder' ;
+## x 'cd ./newfolder';
 ##
-## libname lib './newfolder' ;
+## libname lib './newfolder';
 ##
-## data data ;
-##   set data ;
-## if x = 1 then delete ;
-## run ;
+## data data;
+##   set data;
+## if x = 1 then delete;
+## run;
 ##
 ##
 ##
