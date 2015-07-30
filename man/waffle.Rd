@@ -16,7 +16,13 @@ the current \code{\link{palette}}}
 \item{...}{additional graphical parameters passed to \code{\link{par}}}
 
 \item{reset_par}{logical; if \code{TRUE}, resets \code{par} to current
-settings after \code{waffle}}
+settings after running \code{waffle}}
+}
+\value{
+A list of three matrices: \code{matrix}, the input matrix; \code{origin},
+coordinates of the bottom-left corner for each box; and \code{centers},
+the coordinates for the centers of each box adjusted for \code{xpad} and
+\code{ypad}.
 }
 \description{
 A waffle chart.
@@ -45,5 +51,10 @@ waffle(matrix(x, ng))
 par(fig = c(0,1,.9,1), mar = c(.5,5,.5,1), new = TRUE)
 waffle(matrix(x, ng)[1, , drop = FALSE], ypad = 0, reset_par = FALSE)
 box()
+
+## waffle conveniently returns the centers of the rects
+## be sure /not/ to reset pars on exit for proper alignment
+(w <- waffle(matrix(1:8, 2), reset_par = FALSE))
+text(w$c[, 'x'], w$c[, 'y'], labels = palette(), col = 'white')
 }
 

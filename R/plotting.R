@@ -520,8 +520,10 @@ ggheat <- function(cors = NULL, data = NULL,
 #' invisible(sapply(seq_along(sp), function(x)
 #'   points(rep(x, length(sp[[x]])), sp[[x]])))
 #' invisible(sapply(seq_along(sp), function(x)
-#'   points(jitter(rep(x, length(sp[[x]]))), sp[[x]], col = 'blue')))
-#' points(dodge(mpg ~ gear + vs, data = mtcars), col = 'red', pch = 4)
+#'   points(jitter(rep(x, length(sp[[x]]))), sp[[x]], col = 4, pch = 2)))
+#' points(dodge(mpg ~ gear + vs, data = mtcars), col = 2, pch = 4)
+#' legend('topleft', pch = c(1,1,4), col = c(1,4,2),
+#'        legend = c('overlapping','random jitter','dodging'))
 #' 
 #' ## practical use
 #' boxplot(mpg ~ vs + gear, data = mtcars)
@@ -1785,7 +1787,13 @@ ctitle <- function(main = NULL, sub = NULL, xlab = NULL, ylab = NULL,
 #' @param xpad,ypad amount of padding between \code{rect}s along axes
 #' @param ... additional graphical parameters passed to \code{\link{par}}
 #' @param reset_par logical; if \code{TRUE}, resets \code{par} to current
-#' settings after \code{waffle}
+#' settings after running \code{waffle}
+#' 
+#' @return
+#' A list of three matrices: \code{matrix}, the input matrix; \code{origin},
+#' coordinates of the bottom-left corner for each box; and \code{centers},
+#' the coordinates for the centers of each box adjusted for \code{xpad} and
+#' \code{ypad}.
 #' 
 #' @examples
 #' waffle(matrix(1:8, 2))
@@ -1812,6 +1820,11 @@ ctitle <- function(main = NULL, sub = NULL, xlab = NULL, ylab = NULL,
 #' waffle(matrix(x, ng)[1, , drop = FALSE], ypad = 0, reset_par = FALSE)
 #' box()
 #' 
+#' ## waffle conveniently returns the centers of the rects
+#' ## be sure /not/ to reset pars on exit for proper alignment
+#' (w <- waffle(matrix(1:8, 2), reset_par = FALSE))
+#' text(w$c[, 'x'], w$c[, 'y'], labels = palette(), col = 'white')
+#' 
 #' @export
 
 waffle <- function(mat, xpad = 0, ypad = .05, ..., reset_par = TRUE) {
@@ -1823,7 +1836,8 @@ waffle <- function(mat, xpad = 0, ypad = .05, ..., reset_par = TRUE) {
   o <- cbind(c(row(mat)), c(col(mat))) - 1
   plot.window(xlim = c(0, max(o[, 2]) + 1), ylim = c(0, max(o[, 1]) + 1),
               xaxs = 'i', yaxs = 'i')
-  rect(o[, 2], o[, 1], o[, 2] + (1 - xpad), o[, 1] + (1 - ypad),
-       col = c(mat), border = NA)
-  invisible(list(matrix = mat, origin = o))
+  rect(xl <- o[, 2], yb <- o[, 1], xr <- o[, 2] + (1 - xpad),
+       yt <- o[, 1] + (1 - ypad), col = c(mat), border = NA)
+  invisible(list(matrix = mat, origin = `colnames<-`(o[, 2:1], c('x','y')),
+                 centers = cbind(x = psum(xl, xr) / 2, y = psum(yb, yt) / 2)))
 }
