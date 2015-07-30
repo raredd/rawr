@@ -43,34 +43,34 @@
 #' @examples
 #' \dontrun{
 #' code <- "
-#' * this is a sas program file : ;
+#' * this is a sas program file :;
 #' 
-#' options nodate nocenter nonumber ;
+#' options nodate nocenter nonumber;
 #' 
-#' x 'cd ./newfolder' ;
+#' x 'cd ./newfolder';
 #' 
-#' libname lib './newfolder' ;
+#' libname lib './newfolder';
 #' 
-#' data data ;
-#'   set data ;
-#' if x = 1 then delete ;
-#' run ;
+#' data data;
+#'   set data;
+#' if x = 1 then delete;
+#' run;
 #' "
 #' 
 #' r2sas(code)
 #' 
-#' ## * this is a sas program file : ;
+#' ## * this is a sas program file :;
 #' ## 
-#' ## options nodate nocenter nonumber ;
+#' ## options nodate nocenter nonumber;
 #' ## 
-#' ## x 'cd ./newfolder' ;
+#' ## x 'cd ./newfolder';
 #' ## 
-#' ## libname lib './newfolder' ;
+#' ## libname lib './newfolder';
 #' ## 
-#' ## data data ;
-#' ##   set data ;
-#' ## if x = 1 then delete ;
-#' ## run ;
+#' ## data data;
+#' ##   set data;
+#' ## if x = 1 then delete;
+#' ## run;
 #' ## 
 #' ## 
 #' ## 
@@ -186,15 +186,15 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
 #' \dontrun{
 #' rmacro('./tests/testfiles/onemacro.sas',
 #'        args = 'arg1 = 1, arg2 = 2',
-#'        firstArgs = 'options nodate no center ; x \'cd ~/desktop\';',
+#'        firstArgs = 'options nodate no center; x \'cd ~/desktop\';',
 #'        lastArgs = 'endsas;')
 #'        
-#' ## options nodate no center  ; 
-#' ## x 'cd ~/desktop' ; 
+#' ## options nodate no center; 
+#' ## x 'cd ~/desktop'; 
 #' ## 
-#' ## %include "./tests/testfiles/onemacro.sas" ;
-#' ## %macro1(arg1 = 1, arg2 = 2) ;
-#' ## endsas ; 
+#' ## %include "./tests/testfiles/onemacro.sas";
+#' ## %macro1(arg1 = 1, arg2 = 2);
+#' ## endsas; 
 #' ## 
 #' ## 
 #' ## 
@@ -220,13 +220,13 @@ rmacro <- function(mpath, mname, args, saspath, show.args = FALSE,
   
   ## create .sas script to call macro
   if (!missing(firstArgs))
-    firstArgs <- gsub(';', ' ; \n', firstArgs)
+    firstArgs <- gsub(';', '; \n', firstArgs)
   else firstArgs <- '\n'
   if (!missing(lastArgs))
-    lastArgs <- gsub(';', ' ; \n', lastArgs)
+    lastArgs <- gsub(';', '; \n', lastArgs)
   else lastArgs <- '\n'
-  sass <- c(sprintf('%%include \"%s\" ;', mpath),
-            sprintf('%%%s(%s) ;', mname, gsub(';','', args)))
+  sass <- c(sprintf('%%include \"%s\";', mpath),
+            sprintf('%%%s(%s);', mname, gsub(';','', args)))
   
   r2sas(code = paste(c(firstArgs, sass, lastArgs), sep = '\n'),
         saspath = saspath, force = force, out = out)
@@ -240,6 +240,8 @@ rmacro <- function(mpath, mname, args, saspath, show.args = FALSE,
 #' @param mpath character string of path to \code{.sas} file
 #' @param mname macro name in \code{mpath} of interest; if missing, returns
 #' all macros found
+#' @param text (optional) character string(s) of macros given instead of
+#' \code{mpath}
 #' 
 #' @return
 #' A list with macro names in \code{mpath} and their respective parameters.
@@ -249,10 +251,13 @@ rmacro <- function(mpath, mname, args, saspath, show.args = FALSE,
 #' \code{\link{source_sas}}
 #' 
 #' @examples
-#' \dontrun{
-#' ## tests
+#' get_margs(text = '%macro macro(a = 1, b = 2); %mend;')
 #' 
-#' get_margs('./tests/testfiles/macros.sas')
+#' ## $macro
+#' ## [1] "a=1, b=2"
+#' 
+#' path <- system.file('testfiles', package = 'rawr')
+#' get_margs(file.path(path, 'macros.sas'))
 #' 
 #' ## $macro1
 #' ## [1] "arg1, arg2"
@@ -269,33 +274,38 @@ rmacro <- function(mpath, mname, args, saspath, show.args = FALSE,
 #' ## $macro5
 #' ## [1] ""this=, macro=, has=, comments=, between=, each=, parameter="
 #' 
-#' get_margs('./tests/testfiles/macros.sas', 'macro1')
+#' get_margs(file.path(path, 'macros.sas'), 'macro1')
 #' 
 #' ## $macro1
 #' ## [1] "arg1, arg2"
 #' 
-#' get_margs('./tests/testfiles/macros.sas', 'no_macro_with_this_name')
+#' \dontrun{
+#' get_margs(file.path(path, 'macros.sas'), 'no_macro_with_this_name')
 #' 
-#' Error in get_margs("./tests/testfiles/macros.sas", "no_macro_with_this_name") : 
-#'  no_macro_with_this_name macro not found in ./tests/testfiles/macros.sas
+#' Error in get_margs(file.path(path, "macros.sas"), "no_macro_with_this_name") : 
+#'  no_macro_with_this_name macro not found in ...
 #' 
-#' get_margs('./tests/testfiles/nomacro.sas')
+#' get_margs(file.path(path, 'nomacro.sas'))
 #' 
-#' ## Error in get_margs("./tests/testfiles/nomacro.sas") : 
-#' ##   no valid macros found in ./tests/testfiles/nomacro.sas
+#' ## Error in get_margs(file.path(path, 'nomacro.sas')) : 
+#' ##   no valid macros found in ...
 #' 
-#' get_margs('./tests/testfiles/onemacro.sas', c('macro2', 'macro5'))
+#' get_margs(file.path(path, 'onemacro.sas'), c('macro2', 'macro5'))
 #' 
-#' ## Error in get_margs("./tests/testfiles/onemacro.sas", c("macro2", "macro5")) : 
-#' ## macro2, macro5 not found in ./tests/testfiles/onemacro.sas
+#' ## Error in get_margs(file.path(path, 'onemacro.sas'), c("macro2", "macro5")) : 
+#' ## macro2, macro5 not found in ...
 #' }
 #' 
 #' @export
 
-get_margs <- function(mpath, mname) {
-  
-  macro <- readLines(con <- file(mpath), warn = FALSE)
-  close(con)
+get_margs <- function(mpath, mname, text) {
+  macro <- if (missing(mpath) && !missing(text)) {
+    mpath <- shQuote('text')
+    readLines(con <- textConnection(text, encoding = 'UTF-8'))
+  } else if (is.character(mpath)) {
+    readLines(con <- file(mpath), warn = FALSE)
+  }
+  on.exit(close(con))
   
   ## ignore everything between /* */, collapse, 
   ## then split lines by semicolons
@@ -305,15 +315,15 @@ get_margs <- function(mpath, mname) {
   macro <- gsub(';', ';$$$;', macro)
   macro <- strsplit(macro, split = '\\$\\$\\$;')
   
-  ## match the macro syntax: " %macro name( ) ; "
+  ## match the macro syntax: " %macro name( ); "
   ## and trim whitespace
   mcall <- unlist(lapply(macro, function(x)
-    regmatches(x, gregexpr('\\s*%macro\\s+(\\w+)\\((.*)\\)\\s*;{1}', x, 
-                           perl = TRUE))))
+    regmatches(x,
+      gregexpr('\\s*%macro\\s+(\\w+)\\((.*)\\)\\s*;{1}', x, perl = TRUE))))
   mnames <- gsub('%macro|;|(?<=\\().*?(?=\\))|\\(|\\)|\\s*', '',
                  mcall, perl = TRUE)
-  args <- gsub(' ','', regmatches(mcall, gregexpr('(?<=\\().*?(?=\\))', 
-                                                  mcall, perl = TRUE)))
+  args <- gsub(' ','', regmatches(mcall,
+                gregexpr('(?<=\\().*?(?=\\))', mcall, perl = TRUE)))
   
   if (length(mnames) < 1)
     stop(sprintf('no valid macros found in %s\n', mpath))
@@ -471,12 +481,12 @@ sas.mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
     ## if a format.sas file is given, create a format catalog
     if (!missing(fmtpath)) {
       log.fmt <- sprintf('%s/_temp_fmt_.log', libpath)
-      sass <- c(sprintf('x \"cd %s\" ;', libpath),
-                sprintf('libname tmp \"%s\" ;', libpath),
-                sprintf('%%include \"%s\" ;', fmtpath),
-                'proc catalog catalog =  work.formats ;',
-                'copy out = tmp.formats ;',
-                'quit ;')
+      sass <- c(sprintf('x \"cd %s\";', libpath),
+                sprintf('libname tmp \"%s\";', libpath),
+                sprintf('%%include \"%s\";', fmtpath),
+                'proc catalog catalog =  work.formats;',
+                'copy out = tmp.formats;',
+                'quit;')
       sasin <- paste0(libpath, '/tmp.sas')
       on.exit(unlink(sasin), add = TRUE)
       cat(sass, sep = '\n', file = sasin, append = TRUE)
