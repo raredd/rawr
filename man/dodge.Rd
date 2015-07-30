@@ -51,8 +51,10 @@ box()
 invisible(sapply(seq_along(sp), function(x)
   points(rep(x, length(sp[[x]])), sp[[x]])))
 invisible(sapply(seq_along(sp), function(x)
-  points(jitter(rep(x, length(sp[[x]]))), sp[[x]], col = 'blue')))
-points(dodge(mpg ~ gear + vs, data = mtcars), col = 'red', pch = 4)
+  points(jitter(rep(x, length(sp[[x]]))), sp[[x]], col = 4, pch = 2)))
+points(dodge(mpg ~ gear + vs, data = mtcars), col = 2, pch = 4)
+legend('topleft', pch = c(1,1,4), col = c(1,4,2),
+       legend = c('overlapping','random jitter','dodging'))
 
 ## practical use
 boxplot(mpg ~ vs + gear, data = mtcars)
