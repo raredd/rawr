@@ -4,13 +4,16 @@
 \alias{get_margs}
 \title{Get arguments from SAS macros}
 \usage{
-get_margs(mpath, mname)
+get_margs(mpath, mname, text)
 }
 \arguments{
 \item{mpath}{character string of path to \code{.sas} file}
 
 \item{mname}{macro name in \code{mpath} of interest; if missing, returns
 all macros found}
+
+\item{text}{(optional) character string(s) of macros given instead of
+\code{mpath}}
 }
 \value{
 A list with macro names in \code{mpath} and their respective parameters.
@@ -20,10 +23,13 @@ Reads a text file (usually \code{.sas}) and extracts \code{SAS} macro names
 and parameters with any default values; see tests in examples below.
 }
 \examples{
-\dontrun{
-## tests
+get_margs(text = '\%macro macro(a = 1, b = 2); \%mend;')
 
-get_margs('./tests/testfiles/macros.sas')
+## $macro
+## [1] "a=1, b=2"
+
+path <- system.file('testfiles', package = 'rawr')
+get_margs(file.path(path, 'macros.sas'))
 
 ## $macro1
 ## [1] "arg1, arg2"
@@ -40,25 +46,26 @@ get_margs('./tests/testfiles/macros.sas')
 ## $macro5
 ## [1] ""this=, macro=, has=, comments=, between=, each=, parameter="
 
-get_margs('./tests/testfiles/macros.sas', 'macro1')
+get_margs(file.path(path, 'macros.sas'), 'macro1')
 
 ## $macro1
 ## [1] "arg1, arg2"
 
-get_margs('./tests/testfiles/macros.sas', 'no_macro_with_this_name')
+\dontrun{
+get_margs(file.path(path, 'macros.sas'), 'no_macro_with_this_name')
 
-Error in get_margs("./tests/testfiles/macros.sas", "no_macro_with_this_name") :
- no_macro_with_this_name macro not found in ./tests/testfiles/macros.sas
+Error in get_margs(file.path(path, "macros.sas"), "no_macro_with_this_name") :
+ no_macro_with_this_name macro not found in ...
 
-get_margs('./tests/testfiles/nomacro.sas')
+get_margs(file.path(path, 'nomacro.sas'))
 
-## Error in get_margs("./tests/testfiles/nomacro.sas") :
-##   no valid macros found in ./tests/testfiles/nomacro.sas
+## Error in get_margs(file.path(path, 'nomacro.sas')) :
+##   no valid macros found in ...
 
-get_margs('./tests/testfiles/onemacro.sas', c('macro2', 'macro5'))
+get_margs(file.path(path, 'onemacro.sas'), c('macro2', 'macro5'))
 
-## Error in get_margs("./tests/testfiles/onemacro.sas", c("macro2", "macro5")) :
-## macro2, macro5 not found in ./tests/testfiles/onemacro.sas
+## Error in get_margs(file.path(path, 'onemacro.sas'), c("macro2", "macro5")) :
+## macro2, macro5 not found in ...
 }
 }
 \seealso{
