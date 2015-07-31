@@ -1,6 +1,6 @@
 ### plot functions
-# ggmultiplot, click_text, click_shape, facet_adjust, print.facet_adjust, 
-# ggcaterpillar, ggheat, dodge, jmplot, tplot, dsplot, bpCI, inset, 
+# ggmultiplot, click_text, click_shape, facet_adjust, print.facet_adjust,
+# ggcaterpillar, ggheat, ggheat2, dodge, jmplot, tplot, dsplot, bpCI, inset,
 # show_colors, show_pch, tcol, ggcols, grcols, ctext, cmtext, ctitle, waffle
 ###
 
@@ -349,14 +349,14 @@ print.facet_adjust <- function(x, newpage = is.null(vp), vp = NULL) {
 
 #' Caterpillar plot
 #' 
-#' Caterpillar plots for random effects models using ggplot.
+#' Caterpillar plots for random effects models using \code{\link{ggplot}}.
 #' 
 #' Behaves like \code{\link[lattice]{qqmath}} and 
-#' \code{\link[lattice]{dotplot}} from the lattice package; also handles models
-#' with multiple correlated random effects
+#' \code{\link[lattice]{dotplot}} from the lattice package; also handles
+#' models with multiple correlated random effects
 #' 
 #' @param re random effects from lmer object
-#' @param qq if \code{TRUE}, returns normal q/q plot; else returns caterpillar 
+#' @param qq if \code{TRUE}, returns normal q/q plot; else returns caterpillar
 #' dotplot
 #' @param likeDotplot if \code{TRUE}, uses different scales for random effects,
 #' i.e., \code{\link[ggplot2]{facet_wrap}}
@@ -416,9 +416,9 @@ ggcaterpillar <- function(re, qq  =  TRUE, likeDotplot  =  TRUE) {
   lapply(re, f)
 }
 
-#' ggHeatmap
+#' ggheat
 #' 
-#' Function to plot a heat map using \code{ggplot}.
+#' Function to plot a heat map using \code{\link{ggplot}}.
 #' 
 #' \code{gradn} takes a vector of \code{n} colors: either a list of names, a 
 #' list of hexadecimal values, an existing color palette (i.e., 
@@ -437,6 +437,9 @@ ggcaterpillar <- function(re, qq  =  TRUE, likeDotplot  =  TRUE) {
 #' a continuous scale between those colors; see 
 #' \code{\link[ggplot2]{scale_fill_gradient}}
 #' 
+#' @seealso
+#' \code{\link{cor}}, \code{\link{ggheat2}}, \code{\link[iplotr]{icorr}}
+#' 
 #' @examples
 #' library('ggplot2')
 #' tmp <- rescaler(matrix(1:25, 5))
@@ -447,8 +450,7 @@ ggcaterpillar <- function(re, qq  =  TRUE, likeDotplot  =  TRUE) {
 #' 
 #' @export
 
-ggheat <- function(cors = NULL, data = NULL, 
-                   limits = c(-1, 1),
+ggheat <- function(cors = NULL, data = NULL, limits = c(-1, 1),
                    gradn = rev(heat.colors(10)),
                    gradc = c('white', 'steelblue')) {
   
@@ -472,14 +474,201 @@ ggheat <- function(cors = NULL, data = NULL,
           axis.title.y = element_blank())
   
   if (!is.null(gradc)) {
-    p <- p + scale_fill_gradient(limits = limits, 
-                                 low = gradc[1], 
-                                 high = gradc[2])
+    p <- p + 
+      scale_fill_gradient(limits = limits, low = gradc[1], high = gradc[2])
   }
   if (!is.null(gradn))
-    p <- p + scale_fill_gradientn(limits = limits,
-                                  colours = gradn)
+    p <- p + scale_fill_gradientn(limits = limits, colours = gradn)
   
+  p
+}
+
+#' ggheat2
+#'
+#' Function to plot a heat map using \code{\link{ggplot}}.
+#' 
+#' Default cluster method is \code{stats::hclust(dist(x), method = 'average')}
+#' which will return a list containing a named vector, "order", which is used
+#' to reorder the variables.
+#'
+#' In order to pass a custom clustering function to \code{cluster}, the
+#' function must take a single input (a correlation matrix) and return either
+#' a vector or a list with a named vector, \code{"order"}.
+#' 
+#' @param data a data frame or matrix (observations x variables) of numeric
+#' values
+#' @param corr a correlation matrix
+#' @param cluster logical or function; if \code{TRUE}, the variables will be
+#' clustered and reordered; if \code{FALSE}, no reordering will be done;
+#' otherwise, a custom clustering function may be given; see details
+#' @param nbreaks number of breaks to categorize the correlations (default is
+#' \code{NULL}, ie, a continuous scale)
+#' @param palette for a continuous scale, a vector of length three giving the
+#' low, mid, and high colors of the gradient (default is
+#' \code{c('blue','white',''red)}, see \code{\link{scale_colour_gradient2}});
+#' for a discrete scale, a character string of the palette name or an integer
+#' giving the index of the palette, see \code{\link{scale_colour_brewer}}
+#' @param legend_name the legend name; see \code{\link{discrete_scale}}
+#' @param pch (optional) plotting character; if \code{missing},
+#' \code{\link{geom_tile}} is used instead of plotting characters
+#' @param cex size of \code{pch}; a vector of length one (all \code{pch} will
+#' be the same size) or two (size will be proportional to the correlation);
+#' default is c(2,6); see\code{\link{scale_size_identity}}
+#' @param label logical; if \code{TRUE}, adds correlation coefficients on top
+#' of each \code{pch}
+#' @param label_alpha logical, if \code{TRUE}, adds alpha transparency when
+#' \code{label} is \code{TRUE} (correlations closer to 0 will be less visible)
+#' @param label_color color of correlations (default is \code{'black'})
+#' @param label_digits number of digits in correlation labels
+#' @param midpoint the midpoint value for continuous scaling of correlations
+#' (default is \code{0})
+#' @param clim vector of length two giving the limits of correlation
+#' coefficients (default is \code{-1,1})
+#' @param ... additional arguments passed to \code{\link{geom_text}} for the
+#' diagonal labels
+#' 
+#' @seealso
+#' \code{\link{cor}}, \code{\link{ggheat}}, \code{\link[iplotr]{icorr}},
+#' \code{\link[arm]{corrplot}}, \url{https://github.com/briatte/ggcorr}
+#' 
+#' @examples
+#' library('ggplot2')
+#' ggheat2(mtcars)
+#'
+#' ggheat2(mtcars, label = TRUE, label_alpha = TRUE, cluster = FALSE,
+#'         ## additional args passed to diagonal labels
+#'         colour = 'red', angle = 45, size = 7)
+#'
+#' ggheat2(mtcars, pch = 19, nbreaks = 6, cex = c(2,10),
+#'         palette = 'PuOr',         ## colorblind palette
+#'         size = 5, hjust = 0.75) + ## passed to diag text
+#'     labs(title = 'Correlation Matrix')
+#'
+#' ## custom clustering function
+#' ggheat2(data = NULL, corr = cor(mtcars, use = 'pairwise'),
+#'         nbreaks = 5, palette = 'Blues',
+#'         cluster = function(...) sample(ncol(mtcars)))
+#' 
+#' @export
+
+ggheat2 <- function(data, corr = cor(data, use = 'pairwise.complete'),
+                    cluster = TRUE, nbreaks = NULL,
+                    palette = if (is.null(nbreaks)) c('blue','white','red') else 1,
+                    legend_name = expression(rho), pch, cex = c(2, 6),
+                    label = FALSE, label_alpha = FALSE, label_color = 'black',
+                    label_digits = 2, midpoint = 0, clim = c(-1, 1), ...) {
+  
+  ## clustering
+  stopifnot(class(cluster) %in% c('logical','function'))
+  ord <- if (is.function(cluster)) cluster(corr) else
+    if (cluster) stats::hclust(dist(corr), method = 'average')$order else
+      seq.int(ncol(corr))
+  
+  ord <-  tryCatch(if (is.vector(ord, mode = 'integer')) ord else ord$order,
+                   error = function(e) {
+                     warning('Variables not reordered; see \'details\' ',
+                             'section on the use of \'cluster\'', domain = NA)
+                     seq.int(ncol(corr))
+                   },
+                   warning = function(w) {
+                     warning('Variables not reordered; see \'details\' ',
+                             'section on the use of \'cluster\'', domain = NA)
+                     seq.int(ncol(corr))
+                   })
+  corr <- corr[ord, ord]
+  
+  if (label_alpha)
+    label <- TRUE
+  colnames(corr) <- rownames(corr) <- make.names(colnames(corr))
+  cex <- c(cex, cex)
+  dd <- round(corr, label_digits)
+  dd <- as.data.frame(dd * lower.tri(dd))
+  rn <- names(dd)
+  dd <- data.frame(row = rn, dd)
+  dd <- melt(dd, varying = list(2:ncol(dd)))
+  
+  corr <- as.data.frame(corr * lower.tri(corr))
+  corr <- cbind.data.frame(row = rn, corr)
+  corr <- melt(corr, varying = list(2:ncol(corr)))
+  corr$value[corr$value == 0] <- NA
+  
+  if (!is.null(nbreaks)) {
+    s <- seq(-1, 1, length.out = nbreaks + 1)
+    if (!nbreaks %% 2)
+      s <- unique(sort(c(s, 0)))
+    corr <- within(corr, {
+      value <- droplevels(cut(value, breaks = s, include.lowest = TRUE))
+      value <- factor(value,
+                      levels = unique(cut(s, breaks = s, include.lowest = TRUE)))
+    })
+  }
+  
+  if (is.null(midpoint)) {
+    midpoint <- median(corr$value, na.rm = TRUE)
+    message('Color gradient midpoint set to median of correlation, ',
+            round(midpoint, 2), domain = NA)
+  }
+  
+  corr <- within(corr, {
+    row <- factor(row, levels = unique(as.character(variable)))
+    num <- as.numeric(value)
+    num <- as.numeric(factor(abs(num - median(unique(num), na.rm = TRUE))))
+    num <- seq(cex[1], cex[2], length.out = length(na.omit(unique(num))))[num]
+    variable <- factor(variable, levels = levels(row))
+  })
+  
+  diag  <- corr[with(corr, row == variable), ]
+  corr <- corr[complete.cases(corr), ]
+  p <- ggplot(corr, aes(x = row, y = variable))
+  
+  ## if pch is given, use geom_point
+  if (!missing(pch)) {
+    p <- p + geom_point(aes(size = num, colour = value), shape = pch)
+    if (is.null(nbreaks))
+      p <- p + scale_size_continuous(range = c(cex[1], cex[2])) +
+        scale_colour_gradient2(legend_name, limits = clim, low = palette[1],
+                               mid = palette[2], high = palette[3], midpoint = midpoint) +
+        guides(size = FALSE)
+    else
+      p <- p + scale_size_identity(legend_name) +
+        scale_colour_brewer(legend_name, palette = palette, drop = FALSE) +
+        guides(colour = guide_legend(legend_name,
+                                     override.aes = list(size = (cex[1] + cex[2]) / 2)))
+    ## use geom_tile otherwise
+  } else {
+    p <- p + geom_tile(aes(fill = value), colour = 'white') +
+      if (is.null(nbreaks))
+        scale_fill_gradient2(legend_name, low = palette[1], mid = palette[2],
+                             high = palette[3], midpoint = midpoint, limits = clim)
+    else 
+      scale_fill_brewer(legend_name, palette = palette, drop = FALSE)
+  }
+  
+  ## corr labels
+  if (label) {
+    dd <- dd[dd$value != 0, ]
+    p <- p +
+      if (label_alpha)
+        geom_text(data = dd, aes(row, variable, label = value,
+                                 alpha = abs(as.numeric(value))), show_guide = FALSE,
+                  colour = label_color)
+    else geom_text(data = dd, aes(row, variable, label = value),
+                   colour = label_color)
+  }
+  
+  ## diagonal text and options
+  p <- p  +
+    geom_text(data = diag, aes(label = variable), ...) +
+    scale_x_discrete(breaks = NULL, limits = levels(corr$row)) +
+    scale_y_discrete(breaks = NULL, limits = levels(corr$variable)) +
+    labs(x = NULL, y = NULL) +
+    coord_equal() +
+    theme(panel.background = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.grid.major = element_blank(),
+          legend.key       = element_blank(),
+          legend.title	   = element_text(size = 15),
+          axis.text.x      = element_text(angle = -90))
   p
 }
 

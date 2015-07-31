@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting.R
 \name{ggheat}
 \alias{ggheat}
-\title{ggHeatmap}
+\title{ggheat}
 \usage{
 ggheat(cors = NULL, data = NULL, limits = c(-1, 1),
   gradn = rev(heat.colors(10)), gradc = c("white", "steelblue"))
@@ -24,7 +24,7 @@ a continuous scale between those colors; see
 \code{\link[ggplot2]{scale_fill_gradient}}}
 }
 \description{
-Function to plot a heat map using \code{ggplot}.
+Function to plot a heat map using \code{\link{ggplot}}.
 }
 \details{
 \code{gradn} takes a vector of \code{n} colors: either a list of names, a
@@ -40,5 +40,8 @@ diag(tmp) <- 1
 colnames(tmp) <- rownames(tmp) <- LETTERS[1:5]
 ggheat(cors = tmp, limits = c(0, 1))
 ggheat(cors = tmp, gradn = NULL, gradc = c('white','red'))
+}
+\seealso{
+\code{\link{cor}}, \code{\link{ggheat2}}, \code{\link[iplotr]{icorr}}
 }
 
