@@ -31,6 +31,6 @@ source_sas('./tests/testfiles/onemacro.sas')
 }
 \seealso{
 \code{\link{r2sas}}, \code{\link{rmacro}}, \code{\link{get_margs}},
-\code{\link{sas.mget}}
+\code{\link{sas_mget}}
 }
 
