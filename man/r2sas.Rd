@@ -15,7 +15,8 @@ Usually \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
 where \code{x.x} is the \code{SAS} version number, is the correct directory
 
 Note that specifying \code{saspath} is not required if v9.2 is installed in
-the default directory (i.e., \code{c:/program files/sasfoundation/9.2/sas.exe});
+the default directory (i.e.,
+\code{c:/program files/sasfoundation/9.2/sas.exe});
 
 For previous versions or if\code{SAS} is not installed in the default
 directory, it will be necessary to supply \code{saspath} to \code{sas.exe}}
@@ -39,7 +40,7 @@ To source an existing \code{.sas} program, see \code{\link{source_sas}}.
 
 For macros, see \code{\link{get_margs}} and \code{\link{rmacro}}.
 
-To convert \code{.sas7bdat} files, \code{\link{sas.mget}}.
+To convert \code{.sas7bdat} files, \code{\link{sas_mget}}.
 }
 \examples{
 \dontrun{
@@ -79,7 +80,7 @@ r2sas(code)
 }
 }
 \seealso{
-\code{\link{rmacro}}, \code{\link{get_margs}}, \code{\link{sas.mget}},
+\code{\link{rmacro}}, \code{\link{get_margs}}, \code{\link{sas_mget}},
 \code{\link{source_sas}}
 }
 

@@ -25,14 +25,15 @@ Usually \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
 where \code{x.x} is the \code{SAS} version number, is the correct directory
 
 Note that specifying \code{saspath} is not required if v9.2 is installed in
-the default directory (i.e., \code{c:/program files/sasfoundation/9.2/sas.exe});
+the default directory (i.e.,
+\code{c:/program files/sasfoundation/9.2/sas.exe});
 
 For previous versions or if\code{SAS} is not installed in the default
 directory, it will be necessary to supply \code{saspath} to \code{sas.exe}
 \code{mpath} defaults to the most recent version of \code{SAS}}
 
-\item{show.args}{logical; if \code{TRUE}, \code{rmacro} will only return the
-macro names and arguments found in \code{mpath}}
+\item{show.args}{logical; if \code{TRUE}, \code{rmacro} will only return
+the macro names and arguments found in \code{mpath}}
 
 \item{force}{logical; by default, user must interactively allow
 \code{r2sas} to continue running \code{code}; set to \code{TRUE} to ignore
@@ -42,12 +43,12 @@ this or for non-interactive \code{R}}
 separated by semicolons to be excuted \emph{before} the macro; for example,
 \code{options <OPTIONS>;} or \code{x "cd ..";}}
 
-\item{lastArgs}{optional commands to be executed \emph{after} the macro; see
-\code{firstArgs}}
+\item{lastArgs}{optional commands to be executed \emph{after} the macro;
+see \code{firstArgs}}
 
 \item{out}{either \code{FALSE}, directory (as character string) to dump
-\code{.sas} program file, \code{.log} file, and any \code{SAS} output, i.e.,
-\code{.lst} file(s)}
+\code{.sas} program file, \code{.log} file, and any \code{SAS} output,
+i.e., \code{.lst} file(s)}
 }
 \description{
 \code{rmacro} runs \code{SAS} macros in \code{.sas} files from \code{R}.
@@ -75,7 +76,7 @@ rmacro('./tests/testfiles/onemacro.sas',
 }
 }
 \seealso{
-\code{\link{get_margs}}, \code{\link{r2sas}}, \code{\link{sas.mget}}
+\code{\link{get_margs}}, \code{\link{r2sas}}, \code{\link{sas_mget}}
 \code{\link{source_sas}}
 }
 

@@ -16,12 +16,12 @@ dotplot}
 i.e., \code{\link[ggplot2]{facet_wrap}}}
 }
 \description{
-Caterpillar plots for random effects models using ggplot.
+Caterpillar plots for random effects models using \code{\link{ggplot}}.
 }
 \details{
 Behaves like \code{\link[lattice]{qqmath}} and
-\code{\link[lattice]{dotplot}} from the lattice package; also handles models
-with multiple correlated random effects
+\code{\link[lattice]{dotplot}} from the lattice package; also handles
+models with multiple correlated random effects
 }
 \examples{
 \donttest{
