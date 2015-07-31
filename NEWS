@@ -1,3 +1,9 @@
+rawr 0.6.1
+--------
+  * version bump
+  * fix naming conventions
+  * added ggheat2, waffle, rgene
+
 rawr 0.6.0
 --------
   * moved unneed packages to suggests
