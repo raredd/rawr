@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils2.R
 \name{binconr}
 \alias{binconr}
-\title{binconr}
+\title{bincon formatter}
 \usage{
 binconr(r, n, conf = 0.95, digits = 0, est = TRUE, method = "exact")
 }
@@ -20,7 +20,7 @@ binconr(r, n, conf = 0.95, digits = 0, est = TRUE, method = "exact")
 \item{method}{method to use; see \code{\link{bincon}}}
 }
 \description{
-Binomial confidence interval formatter.
+Binomial confidence interval (\code{\link{bincon}}) formatter.
 }
 \examples{
 binconr(5, 10, .90, est = FALSE)

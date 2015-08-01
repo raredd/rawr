@@ -2,7 +2,7 @@
 % Please edit documentation in R/plotting.R
 \name{waffle}
 \alias{waffle}
-\title{waffle}
+\title{waffle chart}
 \usage{
 waffle(mat, xpad = 0, ypad = 0.05, ..., reset_par = TRUE)
 }

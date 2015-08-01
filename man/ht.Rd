@@ -9,12 +9,17 @@ ht(x, ..., sep = NULL)
 \arguments{
 \item{x}{an object}
 
-\item{...}{other parameters, such as \code{n}, passed to \code{\link{head}}
-or other methods}
+\item{...}{other parameters, such as \code{n}, passed to \code{head},
+\code{tail}, or other methods}
 
-\item{sep}{separator}
+\item{sep}{row separator}
 }
 \description{
-head/tail
+\code{\link{rbind}} the \code{\link{head}} and \code{\link{tail}} of an
+object.
+}
+\examples{
+ht(mtcars)
+ht(mtcars, sep = '...')
 }
 

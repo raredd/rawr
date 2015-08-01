@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils2.R
 \name{show_html}
 \alias{show_html}
-\title{html test}
+\title{html render}
 \usage{
 show_html(..., use_viewer = !is.null(getOption("viewer")))
 }

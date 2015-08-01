@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{clear}
 \alias{clear}
-\title{clear}
+\title{Clear console}
 \usage{
 clear(...)
 }

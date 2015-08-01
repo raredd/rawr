@@ -2,12 +2,12 @@
 % Please edit documentation in R/utils.R
 \name{clc}
 \alias{clc}
-\title{clc}
+\title{Clear workspace}
 \usage{
-clc(all = FALSE)
+clc(all.names = FALSE)
 }
 \arguments{
-\item{all}{logical; if \code{TRUE}, also removes hidden files}
+\item{all.names}{logical; if \code{TRUE}, also removes hidden files}
 }
 \description{
 Clear the workspace by removing all objects in \code{\link{ls}}.
