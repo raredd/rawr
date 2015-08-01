@@ -1,3 +1,8 @@
+rawr 0.6.2
+--------
+  * version bump
+  * added some stuff, restructured some stuff
+
 rawr 0.6.1
 --------
   * version bump
@@ -76,13 +81,13 @@ rawr 0.2.1
 
 rawr 0.2.0
 --------
-	* fixed for R CMD check
-	* added some tests
-	* minor bugs fixes
-	* fixed args in ggsurv to be consistent with kmplot
-	* roxygen 4.0.0
+  * fixed for R CMD check
+  * added some tests
+  * minor bugs fixes
+  * fixed args in ggsurv to be consistent with kmplot
+  * roxygen 4.0.0
 
 
 rawr 0.1.0
 --------
-	* initial bullshit commit
+  * initial bullshit commit
