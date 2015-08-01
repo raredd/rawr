@@ -1,9 +1,11 @@
 ### utilities
-# rawrops: %ni%, %==%, %||%, %inside%, %:%
-# misc: lss, lsp, lsf, ht, progress, recoder, psum, ident, allequal, search_df,
-# search_hist, fapply, rescaler, try_require, list2file, Restart, clc, clear,
-# helpExtract, Round, bind_all, cbindx, rbindx, rbindfill, interleave, outer2,
-# merge2, locf, roll_fun, round_to, updateR, read_clip, fcols, classMethods,
+# rawr_ops: %ni%, %==%, %||%, %inside%, %:%
+# rawr_ls: lss, lsf, lsp
+# rawr_parse: parse_yaml, parse_index, parse_news, parse_namespace
+# misc: ht, progress, recoder, psum, ident, allequal, search_df, search_hist,
+# fapply, rescaler, try_require, list2file, Restart, clc, clear, helpExtract,
+# Round, bind_all, cbindx, rbindx, rbindfill, interleave, outer2, merge2,
+# locf, roll_fun, round_to, updateR, read_clip, fcols, classMethods,
 # regcaptures, path_extract, fname, file_name, file_ext, cast, melt,
 # install_temp, nestedMerge, fill_df, kinda_sort, rgene
 ###
@@ -37,9 +39,7 @@
 #' @param range a numeric or character vector of length two with the indices
 #' or names from \code{object}, generally of the structure \code{c(from, to)}
 #' 
-#' @aliases oror %||% notin %ni% inside %inside% %==%
 #' @seealso \code{\link{==}}, \code{\link{\%in\%}}, \code{\link{||}}
-#' @name rawrops
 #' 
 #' @examples
 #' \dontrun{
@@ -68,95 +68,52 @@
 #' names(mtcars[, 4:8])
 #' }
 #' 
+#' @aliases oror %||% notin %ni% inside %inside% %==%
+#' @name rawr_ops
 #' @export
 
-#' @rdname rawrops
+#' @rdname rawr_ops
 #' @export
-`%ni%` <- function(x, table) !(match(x, table, nomatch = 0) > 0)
+'%ni%' <- function(x, table) !(match(x, table, nomatch = 0) > 0)
 
-#' @rdname rawrops
+#' @rdname rawr_ops
 #' @export
-`%inside%` <- function(x, interval) {
+'%inside%' <- function(x, interval) {
   interval <- sort(interval)
   x >= interval[1] & x <= interval[2]
 }
 
-#' @rdname rawrops
+#' @rdname rawr_ops
 #' @export
-`%==%` <- function(a, b)
+'%==%' <- function(a, b)
   (is.na(a) & is.na(b)) | (!is.na(a) & !is.na(b) & a == b)
 
-#' @rdname rawrops
+#' @rdname rawr_ops
 #' @export
-`%||%` <- function(a, b) if (!is.null(a)) a else b
+'%||%' <- function(a, b) if (!is.null(a)) a else b
 
-#' @rdname rawrops
+#' @rdname rawr_ops
 #' @export
-`%:%` <- function(object, range) {
+'%:%' <- function(object, range) {
   FUN <- if (is.matrix(object)) colnames else names
   wh <- if (is.numeric(range)) range else which(FUN(object) %in% range)
   FUN(object)[seq(wh[1], wh[2])]
 }
 
-#' Improved list of objects
+#' List utilities
 #' 
-#' Provides more details of objects in workspace.
+#' These functions begin with \code{ls} and list different things. \code{lss}
+#' is an "improved" \code{\link{ls}} which gives more details of objects in
+#' the workspace such as size and dimensions; \code{lsp} lists the
+#' \code{p}ackage contents, i.e., exported and/or non exported obejcts (see
+#' details); and \code{lsf} lists package \code{f}iles (see details).
 #' 
-#' @param pos argument specifying the environment as a position in search list
-#' @param pattern optional \code{\link{regex}}; only names matching 
-#' \code{pattern} are returned; \code{\link{glob2rx}} can be used to convert
-#' wildcard patterns to regular expressions
-#' @param by variable to order output ('type', 'size' (default), 'sizef', 
-#' 'nrow', or 'ncol')
-#' @param decreasing logical; if \code{TRUE}, displays output in decreasing 
-#' order
-#' @param all.names logical; if \code{TRUE}, all object names are returned; if
-#' \code{FALSE}, names which begin with a \code{.} are omitted
-#' @param n number of objects to displace if \code{head} is \code{TRUE}
+#' \code{lsf} prints package files (e.g., \code{DESCRIPTION}, \code{NEWS},
+#' \code{INDEX}, \code{NAMESPACE}, etc.) to console and returns (invisibly)
+#' the files parsed for easier use.
 #' 
-#' @seealso \code{\link{ls}}, \code{\link{ls.str}}, \code{\link{objects}}
-#' 
-#' @examples
-#' lss()
-#' a <- rnorm(100000)
-#' b <- matrix(1, 1000, 100)
-#' lss()
-#' 
-#' @export
-
-lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
-                 decreasing = TRUE, n = 15) {
-  
-  if (length(ls(envir = as.environment(pos))) < 1L)
-    stop(return(character(0)))
-  
-  napply <- function(names, fn) 
-    sapply(names, function(x) fn(get(x, pos = pos)))
-  names <- ls(pos = pos, pattern = pattern, all.names = all.names)
-  obj.class <- napply(names, function(x) as.character(class(x))[1])
-  obj.mode <- napply(names, mode)
-  obj.type <- ifelse(is.na(obj.class), obj.mode, obj.class)
-  obj.prettysize <- napply(names, function(x)
-    capture.output(print(object.size(x), units = 'auto')))
-  obj.size <- napply(names, object.size)
-  obj.dim <- t(napply(names, function(x)
-    as.numeric(dim(x))[1:2]))
-  vec <- is.na(obj.dim)[ , 1] & (obj.type != 'function')
-  obj.dim[vec, 1] <- napply(names, length)[vec]
-  
-  out <- setNames(data.frame(obj.type, obj.size, obj.prettysize, obj.dim),
-                  c('type', 'size', 'sizef', 'nrow', 'ncol'))
-  if (!is.null(by))
-    out <- out[order(out[[by]], decreasing = decreasing), ]
-  head(out, n)
-}
-
-#' List package contents
-#' 
-#' List all exported and/or non exported objects in a package.
-#' 
-#' This is a helper/wrapper function to list exported (\code{?'::'}) and
-#' non exported (\code{?':::'}) functions (and other features from a package's 
+#' \code{lsp} is a helper function to list exported (\code{?'::'}) and non
+#' exported (\code{?':::'}) functions (and other features from a package's 
 #' \code{NAMESPACE} file).
 #' 
 #' Note that \code{base} and older packages do not have a \code{NAMESPACE}
@@ -173,17 +130,50 @@ lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
 #' 
 #' \code{lsp(packagename, NULL)} to return all information in a list.
 #' 
-#' @param package package name, as \code{\link{name}} or literal character 
+#' @param pos argument specifying the environment as a position in search list
+#' @param pattern optional \code{\link{regex}}; for \code{lss} only names
+#' matching  \code{pattern} are returned; \code{\link{glob2rx}} can be used to
+#' convert wildcard patterns to regular expressions; for \code{lsp} a text
+#' pattern or regular expression passed to \code{\link{grep}} to filter the
+#' results
+#' @param by variable to order output ('type', 'size' (default), 'sizef', 
+#' 'nrow', or 'ncol')
+#' @param all.names logical; if \code{TRUE}, all object names are returned; if
+#' \code{FALSE}, names which begin with a \code{.} are omitted
+#' @param decreasing logical; if \code{TRUE}, displays output in decreasing 
+#' order
+#' @param n number of objects to displace if \code{head} is \code{TRUE}
+#' @param package package name, as a \code{\link{name}} or literal character
 #' string
+#' @param file file to return as a character string; usual options are
+#' \code{'DESCRIPTION'}, \code{'NEWS'}, \code{'INDEX'}, \code{'NAMESPACE'};
+#' partial matching is supported and case is ignored
 #' @param what what to get; \code{'all'} is default which returns all exported
 #' and non exported functions in \code{package}; see details for more
-#' @param pattern text pattern or regular expression passed to 
-#' \code{\link{grep}} to filter results
 #' 
-#' @seealso \code{\link{lsf}}, \code{\link{ls}}, \code{\link{search}}
+#' @seealso
+#' \code{\link{parse_yaml}}, \code{\link{parse_index}},
+#' \code{\link{parse_news}}, \code{\link{parse_namespace}}, \code{\link{ls}},
+#' \code{\link{search}}, 
+#' 
+#' @return
+#' \code{lss} (invisibly) returns a data frame of the printed output.
+#' \code{lsf} (invisibly) returns the contents of \code{file}. \code{lsp}
+#' returns a vector of character strings.
 #' 
 #' @examples
-#' ## see the contents of this package
+#' ## lss: use like ls
+#' lss()
+#' a <- rnorm(100000)
+#' b <- matrix(1, 1000, 100)
+#' lss()
+#' 
+#' ## lsf: these are equivalent ways to use
+#' lsf(rawr)
+#' lsf(rawr, 'DESCRIPTION')
+#' lsf('rawr', 'des')
+#' 
+#' ## lsp: see the contents of a package
 #' lsp(rawr)
 #' 
 #' ## return all one or two character functions from base package
@@ -201,8 +191,59 @@ lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
 #' ## data sets
 #' lsp('ggplot2', 'lazydata')
 #' 
-#' @export
+#' @name rawr_ls
+NULL
 
+#' @rdname rawr_ls
+#' @export
+lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
+                 decreasing = TRUE, n = 15) {
+  
+  if (length(ls(envir = as.environment(pos))) < 1L)
+    stop(return(character(0)))
+  napply <- function(names, fn) 
+    sapply(names, function(x) fn(get(x, pos = pos)))
+  names <- ls(pos = pos, pattern = pattern, all.names = all.names)
+  
+  oclass <- napply(names, function(x) as.character(class(x))[1])
+  omode <- napply(names, mode)
+  otype <- ifelse(is.na(oclass), omode, oclass)
+  oprettysize <- napply(names, function(x)
+    capture.output(print(object.size(x), units = 'auto')))
+  osize <- napply(names, object.size)
+  odim <- t(napply(names, function(x) as.numeric(dim(x))[1:2]))
+  vec <- is.na(odim)[ , 1] & (otype != 'function')
+  odim[vec, 1] <- napply(names, length)[vec]
+  
+  out <- setNames(data.frame(otype, osize, oprettysize, odim),
+                  c('type', 'size', 'sizef', 'nrow', 'ncol'))
+  if (!is.null(by))
+    out <- out[order(out[[by]], decreasing = decreasing), ]
+  
+  head(out, n)
+}
+
+#' @rdname rawr_ls
+#' @export
+lsf <- function(package, file = 'DESCRIPTION') {
+  ## DESCRIPTION, INDEX, NEWS, NAMESPACE
+  package <- as.character(substitute(package))
+  p <- do.call('lsp', list(package = package, what = 'path'))
+  lf <- list.files(p)
+  ff <- lf[grepl(sprintf('(?i)^%s.*$', file), lf, perl = TRUE)]
+  if (!length(ff)) {
+    message(sprintf('File \'%s\' not found', file))
+    return(invisible())
+  }
+  f <- readLines(con <- file(fp <- file.path(p, ff)))
+  on.exit(close(con))
+  message(sprintf('Showing file:\n%s\n', fp))
+  cat(f, sep = '\n')
+  invisible(f)
+}
+
+#' @rdname rawr_ls
+#' @export
 lsp <- function(package, what, pattern) {
   
   if (!is.character(substitute(package)))
@@ -220,8 +261,8 @@ lsp <- function(package, what, pattern) {
   } else {
     ## for non base packages
     if (exists('.__NAMESPACE__.', envir = ns, inherits = FALSE)) {
-      wh <- get('.__NAMESPACE__.', envir = asNamespace(package, base.OK = FALSE),
-                inherits = FALSE)
+      wh <- get('.__NAMESPACE__.', inherits = FALSE,
+                envir = asNamespace(package, base.OK = FALSE))
       if ('?' %in% what) 
         return(ls(wh))
       if (!is.null(what) && !any(what %in% c('all', ls(wh))))
@@ -243,57 +284,91 @@ lsp <- function(package, what, pattern) {
   }
 }
 
-#' List package files
+#' Parsers
 #' 
-#' Prints package files (\code{DESCRIPTION}, \code{NEWS}, \code{INDEX},
-#' \code{NAMESPACE}, etc.) to console.
+#' Some (mostly internal) simple parsers. \code{parse_yaml} can process
+#' simple, single-level yaml-like files such as the \code{DESCRIPTION} files
+#' of \code{R} packages; \code{parse_index}, \code{parse_news}, and
+#' \code{parse_namespace} process their respective files. These have not
+#' been tested for every case, particularly \code{parse_news} since there is
+#' not a requirememnt on the structure of \code{NEWS} files.
 #' 
-#' @param package package name, as a \code{\link{name}} or literal character
-#' string
-#' @param file file to return as a character string; usual options are
-#' \code{'DESCRIPTION'}, \code{'NEWS'}, \code{'INDEX'}, \code{'NAMESPACE'};
-#' partial matching is supported and case is ignored
-#' 
-#' @seealso \code{\link{lsp}}
+#' @param x a vector of character strings
+#' @param wh for \code{parse_namespace}, which types to parse and return
 #' 
 #' @return
-#' Returns (invisibly) the contents of \code{file} as a vector of character
-#' strings.
+#' All return named lists for each section type.
 #' 
 #' @examples
-#' ## these are equivalent
-#' lsf(rawr)
-#' lsf(rawr, 'DESCRIPTION')
-#' lsf('rawr', 'des')
+#' parse_yaml(lsf(rawr, 'desc'))
+#' parse_index(lsf(rawr, 'index'))
+#' parse_news(lsf(rawr, 'news'))
+#' parse_namespace(lsf(rawr, 'name'))
 #' 
-#' @export
+#' @name rawr_parse
+NULL
 
-lsf <- function(package, file = 'DESCRIPTION') {
-  ## DESCRIPTION, INDEX, NEWS, NAMESPACE
-  package <- as.character(substitute(package))
-  p <- do.call('lsp', list(package = package, what = 'path'))
-  lf <- list.files(p)
-  ff <- lf[grepl(sprintf('(?i)^%s.*$', file), lf, perl = TRUE)]
-  if (!length(ff)) {
-    message(sprintf('File \'%s\' not found', file))
-    return(invisible())
-  }
-  f <- readLines(con <- file(fp <- file.path(p, ff)))
-  on.exit(close(con))
-  message(sprintf('Showing file:\n%s\n', fp))
-  cat(f, sep = '\n')
-  invisible(f)
+#' @rdname rawr_parse
+#' @export
+parse_yaml <- function(x) {
+  pattern <- '(^[^:]+):\\s+?(.*)$'
+  nn <- gsub(pattern, '\\1', x)
+  dd <- gsub(pattern, '\\2', x)
+  setNames(as.list(dd), nn)
+}
+
+#' @rdname rawr_parse
+#' @export
+parse_index <- function(x) {
+  ## collapse descriptions >1 line
+  x <- strsplit(gsub('\\$\\$\\s+', ' ', paste0(x, collapse = '$$')),
+                split = '\\$\\$')[[1]]
+  x <- strsplit(x, '\\s{2,}')
+  as.list(sapply(x, function(xx) `names<-`(xx[2], xx[1])))
+}
+
+#' @rdname rawr_parse
+#' @export
+parse_news <- function(x) {
+  ## assume some separator
+  x <- Filter(nzchar, gsub('[-=_]{2,}', '', x))
+  ## assume version updates state with letter, not -, *, etc
+  nn <- x[idx <- grepl('^\\w+', x)]
+  sp <- split(x, cumsum(idx))
+  setNames(lapply(sp, '[', -1), nn)
+}
+
+#' @rdname rawr_parse
+#' @export
+parse_namespace <- function(x, wh = c('useDynLib','export',
+                                      'import','S3method')) {
+  ## remove comments and collapse
+  x <- paste0(gsub('#.*$', '', x), collapse = '')
+  mm <- lapply(wh, function(xx)
+    gregexpr(sprintf('%s\\((.*?)\\)', xx), x, perl = TRUE))
+  setNames(lapply(mm, function(xx)
+    gsub('^\\s+|\\s+$|\\s{2,}', '',
+         unlist(strsplit(unlist(regcaptures(x, xx)), ',')))), wh)
 }
 
 #' head/tail
 #' 
+#' \code{\link{rbind}} the \code{\link{head}} and \code{\link{tail}} of an
+#' object.
+#' 
 #' @param x an object
-#' @param ... other parameters, such as \code{n}, passed to \code{\link{head}} 
-#' or other methods
-#' @param sep separator 
+#' @param ... other parameters, such as \code{n}, passed to \code{head},
+#' \code{tail}, or other methods
+#' @param sep row separator
+#' 
+#' @examples
+#' ht(mtcars)
+#' ht(mtcars, sep = '...')
+#' 
 #' @export
 
-ht <- function(x, ..., sep = NULL) rbind(head(x, ...), sep, tail(x, ...))
+ht <- function(x, ..., sep = NULL)
+  rbind(head(x, ...), '   ' = sep, tail(x, ...))
 
 #' Progress function
 #' 
@@ -874,7 +949,7 @@ list2file <- function(l, targetdir = getwd(), sep, ...) {
   invisible()
 }
 
-#' Restart
+#' Restart R session
 #' 
 #' Ends current and restarts a clean \code{R} session.
 #' 
@@ -904,18 +979,18 @@ Restart <- function(afterRestartCommand = '')
 #   invisible(NULL)
 # }
 
-#' clc
+#' Clear workspace
 #' 
 #' Clear the workspace by removing all objects in \code{\link{ls}}.
 #' 
-#' @param all logical; if \code{TRUE}, also removes hidden files
+#' @param all.names logical; if \code{TRUE}, also removes hidden files
 #' 
 #' @export
 
-clc <- function(all = FALSE)
-  rm(list = ls(.GlobalEnv, all.names = all), envir = .GlobalEnv)
+clc <- function(all.names = FALSE)
+  rm(list = ls(.GlobalEnv, all.names = all.names), envir = .GlobalEnv)
 
-#' clear
+#' Clear console
 #' 
 #' Clear the console window.
 #' 
