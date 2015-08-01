@@ -5,7 +5,7 @@
 ###
 
 
-#' html test
+#' html render
 #' 
 #' Render html in rstudio viewer or default browser.
 #' 
@@ -415,9 +415,9 @@ pvalr2 <- function(pvals, html = FALSE, show.p = FALSE) {
 clist <- function(l) 
   paste(paste(names(l), l, sep = ' = ', collapse = ', '), sep = '')
 
-#' binconr
+#' bincon formatter
 #' 
-#' Binomial confidence interval formatter.
+#' Binomial confidence interval (\code{\link{bincon}}) formatter.
 #' 
 #' @param r number of responses (successes)
 #' @param n number of observations (trials)

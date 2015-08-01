@@ -1966,7 +1966,7 @@ ctitle <- function(main = NULL, sub = NULL, xlab = NULL, ylab = NULL,
   invisible(NULL)
 }
 
-#' waffle
+#' waffle chart
 #' 
 #' A waffle chart.
 #' 
