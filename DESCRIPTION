@@ -1,7 +1,7 @@
 Package: rawr
 Type: Package
 Title: rawr package
-Version: 0.6.1
+Version: 0.6.2
 Authors@R: person("Robert", "Redd", email = "raredd01@gmail.com",
     role = c("aut", "cre"))
 Description: Personal package with miscellaneous functions, stuff in progress,
