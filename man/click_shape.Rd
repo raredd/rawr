@@ -4,18 +4,17 @@
 \alias{click_shape}
 \title{Add shapes interactively in base \code{R} graphics}
 \usage{
-click_shape(shape = "line", col = "black", border = col, trans = NULL,
-  corners = NULL, lty = par("lty"), lwd = par("lwd"), density = NULL,
-  length = 1, code = 2, ...)
+click_shape(shape = "line", col = "black", border = col, corners = 5,
+  lty = par("lty"), lwd = par("lwd"), density = NULL, length = 1,
+  code = 2, ...)
 }
 \arguments{
-\item{shape}{type of shape: 'box', 'arrow', 'line', 'poly', 'circle', 'cyl'}
+\item{shape}{type of shape; choices are \code{'box'}, \code{'arrow'},
+\code{'line'}, \code{'poly'}, \code{'circle'}, and \code{'cyl'}}
 
-\item{col}{shape outline colour}
+\item{col}{shape outline color}
 
 \item{border}{border colour for shape; defaults to value for \code{col}}
-
-\item{trans}{color transparency; see \code{\link{tcol}}}
 
 \item{corners}{number of corners to draw for a polygon}
 
@@ -35,8 +34,7 @@ be drawn}
 \item{...}{ignored}
 }
 \description{
-Allows you to add shapes anywhere in a plot (including margins)
-with mouse click(s).
+Add shapes anywhere in a plot (including margins) with mouse click(s).
 }
 \examples{
 \dontrun{
@@ -46,12 +44,16 @@ click_shape('arrow', col = 'blue', code = 2, lwd = 2, length = .15)
 click_shape('box', border = 'purple', col = 'pink', lwd = 2)
 click_shape('box', col = NULL, border = 'purple', lwd = 2)
 click_shape('line', col = 'orange', lty = 3, lwd = 3)
-click_shape('poly', corners = 5, border = 'green', col = 'orange',
-  lty = 1, lwd = 3)
-click_shape('poly', corners = 3, border = 'red', col = 'yellow', lty = 1,
-  lwd = 2)
+click_shape('poly', corners = 5, border = 'green', col = 'orange')
+click_shape('poly', corners = 3, border = 'red', col = 'yellow', lty = 1)
 click_shape('cyl', col = 'orange')
 click_shape('circle', col = 'orange', border = 'black', lty = 3, lwd = 3)
 }
+}
+\seealso{
+\code{\link{click_text}}, \code{link{tcol}}, \code{\link{rect}},
+\code{\link{arrows}}, \code{\link{rect}}, \code{\link{rect}},
+\code{\link{segments}}, \code{\link{polygon}},
+\code{\link[plotrix]{draw.circle}}, \code{\link[plotrix]{cylindrect}}
 }
 

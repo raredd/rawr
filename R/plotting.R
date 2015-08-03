@@ -135,22 +135,19 @@ ggmultiplot <- function(..., plotlist = NULL, cols = 1, layout = NULL) {
 
 #' Add text interactively in base \code{R} graphics
 #' 
-#' Allows you to add text and expressions anywhere in a plot (including 
-#' margins) with mouse click(s).
+#' Add text and expressions anywhere in a plot (including margins) with mouse
+#' click(s).
 #' 
-#' @param express text or \code{\link{expression}}
-#' @param col colour of text
-#' @param cex numerical \strong{c}haracter \strong{ex}pansion factor; 
-#' multiplied by \code{\link{par}} ("cex") yields the final character size; 
-#' \code{NULL} and \code{NA} are equivalent to \code{1.0}
-#' @param srt the string rotation in degrees; see \code{\link{par}}
-#' @param trans color transparency; see \code{\link{tcol}}
-#' @param family the name of a font or drawing text; see \code{\link{Hershey}}
+#' @param expr a character string of text or an \code{\link{expression}}
 #' @param ... additional graphical parameters passed to \code{\link{text}} (or 
-#' \code{\link{par}})
+#' \code{\link{par}}) such as \code{col}, \code{srt}, \code{family}, etc
 #'
-#' @seealso \code{\link{click_shape}}; \code{\link{plotmath}} for help with 
-#' mathematical expressions
+#' @seealso
+#' \code{\link{click_shape}}; \code{\link{plotmath}} for help with plotting
+#' mathematical expressions; \code{link{tcol}}
+#' 
+#' @return
+#' A vector of length two with the x- and y-coordinates of the text position.
 #' 
 #' @examples
 #' \dontrun{
@@ -159,31 +156,26 @@ ggmultiplot <- function(..., plotlist = NULL, cols = 1, layout = NULL) {
 #' click_text('goodbye', family = 'HersheyScript', cex = 3)
 #' click_text(expression(sum(x ^ 2) == 5 ^ hat(x)), srt = 45)
 #' }
+#' 
 #' @export
 
-click_text <- function(express, col = 'black', cex = NULL, srt = 0, 
-                       trans = NULL, family = 'sans', ...) {
+click_text <- function(expr, ...) {
   op <- par(no.readonly = TRUE) 
   on.exit(par(op))
-  par(mar = rep(0, 4), xpd = NA)
-  if (!is.null(trans))
-    col <- tcol(col, trans)
-  x <- locator(1)
-  X <- format(x, digits = 3)
-  text(x[1], x[2], express, 
-       col = col, cex = cex, srt = srt, family = family, ...)
-  noquote(paste(X[1], X[2], sep = ', '))
+  par(mar = c(0,0,0,0), xpd = NA)
+  co <- locator(1)
+  text(co[[1]], co[[2]], labels = if (missing(expr)) '' else expr, ...)
+  c(x = co[[1]], y = co[[2]])
 }
 
 #' Add shapes interactively in base \code{R} graphics
 #' 
-#' Allows you to add shapes anywhere in a plot (including margins)
-#' with mouse click(s).
+#' Add shapes anywhere in a plot (including margins) with mouse click(s).
 #' 
-#' @param shape type of shape: 'box', 'arrow', 'line', 'poly', 'circle', 'cyl'
-#' @param col shape outline colour
+#' @param shape type of shape; choices are \code{'box'}, \code{'arrow'},
+#' \code{'line'}, \code{'poly'}, \code{'circle'}, and \code{'cyl'}
+#' @param col shape outline color
 #' @param border border colour for shape; defaults to value for \code{col}
-#' @param trans color transparency; see \code{\link{tcol}}
 #' @param corners number of corners to draw for a polygon
 #' @param lty,lwd graphical parameters; see \code{\link{par}}
 #' @param density the density of shading lines in lines per inch; the default
@@ -196,6 +188,11 @@ click_text <- function(express, col = 'black', cex = NULL, srt = 0,
 #' be drawn
 #' @param ... ignored
 #' 
+#' @seealso \code{\link{click_text}}, \code{link{tcol}}, \code{\link{rect}},
+#' \code{\link{arrows}}, \code{\link{rect}}, \code{\link{rect}},
+#' \code{\link{segments}}, \code{\link{polygon}},
+#' \code{\link[plotrix]{draw.circle}}, \code{\link[plotrix]{cylindrect}}
+#' 
 #' @examples
 #' \dontrun{
 #' plot.new()
@@ -204,64 +201,62 @@ click_text <- function(express, col = 'black', cex = NULL, srt = 0,
 #' click_shape('box', border = 'purple', col = 'pink', lwd = 2)
 #' click_shape('box', col = NULL, border = 'purple', lwd = 2)
 #' click_shape('line', col = 'orange', lty = 3, lwd = 3)
-#' click_shape('poly', corners = 5, border = 'green', col = 'orange', 
-#'   lty = 1, lwd = 3)
-#' click_shape('poly', corners = 3, border = 'red', col = 'yellow', lty = 1, 
-#'   lwd = 2)
+#' click_shape('poly', corners = 5, border = 'green', col = 'orange')
+#' click_shape('poly', corners = 3, border = 'red', col = 'yellow', lty = 1)
 #' click_shape('cyl', col = 'orange')
 #' click_shape('circle', col = 'orange', border = 'black', lty = 3, lwd = 3)
 #' }
+#' 
 #' @export
 
-click_shape <- function(shape = 'line', col = 'black', border = col, trans = NULL,
-                        corners = NULL, lty = par('lty'), lwd = par('lwd'), 
+click_shape <- function(shape = 'line', col = 'black', border = col,
+                        corners = 5, lty = par('lty'), lwd = par('lwd'), 
                         density = NULL, length = 1, code = 2, ...) {
   
   op <- par(no.readonly = TRUE) 
   on.exit(par(op))
-  if (!is.null(trans))
-    col <- tcol(col, trans)
   par(xpd = NA)
   
-  RECTANGLE <- function(...) {
-    coords <- c(unlist(locator(1)), unlist(locator(1)))
-    rect(coords[1], coords[2], coords[3], coords[4], col = col, 
-         density = density, border = border, lty = lty, lwd = lwd, length = NULL)
+  RECT <- function(...) {
+    co <- c(unlist(locator(1)), unlist(locator(1)))
+    rect(co[1], co[2], co[3], co[4], col = col, 
+         density = density, border = border, lty = lty, lwd = lwd,
+         length = NULL)
   }
-  ARROW <- function(...) {
-    coords <- c(unlist(locator(1)), unlist(locator(1)))
-    arrows(coords[1], coords[2], coords[3], coords[4], code = code, col = col, 
-           border = NULL, lty = lty, lwd = lwd, length = length)
+  ARRO <- function(...) {
+    co <- c(unlist(locator(1)), unlist(locator(1)))
+    arrows(co[1], co[2], co[3], co[4], code = code,
+           col = col, border = NULL, lty = lty, lwd = lwd, length = length)
   }
-  lineSEGMENT <- function(...){
-    coords <- c(unlist(locator(1)), unlist(locator(1)))
-    segments(coords[1], coords[2], coords[3], coords[4], col = col, 
+  LINE <- function(...){
+    co <- c(unlist(locator(1)), unlist(locator(1)))
+    segments(co[1], co[2], co[3], co[4], col = col, 
              border = NULL, lty = lty, lwd = lwd, length = NULL)
   }
-  POLYGON <- function(...) {
+  POLY <- function(...) {
     locations <- locator(corners)
     polygon(locations, col = col, density = density,
             border = border, lty = lty, lwd = lwd, length = NULL)
   }
-  CIRCLE <- function(...) {
-    coords <- c(unlist(locator(1)), unlist(locator(1)))
-    rad <- sqrt(((coords[3] - coords[1]) ** 2) + ((coords[4] - coords[2]) ** 2))
-    draw.circle(coords[1], coords[2], radius = rad, col = col,
+  CIRC <- function(...) {
+    co <- c(unlist(locator(1)), unlist(locator(1)))
+    rad <- sqrt(((co[3] - co[1]) ** 2) + ((co[4] - co[2]) ** 2))
+    draw.circle(co[1], co[2], radius = rad, col = col,
                 border = border, lty = lty, lwd = lwd)
   }
-  CYLINDER <- function(...) {
+  CYLI <- function(...) {
     coor <- unlist(locator(2))
     cylindrect(coor[1], coor[3], coor[2], coor[4], col = col, border = border)
   }
   
   suppressWarnings(
     switch(shape,
-           box = RECTANGLE(col, border, lty, lwd, density),
-           arrow = ARROW(col, border, lty, lwd, code, length),
-           line = lineSEGMENT(col, border, lty, lwd),
-           poly = POLYGON(col, border, lty, lwd, density, corners),
-           circle = CIRCLE(col, border, lty, lwd),
-           cyl = CYLINDER(col, border),
+           box    = RECT(col, border, lty, lwd, density),
+           arrow  = ARRO(col, border, lty, lwd, code, length),
+           line   = LINE(col, border, lty, lwd),
+           poly   = POLY(col, border, lty, lwd, density, corners),
+           circle = CIRC(col, border, lty, lwd),
+           cyl    = CYLI(col, border),
            stop('Invalid Argumets'))
   )
 }
@@ -281,7 +276,7 @@ click_shape <- function(shape = 'line', col = 'black', border = col, trans = NUL
 #' 
 #' @examples
 #' library('ggplot2')
-#' # missing some labels 
+#' ## missing some labels 
 #' (tmp <- ggplot(diamonds[1:100, ], aes(carat, price, colour = clarity)) + 
 #'   geom_point() + facet_wrap( ~ cut))
 #' facet_adjust(tmp)
@@ -295,25 +290,26 @@ facet_adjust <- function(x, pos = c('up', 'down'),
   pos <- match.arg(pos)
   p <- ggplot_build(x)
   gtable <- ggplot_gtable(p)
-  # dev.off() # this prevented plots from being rendered in knitr
-  # finding dimensions
+  ## dev.off() ## this prevented plots from being rendered in knitr
+  ## finding dimensions
   dims <- apply(p$panel$layout[2:3], 2, max)
   nrow <- dims[1]
   ncol <- dims[2]
-  # number of panels in plot
+  ## number of panels in plot
   panels <- sum(grepl('panel', names(gtable$grobs)))
   space <- ncol * nrow
-  # missing panels
+  ## missing panels
   n <- space - panels
-  # check if modifications are needed
+  ## check if modifications are needed
   if (panels != space) {
-    # indices of panels to fix
+    ## indices of panels to fix
     idx <- (space - ncol - n + 1):(space - ncol)
-    # copying x-axis of the last existing panel to the chosen panels in the row above
-    gtable$grobs[paste0('axis_b', idx)] <- list(gtable$grobs[[paste0('axis_b', panels)]])
+    ## copy x-axis of last existing panel to the chosen panels in row above
+    gtable$grobs[paste0('axis_b', idx)] <- list(
+      gtable$grobs[[paste0('axis_b', panels)]])
     if (pos == 'down') {
-      # if pos == 'down' shift labels down to same level as x-axis of last panel
-      rows <- grep(paste0('axis_b\\-[', idx[1], '-', idx[n], ']'), 
+      ## shift labels down to same level as x-axis of last panel
+      rows <- grep(sprintf('axis_b\\-[%s-%s]', idx[1], idx[n]),
                    gtable$layout$name)
       lastAxis <- grep(paste0('axis_b\\-', panels), gtable$layout$name)
       gtable$layout[rows, c('t','b')] <- gtable$layout[lastAxis, c('t')]
@@ -368,7 +364,7 @@ print.facet_adjust <- function(x, newpage = is.null(vp), vp = NULL) {
 #' 
 #' ggcaterpillar(ranef(fit, condVar = TRUE))
 #' 
-#' # compare (requires lattice package)
+#' ## compare (requires lattice package)
 #' lattice::qqmath(ranef(fit, condVar = TRUE))
 #' }
 #' @export
@@ -394,13 +390,13 @@ ggcaterpillar <- function(re, qq  =  TRUE, likeDotplot  =  TRUE) {
         xlab('Standard normal quantiles') + 
         ylab('Random effect quantiles')
     } else {
-      # caterpillar dotplot
+      ## caterpillar dotplot
       p <- ggplot(pDf, aes(x = ID, y = y)) + coord_flip()
       if (likeDotplot) {
-        # imitate dotplot() -> same scales for random effects
+        ## imitate dotplot() -> same scales for random effects
         p <- p + facet_wrap( ~ ind)
       } else {
-        # different scales for random effects
+        ## different scales for random effects
         p <- p + facet_grid(ind ~ ., scales = 'free_y')
       }
       p <- p + xlab('Levels') + ylab('Random effects')
@@ -552,11 +548,11 @@ ggheat <- function(cors = NULL, data = NULL, limits = c(-1, 1),
 #' @export
 
 ggheat2 <- function(data, corr = cor(data, use = 'pairwise.complete'),
-                    cluster = TRUE, nbreaks = NULL,
-                    palette = if (is.null(nbreaks)) c('blue','white','red') else 1,
-                    legend_name = expression(rho), pch, cex = c(2, 6),
-                    label = FALSE, label_alpha = FALSE, label_color = 'black',
-                    label_digits = 2, midpoint = 0, clim = c(-1, 1), ...) {
+             cluster = TRUE, nbreaks = NULL,
+             palette = if (is.null(nbreaks)) c('blue','white','red') else 1,
+             legend_name = expression(rho), pch, cex = c(2, 6),
+             label = FALSE, label_alpha = FALSE, label_color = 'black',
+             label_digits = 2, midpoint = 0, clim = c(-1, 1), ...) {
   
   ## clustering
   stopifnot(class(cluster) %in% c('logical','function'))
@@ -627,19 +623,22 @@ ggheat2 <- function(data, corr = cor(data, use = 'pairwise.complete'),
     if (is.null(nbreaks))
       p <- p + scale_size_continuous(range = c(cex[1], cex[2])) +
         scale_colour_gradient2(legend_name, limits = clim, low = palette[1],
-                               mid = palette[2], high = palette[3], midpoint = midpoint) +
+                               mid = palette[2], high = palette[3],
+                               midpoint = midpoint) +
         guides(size = FALSE)
     else
       p <- p + scale_size_identity(legend_name) +
         scale_colour_brewer(legend_name, palette = palette, drop = FALSE) +
-        guides(colour = guide_legend(legend_name,
-                                     override.aes = list(size = (cex[1] + cex[2]) / 2)))
+        guides(colour = guide_legend(
+          legend_name, override.aes = list(size = (cex[1] + cex[2]) / 2))
+        )
     ## use geom_tile otherwise
   } else {
     p <- p + geom_tile(aes(fill = value), colour = 'white') +
       if (is.null(nbreaks))
         scale_fill_gradient2(legend_name, low = palette[1], mid = palette[2],
-                             high = palette[3], midpoint = midpoint, limits = clim)
+                             high = palette[3], midpoint = midpoint,
+                             limits = clim)
     else 
       scale_fill_brewer(legend_name, palette = palette, drop = FALSE)
   }
@@ -650,8 +649,8 @@ ggheat2 <- function(data, corr = cor(data, use = 'pairwise.complete'),
     p <- p +
       if (label_alpha)
         geom_text(data = dd, aes(row, variable, label = value,
-                                 alpha = abs(as.numeric(value))), show_guide = FALSE,
-                  colour = label_color)
+                                 alpha = abs(as.numeric(value))),
+                  show_guide = FALSE, colour = label_color)
     else geom_text(data = dd, aes(row, variable, label = value),
                    colour = label_color)
   }
@@ -816,14 +815,14 @@ dodge.default <- function(x, at, dist, jit, ...) {
 
 jmplot <- function(x, y, z, 
                    
-                   # labels
+                   ## labels
                    main, sub, xlab, ylab, names, 
                    
-                   # axes stuff
+                   ## axes stuff
                    xlim, ylim, axes = TRUE, frame.plot = axes, 
                    log = '', xratio = .8, yratio = xratio, 
                    
-                   # more options
+                   ## more options
                    show.n = TRUE, show.na = TRUE, cex.n, 
                    ann = par('ann'), asp = NA, 
                    panel.first = NULL, panel.last = NULL,
@@ -852,7 +851,7 @@ jmplot <- function(x, y, z,
   z <- as.factor(z)
   xy <- xy.coords(x, y, deparse(substitute(x)), deparse(substitute(y)), log)
   
-  # defaults
+  ## defaults
   if (missing(names)) 
     names <- levels(z)
   if (missing(xlab)) 
@@ -864,14 +863,14 @@ jmplot <- function(x, y, z,
   
   op <- par(no.readonly = TRUE)
   mar <- op$mar
-  # set the layout
+  ## set the layout
   layout(matrix(c(1, 3, 0, 2), 2), 
          widths = c(xratio, 1 - xratio), 
          heights = c(1 - yratio, yratio))
   par(mar = c(0, 0, 0, 0), 
       oma = c(0,0, mar[3], mar[4]) + op$oma)
   
-  # calculate xlim, ylim
+  ## calculate xlim, ylim
   lim <- function(z) {
     r <- range(z, na.rm = TRUE, finite = TRUE)
     #     pm <- diff(r) / 20
@@ -884,21 +883,21 @@ jmplot <- function(x, y, z,
   if (missing(cex.n)) 
     cex.n <- 1
   
-  # plot x distribution on top
+  ## plot x distribution on top
   par(mar = c(0, mar[2], 0, 0))
   localTplot(x ~ z, ylim = xlim, horizontal = TRUE, 
              show.n = FALSE, show.na = FALSE, ...)
   if (axes) 
     localAxis(side = 2, at = 1:nlevels(z), labels = names, ...)
   
-  # plot y distribution on right
+  ## plot y distribution on right
   par(mar = c(mar[1], 0, 0, 0))
   localTplot(y ~ z, ylim = ylim, show.n = show.n, show.na = show.na, 
              cex.n = cex.n, ...)
   if (axes) 
     localAxis(side = 1, at = 1:nlevels(z), labels = names, ...)
   
-  # plot xy points
+  ## plot xy points
   par(mar = c(mar[1], mar[2], 0, 0))
   plot.new()
   localWindow(xlim, ylim, log, asp, ...)
@@ -906,14 +905,14 @@ jmplot <- function(x, y, z,
   localPlot(xy, xlim = xlim, ylim = ylim, ...)
   panel.last
   
-  # add axes
+  ## add axes
   if (axes) {
     localAxis(side = 1, ...)
     localAxis(side = 2, ...)
   }
   if (frame.plot) 
     localBox(...)
-  # add titles
+  ## add titles
   if (ann) {
     localTitle(sub = sub, xlab = xlab, ylab = ylab, ...)
     localTitle(main = main, outer = TRUE, ...)
@@ -986,7 +985,8 @@ jmplot <- function(x, y, z,
 #' place but before the axes, title, and box are added; see the comments about 
 #' \code{panel.first}
 #' 
-#' @references \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
+#' @references
+#' \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
 #' 
 #' @examples
 #' ## equivalent ways to call tplot
@@ -1047,7 +1047,7 @@ tplot.default <- function(x, ...,
   
   op <- par(no.readonly = TRUE)
   
-  # helpers
+  ## helpers
   localPoints <- function(..., tick) points(...)
   localAxis   <- function(..., bg, cex, lty, lwd) axis(...)
   localBox    <- function(..., bg, cex, lty, lwd, tick) box(...)
@@ -1255,7 +1255,8 @@ tplot.default <- function(x, ...,
     if (median.line[i]) {
       if (horizontal)
         do.call('lines', c(list(rep(median(y), 2), at[i] + Lme), median.pars))
-      else do.call('lines', c(list(at[i] + Lme, rep(median(y), 2)), median.pars))
+      else
+        do.call('lines', c(list(at[i] + Lme, rep(median(y), 2)), median.pars))
     }
     out[[i]] <- data.frame(to.plot, col = col[[i]], pch = pch[[i]])
   }
@@ -1327,8 +1328,7 @@ tplot.formula <- function(formula, data = NULL, ...,
   n <- nrow(mf)
   response <- attr(attr(mf, 'terms'), 'response')
   
-  ## special handling of col and pch
-  ## pick out these options
+  ## special handling of col and pch -- pick out these options
   group.col <- if ('group.col' %in% names(args)) args$group.col else FALSE
   group.pch <- if ('group.pch' %in% names(args)) args$group.pch else FALSE
   ## reorder if necessary
@@ -1575,9 +1575,9 @@ dsplot.formula <- function(formula, data = NULL, ...,
 #' 
 #' ci.l <- hh * 0.85
 #' ci.u <- hh * 1.15
-#' pvals <- pt(-abs(apply(hh, 2, diff)), 1)
+#' pv <- pt(-abs(apply(hh, 2, diff)), 1)
 #' 
-#' bpCI(bp, ci.u = ci.u, ci.l = ci.l, sig = TRUE, pvals = pvals, ci.width = 100,
+#' bpCI(bp, ci.u = ci.u, ci.l = ci.l, sig = TRUE, pvals = pv, ci.width = 100,
 #'      col = 'red', lty = 'dashed', lwd = 2)
 #' mtext("Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1",
 #'       side = 1, at = par('usr')[2], line = 2, adj = 1, cex = .8, font = 3)
@@ -1709,7 +1709,7 @@ inset <- function(x, y = NULL, pct = .25, ...) {
 #' Show colors
 #' 
 #' In \code{R}, there are 657 named colors. This function shows these colors 
-#' and their respective numbers. Find a color by number in the plot or find the
+#' and their respective numbers. Find a color by number in the plot or by the
 #' name of the color with \code{colors()[n]}.
 #' 
 #' @seealso \code{\link{show_pch}}
@@ -1767,21 +1767,22 @@ show_pch <- function() {
 
 #' Transparent colors
 #' 
-#' Add transparency to colors.
+#' Add alpha transparency to colors.
 #' 
-#' This is a vectorized function to add transparency to colors. 
-#' \code{color} and \code{trans} must either be the same length or one of the 
-#' two must have length one. 
+#' This is a vectorized function to add transparency to colors. \code{color}
+#' and \code{trans} (or \code{alpha}) must either be the same length or one
+#' of the two must have length one. 
 #' 
-#' The function adds integers (in hex) between 0 (fully transparent) and 255
-#' (fully visible) to the color(s) given. \code{color} values are converted to
-#' RGB with transparency.
+#' The function adds integers (in hexadecimal) between 0 (fully transparent)
+#' and 255 (fully visible) to the color(s) given. \code{color} values are
+#' converted to RGB with transparency.
 #' 
-#' @param color vector of color names (or hexadecimal)
-#' @param trans transparency defined as an integer in the range 
+#' @param color vector of color names (or hexadecimal) as character strings
+#' or integers corresponding to colors in the current \code{\link{palette}}
+#' @param trans alpha transparency defined as an integer in the range 
 #' \code{[0, 255]} where \code{0} is fully transparent and \code{255} is fully
 #' visible; see details
-#' @param alpha the alpha transparenct in \code{[0,1]}; \code{trans} is
+#' @param alpha the alpha transparency in \code{[0,1]}; \code{trans} is
 #' ignored if \code{alpha} is given
 #' 
 #' @seealso \code{\link{as.hexmode}}, \code{\link{col2rgb}},
