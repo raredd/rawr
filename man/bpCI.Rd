@@ -55,9 +55,9 @@ bp <- barplot(hh <- cbind(x = c(465, 91) / 465 * 100,
 
 ci.l <- hh * 0.85
 ci.u <- hh * 1.15
-pvals <- pt(-abs(apply(hh, 2, diff)), 1)
+pv <- pt(-abs(apply(hh, 2, diff)), 1)
 
-bpCI(bp, ci.u = ci.u, ci.l = ci.l, sig = TRUE, pvals = pvals, ci.width = 100,
+bpCI(bp, ci.u = ci.u, ci.l = ci.l, sig = TRUE, pvals = pv, ci.width = 100,
      col = 'red', lty = 'dashed', lwd = 2)
 mtext("Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1",
       side = 1, at = par('usr')[2], line = 2, adj = 1, cex = .8, font = 3)

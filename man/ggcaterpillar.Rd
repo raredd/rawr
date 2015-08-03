@@ -30,7 +30,7 @@ fit <- lmer(Reaction ~ Days + (Days | Subject), data = sleepstudy)
 
 ggcaterpillar(ranef(fit, condVar = TRUE))
 
-# compare (requires lattice package)
+## compare (requires lattice package)
 lattice::qqmath(ranef(fit, condVar = TRUE))
 }
 }

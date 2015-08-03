@@ -7,26 +7,27 @@
 tcol(color, trans = 255, alpha)
 }
 \arguments{
-\item{color}{vector of color names (or hexadecimal)}
+\item{color}{vector of color names (or hexadecimal) as character strings
+or integers corresponding to colors in the current \code{\link{palette}}}
 
-\item{trans}{transparency defined as an integer in the range
+\item{trans}{alpha transparency defined as an integer in the range
 \code{[0, 255]} where \code{0} is fully transparent and \code{255} is fully
 visible; see details}
 
-\item{alpha}{the alpha transparenct in \code{[0,1]}; \code{trans} is
+\item{alpha}{the alpha transparency in \code{[0,1]}; \code{trans} is
 ignored if \code{alpha} is given}
 }
 \description{
-Add transparency to colors.
+Add alpha transparency to colors.
 }
 \details{
-This is a vectorized function to add transparency to colors.
-\code{color} and \code{trans} must either be the same length or one of the
-two must have length one.
+This is a vectorized function to add transparency to colors. \code{color}
+and \code{trans} (or \code{alpha}) must either be the same length or one
+of the two must have length one.
 
-The function adds integers (in hex) between 0 (fully transparent) and 255
-(fully visible) to the color(s) given. \code{color} values are converted to
-RGB with transparency.
+The function adds integers (in hexadecimal) between 0 (fully transparent)
+and 255 (fully visible) to the color(s) given. \code{color} values are
+converted to RGB with transparency.
 }
 \examples{
 cols <- c('red','green','blue')
