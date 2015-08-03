@@ -14,7 +14,9 @@ parse_index(x)
 
 parse_news(x)
 
-parse_namespace(x, wh = c("useDynLib", "export", "import", "S3method"))
+parse_namespace(x, wh = c("import", "export", "exportPattern", "importClass",
+  "importMethod", "exportClass", "exportMethod", "exportClassPattern",
+  "useDynLib", "nativeRoutine", "S3method"))
 }
 \arguments{
 \item{x}{a vector of character strings}
@@ -37,5 +39,9 @@ parse_yaml(lsf(rawr, 'desc'))
 parse_index(lsf(rawr, 'index'))
 parse_news(lsf(rawr, 'news'))
 parse_namespace(lsf(rawr, 'name'))
+}
+\seealso{
+\code{\link{parseNamespaceFile}}, \code{\link{lss}}, \code{\link{lsf}},
+\code{\link{lsp}}
 }
 

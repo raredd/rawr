@@ -296,6 +296,10 @@ lsp <- function(package, what, pattern) {
 #' @param x a vector of character strings
 #' @param wh for \code{parse_namespace}, which types to parse and return
 #' 
+#' @seealso
+#' \code{\link{parseNamespaceFile}}, \code{\link{lss}}, \code{\link{lsf}},
+#' \code{\link{lsp}}
+#' 
 #' @return
 #' All return named lists for each section type.
 #' 
@@ -340,12 +344,14 @@ parse_news <- function(x) {
 
 #' @rdname rawr_parse
 #' @export
-parse_namespace <- function(x, wh = c('useDynLib','export',
-                                      'import','S3method')) {
+parse_namespace <- function(x,
+  wh = c("import", "export", "exportPattern", "importClass",
+         "importMethod", "exportClass", "exportMethod",
+         "exportClassPattern", "useDynLib", "nativeRoutine", "S3method")) {
   ## remove comments and collapse
   x <- paste0(gsub('#.*$', '', x), collapse = '')
   mm <- lapply(wh, function(xx)
-    gregexpr(sprintf('%s\\((.*?)\\)', xx), x, perl = TRUE))
+    gregexpr(sprintf('(?i)%s\\((.*?)\\)', xx), x, perl = TRUE))
   setNames(lapply(mm, function(xx)
     gsub('^\\s+|\\s+$|\\s{2,}', '',
          unlist(strsplit(unlist(regcaptures(x, xx)), ',')))), wh)
