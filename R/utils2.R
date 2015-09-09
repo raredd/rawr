@@ -245,7 +245,7 @@ roundr.default <- function(x, digits = 1) {
   res <- sprintf(paste0('%.', digits, 'f'), x)
   zzz <- paste0('0.', paste(rep('0', digits), collapse = ''))
   res[res == paste0('-', zzz)] <- zzz
-  res
+  'names<-'(res, names(x))
 }
 
 #' @rdname roundr
