@@ -17,9 +17,9 @@ power_cv(n = NULL, f = NULL, cv = NULL, sig.level = NULL,
 
 \item{cv}{coefficient of variation}
 
-\item{sig.level}{significance level (type I error probability)}
+\item{sig.level}{significance level (type-I error probability)}
 
-\item{power}{power of test (1 - type II error probability)}
+\item{power}{power of test (1 - type-II error probability)}
 
 \item{type}{type of t test}
 

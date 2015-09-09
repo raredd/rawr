@@ -12,7 +12,7 @@ bincon(r, n, alpha = 0.05, round = NULL, method = c("exact", "wilson",
 
 \item{n}{number of observations (trials)}
 
-\item{alpha}{type I error probability}
+\item{alpha}{type-I error probability}
 
 \item{round}{integer value specifying number of decimal places to round
 (default is no rounding); see \code{\link{round}}}
@@ -31,7 +31,7 @@ widths, and, optionally, \code{r} and \code{n}.
 }
 \description{
 Calculates confidence intervales for binomial probabilities for specified
-type I error (\code{alpha}) using exact, Wilson, or asymptotic methods.
+type-I error (\code{alpha}) using exact, Wilson, or asymptotic methods.
 }
 \details{
 The "all" option, which shows results from each calculation method, only

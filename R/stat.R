@@ -1,16 +1,16 @@
 ### statistical functions
-# bincon, bintest, dlt_table, power_cv, simon2, moods_test, fakeglm
+# bincon, bintest, table, power_cv, simon2, moods_test, fakeglm
 ###
 
 
 #' Binomial probability confidence intervals
 #' 
 #' Calculates confidence intervales for binomial probabilities for specified 
-#' type I error (\code{alpha}) using exact, Wilson, or asymptotic methods.
+#' type-I error (\code{alpha}) using exact, Wilson, or asymptotic methods.
 #'    
 #' @param r number of responses (successes)
 #' @param n number of observations (trials)
-#' @param alpha type I error probability
+#' @param alpha type-I error probability
 #' @param round integer value specifying number of decimal places to round 
 #' (default is no rounding); see \code{\link{round}}
 #' @param method character strings specifying which method to use; see details
@@ -147,8 +147,8 @@ bincon <- function(r, n, alpha = 0.05, round = NULL,
 #' @param r cut-off value for responses expected; usually best to leave 
 #' \code{r = n.max} (default); useful if you know a maximum number of responses
 #' that may occur
-#' @param alpha type I error rate
-#' @param beta type II error rate
+#' @param alpha type-I error rate
+#' @param beta type-II error rate
 #' 
 #' @details Cycles through possible designs constrained by alpha, beta, and 
 #' n.max arguments for specified ranges of p0 and p1.
@@ -156,7 +156,7 @@ bincon <- function(r, n, alpha = 0.05, round = NULL,
 #' based on exact tests with actual error rates by trading-off their nominal 
 #' levels of significance and power. \emph{British J of Cancer} (2012) 107, 
 #' 1801-9.
-#' @return Sample size, overall power, and overall type I error rate
+#' @return Sample size, overall power, and overall type-I error rate
 #' @seealso \code{ph2single} (clinfun package); \code{bin1samp} (desmon 
 #' package); bintest.sas (SAS macro)
 #' 
@@ -191,10 +191,10 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
   # Pr(>r2 responders for p0)
   type1 <- 1 - y
   
-  # Pr(<r2 responders | p1 true): pbinom(r2, n, p1): type II error
+  # Pr(<r2 responders | p1 true): pbinom(r2, n, p1): type-II error
   z <- pbinom(mat[ ,5], mat[ ,3], mat[ ,2])
   
-  # Pr(>r2 responders for p1): 1 - type II error
+  # Pr(>r2 responders for p1): 1 - type-II error
   power <- 1 - z
   
   # signal: p1 - p0
@@ -205,7 +205,7 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
   alpha <- rep(alpha, times = dim(mat)[1])
   beta  <- rep(beta, times = dim(mat)[1])
   
-  # keep occurences that fit type I/II error constraints
+  # keep occurences that fit type-I/II error constraints
   mat <- mat[mat[ ,9] > (1 - beta) & mat[ ,7] < alpha, ]
   
   # select pertinent variables
@@ -222,7 +222,7 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
 
 #' DLT table
 #' 
-#' Creates a standard dose-limiting toxicity table with probabilities of 
+#' Creates a standard 3x3 dose-limiting toxicity table with probabilities of
 #' dose-escalation.
 #' 
 #' @param low lowest true DLT rate, percent
@@ -240,14 +240,12 @@ dlt_table <- function(low, high, delta = 10) {
   int <- seq(low, high, by = delta)
   mat <- matrix(NA, nrow = length(int), ncol = 2)
   
-  for (i in 1:length(int)) {
-    mat[i, 1] <- round(int[i])
-    mat[i, 2] <- dbinom(0, 3, int[i] / 100) + 
-      dbinom(1, 3, int[i] / 100) * dbinom(0, 3, int[i] / 100)
+  for (ii in 1:length(int)) {
+    mat[ii, 1] <- round(int[ii])
+    mat[ii, 2] <- dbinom(0, 3, int[ii] / 100) + 
+      dbinom(1, 3, int[ii] / 100) * dbinom(0, 3, int[ii] / 100)
   }
-  colnames(mat) <- c('DLT rate (%)', 'Pr(Escalation)')
-  
-  return(mat)
+  `colnames<-`(mat, c('DLT rate (%)', 'Pr(Escalation)'))
 }
 
 #' Power calculations for one- and two-sample t-tests using ratio of means and 
@@ -259,8 +257,8 @@ dlt_table <- function(low, high, delta = 10) {
 #' @param n number of observations (per group)
 #' @param f ratio of means (>1)
 #' @param cv coefficient of variation
-#' @param sig.level significance level (type I error probability)
-#' @param power power of test (1 - type II error probability)
+#' @param sig.level significance level (type-I error probability)
+#' @param power power of test (1 - type-II error probability)
 #' @param type type of t test
 #' @param alternative one- or two-sided test
 #' @param distribution underlying distribution assumption
@@ -308,7 +306,7 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
   dist <- match.arg(distribution)
   if (dist == 'log.normal' && !(sig.level %in% c(0.01, 0.05)))
     stop('cannot use desired significance level:
-         use 5% or 10% type I error probability')
+         use 5% or 10% type-I error probability')
   tsample <- switch(type, 
                     one.sample = 1, two.sample = 2, paired = 1)
   ttside <- switch(alternative, 
@@ -428,8 +426,8 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
 #' @param n1max maximum number of subjects entered during the first stage; 
 #' ignored if <= 0
 #' @param ntmax maximum total number of total subjects
-#' @param alpha type I error rate
-#' @param beta type II error rate
+#' @param alpha type-I error rate
+#' @param beta type-II error rate
 #' @param del searches for designs where the expected number of subjects under 
 #' the null with within \code{del} of the minimum possible value
 #' @param minimax logical; if \code{TRUE}, only searches for designs which will
@@ -449,7 +447,7 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
 #' \code{r2}, the cutoff for inactivity after the second stage (reject the null
 #' if the number of responses is > \code{r2}); \code{Pstop1.H0}, the
 #' probability of stopping after the first stage under H0 (\code{p0}); 
-#' \code{size}, the actual type I error; \code{type2}, the actual type II 
+#' \code{size}, the actual type-I error; \code{type2}, the actual type-II 
 #' error; \code{E.tot.n.H0}, the expected number of subjects under H0}
 #' \item{\code{$call}}{the call to \code{simon2}.}
 #' \item{\code{$description}}{a text string giving a brief description of 

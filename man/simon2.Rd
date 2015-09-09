@@ -17,9 +17,9 @@ ignored if <= 0}
 
 \item{ntmax}{maximum total number of total subjects}
 
-\item{alpha}{type I error rate}
+\item{alpha}{type-I error rate}
 
-\item{beta}{type II error rate}
+\item{beta}{type-II error rate}
 
 \item{del}{searches for designs where the expected number of subjects under
 the null with within \code{del} of the minimum possible value}
@@ -37,7 +37,7 @@ the first stage (continue if the number of responses is > \code{r1});
 \code{r2}, the cutoff for inactivity after the second stage (reject the null
 if the number of responses is > \code{r2}); \code{Pstop1.H0}, the
 probability of stopping after the first stage under H0 (\code{p0});
-\code{size}, the actual type I error; \code{type2}, the actual type II
+\code{size}, the actual type-I error; \code{type2}, the actual type-II
 error; \code{E.tot.n.H0}, the expected number of subjects under H0}
 \item{\code{$call}}{the call to \code{simon2}.}
 \item{\code{$description}}{a text string giving a brief description of

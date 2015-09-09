@@ -22,12 +22,12 @@ bintest(p0low, p0high = p0low, p1low, p1high = p1low, n.max, r = n.max,
 \code{r = n.max} (default); useful if you know a maximum number of responses
 that may occur}
 
-\item{alpha}{type I error rate}
+\item{alpha}{type-I error rate}
 
-\item{beta}{type II error rate}
+\item{beta}{type-II error rate}
 }
 \value{
-Sample size, overall power, and overall type I error rate
+Sample size, overall power, and overall type-I error rate
 }
 \description{
 Function for sample sizes for single-stage designs in early clinical trial

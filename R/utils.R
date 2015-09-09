@@ -131,6 +131,7 @@
 #' \code{lsp(packagename, NULL)} to return all information in a list.
 #' 
 #' @param pos argument specifying the environment as a position in search list
+#' or a "list-like" object such as a data frame or list of objects
 #' @param pattern optional \code{\link{regex}}; for \code{lss} only names
 #' matching  \code{pattern} are returned; \code{\link{glob2rx}} can be used to
 #' convert wildcard patterns to regular expressions; for \code{lsp} a text

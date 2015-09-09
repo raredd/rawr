@@ -14,7 +14,7 @@ dlt_table(low, high, delta = 10)
 \item{delta}{interval of DLT rate sequence; default is 10}
 }
 \description{
-Creates a standard dose-limiting toxicity table with probabilities of
+Creates a standard 3x3 dose-limiting toxicity table with probabilities of
 dose-escalation.
 }
 \examples{
