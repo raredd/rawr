@@ -7,7 +7,7 @@
 # Round, bind_all, cbindx, rbindx, rbindfill, interleave, outer2, merge2,
 # locf, roll_fun, round_to, updateR, read_clip, fcols, classMethods,
 # regcaptures, path_extract, fname, file_name, file_ext, cast, melt,
-# install_temp, nestedMerge, fill_df, kinda_sort, rgene
+# install_temp, nestedMerge, fill_df, kinda_sort, rgene, mgsub
 ###
 
 #' rawr operators
@@ -2350,4 +2350,37 @@ rgene <- function(n = 1, alpha = LETTERS[1:5], nalpha = 2:5,
   numerics <- function()
     sample(num, size = sample(nnum, 1), replace = TRUE)
   replicate(n, p0(p0(alphas()), sep, p0(numerics())))
+}
+
+#' Multiple gsub
+#' 
+#' Perform multiple pattern replacements with \code{\link{gsub}}.
+#' 
+#' @param pattern a vector of length two for a single replacement or a
+#' \emph{list} of length two vectors for multiple replacements where each
+#' vector is \code{c("pattern","replacement")}
+#' @param x a character string
+#' @param ... additional parameters passed to \code{\link{gsub}}
+#' 
+#' @examples
+#' s1 <- 'thiS iS gooD'
+#' 
+#' r1 <- c('s','5')
+#' r2 <- c(list(r1), list(c('o', '0'), c('i', '1')))
+#' r3 <- c(r2, list(c('\\b(\\w)', '\\U\\1')))
+#' 
+#' mgsub(r1, s1, ignore.case = TRUE)
+#' mgsub(r2, s1)
+#' mgsub(r3, s1, perl = TRUE)
+#' 
+#' 
+#' @export
+
+mgsub <- function(pattern, x, ...) {
+  dots <- match.call(expand.dots = FALSE)$...
+  if (!is.list(pattern))
+    pattern <- list(pattern)
+  gsub2 <- function(l, x)
+    do.call('gsub', c(list(x = x, pattern = l[1], replacement = l[2]), dots))
+  Reduce(gsub2, pattern, x, right = TRUE)
 }
