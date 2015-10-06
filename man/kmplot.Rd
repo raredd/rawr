@@ -13,7 +13,8 @@ kmplot(s, lty.surv = 1, lwd.surv = 1, col.surv = 1, mark = 3,
   xaxis.lab = xaxis.at, yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
   xlab = "Time", ylab = "Survival probability", main = "", cex.axis = 1,
   legend = !is.null(s$strata), legend.pos = "bottomleft", grid = FALSE,
-  lty.grid = 1, lwd.grid = 1, col.grid = grey(0.9), add = FALSE, ...)
+  lty.grid = 1, lwd.grid = 1, col.grid = grey(0.9), add = FALSE,
+  panel.first = NULL, panel.last = NULL, ...)
 }
 \arguments{
 \item{s}{object of class \code{\link[survival]{survfit}} or
@@ -65,23 +66,15 @@ are long}
 
 \item{xaxs}{style of axis; see details}
 
-\item{xlim}{x-axis limits}
+\item{xlim,ylim}{x- and y-axis limits}
 
-\item{ylim}{y-axis limits}
+\item{xaxis.at,yaxis.at}{positions for x- and y-axis labels and ticks}
 
-\item{xaxis.at}{positions for x-axis labels and ticks}
+\item{xaxis.lab,yaxis.lab}{x- and y-axis tick labels}
 
-\item{xaxis.lab}{x-axis labels}
+\item{xlab,ylab}{x-axis label}
 
-\item{yaxis.at}{positions for y-axis labels and ticks}
-
-\item{yaxis.lab}{y-axis labels}
-
-\item{xlab}{x-axis label}
-
-\item{ylab}{y-axis label}
-
-\item{main}{title}
+\item{main}{title of plot}
 
 \item{cex.axis}{text size for axes labels, legend, at risk table}
 
@@ -99,6 +92,12 @@ are long}
 
 \item{add}{logical; if \code{TRUE}, \code{par} is not refreshed; allows for
 multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}}
+
+\item{panel.first}{an expression to be evaluated after the plot axes are
+set up but before any plotting takes place}
+
+\item{panel.last}{an expression to be evaluated after plotting but before
+returning from the function}
 
 \item{...}{additional parameters (\code{font}, \code{mfrow}, \code{bty},
 \code{tcl}, \code{cex.lab}, \code{xaxs}, etc) passed to \code{par}}
@@ -179,6 +178,7 @@ dev.off()
 \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
 }
 \seealso{
-\code{\link[rawr]{ggsurv}}; \code{survival:::plot.survfit}
+\code{\link[rawr]{ggsurv}}; \code{survival:::plot.survfit};
+\code{\link{kmplot_by}}
 }
 
