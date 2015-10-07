@@ -1,5 +1,5 @@
 ### statistical functions
-# bincon, bintest, table, power_cv, simon2, moods_test, fakeglm
+# bincon, bintest, table, power_cv, simon2, moods_test, fakeglm, gcd
 ###
 
 
@@ -800,3 +800,15 @@ fakeglm <- function(formula, ..., family, data = NULL) {
   }
   out
 }
+
+#' GCD
+#' 
+#' Find greatest common divisor of two integers.
+#' 
+#' @param x,y integers
+#' @examples
+#' gcd(99, 2048)
+#' gcd(2 ** (1:12), 2048)
+#' @export
+
+gcd <- function(x, y) ifelse(r <- x%%y, Recall(y, r), y)
