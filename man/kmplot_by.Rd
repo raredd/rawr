@@ -4,8 +4,8 @@
 \alias{kmplot_by}
 \title{kmplot_by}
 \usage{
-kmplot_by(strata, event = "pfs", dat, by, pval = TRUE, ..., cols,
-  mar = c(8, 8, 3, 1), main, labs, fig)
+kmplot_by(strata, event = "pfs", dat, by, lr_test = TRUE, ..., sub,
+  strata_lab, fig_lab)
 }
 \arguments{
 \item{strata}{character string of the strata variable}
@@ -17,25 +17,27 @@ see details}
 
 \item{by}{optional character string of stratification variable}
 
-\item{pval}{logical; if \code{TRUE}, a log-rank test will be performed
+\item{lr_test}{logical; if \code{TRUE}, a log-rank test will be performed
 and the results added to the top-right corner of the plot}
 
 \item{...}{additional arguments passed to \code{\link{kmplot}} or
 graphical parameters subsequently passed to \code{\link{par}}}
 
-\item{cols}{vector of colors for curves}
+\item{sub}{sub-title displayed in upper left corner; should be a character
+vector with length equal to the number of panels (i.e., the number of
+levels of \code{by} or length one if \code{by} was not given)}
 
-\item{mar}{plotting margins}
+\item{labs}{at-risk table strata labels; should be a character vector with
+length equal to the number of strata; otherwise, the variable labels will
+be removed; see examples}
 
-\item{main}{title for figure}
-
-\item{labs}{at risk table labels}
-
-\item{fig}{figure panel label}
+\item{fig}{figure panel labels; should be a character vector with length
+equal to the number of panels (i.e., the number of levels of \code{by} or
+length one if \code{by} was not given)}
 }
 \value{
-Invisibly returns a list of data frames stratified by the \code{by}
-variable.
+Invisibly returns a list of data frames stratified (optionally) by the
+\code{by} variable.
 }
 \description{
 This function helps create stratified \code{\link{kmplot}}s quickly with
@@ -50,7 +52,7 @@ column unless \code{strata = "1"}.
 }
 \examples{
 library('survival')
-data(cancer)
+data(colon)
 colon <- within(colon[duplicated(colon$id), ], {
   pfs_time <- time
   pfs_ind <- status
@@ -58,10 +60,14 @@ colon <- within(colon[duplicated(colon$id), ], {
 })
 
 kmplot_by('1', dat = colon)
-kmplot_by('sex', dat = colon, fig = 'B', labs = c('F','M'))
-kmplot_by('rx', dat = colon, fig = '', labs = FALSE)
-kmplot_by('rx + sex', dat = colon)
-kmplot_by('rx', dat = colon, by = 'sex')
+kmplot_by('sex', dat = colon, fig_lab = 'B',
+  strata_lab = c('F','M'), sub = 'PFS, by sex')
+kmplot_by('rx', dat = colon, fig_lab = '', col.surv = 1:3,
+  strata_lab = FALSE, col.band = NA)
+kmplot_by('rx + sex', dat = colon, strata_lab = '',
+  lty.surv = 1:6, col.band = NA)
+kmplot_by('rx', dat = colon, by = 'sex', col.surv = 1:3,
+  strata_lab = c('Observation','Trt','Trt + 5-FU'))
 }
 \seealso{
 \code{\link{kmplot}}, \code{\link{survdiff}}

@@ -1,6 +1,6 @@
 ### survival stuff
-# kmplot, ggsurv, survdat, surv_summary, surv_table, local_coxph_test, surv_cp,
-# surv_summary, surv_table
+# kmplot, kmplot_by, ggsurv, survdat, surv_summary, surv_table,
+# local_coxph_test, surv_cp, surv_summary, surv_table
 ###
 
 
@@ -376,6 +376,120 @@ kmplot <- function(s,
   if (!add)
     par(op)
   invisible()
+}
+
+#' kmplot_by
+#' 
+#' This function helps create stratified \code{\link{kmplot}}s quickly with
+#' panel labels and log-rank tests for the subsets.
+#' 
+#' The data used should have at least three variables: \code{strata},
+#' \code{*_time}, and \code{*_ind} where \code{*} is \code{event}. For
+#' example, to use progression-free survival, \code{dat} should have columns
+#' \code{"pfs_time"} and \code{"pfs_ind"} and optionally the \code{strata}
+#' column unless \code{strata = "1"}.
+#' 
+#' @param strata character string of the strata variable
+#' @param event character string indicating the event (pfs, os, ttp, etc);
+#' see details
+#' @param dat data frame to use
+#' @param by optional character string of stratification variable
+#' @param lr_test logical; if \code{TRUE}, a log-rank test will be performed
+#' and the results added to the top-right corner of the plot
+#' @param ... additional arguments passed to \code{\link{kmplot}} or
+#' graphical parameters subsequently passed to \code{\link{par}}
+#' @param sub sub-title displayed in upper left corner; should be a character
+#' vector with length equal to the number of panels (i.e., the number of
+#' levels of \code{by} or length one if \code{by} was not given)
+#' @param labs at-risk table strata labels; should be a character vector with
+#' length equal to the number of strata; otherwise, the variable labels will
+#' be removed; see examples
+#' @param fig figure panel labels; should be a character vector with length
+#' equal to the number of panels (i.e., the number of levels of \code{by} or
+#' length one if \code{by} was not given)
+#' 
+#' @return
+#' Invisibly returns a list of data frames stratified (optionally) by the
+#' \code{by} variable.
+#' 
+#' @seealso
+#' \code{\link{kmplot}}, \code{\link{survdiff}}
+#' 
+#' @examples
+#' library('survival')
+#' data(colon)
+#' colon <- within(colon[duplicated(colon$id), ], {
+#'   pfs_time <- time
+#'   pfs_ind <- status
+#'   sex <- c('Female','Male')[sex + 1]
+#' })
+#' 
+#' kmplot_by('1', dat = colon)
+#' kmplot_by('sex', dat = colon, fig_lab = 'B',
+#'   strata_lab = c('F','M'), sub = 'PFS, by sex')
+#' kmplot_by('rx', dat = colon, fig_lab = '', col.surv = 1:3,
+#'   strata_lab = FALSE, col.band = NA)
+#' kmplot_by('rx + sex', dat = colon, strata_lab = '',
+#'   lty.surv = 1:6, col.band = NA)
+#' kmplot_by('rx', dat = colon, by = 'sex', col.surv = 1:3,
+#'   strata_lab = c('Observation','Trt','Trt + 5-FU'))
+#' 
+#' @export
+
+kmplot_by <- function(strata, event = 'pfs', dat, by, lr_test = TRUE, ...,
+                      sub, strata_lab, fig_lab) {
+  # on.exit(par(xpd = FALSE))
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
+  if (!missing(by)) {
+    add <- TRUE
+    par(mfrow = n2mfrow(length(unique(dat[, by]))))
+    sp <- split(dat, dat[, by])
+  } else {
+    add <- FALSE
+    par(mfrow = c(1,1))
+    sp <- list(dat)
+  }
+  mlabs <- missing(strata_lab)
+  msub <- missing(sub)
+  fig <- if (missing(fig_lab)) LETTERS[seq_along(sp)] else fig_lab
+  
+  l <- lapply(seq_along(sp), function(x) {
+    form <- as.formula(sprintf('Surv(%s_time, %s_ind) ~ %s',
+                               event, event, strata))
+    s <- survfit(form, data = sp[[x]], conf.type = 'log-log')
+    
+    if (strata == '1')
+      strata <- ''
+    names(s$strata) <- if (mlabs)
+      names(s$strata) else if (length(strata_lab) == length(s$strata))
+        strata_lab else gsub('\\w+=', '', names(s$strata))
+    
+    kmplot(s, ylab = sprintf('%s probability', toupper(event)), add = add,
+           legend = FALSE, main = names(sp)[x], ...,
+           panel.first = {
+             ## add plot text
+             p <- par('usr')
+             mtext(if (!msub) sub[x] else strata, side = 3, font = 3,
+                   at = 0, line = .5, adj = 0)
+             mtext(fig[x], side = 3, at = 0 - p[2] * .05,
+                   font = 2, cex = 1.5, line = 1.2)
+             
+             ## add survdiff text in upper right corner
+             if (lr_test && strata != '') {
+               sd <- survdiff(form, data = sp[[x]])
+               df <- sum(1 * (colSums(if (is.matrix(sd$obs))
+                 sd$obs else t(sd$obs)) > 0)) - 1
+               pv <- 1 - pchisq(sd$chisq, df)
+               txt <- sprintf('%s (%s df), %s', roundr(sd$chisq, 1),
+                              df, pvalr(pv, show.p = TRUE))
+               txt <- bquote(paste(chi^2, ' = ', .(txt)))
+               mtext(txt, side = 3, at = p[2], adj = 1,
+                     font = 3, cex = .8, line = .5)
+             }
+           })
+  })
+  invisible(sp)
 }
 
 #' Survival curves with ggplot
@@ -1100,117 +1214,6 @@ surv_cp <- function(dat, time.var, status.var,
     c(rep(0, length(x) - 2), 1)))
   dat[status.var] <- dat[status.var] * keep.status
   dat
-}
-
-#' kmplot_by
-#' 
-#' This function helps create stratified \code{\link{kmplot}}s quickly with
-#' panel labels and log-rank tests for the subsets.
-#' 
-#' The data used should have at least three variables: \code{strata},
-#' \code{*_time}, and \code{*_ind} where \code{*} is \code{event}. For
-#' example, to use progression-free survival, \code{dat} should have columns
-#' \code{"pfs_time"} and \code{"pfs_ind"} and optionally the \code{strata}
-#' column unless \code{strata = "1"}.
-#' 
-#' @param strata character string of the strata variable
-#' @param event character string indicating the event (pfs, os, ttp, etc);
-#' see details
-#' @param dat data frame to use
-#' @param by optional character string of stratification variable
-#' @param pval logical; if \code{TRUE}, a log-rank test will be performed
-#' and the results added to the top-right corner of the plot
-#' @param ... additional arguments passed to \code{\link{kmplot}} or
-#' graphical parameters subsequently passed to \code{\link{par}}
-#' @param cols vector of colors for curves
-#' @param mar plotting margins
-#' @param main title for figure
-#' @param labs at risk table labels
-#' @param fig figure panel label
-#' 
-#' @return
-#' Invisibly returns a list of data frames stratified by the \code{by}
-#' variable.
-#' 
-#' @seealso
-#' \code{\link{kmplot}}, \code{\link{survdiff}}
-#' 
-#' @examples
-#' library('survival')
-#' data(cancer)
-#' colon <- within(colon[duplicated(colon$id), ], {
-#'   pfs_time <- time
-#'   pfs_ind <- status
-#'   sex <- c('Female','Male')[sex + 1]
-#' })
-#' 
-#' kmplot_by('1', dat = colon)
-#' kmplot_by('sex', dat = colon, fig = 'B', labs = c('F','M'))
-#' kmplot_by('rx', dat = colon, fig = '', labs = FALSE)
-#' kmplot_by('rx + sex', dat = colon)
-#' kmplot_by('rx', dat = colon, by = 'sex')
-#' 
-#' @export
-
-kmplot_by <- function(strata, event = 'pfs', dat, by, pval = TRUE, ...,
-                      cols, mar = c(8,8,3,1), main, labs, fig) {
-  # on.exit(par(xpd = FALSE))
-  op <- par(no.readonly = TRUE)
-  on.exit(par(op))
-  if (!missing(by)) {
-    add <- TRUE
-    par(mfrow = n2mfrow(length(unique(dat[, by]))))
-    sp <- split(dat, dat[, by])
-  } else {
-    add <- FALSE
-    par(mfrow = c(1,1))
-    sp <- list(dat)
-  }
-  if (missing(cols))
-    cols <- palette()
-  mlabs <- missing(labs)
-  mmain <- missing(main)
-  fig <- if (missing(fig)) LETTERS[seq_along(sp)] else fig
-  
-  l <- lapply(seq_along(sp), function(x) {
-    form <- as.formula(sprintf('Surv(%s_time, %s_ind) ~ %s',
-                               event, event, strata))
-    s <- survfit(form, data = sp[[x]], conf.type = 'log-log')
-    
-    if (strata == '1')
-      strata <- ''
-    names(s$strata) <- if (mlabs) {
-      names(s$strata)
-    } else if (length(labs) == length(s$strata))
-      labs
-    else gsub('\\w+=', '', names(s$strata))
-    
-    kmplot(s, col.band = NA, col.surv = cols[seq_along(s$strata %||% 1)],
-           ylab = sprintf('%s probability', toupper(event)), add = add,
-           legend = FALSE, main = names(sp)[x], mar = mar, ...,
-           panel.first = {
-             
-             ## add plot text
-             mtext(if (!mmain) main else strata, side = 3, font = 3,
-                   at = 0, line = .5, adj = 0)
-             mtext(fig[x], side = 3, at = 0 - par('usr')[2] * .05,
-                   font = 2, cex = 1.5, line = 1.2)
-             
-             ## add survdiff text in upper right corner
-             if (pval && strata != '') {
-               sd <- survdiff(form, data = sp[[x]])
-               df <- sum(1 * (colSums(if (is.matrix(sd$obs))
-                 sd$obs else t(sd$obs)) > 0)) - 1
-               pv <- 1 - pchisq(sd$chisq, df)
-               txt <- sprintf('%s (%s df), %s', roundr(sd$chisq, 1),
-                              df, pvalr(pv, show.p = TRUE))
-               txt <- bquote(paste(chi^2, ' = ', .(txt)))
-               mtext(text = txt, side = 3, at = par('usr')[2], cex = .8,
-                     adj = 1, font = 3, line = .5)
-             }
-           })
-  })
-  invisible(sp)
 }
 
 #' Summary of a survival curve
