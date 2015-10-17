@@ -1,6 +1,6 @@
 context('ggsurv compatible')
 
-library(survival)
+library('survival')
 fit <- survfit(Surv(time, status) ~ 1, data = cancer)
 
 test_that('ggsurv: backwards compatiblity check', {

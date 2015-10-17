@@ -43,8 +43,8 @@ l <- list('~/desktop/tmp.csv',               ## normal file with directory
           '~/DESCRIPTION',                   ## no extension
           '~/desktop/tmp/a.filename.tar.gz') ## compound extension fails
 
-setNames(lapply(l, fname), l)
 setNames(lapply(l, path_extract), l)
+setNames(lapply(l, fname), l)
 setNames(lapply(l, file_name), l)
 setNames(lapply(l, file_ext), l)
 }
