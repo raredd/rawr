@@ -1043,31 +1043,72 @@ clear <- function(...) cat('\014')
 #'      options = list(tidy = FALSE, eval = FALSE))}
 #' }
 #' 
-#' @param FUN a function
+#' @param FUN a function as name or character string
 #' @param show.sections logical; if \code{TRUE}, returns \code{section} options
 #' for \code{FUN}
 #' @param section section to extract (default is \code{"Usage"}
 #' @param type type of character vector you want returned; default is 
 #' \code{"m_code"}, see details
-#' @param ... additional arguments passed to \code{utils:::.getHelpFile}
+#' @param ... additional arguments passed to \code{\link[utils]{help}}
 #' 
 #' @return 
-#' A character vector to be used in a Sweave or R-markdown document.
+#' A character vector to be used in a Sweave or Rmarkdown document.
 #' 
 #' @examples
-#' cat(helpExtract(print), sep = '\n')
+#' helpExtract(print, type = 'text')
 #' 
-#' cat(helpExtract(print, type = 'm_text'))
+#' cat(helpExtract(print), sep = '\n')
 #' 
 #' cat(helpExtract(print, type = 'm_text', section = 'description'))
 #' 
+#' ## selecting multiple sections prints section names
+#' cat(helpExtract(print, section = c('references', 'see also')), sep = '\n')
+#' 
 #' @export
 
-helpExtract <- function(FUN, show.sections = FALSE, section = 'Usage', 
-                        type = 'm_code', ...) {
-  ## helpers 
-  # tools:::fetchRdDB
-  fetchRdDB <- function (filebase, key = NULL) {
+helpExtract <- function(FUN, show.sections = FALSE, section = 'Usage',
+                 type = c('text','md_code','md_text','sw_code','sw_text'), ...) {
+  
+  type <- match.arg(type, c('text','md_code','md_text','sw_code','sw_text'), FALSE)
+  FUN <- ifelse(!is.character(substitute(FUN)), deparse(substitute(FUN)), FUN)
+  x <- helpExtract_(FUN, ...)
+  
+  ## section start lines
+  B <- grep('^_', x)
+  x <- gsub('_\b', '', x, fixed = TRUE)
+  if (show.sections)
+    return(gsub(':','', x[B]))
+  X <- rep(0, length(x))
+  X[B] <- 1
+  out <- split(x, cumsum(X))
+  vgrepl <- Vectorize(grepl)
+  out <- out[which(sapply(out, function(x) 
+    any(vgrepl(section, x[1], ignore.case = TRUE))))]
+  # out <- unlist(sapply(out, '[', -(1:2)))
+  out <- if (length(section) > 1) unname(unlist(out)) else out[[1]][-(1:2)]
+  while (TRUE) {
+    out <- out[-length(out)]
+    if (out[length(out)] != '')
+      break
+  }
+  
+  switch(type,
+         text = out,
+         md_code = c('```r', out, '```'),
+         sw_code = c('<<>>=', out, '@'),
+         md_text = paste('    ', out, collapse = '\n'),
+         sw_text = c('\\begin{verbatim}', out, '\\end{verbatim}'),
+         stop('\"type\" must be either \"m_code\", \"s_code\", \"m_text\", ',
+              'or \"s_text\"')
+  )
+}
+
+helpExtract_ <- function(FUN, ...) {
+  # (helpExtract_('print'))
+  stopifnot(is.character(FUN))
+  
+  ## tools:::fetchRdDB
+  fetchRdDB <- function(filebase, key = NULL) {
     fun <- function(db) {
       vals <- db$vals
       vars <- db$vars
@@ -1092,8 +1133,9 @@ helpExtract <- function(FUN, show.sections = FALSE, section = 'Usage',
       res
     else invisible(res)
   }
-  # utils:::.getHelpFile
-  getHelpFile <- function (file) {
+  
+  ## utils:::.getHelpFile
+  getHelpFile <- function(file) {
     path <- dirname(file)
     dirpath <- dirname(path)
     if (!file.exists(dirpath)) 
@@ -1106,33 +1148,9 @@ helpExtract <- function(FUN, show.sections = FALSE, section = 'Usage',
     fetchRdDB(RdDB, basename(file))
   }
   
-  A <- deparse(substitute(FUN))
-  x <- capture.output(tools::Rd2txt(getHelpFile(utils::help(A, ...)),
-                                     options = list(sectionIndent = 0)))
-  ## section start lines
-  B <- grep('^_', x)
-  x <- gsub('_\b', '', x, fixed = TRUE)
-  if (show.sections)
-    return(gsub(':','', x[B]))
-  X <- rep(FALSE, length(x))
-  X[B] <- 1
-  out <- split(x, cumsum(X))
-  out <- out[[which(sapply(out, function(x) 
-    grepl(section, x[1], fixed = FALSE, ignore.case = TRUE)))]][-c(1, 2)]
-  while (TRUE) {
-    out <- out[-length(out)]
-    if (out[length(out)] != '')
-      break
-  }
-  
-  switch(type,
-         m_code = c('```r', out, '```'),
-         s_code = c('<<>>=', out, '@'),
-         m_text = paste('    ', out, collapse = '\n'),
-         s_text = c('\\begin{verbatim}', out, '\\end{verbatim}'),
-         stop('\"type\" must be either \"m_code\", \"s_code\", \"m_text\", ',
-              'or \"s_text\"')
-  )
+  x <- capture.output(tools::Rd2txt(getHelpFile(utils::help(FUN, ...)),
+                                    options = list(sectionIndent = 0)))
+  invisible(x)
 }
 
 #' Round vector to target sum
@@ -1830,18 +1848,22 @@ classMethods <- function(class) {
 #' @param m an object with match data
 #' 
 #' @return
-#' A list with captures for each string in \code{x}.
+#' A list with a matrix of captures for each string in \code{x}. Note that the
+#' column names of each matrix will be the starting positions of the captures.
 #' 
 #' @seealso \code{\link{regmatches}}
 #' @references \url{https://gist.github.com/MrFlick/10413321}
 #' 
 #' @examples
-#' x <- c('larry:35,M', 'alison:22,F', 'dave', 'lily:55,F')
-#' m <- regexpr('(.*):(\\d+),([MF])', x, perl = TRUE)
+#' x <- c('larry:35,M', 'alison:22,F', 'dave:,M', 'lily:55,F', 'no data')
+#' m <- regexpr('(.*):(\\d+)?,([MF])?', x, perl = TRUE)
 #' regcaptures(x, m)
 #' 
 #' x <- 'ACCACCACCAC'
 #' m <- gregexpr('(?=([AC]C))', x, perl = TRUE)
+#' regcaptures(x, m)[[1]]
+#' 
+#' m <- gregexpr('(?=(CC))', x, perl = TRUE)
 #' regcaptures(x, m)[[1]]
 #' 
 #' ## compare:
@@ -1876,9 +1898,10 @@ regcaptures <- function(x, m) {
   
   Substring <- function(x, starts, lens) {
     if (!all(starts < 0)) {
-      t(mapply(function(x, st, ln)
+      ss <- t(mapply(function(x, st, ln)
         substring(x, st, st + ln - 1), x, data.frame(t(starts)),
         data.frame(t(lens)), USE.NAMES = FALSE))
+      `colnames<-`(ss, starts)
     } else character()
   }
   
@@ -1916,8 +1939,8 @@ regcaptures <- function(x, m) {
 #'           '~/DESCRIPTION',                   ## no extension
 #'           '~/desktop/tmp/a.filename.tar.gz') ## compound extension fails
 #' 
-#' setNames(lapply(l, fname), l)
 #' setNames(lapply(l, path_extract), l)
+#' setNames(lapply(l, fname), l)
 #' setNames(lapply(l, file_name), l)
 #' setNames(lapply(l, file_ext), l)
 #' 
@@ -1930,7 +1953,7 @@ path_extract <- function(path) {
                   paste(m[, 'filename'], m[, 'extension'],
                         sep = ifelse(nzchar(m[, 'extension']), '.', '')))
   if (gsub('\\./', '', mm) != p || !nzchar(m[, 'filename']))
-    warning('Results could not be validated')
+    warning('Results could not be validated', domain = NA)
   m
 }
 
