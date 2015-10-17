@@ -12,19 +12,23 @@ regcaptures(x, m)
 \item{m}{an object with match data}
 }
 \value{
-A list with captures for each string in \code{x}.
+A list with a matrix of captures for each string in \code{x}. Note that the
+column names of each matrix will be the starting positions of the captures.
 }
 \description{
 Extract the captured substrings from match data obtained by
 \code{\link{regexpr}}, \code{\link{gregexpr}}, or \code{\link{regexec}}.
 }
 \examples{
-x <- c('larry:35,M', 'alison:22,F', 'dave', 'lily:55,F')
-m <- regexpr('(.*):(\\\\d+),([MF])', x, perl = TRUE)
+x <- c('larry:35,M', 'alison:22,F', 'dave:,M', 'lily:55,F', 'no data')
+m <- regexpr('(.*):(\\\\d+)?,([MF])?', x, perl = TRUE)
 regcaptures(x, m)
 
 x <- 'ACCACCACCAC'
 m <- gregexpr('(?=([AC]C))', x, perl = TRUE)
+regcaptures(x, m)[[1]]
+
+m <- gregexpr('(?=(CC))', x, perl = TRUE)
 regcaptures(x, m)[[1]]
 
 ## compare:
