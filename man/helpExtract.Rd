@@ -5,10 +5,10 @@
 \title{Extract R help files}
 \usage{
 helpExtract(FUN, show.sections = FALSE, section = "Usage",
-  type = "m_code", ...)
+  type = c("text", "md_code", "md_text", "sw_code", "sw_text"), ...)
 }
 \arguments{
-\item{FUN}{a function}
+\item{FUN}{a function as name or character string}
 
 \item{show.sections}{logical; if \code{TRUE}, returns \code{section} options
 for \code{FUN}}
@@ -18,10 +18,10 @@ for \code{FUN}}
 \item{type}{type of character vector you want returned; default is
 \code{"m_code"}, see details}
 
-\item{...}{additional arguments passed to \code{utils:::.getHelpFile}}
+\item{...}{additional arguments passed to \code{\link[utils]{help}}}
 }
 \value{
-A character vector to be used in a Sweave or R-markdown document.
+A character vector to be used in a Sweave or Rmarkdown document.
 }
 \description{
 Extracts specified portions of R help files (from \emph{loaded} libraries)
@@ -60,10 +60,13 @@ To insert a (highlighted) chunk into a Sweave document:
 }
 }
 \examples{
+helpExtract(print, type = 'text')
+
 cat(helpExtract(print), sep = '\\n')
 
-cat(helpExtract(print, type = 'm_text'))
-
 cat(helpExtract(print, type = 'm_text', section = 'description'))
+
+## selecting multiple sections prints section names
+cat(helpExtract(print, section = c('references', 'see also')), sep = '\\n')
 }
 
