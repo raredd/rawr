@@ -64,7 +64,7 @@ helpExtract(print, type = 'text')
 
 cat(helpExtract(print), sep = '\\n')
 
-cat(helpExtract(print, type = 'm_text', section = 'description'))
+cat(helpExtract(print, type = 'md_text', section = 'description'))
 
 ## selecting multiple sections prints section names
 cat(helpExtract(print, section = c('references', 'see also')), sep = '\\n')
