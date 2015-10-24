@@ -21,7 +21,7 @@ roundr(x, digits = 1)
 \item{digits}{number of digits past the decimal point to keep}
 }
 \value{
-A vector of character strings.
+An object having the same class as \code{x}.
 }
 \description{
 Improved rounding formatter.
@@ -30,12 +30,23 @@ Improved rounding formatter.
 Uses \code{\link[base]{sprintf}} to round numeric value, retaining extra 0s.
 }
 \examples{
-roundr(51.01, 3)
+round(0.199, 2)
+
+## compare to
 roundr(0.199, 2)
 
+## useful for dropping the negative sign in case 1:
 roundr(c(-0.0002, 0.0002, 0.5, -0.5, -0.002), digits = 3)
 
-roundr(matrix(1:9, 3), 2)
+## for matrices or data frames (including factors and/or characters)
+roundr(matrix(1:9, 3))
+
+dd <- within(head(mtcars), {
+  mpg <- as.character(mpg)
+  cyl <- factor(cyl, labels = LETTERS[1:3])
+})
+
+roundr(dd)
 }
 \seealso{
 \code{\link[base]{round}}; \code{\link[base]{sprintf}}
