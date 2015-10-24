@@ -13,15 +13,17 @@ Imports:
     Hmisc,
     knitr,
     plotrix,
-    rstudio,
     survival,
     testthat
 Suggests:
     desmon,
+    DT,
     htmlTable,
+    htmlwidgets,
     lattice,
     lme4,
-    markdown
+    markdown,
+    rstudio
 License: GPL-2
 LazyData: yes
 URL: https://github.com/raredd/rawr
