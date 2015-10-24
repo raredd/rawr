@@ -7,7 +7,7 @@
 # Round, bind_all, cbindx, rbindx, rbindfill, interleave, outer2, merge2,
 # locf, roll_fun, round_to, updateR, read_clip, fcols, classMethods,
 # regcaptures, path_extract, fname, file_name, file_ext, cast, melt,
-# install_temp, nestedMerge, fill_df, kinda_sort, rgene, mgsub
+# install_temp, nestedMerge, fill_df, kinda_sort, rgene, mgsub, view, view2
 ###
 
 #' rawr operators
@@ -1059,7 +1059,7 @@ clear <- function(...) cat('\014')
 #' 
 #' cat(helpExtract(print), sep = '\n')
 #' 
-#' cat(helpExtract(print, type = 'm_text', section = 'description'))
+#' cat(helpExtract(print, type = 'md_text', section = 'description'))
 #' 
 #' ## selecting multiple sections prints section names
 #' cat(helpExtract(print, section = c('references', 'see also')), sep = '\n')
@@ -1067,9 +1067,11 @@ clear <- function(...) cat('\014')
 #' @export
 
 helpExtract <- function(FUN, show.sections = FALSE, section = 'Usage',
-                 type = c('text','md_code','md_text','sw_code','sw_text'), ...) {
+                 type = c('text','md_code','md_text','sw_code','sw_text'),
+                 ...) {
   
-  type <- match.arg(type, c('text','md_code','md_text','sw_code','sw_text'), FALSE)
+  type <- match.arg(type, c('text','md_code','md_text','sw_code','sw_text'),
+                    several.ok = FALSE)
   FUN <- ifelse(!is.character(substitute(FUN)), deparse(substitute(FUN)), FUN)
   x <- helpExtract_(FUN, ...)
   
@@ -2360,14 +2362,15 @@ kinda_sort <- function(x, n, decreasing = FALSE, indices) {
 #' 
 #' @examples
 #' rgene()
-#' rgene(5, alpha = 'AB', nalpha = 1, nnum = 5:6)
+#' rgene(5, alpha = 'ABCD', nalpha = 1, nnum = 5:6)
+#' rgene(5, alpha = c('A','T','C','G'), num = '', sep = '')
 #' 
 #' @export
 
 rgene <- function(n = 1, alpha = LETTERS[1:5], nalpha = 2:5,
                   num = 0:9, nnum = 1:5, sep = '-', seed = NULL) {
-  set.seed(seed)
   p0 <- function(...) paste0(..., collapse = '')
+  set.seed(seed)
   alphas <- function()
     sample(alpha, size = sample(nalpha, 1), replace = TRUE)
   numerics <- function()
@@ -2406,4 +2409,55 @@ mgsub <- function(pattern, x, ...) {
   gsub2 <- function(l, x)
     do.call('gsub', c(list(x = x, pattern = l[1], replacement = l[2]), dots))
   Reduce(gsub2, pattern, x, right = TRUE)
+}
+
+#' View data
+#' 
+#' Convenience functons to use the base \code{R} data viewer (\code{view}
+#' always invokes \code{\link[utils]{View}} instead of the rstudio viewer)
+#' or the default browser (\code{view2} which can open html and widgets in
+#' the browser or to view data frame- or matrix-like objects using
+#' \code{\link[DT]{datatable}}.
+#' 
+#' @param x an \code{R} object which can be coerced to a data frame with
+#' non-zero numbers of rows and columns or an \code{htmlwidget} object
+#' @param title title for viewer window, defaults to name of \code{x}
+#' prefixed by \code{Data:}
+#' @param ... additional arguments passed to \code{\link[DT]{datatable}}
+#' @param use_viewer logical; if \code{TRUE}, opens in the
+#' \code{\link[rstudio]{viewer}} if available; otherwise, opens in the default
+#' browser
+#' 
+#' @examples
+#' view2(mtcars)
+#' view2(htmlTable::htmlTable(mtcars))
+#' 
+#' \dontrun{
+#' view2(qtlcharts::iplot(1:5, 1:5))
+#' }
+#' 
+#' @name rawr_view
+#' @export
+
+#' @rdname rawr_view
+#' @export
+view <- function(x, title, ...) utils::View(x, title)
+
+#' @rdname rawr_view
+#' @export
+view2 <- function(x, use_viewer = FALSE, ...) {
+  if (is.data.frame(x) | is.matrix(x))
+    x <- DT::datatable(x)
+  htmlFile <- tempfile(fileext = '.html')
+  if (inherits(x, 'htmlwidget'))
+    htmlwidgets::saveWidget(x, htmlFile, selfcontained = TRUE) else
+      writeLines(x, con = htmlFile)
+  if (use_viewer)
+    tryCatch(rstudio::viewer(htmlFile),
+             error = function(e) {
+               message('Viewer not available - opening in browser.\n',
+                       'In RStudio, try installing the \'rstudio\' package.',
+                       domain = NA)
+               browseURL(htmlFile)
+             }) else browseURL(htmlFile)
 }
