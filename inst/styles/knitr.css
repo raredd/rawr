@@ -1,20 +1,21 @@
-body, td {
-  font-family: "Calibri";
-  !background-color: white;
-  font-size: 11pt;
-}
-
 body {
   font-size: 11pt;
+  font-family: Calibri;
+  /* font-family: Georgia; */
   color: #000000;
   max-width: 55em;
   margin: auto;
-  padding: 1em;
-  !line-height: 20px;
+  padding: 2em;
+  letter-spacing: .1px;
   /*
+  line-height: 20px;
   text-align: justify;
   text-justify: inter-word;
   */
+}
+
+body, td {
+  /* background-color: white; */
 }
 
 table {
@@ -23,30 +24,30 @@ table {
   margin-bottom: 3em;
   border: none;
   border-collapse: separate;
-  border-spacing: 0 0em;
+  border-spacing: 0 0;
 }
 
 td, tr {
-  /*font: 10pt Calibri;*/
-  padding: 0px;
-  margin: 0px;
+  padding: 0;
+  margin: 0;
+  /* font: 10pt Calibri; */
 }
- 
+
 p {
-  margin-left: 15px;
-  margin-bottom: 5px;
+  margin: 5px 15px;
+  padding: 5px 0;
   text-align: justify;
   text-justify: inter-word;
 }
 
 blockquote {
   background-color: #f6f6f6;
-  padding: 13px;
+  padding: 10px;
   padding-bottom: 1px;
 }
 
 hr {
-  height: 0px;
+  height: 0;
   border-bottom: none;
   border-top-width: thin;
   border-top-style: dotted;
@@ -58,139 +59,130 @@ dl {
 }
 
 dl, dd {
-    margin-bottom: 13px;
-    margin-left: 13px;
-  }
+  margin-bottom: 13px;
+  margin-left: 13px;
+}
 
 ul {
   margin-top: 0;
+  margin-bottom: 0;
 }
 
 ul, li {
-    list-style: circle outside;
-  }
-
-ul, ul {
-    margin-bottom: 0;
-  }
+  list-style: circle outside;
+}
 
 code {
   font-family: Consolas, Monaco, 'Courier New', monospace;
   color: #000;
-  padding: 0px;
+  padding: 0;
 }
 
-/* in-line r */
+/* in-line code */
 p > code, li > code {
-  color: #900;
+  color: #0000aa;
   border: 1px solid #ddd;
   border-radius: 3px;
   background-color: #f6f6f6;
   font-size: 90%;
-  padding: 0px 2px;
+  padding: 0 2px;
   font-weight: 400;
 }
-
-/*
-pre > code {
-  font-size: 12px;
-  line-height: 16px;
-}
-*/
 
 pre {
   font-size: 12px;
   line-height: 16px;
-  white-space: pre-wrap;    /* Wrap long lines */
+  /* white-space: pre-wrap; /* wrap long lines */
+  padding: 10px 20px;
+  border: 1px solid #aaaaaa;
+  border-radius: 5px;
+  width: 85%;
+  margin: auto;
 }
 
 pre.r {
-  background-color: #f6f6f6;
-  padding: 4px 10px;
-  border: 1px solid #aabbdd;
-  border-radius: 5px;
-  margin: 5px 5px 10px 20px;
+  /* spacing between r code and printed output */
+  margin-bottom: 10px;
 }
-
-img {
-  background-color: #ffffff;
-  padding: 2px;
-  !border: 1px solid #dddddd;
-  !border-radius: 3px;
-  box-shadow: 2px 2px 12px -5px #999999;
-  margin: auto;
-  max-width: 75em;
-  !max-height: 75em;
-}
-
-a {
-  color: #6f6f6f;
-  text-decoration: underline dotted;
-}
-  a:hover {
-    color: #aaaaaa; }
-  a:visited {
-    color: #aaaaaa; }
-  a:visited:hover {
-    color: #aaaaaa; }
-  a[href^="http:"] {
-    text-decoration: underline dotted; }
-  a[href^="https:"] {
-    text-decoration: underline dotted; }
-
-dl dt {
-  font-weight: bold;
-}
-
 pre .operator {
   color: #000000;
 }
 pre .paren {
   color: #000000;
 }
-
 pre .literal {
- color: #2255dd;
+  color: #2255dd;
 }
-
 pre .number {
- color: #2255dd;
+  color: #2255dd;
 }
-
 pre .comment {
- color: #7f7f7f;
- font-style: italic
+  color: #7f7f7f;
+  font-style: italic
 }
-
 pre .keyword {
- color: #2255dd;
- font-weight: bold;
+  color: #2255dd;
+  font-weight: bold;
 }
-
 pre .identifier {
- color: #000000;
+  color: #000000;
+}
+pre .string {
+  color: #008844;
 }
 
-pre .string {
- color: #008844;
+img {
+  background-color: #ffffff;
+  box-shadow: 2px 2px 12px -5px #aaaabb;
+  margin: 20px 0 10px 0 !important;
+  text-justify: inter-word;
+  /*
+  padding: 10px;
+  max-width: 50em;
+  max-height: 75em;
+  border: 1px solid #dddddd;
+  border-radius: 3px;
+  */
+}
+
+a {
+  color: #6f6f6f;
+  text-decoration: underline dotted;
+}
+a:hover {
+  color: #aaaaaa;
+}
+a:visited {
+  color: #aaaabb;
+}
+a:visited:hover {
+  color: #aaaaaa;
+}
+a[href^="http:"] {
+  text-decoration: underline dotted;
+}
+a[href^="https:"] {
+  text-decoration: underline dotted;
 }
 
 h1, h6 {
-  margin-left: 15px;
+  margin-left: 11pt;
   margin-bottom: 5px;
   text-align: center;
-  text-center: inter-word;
+  text-justify: inter-word;
 }
-
-h2, h3 {
- ! border-bottom: 2px solid #ccc;
+h2 {
   width: 75%;
   padding-top: 10px;
-  font-size: 18px;
+  font-size: 14pt;
+  border-bottom: 2px solid #ccc;
 }
-
+h3 {
+  width: 75%;
+  padding-top: 10px;
+  font-size: 14pt;
+}
 h4, h5 {
- ! border-bottom: 1px solid #ccc;
   width: 60%;
   margin-left: 8px;
   font-size: 16px;
@@ -203,30 +195,51 @@ h4, h5 {
   width: 400px;
   border: 1px solid #cccccc;
   border-radius: 5px;
-
   background-color: #f6f6f6;
   font-size: 13px;
   line-height: 16px;
 }
 
 #TOC .toctitle {
-font-weight: bold;
-font-size: 15px;
-margin-left: 5px;
+  font-weight: bold;
+  font-size: 15px;
+  margin-left: 5px;
 }
 
 #TOC ul {
-padding-left: 40px;
-margin-left: -1.5em;
-margin-top: 5px;
-margin-bottom: 5px;
+  padding-left: 40px;
+  margin-left: -1.5em;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 
 #TOC ul ul {
-margin-left: -2em;
+  margin-left: -2em;
 }
 
 #TOC li {
-line-height: 16px;
+  line-height: 16px;
 }
 
+/* rules */
+
+.columns-2 {
+  -webkit-columns: 2; /* chrome, safari, opera*/
+  -moz-columns: 2;    /* firefox */
+  columns: 2;
+}
+.columns-3 {
+  -webkit-columns: 3;
+  -moz-columns: 3;
+  columns: 3;
+}
+.sh {
+  font-weight: bold;
+  background-color: #f8f8f8;
+}
+
+figcaption {
+  text-align: justify;
+  text-justify: inter-word;
+  font-size: 90%;
+}
