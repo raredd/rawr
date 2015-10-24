@@ -218,19 +218,29 @@ show_math <- function(..., css, use_viewer = !is.null(getOption('viewer'))) {
 #' @param digits number of digits past the decimal point to keep
 #'
 #' @return
-#' A vector of character strings.
+#' An object having the same class as \code{x}.
 #' 
 #' @seealso
 #' \code{\link[base]{round}}; \code{\link[base]{sprintf}}
 #'
 #' @examples
-#' roundr(51.01, 3)
+#' round(0.199, 2)
+#' 
+#' ## compare to
 #' roundr(0.199, 2)
 #' 
-# useful for dropping the negative in case 1:
+#' ## useful for dropping the negative sign in case 1:
 #' roundr(c(-0.0002, 0.0002, 0.5, -0.5, -0.002), digits = 3)
 #' 
-#' roundr(matrix(1:9, 3), 2)
+#' ## for matrices or data frames (including factors and/or characters)
+#' roundr(matrix(1:9, 3))
+#' 
+#' dd <- within(head(mtcars), {
+#'   mpg <- as.character(mpg)
+#'   cyl <- factor(cyl, labels = LETTERS[1:3])
+#' })
+#' 
+#' roundr(dd)
 #' 
 #' @export
 
@@ -242,7 +252,7 @@ roundr.default <- function(x, digits = 1) {
   mode.ok <- vapply(x, function(x) is.numeric(x) || is.complex(x), NA)
   if (!all(mode.ok))
     stop('non-numeric argument to mathematical function')
-  res <- sprintf(paste0('%.', digits, 'f'), x)
+  res <- sprintf(paste0('%.', digits = digits, 'f'), x)
   zzz <- paste0('0.', paste(rep('0', digits), collapse = ''))
   res[res == paste0('-', zzz)] <- zzz
   'names<-'(res, names(x))
@@ -252,20 +262,21 @@ roundr.default <- function(x, digits = 1) {
 #' @export
 roundr.data.frame <- function(x, digits = 1) {
   mode.ok <- vapply(x, function(x) is.numeric(x) || is.complex(x), NA)
-  if (!all(mode.ok))
-    stop(paste0('non-numeric variable in data frame, ', deparse(substitute(x))))
-  else
-    do.call(data.frame, lapply(x, roundr, digits))
+  if (sum(mode.ok) < 1)
+    stop(paste0('non-numeric variables in data frame, ',
+                deparse(substitute(x))))
+  else x[]  <- lapply(seq_along(mode.ok), function(ii)
+    if (mode.ok[ii]) roundr.default(x[, ii], digits = digits) else x[, ii])
+  x
 }
 
 #' @rdname roundr
 #' @export
 roundr.matrix <- function(x, digits = 1) {
-  mode.ok <- vapply(x, function(x) is.numeric(x) || is.complex(x), NA)
-  if (!all(mode.ok))
+  if (!is.numeric(x) || is.complex(x))
     stop(paste0('non-numeric variable in matrix, ', deparse(substitute(x))))
-  else
-    apply(x, 2, roundr, digits)
+  else x[] <- roundr.default(x, digits)
+  x
 }
 
 #' Interval formatter
