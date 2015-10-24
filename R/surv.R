@@ -401,12 +401,12 @@ kmplot <- function(s,
 #' @param sub sub-title displayed in upper left corner; should be a character
 #' vector with length equal to the number of panels (i.e., the number of
 #' levels of \code{by} or length one if \code{by} was not given)
-#' @param labs at-risk table strata labels; should be a character vector with
-#' length equal to the number of strata; otherwise, the variable labels will
-#' be removed; see examples
-#' @param fig figure panel labels; should be a character vector with length
-#' equal to the number of panels (i.e., the number of levels of \code{by} or
-#' length one if \code{by} was not given)
+#' @param strata_lab at-risk table strata labels; should be a character vector
+#' with length equal to the number of strata; otherwise, the variable labels
+#' will be removed; see examples
+#' @param fig_lab figure panel labels; should be a character vector with
+#' length equal to the number of panels (i.e., the number of levels of
+#' \code{by} or length one if \code{by} was not given)
 #' 
 #' @return
 #' Invisibly returns a list of data frames stratified (optionally) by the

@@ -27,13 +27,13 @@ graphical parameters subsequently passed to \code{\link{par}}}
 vector with length equal to the number of panels (i.e., the number of
 levels of \code{by} or length one if \code{by} was not given)}
 
-\item{labs}{at-risk table strata labels; should be a character vector with
-length equal to the number of strata; otherwise, the variable labels will
-be removed; see examples}
+\item{strata_lab}{at-risk table strata labels; should be a character vector
+with length equal to the number of strata; otherwise, the variable labels
+will be removed; see examples}
 
-\item{fig}{figure panel labels; should be a character vector with length
-equal to the number of panels (i.e., the number of levels of \code{by} or
-length one if \code{by} was not given)}
+\item{fig_lab}{figure panel labels; should be a character vector with
+length equal to the number of panels (i.e., the number of levels of
+\code{by} or length one if \code{by} was not given)}
 }
 \value{
 Invisibly returns a list of data frames stratified (optionally) by the
