@@ -51,6 +51,10 @@ for convenience.
 ## default of melt is no id variable so all are melted
 melt(mtcars)
 
+## compare to
+reshape(mtcars, dir = 'long', varying = list(names(mtcars)))
+
+
 dat <- data.frame(id = rep(1:4, rep(2, 4)),
                   visit = I(rep(c('Before', 'After'), 4)),
                   x = abs(rpois(4, 10)), y = -runif(4))
@@ -68,6 +72,7 @@ cast(l, 1:2, 3, list('value'))
 ## cast assumes columns are id, time, followed by all varying:
 cast(dat)
 
+
 dat <- within(dat, {
   xx <- abs(rpois(4, 10))
   yy <- -runif(4, 1, 2)
@@ -81,6 +86,7 @@ melt(dat, c('x','xx','y','yy'))
 
 ## use a list instead
 melt(dat, list(c('x','xx'), c('y','yy')))
+
 
 ## melt or cast can also be undone as other reshape objects
 w1 <- reshape(Indometh, v.names = "conc", idvar = "Subject",
