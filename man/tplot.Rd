@@ -153,7 +153,9 @@ tplot(age ~ group, data = dat, las = 1, cex.n = .8, cex.axis = 1, bty = 'L',
       boxcol = c('lightsteelblue1', 'lightyellow1', grey(.9)),
       boxplot.pars = list(notch = TRUE, boxwex = .5))
 }
-\references{
-\url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
+\seealso{
+\href{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}{Tatsuki
+\code{tplot}}; \href{http://data.vanderbilt.edu/~graywh/dotplot/}{web app
+for Tatsuki \code{tplot}}
 }
 

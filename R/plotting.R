@@ -985,8 +985,10 @@ jmplot <- function(x, y, z,
 #' place but before the axes, title, and box are added; see the comments about 
 #' \code{panel.first}
 #' 
-#' @references
-#' \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
+#' @seealso
+#' \href{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}{Tatsuki
+#' \code{tplot}}; \href{http://data.vanderbilt.edu/~graywh/dotplot/}{web app
+#' for Tatsuki \code{tplot}}
 #' 
 #' @examples
 #' ## equivalent ways to call tplot
