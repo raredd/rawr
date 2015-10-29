@@ -1,5 +1,5 @@
 ## sas helpers
-# r2sas, rmacro, get_margs, sas_mget, source_sas
+# r2sas, rmacro, get_margs, sas_mget, source_sas, parse_formats
 ##
 
 
@@ -39,7 +39,7 @@
 #' 
 #' @seealso
 #' \code{\link{rmacro}}, \code{\link{get_margs}}, \code{\link{sas_mget}},
-#' \code{\link{source_sas}}
+#' \code{\link{source_sas}}, \code{\link{parse_formats}}
 #' 
 #' @examples
 #' \dontrun{
@@ -140,7 +140,7 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
   return(invisible())
 }
 
-#' Call SAS macros
+#' Call \code{SAS} macros
 #' 
 #' \code{rmacro} runs \code{SAS} macros in \code{.sas} files from \code{R}.
 #' 
@@ -180,7 +180,7 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
 #' 
 #' @seealso 
 #' \code{\link{get_margs}}, \code{\link{r2sas}}, \code{\link{sas_mget}}
-#' \code{\link{source_sas}}
+#' \code{\link{source_sas}}, \code{\link{parse_formats}}
 #' 
 #' @examples
 #' \dontrun{
@@ -232,7 +232,7 @@ rmacro <- function(mpath, mname, args, saspath, show.args = FALSE,
         saspath = saspath, force = force, out = out)
 }
 
-#' Get arguments from SAS macros
+#' Get arguments from \code{SAS} macros
 #' 
 #' Reads a text file (usually \code{.sas}) and extracts \code{SAS} macro names
 #' and parameters with any default values; see tests in examples below.
@@ -248,7 +248,7 @@ rmacro <- function(mpath, mname, args, saspath, show.args = FALSE,
 #' 
 #' @seealso
 #' \code{\link{rmacro}}, \code{\link{r2sas}}, \code{\link{sas_mget}},
-#' \code{\link{source_sas}}
+#' \code{\link{source_sas}}, \code{\link{parse_formats}}
 #' 
 #' @examples
 #' get_margs(text = '%macro macro(a = 1, b = 2); %mend;')
@@ -334,7 +334,7 @@ get_margs <- function(mpath, mname, text) {
   as.list(margs)[mname]
 }
 
-#' Convert multiple SAS data sets to R data frame
+#' Convert multiple \code{SAS} data sets to \code{R} data frame
 #' 
 #' User-friendly wrapper of \code{\link[Hmisc]{sas.get}} to convert one or
 #' more \code{SAS} data sets (\code{.sas7bdat} files) into a list of \code{R}
@@ -378,7 +378,7 @@ get_margs <- function(mpath, mname, text) {
 #' 
 #' @seealso
 #' \code{\link{rmacro}}, \code{\link{get_margs}}, \code{\link{r2sas}},
-#' \code{\link{source_sas}}
+#' \code{\link{source_sas}}, \code{\link{parse_formats}}
 #' 
 #' @examples
 #' \dontrun{
@@ -524,7 +524,7 @@ sas_mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
   } else invisible()
 }
 
-#' Source SAS code
+#' Source \code{SAS} code
 #' 
 #' \code{\link{source}}-esque function for \code{.sas} files
 #' 
@@ -533,7 +533,7 @@ sas_mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
 #' 
 #' @seealso
 #' \code{\link{r2sas}}, \code{\link{rmacro}}, \code{\link{get_margs}},
-#' \code{\link{sas_mget}}
+#' \code{\link{sas_mget}}, \code{\link{parse_formats}}
 #' 
 #' @examples
 #' \dontrun{
@@ -556,4 +556,97 @@ source_sas <- function(path, ...) {
   sas <- readLines(con <- file(path), warn = FALSE)
   close(con)
   r2sas(code = paste(sas, sep = '\n'), ...)
+}
+
+#' Get formats from \code{SAS} format files
+#' 
+#' Reads a text file (usually \code{.sas}) and extracts \code{SAS} format
+#' variable names and format values.
+#' 
+#' @param path character string of path to \code{.sas} file
+#' 
+#' @return
+#' A list with format names in \code{path} and their respective values and
+#' labels as named character vectors.
+#' 
+#' @seealso
+#' \code{\link{rmacro}}, \code{\link{r2sas}}, \code{\link{sas_mget}},
+#' \code{\link{source_sas}}
+#' 
+#' @examples
+#' p <- system.file('testfiles', 'formats.sas', package = 'rawr')
+#' cat(readLines(p), sep = '\n')
+#' 
+#' #  /*
+#' #    sas format file
+#' #  */
+#' #  
+#' #  proc format;
+#' #    value $jc 'one' = 'management'
+#' #              'two' = 'non-management';
+#' #    value rate 
+#' #           -99 = 'not applicable'
+#' #            -1 = 'missing'
+#' #             0 = 'terrible'
+#' #             1 = 'poor'
+#' #             2 = 'fair'
+#' #             3 = 'good'
+#' #             4 = 'excellent';
+#' #    value with_comments
+#' #           -99 = 'not applicable' * comment here;
+#' #            -1 = 'missing'
+#' #             0 = 'terrible' /* comment */
+#' #             1 = 'poor'
+#' #             * comment here;
+#' #             2 = 'fair'
+#' #             3 = 'good'
+#' #             /* 
+#' #               long
+#' #               comment
+#' #             */
+#' #             4 = 'excellent';
+#' #  run;
+#' 
+#' (pp <- parse_formats(p))
+#' 
+#' #  $jc
+#' #    'management' 'non-management'; 
+#' #         "'one'"           "'two'" 
+#' #  
+#' #  $rate
+#' #  'not applicable'        'missing'       'terrible'           'poor' 
+#' #             "-99"             "-1"              "0"              "1" 
+#' #            'fair'           'good'      'excellent' 
+#' #               "2"              "3"              "4" 
+#' #  
+#' #  $with_comments
+#' #  'not applicable'        'missing'       'terrible'           'poor' 
+#' #             "-99"             "-1"              "0"              "1" 
+#' #            'fair'           'good'      'excellent' 
+#' #               "2"              "3"              "4" 
+#' 
+#' names(pp[[3]][match(c('1','-99','2','0'), pp[[3]])])
+#' 
+#' @export
+
+parse_formats <- function(path) {
+  fmt <- readLines(path)
+  fmt <- gsub('\\*.*;|\\/\\*.*\\*\\/', '', fmt)
+  vars <- gsub('(?i)value\\W+(\\w*)|.', '\\1', fmt, perl = TRUE)
+#   vals <- gsub("(?i)([\'\"]?[a-z\\d -]+[\'\"]?\\s*=\\s*[\'\"]?[a-z\\d -,]+[\'\"]?)|.", '\\1',
+#                fmt, perl = TRUE)
+  regex <- '[\'\"].*[\'\"]|[\\w\\d-]+'
+  vals <- gsub(sprintf('(?i)\\s*(%s)\\s*(=)\\s*(%s)|.', regex, regex),
+               '\\1\\2\\3', fmt, perl = TRUE)
+  vars <- locf(vars)
+  dd <- data.frame(values = vars, formats = vals, stringsAsFactors = FALSE)
+  dd <- dd[with(dd, is.na(values) | nzchar(formats)), ]
+  sp <- split(dd$formats, dd$values)
+  lapply(sp, function(x) {
+    x <- Filter(nzchar, x)
+    x <- strsplit(x, '=')
+    tw <- function(x) gsub('^\\s+|\\s+$', '', x)
+    sapply(x, function(y)
+      setNames(tw(y[1]), tw(y[2])))
+  })
 }
