@@ -29,3 +29,4 @@ LazyData: yes
 URL: https://github.com/raredd/rawr
 Roxygen: list(wrap = FALSE)
 VignetteBuilder: knitr
+RoxygenNote: 5.0.0
