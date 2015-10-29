@@ -1606,32 +1606,43 @@ merge2 <- function(l, ...) Reduce(function(x, y) merge(x, y, ...), l)
 #' Last observation carried forward
 #' 
 #' Replaces \code{NA} in vectors, data frames, or matrices with most recent
-#' non-\code{NA} value
+#' non-\code{NA} value.
 #' 
 #' @param x a vector, matrix, or data frame
 #' @param fromLast logical; if \code{TRUE}, starts from end
+#' @param na.strings a vector of values to be treated as \code{NA}; optionally
+#' a list of single elements can be used for mixed data types; see examples
 #' 
 #' @examples
-#' df <- data.frame(V1 = c('Bob', NA, NA, 'Joe', NA, NA),
-#'                  V2 = c(NA, 1, NA, NA, 2, NA))
+#' x <- c('','','a','','b','','','','c')
+#' locf(x)
+#' locf(x, TRUE)
 #' 
-#' within(df, {
-#'   V1 <- locf(V1)
-#'   V2 <- locf(V2, fromLast = TRUE)
-#' })
+#' df <- data.frame(V1 = c('Bob', NA, NA, 'Joe', NA, NA),
+#'                  V2 = c(NA, 1, NA, NA, 2, NA), stringsAsFactors = FALSE)
 #' 
 #' locf(df)
+#' locf(df, c(FALSE, TRUE))
+#' locf(df, na.strings = 2)
+#' 
+#' ## note the differences
+#' locf(df, na.strings = c('Joe', 2))
+#' locf(df, na.strings = list('Joe', 02))
+#' locf(df, na.strings = list('Joe', '02'))
 #' 
 #' @export
 
-locf <- function(x, fromLast = FALSE) {
+locf <- function(x, fromLast = FALSE, na.strings = '') {
   if (!(ok <- !is.null(nrow(x))))
-    x <- data.frame(x)
+    x <- data.frame(x, stringsAsFactors = FALSE)
+  fromLast <- rep(fromLast, ncol(mtcars))
+  if (length(na.strings))
+    for (ii in seq_along(na.strings))
+      x[x == unlist(na.strings[ii])] <- NA
   indx <- !is.na(x)
-  #   if (!missing(ch.strings))
-  #     indx <- do.call('cbind', lapply(x, `%in%`, ch.strings))
+  
   x[] <- lapply(seq_along(x), function(ii) {
-    if (fromLast) {
+    if (fromLast[ii]) {
       idx <- rev(cumsum(rev(indx[, ii])))
       idx[idx == 0] <- NA
       return(rev(x[, ii])[rev(indx[, ii])][idx])
