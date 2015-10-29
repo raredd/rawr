@@ -2,7 +2,7 @@
 % Please edit documentation in R/sas.R
 \name{sas_mget}
 \alias{sas_mget}
-\title{Convert multiple SAS data sets to R data frame}
+\title{Convert multiple \code{SAS} data sets to \code{R} data frame}
 \usage{
 sas_mget(libpath, dsn, saspath, fmtpath, catalog = FALSE, log.file, ...,
   force = FALSE)
@@ -78,6 +78,6 @@ data.list <- sas_mget('./tests/testfiles/')
 }
 \seealso{
 \code{\link{rmacro}}, \code{\link{get_margs}}, \code{\link{r2sas}},
-\code{\link{source_sas}}
+\code{\link{source_sas}}, \code{\link{parse_formats}}
 }
 

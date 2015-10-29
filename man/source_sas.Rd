@@ -2,7 +2,7 @@
 % Please edit documentation in R/sas.R
 \name{source_sas}
 \alias{source_sas}
-\title{Source SAS code}
+\title{Source \code{SAS} code}
 \usage{
 source_sas(path, ...)
 }
@@ -32,6 +32,6 @@ source_sas('./tests/testfiles/onemacro.sas')
 }
 \seealso{
 \code{\link{r2sas}}, \code{\link{rmacro}}, \code{\link{get_margs}},
-\code{\link{sas_mget}}
+\code{\link{sas_mget}}, \code{\link{parse_formats}}
 }
 

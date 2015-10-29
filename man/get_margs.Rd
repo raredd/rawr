@@ -2,7 +2,7 @@
 % Please edit documentation in R/sas.R
 \name{get_margs}
 \alias{get_margs}
-\title{Get arguments from SAS macros}
+\title{Get arguments from \code{SAS} macros}
 \usage{
 get_margs(mpath, mname, text)
 }
@@ -71,6 +71,6 @@ get_margs(file.path(path, 'onemacro.sas'), c('macro2', 'macro5'))
 }
 \seealso{
 \code{\link{rmacro}}, \code{\link{r2sas}}, \code{\link{sas_mget}},
-\code{\link{source_sas}}
+\code{\link{source_sas}}, \code{\link{parse_formats}}
 }
 

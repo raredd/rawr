@@ -2,7 +2,7 @@
 % Please edit documentation in R/sas.R
 \name{rmacro}
 \alias{rmacro}
-\title{Call SAS macros}
+\title{Call \code{SAS} macros}
 \usage{
 rmacro(mpath, mname, args, saspath, show.args = FALSE, force = FALSE,
   firstArgs, lastArgs, out = getwd())
@@ -78,6 +78,6 @@ rmacro('./tests/testfiles/onemacro.sas',
 }
 \seealso{
 \code{\link{get_margs}}, \code{\link{r2sas}}, \code{\link{sas_mget}}
-\code{\link{source_sas}}
+\code{\link{source_sas}}, \code{\link{parse_formats}}
 }
 
