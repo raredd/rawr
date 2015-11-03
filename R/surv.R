@@ -479,7 +479,7 @@ kmplot_by <- function(strata, event = 'pfs', dat, by, lr_test = TRUE, ...,
              if (lr_test && strata != '') {
                sd <- survdiff(form, data = sp[[x]])
                df <- sum(1 * (colSums(if (is.matrix(sd$obs))
-                 sd$obs else t(sd$obs)) > 0)) - 1
+                 sd$exp else t(sd$exp)) > 0)) - 1
                pv <- 1 - pchisq(sd$chisq, df)
                txt <- sprintf('%s (%s df), %s', roundr(sd$chisq, 1),
                               df, pvalr(pv, show.p = TRUE))
