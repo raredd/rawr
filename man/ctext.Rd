@@ -37,10 +37,10 @@ all label types; see examples.
 }
 \examples{
 plot(1, ann = FALSE)
-ctext(x = 1, y = 1, text = c('hello','little','point'), cols = 1:3)
-cmtext(c('a','side','label'), 1:2, FALSE, side = 4, cex = 5)
+ctext(x = 1, y = 1, text = c('hello','little','point'), cols = 1:3, pos = 1)
+cmtext(c('a','side','label'), 1:2, space = FALSE, side = 4, cex = 3)
 
-## note that line, cex, font, etc are recycled
+## note that line, cex, font, etc will be recycled
 ctitle(main = c('the','main','label'), xlab = c('x','label'),
        ylab = c('y','label'), sub = c('sub', 'label'), col = 3:5)
 ctitle(xlab = c('another','label'), ylab = c('another','label'),
