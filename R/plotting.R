@@ -1104,8 +1104,8 @@ tplot.default <- function(x, ...,
   
   type <- match.arg(type, choices = c('d','db','bd','b'), several.ok = TRUE)
   ## type of plot for each group
-  if ((length(type) > 1) && (length(type) !=  ng))
-    warning("length of \'type\' does not match the number of groups")
+  # if ((length(type) > 1) && (length(type) !=  ng))
+  #   warning("length of \'type\' does not match the number of groups")
   type <- rep(type, length.out = ng)
   
   ## default colors
@@ -1131,26 +1131,26 @@ tplot.default <- function(x, ...,
   
   ## colors by group
   if (group.col) {
-    if (length(col) !=  ng)
-      warning("length of \'col\' does not match the number of groups")
+    # if (length(col) !=  ng)
+    #   warning("length of \'col\' does not match the number of groups")
     g.col <- rep(col, length.out = ng)
     col <- rep(g.col, l)
     ## colors by individual or global
   } else {
-    if ((length(col) > 1) && (length(col) !=  nv))
-      warning("length of \'col\' does not match the number of data points")
+    # if ((length(col) > 1) && (length(col) !=  nv))
+    #   warning("length of \'col\' does not match the number of data points")
     col   <- rep(col, length.out = nv)
     g.col <- rep(1, length.out = ng)
   }
   ## plot characters by group
   if (group.pch) {
-    if (length(pch) !=  ng)
-      warning("length of \'pch\' does not match the number of groups")
+    # if (length(pch) !=  ng)
+    #   warning("length of \'pch\' does not match the number of groups")
     pch <- rep(rep(pch, length.out = ng), l)
     ## plot characters by individual or global
   } else {
-    if ((length(pch) > 1) && (length(pch) !=  nv))
-      warning("length of \'pch\' does not match the number of data points")
+    # if ((length(pch) > 1) && (length(pch) !=  nv))
+    #   warning("length of \'pch\' does not match the number of data points")
     pch <- rep(pch, length.out = nv)
   }
   
@@ -1896,10 +1896,10 @@ grcols <- function(n, s = .5, v = 1, alpha = 1) {
 #' 
 #' @examples
 #' plot(1, ann = FALSE)
-#' ctext(x = 1, y = 1, text = c('hello','little','point'), cols = 1:3)
-#' cmtext(c('a','side','label'), 1:2, FALSE, side = 4, cex = 5)
+#' ctext(x = 1, y = 1, text = c('hello','little','point'), cols = 1:3, pos = 1)
+#' cmtext(c('a','side','label'), 1:2, space = FALSE, side = 4, cex = 3)
 #' 
-#' ## note that line, cex, font, etc are recycled
+#' ## note that line, cex, font, etc will be recycled
 #' ctitle(main = c('the','main','label'), xlab = c('x','label'),
 #'        ylab = c('y','label'), sub = c('sub', 'label'), col = 3:5)
 #' ctitle(xlab = c('another','label'), ylab = c('another','label'),
