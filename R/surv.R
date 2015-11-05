@@ -1,6 +1,6 @@
 ### survival stuff
-# kmplot, kmplot_by, ggsurv, survdat, surv_summary, surv_table,
-# local_coxph_test, surv_cp, surv_summary, surv_table
+# kmplot, kmplot_by, ggsurv, survdat, local_coxph_test, surv_cp,
+# surv_summary, surv_table
 ###
 
 
