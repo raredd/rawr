@@ -943,7 +943,8 @@ tox_worst <- function(dat, id = 'casenum', tox_desc = 'tox_desc', tox_grade = 't
   ## sort by id, toxicity, and grade
   dat <- dat[order(dat[, id], dat[, tox_desc], -xtfrm(dat[, tox_grade])), ]
   idx <- which(duplicated(dat[, c(id, tox_desc)]))
-  list(tox_worst = dat[-idx, ], dat = dat, duplicates = idx)
+  list(tox_worst = if (length(idx)) dat[-idx, ] else dat,
+       dat = dat, duplicates = idx)
 }
 
 #' Date parse
