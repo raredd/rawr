@@ -7,7 +7,8 @@
 # Round, bind_all, cbindx, rbindx, rbindfill, interleave, outer2, merge2,
 # locf, roll_fun, round_to, updateR, read_clip, fcols, classMethods,
 # regcaptures, path_extract, fname, file_name, file_ext, cast, melt,
-# install_temp, nestedMerge, fill_df, kinda_sort, rgene, mgsub, view, view2
+# install_temp, nestedMerge, fill_df, kinda_sort, rgene, mgsub, view, view2,
+# flatten
 ###
 
 #' rawr operators
@@ -2477,4 +2478,29 @@ view2 <- function(x, use_viewer = FALSE, ...) {
                        domain = NA)
                browseURL(htmlFile)
              }) else browseURL(htmlFile)
+}
+
+#' Flatten lists
+#' 
+#' Flattens lists and nested lists of vectors, matrices, and/or data frames
+#' 
+#' @param l a list
+#' 
+#' @references
+#' \url{https://stackoverflow.com/questions/8139677/how-to-flatten-a-list-to-a-list-without-coercion}
+#' 
+#' @examples
+#' (l <- list(matrix(1:3), list(1:3, 'foo'), TRUE, 'hi',
+#'            list(head(mtcars), list(tail(mtcars)))))
+#' flatten(l)
+#' 
+#' @export
+
+flatten <- function(l) {
+  f <- function(x) !is.data.frame(x) & is.list(x)
+  while (any(vapply(l, f, NA))) {
+    l <- lapply(l, function(x) if (f(x)) x else list(x))
+    l <- unlist(l, recursive = FALSE)
+  }
+  l
 }
