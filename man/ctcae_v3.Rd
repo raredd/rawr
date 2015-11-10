@@ -12,6 +12,9 @@
 \tab \code{tox_cat} \tab category \cr
 \tab \code{ctc_version} \tab version number \cr
 }}
+\source{
+\url{http://ctep.cancer.gov/protocolDevelopment/electronic_applications/docs/ctcaev3.pdf}
+}
 \usage{
 ctcae_v3
 }

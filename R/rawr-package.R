@@ -13,8 +13,12 @@ NULL
 #'
 #' A dataset containing the CTCAE (version 3) toxicity codes, descriptions, and
 #' categories.
+#' 
+#' @source
+#' \url{http://ctep.cancer.gov/protocolDevelopment/electronic_applications/docs/ctcaev3.pdf}
 #'
-#' @format A data frame with 1059 rows and 4 variables:
+#' @format
+#' A data frame with 1059 rows and 4 variables:
 #' 
 #' \tabular{lll}{
 #' \tab \code{tox_code} \tab alphanumeric toxicity code (\code{AB123}) \cr
@@ -30,9 +34,10 @@ NULL
 #' categories.
 #'  
 #' @source
-#' \href{http://www.dfhcc.harvard.edu/fileadmin/DFHCC_Admin/Clinical_Trials/QACT/Policies_and_Procedures/CTCToxVersion4.pdf}{CTCAE v4}
+#' \url{http://evs.nci.nih.gov/ftp1/CTCAE/CTCAE_4.03_2010-06-14_QuickReference_8.5x11.pdf}
 #'
-#' @format A data frame with 790 rows and 5 variables:
+#' @format
+#' A data frame with 790 rows and 5 variables:
 #' 
 #' \tabular{lll}{
 #' \tab \code{tox_code} \tab alphanumeric toxicity code (\code{AB123}) \cr

@@ -15,7 +15,7 @@
 Activities codes, v12 \cr
 }}
 \source{
-\href{http://www.dfhcc.harvard.edu/fileadmin/DFHCC_Admin/Clinical_Trials/QACT/Policies_and_Procedures/CTCToxVersion4.pdf}{CTCAE v4}
+\url{http://evs.nci.nih.gov/ftp1/CTCAE/CTCAE_4.03_2010-06-14_QuickReference_8.5x11.pdf}
 }
 \usage{
 ctcae_v4
