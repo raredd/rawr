@@ -2074,7 +2074,7 @@ river <- function(data, id, at = id, legend = 'topleft', xlim, ylim, ...) {
   
   plot.new()
   par(mar = c(4,0,1,0))
-  plot.window(if (!missing(xlim)) xlim else c(0, rx[2]),
+  plot.window(if (!missing(xlim)) xlim else c(0, diff(rx)),
               if (!missing(ylim)) ylim else c(0, nrow(data)))
   axis(1, tcl = .2, las = 1)
   title(xlab = 'Days from study entry', line = 2.5)
