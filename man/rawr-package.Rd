@@ -6,7 +6,6 @@
 \alias{rawr-package}
 \title{rawr}
 \description{
-Personal package with miscellaneous functions, stuff in progress, and
-tools I use regularly.
+rawr miscellaneous
 }
 

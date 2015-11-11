@@ -1,32 +1,26 @@
 Package: rawr
 Type: Package
-Title: rawr package
-Version: 0.6.2
+Title: rawr miscellaneous
+Version: 0.7.0
 Authors@R: person("Robert", "Redd", email = "raredd01@gmail.com",
   role = c("aut", "cre"))
-Description: Personal package with miscellaneous functions, stuff in progress,
-  and tools I use regularly.
+Description: Miscellaneous plotting, statistical, analysis, and utility
+    functions.
 Imports:
-  ggplot2,
-  grid,
-  gridExtra,
-  Hmisc,
-  knitr,
-  plotrix,
-  survival,
-  testthat
+    survival
 Suggests:
-  desmon,
-  DT,
-  htmlTable,
-  htmlwidgets,
-  lattice,
-  lme4,
-  markdown,
-  rstudio
+    desmon,
+    DT,
+    Hmisc,
+    htmlTable,
+    htmlwidgets,
+    knitr,
+    markdown,
+    rstudio,
+    testthat
 License: GPL-2
 LazyData: yes
 URL: https://github.com/raredd/rawr
 Roxygen: list(wrap = FALSE)
 VignetteBuilder: knitr
-RoxygenNote: 5.0.0
+RoxygenNote: 5.0.1

@@ -178,7 +178,7 @@ dev.off()
 \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
 }
 \seealso{
-\code{\link[rawr]{ggsurv}}; \code{survival:::plot.survfit};
+\code{\link[plotr]{ggsurv}}; \code{survival:::plot.survfit};
 \code{\link{kmplot_by}}
 }
 

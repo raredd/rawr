@@ -1,3 +1,10 @@
+rawr 0.7.0
+--------
+  * removed a bunch of dependencies - no one likes a clingy package
+  * moved little-used plotting functions and utilities to plotr
+  * restructured some stuff
+  * R CMD check succeeded, Status: OK
+
 rawr 0.6.2
 --------
   * version bump

@@ -6,7 +6,7 @@
 \alias{river2}
 \title{River plots}
 \usage{
-river(data, id, at = id, legend = "topleft", xlim, ylim, ...)
+river(data, id, at = id, legend = "topleft", xlim, ylim)
 
 river2(data, id = 1, tox, legend = "topleft", xlim, ylim)
 

@@ -4,10 +4,10 @@
 \alias{tabler_by}
 \title{tabler_by}
 \usage{
-tabler_by(dat, varname, byvar, n, order = FALSE, zeros, pct.col = FALSE)
+tabler_by(data, varname, byvar, n, order = FALSE, zeros, pct.col = FALSE)
 }
 \arguments{
-\item{dat}{a data frame; variables \code{varname} and \code{byvar} should
+\item{data}{a data frame; variables \code{varname} and \code{byvar} should
 be factors}
 
 \item{varname}{variable with subgroups to count}
@@ -41,7 +41,7 @@ population for a subgroup, i.e., if creating a table for a subset of the
 data, it is only necessary to provide the total \code{n} for that group.
 
 If more than one \code{n} is given, \code{tabler_by} assumes that the
-entire data set is given to \code{dat} and will use the corresponding 
+entire data set is given to \code{data} and will use the corresponding 
 \code{n} to show percentages out of each respective subgroup.
 }
 \examples{

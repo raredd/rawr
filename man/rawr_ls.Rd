@@ -108,7 +108,7 @@ lsp('rawr', 'path')
 lsp('rawr', NULL)
 
 ## data sets
-lsp('ggplot2', 'lazydata')
+lsp('rawr', 'lazydata')
 
 }
 \seealso{

@@ -4,11 +4,11 @@
 \alias{tox_worst}
 \title{Find most severe toxicities}
 \usage{
-tox_worst(dat, id = "casenum", tox_desc = "tox_desc",
+tox_worst(data, id = "casenum", tox_desc = "tox_desc",
   tox_grade = "tox_grade")
 }
 \arguments{
-\item{dat}{toxicity data frame}
+\item{data}{toxicity data frame}
 
 \item{id}{column name with identifier}
 
@@ -19,7 +19,7 @@ with the desired order to be properly sorted}
 }
 \value{
 A list of length three with \code{tox_worst}, the filtered data frame;
-\code{dat}, the input data frame sorted by \code{id}, \code{tox_desc},
+\code{data}, the input data frame sorted by \code{id}, \code{tox_desc},
 and \code{tox_grade}; and \code{duplicates}, the rows which correspond to
 duplicate \code{tox_desc} per \code{id} but of an equal or lesser 
 \code{tox_grade}.

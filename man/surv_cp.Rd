@@ -4,16 +4,16 @@
 \alias{surv_cp}
 \title{Create counting process data}
 \usage{
-surv_cp(dat, time.var, status.var, covars = setdiff(names(dat), c(time.var,
+surv_cp(data, time.var, status.var, covars = setdiff(names(data), c(time.var,
   status.var)))
 }
 \arguments{
-\item{dat}{data frame with survival time, survival status, and other 
+\item{data}{data frame with survival time, survival status, and other 
 covariates}
 
-\item{time.var}{\code{dat} variable name representing survival time}
+\item{time.var}{\code{data} variable name representing survival time}
 
-\item{status.var}{\code{dat} variable name representing status}
+\item{status.var}{\code{data} variable name representing status}
 
 \item{covars}{other covariates to retain}
 }

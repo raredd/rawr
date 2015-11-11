@@ -1,5 +1,6 @@
 ### statistical functions
-# bincon, bintest, table, power_cv, simon2, moods_test, fakeglm, gcd
+# bincon, bintest, dlt_table, power_cv, simon2, moods_test, fakeglm, gcd,
+# install.bioc
 ###
 
 
@@ -812,3 +813,30 @@ fakeglm <- function(formula, ..., family, data = NULL) {
 #' @export
 
 gcd <- function(x, y) ifelse(r <- x%%y, Recall(y, r), y)
+
+#' Install bioconductor
+#' 
+#' Installs bioconductor base, packages, or upgrades.
+#' 
+#' @param pkgs character vector of package names to install
+#' @param upgrade logical; if \code{TRUE} updates installed packages
+#' 
+#' @examples
+#' \dontrun{
+#' install.bioc()
+#' install.bioc('Biostrings')
+#' }
+#' @export
+
+install.bioc <- function(pkgs, upgrade = FALSE) {
+  source('http://bioconductor.org/biocLite.R')
+  f <- function(...)
+    biocLite(..., suppressAutoUpdate = TRUE, suppressUpdates = TRUE)
+  if (upgrade) {
+    biocLite(suppressAutoUpdate = TRUE, suppressUpdates = FALSE)
+    return(invisible())
+  }
+  if (missing(pkgs))
+    f() else f(pkgs)
+  invisible()
+}

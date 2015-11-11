@@ -4,8 +4,8 @@
 \alias{kmplot_by}
 \title{kmplot_by}
 \usage{
-kmplot_by(strata, event = "pfs", dat, by, lr_test = TRUE, ..., sub,
-  strata_lab, fig_lab)
+kmplot_by(strata, event = "pfs", data, by, single = TRUE, lr_test = TRUE,
+  ylab, sub, strata_lab, fig_lab, ...)
 }
 \arguments{
 \item{strata}{character string of the strata variable}
@@ -13,15 +13,17 @@ kmplot_by(strata, event = "pfs", dat, by, lr_test = TRUE, ..., sub,
 \item{event}{character string indicating the event (pfs, os, ttp, etc);
 see details}
 
-\item{dat}{data frame to use}
+\item{data}{data frame to use}
 
 \item{by}{optional character string of stratification variable}
+
+\item{single}{logical; if \code{TRUE}, each level of \code{by} will be
+drawn in a separate window}
 
 \item{lr_test}{logical; if \code{TRUE}, a log-rank test will be performed
 and the results added to the top-right corner of the plot}
 
-\item{...}{additional arguments passed to \code{\link{kmplot}} or
-graphical parameters subsequently passed to \code{\link{par}}}
+\item{ylab}{y-axis label}
 
 \item{sub}{sub-title displayed in upper left corner; should be a character
 vector with length equal to the number of panels (i.e., the number of
@@ -34,6 +36,9 @@ will be removed; see examples}
 \item{fig_lab}{figure panel labels; should be a character vector with
 length equal to the number of panels (i.e., the number of levels of
 \code{by} or length one if \code{by} was not given)}
+
+\item{...}{additional arguments passed to \code{\link{kmplot}} or
+graphical parameters subsequently passed to \code{\link{par}}}
 }
 \value{
 Invisibly returns a list of data frames stratified (optionally) by the
@@ -59,14 +64,18 @@ colon <- within(colon[duplicated(colon$id), ], {
   sex <- c('Female','Male')[sex + 1]
 })
 
-kmplot_by('1', dat = colon)
-kmplot_by('sex', dat = colon, fig_lab = 'B',
+kmplot_by('1', data = colon)
+
+kmplot_by('sex', data = colon, fig_lab = 'B',
   strata_lab = c('F','M'), sub = 'PFS, by sex')
-kmplot_by('rx', dat = colon, fig_lab = '', col.surv = 1:3,
+  
+kmplot_by('rx', data = colon, col.surv = 1:3,
   strata_lab = FALSE, col.band = NA)
-kmplot_by('rx + sex', dat = colon, strata_lab = '',
+  
+kmplot_by('rx + sex', data = colon, strata_lab = '',
   lty.surv = 1:6, col.band = NA)
-kmplot_by('rx', dat = colon, by = 'sex', col.surv = 1:3,
+  
+kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3, single = TRUE,
   strata_lab = c('Observation','Trt','Trt + 5-FU'))
 
 }

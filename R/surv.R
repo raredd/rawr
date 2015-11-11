@@ -1,6 +1,5 @@
 ### survival stuff
-# kmplot, kmplot_by, ggsurv, survdat, local_coxph_test, surv_cp,
-# surv_summary, surv_table
+# kmplot, kmplot_by, local_coxph_test, surv_cp, surv_summary, surv_table
 ###
 
 
@@ -89,7 +88,7 @@
 #' \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
 #' 
 #' @seealso
-#' \code{\link[rawr]{ggsurv}}; \code{survival:::plot.survfit};
+#' \code{\link[plotr]{ggsurv}}; \code{survival:::plot.survfit};
 #' \code{\link{kmplot_by}}
 #' 
 #' @examples
@@ -392,12 +391,13 @@ kmplot <- function(s,
 #' @param strata character string of the strata variable
 #' @param event character string indicating the event (pfs, os, ttp, etc);
 #' see details
-#' @param dat data frame to use
+#' @param data data frame to use
 #' @param by optional character string of stratification variable
+#' @param single logical; if \code{TRUE}, each level of \code{by} will be
+#' drawn in a separate window
 #' @param lr_test logical; if \code{TRUE}, a log-rank test will be performed
 #' and the results added to the top-right corner of the plot
-#' @param ... additional arguments passed to \code{\link{kmplot}} or
-#' graphical parameters subsequently passed to \code{\link{par}}
+#' @param ylab y-axis label
 #' @param sub sub-title displayed in upper left corner; should be a character
 #' vector with length equal to the number of panels (i.e., the number of
 #' levels of \code{by} or length one if \code{by} was not given)
@@ -407,6 +407,8 @@ kmplot <- function(s,
 #' @param fig_lab figure panel labels; should be a character vector with
 #' length equal to the number of panels (i.e., the number of levels of
 #' \code{by} or length one if \code{by} was not given)
+#' @param ... additional arguments passed to \code{\link{kmplot}} or
+#' graphical parameters subsequently passed to \code{\link{par}}
 #' 
 #' @return
 #' Invisibly returns a list of data frames stratified (optionally) by the
@@ -424,35 +426,47 @@ kmplot <- function(s,
 #'   sex <- c('Female','Male')[sex + 1]
 #' })
 #' 
-#' kmplot_by('1', dat = colon)
-#' kmplot_by('sex', dat = colon, fig_lab = 'B',
+#' kmplot_by('1', data = colon)
+#' 
+#' kmplot_by('sex', data = colon, fig_lab = 'B',
 #'   strata_lab = c('F','M'), sub = 'PFS, by sex')
-#' kmplot_by('rx', dat = colon, fig_lab = '', col.surv = 1:3,
+#'   
+#' kmplot_by('rx', data = colon, col.surv = 1:3,
 #'   strata_lab = FALSE, col.band = NA)
-#' kmplot_by('rx + sex', dat = colon, strata_lab = '',
+#'   
+#' kmplot_by('rx + sex', data = colon, strata_lab = '',
 #'   lty.surv = 1:6, col.band = NA)
-#' kmplot_by('rx', dat = colon, by = 'sex', col.surv = 1:3,
+#'   
+#' kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3, single = TRUE,
 #'   strata_lab = c('Observation','Trt','Trt + 5-FU'))
 #' 
 #' @export
 
-kmplot_by <- function(strata, event = 'pfs', dat, by, lr_test = TRUE, ...,
-                      sub, strata_lab, fig_lab) {
+kmplot_by <- function(strata, event = 'pfs', data, by, single = TRUE,
+                      lr_test = TRUE, ylab, sub, strata_lab, fig_lab, ...) {
   # on.exit(par(xpd = FALSE))
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
   if (!missing(by)) {
-    add <- TRUE
-    par(mfrow = n2mfrow(length(unique(dat[, by]))))
-    sp <- split(dat, dat[, by])
+    if (single) {
+      add <- FALSE
+      par(mfrow = c(1,1))
+    } else {
+      add <- TRUE
+      par(mfrow = n2mfrow(length(unique(data[, by]))))
+    }
+    sp <- split(data, data[, by])
   } else {
     add <- FALSE
     par(mfrow = c(1,1))
-    sp <- list(dat)
+    sp <- list(data)
   }
   mlabs <- missing(strata_lab)
   msub <- missing(sub)
-  fig <- if (missing(fig_lab)) LETTERS[seq_along(sp)] else fig_lab
+  fig <- if (length(sp) > 1 & missing(fig_lab))
+    LETTERS[seq_along(sp)] else if (missing(fig_lab)) '' else fig_lab
+  ylab <- if (missing(ylab))
+    sprintf('%s probability', toupper(event)) else ylab
   
   l <- lapply(seq_along(sp), function(x) {
     form <- as.formula(sprintf('Surv(%s_time, %s_ind) ~ %s',
@@ -465,8 +479,7 @@ kmplot_by <- function(strata, event = 'pfs', dat, by, lr_test = TRUE, ...,
       names(s$strata) else if (length(strata_lab) == length(s$strata))
         strata_lab else gsub('\\w+=', '', names(s$strata))
     
-    kmplot(s, ylab = sprintf('%s probability', toupper(event)), add = add,
-           legend = FALSE, main = names(sp)[x], ...,
+    kmplot(s, add = add, legend = FALSE, main = names(sp)[x], ylab = ylab, ...,
            panel.first = {
              ## add plot text
              p <- par('usr')
@@ -490,619 +503,6 @@ kmplot_by <- function(strata, event = 'pfs', dat, by, lr_test = TRUE, ...,
            })
   })
   invisible(sp)
-}
-
-#' Survival curves with ggplot
-#' 
-#' Plot Kaplan-Meier or Cox proportional hazards models with at-risk table
-#' using \code{\link[ggplot2]{ggplot}}.
-#' 
-#' The argument \code{confband = TRUE} does not plot a confidence band in the 
-#' statistical sense, i.e., xx-percent chance of containing entire population 
-#' of the survival curve which are wider than the point-wise confidence limits.
-#' Rather, it refers to a band of color in \code{ggplot} objects, specifically 
-#' the use of a \code{\link[ggplot2]{geom_ribbon}} geometric shape. The band is
-#' bounded by the confidence limits calculated in the \code{survfit} object
-#' which is passed to \code{ggsurv} in the initial function call.
-#' 
-#' Long strata labels can mis-align the at risk numbers and plot ticks. If the
-#' arguments \code{plot.margin} and \code{table.margin} are \code{NULL}, the
-#' function will make a guess based on the number of characters in the strata
-#' labels. If this is not perfect, \code{plot.margin} and \code{table.margin}
-#' can be specified explicitly by providing a single numeric corresponding to
-#' the number of "lines" of padding (see \code{\link{unit}}). Note that the 
-#' default for \code{ggplot} is \code{unit(.25, "lines")}.
-#' 
-#' @param s \code{\link{survfit}} or \code{survfit.cox} object
-#' @param col.surv color of survival lines; should be one color or match 
-#' number of strata
-#' @param lty.surv line type used for survival line; default is 1 (solid line)
-#' @param censor logical; if \code{TRUE}, plots censored observations (default)
-#' @param col.cens color for censore
-#' @param mark plotting character for censored observations
-#' @param confin logical; plot confidence bounds around survival estimate
-#' @param confband logical; plot confidence band; note that this is not a 
-#' confidence band in the statistical sense; see details
-#' @param col.band band colors; if \code{NULL}, uses default ggplot colors 
-#' (default); should be one color or match number of strata
-#' @param median logical; if \code{TRUE}, plots line corresponding to median 
-#' survival (inherits \code{col.surv})
-#' @param atrisk logical; if \code{TRUE}, adds table with number of at-risk
-#' observatons at each \code{tick} timepoint; color of text inherits from 
-#' \code{col.surv}
-#' @param col.atrisk optional color for at risk text, e.g., 'black'
-#' @param pval two-element numeric vector corresponding to x- and y-coordinates
-#' to plot a p-value; p-value based on log-rank test for significant 
-#' differences in Kaplan-Meier curves (see \code{\link{survdiff}}); if 
-#' \code{NULL}, no test is performed (default)
-#' @param basehaz logical; if \code{TRUE}, returns baseline survival curve of a 
-#' \code{\link[survival]{coxph}} object; see \code{\link[survival]{basehaz}}
-#' @param ticks three-element numeric vector corresponding to the "from," "to,"
-#' and "by" arguments of \code{seq}, respectively; if \code{NULL}, \code{ticks}
-#' will be the default values; if \code{NULL} and \code{atrist = TRUE}, 
-#' defaults to \code{seq(0, max(time), length.out = 10)}
-#' @param median.ticks logical; if \code{TRUE}, tick labels will be shown for 
-#' median survival times (user should provide \code{ticks} argument to avoid
-#' overlapping labels); if \code{atrisk = TRUE}, plot will also provide number
-#' at risk at median survival time(s)
-#' @param xlab x-axis label
-#' @param ylab y-axis label
-#' @param main title
-#' @param xlim two-element numeric vector of x-axis range; see 
-#' \code{\link[ggplot2]{xlim}}; if \code{NULL}, default is used
-#' @param ylim two-element numeric vector of y-axis range; see 
-#' \code{\link[ggplot2]{ylim}}; if \code{NULL}, default is used
-#' @param legend legend position (no legend if no strata present); takes values
-#' of \code{TRUE}, \code{FALSE}, "none," "right," "left," "top," "bottom," or 
-#' two-element numeric vector
-#' @param legend.labels labels to use for strata in legend; defaults are made 
-#' by \code{\link[survival]{survfit}}
-#' @param grid logical; if \code{TRUE}, grid lines are drawn at major and 
-#' minor ticks
-#' @param ggdefault logical; use default ggplot background; if \code{FALSE}, 
-#' white background is used (default)
-#' @param plot.margin numeric; extra "lines" added to left margin of plot; see
-#' details
-#' @param table.margin numeric; extra "lines" added to left margin of at risk
-#' table; see details
-#' @param ... for backwards compatibility with deprecated arguments
-#' 
-#' @seealso \code{\link[rawr]{kmplot}}; \code{survival:::plot.survfit}
-#'
-#' @examples
-#' library('ggplot2')
-#' library('grid')
-#' library('gridExtra')
-#' library('survival')
-#' data(cancer)
-#' 
-#' cancer <- within(cancer, {
-#'   age.cat <- factor(as.numeric(cut(age, c(-Inf, 50, 60, 70, Inf))))
-#'   meal.cat <- factor(as.numeric(cut(meal.cal, 
-#'     c(-Inf,quantile(meal.cal, c(.25,.5,.75), na.rm = TRUE), Inf))))
-#'   wt.cat <- factor(as.numeric(cut(wt.loss, c(-Inf,quantile(wt.loss, 
-#'     c(.25,.5,.75), na.rm = TRUE),Inf))))
-#' })
-#' 
-#' ## fitting models
-#' # kaplan-meier
-#' kmfit0 <- survfit(Surv(time = time, event = status) ~ 1, data = cancer, 
-#'   conf.type = 'log-log')
-#' kmfit1 <- survfit(Surv(time = time, event = status) ~ sex, data = cancer, 
-#'   conf.type = 'log-log')
-#'   
-#' # cox proportional hazards
-#' coxfit0 <- survfit(coxph(Surv(time = time, event = status) ~ strata(age.cat),
-#'   data = cancer))
-#' coxfit1 <- survfit(coxph(Surv(time = time, event = status) ~ strata(I(age > 45)),
-#'   data = cancer))
-#' 
-#' ggsurv(kmfit0)
-#' 
-#' ggsurv(kmfit1, confin = FALSE, lty.surv = 1:2, col.cens = 'blue', 
-#'   grid = FALSE, pval = c(500, .75))
-#' 
-#' ggsurv(kmfit1, confin = FALSE, lty.surv = 1:2, col.cens = 'red', 
-#'   confband = TRUE, col.band = c('blue','red'), 
-#'   legend.labels = c('Male', 'Female'), median = TRUE, ticks = c(0, 1000, 200))
-#'   
-#' ggsurv(coxfit0, basehaz = TRUE)
-#' 
-#' ## this long label mis-aligns the table numbers, so we can use plot.margin
-#' ## to adjust; it may be easier to adjust plot.margin instead of table.margin
-#' ggsurv(coxfit0, confin = FALSE, col.atrisk = 'black',
-#'   col.surv = c('red','green','blue','black'),
-#'   legend.labels = c('Less than 50','50-60','60-70','70+'),
-#'   plot.margin = 3)
-#' 
-#' \dontrun{
-#' png('plot.png', height = 600, width = 750)
-#' ggsurv(coxfit1, confin = FALSE, median = TRUE, confband = FALSE,
-#'   legend.labels = c('< 45','> 45'), 
-#'   col.surv = c('red','green'), mark = '#', col.cens = 'black', 
-#'   legend = FALSE)
-#' dev.off()
-#' }
-#' @export
-
-ggsurv <- function(s, 
-                   # basic plot options
-                   col.surv = 1, lty.surv = 1,
-                   censor = TRUE, col.cens = 1, mark = 3,
-                   
-                   # confidence options
-                   confin = TRUE, confband = FALSE, col.band = NA, 
-                   
-                   # extra plot options
-                   median = FALSE, atrisk = TRUE, col.atrisk,
-                   pval, basehaz = FALSE,
-                   
-                   # aesthetics
-                   ticks, median.ticks = TRUE,
-                   xlab, ylab, main, xlim, ylim,
-                   legend = 'right', legend.labels,
-                   grid = FALSE, ggdefault = FALSE,
-                   
-                   # other options
-                   plot.margin = NULL, table.margin = NULL, ...) {
-  
-  ## to do:
-  # y axis ticks
-  # specific axes ticks?, eg, at = c(.5, 1, 4, 10)
-  # ticks labels with atrisk and median?
-  
-  #### error checks
-  if (!inherits(s, 'survfit')) 
-    stop('s must be a survfit object')
-  if (basehaz && !inherits(s, 'survfit.cox')) 
-    stop('s must be a survfit.cox object')
-  if (confin & confband) 
-    warning('choose confidence interval or confidence band')
-  if (atrisk && missing(ticks)) 
-    message('ticks not specified: \ntick marks defaulting to seq(0, ',
-            'max(time), length.out = 10)\n')
-  if (missing(xlab)) xlab <- 'Time'
-  if (missing(ylab)) ylab <- 'Probability of event'
-  if (missing(main)) main <- ''
-  
-  #### allow for backwards compatibility
-  m <- match.call(expand.dots = FALSE)
-  if (!is.null(m$...)) {
-    depr <- c('surv.col','surv.lty','cens.col',
-              'cens.shape','band.col','atrisk.col')
-    if (any(depr %in% names(m$...))) {
-      warning('\n NOTE: using deprecated arguments: ', 
-              paste(depr[depr %in% names(m$...)], collapse = ' '))
-    }
-    if (!is.null(m$...) && !all(names(m$...) %in% depr))
-        warning('\n NOTE: unused arguments: ', 
-                paste(names(m$...)[names(m$...) %ni% depr], collapse = ' '))
-    
-    try(list(if (!is.null(m$...$surv.col)) col.surv <- eval(m$...$surv.col),
-             if (!is.null(m$...$surv.lty)) lty.surv <- eval(m$...$surv.lty),
-             if (!is.null(m$...$cens.col)) col.cens <- eval(m$...$cens.col),
-             if (!is.null(m$...$cens.shape)) mark <- eval(m$...$cens.shape),
-             if (!is.null(m$...$band.col)) col.band <- eval(m$...$band.col),
-             if (!is.null(m$...$atrisk.col)) 
-               col.atrisk <- eval(m$...$atrisk.col)), 
-        silent = TRUE)
-  }
-  
-  #### create data from survfit object in proper format for ggplot
-  survdat <- function(s) {
-    survdat <- NULL
-    if (is.null(s$strata)) {   
-      # if no strata are defined
-      # initiate 100% survival at time == 0
-      survdat <- data.frame(time = c(0, s$time),
-                            n.risk = c(s$n, s$n.risk),
-                            n.event = c(0, s$n.event),
-                            n.censor = c(0, s$n.censor),
-                            surv = c(1, s$surv),
-                            lower = c(1, s$lower),  
-                            upper = c(1, s$upper))
-    } else {
-      # if there is one or more strata
-      surv.strata <- NULL
-      for (i in 1:length(s$strata)) 
-        surv.strata <- c(surv.strata, rep(names(s$strata)[i], s$strata[i]))
-      survdat <- data.frame(time = s$time, 
-                            n.risk = s$n.risk, 
-                            n.event = s$n.event, 
-                            n.censor = s$n.censor, 
-                            surv = s$surv,
-                            lower = s$lower, 
-                            upper = s$upper, 
-                            strata = factor(surv.strata))
-      # initiate 100% survival at time == 0
-      tmp <- NULL
-      for (i in 1:length(s$strata)) {
-        tmp0 <- subset(survdat, strata == names(s$strata)[i])
-        tmp1 <- data.frame(time = 0, 
-                           n.risk = s[i]$n, 
-                           n.event = 0, 
-                           n.censor = 0,
-                           surv = 1,
-                           lower = 1,
-                           upper = 1,
-                           strata = names(s$strata)[i])
-        tmp1 <- rbind(tmp1, tmp0)
-        tmp <- rbind(tmp, tmp1)
-      }
-      survdat <- tmp[order(tmp$strata, tmp$time), ]
-      rownames(survdat) <- NULL   
-    }
-    return(survdat)
-  }
-  
-  survdat <- outdata <- survdat(s)
-  # if (data) 
-  #   return(outdata)
-  
-  #### for custom ribbon color with no strata present
-  if (is.null(survdat$strata) && !missing(col.band)) 
-    survdat$col.band <- col.band
-  
-  #### change levels in strata
-  if (!is.null(survdat$strata) && !(missing(legend.labels))) {
-    if (length(unique(levels(survdat$strata))) != length(legend.labels)) {
-      warning('legend labels not equal to number of strata')
-    }
-    recodes <- list(original = levels(survdat$strata),
-                    replaced = legend.labels)
-    cat('\nstrata labels recoded as follows:\n\n')
-    print(do.call(data.frame, recodes))
-    if (inherits(res <- try(rawr::recoder), 'try-error')) {
-      survdat$strata <- factor(survdat$strata, 
-                               levels = levels(survdat$strata),
-                               labels = legend.labels)
-    } else { 
-      survdat$strata <- rawr::recoder(object = survdat$strata, 
-                                      pattern = levels(survdat$strata),
-                                      replacement = legend.labels)
-    }
-    survdat$strata <- droplevels(survdat$strata)
-  }
-  
-  #### graph with no strata ####
-  
-  if (is.null(survdat$strata)) {
-    if (length(col.band) > 1) warning('more colors chosen than bands')
-    if (length(col.surv) > 1) warning('more colors chosen than lines')
-    
-    if (is.null(col.surv)) col.surv <- 'black'
-    
-    # step plot
-    tmp <- ggplot(data = survdat, aes(x = time, y = surv)) 
-    if (is.null(col.surv)) {
-      tmp <- tmp + geom_step(colour = 'black', lty = lty.surv, direction = 'hv')
-    } else {
-      tmp <- tmp + geom_step(colour = col.surv, lty = lty.surv, 
-                             direction = 'hv')
-    }
-    # add censored observations
-    if (censor) {
-      if (is.null(col.cens) & !is.null(col.surv)) {
-        tmp <- tmp + geom_point(data = subset(survdat, n.censor > 0), 
-                                aes(x = time, y = surv), 
-                                colour = col.surv, shape = mark) 
-      } else { 
-        if (is.null(col.cens) & is.null(col.surv)) {
-          tmp <- tmp + geom_point(data = subset(survdat, n.censor > 0), 
-                                  aes(x = time, y = surv), 
-                                  colour = 'black', shape = mark)
-        } else {
-          tmp <- tmp + geom_point(data = subset(survdat, n.censor > 0), 
-                                  aes(x = time, y = surv), 
-                                  colour = col.cens, shape = mark)
-        }
-      }
-    }
-    # add confidence interval
-    if (confin) {
-      tmp <- tmp + 
-        geom_step(aes(x = time, y = upper), 
-                  direction = 'hv', linetype = 2, colour = col.surv) + 
-        geom_step(aes(x = time, y = lower), 
-                  direction = 'hv', linetype = 2, colour = col.surv)
-    }
-    # add confidence band
-    if (confband) {
-      if (is.null(survdat$col.band)) {
-        tmp <- tmp + geom_ribbon(aes(x = time, ymax = upper, ymin = lower), 
-                                 directions = 'hv',alpha = 0.25)
-      } else {
-        tmp <- tmp + geom_ribbon(aes(x = time, ymax = upper, ymin = lower, 
-                                     fill = col.band), 
-                                 direction = 'hv', alpha = 0.25) + 
-          scale_fill_manual(values = col.band)
-      }
-    }
-    # median survival line
-    if (median) {
-      options(survfit.rmean = 'individual')
-      tmp.med <- summary(s)$table['median']
-      cat('median survival time:',tmp.med)
-      tmp.med <- data.frame(time = rep(unname(tmp.med), 2), 
-                            quant = c(.5, 0))
-      tmp.med <- subset(tmp.med, !is.na(time))
-      if (nrow(tmp.med) == 0) {
-        cat('\nmedian survival not reached\n')
-      } else {
-        tmp <- tmp + geom_line(data = tmp.med, aes(x = time, y = quant), 
-                               colour = col.surv, linetype = 3) + 
-          geom_point(data = tmp.med, aes(x = time, y = quant), 
-                     colour = col.surv)
-      }
-    }
-    
-  } else { 
-    
-    #### graph with strata ####
-    
-    # make sure options are compatible
-    # line colors
-    col.survs <- if (length(col.surv == 1)) {
-      scale_colour_manual(values = rep(col.surv, 
-                                       length(unique(survdat$strata))))
-    } else {
-      scale_colour_manual(values = col.surv)
-    } 
-    if (is.null(col.surv)) col.survs <- NULL
-    # line types
-    lty.survs <- if (length(lty.surv == 1)) {
-      scale_linetype_manual(values = rep(lty.surv, 
-                                         length(unique(survdat$strata))))
-    } else {
-      scale_linetype_manual(values = lty.surv)
-    }
-    # censor shapes
-    marks <- rep(mark, times = length(unique(survdat$strata)))
-    
-    # step plot
-    tmp <- ggplot(data = survdat, aes(x = time, y = surv, 
-                                      group = strata, colour = strata)) +
-      geom_step(aes(colour = strata, group = strata, linetype = strata), 
-                direction = 'hv') + col.survs + lty.survs
-    # add censored observations
-    if (censor) {
-      if (is.null(col.cens)) {
-        tmp <- tmp + geom_point(data = subset(survdat, n.censor > 0), 
-                                aes(x = time, y = surv, colour = strata, 
-                                    group = strata), shape = mark) 
-      } else { 
-        tmp <- tmp + geom_point(data = subset(survdat, n.censor > 0), 
-                                aes(x = time, y = surv, colour = strata, 
-                                    group = strata, shape = strata), 
-                                colour = col.cens) + 
-          scale_shape_manual(values = marks)
-      }
-    }
-    # add confidence interval
-    if (confin) {      
-      tmp <- tmp + 
-        geom_step(aes(x = time, y = upper), direction = 'hv', 
-                  linetype = 2, alpha = 0.5) + 
-        geom_step(aes(x = time, y = lower), direction = 'hv', 
-                  linetype = 2, alpha = 0.5)  
-    }
-    # add confidence band
-    if (confband) {
-      tmp <- tmp + geom_ribbon(aes(x = time, ymax = upper, ymin = lower, 
-                                   fill = strata), 
-                               directions = "hv", linetype = 0 ,alpha = 0.25)
-      # custom conf band fill colors
-      if (!missing(col.band)) 
-        tmp <- tmp + scale_fill_manual(values = rep(col.band, 
-                                      length(unique(survdat$strata))))
-    }
-    
-    # median survival line
-    if (median) {
-      options(survfit.rmean = 'individual')
-      tmp.med <- summary(s)$table[ ,'median']
-      cat('median survival times:\n')
-      print(tmp.med)
-      cols <- if (is.null(col.surv)) {
-        rep(ggcols(length(names(tmp.med))), each = 2)
-      } else {
-        rep(col.surv, each = 2)
-      }
-      tmp.med <- data.frame(time = rep(tmp.med, each = 2), 
-                            quant = rep(c(.5,0), times = length(tmp.med)), 
-                            group = rep(names(tmp.med), each = 2),
-                            col.surv = cols)
-      tmp.med <- subset(tmp.med, !is.na(time))
-      if (nrow(tmp.med) == 0) {
-        cat('\nmedian survival not reached\n')
-      } else {
-        tmp <- tmp + geom_line(data = tmp.med, aes(time, quant, group = group),
-                               colour = tmp.med$col.surv, linetype = 3) + 
-          geom_point(data = tmp.med, aes(time, quant, group = group), 
-                     colour = tmp.med$col.surv)
-      }
-    }
-  }
-  
-  tmp <- tmp + xlab('Time') + ylab('Survival')
-  
-  ### test
-  ### plotting baseline hazard instead of survival
-  if (basehaz && inherits(s, 'survfit.cox')) {
-    tmp.haz <- basehaz(eval(s$call$formula))
-    
-    if (is.null(tmp.haz$strata)) {
-      tmp <- ggplot(data = tmp.haz, aes(x = time, y = hazard)) + 
-        geom_line() + xlab('Time') + ylab('Hazard')
-    } else {
-      tmp <- ggplot(data = tmp.haz, aes(x = time, y = hazard, 
-                                        colour = strata)) + 
-        geom_line() + xlab('Time') + ylab('Hazard') + col.survs + lty.survs
-    }
-  }
-  ### / test
-  
-  # label options
-  if (!missing(xlab)) tmp <- tmp + xlab(xlab)
-  if (!missing(ylab)) tmp <- tmp + ylab(ylab)
-  if (!missing(main)) tmp <- tmp + ggtitle(main)
-  
-  # background options
-  if (ggdefault == FALSE) tmp <- tmp + theme_bw()
-  if (!grid) 
-    tmp <- tmp + theme(panel.grid.major = element_blank(),
-                       panel.grid.minor = element_blank(),
-                       axis.line = element_line(colour = 'black'))
-  
-  # need to remove legend if custom band color supplied for no strata plot
-  if (is.null(s$strata)) {
-    tmp <- tmp + theme(legend.position = 'none')
-  } else { 
-    if (is.logical(legend)) {
-      legend <- if (!legend) 'none' else 'right'
-    }
-    tmp <- tmp + theme(legend.position = legend)
-  }
-  
-  if (!missing(pval)) {
-    # log-rank/Mantel-Haenszel (rho = 0)
-    sdiff <- survdiff(eval(s$call$formula), data = eval(s$call$data), rho = 0)
-    pval.chisq <- pchisq(sdiff$chisq, length(sdiff$n) - 1, lower.tail = FALSE)
-    pvaltxt <- ifelse(pval.chisq < 0.001, 'p < 0.001', 
-                      paste('p =', signif(pval.chisq, 3)))
-    tmp <- tmp + annotate('text', x = pval[1], y = pval[2], label = pvaltxt)
-    print(sdiff)
-  }
-  
-  ## added labels here
-  if (!missing(ticks)) 
-    tmp <- tmp + scale_x_continuous(breaks = seq(ticks[1], ticks[2], 
-                                                 by = ticks[3]),
-                                    labels = format(seq(ticks[1], ticks[2], 
-                                                        by = ticks[3]), 
-                                                    nsmall = 0))
-  ## here
-  if (!missing(ticks) && median && median.ticks) 
-    tmp <- tmp + 
-      scale_x_continuous(breaks = sort(c(tmp.med$time, seq(ticks[1], ticks[2], 
-                                                           by = ticks[3]))),
-                         labels = format(sort(c(tmp.med$time, seq(ticks[1], 
-                                      ticks[2], by = ticks[3]))), nsmall = 0))
-  if (!missing(xlim)) tmp <- tmp + xlim(xlim)
-  if (!missing(ylim)) tmp <- tmp + ylim(ylim)
-  tmp <- tmp + theme(legend.title = element_blank())
-  
-  if (atrisk) {
-    
-    # fix legend
-    if (!(legend %in% c(FALSE, 'none', 'bottom', 'top'))) {
-      legend <- 'bottom'
-      message("when atrisk == TRUE, legend should be FALSE, 'none', ",
-              "'bottom', or 'top'\nposition defaulting to 'bottom'")
-    }
-    
-    # set up tick marks for atrisk alignment
-    options(survfit.rmean = 'individual')
-    if (missing(ticks)) {
-      tick.seq <- seq(0, max(s$time), length = 10)
-      if (median && median.ticks) 
-        tick.seq <- sort(c(tmp.med$time, tick.seq))
-      tmp <- tmp + scale_x_continuous(breaks = round(tick.seq))
-    } else {
-      tick.seq <- seq(ticks[1], ticks[2], ticks[3])
-      if (median && median.ticks) tick.seq <- sort(c(tmp.med$time, tick.seq))
-    }
-    n.ticks <- length(tick.seq)
-    
-    # create data of at risk
-    tmp.risk <- summary(s, times = tick.seq)
-    risk.table <- data.frame(
-      time = tmp.risk$time,
-      n.risk = tmp.risk$n.risk)
-    if (is.null(s$strata)) {
-      risk.table$strata <- '1'
-    } else risk.table$strata <- tmp.risk$strata
-    
-    # reverse order of risk.table by group
-    risk.table <- do.call(rbind, 
-                          lapply(rev(unique(risk.table$strata)), 
-                                 function(x) 
-                                   risk.table[risk.table$strata == x, ]))
-    risk.table$strata <- factor(risk.table$strata, 
-                                levels = rev(levels(risk.table$strata)))
-    if (is.null(s$strata)) {
-      risk.table$strata <- factor(' ')
-      survdat$strata <- factor(' ')
-    }
-    
-    # increase margins with long labels in risk.table
-    if (missing(plot.margin))
-      plot.margin <- .5 * (max(nchar(levels(survdat$strata))) - 1) - .3
-    
-    tmp <- tmp + 
-      theme(plot.margin = unit(c(.25, .25, .4, plot.margin), 'lines'))
-    
-    # create table in ggplot
-    gg.table <- ggplot(risk.table, 
-                       aes(x = time, y = strata, colour = strata, 
-                           label = format(n.risk, nsmall = 0))) + 
-      theme_bw() + 
-      scale_y_discrete(breaks = as.character(levels(risk.table$strata)), 
-                       labels = rev(unique(survdat$strata))) +
-      # scale_y_discrete(breaks = as.character(levels(risk.table$strata)), 
-      #                  labels = rep('', length(unique(survdat$strata)))) +
-      scale_x_continuous('Number at risk', breaks = tick.seq, 
-                         limits = c(0, max(s$time))) + 
-      theme(axis.title.x = element_text(size = 10, vjust = 1),
-            panel.grid.major = element_blank(), 
-            panel.grid.minor = element_blank(),
-            panel.border = element_blank(), 
-            axis.text.x = element_blank(),
-            axis.ticks = element_blank(), 
-            axis.text.y = element_text(face = 'bold', hjust = 1))
-          # annotate('text', x = 0, y = length(unique(risk.table$strata)) + .5, 
-          #          label = 'Number at risk')
-          # ggtitle('Number at risk') 
-          # theme(plot.title = element_text(size = rel(1)))
-    if (!missing(col.atrisk))
-      gg.table <- gg.table + geom_text(size = 3.5, colour = col.atrisk)
-    else gg.table <- gg.table + geom_text(size = 3.5)
-    
-    if (missing(table.margin))
-      table.margin <- 2
-    gg.table <- gg.table + 
-      theme(plot.margin = unit(c(-2, .5, .1, table.margin), 'lines'),
-            legend.position = 'none') + xlab(NULL) + ylab(NULL)
-    
-    if (is.null(col.surv)) {
-      gg.table <- gg.table + 
-        scale_colour_manual(values = rev(ggcols(length(unique(risk.table$strata)))))
-    } else {
-      if (length(col.surv) == 1) 
-        col.surv <- rep(col.surv, length(unique(survdat$strata)))
-      gg.table <- gg.table + 
-        scale_colour_manual(values = rev(col.surv))
-    }
-    
-    # blank plot for place-holding
-    blank.plot <- ggplot(data = survdat, aes(x = time, y = surv)) +
-      geom_blank() + theme_bw() +
-      theme(axis.text.x = element_blank(), axis.text.y = element_blank(),
-            axis.title.x = element_blank(), axis.title.y = element_blank(),
-            axis.ticks = element_blank(),
-            panel.grid.major = element_blank(), panel.border = element_blank())
-    
-    # left/right legend location throws off at risk table alignment
-    if (legend %ni% FALSE)
-      tmp <- tmp + theme(legend.position = legend)
-    if (is.null(s$strata)) 
-      tmp <- tmp + theme(legend.position = 'none')
-    
-    tmp <- arrangeGrob(tmp, blank.plot, gg.table,
-                       clip = FALSE, nrow = 3, ncol = 1,
-                       heights = unit(c(2, .1, .25), c('null','null','null')))
-  }
-  tmp
 }
 
 #' Compute local p-value from coxph
@@ -1159,10 +559,10 @@ local_coxph_test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
 #' Converts a data frame to counting process notation and allows for time-
 #' dependent variables to be introduced.
 #' 
-#' @param dat data frame with survival time, survival status, and other 
+#' @param data data frame with survival time, survival status, and other 
 #' covariates
-#' @param time.var \code{dat} variable name representing survival time
-#' @param status.var \code{dat} variable name representing status
+#' @param time.var \code{data} variable name representing survival time
+#' @param status.var \code{data} variable name representing status
 #' @param covars other covariates to retain
 #' 
 #' @return
@@ -1182,14 +582,14 @@ local_coxph_test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
 #' 
 #' @export
 
-surv_cp <- function(dat, time.var, status.var, 
-                      covars = setdiff(names(dat), c(time.var, status.var))) {
+surv_cp <- function(data, time.var, status.var, 
+                      covars = setdiff(names(data), c(time.var, status.var))) {
   
   ## sorted times, append to 0
-  t.sort <- c(0, sort(unique(dat[[time.var]])))
+  t.sort <- c(0, sort(unique(data[[time.var]])))
   
   ## for each data point find times less than or equal to the obs time
-  t.list <- lapply(dat[[time.var]], function(x) t.sort[t.sort <= x])
+  t.list <- lapply(data[[time.var]], function(x) t.sort[t.sort <= x])
   
   ## create list of datasets with covariates and all relevant start/stop times
   ## remove one from end of x, stop by removing first of x
@@ -1197,12 +597,12 @@ surv_cp <- function(dat, time.var, status.var,
   f <- function(i)
     data.frame(start = head(t.list[[i]], -1),
                stop = tail(t.list[[i]], -1),
-               dat[i, c(status.var, covars)], 
+               data[i, c(status.var, covars)], 
                row.names = NULL)
   
   n <- length(t.list)
   datl <- Map(f, 1:n)
-  dat <- do.call(rbind, datl)
+  data <- do.call(rbind, datl)
   
   ## create the correct status need last time for each
   ## subject with status=1 to to be status=1 but all others status=0
@@ -1212,8 +612,8 @@ surv_cp <- function(dat, time.var, status.var,
   ## this is then multiplied by status to correct it
   keep.status <- do.call(c, lapply(t.list, function(x) 
     c(rep(0, length(x) - 2), 1)))
-  dat[status.var] <- dat[status.var] * keep.status
-  dat
+  data[status.var] <- data[status.var] * keep.status
+  data
 }
 
 #' Summary of a survival curve

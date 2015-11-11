@@ -1,4 +1,4 @@
-### formatting and miscellaneous utilities
+### formatting, knitr, misc utils
 # show_html, show_markdown, show_math, roundr, intr, pvalr, pvalr2, clist,
 # binconr, num2char, iprint, match_ctc, writeftable, tabler, tabler_by,
 # countr, tox_worst, dmy, combine_table
@@ -753,10 +753,10 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' data, it is only necessary to provide the total \code{n} for that group.
 #' 
 #' If more than one \code{n} is given, \code{tabler_by} assumes that the
-#' entire data set is given to \code{dat} and will use the corresponding 
+#' entire data set is given to \code{data} and will use the corresponding 
 #' \code{n} to show percentages out of each respective subgroup.
 #' 
-#' @param dat a data frame; variables \code{varname} and \code{byvar} should
+#' @param data a data frame; variables \code{varname} and \code{byvar} should
 #' be factors
 #' @param varname variable with subgroups to count
 #' @param byvar stratification variable
@@ -811,13 +811,13 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #'             
 #' @export
 
-tabler_by <- function(dat, varname, byvar, n, order = FALSE, zeros,
+tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros,
                       pct.col = FALSE) {
-  if (!all(sapply(dat[, c(varname, byvar)], is.factor)))
+  if (!all(sapply(data[, c(varname, byvar)], is.factor)))
     stop('\'varname\' and \'byvar\' must be factors')
   
   ## split data by varname, get totals overall and for each level of byvar
-  l <- split(dat, dat[, varname])
+  l <- split(data, data[, varname])
   res <- do.call('rbind', lapply(l, function(x)
     c(Total = length(x[, varname]), tapply(x[, varname], x[, byvar], length))))
   res1 <- res[, -1]
@@ -833,7 +833,7 @@ tabler_by <- function(dat, varname, byvar, n, order = FALSE, zeros,
     ## will have the same overall n
     if (length(n) == 1L)
       n <- rep(n, ncol(res1))
-    if (length(n) != nlevels(dat[, byvar]))
+    if (length(n) != nlevels(data[, byvar]))
       stop('\'n\' should be 1 or equal to nlevels(byvar)')
     res1 <- matrix(res1)
     mat <- round(res1 / matrix(rep(n, each = nr)) * 100)
@@ -896,7 +896,7 @@ countr <- function(top, n, lowcase = TRUE) {
 #' Returns a subset of input data with worst toxicity grade per toxicity
 #' code per patient, ie, sorts and removes duplicates.
 #' 
-#' @param dat toxicity data frame
+#' @param data toxicity data frame
 #' @param id column name with identifier
 #' @param tox_desc column name with toxicity descriptions (or codes)
 #' @param tox_grade column name with toxiticity grades; should be a factor
@@ -904,7 +904,7 @@ countr <- function(top, n, lowcase = TRUE) {
 #' 
 #' @return
 #' A list of length three with \code{tox_worst}, the filtered data frame;
-#' \code{dat}, the input data frame sorted by \code{id}, \code{tox_desc},
+#' \code{data}, the input data frame sorted by \code{id}, \code{tox_desc},
 #' and \code{tox_grade}; and \code{duplicates}, the rows which correspond to
 #' duplicate \code{tox_desc} per \code{id} but of an equal or lesser 
 #' \code{tox_grade}.
@@ -936,15 +936,15 @@ countr <- function(top, n, lowcase = TRUE) {
 #' 
 #' @export
 
-tox_worst <- function(dat, id = 'casenum', tox_desc = 'tox_desc', tox_grade = 'tox_grade') {
+tox_worst <- function(data, id = 'casenum', tox_desc = 'tox_desc', tox_grade = 'tox_grade') {
   ## make sure grades are properly ordered
-  if (!is.factor(dat[, tox_grade]))
+  if (!is.factor(data[, tox_grade]))
     stop('\'tox_grade\' should be a factor')
   ## sort by id, toxicity, and grade
-  dat <- dat[order(dat[, id], dat[, tox_desc], -xtfrm(dat[, tox_grade])), ]
-  idx <- which(duplicated(dat[, c(id, tox_desc)]))
-  list(tox_worst = if (length(idx)) dat[-idx, ] else dat,
-       dat = dat, duplicates = idx)
+  data <- data[order(data[, id], data[, tox_desc], -xtfrm(data[, tox_grade])), ]
+  idx <- which(duplicated(data[, c(id, tox_desc)]))
+  list(tox_worst = if (length(idx)) data[-idx, ] else data,
+       data = data, duplicates = idx)
 }
 
 #' Date parse
