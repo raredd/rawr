@@ -42,16 +42,32 @@ hmsf_ <- function(g) {
   out
 }
 
-do_rect_ <- function(n, x, y, border = NA, ...) {
+do_rect_ <- function(n, x, y, single = FALSE, border = NA, col = NA, ...) {
   adj <- 0.25
-  if (is.na(x)) return()
-  rect(x, n - 1 * adj, y, n + 1 * adj, border = border, ...)
+  lx <- length(x)
+  if (lx == 1L && is.na(x)) return()
+  if (single || length(x) == 1) {
+    rect(x[1], n[1] - 1 * adj, y[1], n[1] + 1 * adj, border = border[1],
+         col = col[1], ...)
+  } else {
+    ## x is a vector of start times, y is a vector of end times
+    for (ii in seq_along(x))
+      rect(x[ii], n - 1 * adj, y[ii], n + 1 * adj, border = border[ii],
+           col = col[ii], ...)
+  }
+  invisible()
 }
 
-do_seg_ <- function(n, x, y, arrow, ...) {
+do_seg_ <- function(n, x, y, arrow, single = FALSE, ...) {
+  if (single) {
+    n <- n[1]
+    x <- x[1]
+    y <- y[1]
+  }
   if (is.na(x)) return()
-  if (arrow)
+  if (arrow[1])
     arrows(x, n, pmax(y,1, na.rm = TRUE), n, lwd = 2,
            angle = 30, length = .15, ...)
   else segments(x, n, y, n, ...)
+  invisible()
 }
