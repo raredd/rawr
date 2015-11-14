@@ -30,7 +30,7 @@ locf(df)
 locf(df, c(FALSE, TRUE))
 locf(df, na.strings = 2)
 
-## note the differences
+## note the differences for numeric and character na.strings
 locf(df, na.strings = c('Joe', 2))
 locf(df, na.strings = list('Joe', 02))
 locf(df, na.strings = list('Joe', '02'))

@@ -882,7 +882,7 @@ merge2 <- function(l, ...) Reduce(function(x, y) merge(x, y, ...), l)
 #' locf(df, c(FALSE, TRUE))
 #' locf(df, na.strings = 2)
 #' 
-#' ## note the differences
+#' ## note the differences for numeric and character na.strings
 #' locf(df, na.strings = c('Joe', 2))
 #' locf(df, na.strings = list('Joe', 02))
 #' locf(df, na.strings = list('Joe', '02'))
@@ -892,10 +892,13 @@ merge2 <- function(l, ...) Reduce(function(x, y) merge(x, y, ...), l)
 locf <- function(x, fromLast = FALSE, na.strings = '') {
   if (!(ok <- !is.null(nrow(x))))
     x <- data.frame(x, stringsAsFactors = FALSE)
-  fromLast <- rep(fromLast, ncol(mtcars))
+  fromLast <- rep(fromLast, ncol(x))
   if (length(na.strings))
     for (ii in seq_along(na.strings))
-      x[x == unlist(na.strings[ii])] <- NA
+      try({
+        ## this throws an error for special cases like dates
+        x[x == unlist(na.strings[ii])] <- NA
+      }, silent = TRUE)
   indx <- !is.na(x)
   
   x[] <- lapply(seq_along(x), function(ii) {
