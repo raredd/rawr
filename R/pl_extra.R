@@ -206,6 +206,7 @@ tcol <- function(color, trans = 255, alpha) {
     format(as.hexmode(x), 2)), 2, paste, collapse = ''))
   res <- unlist(unname(Map(paste0, res, as.character(as.hexmode(trans)))))
   res[is.na(color)] <- NA
+  res[color %in% 'transparent'] <- 'transparent'
   
   res
 }
