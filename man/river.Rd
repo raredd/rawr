@@ -6,15 +6,17 @@
 \alias{river2}
 \title{River plots}
 \usage{
-river(data, id, at = id, legend = "topleft", xlim, ylim, rev = FALSE)
+river(data, bar_data, id, at = id, legend = "topleft", xlim, ylim,
+  rev = FALSE, stagger = TRUE)
 
-river2(data, id = 1, tox, legend = "topleft", xlim, ylim)
+river2(data, bar_data, bar_data2, id = 1, legend = "topleft", xlim, ylim,
+  rev = FALSE, stagger = FALSE)
 
-check_river_format(data, tox)
+check_river_format(data, bar_data)
 }
 \arguments{
-\item{data, tox}{data frames; these should have a specific format, see
-details, examples, or run \code{check_river_format()}}
+\item{data, bar_data, bar_data2}{data frames; these should have a specific
+format, see details, examples, or run \code{check_river_format()}}
 
 \item{id, at}{optional parameters specifying individuals (rows) from
 \code{data} to plot and their positions along the y-axis; if not given,
@@ -27,73 +29,92 @@ timelines are plotted sequentially}
 
 \item{rev}{logical; if \code{TRUE}, observations will be plotted from top
 to bottom}
+
+\item{stagger}{logical; if \code{FALSE}, start dates will be fixed at 0
+rather than relative to the first start date if \code{TRUE} (default)}
 }
 \description{
 Summarize a timeline for individuals over the course of a study.
 }
 \details{
-\code{data} and \code{tox} data frames need to have a minimum number of
-variables in a specific order, some of which should be \code{\link{Date}}
-formats. \code{check_river_format()} without any arguments will give a
-summary of the formats.
+\code{data}, \code{bar_data}, and \code{bar_data2} data frames need to have
+a minimum number of variables in a specific order, some of which should be
+\code{\link{Date}} formats.
 
-\code{data} should have at least 13 columns (any additional will be
-ignored) in the following order: ID; dates of registration, last treatment
-start and end, progression, and response start and end; type of response;
-dates off treatment, last contact, off study, and status; and status.
+\code{check_river_format()} without any arguments will give a summary of
+the required formats.
 
-\code{tox} should have at least 5 columns (any additional will be
-ignored) in the following order: ID, dates of toxicity start and end,
-grade, and description.
+Note that date columns can also be given as integers to be coerced to dates
+as seen in the examples. In this case, \code{check_river_format} will do
+the coersion to date before plotting. However, these two methods are
+interchangeable as long as all values are relative to a starting time.
 
-Non \code{\link{Date}} columns are coerced to character. The response and
-grade variables should be innately ordinal and therefore factors with proper
-level ordering since the legend and colors will make use of this. The
-description variable should have relatively short descriptions to avoid
-text extending outside the plotting window.
+\code{data} should have 10 columns (any additional will be ignored) in the
+following order: ID; dates of registration, start of treatment, end of
+treatment, progression, off treatment, and survival status; status
+indicator; and dates of last contact and off study. That is, these should
+be in approximate chronological order.
+
+\code{bar_data} and \code{bar_data2} provide additional information to
+supplement \code{data} and may contain multiple records per ID.
+
+\code{bar_data} is intended to represent response assessments and therefore
+should have three columns: ID, date of assessment, and assessment. Any
+additional columns are ignored. Assessment data should be a factor variable
+with proper level ordering or will be coerced.
+
+\code{bar_data2} is intended to represent toxicity assessments and therefore
+should have five columns: ID, start date, end date, grade, and description.
+Any additional columns are ignored. Grade should be a factor variable with
+proper level ordering or will be coerced. Descriptions should be relatively
+short to avoid text extending outside of the plotting window.
+
+Despite the assumptions above, any type of data may work if properly
+formatted and ordered according to \code{check_river_format()}.
 }
 \examples{
+## to print a summary of the required formats
 check_river_format()
 
-## generate data in river format:
-dd <- data.frame(id       = c(1,2,3,3,3,4,4,5),
-                 dt_reg   = c(1,2,3,3,3,4,4,5),
-                 dt_txst  = c(1,2,3,3,3,4,4,5) + 1,
-                 dt_txend = c(10,11,12,12,12,13,13,8),
-                 dt_prog = c(11,16,NA,NA,NA,NA,NA,8),
-                 dt_resp_start = c(NA,NA,9,13,21,10,15,NA),
-                 dt_resp_end   = c(NA,NA,13,14,21,15,NA,NA),
-                 resp = factor(c('PD','PD','MR','PR','CR','PR','CR','SD'),
-                               levels = c('PD','SD','MR','PR','CR')),
-                 dt_offtx = c(12,19,NA,NA,NA,NA,NA,8),
-                 dt_last  = c(12,19,24,24,24,25,25,NA),
-                 dt_off   = c(12,19,NA,NA,NA,NA,NA,8),
-                 dt_surv  = c(12,19,24,24,24,25,25,NA),
-                 surv     = c(0,1,0,0,0,0,0,NA))
-                 
-## dates should be formatted
-dts <- grep('dt_', names(dd))
-dd[, dts] <- lapply(dd[, dts], as.Date.numeric, origin = '1970-01-01')
 
-## data with single observations per id
-(river(dd[!duplicated(dd$id, fromLast = TRUE), ]))
+## data in river format:
+dd <- data.frame(id       = c(1,2,3,4,5),
+                 dt_reg   = c(1,2,3,4,5),
+                 dt_txst  = c(1,2,3,4,5) + 1,
+                 dt_txend = c(10,11,12,13,8),
+                 dt_prog  = c(11,16,NA,NA,8),
+                 dt_offtx = c(12,19,NA,NA,8),
+                 dt_surv  = c(12,19,24,25,NA),
+                 surv     = c(0,1,0,0,NA),
+                 dt_last  = c(12,19,24,25,NA),
+                 dt_off   = c(12,19,NA,NA,8))
+bd <- data.frame(id        = c(3,3,3,3,4,4),
+                 dt_assess = c(9,13,17,21,10,15),
+                 resp = factor(c('MR','PR','PR','CR','PR','CR'),
+                               levels = c('PD','SD','MR','PR','CR')))
 
-## or multiple
-river(dd, legend = list(x = 20, y = 2.5, title = 'Best Response'))
+river(dd, bd, stagger = FALSE, rev = TRUE,
+      legend = list(x = 'bottom', title = 'Response', horiz = TRUE))
+
+## same data with single observations per id
+bd1 <- data.frame(
+  id = 3:4, dt_assesss = 9:10,
+  resp = factor(c('PR','CR'), levels = c('PD','SD','MR','PR','CR')))
+
+river(dd, bd1)
+
+## id and at parameters control the positions of the timelines
+river(dd, bd1, id = c(1,2,5,3,4), at = c(1:3, 5:6), legend = FALSE)
 
 
-## generate tox data for river2
+## additional data for river2
 tt <- data.frame(id = rep(1:2, times = c(1, 5)),
                  dt_start = c(3,5,5,8,9,11),
                  dt_end = c(NA,5,NA,10,10,NA),
                  grade = c(1,4,3,4,1,2),
                  desc = paste('tox', c(1,1:5)))
 
-## dates should be formatted
-dts <- grep('dt_', names(tt))
-tt[, dts] <- lapply(tt[, dts], as.Date.numeric, origin = '1970-01-01')
-
-river2(dd, 2, tt)
+river2(dd, bd, tt, id = 2)
 
 ## multiple records per id (ie, worsening toxicities)
 tt2 <- data.frame(id = rep(1:2, times = c(1, 8)),
@@ -102,11 +123,7 @@ tt2 <- data.frame(id = rep(1:2, times = c(1, 8)),
                   grade = c(1,4,1,2,3,4,1,2,3),
                   desc = paste('tox', c(1,1,2,2,2,3,4,5,5)))
                   
-## dates should be formatted
-dts <- grep('dt_', names(tt2))
-tt2[, dts] <- lapply(tt2[, dts], as.Date.numeric, origin = '1970-01-01')
-
-river2(dd, 2, tt2)
+river2(dd, bd, tt2, id = 2)
 
 }
 

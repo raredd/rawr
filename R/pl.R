@@ -851,28 +851,43 @@ waffle <- function(mat, xpad = 0, ypad = .05, ..., reset_par = TRUE) {
 #' 
 #' Summarize a timeline for individuals over the course of a study.
 #' 
-#' \code{data} and \code{tox} data frames need to have a minimum number of
-#' variables in a specific order, some of which should be \code{\link{Date}}
-#' formats. \code{check_river_format()} without any arguments will give a
-#' summary of the formats.
+#' \code{data}, \code{bar_data}, and \code{bar_data2} data frames need to have
+#' a minimum number of variables in a specific order, some of which should be
+#' \code{\link{Date}} formats.
 #' 
-#' \code{data} should have at least 13 columns (any additional will be
-#' ignored) in the following order: ID; dates of registration, last treatment
-#' start and end, progression, and response start and end; type of response;
-#' dates off treatment, last contact, off study, and status; and status.
+#' \code{check_river_format()} without any arguments will give a summary of
+#' the required formats.
 #' 
-#' \code{tox} should have at least 5 columns (any additional will be
-#' ignored) in the following order: ID, dates of toxicity start and end,
-#' grade, and description.
+#' Note that date columns can also be given as integers to be coerced to dates
+#' as seen in the examples. In this case, \code{check_river_format} will do
+#' the coersion to date before plotting. However, these two methods are
+#' interchangeable as long as all values are relative to a starting time.
 #' 
-#' Non \code{\link{Date}} columns are coerced to character. The response and
-#' grade variables should be innately ordinal and therefore factors with proper
-#' level ordering since the legend and colors will make use of this. The
-#' description variable should have relatively short descriptions to avoid
-#' text extending outside the plotting window.
+#' \code{data} should have 10 columns (any additional will be ignored) in the
+#' following order: ID; dates of registration, start of treatment, end of
+#' treatment, progression, off treatment, and survival status; status
+#' indicator; and dates of last contact and off study. That is, these should
+#' be in approximate chronological order.
 #' 
-#' @param data,tox data frames; these should have a specific format, see
-#' details, examples, or run \code{check_river_format()}
+#' \code{bar_data} and \code{bar_data2} provide additional information to
+#' supplement \code{data} and may contain multiple records per ID.
+#' 
+#' \code{bar_data} is intended to represent response assessments and therefore
+#' should have three columns: ID, date of assessment, and assessment. Any
+#' additional columns are ignored. Assessment data should be a factor variable
+#' with proper level ordering or will be coerced.
+#' 
+#' \code{bar_data2} is intended to represent toxicity assessments and therefore
+#' should have five columns: ID, start date, end date, grade, and description.
+#' Any additional columns are ignored. Grade should be a factor variable with
+#' proper level ordering or will be coerced. Descriptions should be relatively
+#' short to avoid text extending outside of the plotting window.
+#' 
+#' Despite the assumptions above, any type of data may work if properly
+#' formatted and ordered according to \code{check_river_format()}.
+#' 
+#' @param data,bar_data,bar_data2 data frames; these should have a specific
+#' format, see details, examples, or run \code{check_river_format()}
 #' @param id,at optional parameters specifying individuals (rows) from
 #' \code{data} to plot and their positions along the y-axis; if not given,
 #' timelines are plotted sequentially
@@ -881,49 +896,52 @@ waffle <- function(mat, xpad = 0, ypad = .05, ..., reset_par = TRUE) {
 #' @param xlim,ylim x- and y-axis limits
 #' @param rev logical; if \code{TRUE}, observations will be plotted from top
 #' to bottom
+#' @param stagger logical; if \code{FALSE}, start dates will be fixed at 0
+#' rather than relative to the first start date if \code{TRUE} (default)
 #' 
 #' @examples
+#' ## to print a summary of the required formats
 #' check_river_format()
 #' 
-#' ## generate data in river format:
-#' dd <- data.frame(id       = c(1,2,3,3,3,4,4,5),
-#'                  dt_reg   = c(1,2,3,3,3,4,4,5),
-#'                  dt_txst  = c(1,2,3,3,3,4,4,5) + 1,
-#'                  dt_txend = c(10,11,12,12,12,13,13,8),
-#'                  dt_prog = c(11,16,NA,NA,NA,NA,NA,8),
-#'                  dt_resp_start = c(NA,NA,9,13,21,10,15,NA),
-#'                  dt_resp_end   = c(NA,NA,13,14,21,15,NA,NA),
-#'                  resp = factor(c('PD','PD','MR','PR','CR','PR','CR','SD'),
-#'                                levels = c('PD','SD','MR','PR','CR')),
-#'                  dt_offtx = c(12,19,NA,NA,NA,NA,NA,8),
-#'                  dt_last  = c(12,19,24,24,24,25,25,NA),
-#'                  dt_off   = c(12,19,NA,NA,NA,NA,NA,8),
-#'                  dt_surv  = c(12,19,24,24,24,25,25,NA),
-#'                  surv     = c(0,1,0,0,0,0,0,NA))
-#'                  
-#' ## dates should be formatted
-#' dts <- grep('dt_', names(dd))
-#' dd[, dts] <- lapply(dd[, dts], as.Date.numeric, origin = '1970-01-01')
 #' 
-#' ## data with single observations per id
-#' (river(dd[!duplicated(dd$id, fromLast = TRUE), ]))
+#' ## data in river format:
+#' dd <- data.frame(id       = c(1,2,3,4,5),
+#'                  dt_reg   = c(1,2,3,4,5),
+#'                  dt_txst  = c(1,2,3,4,5) + 1,
+#'                  dt_txend = c(10,11,12,13,8),
+#'                  dt_prog  = c(11,16,NA,NA,8),
+#'                  dt_offtx = c(12,19,NA,NA,8),
+#'                  dt_surv  = c(12,19,24,25,NA),
+#'                  surv     = c(0,1,0,0,NA),
+#'                  dt_last  = c(12,19,24,25,NA),
+#'                  dt_off   = c(12,19,NA,NA,8))
+#' bd <- data.frame(id        = c(3,3,3,3,4,4),
+#'                  dt_assess = c(9,13,17,21,10,15),
+#'                  resp = factor(c('MR','PR','PR','CR','PR','CR'),
+#'                                levels = c('PD','SD','MR','PR','CR')))
 #' 
-#' ## or multiple
-#' river(dd, legend = list(x = 20, y = 2.5, title = 'Best Response'))
+#' river(dd, bd, stagger = FALSE, rev = TRUE,
+#'       legend = list(x = 'bottom', title = 'Response', horiz = TRUE))
+#' 
+#' ## same data with single observations per id
+#' bd1 <- data.frame(
+#'   id = 3:4, dt_assesss = 9:10,
+#'   resp = factor(c('PR','CR'), levels = c('PD','SD','MR','PR','CR')))
+#' 
+#' river(dd, bd1)
+#' 
+#' ## id and at parameters control the positions of the timelines
+#' river(dd, bd1, id = c(1,2,5,3,4), at = c(1:3, 5:6), legend = FALSE)
 #' 
 #' 
-#' ## generate tox data for river2
+#' ## additional data for river2
 #' tt <- data.frame(id = rep(1:2, times = c(1, 5)),
 #'                  dt_start = c(3,5,5,8,9,11),
 #'                  dt_end = c(NA,5,NA,10,10,NA),
 #'                  grade = c(1,4,3,4,1,2),
 #'                  desc = paste('tox', c(1,1:5)))
 #' 
-#' ## dates should be formatted
-#' dts <- grep('dt_', names(tt))
-#' tt[, dts] <- lapply(tt[, dts], as.Date.numeric, origin = '1970-01-01')
-#' 
-#' river2(dd, 2, tt)
+#' river2(dd, bd, tt, id = 2)
 #' 
 #' ## multiple records per id (ie, worsening toxicities)
 #' tt2 <- data.frame(id = rep(1:2, times = c(1, 8)),
@@ -932,61 +950,58 @@ waffle <- function(mat, xpad = 0, ypad = .05, ..., reset_par = TRUE) {
 #'                   grade = c(1,4,1,2,3,4,1,2,3),
 #'                   desc = paste('tox', c(1,1,2,2,2,3,4,5,5)))
 #'                   
-#' ## dates should be formatted
-#' dts <- grep('dt_', names(tt2))
-#' tt2[, dts] <- lapply(tt2[, dts], as.Date.numeric, origin = '1970-01-01')
-#' 
-#' river2(dd, 2, tt2)
+#' river2(dd, bd, tt2, id = 2)
 #' 
 #' @export
 
-river <- function(data, id, at = id, legend = 'topleft',
-                  xlim, ylim, rev = FALSE) {
+river <- function(data, bar_data, id, at = id, legend = 'topleft',
+                  xlim, ylim, rev = FALSE, stagger = TRUE) {
   ## error checks
-  data <- setNames(data[, 1:13],
-                   c('id','dt_reg','dt_txstart','dt_txend','dt_prog',
-                     'dt_resp_start','dt_resp_end','resp','dt_offtx',
-                     'dt_lastcontact','dt_offstudy','dt_status','status'))
-  stopifnot(check_river_format(data))
+  dd <- check_river_format(data)
+  bd <- check_river_format(data, bar_data)
   
-  nn <- seq_along(unique(data$id))
-  
-  if (missing(id)) {
-    id <- nn
-  } else stopifnot(all(id %in% nn & at %in% nn))
+  dd <- merge(bd, dd, by = 'id', all = TRUE)
+  nn <- seq_along(unique(dd$id))
   
   ## colors for resp - PD:CR
   cols <- c('red','transparent','yellow','orange','blue','green4')
   
+  if (missing(id))
+    id <- nn else stopifnot(all(id %in% nn & length(at) == length(id)))
+  
   ## convert dates to days with origin at first id reg (ie, ref date == 0)
-  dts <- grep('^dt_', names(data))
-  mm <- setNames(data[, dts], gsub('dt_', 'dd_', names(data)[dts]))
+  dts <- grep('^dt_', names(dd))
+  mm <- setNames(dd[, dts], gsub('dt_', 'dd_', names(dd)[dts]))
   rx <- range(unlist(mm[id, , drop = FALSE]), na.rm = TRUE)
   
   mm[] <- lapply(mm, as.numeric)
-  mm <- as.matrix(mm) - min(mm, na.rm = TRUE)
+  mm <- t(apply(mm, 1, function(x)
+    x - min(if (stagger) mm[, 'dd_reg'] else x['dd_reg'], na.rm = TRUE)))
   
-  data <- within(cbind(data, mm), {
+  dd <- within(cbind(dd, mm), {
     end_day <- apply(mm, 1, max, na.rm = TRUE)
     end_day <- pmax(end_day, dd_reg)
     alive <- is.na(status) | (grepl('(?i)[0v]', status) + 0L)
     censor <- alive & !is.na(dt_offstudy)
-    resp <- as.factor(resp)
-    col_resp <- cols[as.numeric(resp)]
+    assess <- as.factor(assess)
+    col_assess <- cols[as.numeric(assess)]
   })
   
   plot.new()
   par(mar = c(4,1,1,0))
   plot.window(if (!missing(xlim)) xlim else range(pretty(c(0, max(rx)))),
-              if (!missing(ylim)) ylim else c(0, length(nn)))
+              ## set min ylim to c(0,5) for case: id < 5
+              if (!missing(ylim)) ylim else range(c(0, at, 5)))
   axis(1, tcl = .2, las = 1)
-  title(xlab = 'Days from first registration', line = 2.5)
+  title(xlab = sprintf('Days from %sregistration', c('','first ')[stagger + 1L]),
+        line = 2.5)
   
-  if (legend[1] != FALSE)
-    do.call('legend', c(list(fill = cols, legend = levels(data$resp),
-                             horiz = FALSE, cex = .8, bty = 'n'), legend))
+  if (legend[[1]] != FALSE)
+    do.call('legend', modifyList(list(
+      x = legend, fill = cols, legend = levels(dd$assess),
+      horiz = FALSE, cex = .8, bty = 'n'), val = as.list(legend)))
   
-  sp <- split(data, data$id)
+  sp <- split(dd, dd$id)
   if (rev)
     sp <- rev(sp)
   
@@ -994,7 +1009,7 @@ river <- function(data, id, at = id, legend = 'topleft',
     ## lines at specific points requires new index
     jj <- at[which(id %in% ii)]
     
-    # with(data[ii, ], {
+    # with(dd[ii, ], {
     with(sp[[ii]], {
       ## label ids in black to left of rect
       text(dd_reg[1], jj, labels = id[1], pos = 2, xpd = NA)
@@ -1005,9 +1020,11 @@ river <- function(data, id, at = id, legend = 'topleft',
       do_seg_(jj, dd_txstart, dd_txend %|% end_day, arrow = FALSE,
               single = TRUE, lty = 1, lwd = 4, col = 'green4')
       
-      ## rects - resp
-      do_rect_(jj, dd_resp_start, dd_resp_end %|% end_day,
-               col = tcol(col_resp, alpha = .5))
+      ## rects - assessments
+      do_rect_(jj, dd_assess_start, dd_assess_end %|% end_day,
+               col = tcol(col_assess, alpha = .5))
+      points(dd_assess_start, rep(jj, length(dd_assess_start)),
+             pch = '|', col = 1)
       
       ## points - prog (red circle), death, (red x), censor (blue x)
       points(dd_prog[1], jj, pch = 16, col = 2, cex = 1.5)
@@ -1017,109 +1034,126 @@ river <- function(data, id, at = id, legend = 'topleft',
              col = 4, lwd = 3, cex = 1.5)
     })
   }
-  invisible(list(data = data))
+  invisible(list(data = dd, bar_data = bd))
 }
 
 #' @rdname river
 #' @export
-river2 <- function(data, id = 1, tox, legend = 'topleft', xlim, ylim) {
+river2 <- function(data, bar_data, bar_data2, id = 1, legend = 'topleft',
+                   xlim, ylim, rev = FALSE, stagger = FALSE) {
   ## error checks
-  data <- setNames(data[, 1:13],
-                   c('id','dt_reg','dt_txstart','dt_txend','dt_prog',
-                     'dt_resp_start','dt_resp_end','resp','dt_offstudy',
-                     'dt_offtx','dt_lastcontact','dt_status','status'))
-  if (missing(tox))
-    return(river(data, id, 1, legend, xlim, ylim))
-  tox <- setNames(tox[, 1:5], c('id','dt_start','dt_end','grade','desc'))
-  stopifnot(check_river_format(data, tox))
+  if (missing(bar_data2))
+    return(river(data = data, bar_data = bar_data, id = id, at = 1, rev = rev,
+                 legend = legend, xlim = xlim, ylim = ylim, stagger = stagger))
+  dd <- check_river_format(data)
+  bd <- check_river_format(data, bar_data)
+  td <- check_river_format(data, bar_data2)
   
-  ## select the tox for id, remove NA rows, order by date
-  tox <- split(tox, tox$id, drop = FALSE)[[id]]
-  tox <- tox[!is.na(tox$dt_start), ]
-  tox <- tox[do.call('order', as.list(tox[, c('desc', 'dt_start')])), ]
+  ## select bd for id, remove NA rows, order by date
+  td <- split(td, td$id, drop = FALSE)[[id]]
+  td <- td[!is.na(td$dt_start), ]
+  td <- td[do.call('order', as.list(td[, c('desc', 'dt_start')])), ]
   
   ## grade colors - 1:5
   cols <- c('blue','green','orange','red','black')
   
   ## base plot of the id summary
-  rv <- river(data, id = id, at = 1, legend = FALSE, rev = FALSE, xlim = xlim,
+  rv <- river(data = data, bar_data = bar_data, id = id, at = 1,
+              legend = FALSE, rev = FALSE, stagger = stagger, xlim = xlim,
               ylim = if (missing(ylim))
-                c(0, length(unique(tox$desc)) + 1) else ylim)
+                c(0, length(unique(td$desc)) + 1) else ylim)
   
-  tox <- within(tox, {
+  td <- within(td, {
     dt_reg <- rv$data$dt_reg[id]
     end_day <- rv$data$end_day[id]
     ong <- is.na(dt_end)
     grade <- as.factor(grade)
-    col_grade <- cols[as.numeric(tox$grade)]
-    # toxnum <- nn
-    toxnum <- ave(seq_along(desc), desc, FUN = seq_along)
+    col_grade <- cols[as.numeric(td$grade)]
+    num <- ave(seq_along(desc), desc, FUN = seq_along)
   })
-  ## convert dates to days, fix origin at first reg date (ie, ref date == 0)
-  dts <- grep('^dt_', names(tox))
-  mm <- setNames(lapply(tox[, dts], function(x)
-    as.numeric(x) - min(as.numeric(rv$data$dt_reg), na.rm = TRUE)),
-    gsub('dt_', 'dd_', names(tox)[dts]))
-  tox <- cbind(tox, do.call('cbind', mm))
   
-  # nn <- seq.int(nrow(tox))
-  sp <- split(tox, tox$desc)
+  ## convert dates to days, fix origin at first reg date (ie, ref date == 0)
+  dts <- grep('^dt_', names(td))
+  mm <- setNames(lapply(td[, dts], function(x)
+    as.numeric(x) - as.numeric(rv$data$dt_reg)[if (stagger) 1 else id]),
+    gsub('dt_', 'dd_', names(td)[dts]))
+  td <- cbind(td, do.call('cbind', mm))
+  
+  sp <- split(td, td$desc)
   nn <- seq_along(sp)
   
   if (legend[1] != FALSE)
     do.call('legend', c(list(fill = tcol(cols, alpha = .5), horiz = FALSE,
-                             legend = levels(tox$grade), cex = .8, bty = 'n'),
+                             legend = levels(td$grade), cex = .8, bty = 'n'),
                         legend))
   
   for (ii in nn) {
     with(sp[[ii]], {
-      ## rect for indiv tox
-      col <- tcol(col_grade, alpha = .5)
-      do_rect_(ii + 1, dd_start, dd_end %|% end_day, col = col, border = col)
+      ## max end bar date
+      dd_end2 <- min(rv$data[rv$data$id %in% id,
+                             c('dd_prog', 'dd_lastcontact')], na.rm = TRUE)
       
-      ## add count of tox to left in black
+      ## rect for indiv td
+      col <- tcol(col_grade, alpha = .5)
+      do_rect_(ii + 1, dd_start, dd_end %|% dd_end2, col = col, border = col)
+      
+      ## add count of td to left in black
       ## desc on right in color, italics if continuing; black otherwise
       text(dd_start[1], ii + 1, labels = ii, pos = 2, xpd = NA, cex = .8)
-      text(tail(dd_end %|% end_day, 1), ii + 1, labels = tail(desc, 1),
-           pos = 4, xpd = NA, cex = .8, font = c(1,3)[ong + 1L],
+      # text(tail(dd_end %|% end_day, 1), ii + 1, labels = tail(desc, 1),
+      
+      text(max(dd_start, dd_end %|% dd_end2, na.rm = TRUE), ii + 1, labels = tail(desc, 1),
+           pos = 4, xpd = NA, cex = .8, font = c(1,3)[tail(ong, 1) + 1L],
            col = c('black', tail(col, 1))[tail(ong, 1) + 1L])
     })
   }
-  invisible(list(data = rv$data, tox = tox))
+  invisible(list(data = rv$data, bar_data = bd, bar_data2 = td))
 }
 
 #' @rdname river
 #' @export
-check_river_format <- function(data, tox) {
-  fmt1 <- c("'data.frame':\tn obs. of 12 variables:",
+check_river_format <- function(data, bar_data) {
+  fmt1 <- c("'data.frame': n obs. of 10 variables:",
             " $ id            : any ",
             " $ dt_reg        :Class 'Date'",
             " $ dt_txstart    :Class 'Date'",
             " $ dt_txend      :Class 'Date'",
             " $ dt_prog       :Class 'Date'",
-            " $ dt_resp_start :Class 'Date'",
-            " $ dt_resp_end   :Class 'Date'",
-            " $ resp          : any ",
             " $ dt_offtx      :Class 'Date'",
-            " $ dt_lastcontact:Class 'Date'",
-            " $ dt_offstudy   :Class 'Date'",
             " $ dt_status     :Class 'Date'",
-            " $ status        : any ")
-  fmt2 <- c("'data.frame':\tn obs. of 5 variables:",
-            " $ id           : any ",
-            " $ dt_dtstarttox:Class 'Date'",
-            " $ dt_dtendtox  :Class 'Date'", 
-            " $ tox_grade    : any ",
-            " $ tox_desc     : any ")
+            " $ status        : any ",
+            " $ dt_lastcontact:Class 'Date'",
+            " $ dt_offstudy   :Class 'Date'")
+  fmt2 <- c("'data.frame': n obs. of 3 variables:",
+            " $ id            : any ",
+            " $ dt_assess     :Class 'Date'",
+            " $ assessment    : factor")
+  fmt3 <- c("'data.frame': n obs. of 5 variables:",
+            " $ id            : any ",
+            " $ dt_tox_start  :Class 'Date'",
+            " $ dt_tox_end    :Class 'Date'", 
+            " $ tox_grade     : factor ",
+            " $ tox_desc      : any ")
   
-  if (missing(data) && missing(tox)) {
+  ## if no arguments, print the formats
+  if (missing(data) && missing(bar_data)) {
     message('\'data\' should have the following format:\n', domain = NA)
     cat(fmt1, sep = '\n')
-    message('\n\n\'tox\' should have the following format:\n', domain = NA)
+    message('\n\'bar_data\' objects should have the following format:\n',
+            domain = NA)
     cat(fmt2, sep = '\n')
+    message('\n\t\tOR\n')
+    cat(fmt3, sep = '\n')
     return(invisible())
   }
   
+  to_date <- function(x) {
+    to_date_ <- function(x)
+      if (inherits(x, 'Date')) x else as.Date.numeric(x, origin = '1970-01-01')
+    dts <- grep('^dt_', names(x))
+    x[, dts] <- lapply(x[, dts, drop = FALSE], to_date_)
+    x
+  }
   do_error <- function(fmt, wh) {
     message(sprintf('%s should have the following format:\n', shQuote(wh)))
     cat(fmt, sep = '\n')
@@ -1127,15 +1161,36 @@ check_river_format <- function(data, tox) {
          domain = NA, call. = FALSE)
   }
   
-  dts <- grep('^dt_', names(data))
-  ok <- all(sapply(data[, dts], class) == 'Date')
-  if (!ok || !length(dts))
-    do_error(fmt1, 'data')
-  if (!missing(tox)) {
-    dts <- grep('^dt_', names(tox))
-    ok <- all(sapply(tox[, dts], class) == 'Date')
-    if (!ok || !length(dts))
-      do_error(fmt2, 'tox')
-  }
-  TRUE
+  dd <- tryCatch({
+    dd <- setNames(data[, 1:10],
+                   c('id','dt_reg','dt_txstart','dt_txend','dt_prog','dt_offtx',
+                     'dt_status','status','dt_lastcontact','dt_offstudy'))
+    to_date(dd)
+  }, error = function(e) do_error(fmt1, 'data'))
+  
+  if (missing(bar_data))
+    return(invisible(dd))
+  
+  dts <- grep('^dt_', names(bar_data))
+  bd <- tryCatch({
+    if (one <- length(dts) == 1L) {
+      bd <- setNames(bar_data[, 1:3], c('id','dt_assess_start','assess'))
+      bd <- within(bd, {
+        id <- factor(id, levels = data$id)
+        dt_assess_end <- ave(dt_assess_start, id, FUN = function(x)
+          c(tail(x, -1), NA))
+      })[!is.na(bd$dt_assess_start), ]
+      to_date(bd)
+    } else {
+      bd <- setNames(bar_data[, 1:5],
+                     c('id','dt_start','dt_end','grade','desc'))
+      bd <- within(bd, {
+        id <- factor(id, levels = data$id)
+      })
+      to_date(bd)
+    }
+  }, error = function(e)
+    do_error(if (one) fmt2 else fmt3, paste0('bar_data', c('','2')[one + 1L])))
+  
+  invisible(bd)
 }
