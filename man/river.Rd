@@ -10,7 +10,7 @@ river(data, bar_data, id, at = id, legend = "topleft", xlim, ylim,
   rev = FALSE, stagger = TRUE)
 
 river2(data, bar_data, bar_data2, id = 1, legend = "topleft", xlim, ylim,
-  rev = FALSE, stagger = FALSE)
+  rev = FALSE, stagger = FALSE, split = FALSE)
 
 check_river_format(data, bar_data)
 }
@@ -32,6 +32,9 @@ to bottom}
 
 \item{stagger}{logical; if \code{FALSE}, start dates will be fixed at 0
 rather than relative to the first start date if \code{TRUE} (default)}
+
+\item{split}{logical; if \code{TRUE}, rows of \code{bar_data2} will be
+plotted individually}
 }
 \description{
 Summarize a timeline for individuals over the course of a study.
