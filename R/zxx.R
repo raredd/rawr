@@ -1023,37 +1023,67 @@ rgene <- function(n = 1, alpha = LETTERS[1:5], nalpha = 2:5,
   replicate(n, p0(p0(alphas()), sep, p0(numerics())))
 }
 
-#' Multiple gsub
+#' Multiple pattern matching and replacement
 #' 
-#' Perform multiple pattern replacements with \code{\link{gsub}}.
+#' Perform multiple pattern matching and replacement.
 #' 
 #' @param pattern a vector of length two for a single replacement or a
 #' \emph{list} of length two vectors for multiple replacements where each
-#' vector is \code{c("pattern","replacement")}
-#' @param x a character string
+#' vector is \code{c(pattern,replacement)}
+#' @param replacement optional; if given, both \code{pattern} and
+#' \code{replacement} should be character vectors of equal length
+#' (\code{replacement} will be recycled if needed)
+#' @param x a character vector where matches are sought
 #' @param ... additional parameters passed to \code{\link{gsub}}
 #' 
+#' @seealso
+#' \code{\link[base]{grep}}
+#' 
 #' @examples
-#' s1 <- 'thiS iS gooD'
+#' s1 <- 'thiS iS SooD'
 #' 
-#' r1 <- c('s','5')
-#' r2 <- c(list(r1), list(c('o', '0'), c('i', '1')))
-#' r3 <- c(r2, list(c('\\b(\\w)', '\\U\\1')))
+#' ## if replacement is given, acts like gsub
+#' mgsub(c('hi', 'oo'), c('HI', '00'), s1)
+#' mgsub(c('\\bS','$','i'), '_', rep(s1, 3))
 #' 
-#' mgsub(r1, s1, ignore.case = TRUE)
-#' mgsub(r2, s1)
-#' mgsub(r3, s1, perl = TRUE)
+#' ## pattern can also be a list of c(pattern, replacement)
+#' r1 <- c('hi','HI')
+#' r2 <- c(list(r1), list(c('oo', '00')))
+#' r3 <- c(r2, list(c('i', '1'), c('\\b(\\w)', '\\U\\1')))
 #' 
+#' mgsub(r1, x = s1, ignore.case = TRUE)
+#' mgsub(r2, x = s1)
+#' mgsub(r3, x = s1, perl = TRUE)
 #' 
-#' @export
+#' @name mgrep
+NULL
 
-mgsub <- function(pattern, x, ...) {
+#' @rdname mgrep
+#' @export
+msub <- function(pattern, replacement, x, ...) {
   dots <- match.call(expand.dots = FALSE)$...
+  if (!missing(replacement))
+    pattern <- as.list(data.frame(
+      t(cbind(I(pattern), I(rep_len(replacement, length(pattern)))))))
+  if (!is.list(pattern))
+    pattern <- list(pattern)
+  sub2 <- function(l, x)
+    do.call('sub', c(list(x = x, pattern = l[1], replacement = l[2]), dots))
+  Reduce('sub2', pattern, x, right = TRUE)
+}
+
+#' @rdname mgrep
+#' @export
+mgsub <- function(pattern, replacement, x, ...) {
+  dots <- match.call(expand.dots = FALSE)$...
+  if (!missing(replacement))
+    pattern <- as.list(data.frame(
+      t(cbind(I(pattern), I(rep_len(replacement, length(pattern)))))))
   if (!is.list(pattern))
     pattern <- list(pattern)
   gsub2 <- function(l, x)
     do.call('gsub', c(list(x = x, pattern = l[1], replacement = l[2]), dots))
-  Reduce(gsub2, pattern, x, right = TRUE)
+  Reduce('gsub2', pattern, x, right = TRUE)
 }
 
 #' Install packages temporarily
