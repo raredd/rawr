@@ -1259,7 +1259,7 @@ view2 <- function(x, use_viewer = FALSE, ...) {
 
 #' Flatten lists
 #' 
-#' Flattens lists and nested lists of vectors, matrices, and/or data frames
+#' Flattens lists and nested lists of vectors, matrices, and/or data frames.
 #' 
 #' @param l a list
 #' 
@@ -1280,4 +1280,43 @@ flatten <- function(l) {
     l <- unlist(l, recursive = FALSE)
   }
   l
+}
+
+#' tree
+#' 
+#' List contents of directories in a tree-like format.
+#' 
+#' @param path file name path as character string
+#' @param full.names logical; if \code{TRUE}, the full file path will be
+#' returned; otherwise, only the \code{\link{basename}} is returned (default)
+#' @param ndirs,nfiles maximum number of directories and files per directory
+#' to print
+#' 
+#' @references
+#' \url{http://stackoverflow.com/questions/14188197/representing-a-directory-tree-as-a-recursive-list}
+#' 
+#' @examples
+#' str(tree(system.file(package = 'rawr'), FALSE))
+#' 
+#' @export
+
+tree <- function(path = '.', full.names = FALSE, ndirs = 5, nfiles = 5) {
+  path <- normalizePath(path, mustWork = TRUE)
+  
+  tree_ <- function(path = '.', full.names, n) {
+    isdir <- file.info(path)$isdir
+    if (!isdir) {
+      out <- if (full.names)
+        path else basename(path)
+    } else {
+      files <- list.files(path, full.names = TRUE, include.dirs = TRUE)
+      isdir <- file.info(files)$isdir
+      files <- files[isdir | cumsum(!isdir) <= nfiles]
+      out <- lapply(files, tree_, full.names, nfiles)
+      names(out) <- basename(files)
+    }
+    out
+  }
+  
+  head(tree_(path, full.names, nfiles), ndirs)
 }

@@ -10,7 +10,7 @@ flatten(l)
 \item{l}{a list}
 }
 \description{
-Flattens lists and nested lists of vectors, matrices, and/or data frames
+Flattens lists and nested lists of vectors, matrices, and/or data frames.
 }
 \examples{
 (l <- list(matrix(1:3), list(1:3, 'foo'), TRUE, 'hi',
