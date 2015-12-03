@@ -5,7 +5,7 @@
 #
 # psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill, interleave,
 # outer2, merge2, locf, roll_fun, classMethods, regcaptures, cast, melt, view,
-# view2, flatten
+# view2, flatten, tree, rm_null
 ###
 
 
@@ -1319,4 +1319,30 @@ tree <- function(path = '.', full.names = FALSE, ndirs = 5, nfiles = 5) {
   }
   
   head(tree_(path, full.names, nfiles), ndirs)
+}
+
+#' Recursive \code{rm} for lists
+#' 
+#' Remove \code{NULL} or \code{list(NULL)} objects recursively from a list.
+#' 
+#' @param l a list
+#' @param rm_list logical; if \code{FALSE}, lists with only the \code{NULL}
+#' object will not be removed
+#' 
+#' @references
+#' \url{http://stackoverflow.com/questions/26539441/r-remove-null-elements-from-list-of-lists}
+#' 
+#' @examples
+#' str(l <- list(list(NULL),list(1),list('a', NULL)))
+#' str(rm_null(l))
+#' str(rm_null(l, FALSE))
+#' 
+#' @export
+
+rm_null <- function(l, rm_list = TRUE) {
+  isnull <- if (rm_list)
+    function(x) is.null(x) | all(vapply(x, is.null, logical(1))) else
+      function(x) is.null(x)
+  x <- Filter(Negate(isnull), l)
+  lapply(x, function(x) if (is.list(x)) rm_null(x, rm_list) else x)
 }
