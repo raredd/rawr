@@ -1,8 +1,9 @@
 ### blah who would use these
 # ht, progress, recoder, ident, allequal, search_df, search_hist, fapply,
 # try_require, list2file, Restart, helpExtract, helpExtract_, Round, round_to,
-# updateR, read_clip, icols, fill_df, kinda_sort, rgene, mgsub, install_temp,
-# nestedMerge, nestedmerge, path_extract, fname, file_name, file_ext, rm_ext
+# updateR, read_clip, icols, fill_df, kinda_sort, rgene, install_temp,
+# nestedMerge, nestedmerge, path_extract, fname, file_name, file_ext, rm_ext,
+# mgrep, msub, mgsub, flatten, tree, rm_null, cum_reset
 ###
 
 
@@ -1023,69 +1024,6 @@ rgene <- function(n = 1, alpha = LETTERS[1:5], nalpha = 2:5,
   replicate(n, p0(p0(alphas()), sep, p0(numerics())))
 }
 
-#' Multiple pattern matching and replacement
-#' 
-#' Perform multiple pattern matching and replacement.
-#' 
-#' @param pattern a vector of length two for a single replacement or a
-#' \emph{list} of length two vectors for multiple replacements where each
-#' vector is \code{c(pattern,replacement)}
-#' @param replacement optional; if given, both \code{pattern} and
-#' \code{replacement} should be character vectors of equal length
-#' (\code{replacement} will be recycled if needed)
-#' @param x a character vector where matches are sought
-#' @param ... additional parameters passed to \code{\link{gsub}}
-#' 
-#' @seealso
-#' \code{\link[base]{grep}}
-#' 
-#' @examples
-#' s1 <- 'thiS iS SooD'
-#' 
-#' ## if replacement is given, acts like gsub
-#' mgsub(c('hi', 'oo'), c('HI', '00'), s1)
-#' mgsub(c('\\bS','$','i'), '_', rep(s1, 3))
-#' 
-#' ## pattern can also be a list of c(pattern, replacement)
-#' r1 <- c('hi','HI')
-#' r2 <- c(list(r1), list(c('oo', '00')))
-#' r3 <- c(r2, list(c('i', '1'), c('\\b(\\w)', '\\U\\1')))
-#' 
-#' mgsub(r1, x = s1, ignore.case = TRUE)
-#' mgsub(r2, x = s1)
-#' mgsub(r3, x = s1, perl = TRUE)
-#' 
-#' @name mgrep
-NULL
-
-#' @rdname mgrep
-#' @export
-msub <- function(pattern, replacement, x, ...) {
-  dots <- match.call(expand.dots = FALSE)$...
-  if (!missing(replacement))
-    pattern <- as.list(data.frame(
-      t(cbind(I(pattern), I(rep_len(replacement, length(pattern)))))))
-  if (!is.list(pattern))
-    pattern <- list(pattern)
-  sub2 <- function(l, x)
-    do.call('sub', c(list(x = x, pattern = l[1], replacement = l[2]), dots))
-  Reduce('sub2', pattern, x, right = TRUE)
-}
-
-#' @rdname mgrep
-#' @export
-mgsub <- function(pattern, replacement, x, ...) {
-  dots <- match.call(expand.dots = FALSE)$...
-  if (!missing(replacement))
-    pattern <- as.list(data.frame(
-      t(cbind(I(pattern), I(rep_len(replacement, length(pattern)))))))
-  if (!is.list(pattern))
-    pattern <- list(pattern)
-  gsub2 <- function(l, x)
-    do.call('gsub', c(list(x = x, pattern = l[1], replacement = l[2]), dots))
-  Reduce('gsub2', pattern, x, right = TRUE)
-}
-
 #' Install packages temporarily
 #' 
 #' This function will create a temporary \code{.libPath}, install, and load
@@ -1267,3 +1205,233 @@ file_ext <- function(path) path_extract(path)[, 'extension']
 rm_ext <- function(path)
   gsub('(^\\.[^ .]+$|[^:\\/]*?[.$]?)(?:\\.([^ :\\/.]*))?$', '\\1', path,
        perl = TRUE)
+
+#' Multiple pattern matching and replacement
+#' 
+#' Perform multiple pattern matching and replacement.
+#' 
+#' @param pattern for substituting, a vector of length two for a single
+#' replacement or a \emph{list} of length two vectors for multiple
+#' replacements where each vector is \code{c(pattern,replacement)}; or for
+#' grepping, a vector of character strings containing regular expressions
+#' to be matched in \code{x}
+#' @param x a character vector where matches are sought
+#' @param ... additional parameters passed onto other methods
+#' @param parallel logical; if \code{TRUE}, grepping will be performed in
+#' \pkg{\link{parallel}}; also, if \code{pattern} is a vector greater than
+#' \code{1e4} elements in length, \code{parallel} defaults to \code{TRUE}
+#' @param replacement optional; if given, both \code{pattern} and
+#' \code{replacement} should be character vectors of equal length
+#' (\code{replacement} will be recycled if needed)
+#' 
+#' @seealso
+#' \code{\link[base]{grep}}
+#' 
+#' @examples
+#' ## grepping
+#' mgrep(letters[1:5], letters[1:5])
+#' mgrepl(letters[1:5], letters[1:5])
+#' 
+#' ## subbing
+#' s1 <- 'thiS iS SooD'
+#' 
+#' ## if replacement is given, acts like gsub
+#' mgsub(c('hi', 'oo'), c('HI', '00'), s1)
+#' mgsub(c('\\bS','$','i'), '_', rep(s1, 3))
+#' 
+#' ## pattern can also be a list of c(pattern, replacement)
+#' r1 <- c('hi','HI')
+#' r2 <- c(list(r1), list(c('oo', '00')))
+#' r3 <- c(r2, list(c('i', '1'), c('\\b(\\w)', '\\U\\1')))
+#' 
+#' mgsub(r1, x = s1, ignore.case = TRUE)
+#' mgsub(r2, x = s1)
+#' mgsub(r3, x = s1, perl = TRUE)
+#' 
+#' @name mgrep
+NULL
+
+mgrep_ <- function(parallel, FUN, vlist, ...) {
+  pattern <- vlist$pattern
+  x <- vlist$x
+  if (parallel) {
+    ## if parallel = TRUE or long vector x (>1e4), run in parallel
+    requireNamespace('parallel')
+    cl <- makeCluster(nc <- getOption('cl.cores', detectCores()))
+    on.exit(stopCluster(cl))
+    clusterExport(cl = cl, varlist = c('x', 'pattern'), envir = environment())
+    parLapply(cl, seq_along(pattern),
+              function(ii) FUN(pattern = pattern[ii], x = x, ...))
+  } else {
+    ## slow version
+    lapply(seq_along(pattern), function(ii)
+      FUN(pattern = pattern[ii], x = x, ...))
+  }
+}
+
+#' @rdname mgrep
+#' @export
+mgrepl <- function(pattern, x, ..., parallel = length(pattern) > 1e4) {
+  mgrep_(parallel = parallel, FUN = base::grepl, ...,
+         vlist = list(pattern = pattern, x = x))
+}
+
+#' @rdname mgrep
+#' @export
+mgrep <- function(pattern, x, ..., parallel = length(pattern) > 1e4) {
+  mgrep_(parallel = parallel, FUN = base::grep, ...,
+         vlist = list(pattern = pattern, x = x))
+}
+
+msub_ <- function(pattern, replacement, x, ..., FUN) {
+  dots <- match.call(expand.dots = FALSE)$...
+  if (!missing(replacement))
+    pattern <- as.list(data.frame(
+      t(cbind(I(pattern), I(rep_len(replacement, length(pattern)))))))
+  if (!is.list(pattern))
+    pattern <- list(pattern)
+  sub2 <- function(l, x)
+    do.call(FUN, c(list(x = x, pattern = l[1], replacement = l[2]), dots))
+  Reduce('sub2', pattern, x, right = TRUE)
+}
+
+#' @rdname mgrep
+#' @export
+msub <- function(pattern, replacement, x, ...)
+  msub_(pattern = pattern, replacement = replacement, x = x, ..., FUN = 'sub')
+
+#' @rdname mgrep
+#' @export
+mgsub <- function(pattern, replacement, x, ...)
+  msub_(pattern = pattern, replacement = replacement, x = x, ..., FUN = 'gsub')
+
+#' Flatten lists
+#' 
+#' Flattens lists and nested lists of vectors, matrices, and/or data frames.
+#' 
+#' @param l a list
+#' 
+#' @references
+#' \url{https://stackoverflow.com/questions/8139677/how-to-flatten-a-list-to-a-list-without-coercion}
+#' 
+#' @examples
+#' (l <- list(matrix(1:3), list(1:3, 'foo'), TRUE, 'hi',
+#'            list(head(mtcars), list(tail(mtcars)))))
+#' flatten(l)
+#' 
+#' @export
+
+flatten <- function(l) {
+  f <- function(x) !is.data.frame(x) & is.list(x)
+  while (any(vapply(l, f, NA))) {
+    l <- lapply(l, function(x) if (f(x)) x else list(x))
+    l <- unlist(l, recursive = FALSE)
+  }
+  l
+}
+
+#' tree
+#' 
+#' List contents of directories in a tree-like format.
+#' 
+#' @param path file name path as character string
+#' @param full.names logical; if \code{TRUE}, the full file path will be
+#' returned; otherwise, only the \code{\link{basename}} is returned (default)
+#' @param ndirs,nfiles maximum number of directories and files per directory
+#' to print
+#' 
+#' @references
+#' \url{http://stackoverflow.com/questions/14188197/representing-a-directory-tree-as-a-recursive-list}
+#' 
+#' @examples
+#' str(tree(system.file(package = 'rawr'), FALSE))
+#' 
+#' @export
+
+tree <- function(path = '.', full.names = FALSE, ndirs = 5, nfiles = 5) {
+  path <- normalizePath(path, mustWork = TRUE)
+  
+  tree_ <- function(path = '.', full.names, n) {
+    isdir <- file.info(path)$isdir
+    if (!isdir) {
+      out <- if (full.names)
+        path else basename(path)
+    } else {
+      files <- list.files(path, full.names = TRUE, include.dirs = TRUE)
+      isdir <- file.info(files)$isdir
+      files <- files[isdir | cumsum(!isdir) <= nfiles]
+      out <- lapply(files, tree_, full.names, nfiles)
+      names(out) <- basename(files)
+    }
+    out
+  }
+  
+  head(tree_(path, full.names, nfiles), ndirs)
+}
+
+#' Recursive \code{rm} for lists
+#' 
+#' Remove \code{NULL} or \code{list(NULL)} objects recursively from a list.
+#' 
+#' @param l a list
+#' @param rm_list logical; if \code{FALSE}, lists with only the \code{NULL}
+#' object will not be removed
+#' 
+#' @references
+#' \url{http://stackoverflow.com/questions/26539441/r-remove-null-elements-from-list-of-lists}
+#' 
+#' @examples
+#' str(l <- list(list(NULL),list(1),list('a', NULL)))
+#' str(rm_null(l))
+#' str(rm_null(l, FALSE))
+#' 
+#' @export
+
+rm_null <- function(l, rm_list = TRUE) {
+  isnull <- if (rm_list)
+    function(x) is.null(x) | all(vapply(x, is.null, logical(1))) else
+      function(x) is.null(x)
+  x <- Filter(Negate(isnull), l)
+  lapply(x, function(x) if (is.list(x)) rm_null(x, rm_list) else x)
+}
+
+#' Cumulative reset
+#' 
+#' Reset a cumulative function if a value is encountered.
+#' 
+#' @param x a vector
+#' @param value a value of \code{x} which signals the end of a group and
+#' resets \code{FUN}
+#' @param FUN function to apply to each group
+#' 
+#' @seealso
+#' \code{\link{cummin}}, \code{\link{cummax}}, \code{\link{cumsum}},
+#' \code{\link{cumprod}}, \code{\link{ave}}
+#' 
+#' @return
+#' A vector having the same length as \code{x} with \code{FUN} applied to
+#' each group defined by positions of \code{value}.
+#' 
+#' @examples
+#' x <- 1:10
+#' cum_reset(x, 5, cummin)
+#' 
+#' x[x %% 4 == 0] <- 0
+#' cum_reset(x)
+#' cum_reset(x, FUN = sum)
+#' 
+#' set.seed(1)
+#' data.frame(x = x <- rpois(15, 1),
+#'            y = cum_reset(x),
+#'            z = cum_reset(x, 0, function(x) ave(x, FUN = sum)))
+#' 
+#' ## x need not be numeric if FUN is appropriate for typeof(x)
+#' cum_reset(letters[1:10], c('d','g'), function(x) letters[as.numeric(factor(x))])
+#' 
+#' @export
+
+cum_reset <- function(x, value = 0L, FUN = cumsum) {
+  idx <- c(0, head(cumsum(x %in% value), -1))
+  sp <- split(x, idx)
+  unname(unlist(lapply(sp, FUN)))
+}

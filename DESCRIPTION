@@ -16,6 +16,7 @@ Suggests:
     htmlwidgets,
     knitr,
     markdown,
+    parallel,
     rstudio,
     testthat
 License: GPL-2

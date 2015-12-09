@@ -5,7 +5,7 @@
 #
 # psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill, interleave,
 # outer2, merge2, locf, roll_fun, classMethods, regcaptures, cast, melt, view,
-# view2, flatten, tree, rm_null
+# view2
 ###
 
 
@@ -1255,94 +1255,4 @@ view2 <- function(x, use_viewer = FALSE, ...) {
                        domain = NA)
                browseURL(htmlFile)
              }) else browseURL(htmlFile)
-}
-
-#' Flatten lists
-#' 
-#' Flattens lists and nested lists of vectors, matrices, and/or data frames.
-#' 
-#' @param l a list
-#' 
-#' @references
-#' \url{https://stackoverflow.com/questions/8139677/how-to-flatten-a-list-to-a-list-without-coercion}
-#' 
-#' @examples
-#' (l <- list(matrix(1:3), list(1:3, 'foo'), TRUE, 'hi',
-#'            list(head(mtcars), list(tail(mtcars)))))
-#' flatten(l)
-#' 
-#' @export
-
-flatten <- function(l) {
-  f <- function(x) !is.data.frame(x) & is.list(x)
-  while (any(vapply(l, f, NA))) {
-    l <- lapply(l, function(x) if (f(x)) x else list(x))
-    l <- unlist(l, recursive = FALSE)
-  }
-  l
-}
-
-#' tree
-#' 
-#' List contents of directories in a tree-like format.
-#' 
-#' @param path file name path as character string
-#' @param full.names logical; if \code{TRUE}, the full file path will be
-#' returned; otherwise, only the \code{\link{basename}} is returned (default)
-#' @param ndirs,nfiles maximum number of directories and files per directory
-#' to print
-#' 
-#' @references
-#' \url{http://stackoverflow.com/questions/14188197/representing-a-directory-tree-as-a-recursive-list}
-#' 
-#' @examples
-#' str(tree(system.file(package = 'rawr'), FALSE))
-#' 
-#' @export
-
-tree <- function(path = '.', full.names = FALSE, ndirs = 5, nfiles = 5) {
-  path <- normalizePath(path, mustWork = TRUE)
-  
-  tree_ <- function(path = '.', full.names, n) {
-    isdir <- file.info(path)$isdir
-    if (!isdir) {
-      out <- if (full.names)
-        path else basename(path)
-    } else {
-      files <- list.files(path, full.names = TRUE, include.dirs = TRUE)
-      isdir <- file.info(files)$isdir
-      files <- files[isdir | cumsum(!isdir) <= nfiles]
-      out <- lapply(files, tree_, full.names, nfiles)
-      names(out) <- basename(files)
-    }
-    out
-  }
-  
-  head(tree_(path, full.names, nfiles), ndirs)
-}
-
-#' Recursive \code{rm} for lists
-#' 
-#' Remove \code{NULL} or \code{list(NULL)} objects recursively from a list.
-#' 
-#' @param l a list
-#' @param rm_list logical; if \code{FALSE}, lists with only the \code{NULL}
-#' object will not be removed
-#' 
-#' @references
-#' \url{http://stackoverflow.com/questions/26539441/r-remove-null-elements-from-list-of-lists}
-#' 
-#' @examples
-#' str(l <- list(list(NULL),list(1),list('a', NULL)))
-#' str(rm_null(l))
-#' str(rm_null(l, FALSE))
-#' 
-#' @export
-
-rm_null <- function(l, rm_list = TRUE) {
-  isnull <- if (rm_list)
-    function(x) is.null(x) | all(vapply(x, is.null, logical(1))) else
-      function(x) is.null(x)
-  x <- Filter(Negate(isnull), l)
-  lapply(x, function(x) if (is.list(x)) rm_null(x, rm_list) else x)
 }

@@ -2,31 +2,47 @@
 % Please edit documentation in R/zxx.R
 \name{mgrep}
 \alias{mgrep}
+\alias{mgrepl}
 \alias{mgsub}
 \alias{msub}
 \title{Multiple pattern matching and replacement}
 \usage{
+mgrepl(pattern, x, ..., parallel = length(pattern) > 1e+04)
+
+mgrep(pattern, x, ..., parallel = length(pattern) > 1e+04)
+
 msub(pattern, replacement, x, ...)
 
 mgsub(pattern, replacement, x, ...)
 }
 \arguments{
-\item{pattern}{a vector of length two for a single replacement or a
-\emph{list} of length two vectors for multiple replacements where each
-vector is \code{c(pattern,replacement)}}
+\item{pattern}{for substituting, a vector of length two for a single
+replacement or a \emph{list} of length two vectors for multiple
+replacements where each vector is \code{c(pattern,replacement)}; or for
+grepping, a vector of character strings containing regular expressions
+to be matched in \code{x}}
+
+\item{x}{a character vector where matches are sought}
+
+\item{...}{additional parameters passed onto other methods}
+
+\item{parallel}{logical; if \code{TRUE}, grepping will be performed in
+\pkg{\link{parallel}}; also, if \code{pattern} is a vector greater than
+\code{1e4} elements in length, \code{parallel} defaults to \code{TRUE}}
 
 \item{replacement}{optional; if given, both \code{pattern} and
 \code{replacement} should be character vectors of equal length
 (\code{replacement} will be recycled if needed)}
-
-\item{x}{a character vector where matches are sought}
-
-\item{...}{additional parameters passed to \code{\link{gsub}}}
 }
 \description{
 Perform multiple pattern matching and replacement.
 }
 \examples{
+## grepping
+mgrep(letters[1:5], letters[1:5])
+mgrepl(letters[1:5], letters[1:5])
+
+## subbing
 s1 <- 'thiS iS SooD'
 
 ## if replacement is given, acts like gsub
