@@ -3,7 +3,7 @@
 # try_require, list2file, Restart, helpExtract, helpExtract_, Round, round_to,
 # updateR, read_clip, icols, fill_df, kinda_sort, rgene, install_temp,
 # nestedMerge, nestedmerge, path_extract, fname, file_name, file_ext, rm_ext,
-# mgrep, msub, mgsub, flatten, tree, rm_null, cum_reset
+# mgrep, mgrepl, msub, mgsub, flatten, tree, rm_null, cum_reset
 ###
 
 
@@ -1048,10 +1048,10 @@ rgene <- function(n = 1, alpha = LETTERS[1:5], nalpha = 2:5,
 install_temp <- function(pkgs, lib, ...) {
   if (missing(lib))
     lib <- tempdir()
-  lp <- .libPaths()
-  ## reset libPaths before restarting r session may not be desired
+  ## resetting libPaths before restarting r session may not be desired
+  # lp <- .libPaths()
   # on.exit(.libPaths(lp))
-  .libPaths(c(lp, lib))
+  .libPaths(lib)
   utils::install.packages(pkgs = pkgs, lib = lib, ...)
   for (ii in pkgs)
     require(ii, character.only = TRUE)

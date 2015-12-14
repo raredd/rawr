@@ -197,7 +197,7 @@ NULL
 #' @rdname rawr_ls
 #' @export
 lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
-                 decreasing = TRUE, n = 15) {
+                 decreasing = TRUE, n = 40) {
   
   if (length(ls(envir = as.environment(pos))) < 1L)
     stop(return(character(0)))
@@ -357,8 +357,6 @@ parse_namespace <- function(x,
          unlist(strsplit(unlist(regcaptures(x, xx)), ',')))), wh)
 }
 
-
-
 #' Pairwise sum
 #' 
 #' Compute the pairwise sum of two or more vectors.
@@ -447,7 +445,8 @@ clc <- function(all.names = FALSE)
 #' 
 #' @export
 
-clear <- function(...) cat('\014')
+clear <- function(...)
+  cat('\014')
 
 #' Bind objects
 #' 
@@ -858,7 +857,8 @@ outer2 <- function(..., FUN) {
 #' 
 #' @export
 
-merge2 <- function(l, ...) Reduce(function(x, y) merge(x, y, ...), l)
+merge2 <- function(l, ...)
+  Reduce(function(x, y) merge(x, y, ...), l)
 
 #' Last observation carried forward
 #' 
@@ -1236,7 +1236,8 @@ melt <- function(data, varying = list(1:ncol(data)), ...) {
 
 #' @rdname rawr_view
 #' @export
-view <- function(x, title, ...) utils::View(x, title)
+view <- function(x, title, ...)
+  utils::View(x, title)
 
 #' @rdname rawr_view
 #' @export
