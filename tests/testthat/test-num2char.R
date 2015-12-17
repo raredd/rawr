@@ -14,8 +14,8 @@ test_that('informal and formal are identical in certain circumstances', {
 
 test_that('negatives and positives give same result', {
   
-  v1 <- v(1:10001, cap = FALSE)
-  v2 <- gsub('negative ', '', v(-1:-10001, cap = FALSE))
+  v1 <- v(1:1001, cap = FALSE)
+  v2 <- gsub('negative ', '', v(-1:-1001, cap = FALSE))
   expect_identical(v1, v2)
 })
 
