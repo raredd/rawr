@@ -32,18 +32,23 @@
 #' with(mtcars, dodge(mpg, list(gear, vs)))
 #' dodge(mtcars$mpg, mtcars[, c('gear', 'vs')])
 #' 
+#' 
 #' ## compare to overlapping points and jittering
+#' op <- par(no.readonly = TRUE)
 #' sp <- split(mtcars$mpg, do.call(interaction, mtcars[, c('gear','vs')]))
 #' plot.new()
+#' par(mar = c(0,0,0,0), cex = 2)
 #' plot.window(c(.5,6.5),c(10,35))
 #' box()
-#' invisible(sapply(seq_along(sp), function(x)
-#'   points(rep(x, length(sp[[x]])), sp[[x]])))
-#' invisible(sapply(seq_along(sp), function(x)
-#'   points(jitter(rep(x, length(sp[[x]]))), sp[[x]], col = 4, pch = 2)))
-#' points(dodge(mpg ~ gear + vs, data = mtcars), col = 2, pch = 4)
-#' legend('topleft', pch = c(1,1,4), col = c(1,4,2),
+#' for (ii in seq_along(sp))
+#'   points(rep(ii, length(sp[[ii]])), sp[[ii]])
+#' for (ii in seq_along(sp))
+#'   points(jitter(rep(ii, length(sp[[ii]]))), sp[[ii]], col = 4, pch = 2)
+#' points(dodge(mpg ~ gear + vs, mtcars), col = 2, pch = 4)
+#' legend('topleft', pch = c(1,1,4), col = c(1,4,2), cex = .8,
 #'        legend = c('overlapping','random jitter','dodging'))
+#' par(op)
+#' 
 #' 
 #' ## practical use
 #' boxplot(mpg ~ vs + gear, data = mtcars)
@@ -61,32 +66,35 @@ dodge.formula <- function(formula, data = NULL, ...) {
   m <- match.call(expand.dots = FALSE)
   if (is.matrix(eval(m$data, parent.frame())))
     m$data <- as.data.frame(data)
-  
-  args <- lapply(m$..., eval, data, parent.frame())
   nmargs <- names(args)
   m$... <- NULL
-  
   m[[1]] <- as.name('model.frame')
   mf <- eval(m, parent.frame())
   response <- attr(attr(mf, 'terms'), 'response')
-  
   dodge(mf[, response], mf[, -response])
 }
 
 #' @rdname dodge
 #' @export
+dodge.data.frame <- function(x, ...) {
+  dodge(x[, 2], x[, 1], ...)
+}
+
+#' @rdname dodge
+#' @export
 dodge.default <- function(x, at, dist, jit, ...) {
-  if (missing(at))
-    at <- 1
-  at <- do.call('interaction', list(at))
+  at <- if (is.list(at)) as.numeric(do.call('interaction', at)) else
+    rep_len(if (missing(at)) 1 else at, length(x))
   if (missing(dist) || is.na(dist) || is.null(dist)) 
     dist <- diff(range(x)) / 100
   if (missing(jit) || is.na(jit) || is.null(jit)) 
     jit <- 0.1
   ## call dodge on each group
   sp <- if (length(unique(at)) > 1) split(x, at) else list(x)
-  l <- lapply(seq_along(sp), function(xx)
-    dodge_(sp[[xx]], seq_along(sp)[xx], dist, jit))
+  l <- lapply(seq_along(sp), function(xx) {
+    ss <- sp[xx]
+    dodge_(ss[[1]], rep_len(as.numeric(names(ss)), length(ss[[1]])), dist, jit)
+  })
   do.call('rbind', l)
 }
 

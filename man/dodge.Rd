@@ -2,6 +2,7 @@
 % Please edit documentation in R/pl_extra.R
 \name{dodge}
 \alias{dodge}
+\alias{dodge.data.frame}
 \alias{dodge.default}
 \alias{dodge.formula}
 \title{Point dodge}
@@ -9,6 +10,8 @@
 dodge(x, ...)
 
 \method{dodge}{formula}(formula, data = NULL, ...)
+
+\method{dodge}{data.frame}(x, ...)
 
 \method{dodge}{default}(x, at, dist, jit, ...)
 }
@@ -43,18 +46,23 @@ dodge(mpg ~ gear + vs, mtcars)
 with(mtcars, dodge(mpg, list(gear, vs)))
 dodge(mtcars$mpg, mtcars[, c('gear', 'vs')])
 
+
 ## compare to overlapping points and jittering
+op <- par(no.readonly = TRUE)
 sp <- split(mtcars$mpg, do.call(interaction, mtcars[, c('gear','vs')]))
 plot.new()
+par(mar = c(0,0,0,0), cex = 2)
 plot.window(c(.5,6.5),c(10,35))
 box()
-invisible(sapply(seq_along(sp), function(x)
-  points(rep(x, length(sp[[x]])), sp[[x]])))
-invisible(sapply(seq_along(sp), function(x)
-  points(jitter(rep(x, length(sp[[x]]))), sp[[x]], col = 4, pch = 2)))
-points(dodge(mpg ~ gear + vs, data = mtcars), col = 2, pch = 4)
-legend('topleft', pch = c(1,1,4), col = c(1,4,2),
+for (ii in seq_along(sp))
+  points(rep(ii, length(sp[[ii]])), sp[[ii]])
+for (ii in seq_along(sp))
+  points(jitter(rep(ii, length(sp[[ii]]))), sp[[ii]], col = 4, pch = 2)
+points(dodge(mpg ~ gear + vs, mtcars), col = 2, pch = 4)
+legend('topleft', pch = c(1,1,4), col = c(1,4,2), cex = .8,
        legend = c('overlapping','random jitter','dodging'))
+par(op)
+
 
 ## practical use
 boxplot(mpg ~ vs + gear, data = mtcars)
