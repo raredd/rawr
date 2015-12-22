@@ -839,8 +839,7 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros,
     mat <- round(res1 / matrix(rep(n, each = nr)) * 100)
     res1 <- matrix(sprintf('%s (%s%%)', res1, mat),
                    nrow = nr, ncol = length(n))
-    # if (!missing(zeros))
-    #   res1 <- gsub('0 \\(0%\\)', zeros, res1)
+    res1[] <- gsub('0 (NaN%)', '0 (0%)', res1, fixed = TRUE)
   }
   
   zzz <- if (pct.col) {
@@ -857,7 +856,7 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros,
     zzz <- zzz[order(zzz[, 1], decreasing = TRUE), ]
   }
    if (!missing(zeros))
-     gsub('0 \\(0%\\)|^0$', zeros, zzz) else zzz
+     `[<-`(zzz, gsub('0 \\(0%\\)|^0$', zeros, zzz)) else zzz
 }
 
 #' Count formatter
