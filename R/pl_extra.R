@@ -14,14 +14,13 @@
 #' \code{y} is a numeric vector of data values to be split into groups
 #' according to the grouping variable, \code{group}
 #' @param data optional matrix or data frame containing the variables in 
-#' \code{formula}; by default, variables are taken from 
+#' \code{formula}; by default, the variables are taken from
 #' \code{environment(formula)}
-#' @param x a numeric vector of data
-#' @param at grouping variables or, equivalently, positions along x-axis
+#' @param x grouping variables or, equivalently, positions along x-axis
+#' @param y a numeric vector of data, y-values
 #' @param jit,dist jittering parameters; \code{jit} describes the spread of
-#' close points, and \code{dist} defines a range of data to declare points
-#' "close"
-#' @param ... ignored
+#' close points, and \code{dist} defines a range to consider points "close"
+#' @param ... additional arguments passed to other methods
 #' 
 #' @seealso
 #' \code{\link{jitter}}, \code{\link{tplot}}
@@ -29,8 +28,8 @@
 #' @examples
 #' ## these are equivalent ways to call dodge:
 #' dodge(mpg ~ gear + vs, mtcars)
-#' with(mtcars, dodge(mpg, list(gear, vs)))
-#' dodge(mtcars$mpg, mtcars[, c('gear', 'vs')])
+#' with(mtcars, dodge(list(gear, vs), mpg))
+#' dodge(mtcars[, c('gear', 'vs')], mtcars$mpg)
 #' 
 #' 
 #' ## compare to overlapping points and jittering
@@ -43,7 +42,7 @@
 #' for (ii in seq_along(sp))
 #'   points(rep(ii, length(sp[[ii]])), sp[[ii]])
 #' for (ii in seq_along(sp))
-#'   points(jitter(rep(ii, length(sp[[ii]]))), sp[[ii]], col = 4, pch = 2)
+#'   points(jitter(rep(ii, length(sp[[ii]]))), sp[[ii]], col = 4, pch = 1)
 #' points(dodge(mpg ~ gear + vs, mtcars), col = 2, pch = 4)
 #' legend('topleft', pch = c(1,1,4), col = c(1,4,2), cex = .8,
 #'        legend = c('overlapping','random jitter','dodging'))
@@ -52,7 +51,7 @@
 #' 
 #' ## practical use
 #' boxplot(mpg ~ vs + gear, data = mtcars)
-#' points(dodge(mpg ~ vs + gear, data = mtcars), col = 'red', pch = 19)
+#' points(dodge(mpg ~ vs + gear, data = mtcars), col = 2, pch = 19)
 #'
 #' @export
 
@@ -71,31 +70,27 @@ dodge.formula <- function(formula, data = NULL, ...) {
   m[[1]] <- as.name('model.frame')
   mf <- eval(m, parent.frame())
   response <- attr(attr(mf, 'terms'), 'response')
-  dodge(mf[, response], mf[, -response])
+  dodge(mf[, -response], mf[, response])
 }
 
 #' @rdname dodge
 #' @export
-dodge.data.frame <- function(x, ...) {
-  dodge(x[, 2], x[, 1], ...)
-}
-
-#' @rdname dodge
-#' @export
-dodge.default <- function(x, at, dist, jit, ...) {
-  at <- if (is.list(at)) as.numeric(do.call('interaction', at)) else
-    rep_len(if (missing(at)) 1 else at, length(x))
+dodge.default <- function(x, y, dist, jit, ...) {
+  if (is.data.frame(y)) {
+    x <- y[, 2]
+    y <- y[, 1]
+  }
+  x <- if (!missing(x) && is.list(x))
+    as.numeric(do.call('interaction', x)) else
+      rep_len(if (missing(x)) 1 else x, length(x))
   if (missing(dist) || is.na(dist) || is.null(dist)) 
     dist <- diff(range(x)) / 100
   if (missing(jit) || is.na(jit) || is.null(jit)) 
     jit <- 0.1
   ## call dodge on each group
-  sp <- if (length(unique(at)) > 1) split(x, at) else list(x)
-  l <- lapply(seq_along(sp), function(xx) {
-    ss <- sp[xx]
-    dodge_(ss[[1]], rep_len(as.numeric(names(ss)), length(ss[[1]])), dist, jit)
-  })
-  do.call('rbind', l)
+  cbind.data.frame(x_new = ave(seq_along(y), x, FUN = function(ii)
+    dodge_(y[ii], x[ii], dist, jit)$x),
+    y = y)
 }
 
 #' Show colors

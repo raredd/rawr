@@ -2,7 +2,6 @@
 % Please edit documentation in R/pl_extra.R
 \name{dodge}
 \alias{dodge}
-\alias{dodge.data.frame}
 \alias{dodge.default}
 \alias{dodge.formula}
 \title{Point dodge}
@@ -11,28 +10,25 @@ dodge(x, ...)
 
 \method{dodge}{formula}(formula, data = NULL, ...)
 
-\method{dodge}{data.frame}(x, ...)
-
-\method{dodge}{default}(x, at, dist, jit, ...)
+\method{dodge}{default}(x, y, dist, jit, ...)
 }
 \arguments{
-\item{x}{a numeric vector of data}
+\item{x}{grouping variables or, equivalently, positions along x-axis}
 
-\item{...}{ignored}
+\item{...}{additional arguments passed to other methods}
 
 \item{formula}{a \code{\link{formula}}, such as \code{y ~ group}, where
 \code{y} is a numeric vector of data values to be split into groups
 according to the grouping variable, \code{group}}
 
 \item{data}{optional matrix or data frame containing the variables in 
-\code{formula}; by default, variables are taken from 
+\code{formula}; by default, the variables are taken from
 \code{environment(formula)}}
 
-\item{at}{grouping variables or, equivalently, positions along x-axis}
+\item{y}{a numeric vector of data, y-values}
 
 \item{jit, dist}{jittering parameters; \code{jit} describes the spread of
-close points, and \code{dist} defines a range of data to declare points
-"close"}
+close points, and \code{dist} defines a range to consider points "close"}
 }
 \description{
 Dodge and center overlapping points by group. Spreads scattered points
@@ -43,8 +39,8 @@ and to set useful defaults for \code{jit} and \code{dist}.
 \examples{
 ## these are equivalent ways to call dodge:
 dodge(mpg ~ gear + vs, mtcars)
-with(mtcars, dodge(mpg, list(gear, vs)))
-dodge(mtcars$mpg, mtcars[, c('gear', 'vs')])
+with(mtcars, dodge(list(gear, vs), mpg))
+dodge(mtcars[, c('gear', 'vs')], mtcars$mpg)
 
 
 ## compare to overlapping points and jittering
@@ -57,7 +53,7 @@ box()
 for (ii in seq_along(sp))
   points(rep(ii, length(sp[[ii]])), sp[[ii]])
 for (ii in seq_along(sp))
-  points(jitter(rep(ii, length(sp[[ii]]))), sp[[ii]], col = 4, pch = 2)
+  points(jitter(rep(ii, length(sp[[ii]]))), sp[[ii]], col = 4, pch = 1)
 points(dodge(mpg ~ gear + vs, mtcars), col = 2, pch = 4)
 legend('topleft', pch = c(1,1,4), col = c(1,4,2), cex = .8,
        legend = c('overlapping','random jitter','dodging'))
@@ -66,7 +62,7 @@ par(op)
 
 ## practical use
 boxplot(mpg ~ vs + gear, data = mtcars)
-points(dodge(mpg ~ vs + gear, data = mtcars), col = 'red', pch = 19)
+points(dodge(mpg ~ vs + gear, data = mtcars), col = 2, pch = 19)
 
 }
 \seealso{

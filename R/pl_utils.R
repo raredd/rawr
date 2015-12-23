@@ -27,7 +27,7 @@ grouping_ <- function(v, dif) {
   g.id <- cumsum(!together)
   g.si <- rep(x <- as.vector(table(g.id)), x)
   vg <- cbind(vs = vs, g.id = g.id, g.si = g.si)[rank(v), ]
-  if (length(v) == 1) 
+  if (length(v) == 1L) 
     vg <- as.data.frame(t(vg))
   data.frame(vg, hmsf = hmsf_(vg[, 2]))
 }
