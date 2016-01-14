@@ -1,6 +1,6 @@
 ### statistical functions
 # bincon, bintest, dlt_table, power_cv, simon2, moods_test, fakeglm, gcd,
-# install.bioc
+# install.bioc, lm.beta
 ###
 
 
@@ -839,4 +839,44 @@ install.bioc <- function(pkgs, upgrade = FALSE) {
   if (missing(pkgs))
     f() else f(pkgs)
   invisible()
+}
+
+#' Standardize regression coefficients
+#' 
+#' Computes standardized regression coefficients (beta) for linear models.
+#' 
+#' The optional \code{weights} argument can be used to scale the standard
+#' deviation(s) of the coefficient(s). The default is \code{weights = 1}, but
+#' \code{weights = 2} has also been suggested so that the generic comparison
+#' is with inputs equal to the mean +/- 1 standard deviation [Gelman] (see
+#' references). Additionally, \code{weights} can be a vector of weights for
+#' each coefficient.
+#' 
+#' @param x an \code{\link{lm}} object
+#' @param weights a vector of weights; see details
+#' 
+#' @seealso
+#' \code{\link[QuantPsyc]{lm.beta}}
+#' 
+#' @references
+#' \url{http://onlinelibrary.wiley.com/doi/10.1002/sim.3107/abstract}
+#' 
+#' @examples
+#' (cc <- with(mtcars, cor(mpg, wt)))
+#' lm.beta(lm(mpg ~ wt, data = mtcars))
+#' 
+#' cc ** 2
+#' summary(lm(mpg ~ wt, data = mtcars))$r.squared
+#' 
+#' lm.beta(lm(mpg ~ wt + disp + factor(vs), data = mtcars), weights = 2)
+#' 
+#' @export
+
+lm.beta <- function (x, weights = 1) {
+  stopifnot(inherits(x, 'lm'))
+  b  <- coef(x)[-1]
+  mf <- x$model
+  sx <- vapply(mf[, -1, drop = FALSE], sd, double(1))
+  sy <- vapply(mf[,  1, drop = FALSE], sd, double(1))
+  b * sx / sy * weights
 }
