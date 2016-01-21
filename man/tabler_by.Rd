@@ -87,4 +87,7 @@ htmlTable(out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
             'proportion of patients out of respective phase total.</font>'))
             
 }
+\seealso{
+\code{\link{tox_worst}}
+}
 

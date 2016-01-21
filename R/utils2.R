@@ -767,7 +767,7 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' @param pct.col logical; if \code{TRUE}, percents are separated into new
 #' columns
 #' 
-#' @see also
+#' @seealso
 #' \code{\link{tox_worst}}
 #' 
 #' @examples
