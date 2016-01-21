@@ -966,7 +966,8 @@ river <- function(data, bar_data, id, at = id, legend = 'topleft',
   nn <- seq_along(unique(dd$id))
   
   ## colors for resp - PD:CR
-  cols <- c('red','transparent','yellow','orange','blue','green4')
+  cols <- c('red','transparent','yellow','orange',
+            'deepskyblue','dodgerblue3','blue4')
   
   if (missing(id))
     id <- nn else stopifnot(all(id %in% nn & length(at) == length(id)))
