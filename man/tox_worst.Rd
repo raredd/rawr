@@ -54,4 +54,7 @@ tabler_by(out$tox_worst, 'tox_desc', 'tox_grade')
 options(oo)
 
 }
+\seealso{
+\code{\link{tabler_by}}
+}
 

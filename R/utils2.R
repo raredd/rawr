@@ -767,6 +767,9 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' @param pct.col logical; if \code{TRUE}, percents are separated into new
 #' columns
 #' 
+#' @see also
+#' \code{\link{tox_worst}}
+#' 
 #' @examples
 #' set.seed(1)
 #' 
@@ -907,6 +910,9 @@ countr <- function(top, n, lowcase = TRUE) {
 #' and \code{tox_grade}; and \code{duplicates}, the rows which correspond to
 #' duplicate \code{tox_desc} per \code{id} but of an equal or lesser 
 #' \code{tox_grade}.
+#' 
+#' @seealso
+#' \code{\link{tabler_by}}
 #' 
 #' @examples
 #' oo <- options()
