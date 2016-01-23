@@ -1,5 +1,5 @@
 ### formatting, knitr, misc utils
-# show_html, show_markdown, show_math, roundr, intr, pvalr, pvalr2, clist,
+# show_html, show_markdown, show_math, roundr, intr, pvalr, pvalr2, catlist,
 # binconr, num2char, iprint, match_ctc, writeftable, tabler, tabler_by,
 # countr, tox_worst, dmy, combine_table
 ###
@@ -418,12 +418,12 @@ pvalr2 <- function(pvals, html = FALSE, show.p = FALSE) {
 #' # $b
 #' # [1] 2
 #' 
-#' clist(l) # [1] "a = 1, b = 2"
-#' clist(par()[1:5])
+#' catlist(l) # [1] "a = 1, b = 2"
+#' catlist(par()[1:5])
 #' 
 #' @export
 
-clist <- function(l) 
+catlist <- function(l) 
   paste(paste(names(l), l, sep = ' = ', collapse = ', '), sep = '')
 
 #' bincon formatter

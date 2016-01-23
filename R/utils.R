@@ -5,9 +5,12 @@
 #
 # psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill, interleave,
 # outer2, merge2, locf, roll_fun, classMethods, regcaptures, cast, melt, view,
-# view2
+# view2, clist
 ###
 
+
+## is.list(data.frame()); islist(data.frame)
+islist <- function(x) inherits(x, 'list')
 
 #' rawr operators
 #' 
@@ -1256,4 +1259,59 @@ view2 <- function(x, use_viewer = FALSE, ...) {
                        domain = NA)
                browseURL(htmlFile)
              }) else browseURL(htmlFile)
+}
+
+#' Concatenate lists
+#' 
+#' Combine lists with mixed data types "horizontally."
+#' 
+#' @param x,y \emph{uniquely-named} lists or nested lists with each pair
+#' of non-\code{NULL} elements having identical classes
+#' 
+#' @return
+#' A lists with all elements from \code{x} and \code{y} joined using
+#' \code{\link{cbind}} for matrices, \code{\link{cbind.data.frame}} for
+#' data frames, lists for factors, and \code{\link{c}} otherwise.
+#' 
+#' @seealso
+#' \code{\link{nestedMerge}}, \code{\link{modifyList}}
+#' 
+#' @examples
+#' f <- function(x) boxplot(mpg ~ vs, data = x, plot = FALSE)
+#' bp1 <- f(mtcars[mtcars$vs == 0, ])
+#' bp2 <- f(mtcars[mtcars$vs == 1, ])
+#' bp  <- f(mtcars)
+#' stopifnot(identical(clist(bp1, bp2), bp))
+#' 
+#' l1 <- list(x = factor(1:5), y = matrix(1:4, 2),
+#'            z = head(cars), l = list(zz = 1:5))
+#' l2 <- list(z = head(cbind(cars, cars)), x = factor('a'),
+#'            l = list(zz = 6:10))
+#' 
+#' clist(l1, l2)
+#' clist(l1, list(zzz = data.frame(1)))
+#' 
+#' @export
+
+clist <- function (x, y) {
+  get_fun <- function(x, y)
+    switch(class(x %||% y),
+           matrix = cbind,
+           data.frame = function(x, y)
+             do.call('cbind.data.frame', Filter(Negate(is.null), list(x, y))),
+           factor = function(...) unlist(list(...)), c)
+  
+  stopifnot(islist(x), islist(y))
+  nn <- names(rapply(c(x, y), names, how = 'list'))
+  if (is.null(nn) || any(!nzchar(nn)))
+    stop('All non-NULL list elements should have unique names', domain = NA)
+  
+  nn <- unique(c(names(x), names(y)))
+  z <- setNames(vector('list', length(nn)), nn)
+  
+  for (ii in nn)
+    z[[ii]] <- if (islist(x[[ii]]) && islist(y[[ii]]))
+      Recall(x[[ii]], y[[ii]]) else
+        (get_fun(x[[ii]], y[[ii]]))(x[[ii]], y[[ii]])
+  z
 }
