@@ -190,23 +190,21 @@ jmplot <- function(x, y, z,
 #' (unless x is a list when they are ignored), and named arguments are 
 #' arguments and \code{\link{par}}s to be passed to \code{\link{bxp}}
 #' @param type type of plot (dot, dot-box, box-dot, box)
-#' @param main overall title for the plot
-#' @param sub sub-title for the plot (below x-axis)
-#' @param xlab x-axis label
-#' @param ylab y-axis label
+#' @param main,sub overall title and sub-title for the plot (below x-axis)
+#' @param xlab,ylab x- and y-axis labels
 #' @param names group labels
-#' @param xlim x-axis limits
-#' @param ylim y-axis limits
+#' @param xlim,ylim x- and y-axis limits
 #' @param axes logical; draw axes
 #' @param frame.plot logical; draw box around \code{x-y} plot
 #' @param at group positions on axis
 #' @param horizontal logical; flip axes
-#' @param jit numeric; x-axis jitter parameter for overlapping pts (\code{0} for 
-#' overlap and higher values for more distance between points)
-#' @param dist numeric; additional jitter parameter
+#' @param jit,dist x-axis jitter parameters for overlapping points (use
+#' \code{0} for  overlap and higher values for more distance between points);
+#' \code{dist} and \code{jit} define the interval width and spreading factors,
+#' respectively
 #' @param boxplot.pars additional list of graphical parameters for box plots
 #' @param col plotting color
-#' @param group.col logical; if \code{TRUE}, color by group; o/w by order
+#' @param group.col logical; if \code{TRUE}, color by group; otherwise by order
 #' @param boxcol fill color
 #' @param boxborder border color
 #' @param pch plotting character
@@ -215,9 +213,9 @@ jmplot <- function(x, y, z,
 #' @param mean.line logical; draw mean line
 #' @param median.pars list of graphical parameters for median line
 #' @param mean.pars see above
-#' @param show.n show number in each group
-#' @param show.na show number missing in each group
-#' @param cex.n text size for \code{show.n} and \code{show.na}
+#' @param show.n logical; show number in each group
+#' @param show.na logical; show number missing in each group
+#' @param cex.n character expansion for \code{show.n} and \code{show.na}
 #' @param my.gray default border color
 #' @param ann logical; annotate plot
 #' @param add logical; add to an existing plot
@@ -230,6 +228,9 @@ jmplot <- function(x, y, z,
 #' place but before the axes, title, and box are added; see the comments about 
 #' \code{panel.first}
 #' 
+#' @return
+#' A list with length equal to the number of groups
+#' 
 #' @seealso
 #' \href{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}{Tatsuki
 #' \code{tplot}}; \href{http://data.vanderbilt.edu/~graywh/dotplot/}{web app
@@ -238,8 +239,10 @@ jmplot <- function(x, y, z,
 #' @examples
 #' ## equivalent ways to call tplot
 #' ## the formula method is a convenience function for the first case
-#' tplot(split(mtcars$mpg, mtcars$gear))
-#' tplot(mpg ~ gear, mtcars)
+#' tplot(split(mtcars$mpg, interaction(mtcars$gear, mtcars$vs)))
+#' tplot(mpg ~ gear + vs, mtcars)
+#' 
+#' identical(tplot(mtcars$mpg), boxplot(mtcars$mpg))
 #' 
 #' ## use panel.first/panel.last like in `plot` (unavailable in `boxplot`)
 #' tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd',
@@ -453,11 +456,11 @@ tplot.default <- function(x, ...,
       notoplot <- (y <=  boxplotout$stats[5,]) & (y >=  boxplotout$stats[1,])
       if (sum(notoplot) > 0)
         col[[i]][notoplot] <- '#bfbfbf'
-      if (horizontal)
+      if (horizontal) {
         do.call('localPoints', c(list(x = y, y = x, pch = pch[[i]], 
                                       col = col[[i]]), pars))
-      else do.call('localPoints', c(list(x = x, y = y, pch = pch[[i]],
-                                         col = col[[i]]), pars))
+      } else do.call('localPoints', c(list(x = x, y = y, pch = pch[[i]],
+                                           col = col[[i]]), pars))
     }
     ## box in front
     if (type[i] %in% c('bd', 'b')) {
@@ -470,20 +473,21 @@ tplot.default <- function(x, ...,
       if (sum(toplot) > 0) 
         if (col[[i]][toplot][1] == '#bfbfbf') 
           col[[i]][toplot] <- 1
-      if (horizontal)
+      if (horizontal) {
         do.call('localPoints', 
                 c(list(x = y[toplot], y = x[toplot], pch = pch[[i]][toplot], 
                        col = col[[i]][toplot]), pars))
-      else do.call('localPoints', c(list(x = x[toplot], y = y[toplot],
-                                         pch = pch[[i]][toplot],
-                                         col = col[[i]][toplot]), pars))
+      } else do.call('localPoints', c(list(x = x[toplot], y = y[toplot],
+                                           pch = pch[[i]][toplot],
+                                           col = col[[i]][toplot]), pars))
     }
     ## box behind
     if (type[i] == 'db')
-      do.call('boxplot', c(list(x = y, at = at[i], add = TRUE, axes = FALSE,
-                                col = boxcol[i], border = boxborder[i],
-                                outline = FALSE, horizontal = horizontal),
-                           boxplot.pars))
+      boxplotout <- do.call('boxplot',
+                            c(list(x = y, at = at[i], add = TRUE, axes = FALSE,
+                                   col = boxcol[i], border = boxborder[i],
+                                   outline = FALSE, horizontal = horizontal),
+                              boxplot.pars))
     ## dots in front
     if (type[i] %in% c('db', 'd')) {
       if (horizontal)
@@ -506,6 +510,9 @@ tplot.default <- function(x, ...,
         do.call('lines', c(list(at[i] + Lme, rep(median(y), 2)), median.pars))
     }
     out[[i]] <- data.frame(to.plot, col = col[[i]], pch = pch[[i]])
+    ## use return value of boxplot instead
+    out[[i]] <- if (type[i] == 'd')
+      boxplot(x = y, at = at[i], plot = FALSE) else boxplotout
   }
   panel.last
   
@@ -539,8 +546,8 @@ tplot.default <- function(x, ...,
   }
   
   names(out) <- names(groups)
-  invisible(out)
-}
+  invisible(if (length(out) == 1L) out[[1]] else Reduce(clist, out))
+  }
 
 #' @rdname tplot
 #' @export

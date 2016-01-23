@@ -35,28 +35,22 @@ arguments and \code{\link{par}}s to be passed to \code{\link{bxp}}}
 
 \item{type}{type of plot (dot, dot-box, box-dot, box)}
 
-\item{jit}{numeric; x-axis jitter parameter for overlapping pts (\code{0} for 
-overlap and higher values for more distance between points)}
+\item{jit, dist}{x-axis jitter parameters for overlapping points (use
+\code{0} for  overlap and higher values for more distance between points);
+\code{dist} and \code{jit} define the interval width and spreading factors,
+respectively}
 
-\item{dist}{numeric; additional jitter parameter}
+\item{main, sub}{overall title and sub-title for the plot (below x-axis)}
 
-\item{main}{overall title for the plot}
-
-\item{sub}{sub-title for the plot (below x-axis)}
-
-\item{xlab}{x-axis label}
-
-\item{ylab}{y-axis label}
+\item{xlab, ylab}{x- and y-axis labels}
 
 \item{names}{group labels}
 
-\item{xlim}{x-axis limits}
-
-\item{ylim}{y-axis limits}
+\item{xlim, ylim}{x- and y-axis limits}
 
 \item{col}{plotting color}
 
-\item{group.col}{logical; if \code{TRUE}, color by group; o/w by order}
+\item{group.col}{logical; if \code{TRUE}, color by group; otherwise by order}
 
 \item{boxcol}{fill color}
 
@@ -76,11 +70,11 @@ overlap and higher values for more distance between points)}
 
 \item{boxplot.pars}{additional list of graphical parameters for box plots}
 
-\item{show.n}{show number in each group}
+\item{show.n}{logical; show number in each group}
 
-\item{show.na}{show number missing in each group}
+\item{show.na}{logical; show number missing in each group}
 
-\item{cex.n}{text size for \code{show.n} and \code{show.na}}
+\item{cex.n}{character expansion for \code{show.n} and \code{show.na}}
 
 \item{my.gray}{default border color}
 
@@ -120,6 +114,9 @@ used for plotting}
 contain \code{\link{NA}}s; the default is to ignore missing values in either
 the response or the group}
 }
+\value{
+A list with length equal to the number of groups
+}
 \description{
 An alternative to \code{\link{boxplot}}. The individual data can be shown 
 (either in the foreground or background) with jittering if necessary.
@@ -127,8 +124,10 @@ An alternative to \code{\link{boxplot}}. The individual data can be shown
 \examples{
 ## equivalent ways to call tplot
 ## the formula method is a convenience function for the first case
-tplot(split(mtcars$mpg, mtcars$gear))
-tplot(mpg ~ gear, mtcars)
+tplot(split(mtcars$mpg, interaction(mtcars$gear, mtcars$vs)))
+tplot(mpg ~ gear + vs, mtcars)
+
+identical(tplot(mtcars$mpg), boxplot(mtcars$mpg))
 
 ## use panel.first/panel.last like in `plot` (unavailable in `boxplot`)
 tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd',
