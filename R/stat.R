@@ -482,7 +482,7 @@ simon2 <- function(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,
                              n1max = n1max, alpha = alpha, beta = beta, 
                              del = del, minimax = minimax), 
                          '[[', 1),
-                  sapply(seq_len(nrow(args)), function(x) clist(args[x, ])))
+                  sapply(seq_len(nrow(args)), function(x) catlist(args[x, ])))
   
   list(designs = tmp,
        call = match.call(),
