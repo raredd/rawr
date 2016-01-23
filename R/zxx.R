@@ -1073,7 +1073,7 @@ install_temp <- function(pkgs, lib, ...) {
 #' \code{nestedmerge} in this case, only elements of list \code{a} will be
 #' merged and returned.
 #' 
-#' @param a,b lists
+#' @param x,y lists
 #' @seealso
 #' Adapted from \url{http://stackoverflow.com/questions/23483421/combine-merge-lists-by-elements-names-list-in-list}
 #' 
@@ -1101,38 +1101,34 @@ install_temp <- function(pkgs, lib, ...) {
 #' 
 #' @export
 
-nestedMerge <- function(a, b) {
-  if (is.list(a) & is.list(b)) {
-    nn <- setdiff(names(b), names(a))
-    a <- c(a, setNames(vector('list', length(nn)), nn))
+nestedMerge <- function(x, y) {
+  if (islist(x) & islist(y)) {
+    nn <- setdiff(names(y), names(x))
+    x <- c(x, setNames(vector('list', length(nn)), nn))
   }
-  nestedmerge(a, b)
+  nestedmerge(x, y)
 }
 
 #' @rdname nestedMerge
 #' @export
-nestedmerge <- function(a, b) {
-  if (is.list(a) & is.list(b)) {
+nestedmerge <- function(x, y) {
+  if (islist(x) & islist(y)) {
     out <- list()
-    if (!is.null(names(a))) {
-      for (n in names(a)) {
-        if (n %in% names(b) && !is.null(b[[n]])) {
-          out <- append(out, c(Recall(a[[n]], b[[n]])))
-        } else {
-          out <- append(out, list(a[[n]]))
-        }
-        names(out)[length(out)] <- n
+    if (!is.null(names(x))) {
+      for (nn in names(x)) {
+        out <- if (nn %in% names(y) && !is.null(y[[nn]]))
+          append(out, c(Recall(x[[nn]], y[[nn]]))) else
+            append(out, list(x[[nn]]))
+        names(out)[length(out)] <- nn
       }
     } else {
-      for (i in seq_along(a))
-        if (i <= length(b) && !is.null(b[[i]])) {
-          out <- append(out, Recall(a[[i]], b[[i]]))
-        } else {
-          out <- append(out, list(a[[i]]))
-        }
+      for (ii in seq_along(x))
+        out <- if (ii <= length(y) && !is.null(y[[ii]]))
+          append(out, Recall(x[[ii]], y[[ii]])) else
+            append(out, list(x[[ii]]))
     }
-    return(out)
-  } else return(list(c(a, b)))
+    out
+  } else list(c(x, y))
 }
 
 #' Extract parts of file path
@@ -1322,9 +1318,8 @@ mgsub <- function(pattern, replacement, x, ...)
 #' @export
 
 flatten <- function(l) {
-  f <- function(x) !is.data.frame(x) & is.list(x)
-  while (any(vapply(l, f, NA))) {
-    l <- lapply(l, function(x) if (f(x)) x else list(x))
+  while (any(vapply(l, islist, NA))) {
+    l <- lapply(l, function(x) if (islist(x)) x else list(x))
     l <- unlist(l, recursive = FALSE)
   }
   l

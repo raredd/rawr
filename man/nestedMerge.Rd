@@ -5,12 +5,12 @@
 \alias{nestedmerge}
 \title{Merge nested lists}
 \usage{
-nestedMerge(a, b)
+nestedMerge(x, y)
 
-nestedmerge(a, b)
+nestedmerge(x, y)
 }
 \arguments{
-\item{a, b}{lists}
+\item{x, y}{lists}
 }
 \description{
 Recursive functions to merge nested lists.
