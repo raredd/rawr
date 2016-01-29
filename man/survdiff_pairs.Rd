@@ -7,7 +7,8 @@
 survdiff_pairs(s, ..., method = "bonferroni", digits = getOption("digits"))
 }
 \arguments{
-\item{s}{a \code{\link[survival]{survdiff}} object}
+\item{s}{an object of class \code{\link[survival]{survdiff}} or
+\code{\link[survival]{survfit}}}
 
 \item{...}{additional arguments passed to \code{\link{survdiff}} such as
 \code{na.action} to filter missing data or \code{rho} to control the type
@@ -16,6 +17,13 @@ of test}
 \item{method}{p-value correction method; see \code{\link{p.adjust}}}
 
 \item{digits}{integer indicating the number of decimal places to be used}
+}
+\value{
+A list of length three giving the \code{n}s, \code{chi.sq} statistic, and
+\code{p.value} for each comparison. Note that the lower triangle of
+\code{p.value} are uncorrected and the upper triangle is adjusted using
+\code{method} (the default is a Bonferroni correction, see
+\code{\link{p.adjust}})
 }
 \description{
 Evaluate differences in survival curves for all pairs of a grouping
