@@ -36,6 +36,11 @@ survdiff_pairs(fit2)
 ## compare
 survdiff(Surv(time, status) ~ ph.ecog, data = dd[dd$ph.ecog \%in\% 0:1, ])
 
+## for interactions, create a new variable with all levels
+dd$int <- with(dd, interaction(sex, ph.ecog))
+fit3 <- survdiff(Surv(time, status) ~ int, data = dd)
+survdiff_pairs(fit3)
+
 }
 \seealso{
 \code{\link[rawr]{pvalr}}; \code{\link{survdiff}}; \code{\link{p.adjust}};

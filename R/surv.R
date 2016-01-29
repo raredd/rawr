@@ -808,6 +808,11 @@ surv_table <- function(s, digits = 3, times = pretty(range(s$time)), ...) {
 #' ## compare
 #' survdiff(Surv(time, status) ~ ph.ecog, data = dd[dd$ph.ecog %in% 0:1, ])
 #' 
+#' ## for interactions, create a new variable with all levels
+#' dd$int <- with(dd, interaction(sex, ph.ecog))
+#' fit3 <- survdiff(Surv(time, status) ~ int, data = dd)
+#' survdiff_pairs(fit3)
+#' 
 #' @export
 
 survdiff_pairs <- function(s, ..., method = 'bonferroni',
@@ -826,7 +831,7 @@ survdiff_pairs <- function(s, ..., method = 'bonferroni',
       res[ii, jj] <- survdiff(as.formula(s$call$formula), ...,
                         data = data[data[, rhs] %in% unq[c(ii, jj)], ])$chisq
   pvu <- apply(res, 1:2, function(x) pchisq(x, 1, lower.tail = FALSE))
-  pvc <- pvu[lower.tri(pvu)]
+  pvc <- t(pvu)[upper.tri(pvu)]
   pvc <- p.adjust(pvc, method = method, n = length(pvc))
   pvu[upper.tri(pvu)] <- pvc
   
