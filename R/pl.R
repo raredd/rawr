@@ -1095,7 +1095,7 @@ river2 <- function(data, bar_data, bar_data2, id = 1, legend = 'topleft',
   rv <- river(data = data, bar_data = bar_data, id = id, at = 1,
               legend = FALSE, rev = FALSE, stagger = stagger, xlim = xlim,
               ylim = if (missing(ylim))
-                c(0, (if (split) max(nn) else length(nn)) + 1) else ylim)
+                c(0, max(5, (if (split) max(nn) else length(nn)) + 1)) else ylim)
   
   td <- within(td, {
     dt_reg <- rv$data$dt_reg[id]
