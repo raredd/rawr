@@ -961,6 +961,11 @@ waffle <- function(mat, xpad = 0, ypad = .05, ..., reset_par = TRUE) {
 #'                   
 #' river2(dd, bd, tt2, id = 2)
 #' 
+#' 
+#' ## bar_data can also be given in river2 without additional information
+#' river2(bar_data = tt, id = 2)
+#' river2(bar_data = tt2, id = 2)
+#' 
 #' @export
 
 river <- function(data, bar_data, id, at = id, legend = 'topleft',
@@ -1056,9 +1061,23 @@ river <- function(data, bar_data, id, at = id, legend = 'topleft',
 river2 <- function(data, bar_data, bar_data2, id = 1, legend = 'topleft',
                    xlim, ylim, rev = FALSE, stagger = FALSE, split = FALSE) {
   ## error checks
-  if (missing(bar_data2))
-    return(river(data = data, bar_data = bar_data, id = id, at = 1, rev = rev,
-                 legend = legend, xlim = xlim, ylim = ylim, stagger = stagger))
+  if (!missing(data)) {
+    if (missing(bar_data2))
+      return(river(data = data, bar_data = bar_data, id = id, at = 1, rev = rev,
+                   legend = legend, xlim = xlim, ylim = ylim, stagger = stagger))
+  } else {
+    mmin <- function(x) min(x, na.rm = !all(is.na(x)))
+    mmax <- function(x) max(x, na.rm = !all(is.na(x)))
+    bar_data2 <- if (missing(bar_data2)) bar_data else bar_data2
+    data <- data.frame(
+      id = bar_data[, 1], dt_reg = ave(bar_data[, 2], bar_data[, 1], FUN = mmin),
+      dt_txst = NA, dt_txend = NA, dt_prog  = NA, dt_offtx = NA, dt_surv = NA,
+      surv = NA, dt_last = ave(bar_data[, 2], bar_data[, 1], FUN = mmax),
+      dt_off = NA)
+    data <- data[!duplicated(data$id), ]
+    bar_data <- data.frame(id = data$id, dt_assess = data$dt_reg, resp = NA)
+  }
+  
   dd <- check_river_format(data)
   bd <- check_river_format(data, bar_data)
   td <- check_river_format(data, bar_data2)
@@ -1103,8 +1122,9 @@ river2 <- function(data, bar_data, bar_data2, id = 1, legend = 'topleft',
   sp <- split(td, if (split) seq.int(nrow(td)) else td$desc)
   
   ## max end bar date
-  dd_end2 <- min(rv$data[rv$data$id %in% id, c('dd_prog')], na.rm = TRUE)
-
+  dd_end2 <- rv$data[rv$data$id %in% id, c('dd_prog')]
+  dd_end2 <- min(dd_end2, na.rm = !all(is.na(dd_end2)))
+  
   for (ii in nn) {
     with(sp[[ii]], {
       ## rect for indiv td

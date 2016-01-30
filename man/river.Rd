@@ -128,5 +128,10 @@ tt2 <- data.frame(id = rep(1:2, times = c(1, 8)),
                   
 river2(dd, bd, tt2, id = 2)
 
+
+## bar_data can also be given in river2 without additional information
+river2(bar_data = tt, id = 2)
+river2(bar_data = tt2, id = 2)
+
 }
 
