@@ -32,12 +32,12 @@ grouping_ <- function(v, dif) {
   data.frame(vg, hmsf = hmsf_(vg[, 2]))
 }
 
-do_rect_ <- function(n, x, y, single = FALSE, border = NA, col = NA, ...) {
+do_rect_ <- function(n, x, y, single = FALSE, border = NA, col = NA,
+                     adj = 0.25, ...) {
   ## used in river/river2 to add rects for each n
-  adj <- 0.25
   lx <- length(x)
   if (lx == 1L && is.na(x)) return()
-  if (single || length(x) == 1) {
+  if (single || length(x) == 1L) {
     rect(x[1], n[1] - 1 * adj, y[1], n[1] + 1 * adj, border = border[1],
          col = col[1], ...)
   } else {

@@ -983,7 +983,6 @@ river <- function(data, bar_data, id, at = id, legend = 'topleft',
   
   if (missing(id))
     id <- nn else stopifnot(all(id %in% nn & length(at) == length(id)))
-  id <- as.character(id)
   if (rev)
     at <- rev(at)
   
@@ -1030,7 +1029,7 @@ river <- function(data, bar_data, id, at = id, legend = 'topleft',
     jj <- at[which(id %in% ii)]
     
     # with(dd[ii, ], {
-    with(sp[[ii]], {
+    with(sp[[as.character(ii)]], {
       ## label ids in black to left of rect
       text(dd_reg[1], jj, labels = id[1], pos = 2, xpd = NA)
       
@@ -1087,7 +1086,7 @@ river2 <- function(data, bar_data, bar_data2, id = 1, legend = 'topleft',
   td <- check_river_format(data, bar_data2)
   
   ## select bd for id, remove NA rows, order by date
-  td <- split(td, td$id, drop = FALSE)[[id]]
+  td <- split(td, td$id, drop = FALSE)[[as.character(id)]]
   td <- td[!is.na(td$dt_start), ]
   td <- td[do.call('order', as.list(td[, c('dt_start', 'desc')])), ]
   
@@ -1120,7 +1119,8 @@ river2 <- function(data, bar_data, bar_data2, id = 1, legend = 'topleft',
   ## convert dates to days, fix origin at first reg date (ie, ref date == 0)
   dts <- grep('^dt_', names(td))
   mm <- setNames(lapply(td[, dts], function(x)
-    as.numeric(x) - unique(as.numeric(rv$data[if (stagger) 1 else rv$data$id %in% id, 'dt_reg']))),
+    as.numeric(x) - unique(as.numeric(rv$data[if (stagger) 1 else
+      rv$data$id %in% id, 'dt_reg']))),
     gsub('dt_', 'dd_', names(td)[dts]))
   td <- cbind(td, do.call('cbind', mm))
   sp <- split(td, if (split) seq.int(nrow(td)) else td$desc)
@@ -1133,7 +1133,8 @@ river2 <- function(data, bar_data, bar_data2, id = 1, legend = 'topleft',
     with(sp[[ii]], {
       ## rect for indiv td
       col <- tcol(col_grade, alpha = .5)
-      do_rect_(ii + 1, dd_start, dd_end %|% dd_end2, col = col, border = col)
+      do_rect_(ii + 1, dd_start, pmax(dd_end %|% dd_end2, dd_start, na.rm = TRUE),
+               col = col, border = col)
       
       ## add count of td to left in black
       ## desc on right in color, italics if continuing; black otherwise
