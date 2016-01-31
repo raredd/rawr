@@ -1069,10 +1069,13 @@ river2 <- function(data, bar_data, bar_data2, id = 1, legend = 'topleft',
     mmin <- function(x) min(x, na.rm = !all(is.na(x)))
     mmax <- function(x) max(x, na.rm = !all(is.na(x)))
     bar_data2 <- if (missing(bar_data2)) bar_data else bar_data2
+    if (ncol(bar_data2) <= 3)
+      ## use bar_data2 format--check_river_format()
+      bar_data2 <- bar_data[, c(1,2,2,3,3)]
     data <- data.frame(
       id = bar_data[, 1], dt_reg = ave(bar_data[, 2], bar_data[, 1], FUN = mmin),
-      dt_txst = NA, dt_txend = NA, dt_prog  = NA, dt_offtx = NA, dt_surv = NA,
-      surv = NA, dt_last = ave(bar_data[, 2], bar_data[, 1], FUN = mmax),
+      dt_txst = NA, dt_txend = NA, dt_prog = NA, dt_offtx = NA, dt_surv = NA,
+      surv = NA, dt_last = ave(bar_data[, 3], bar_data[, 1], FUN = mmax),
       dt_off = NA)
     data <- data[!duplicated(data$id), ]
     bar_data <- data.frame(id = data$id, dt_assess = data$dt_reg, resp = NA)
