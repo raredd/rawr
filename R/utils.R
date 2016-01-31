@@ -5,7 +5,7 @@
 #
 # psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill, interleave,
 # outer2, merge2, locf, roll_fun, classMethods, regcaptures, cast, melt, view,
-# view2, clist
+# view2, clist, rapply2
 ###
 
 
@@ -1314,4 +1314,46 @@ clist <- function (x, y) {
       Recall(x[[ii]], y[[ii]]) else
         (get_fun(x[[ii]], y[[ii]]))(x[[ii]], y[[ii]])
   z
+}
+
+#' Recursively apply a function to a list
+#' 
+#' Iterates over a (possibly nested) list and applies a function if a specific
+#' \code{\link{class}} is found.
+#' 
+#' @param l a list
+#' @param FUN the function to be applied to each \code{classes} element of
+#' \code{l}
+#' @param classes a character vector of \code{\link{class}} names or
+#' \code{"any"} to apply to every non-\code{\link{list}} element of \code{l}
+#' @param ... additional arguments passed to \code{FUN}
+#' 
+#' @return
+#' A list having the same structure as \code{l} with \code{FUN} applied to
+#' all (including nested) elements with a class matching \code{classes}.
+#' 
+#' @seealso
+#' \code{\link{rapply}}
+#' 
+#' @examples
+#' ll <- list(list(list(head(cars), list(head(cars)))), letters[1:4],
+#'            factor(1:4), 1:3, head(cars))
+#' rapply2(ll, class)
+#' rapply2(ll, log, classes = 'data.frame', base = 10)
+#' 
+#' ## almost fully unlist a list
+#' rapply2(ll, unlist, classes = 'list')
+#' 
+#' @export
+
+rapply2 <- function(l, FUN, classes = 'any', ...) {
+  islist <- function(x) inherits(x, 'list')
+  stopifnot(islist(l))
+  FUN <- match.fun(FUN)
+  for (ii in seq_along(l))
+    l[[ii]] <- if (islist(l[[ii]]) & ('list' %ni% classes))
+      Recall(l[[ii]], FUN, classes, ...) else
+        if (any(classes == 'any') || inherits(l[[ii]], classes))
+          FUN(l[[ii]], ...) else l[[ii]]
+  l
 }
