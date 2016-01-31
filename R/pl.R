@@ -983,6 +983,7 @@ river <- function(data, bar_data, id, at = id, legend = 'topleft',
   
   if (missing(id))
     id <- nn else stopifnot(all(id %in% nn & length(at) == length(id)))
+  id <- as.character(id)
   if (rev)
     at <- rev(at)
   
