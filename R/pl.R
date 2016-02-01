@@ -209,6 +209,10 @@ jmplot <- function(x, y, z,
 #' @param boxborder border color
 #' @param pch plotting character
 #' @param group.pch logical; if \code{TRUE}, \code{pch} by group; o/w, by order
+#' @param cex \strong{c}haracter \strong{ex}pansion value
+#' @param group.cex logical; if \code{TRUE}, groups will use the same
+#' \code{cex} value; otherwise, points will have individual values, recycled if
+#' necessary
 #' @param median.line logical; draw median line
 #' @param mean.line logical; draw mean line
 #' @param median.pars list of graphical parameters for median line
@@ -242,10 +246,12 @@ jmplot <- function(x, y, z,
 #' tplot(split(mtcars$mpg, interaction(mtcars$gear, mtcars$vs)))
 #' tplot(mpg ~ gear + vs, mtcars)
 #' 
+#' ## tplot has the same return value as boxplot
 #' identical(tplot(mtcars$mpg), boxplot(mtcars$mpg))
 #' 
 #' ## use panel.first/panel.last like in `plot` (unavailable in `boxplot`)
 #' tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd',
+#'       cex = c(1,5)[(mtcars$mpg > 30) + 1L],
 #'       panel.last = legend('topleft', legend = 3:5, col = 1:3, pch = 1),
 #'       panel.first = {
 #'         abline(h = mean(mtcars$mpg))
@@ -279,6 +285,7 @@ tplot.default <- function(x, ...,
                           main, sub, xlab, ylab, names, xlim, ylim,
                           col, group.col = TRUE, boxcol, boxborder,
                           pch = par('pch'), group.pch = TRUE,
+                          cex = par('cex'), group.cex = FALSE,
                           
                           ## additional aesthetics
                           median.line = FALSE, mean.line = FALSE, 
@@ -352,16 +359,14 @@ tplot.default <- function(x, ...,
   
   type <- match.arg(type, choices = c('d','db','bd','b'), several.ok = TRUE)
   ## type of plot for each group
-  # if ((length(type) > 1) && (length(type) !=  ng))
-  #   warning("length of \'type\' does not match the number of groups")
   type <- rep(type, length.out = ng)
   
   ## default colors
+  ## 50% gray for box/dots in back, otherwise default color
   defcols <- c(my.gray, par('col'))
-  ## 50% gray for box in back, otherwise default color
+  
   if (missing(boxborder))
     boxborder <- defcols[2 - grepl('.b', type)]
-  ## 50% gray for dots in back, otherwise default color
   if (missing(col)) {
     col <- defcols[2 - grepl('.d', type)]
     group.col <- TRUE
@@ -369,42 +374,38 @@ tplot.default <- function(x, ...,
   if (missing(boxplot.pars))
     boxplot.pars <- NULL
   
-  # if (length(boxborder) !=  ng)
-  #   warning('length of \'boxborder\' does not match the number of groups')
   boxborder <- rep(boxborder, length.out = ng)
-  
-  # if (!is.null(boxcol) && length(boxcol) !=  ng)
-  #   warning('length of 'boxcol' does not match the number of groups')
   boxcol <- rep(boxcol, length.out = ng)
   
-  ## colors by group
   if (group.col) {
-    # if (length(col) !=  ng)
-    #   warning("length of \'col\' does not match the number of groups")
+    ## colors by group
     g.col <- rep(col, length.out = ng)
     col <- rep(g.col, l)
-    ## colors by individual or global
   } else {
-    # if ((length(col) > 1) && (length(col) !=  nv))
-    #   warning("length of \'col\' does not match the number of data points")
+    ## colors by individual or global
     col   <- rep(col, length.out = nv)
     g.col <- rep(1, length.out = ng)
   }
-  ## plot characters by group
-  if (group.pch) {
-    # if (length(pch) !=  ng)
-    #   warning("length of \'pch\' does not match the number of groups")
-    pch <- rep(rep(pch, length.out = ng), l)
-    ## plot characters by individual or global
+  pch <- if (group.pch) {
+    ## plot characters by group
+    rep(rep(pch, length.out = ng), l)
   } else {
-    # if ((length(pch) > 1) && (length(pch) !=  nv))
-    #   warning("length of \'pch\' does not match the number of data points")
-    pch <- rep(pch, length.out = nv)
+    ## plot characters by individual or global
+    rep(pch, length.out = nv)
+  }
+  cex <- if (group.cex) {
+    ## plot characters by group
+    rep(rep(cex, length.out = ng), l)
+  } else {
+    ## plot characters by individual or global
+    rep(cex, length.out = nv)
   }
   
   ## split colors and plot characters into groups
   col <- split(col, g)
   pch <- split(pch, g)
+  cex <- split(cex, g)
+  
   ## remove any NAs from the data and options
   nonas <- lapply(groups, function(x) !is.na(x))
   l2 <- sapply(groups, function(x) sum(is.na(x)))
@@ -412,6 +413,7 @@ tplot.default <- function(x, ...,
   l <- sapply(groups, length)
   col <- mapply('[', col, nonas, SIMPLIFY = FALSE)
   pch <- mapply('[', pch, nonas, SIMPLIFY = FALSE)
+  cex <- mapply('[', cex, nonas, SIMPLIFY = FALSE)
   
   ## mean and median line for each group
   mean.line   <- rep(mean.line, length.out = ng)
@@ -423,15 +425,14 @@ tplot.default <- function(x, ...,
   if (missing(jit) || is.na(jit) || is.null(jit)) 
     jit <- 0.025 * ng
   groups <- lapply(groups, grouping_, dif = dist)
-  ## rawr:::grouping_; rawr:::hmsf_; rawr:::jit_
+  ## rawr:::grouping_; rawr:::jit_
   
   ## set up new plot unless adding to existing one
   if (!add) {
     plot.new()
     if (horizontal)
       do.call('localWindow', c(list(ylim, xlim), pars))
-    else
-      do.call('localWindow', c(list(xlim, ylim), pars))
+    else do.call('localWindow', c(list(xlim, ylim), pars))
   }
   panel.first
   
@@ -445,10 +446,9 @@ tplot.default <- function(x, ...,
     x <- rep(at[i], nrow(to.plot)) + jit_(gs, hms) * jit
     y <- to.plot$vs
     
-    ## type of plot
     ## dots behind
     if (type[i] == 'bd') {
-      boxplotout <- do.call('boxplot', 
+      boxplotout <- do.call('boxplot',
                             c(list(x = y, at = at[i], plot = FALSE, add = FALSE,
                                    axes = FALSE, col = boxcol[i], 
                                    border = boxborder[i], outline = FALSE, 
@@ -458,9 +458,11 @@ tplot.default <- function(x, ...,
         col[[i]][notoplot] <- '#bfbfbf'
       if (horizontal) {
         do.call('localPoints', c(list(x = y, y = x, pch = pch[[i]], 
-                                      col = col[[i]]), pars))
+                                      col = col[[i]], cex = cex[[i]]),
+                                 pars))
       } else do.call('localPoints', c(list(x = x, y = y, pch = pch[[i]],
-                                           col = col[[i]]), pars))
+                                           col = col[[i]], cex = cex[[i]]),
+                                      pars))
     }
     ## box in front
     if (type[i] %in% c('bd', 'b')) {
@@ -475,11 +477,14 @@ tplot.default <- function(x, ...,
           col[[i]][toplot] <- 1
       if (horizontal) {
         do.call('localPoints', 
-                c(list(x = y[toplot], y = x[toplot], pch = pch[[i]][toplot], 
-                       col = col[[i]][toplot]), pars))
+                c(list(x = y[toplot], y = x[toplot], pch = pch[[i]][toplot],
+                       col = col[[i]][toplot], cex = cex[[i]][toplot]),
+                  pars))
       } else do.call('localPoints', c(list(x = x[toplot], y = y[toplot],
                                            pch = pch[[i]][toplot],
-                                           col = col[[i]][toplot]), pars))
+                                           col = col[[i]][toplot],
+                                           cex = cex[[i]][toplot]),
+                                      pars))
     }
     ## box behind
     if (type[i] == 'db')
@@ -492,9 +497,11 @@ tplot.default <- function(x, ...,
     if (type[i] %in% c('db', 'd')) {
       if (horizontal)
         do.call('localPoints', c(list(x = y, y = x, pch = pch[[i]],
-                                      col = col[[i]]), pars))
+                                      col = col[[i]], cex = cex[[i]]),
+                                 pars))
       else do.call('localPoints', c(list(x = x, y = y, pch = pch[[i]],
-                                         col = col[[i]]), pars))
+                                         col = col[[i]], cex = cex[[i]]),
+                                    pars))
     }
     
     ## mean and median lines
@@ -506,11 +513,11 @@ tplot.default <- function(x, ...,
     if (median.line[i]) {
       if (horizontal)
         do.call('lines', c(list(rep(median(y), 2), at[i] + Lme), median.pars))
-      else
-        do.call('lines', c(list(at[i] + Lme, rep(median(y), 2)), median.pars))
+      else do.call('lines', c(list(at[i] + Lme, rep(median(y), 2)), median.pars))
     }
-    out[[i]] <- data.frame(to.plot, col = col[[i]], pch = pch[[i]])
+    
     ## use return value of boxplot instead
+    # out[[i]] <- data.frame(to.plot, col = col[[i]], pch = pch[[i]])
     out[[i]] <- if (type[i] == 'd')
       boxplot(x = y, at = at[i], plot = FALSE) else boxplotout
   }
@@ -522,13 +529,12 @@ tplot.default <- function(x, ...,
     do.call('localAxis', c(list(side = 2 - horizontal), pars))
   }
   
-  ## frame and text
-  ## optional sample sizes
+  ## frame and text, optional sample sizes
   if (show.n) {
     if (missing(cex.n))
       cex.n <- 1
-    do.call('localMtext', 
-            if (show.na) 
+    do.call('localMtext',
+            if (show.na)
               c(list(sprintf('n = %s\nmissing = %s', l, l2),
                      side = 3 + horizontal, at = at),
                 pars, list(xaxt = 's', yaxt = 's'))
@@ -565,7 +571,7 @@ tplot.formula <- function(formula, data = NULL, ...,
   args <- lapply(m$..., eval, data, parent.frame())
   nmargs <- names(args)
   if ('main' %in% nmargs) args[['main']] <- enquote(args[['main']])
-  if ('sub' %in% nmargs)  args[['sub']] <- enquote(args[['sub']])
+  if ('sub' %in% nmargs)  args[['sub']]  <- enquote(args[['sub']])
   if ('xlab' %in% nmargs) args[['xlab']] <- enquote(args[['xlab']])
   if ('ylab' %in% nmargs) args[['ylab']] <- enquote(args[['ylab']])
   
@@ -582,19 +588,23 @@ tplot.formula <- function(formula, data = NULL, ...,
   n <- nrow(mf)
   response <- attr(attr(mf, 'terms'), 'response')
   
-  ## special handling of col and pch -- pick out these options
+  ## special handling of col and pch for grouping
   group.col <- if ('group.col' %in% names(args)) args$group.col else FALSE
   group.pch <- if ('group.pch' %in% names(args)) args$group.pch else FALSE
+  group.cex <- if ('group.cex' %in% names(args)) args$group.cex else FALSE
+  
   ## reorder if necessary
   if ('col' %in% names(args) && !group.col)
     args$col <- unlist(split(rep(args$col, length.out = n), mf[-response]))
   if ('pch' %in% names(args) && !group.pch)
     args$pch <- unlist(split(rep(args$pch, length.out = n), mf[-response]))
+  if ('cex' %in% names(args) && !group.cex)
+    args$cex <- unlist(split(rep(args$cex, length.out = n), mf[-response]))
   
   if (!missing(subset)) {
     s <- eval(subset.expr, data, parent.frame())
-    args <- lapply(args, do_sub_, x, n, s)
     ## rawr:::do_sub_
+    args <- lapply(args, do_sub_, x, n, s)
     mf <- mf[s, ]
   }
   do.call('tplot', c(list(split(mf[[response]], mf[-response])), args))

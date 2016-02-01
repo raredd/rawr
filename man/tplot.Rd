@@ -10,11 +10,12 @@ tplot(x, ...)
 
 \method{tplot}{default}(x, ..., type = c("d", "db", "bd", "b"), jit = 0.1,
   dist, main, sub, xlab, ylab, names, xlim, ylim, col, group.col = TRUE,
-  boxcol, boxborder, pch = par("pch"), group.pch = TRUE,
-  median.line = FALSE, mean.line = FALSE, median.pars = list(col =
-  par("col")), mean.pars = median.pars, boxplot.pars, show.n = TRUE,
-  show.na = TRUE, cex.n, my.gray = gray(0.75), ann = par("ann"),
-  axes = TRUE, frame.plot = axes, add = FALSE, at, horizontal = FALSE,
+  boxcol, boxborder, pch = par("pch"), group.pch = TRUE, cex = par("cex"),
+  group.cex = FALSE, median.line = FALSE, mean.line = FALSE,
+  median.pars = list(col = par("col")), mean.pars = median.pars,
+  boxplot.pars, show.n = TRUE, show.na = TRUE, cex.n,
+  my.gray = gray(0.75), ann = par("ann"), axes = TRUE,
+  frame.plot = axes, add = FALSE, at, horizontal = FALSE,
   panel.first = NULL, panel.last = NULL)
 
 \method{tplot}{formula}(formula, data = NULL, ..., subset, na.action = NULL,
@@ -59,6 +60,12 @@ respectively}
 \item{pch}{plotting character}
 
 \item{group.pch}{logical; if \code{TRUE}, \code{pch} by group; o/w, by order}
+
+\item{cex}{\strong{c}haracter \strong{ex}pansion value}
+
+\item{group.cex}{logical; if \code{TRUE}, groups will use the same
+\code{cex} value; otherwise, points will have individual values, recycled if
+necessary}
 
 \item{median.line}{logical; draw median line}
 
@@ -127,10 +134,12 @@ An alternative to \code{\link{boxplot}}. The individual data can be shown
 tplot(split(mtcars$mpg, interaction(mtcars$gear, mtcars$vs)))
 tplot(mpg ~ gear + vs, mtcars)
 
+## tplot has the same return value as boxplot
 identical(tplot(mtcars$mpg), boxplot(mtcars$mpg))
 
 ## use panel.first/panel.last like in `plot` (unavailable in `boxplot`)
 tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd',
+      cex = c(1,5)[(mtcars$mpg > 30) + 1L],
       panel.last = legend('topleft', legend = 3:5, col = 1:3, pch = 1),
       panel.first = {
         abline(h = mean(mtcars$mpg))
