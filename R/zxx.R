@@ -3,7 +3,8 @@
 # try_require, list2file, Restart, helpExtract, helpExtract_, Round, round_to,
 # updateR, read_clip, icols, fill_df, kinda_sort, rgene, install_temp,
 # nestedMerge, nestedmerge, path_extract, fname, file_name, file_ext, rm_ext,
-# mgrep, mgrepl, msub, mgsub, flatten, tree, rm_null, cum_reset
+# mgrep, mgrepl, msub, mgsub, flatten, tree, rm_null, cum_reset, vgrep, vgrepl,
+# justify
 ###
 
 
@@ -1429,4 +1430,110 @@ cum_reset <- function(x, value = 0L, FUN = cumsum) {
   idx <- c(0, head(cumsum(x %in% value), -1))
   sp <- split(x, idx)
   unname(unlist(lapply(sp, FUN)))
+}
+
+#' \code{grep} for vectors
+#' 
+#' \code{grep} vectors for patterns given by other vectors.
+#' 
+#' @param pattern a vector to be matched
+#' @param a vector having the same type as \code{pattern} where matches are
+#' sought
+#' 
+#' @return
+#' For \code{vgrep}, a vector of indices indicating the start of the matches
+#' found in \code{x}. For \code{vgrepl}, a list of logical vetors of
+#' \code{length(x)} for each match found in \code{x}.
+#' 
+#' @references
+#' Adapted from http://stackoverflow.com/questions/33027611/how-to-index-a-vector-sequence-within-a-vector-sequence/33028695
+#' 
+#' @seealso
+#' \code{\link{grep}}; \code{\link[rawr]{mgrep}}; \code{\link[rawr]{\%==\%}}
+#' 
+#' @examples
+#' x <- c(0,1,1,0,1,1,NA,1,1,0,1,1,NA,1,0,0,1,
+#'        0,1,1,1,NA,1,0,1,NA,1,NA,1,0,1,0,NA,1)
+#' vgrep(c(1, NA, 1), x)
+#' vgrepl(c(1, NA, 1), x)
+#' 
+#' vgrep(c(1, 0, 1, NA), x)
+#' which(vgrepl(c(1, 0, 1, NA), x)[[1]])
+#' 
+#' @export
+
+vgrep <- function(pattern, x) {
+  vgrep_ <- function(pp, xx, acc = if (length(pp)) seq_along(xx) else integer()) {
+    if (!length(pp))
+      return(acc)
+    Recall(pp[-1L], xx, acc[which(pp[[1L]] %==% xx[acc])] + 1L)
+  }
+  vgrep_(pattern, x) - length(pattern)
+}
+
+#' @rdname vgrep
+#' @export
+
+vgrepl <- function(pattern, x) {
+  m <- vgrep(pattern, x)
+  lp <- length(pattern)
+  pp <- rep(FALSE, length(x))
+  if (!length(m))
+    integer() else lapply(m, function(y) {
+      pp[y:(y + lp - 1)] <- TRUE
+      pp
+    })
+}
+
+#' Justify text
+#' 
+#' Add whitespace to (monospaced) text for justified or block-style spacing.
+#' 
+#' @param string a character string
+#' @param width desired width text in characters given as a positive integer
+#' @param fill method of adding whitespace
+#' 
+#' @seealso
+#' \code{\link{strwrap}}
+#' 
+#' @references
+#' Adapted from http://stackoverflow.com/questions/34710597/justify-text-in-r
+#' 
+#' @examples
+#' x <- paste(rownames(mtcars), collapse = ' ')
+#' cat(justify(x))
+#' 
+#' plot.new()
+#' mtext(justify(x), line = -10, family = 'mono')
+#' mtext(justify(x, fill = 'right'), line = -10, family = 'mono', col = 2)
+#' mtext(justify(x, fill = 'left'), line = -10, family = 'mono', col = 3)
+#' 
+#' @export
+
+justify <- function(string, width = getOption('width') / 2, 
+                    fill = c('random', 'right', 'left')) {
+  strs <- strwrap(string, width = width)
+  paste(fill_spaces_(strs, width, match.arg(fill)), collapse = '\n')
+}
+
+fill_spaces_ <- function(lines, width, fill) {
+  tokens <- strsplit(lines, '\\s+')
+  res <- lapply(head(tokens, -1L), function(x) {
+    nspace <- length(x) - 1L
+    extra <- width - sum(nchar(x)) - nspace
+    reps <- extra %/% nspace
+    extra <- extra %% nspace
+    times <- rep.int(if (reps > 0) reps + 1L else 1L, nspace)
+    if (extra > 0) {
+      if (fill == 'right')
+        times[1:extra] <- times[1:extra] + 1L
+      else if (fill == 'left')
+        times[(nspace - extra + 1L):nspace] <-
+          times[(nspace - extra + 1L):nspace] + 1L
+      else times[inds] <- times[(inds <- sample(nspace, extra))] + 1L
+    }
+    spaces <- c('', unlist(lapply(times, formatC, x = ' ', digits = NULL)))
+    paste(c(rbind(spaces, x)), collapse = '')
+  })
+  c(res, paste(tail(tokens, 1L)[[1]], collapse = ' '))
 }
