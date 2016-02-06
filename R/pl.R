@@ -1085,7 +1085,8 @@ river2 <- function(data, bar_data, bar_data2, id = 1, legend = 'topleft',
     data <- data.frame(
       id = bar_data[, 1], dt_reg = ave(bar_data[, 2], bar_data[, 1], FUN = mmin),
       dt_txst = NA, dt_txend = NA, dt_prog = NA, dt_offtx = NA, dt_surv = NA,
-      surv = NA, dt_last = ave(bar_data[, 3], bar_data[, 1], FUN = mmax),
+      surv = NA, dt_last = ave(unlist(bar_data[, 2:3]),
+                               unlist(bar_data[, c(1,1)]), FUN = mmax),
       dt_off = NA)
     data <- data[!duplicated(data$id), ]
     bar_data <- data.frame(id = data$id, dt_assess = data$dt_reg, resp = NA)
@@ -1095,9 +1096,13 @@ river2 <- function(data, bar_data, bar_data2, id = 1, legend = 'topleft',
   bd <- check_river_format(data, bar_data)
   td <- check_river_format(data, bar_data2)
   
-  ## select bd for id, remove NA rows, order by date
+  ## select bd for id, remove rows if NA start AND end, order by date
   td <- split(td, td$id, drop = FALSE)[[as.character(id)]]
-  td <- td[!is.na(td$dt_start), ]
+  td <- td[!(is.na(td$dt_start) & is.na(td$dt_end)), ]
+  td <- within(td, {
+    no_start <- is.na(dt_start)
+    dt_start[no_start] <- dt_end[no_start]
+  })
   td <- td[do.call('order', as.list(td[, c('dt_start', 'desc')])), ]
   
   ## grade colors - 1:5
@@ -1143,12 +1148,19 @@ river2 <- function(data, bar_data, bar_data2, id = 1, legend = 'topleft',
     with(sp[[ii]], {
       ## rect for indiv td
       col <- tcol(col_grade, alpha = .5)
-      do_rect_(ii + 1, dd_start, pmax(dd_end %|% dd_end2, dd_start, na.rm = TRUE),
-               col = col, border = col)
+      endx <- pmax(dd_end %|% dd_end2, dd_start, na.rm = TRUE)
+      do_rect_(ii + 1, dd_start, endx, col = col, border = col)
+      ## td with end but no start date
+      # if (no_start)
+      if (FALSE)
+        segments(endx, 1 + ii + c(.15, -.15),
+                 endx - .15, 1 + ii + c(.15, -.15),
+                 col = col, lwd = 2)
       
-      ## add count of td to left in black
+      ## add count of td to left in black if start date, color/italic if NA
       ## desc on right in color, italics if continuing; black otherwise
-      text(dd_start[1], ii + 1, labels = ii, pos = 2, xpd = NA, cex = .8)
+      text(dd_start[1], ii + 1, labels = ii, pos = 2, xpd = NA, cex = .8,
+           col = if (no_start[1]) col else 1, font = if (no_start[1]) 3 else 1)
       # text(tail(dd_end %|% end_day, 1), ii + 1, labels = tail(desc, 1),
       
       text(max(dd_start, dd_end %|% dd_end2, na.rm = TRUE), ii + 1,
