@@ -4,7 +4,7 @@
 # updateR, read_clip, icols, fill_df, kinda_sort, rgene, install_temp,
 # nestedMerge, nestedmerge, path_extract, fname, file_name, file_ext, rm_ext,
 # mgrep, mgrepl, msub, mgsub, flatten, tree, rm_null, cum_reset, vgrep, vgrepl,
-# justify
+# justify, factors, factors_
 ###
 
 
@@ -1536,4 +1536,27 @@ fill_spaces_ <- function(lines, width, fill) {
     paste(c(rbind(spaces, x)), collapse = '')
   })
   c(res, paste(tail(tokens, 1L)[[1]], collapse = ' '))
+}
+
+#' Find factors
+#' 
+#' Find common factors of two or more integers.
+#' 
+#' @param ... integers
+#' 
+#' @examples
+#' factors(21)
+#' factors(3 * 2^20)
+#' factors(64, 128, 58)
+#' 
+#' @export
+
+factors <- function(...) {
+  factors_ <- function(x) {
+    x <- as.integer(x)
+    y <- seq_len(abs(x))
+    y[x %% y == 0L]
+  }
+  l <- lapply(list(...), factors_)
+  Reduce(intersect, l)
 }
