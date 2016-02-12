@@ -136,33 +136,34 @@
 #' }
 #' @export
 
-kmplot <- function(s, 
+kmplot <- function(s,
                    ## basic plot options
-                   lty.surv = 1, lwd.surv = 1, col.surv = 1, 
+                   lty.surv = 1, lwd.surv = 1,
+                   col.surv = seq_along(s$strata) %||% 1,
                    mark = 3, mar = NULL,
                    
                    ## confidence options
-                   lty.ci = 0, lwd.ci = 1, col.ci = col.surv, 
+                   lty.ci = 0, lwd.ci = 1, col.ci = col.surv,
                    col.band = col.surv,
                    
                    ## at risk table options
-                   atrisk = TRUE, atrisk.lab = 'Number at risk', 
-                   atrisk.lines = TRUE, strata.lab = NULL, 
+                   atrisk = TRUE, atrisk.lab = 'Number at risk',
+                   atrisk.lines = TRUE, strata.lab = NULL,
                    strata.expr = NULL,
-                   strata.order = seq(length(s$n)), 
-                   extra.margin = 5, 
+                   strata.order = seq(length(s$n)),
+                   extra.margin = 5,
                    
                    ## aesthetics
                    xaxs = 'S',
                    xlim = c(0, max(s$time)), ylim = c(0, 1),
-                   xaxis.at = pretty(s$time), xaxis.lab = xaxis.at, 
-                   yaxis.at = pretty(ylim), yaxis.lab = yaxis.at, 
-                   xlab = 'Time', ylab = 'Survival probability', 
-                   main = '', cex.axis = 1, 
-                   legend = !is.null(s$strata), legend.pos = 'bottomleft', 
+                   xaxis.at = pretty(s$time), xaxis.lab = xaxis.at,
+                   yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
+                   xlab = 'Time', ylab = 'Survival probability',
+                   main = '', cex.axis = 1,
+                   legend = !is.null(s$strata), legend.pos = 'bottomleft',
                    
                    ## other options
-                   grid = FALSE, lty.grid = 1, lwd.grid = 1, 
+                   grid = FALSE, lty.grid = 1, lwd.grid = 1,
                    col.grid = grey(.9),
                    add = FALSE, panel.first = NULL, panel.last = NULL, ...) {
   
@@ -412,8 +413,7 @@ kmplot <- function(s,
 #' graphical parameters subsequently passed to \code{\link{par}}
 #' 
 #' @return
-#' Invisibly returns a list of data frames stratified (optionally) by the
-#' \code{by} variable.
+#' Invisibly returns a list of \code{\link{survfit}} objects for each plot.
 #' 
 #' @seealso
 #' \code{\link{kmplot}}, \code{\link{survdiff}}
@@ -429,18 +429,31 @@ kmplot <- function(s,
 #' 
 #' kmplot_by('1', data = colon)
 #' 
-#' kmplot_by('sex', data = colon, fig_lab = 'B',
+#' ## return value is a list of survfit objects
+#' tmp <- kmplot_by('sex', data = colon, fig_lab = 'Figure I',
 #'   strata_lab = c('F','M'), sub = 'PFS, by sex')
+#' kmplot(tmp$sex)
 #'   
 #' kmplot_by('rx', data = colon, col.surv = 1:3,
 #'   strata_lab = FALSE, col.band = NA)
-#'   
+#' 
+#' ## multiple variables can be combined  
 #' kmplot_by('rx + sex', data = colon, strata_lab = '',
 #'   lty.surv = 1:6, col.band = NA)
-#'   
-#' kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3, single = TRUE,
+#'
+#' ## if "by" is given, default is to plot separately
+#' kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3,
 #'   strata_lab = c('Observation','Trt','Trt + 5-FU'))
 #' 
+#' ## if single = FALSE, uses n2mfrow function to set par('mfrow')
+#' kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3, single = FALSE,
+#'   strata_lab = c('Observation','Trt','Trt + 5-FU'))
+#'   
+#' ## if par('mfrow') is anything other than c(1,1), uses current setting
+#' par(mfrow = c(2,2))
+#' kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3, single = FALSE,
+#'   strata_lab = c('Observation','Trt','Trt + 5-FU'))
+#'   
 #' @export
 
 kmplot_by <- function(strata, event = 'pfs', data, by, single = TRUE,
@@ -454,7 +467,8 @@ kmplot_by <- function(strata, event = 'pfs', data, by, single = TRUE,
       par(mfrow = c(1,1))
     } else {
       add <- TRUE
-      par(mfrow = n2mfrow(length(unique(data[, by]))))
+      if (all(par('mfrow') == c(1L, 1L)))
+        par(mfrow = n2mfrow(length(unique(data[, by]))))
     }
     sp <- split(data, data[, by])
   } else {
@@ -472,7 +486,7 @@ kmplot_by <- function(strata, event = 'pfs', data, by, single = TRUE,
   l <- lapply(seq_along(sp), function(x) {
     form <- as.formula(sprintf('Surv(%s_time, %s_ind) ~ %s',
                                event, event, strata))
-    s <- survfit(form, data = sp[[x]], conf.type = 'log-log')
+    s <- s0 <- survfit(form, data = sp[[x]], conf.type = 'log-log')
     
     if (strata == '1')
       strata <- ''
@@ -502,8 +516,10 @@ kmplot_by <- function(strata, event = 'pfs', data, by, single = TRUE,
                      font = 3, cex = .8, line = .5)
              }
            })
+    s0
   })
-  invisible(sp)
+  names(l) <- names(sp) %||% strata
+  invisible(l)
 }
 
 #' Compute local p-value from coxph
