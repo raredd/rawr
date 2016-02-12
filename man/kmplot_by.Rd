@@ -41,8 +41,7 @@ length equal to the number of panels (i.e., the number of levels of
 graphical parameters subsequently passed to \code{\link{par}}}
 }
 \value{
-Invisibly returns a list of data frames stratified (optionally) by the
-\code{by} variable.
+Invisibly returns a list of \code{\link{survfit}} objects for each plot.
 }
 \description{
 This function helps create stratified \code{\link{kmplot}}s quickly with
@@ -66,18 +65,31 @@ colon <- within(colon[duplicated(colon$id), ], {
 
 kmplot_by('1', data = colon)
 
-kmplot_by('sex', data = colon, fig_lab = 'B',
+## return value is a list of survfit objects
+tmp <- kmplot_by('sex', data = colon, fig_lab = 'Figure I',
   strata_lab = c('F','M'), sub = 'PFS, by sex')
+kmplot(tmp$sex)
   
 kmplot_by('rx', data = colon, col.surv = 1:3,
   strata_lab = FALSE, col.band = NA)
-  
+
+## multiple variables can be combined  
 kmplot_by('rx + sex', data = colon, strata_lab = '',
   lty.surv = 1:6, col.band = NA)
-  
-kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3, single = TRUE,
+
+## if "by" is given, default is to plot separately
+kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3,
   strata_lab = c('Observation','Trt','Trt + 5-FU'))
 
+## if single = FALSE, uses n2mfrow function to set par('mfrow')
+kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3, single = FALSE,
+  strata_lab = c('Observation','Trt','Trt + 5-FU'))
+  
+## if par('mfrow') is anything other than c(1,1), uses current setting
+par(mfrow = c(2,2))
+kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3, single = FALSE,
+  strata_lab = c('Observation','Trt','Trt + 5-FU'))
+  
 }
 \seealso{
 \code{\link{kmplot}}, \code{\link{survdiff}}
