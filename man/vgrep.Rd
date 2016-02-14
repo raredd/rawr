@@ -12,7 +12,7 @@ vgrepl(pattern, x)
 \arguments{
 \item{pattern}{a vector to be matched}
 
-\item{a}{vector having the same type as \code{pattern} where matches are
+\item{x}{vector having the same type as \code{pattern} where matches are
 sought}
 }
 \value{

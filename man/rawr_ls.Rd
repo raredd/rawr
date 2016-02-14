@@ -114,6 +114,6 @@ lsp('rawr', 'lazydata')
 \seealso{
 \code{\link{parse_yaml}}, \code{\link{parse_index}},
 \code{\link{parse_news}}, \code{\link{parse_namespace}}, \code{\link{ls}},
-\code{\link{search}},
+\code{\link{search}}
 }
 

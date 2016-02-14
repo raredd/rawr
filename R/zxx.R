@@ -1437,7 +1437,7 @@ cum_reset <- function(x, value = 0L, FUN = cumsum) {
 #' \code{grep} vectors for patterns given by other vectors.
 #' 
 #' @param pattern a vector to be matched
-#' @param a vector having the same type as \code{pattern} where matches are
+#' @param x vector having the same type as \code{pattern} where matches are
 #' sought
 #' 
 #' @return
