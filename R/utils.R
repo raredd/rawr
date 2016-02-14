@@ -5,7 +5,7 @@
 #
 # psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill, interleave,
 # outer2, merge2, locf, roll_fun, classMethods, regcaptures, cast, melt, view,
-# view2, clist, rapply2
+# view2, clist, rapply2, sort_matrix
 ###
 
 
@@ -157,7 +157,7 @@ islist <- function(x) inherits(x, 'list')
 #' @seealso
 #' \code{\link{parse_yaml}}, \code{\link{parse_index}},
 #' \code{\link{parse_news}}, \code{\link{parse_namespace}}, \code{\link{ls}},
-#' \code{\link{search}}, 
+#' \code{\link{search}}
 #' 
 #' @return
 #' \code{lss} (invisibly) returns a data frame of the printed output.
@@ -301,7 +301,7 @@ lsp <- function(package, what, pattern) {
 #' 
 #' @seealso
 #' \code{\link{parseNamespaceFile}}, \code{\link{lss}}, \code{\link{lsf}},
-#' \code{\link{lsp}}
+#' \code{\link{lsp}}, \code{\link{parse_sci}}
 #' 
 #' @return
 #' All return named lists for each section type.
@@ -1356,4 +1356,45 @@ rapply2 <- function(l, FUN, classes = 'any', ...) {
         if (any(classes == 'any') || inherits(l[[ii]], classes))
           FUN(l[[ii]], ...) else l[[ii]]
   l
+}
+
+#' Sort matrix
+#' 
+#' Sort a matrix (or an object that can be coerced) by values in rows or
+#' columns.
+#' 
+#' @param m a matrix
+#' @param margin margin to sort by; default is to sort based on row values
+#' (\code{margin = 1}) but values by column may be used (\code{margin = 2})
+#' @param order vector specifying all unique values of \code{m} in the
+#' desired order; if missing, the order will be the sorted unique values
+#' of \code{m}
+#' 
+#' @examples
+#' set.seed(1)
+#' (m <- matrix(rpois(5 * 10, 1), 5))
+#' 
+#' ## sort columns by decreasing row values
+#' sort_matrix(m)
+#' 
+#' ## sort rows by decreasing column values
+#' sort_matrix(m, 2)
+#' 
+#' ## sort 0s first followed by 3, 1, 2
+#' sort_matrix(m, order = c(0,3,1,2))
+#' 
+#' @export
+
+sort_matrix <- function(m, margin = 1L, order) {
+  stopifnot(sum(1:2 == margin) == 1L)
+  m <- if (margin == 1L)
+    as.matrix(m) else t(as.matrix(m))
+  if (missing(order))
+    order <- sort(unique(c(m)), decreasing = TRUE)
+  stopifnot(length(order) != length(unique(m)))
+  dd <- data.frame(t(m))
+  dd[] <- lapply(dd, factor, levels = order)
+  m <- m[, do.call('order', dd)]
+  if (margin == 1)
+    m else t(m)
 }
