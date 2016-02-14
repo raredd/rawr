@@ -1,5 +1,5 @@
 ### plot extra
-# dodge, show_colors, show_pch, tcol
+# dodge, show_colors, show_pch, tcol, pretty_sci, oom, parse_sci
 ###
 
 
@@ -212,4 +212,75 @@ tcol <- function(color, trans = 255, alpha) {
   res[color %in% 'transparent'] <- 'transparent'
   
   res
+}
+
+#' Print scientific numbers
+#' 
+#' Functions to parse numeric vectors in scientific notation and return an
+#' \code{\link{expression}} for a pretty display.
+#' 
+#' @param x a numeric vector
+#' @param digits integer indicating the number of decimal places to be used
+#' @param limit a numeric value whose order of magnitude will set a limit
+#' beyond which values of \code{x} will be displayed in scientific notation;
+#' default is to display numbers beyond a magnitude of 3; to display
+#' scientific notation always, use a negative value
+#' 
+#' @seealso
+#' \code{\link{roundr}}; \code{\link{format}}; \code{\link{sprintf}},
+#' \code{\link{rawr_parse}}
+#' 
+#' @return
+#' For \code{oom} a vector of order of magnitudes. For \code{parse_sci} an
+#' expression of values in scientific notation. For \code{pretty_sci} an
+#' expression of values in standard or scientific notation depending on the
+#' value of \code{limit}.
+#' 
+#' @examples
+#' x <- 10^(1:5) / 10
+#' oom(x)
+#' 
+#' parse_sci(x)
+#' 
+#' par(xpd = NA, mar = c(6,4,4,2) + .1)
+#' plot(1:5, type = 'n', axes = FALSE, ann = FALSE)
+#' axis(2, at = 1:5, labels = pretty_sci(x), las = 1, lwd.ticks = 0)
+#' 
+#' text(1:5, 0, pretty_sci(1 / x ^ 10))
+#' text(1:5, 1, pretty_sci(1 / x, digits = 3))
+#' text(1:5, 2, pretty_sci(1 / x, digits = 2, limit = 1e2))
+#' text(1:5, 3, x)
+#' text(1:5, 4, pretty_sci(x, limit = 1e2))
+#' text(1:5, 5, pretty_sci(x, digits = 1))
+#' text(1:5, 6, pretty_sci(x ^ 10))
+#' 
+#' text(1:5, -1, pretty_sci(1 / x, limit = -1))
+#' 
+#' @export
+
+pretty_sci <- function(x, digits = 0, limit = 1e3) {
+  l <- as.list(x)
+  limit <- if (limit < 0) -1 else oom(limit)
+  om <- sapply(l, oom)
+  sapply(seq_along(l), function(y)
+    if (abs(om[y]) > limit)
+      parse_sci(l[[y]], digits) else roundr(l[[y]], digits))
+}
+
+#' @rdname pretty_sci
+#' @export
+oom <- function(x) {
+  x <- strsplit(format(x, scientific = TRUE), 'e[+-][0]?')
+  as.numeric(sapply(x, '[[', 2))
+}
+
+#' @rdname pretty_sci
+#' @export
+parse_sci <- function(x, digits = 0) {
+  stopifnot(is.numeric(x))
+  x <- format(x, nsmall = digits, scientific = TRUE)
+  x <- strsplit(x, 'e[+]?[0]?')
+  xbg <- sapply(x, function(y) roundr(as.numeric(y[[1]]), digits))
+  xsm <- sapply(x, '[[', 2)
+  parse(text = do.call('sprintf', list(fmt = '%s%%*%%10^%s', xbg, xsm)))
 }

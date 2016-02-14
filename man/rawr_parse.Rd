@@ -43,6 +43,6 @@ parse_namespace(lsf(rawr, 'name'))
 }
 \seealso{
 \code{\link{parseNamespaceFile}}, \code{\link{lss}}, \code{\link{lsf}},
-\code{\link{lsp}}
+\code{\link{lsp}}, \code{\link{parse_sci}}
 }
 
