@@ -270,8 +270,8 @@ pretty_sci <- function(x, digits = 0, limit = 1e3) {
 #' @rdname pretty_sci
 #' @export
 oom <- function(x) {
-  x <- strsplit(format(x, scientific = TRUE), 'e[+-][0]?')
-  as.numeric(sapply(x, '[[', 2))
+  x <- format(x, scientific = TRUE)
+  as.numeric(gsub('.*e.', '', x))
 }
 
 #' @rdname pretty_sci
