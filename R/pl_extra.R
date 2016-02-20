@@ -1,5 +1,6 @@
 ### plot extra
-# dodge, show_colors, show_pch, tcol, pretty_sci, oom, parse_sci
+# dodge, show_colors, show_pch, tcol, pretty_sci, oom, parse_sci, arrows2,
+# carrows
 ###
 
 
@@ -283,4 +284,181 @@ parse_sci <- function(x, digits = 0) {
   xbg <- sapply(x, function(y) roundr(as.numeric(y[[1]]), digits))
   xsm <- sapply(x, '[[', 2)
   parse(text = do.call('sprintf', list(fmt = '%s%%*%%10^%s', xbg, xsm)))
+}
+
+#' Add filled arrows to a plot
+#' 
+#' Draw filled arrows between pairs of points.
+#' 
+#' @param x0,y0 coordinates of points \strong{from} which to draw
+#' @param x1,y1 coordinates of points \strong{to} which to draw
+#' @param size,width size parameters for arrows
+#' @param curve a numeric value greater than 0 giving the curvature of the
+#' arrows; default is \code{1} for staight lines, but values less than or
+#' greater than 1 may be given for 
+#' @param code integer determining \emph{kind} of arrows to be drawn; arrows
+#' are drawn at \code{{x0[i], y0[i]}}, \code{{x1[i], y1[i]}}, or both for
+#' \code{code = 1:3}, respectively, or no heads drawn if \code{code = 0}
+#' @param col,lty,lwd color, line type, and line width of the segment
+#' @param fill,border fill and border color of arrow
+#' @param sadj optional vector of the form \code{{x0,y0,x1,y1}} for adjusting
+#' the \code{\link{segments}} of the arrows
+#' @param ... additional graphical parameters passed to \code{\link{segments}}
+#' and further to \code{\link{par}}
+#' 
+#' @seealso
+#' \code{arrows}; \code{\link{carrows}}; \url{https://github.com/cran/sfsmisc}
+#' 
+#' @author
+#' Modifications: Robert Redd; original: Andreas Ruckstuhl, 19 May 1994;
+#' Cosmetic: Martin Machler, June 1998
+#' 
+#' @examples
+#' plot.new()
+#' plot.window(0:1, 0:1, asp = 1)
+#' arrows2(0,0,1,1, code = 3, border = 2, fill = 0)
+#' arrows2(.2, 0, .2, 1, code = 1, fill = 4, col = 4)
+#' arrows2(.4, 0, .4, 1, code = 2, fill = 2, size = .5, width = .5)
+#' arrows2(.6, 0, .6, 1, code = 3, curve = 1.5)
+#' arrows2(.8, 0, .8, 1, code = 3, curve = .5, width = .5, lwd = 10, col = 3)
+#' 
+#' @export
+
+arrows2 <- function(x0, y0, x1 = x0, y1 = y0, size = 1,
+                    width = (sqrt(5) - 1) / 8 / cin, curve = 1, code = 2,
+                    col = par('fg'), lty = par('lty'), lwd = par('lwd'),
+                    fill = col, border = fill, sadj = c(0,0,0,0), ...) {
+  stopifnot(length(code) == 1L & code %in% 0:3)
+  cin <- size * par('cin')[2]
+  ## inches per usr unit
+  uin <- if (is.R()) 1 / xyinch() else par('uin')
+  
+  ## create coordinates of a polygon for a unit arrow head
+  # x <- sqrt(seq(0, cin ^ 2, length = floor(350 * cin) + 2))
+  x <- sqrt(seq(0, cin ^ 2, length = 1000))
+  delta <- 0.005 / 2.54
+  x.arr <- c(-x, -rev(x))
+  wx2 <- width * x ^ curve
+  y.arr <- c(-wx2 - delta, rev(wx2) + delta)
+  
+  ## polar, NA to "break" long polygon
+  pol <- c2p(x.arr, y.arr)
+  ## rawr:::c2p
+  deg.arr <- c(pol$theta, NA)
+  r.arr <- c(pol$radius, NA)
+  
+  segments(x0 + sadj[1], y0 + sadj[2], x1 + sadj[3], y1 + sadj[4],
+           col = col, lty = lty, lwd = lwd, lend = 1, ...)
+  
+  if (code == 0L)
+    return(invisible())
+  
+  if (code %in% 2:3) {
+    theta <- atan2((y1 - y0) * uin[2], (x1 - x0) * uin[1])
+    lx <- length(x0)
+    Rep <- rep.int(length(deg.arr), lx)
+    xx <- rep.int(x1, Rep)
+    yy <- rep.int(y1, Rep)
+    theta <- rep.int(theta, Rep) + rep.int(deg.arr, lx)
+    r.arr <- rep.int(r.arr, lx)
+    polygon(xx + r.arr * cos(theta) / uin[1],
+            yy + r.arr * sin(theta) / uin[2],
+            col = fill, xpd = NA, border = border)
+  }
+  
+  if (code %in% c(1L, 3L)) {
+    arrows2(x1, y1, x0, y0, size, width, code = 2, curve,
+            col = col, lty = 0, lwd = 0, fill = fill, border = border, ...)
+  }
+}
+
+#' Curved arrows
+#' 
+#' Draw an arrow along the arc of a circle.
+#' 
+#' @param p1,p2 vectors of length two giving the \code{{x,y}} coordinates for
+#' two points to draw a connecting arc
+#' @param arc a vector of length two with the starting and ending positions
+#' to draw the arc, in radians or degrees
+#' @param degree logical; if \code{TRUE}, \code{arc} should be in degrees;
+#' however, if either element of \code{arc} is greater than \code{2 * pi},
+#' they are assumed to be in degrees and will be converted to radians; set to
+#' \code{TRUE} to avoid conversion of small angles to radians
+#' @param pad a vector of length two giving 1) padding between the tips of
+#' the arrow/segment and the points and 2) additional padding between the
+#' segment endpoints and tip of arrow--useful for thick lines which may
+#' protrude from under the arrowhead
+#' @param flip logical; if \code{TRUE}, the arrow will be rotated around the
+#' circle 180 degrees
+#' @param dir optional vector of directions for arrows; by default, arrows
+#' will point to the nearest endpoint; \code{dir} should be a vector of
+#' \code{1}s and \code{-1}s and will be recycled as necessary; other values
+#' will be ignored and result in no arrows for those positions
+#' @param col,lwd,lty color, line width, and line type passed to
+#' \code{\link{lines}}
+#' @param size,width,curve,fill,border additional parameters passed to
+#' \code{\link{arrows2}}
+#' 
+#' @return
+#' A list containing the arc endpoints and the center and radius of the
+#' corresponding circle.
+#' 
+#' @seealso
+#' \code{\link{arrows2}}; \code{\link{xspline}}
+#' 
+#' @examples
+#' plot.new()
+#' plot.window(c(-2,2), c(-2,2))
+#' p <- matrix(c(rep(-1:1, 2), rep(-1:1, each = 2)), ncol = 2)
+#' points(p)
+#' carrows(p1 <- p[2, ], p2 <- p[1, ], pad = .3)
+#' carrows(p1 <- p[4, ], p2 <- p[5, ], dir = c(0,1), col = 3)
+#' carrows(p1 <- p[6, ], p2 <- p[3, ], lwd = 10, pad = c(.05, .1))
+#' carrows(p1 <- p[1, ], p2 <- p[6, ], flip = TRUE)
+#' carrows(p1 <- p[1, ], p2 <- p[5, ], dir = c(1,0))
+#' 
+#' @export
+
+carrows <- function(p1, p2, arc, degree = FALSE, pad = 0.01 * 1:2,
+                    flip = FALSE, dir = NULL,
+                    ## lines
+                    col = par('col'), lwd = par('lwd'), lty = par('lty'),
+                    ## arrows2
+                    size = 1, width = size / 2, curve = 1, fill = col,
+                    border = NA) {
+  
+  code_ <- function(x) c(2,0,1)[match(x, -1:1)]
+  pad_ <- function(x, pad) ht(x, -length(x) * (1 - pad))
+  
+  ## try to guess code for arrows2
+  slope <- (p2[2] - p1[2]) / (p2[1] - p1[1])
+  slope[!is.finite(slope) | slope == 0] <- 1
+  code <- code_(sign(slope))
+  
+  ## calculate arc based on p1, p2
+  radius <- sqrt(sum((p1 - p2) ** 2)) / 2
+  centers <- (p1 + p2) / 2
+  arc <- if (!missing(arc)) {
+    if (degree | any(arc > 2 * pi))
+      d2r(arc) else arc[1:2]
+  } else sapply(list(p1, p2), function(x)
+    p2r(x[1], x[2], centers[1], centers[2]))
+  
+  ## convert polar to cart and plot lines/arrows
+  theta <- seq(arc[1], arc[2], length = 500) + if (flip) pi else 0
+  pad <- rep_len(pad, 2)
+  th <- pad_(theta, pad[1])
+  xx <- centers[1] + radius * cos(th)
+  yy <- centers[2] + radius * sin(th)
+  lines(pad_(xx, pad[2]), pad_(yy, pad[2]), col = col, lwd = lwd, lty = lty)
+  
+  xx <- ht(xx, 4)
+  yy <- ht(yy, 4)
+  arrows2(xx[1], yy[1], xx[2], yy[2], size = size, width = width,
+          curve = curve, code = dir[1] %||% code, col = col, lty = 0,
+          lwd = 0, fill = fill, border = border)
+  arrows2(xx[4], yy[4], xx[3], yy[3], size = size, width = width,
+          curve = curve, code = dir[2] %||% code, col = col, lty = 0,
+          lwd = 0, fill = fill, border = border)
+  invisible(list(arc = arc, centers = centers, radius = radius))
 }
