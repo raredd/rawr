@@ -2,25 +2,29 @@
 % Please edit documentation in R/zxx.R
 \name{ht}
 \alias{ht}
-\title{head/tail}
+\title{\code{head}/\code{tail}}
 \usage{
-ht(x, ..., sep = NULL)
+ht(x, n = 6L, sep = NULL)
 }
 \arguments{
 \item{x}{an object}
 
-\item{...}{other parameters, such as \code{n}, passed to \code{head},
-\code{tail}, or other methods}
+\item{n}{an integer giving the first and last \code{n / 2} elements if
+positive or the middle \code{n} elements if negative}
 
-\item{sep}{row separator}
+\item{sep}{separator}
 }
 \description{
 \code{\link{rbind}} the \code{\link{head}} and \code{\link{tail}} of an
 object.
 }
 \examples{
+ht(letters, 6, '...')
+ht(letters, -6)
+
 ht(mtcars)
 ht(mtcars, sep = '...')
+ht(mtcars, -6, sep = '...')
 
 }
 
