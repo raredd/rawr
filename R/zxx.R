@@ -8,24 +8,36 @@
 ###
 
 
-#' head/tail
+#' \code{head}/\code{tail}
 #' 
 #' \code{\link{rbind}} the \code{\link{head}} and \code{\link{tail}} of an
 #' object.
 #' 
 #' @param x an object
-#' @param ... other parameters, such as \code{n}, passed to \code{head},
-#' \code{tail}, or other methods
-#' @param sep row separator
+#' @param n an integer giving the first and last \code{n / 2} elements if
+#' positive or the middle \code{n} elements if negative
+#' @param sep separator
 #' 
 #' @examples
+#' ht(letters, 6, '...')
+#' ht(letters, -6)
+#' 
 #' ht(mtcars)
 #' ht(mtcars, sep = '...')
+#' ht(mtcars, -6, sep = '...')
 #' 
 #' @export
 
-ht <- function(x, ..., sep = NULL)
-  rbind(head(x, ...), '   ' = sep, tail(x, ...))
+ht <- function(x, n = 6L, sep = NULL) {
+  pn <- abs(n) / 2
+  FUN <- if (is.null(dim(x)))
+    function(...) setNames(c(...), NULL) else rbind
+  if (n < 0) {
+    idx <- cut(1:NROW(x), breaks = 2, labels = 1:2)
+    x <- split(x, idx)
+    FUN('   ' = sep, tail(x[[1]], pn), head(x[[2]], pn), '    ' = sep)
+  } else  FUN(head(x, pn), '   ' = sep, tail(x, pn))
+}
 
 #' Progress function
 #' 
