@@ -5,7 +5,7 @@
 #
 # psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill, interleave,
 # outer2, merge2, locf, roll_fun, classMethods, regcaptures, cast, melt, view,
-# view2, clist, rapply2, sort_matrix
+# view2, clist, rapply2, sort_matrix, insert_matrix
 ###
 
 
@@ -1397,4 +1397,49 @@ sort_matrix <- function(m, margin = 1L, order) {
   m <- m[, do.call('order', dd)]
   if (margin == 1)
     m else t(m)
+}
+
+#' Insert rows or columns
+#' 
+#' Insert rows and/or columns into a matrix.
+#' 
+#' @param m a matrix
+#' @param rowsep,colsep index of row or column to shift right or down,
+#' respectively
+#' @param rowrep,colrep row and column replacement values, recycled if needed;
+#' note that rows are replaced first followed by columns, so for the opposite
+#' behavior, transpose \code{m} before and after using \code{insert_matrix}
+#' and swap \code{rowrep} andn \code{colrep} accordingly; see examples
+#' 
+#' @examples
+#' m <- col(matrix(0, 5, 5))
+#' insert_matrix(m, 2, c(2, 4, 4, 4))
+#' 
+#' ## anticipate number of values needed for replacement(s)
+#' insert_matrix(m, 4, 4:5, colrep = 1:6)
+#' 
+#' ## these are _almost_ identical
+#' insert_matrix(m, 5, 5, 0, 1) == t(insert_matrix(t(m), 5, 5, 1, 0))
+#' 
+#' @export
+
+insert_matrix <- function(m, rowsep, colsep, rowrep = NA, colrep = rowrep) {
+  # insert_matrix(m, 4, c(5, 7))
+  # insert_matrix(m, 4, c(5, 7), sample(22), 0)
+  im_ <- function(m, idx, repl = NA) {
+    nr <- nrow(m)
+    ii <- sort(c(1:ncol(m), idx))
+    m <- m[, ii]
+    ri <- idx + seq_along(idx) - 1
+    ii <- cbind(rep(1:nr, length(idx)), rep(ri, each = nr))
+    m[ii] <- repl
+    if (!is.null(colnames(m)))
+      colnames(m)[ri] <- ''
+    m
+  }
+  if (!missing(rowsep))
+    m <- t(im_(t(m), rowsep, rowrep))
+  if (!missing(colsep))
+    m <- im_(m, colsep, colrep)
+  m
 }
