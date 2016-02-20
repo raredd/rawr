@@ -1,5 +1,5 @@
 ### plot utils
-# %|%, do_sub_, dodge_, jit_, grouping_, hmsf_, do_rect_, do_seg_
+# %|%, do_sub_, dodge_, jit_, grouping_, hmsf_, do_rect_, do_seg_, p2c, c2p
 ###
 
 
@@ -62,4 +62,31 @@ do_seg_ <- function(n, x, y, arrow, single = FALSE, ...) {
            angle = 30, length = .15, ...)
   else segments(x, n, y, n, ...)
   invisible()
+}
+
+d2r <- function(degrees = 1) degrees * (pi / 180)
+r2d <- function(radians = 1) radians * (180 / pi)
+
+## convert polar to cartesian or vice versa
+# p2c(c2p(0, 1)$r, c2p(0, 1)$t)
+p2c <- function(radius, theta, degree = FALSE) {
+  if (degree)
+    theta <- d2r(theta)
+  list(x = radius * cos(theta),
+       y = radius * sin(theta))
+}
+c2p <- function(x, y, degree = FALSE) {
+  list(radius = sqrt(x ** 2 + y ** 2),
+       theta = atan2(y, x) * if (degree) r2d() else 1)
+}
+
+## x,y coords to radians/degrees
+## p2r(0,1)
+## p2d(0,1)
+p2r <- function(x, y, cx = 0, cy = 0) {
+  atan2(y - cy, x - cx)
+  # ifelse(r < 0, pi / 2 + abs(r), r)
+}
+p2d <- function(x, y, cx = 0, cy = 0) {
+  r2d(atan2(y - cy, x - cx))
 }
