@@ -1,5 +1,5 @@
 ### plot functions
-# jmplot, tplot, dsplot, waffle, river, river2
+# jmplot, tplot, dsplot, waffle, river, river2, dose_esc
 ###
 
 
@@ -1255,4 +1255,98 @@ check_river_format <- function(data, bar_data) {
     do_error(if (one) fmt2 else fmt3, paste0('bar_data', c('','2')[one + 1L])))
   
   invisible(bd)
+}
+
+#' Plot dose escalation
+#' 
+#' Plot results of a dose-escalation study.
+#' 
+#' @param dose,col.dose vector of dose levels for each observation; colors
+#' should correspond to DLT or similar
+#' @param nstep number entered at each step, recycled as necessary; for 3+3
+#' or 4+2 studies for example, the value should be \code{3} or \code{c(4,2)},
+#' respectively
+#' @param dose.exp,col.exp optional vectors for expansion cohort
+#' @param xlab,ylab x- and y-axis label for each dose level
+#' @param xlim,ylim x- and y-axis limits
+#' @param squish numeric value describing a squishing factor; larger values
+#' result in plot being compressed
+#' 
+#' @examples
+#' ## 3 + 3
+#' dose_esc(d33 <- c(1,1,1,2,2,2,3,3,3,3,3,3,4,4,4),
+#'          c33 <- c(3,3,3,3,3,3,3,3,2,3,3,3,3,2,2))
+#' legend(0, 4, col = 2:3, pch = 16, pt.cex = 4, xpd = NA, bty = 'n',
+#'        legend = paste(c('','Non-'), 'DLT'), y.intersp = 1.5)
+#' 
+#' ## 3 + 3 with expansion
+#' dose_esc(d33, c33, dose.exp = rep(4, 10), col.exp = rep(3, 10))
+#' dose_esc(d33, c33, dose.exp = rep(3, 4), col.exp = rep(3, 4))
+#' 
+#' ## 4 + 4
+#' dose_esc(c(1,1,1,1, 2,2,2,2, 2,2,2,2, 3,3,3), nstep = 4,
+#'          col.dose = c(3,3,3,3, 3,3,2,3, 3,3,3,3, 3,2,2),
+#'          ylab = parse(text = paste0(1:2, '~mg^2')))
+#' 
+#' ## 4 + 2
+#' dose_esc(c(1,1,1,1,1,1, 2,2,2,2,2), nstep = c(4,2),
+#'          col.dose = c(3,3,3,2,3,3, 2,3,3,3,2))
+#'          
+#' @export
+
+dose_esc <- function(dose, col.dose, nstep = 3, dose.exp, col.exp,
+                     xlab = 'Time', ylab = 'Dose', xlim = NULL, ylim = NULL,
+                     squish = length(dose) %/% 3) {
+  nlevel <- table(dose)
+  xlab <- if (missing(xlab)) 'Time' else xlab 
+  ylab <- if (missing(ylab)) paste('Dose', seq_along(nlevel)) else ylab
+  dose.exp <- if (missing(dose.exp)) NULL else c(0, dose.exp)
+  col.exp  <- if (missing(col.exp)) {
+    if (is.null(dose.exp))
+      NULL else {
+        warning('\'dose.exp\' given without \'exp.col\'', domain = NA)
+        rep(NA, length(dose.exp) + 1)
+      }
+  } else c(NA, col.exp)
+  
+  n <- sum(nlevel)
+  N <- n + if (!is.null(dose.exp)) length(dose.exp) else 0
+  y <- c(dose, dose.exp)
+  x <- seq.int(N) + c(0, cumsum(diff(y) * 0.1))
+  col <- c(col.dose, col.exp)
+  
+  x <- x + cumsum(ave(y, y, FUN = seq_along) %in%
+                    (cumsum(rep(nstep, length(y))) + 1)) * 0.1
+  pls_idx <- which(!diff(y) > 0 & diff(x) > 1 | y[-length(y)] == 0L)
+  pls_idx <- pls_idx[pls_idx <= n + 1]
+  x <- rawr::rescaler(x, c(1, max(x) - squish)) - 1 / squish
+  pls <- sapply(Map(`:`, pls_idx, pls_idx + 1L),
+                function(ii) mean(x[ii]))
+  arr_idx <- which(diff(y) > 0) + 1L
+  arr <- roll_fun(x, 2, mean)[arr_idx[arr_idx <= n]]
+  
+  plot.new()
+  plot.window(xl <- xlim %||% c(0, max(x)),
+              yl <- ylim %||% c(0, max(y) + 1))
+  p <- par('usr')
+  arrows2(c(0,0), c(0,0), c(0, max(xl)), c(max(yl), 0), lwd = 3,
+          size = 0.5, width = 0.5)
+  axis(2, seq_along(ylab), ylab, las = 1, lwd = 0, mgp = c(0,0,0))
+  text(p[2], 0, pos = 1, xlab, xpd = NA, font = 2)
+  text(0, p[4], pos = 2, ylab, xpd = NA, font = 2)
+  
+  points(x, y, pch = 16, col = col, cex = 3.5, xpd = NA)
+  points(pls, y[pls_idx + 1L], pch = '+', cex = 1.5, xpd = NA)
+  arrows2(arr, seq_along(arr) + 0.2, arr, seq_along(arr) + 0.8,
+          size = 0.5, width = 0.5, lwd = 4, curve = 1.2, sadj = c(0,0,0,-.1))
+  
+  if (!is.null(dose.exp))
+    if (diff(y[wh <- which(y == 0L) + c(-1, 1)]) < 0) {
+      carrows(c(x[wh[1]], y[wh[1]]), c(x[wh[1]] * 1.01, y[wh[2]]), col = 2,
+              size = .5, arc = pi / 3 * c(-1, 1), lwd = 4, width = 0.7,
+              dir = c(1,0), pad = c(.1, .3))
+    } else arrows2(mean(x[wh[1:2]]), max(dose.exp), mean(x[wh[1:2]]),
+                   size = 0.7, width = 1, lwd = 4, col = 3, curve = 1.3)
+  
+  invisible(list(x, y, col, arr, pls))
 }
