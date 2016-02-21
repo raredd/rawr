@@ -1,3 +1,9 @@
+rawr 0.8.0
+--------
+  * move survival to suggests
+  * updates to tabler_by -- should not break code but who knows
+  * R CMD check succeeded, Status: OK
+
 rawr 0.7.0
 --------
   * removed a bunch of dependencies - no one likes a clingy package
