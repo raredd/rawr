@@ -1,13 +1,11 @@
 Package: rawr
 Type: Package
 Title: rawr miscellaneous
-Version: 0.7.0
+Version: 0.8.0
 Authors@R: person("Robert", "Redd", email = "raredd01@gmail.com",
   role = c("aut", "cre"))
 Description: Miscellaneous plotting, statistical, analysis, and utility
     functions.
-Imports:
-    survival
 Suggests:
     desmon,
     DT,
@@ -18,6 +16,7 @@ Suggests:
     markdown,
     parallel,
     rstudio,
+    survival,
     testthat
 License: GPL-2
 LazyData: yes
