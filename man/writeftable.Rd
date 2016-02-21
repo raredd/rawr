@@ -30,5 +30,7 @@ so here we are.
 x <- ftable(Titanic, row.vars = 1:3)
 writeftable(x)
 
+writeftable(ftable(mtcars$vs, mtcars$gear))
+
 }
 
