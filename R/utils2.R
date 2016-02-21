@@ -633,17 +633,15 @@ iprint <- function (..., wrap = '', sep = ', ', copula, digits = 2) {
 
 match_ctc <- function(..., version = 4) {
   x <- c(...)
-  if (version %ni% 3:4)
-    stop('CTCAE version should be 3 or 4')
-  else {
-    if (version == 3)
-      dat <- rawr::ctcae_v3
-    else dat <- rawr::ctcae_v4
-  }
-  if (any(grepl('([A-Za-z -])([0-9])', x)))
-    idx <- match(gsub('\\s*|-', '', x, perl = TRUE), dat[, 'tox_code'])
-  else idx <- grep(paste(x, collapse = '|'), dat[, 'tox_desc'],
-                   ignore.case = TRUE)
+  dat <- if (version %ni% 3:4)
+    stop('CTCAE version should be 3 or 4') else {
+      if (version == 3)
+        rawr::ctcae_v3 else rawr::ctcae_v4
+    }
+  ## guess if input is tox code or description
+  idx <- if (any(grepl('([A-Za-z -])([0-9])', x)))
+    match(gsub('\\s*|-', '', x, perl = TRUE), dat[, 'tox_code']) else
+      grep(paste(x, collapse = '|'), dat[, 'tox_desc'], ignore.case = TRUE)
   list(matches = `rownames<-`(dat[idx, ], NULL),
        version = sprintf('CTCAE v%s', version))
 }
@@ -669,13 +667,24 @@ match_ctc <- function(..., version = 4) {
 #' x <- ftable(Titanic, row.vars = 1:3)
 #' writeftable(x)
 #' 
+#' writeftable(ftable(mtcars$vs, mtcars$gear))
+#' 
 #' @export
 
 writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
   if (!inherits(x, 'ftable'))
     stop('x must be an ftable object')
-  x <- format(x, quote = quote, digits = digits, ...)
-  as.matrix(x)
+  
+  ## add row/col names if blank (ie, if vectors used in ftable)
+  rn <- names(attr(x, 'row.vars'))
+  names(attr(x, 'row.vars')) <- ifelse(!nzchar(rn), '$$$', rn)
+  cn <- names(attr(x, 'col.vars'))
+  names(attr(x, 'col.vars')) <- ifelse(!nzchar(cn), '$$$', cn)
+  
+  mat <- as.matrix(format(x, quote = quote, digits = digits, ...))
+  mat[] <- trimws(mat)
+  `colnames<-`(mat[-(1:2), ],
+               gsub('$$$', '', Filter(nzchar, mat[1:2, ]), fixed = TRUE))
 }
 
 #' Tabler
@@ -758,108 +767,205 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' 
 #' @param data a data frame; variables \code{varname} and \code{byvar} should
 #' be factors
-#' @param varname variable with subgroups to count
-#' @param byvar stratification variable
+#' @param varname subgroup variable name (rows)
+#' @param byvar stratification variable name (columns)
 #' @param n number in each group; see details
 #' @param order logical; order the result by decreasing frequency
 #' @param zeros optional character string replacement for cells which have
 #' zero counts; will appear as \code{0 (0\%)} if not given
 #' @param pct.col logical; if \code{TRUE}, percents are separated into new
 #' columns
+#' @param pct.total logical; if \code{TRUE}, adds percents for total column
+#' @param stratvar for \code{tabler_by2}, a factor-like variable used to
+#' stratify observations into mutually exclusive groups for which
+#' \code{tabler_by} will be performed on each subset
+#' @param ... additional optional parameters passed to \code{tabler_by}:
+#' \code{zeros}, \code{pct.col}, or \code{pct.total}
 #' 
 #' @seealso
-#' \code{\link{tox_worst}}
+#' \code{\link{tox_worst}}; \code{\link{match_ctc}}
 #' 
 #' @examples
+#' mt <- within(mtcars, {
+#'   am <- factor(am)
+#'   gear <- factor(gear)
+#'   vs <- factor(vs, levels = 0:2)
+#'   carb <- factor(carb)
+#' })
+#' 
+#' tabler_by(mt, 'vs', 'gear')
+#' tabler_by(mt, c('vs', 'carb'), 'gear', order = TRUE)
+#' tabler_by(mt, 'vs', 'gear', n = table(mt$gear))
+#' tabler_by(mt, 'vs', 'gear', n = table(mt$gear), pct.col = TRUE, zeros = '-')
+#' 
+#' 
+#' ## example workflow
 #' set.seed(1)
 #' 
 #' f <- function(x, ...) sample(x, 100, replace = TRUE, ...)
 #' tox <- data.frame(casenum = rep(1:10, 10), phase = 1:2,
-#'                   tox_code = f(rawr::ctcae_v4$tox_code[1:25]),
+#'                   tox_code = f(rawr::ctcae_v4$tox_code[1:100]),
 #'                   tox_grade = f(1:3, prob = c(.6, .3, .1)),
 #'                   stringsAsFactors = FALSE)
 #' 
-#' n <- table(tox[1:10, ]$phase)
 #' tox <- cbind(tox, match_ctc(tox$tox_code)$matches[, c('tox_cat', 'tox_desc')])
 #' 
-#' tox <- within(tox, {
-#'   phase <- factor(phase)
-#'   tox_grade <- factor(tox_grade)
-#'   tox_cat <- factor(tox_cat)
-#'   tox_desc <- factor(tox_desc)
-#' })
-#' 
-#' ## get worst toxicities by casenum by grade
+#' ## get worst toxicities by casenum, by grade
+#' n <- colSums(table(tox$casenum, tox$phase) > 0)
+#' tox[] <- lapply(tox, factor)
 #' tox <- tox_worst(tox)$tox_worst
 #' 
-#' out <- cbind(tabler_by(tox, 'tox_desc',
-#'                        'phase', n = n, zeros = '-')[, 1, drop = FALSE],
-#'              tabler_by(tox[tox$phase == '1', ], 'tox_desc',
-#'                        'tox_grade', n = n[1], zeros = '-'),
-#'              tabler_by(tox[tox$phase == '2', ], 'tox_desc',
-#'                        'tox_grade', n = n[2], zeros = '-'))
-#' out <- out[order(as.numeric(out[, 1]), decreasing = TRUE), ]
-#' 
-#' library('htmlTable')
-#' cgroup <- c(sprintf('Total<br /><font size=1>n = %s</font>', sum(n)),
+#' out <- tabler_by2(tox, 'tox_desc', 'tox_grade', 'phase', zeros = '.')
+#' colnames(out)[1] <- sprintf('Total<br /><font size=1>n = %s</font>', sum(n))
+#' cgroup <- c('',
 #'             sprintf('Phase I<br /><font size=1>n = %s</font>', n[1]),
 #'             sprintf('Phase II<br /><font size=1>n = %s</font>', n[2]))
-#'             
+#' 
+#' library('htmlTable')
 #' htmlTable(out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
-#'     caption = 'Table 1: Toxicities<sup>&dagger;</sup> by phase and grade.',
-#'     col.columns = rep(c('grey97','none','grey97'), times = c(1, 4, 4)),
+#'     caption = 'Table 1: Toxicities<sup>&dagger;</sup> by phase and grade,
+#'                sorted by total.',
+#'     col.columns = rep(c('grey97','none','grey97'), times = c(1,4,4)),
 #'     col.rgroup = rep(rep(c('none', 'grey97'), each = 5), 10),
 #'     tfoot = paste0('<font size=1><sup>&dagger;</sup>Percentages represent ',
 #'             'proportion of patients out of respective phase total.</font>'))
+#' 
+#' 
+#' ## same as above but adding a level of stratification
+#' out <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'tox_grade', 'phase',
+#'                   zeros = '-')
+#' 
+#' colnames(out)[1:2] <- c(
+#'   'Description', sprintf('Total<br /><font size=1>n = %s</font>', sum(n)))
+#' 
+#' cgroup <- c('', '',
+#'             sprintf('Phase I<br /><font size=1>n = %s</font>', n[1]),
+#'             sprintf('Phase II<br /><font size=1>n = %s</font>', n[2]))
+#'             
+#' htmlTable(out, align = 'lccccccccc', cgroup = cgroup, n.cgroup = c(1,1,4,4),
+#'     caption = 'Table 1: Toxicities<sup>&dagger;</sup> by category, phase,
+#'                grade.')
 #'             
 #' @export
 
 tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros,
-                      pct.col = FALSE) {
-  if (!all(sapply(data[, c(varname, byvar)], is.factor)))
-    stop('\'varname\' and \'byvar\' must be factors')
+                      pct.col = FALSE, pct.total = FALSE) {
   
-  ## split data by varname, get totals overall and for each level of byvar
-  l <- split(data, data[, varname])
-  res <- do.call('rbind', lapply(l, function(x)
-    c(Total = length(x[, varname]), tapply(x[, varname], x[, byvar], length))))
-  res1 <- res[, -1]
-  res1[is.na(res1)] <- 0
+  rm_p <- function(x) gsub(' \\(.*\\)$', '', x)
+  ord <- function(...) order(..., decreasing = TRUE)
   
-  ## this will add percents: N (x%) to each column where n for each group
+  if (!all(wh <- sapply(data[, c(varname, byvar)], is.factor))) {
+    warning(sprintf('coercing %s to factor',
+                    iprint(shQuote(idx <- c(varname, byvar)[!wh]))),
+            domain = NA)
+    data[, idx] <- lapply(data[, idx, drop = FALSE], as.factor)
+  }
+  if (pct.col & missing(n))
+    warning('\'n\' must be given when \'pct.col = TRUE\'', domain = NA)
+  
+  ## use ftbl format later, ttbl for counts, ptbl for percents
+  ftbl <- ftable(data[, c(varname, byvar)])
+  ttbl <- res <- cbind(Total = rowSums(ftbl), ftbl)
+  cn <- c('Total', unlist(attr(ftbl, 'col.vars')))
+  nr <- nrow(ttbl)
+  nc <- ncol(ttbl)
+  
+  ## add percents, eg "N (x%)", to each column
   if (!missing(n)) {
-    nr <- nrow(res1)
-    ## if one n is given, assume this is the total of a subgroup
-    ## if > 1, assume that these correspond to the size of each level of byvar
-    ## i.e., if calculating overall totals, give the n for each group
-    ## if calculating totals for a subgroup, give one n since this group
-    ## will have the same overall n
+    ## if length(n) == 1L, use same n for all strat levels (assume subgroup)
+    ## else, map each n to each strat level (assume total)
     if (length(n) == 1L)
-      n <- rep(n, ncol(res1))
+      n <- rep(n, ncol(ttbl) - 1)
     if (length(n) != nlevels(data[, byvar]))
       stop('\'n\' should be 1 or equal to nlevels(byvar)')
-    res1 <- matrix(res1)
-    mat <- round(res1 / matrix(rep(n, each = nr)) * 100)
-    res1 <- matrix(sprintf('%s (%s%%)', res1, mat),
-                   nrow = nr, ncol = length(n))
-    res1[] <- gsub('0 (NaN%)', '0 (0%)', res1, fixed = TRUE)
+    
+    ## add percents, make them sum to 100 by column
+    ## if recursive error in Round, skip to regular round
+    ptbl <- ttbl / matrix(rep(c(sum(ttbl[, 1]), n), each = nr), nr) * 100
+    ptbl <- tryCatch(apply(ptbl, 2, Round, 100),
+                     error = function(e) apply(ptbl, 2, round, 0))
+    res <- matrix(sprintf('%s (%s%%)', ttbl, ptbl), nrow = nr, ncol = nc)
+    res[] <- gsub('0 (NaN%)', '0 (0%)', res, fixed = TRUE)
+    
+    ## split percents into individual columns
+    if (pct.col) {
+      res <- gsub('[^0-9 ]', '', apply(res, 1, paste0, collapse = ' '))
+      res <- as.matrix(read.table(text = res, colClasses = 'character'))
+      cn <- interleave(cn, rep('%', nc))
+      if (!pct.total) {
+        cn <- cn[-2]
+        res <- res[, -2]
+      }
+    } else {
+      if (!pct.total)
+        res[, 1] <- rm_p(res[, 1])
+    }
   }
   
-  zzz <- if (pct.col) {
-    res2 <- apply(res1, 1, paste0, collapse = ' ')
-    res2 <- as.matrix(setNames(read.table(text = gsub('\\(|\\)|%', '', res2),
-                                          colClasses = 'character'),
-                       interleave(colnames(res)[-1],
-                                  rep('%', ncol(res1)))))
-    cbind(Total = res[, 1, drop = FALSE], res2)
-  } else `colnames<-`(cbind(Total = res[, 1], res1), colnames(res))
-
-  if (order) {
-    zzz[, 1] <- as.numeric(zzz[, 1])
-    zzz <- zzz[order(zzz[, 1], decreasing = TRUE), ]
+  ## use ftable formatting, replace table with new one
+  ftbl <- writeftable(ftbl)
+  idx <- which(colSums(apply(ftbl, 2, Negate(nzchar))) == nr)
+  res <- cbind(ftbl[, -(idx:ncol(ftbl)), drop = FALSE], `colnames<-`(res, cn))
+  
+  ## order by group variable (if given) and total
+  res <- if (order) {
+    o <- data.frame(res[, c(varname[1], 'Total')], stringsAsFactors = FALSE)
+    o <- within(locf(o), Total <- as.numeric(Total))
+    o <- if (length(varname) == 1L)
+      ord(o[, 2]) else ord(-xtfrm(o[, 1]), o[, 2])
+    o <- res[o, ]
+    o[, 1] <- res[, 1]
+    o
+  } else res
+  
+  if (!missing(zeros)) {
+    idx <- idx:ncol(res)
+    res[, idx] <- `[<-`(res[, idx], gsub('0 \\(0%\\)|^0$', zeros, res[, idx]))
   }
-   if (!missing(zeros))
-     `[<-`(zzz, gsub('0 \\(0%\\)|^0$', zeros, zzz)) else zzz
+  `rownames<-`(res[, -1], res[, 1])
+}
+
+#' @rdname tabler_by
+#' @export
+tabler_by2 <- function(data, varname, byvar, stratvar, n, ...) {
+  
+  rm_p <- function(x) gsub(' \\(.*\\)$', '', x)
+  ord <- function(...) order(..., decreasing = TRUE)
+  dots <- modifyList(list(pct.col = 0, pct.total = 0, zeros = 0),
+                     lapply(substitute(...()), eval))
+  
+  stopifnot(length(byvar) == 1L &
+              (missing(stratvar) || length(stratvar) == 1L) &
+              (ln <- length(varname)) <= 2L)
+  
+  data[] <- lapply(data, as.factor)
+  data$`_strat_var_` <- if (missing(stratvar))
+    factor(1) else data[, stratvar]
+  bylvl <- levels(data[, '_strat_var_'])
+  
+  ## try to guess n, N if missing
+  n <- if (missing(n))
+    setNames(colSums(table(data[, 1], data[, '_strat_var_']) > 1), bylvl) else n
+  N <- sum(n)
+  
+  ## get (second varname if ln == 2L and) overall total column(s)
+  o1 <- tabler_by(data, varname, '_strat_var_', n,
+                  ...)[, 1:(ln + dots$pct.col + dots$pct.total), drop = FALSE]
+  ## get groups of columns for each level of byvar
+  o2 <- lapply(bylvl, function(x)
+    tabler_by(data[data[, '_strat_var_'] == x, ], varname, byvar, n[x],
+              FALSE, ...))
+  
+  out <- do.call('cbind', c(list(o1), o2))
+  rownames(out) <- locf(rownames(out))
+  out <- t(t(out)[!duplicated(t(out)), ])
+  out <- out[!out[, ln] %in% c(0, dots$zeros), ]
+  out <- out[if (ln == 1L)
+    ord(as.numeric(rm_p(out[, 1]))) else
+      ord(-xtfrm(rownames(out)), as.numeric(rm_p(out[, ln]))), ]
+  
+  rownames(out)[duplicated(rownames(out))] <- ''
+  out
 }
 
 #' Count formatter

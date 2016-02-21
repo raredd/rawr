@@ -2,17 +2,21 @@
 % Please edit documentation in R/utils2.R
 \name{tabler_by}
 \alias{tabler_by}
+\alias{tabler_by2}
 \title{tabler_by}
 \usage{
-tabler_by(data, varname, byvar, n, order = FALSE, zeros, pct.col = FALSE)
+tabler_by(data, varname, byvar, n, order = FALSE, zeros, pct.col = FALSE,
+  pct.total = FALSE)
+
+tabler_by2(data, varname, byvar, stratvar, n, ...)
 }
 \arguments{
 \item{data}{a data frame; variables \code{varname} and \code{byvar} should
 be factors}
 
-\item{varname}{variable with subgroups to count}
+\item{varname}{subgroup variable name (rows)}
 
-\item{byvar}{stratification variable}
+\item{byvar}{stratification variable name (columns)}
 
 \item{n}{number in each group; see details}
 
@@ -23,6 +27,15 @@ zero counts; will appear as \code{0 (0\%)} if not given}
 
 \item{pct.col}{logical; if \code{TRUE}, percents are separated into new
 columns}
+
+\item{pct.total}{logical; if \code{TRUE}, adds percents for total column}
+
+\item{stratvar}{for \code{tabler_by2}, a factor-like variable used to
+stratify observations into mutually exclusive groups for which
+\code{tabler_by} will be performed on each subset}
+
+\item{...}{additional optional parameters passed to \code{tabler_by}:
+\code{zeros}, \code{pct.col}, or \code{pct.total}}
 }
 \description{
 This function is helpful to make simple stratified tables, faster and 
@@ -45,49 +58,68 @@ entire data set is given to \code{data} and will use the corresponding
 \code{n} to show percentages out of each respective subgroup.
 }
 \examples{
+mt <- within(mtcars, {
+  am <- factor(am)
+  gear <- factor(gear)
+  vs <- factor(vs, levels = 0:2)
+  carb <- factor(carb)
+})
+
+tabler_by(mt, 'vs', 'gear')
+tabler_by(mt, c('vs', 'carb'), 'gear', order = TRUE)
+tabler_by(mt, 'vs', 'gear', n = table(mt$gear))
+tabler_by(mt, 'vs', 'gear', n = table(mt$gear), pct.col = TRUE, zeros = '-')
+
+
+## example workflow
 set.seed(1)
 
 f <- function(x, ...) sample(x, 100, replace = TRUE, ...)
 tox <- data.frame(casenum = rep(1:10, 10), phase = 1:2,
-                  tox_code = f(rawr::ctcae_v4$tox_code[1:25]),
+                  tox_code = f(rawr::ctcae_v4$tox_code[1:100]),
                   tox_grade = f(1:3, prob = c(.6, .3, .1)),
                   stringsAsFactors = FALSE)
 
-n <- table(tox[1:10, ]$phase)
 tox <- cbind(tox, match_ctc(tox$tox_code)$matches[, c('tox_cat', 'tox_desc')])
 
-tox <- within(tox, {
-  phase <- factor(phase)
-  tox_grade <- factor(tox_grade)
-  tox_cat <- factor(tox_cat)
-  tox_desc <- factor(tox_desc)
-})
-
-## get worst toxicities by casenum by grade
+## get worst toxicities by casenum, by grade
+n <- colSums(table(tox$casenum, tox$phase) > 0)
+tox[] <- lapply(tox, factor)
 tox <- tox_worst(tox)$tox_worst
 
-out <- cbind(tabler_by(tox, 'tox_desc',
-                       'phase', n = n, zeros = '-')[, 1, drop = FALSE],
-             tabler_by(tox[tox$phase == '1', ], 'tox_desc',
-                       'tox_grade', n = n[1], zeros = '-'),
-             tabler_by(tox[tox$phase == '2', ], 'tox_desc',
-                       'tox_grade', n = n[2], zeros = '-'))
-out <- out[order(as.numeric(out[, 1]), decreasing = TRUE), ]
-
-library('htmlTable')
-cgroup <- c(sprintf('Total<br /><font size=1>n = \%s</font>', sum(n)),
+out <- tabler_by2(tox, 'tox_desc', 'tox_grade', 'phase', zeros = '.')
+colnames(out)[1] <- sprintf('Total<br /><font size=1>n = \%s</font>', sum(n))
+cgroup <- c('',
             sprintf('Phase I<br /><font size=1>n = \%s</font>', n[1]),
             sprintf('Phase II<br /><font size=1>n = \%s</font>', n[2]))
-            
+
+library('htmlTable')
 htmlTable(out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
-    caption = 'Table 1: Toxicities<sup>&dagger;</sup> by phase and grade.',
-    col.columns = rep(c('grey97','none','grey97'), times = c(1, 4, 4)),
+    caption = 'Table 1: Toxicities<sup>&dagger;</sup> by phase and grade,
+               sorted by total.',
+    col.columns = rep(c('grey97','none','grey97'), times = c(1,4,4)),
     col.rgroup = rep(rep(c('none', 'grey97'), each = 5), 10),
     tfoot = paste0('<font size=1><sup>&dagger;</sup>Percentages represent ',
             'proportion of patients out of respective phase total.</font>'))
+
+
+## same as above but adding a level of stratification
+out <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'tox_grade', 'phase',
+                  zeros = '-')
+
+colnames(out)[1:2] <- c(
+  'Description', sprintf('Total<br /><font size=1>n = \%s</font>', sum(n)))
+
+cgroup <- c('', '',
+            sprintf('Phase I<br /><font size=1>n = \%s</font>', n[1]),
+            sprintf('Phase II<br /><font size=1>n = \%s</font>', n[2]))
+            
+htmlTable(out, align = 'lccccccccc', cgroup = cgroup, n.cgroup = c(1,1,4,4),
+    caption = 'Table 1: Toxicities<sup>&dagger;</sup> by category, phase,
+               grade.')
             
 }
 \seealso{
-\code{\link{tox_worst}}
+\code{\link{tox_worst}}; \code{\link{match_ctc}}
 }
 
