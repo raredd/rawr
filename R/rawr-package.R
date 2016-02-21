@@ -5,7 +5,6 @@
 #' @name rawr-package
 #' @aliases rawr
 #' @docType package
-#' @import survival
 NULL
 
 #' Common Terminology Criteria for Adverse Events, v3
