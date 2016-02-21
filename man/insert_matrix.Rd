@@ -15,14 +15,14 @@ respectively}
 \item{rowrep, colrep}{row and column replacement values, recycled if needed;
 note that rows are replaced first followed by columns, so for the opposite
 behavior, transpose \code{m} before and after using \code{insert_matrix}
-and swap \code{rowrep} andn \code{colrep} accordingly; see examples}
+and swap \code{rowrep} and \code{colrep}; see examples}
 }
 \description{
 Insert rows and/or columns into a matrix.
 }
 \examples{
 m <- col(matrix(0, 5, 5))
-insert_matrix(m, 2, c(2, 4, 4, 4))
+insert_matrix(m, 2, c(2,4,4,4))
 
 ## anticipate number of values needed for replacement(s)
 insert_matrix(m, 4, 4:5, colrep = 1:6)

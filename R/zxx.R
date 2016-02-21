@@ -205,8 +205,8 @@ recoder <- function(object, pattern, replacement, ...) {
   switcher <- function(f, g, h) {
     if (is.na(g))
       f[is.na(f)] <- h else f[f == g] <- h
-      f
-  } 
+    f
+  }
   superswitcher <- function(x, y, z){
     DF <- data.frame(y, z, stringsAsFactors = FALSE)
     z <- x
