@@ -194,9 +194,10 @@ show_pch <- function() {
 #' @export
 
 tcol <- function(color, trans = 255, alpha) {
+  stopifnot(trans %inside% c(0,255) | is.na(trans))
   if (!missing(alpha)) {
-    stopifnot(alpha %inside% c(0,1))
-    trans <- round(rescaler(alpha, to = c(0,255), from = c(0,1)))
+    stopifnot(alpha %inside% 0:1 | is.na(alpha))
+    trans <- round(rescaler(alpha, to = c(0,255), from = 0:1))
   }
   if (length(color) != length(trans) & 
       !any(c(length(color), length(trans)) == 1)) 
@@ -208,11 +209,10 @@ tcol <- function(color, trans = 255, alpha) {
   
   res <- paste0('#', apply(apply(rbind(col2rgb(color)), 2, function(x)
     format(as.hexmode(x), 2)), 2, paste, collapse = ''))
-  res <- unlist(unname(Map(paste0, res, as.character(as.hexmode(trans)))))
-  res[is.na(color)] <- NA
+  res <- unlist(Map(paste0, res, as.character(try(as.hexmode(trans)))))
+  res[is.na(color) | is.na(trans)] <- NA
   res[color %in% 'transparent'] <- 'transparent'
-  
-  res
+  unname(res)
 }
 
 #' Print scientific numbers
