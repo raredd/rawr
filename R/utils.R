@@ -220,6 +220,10 @@ lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
   
   out <- setNames(data.frame(otype, osize, oprettysize, odim),
                   c('type', 'size', 'sizef', 'nrow', 'ncol'))
+  mb <- sum(napply(names, function(x) object.size(x))) / (1024 * 1024)
+  if (mb > 1)
+    on.exit(message(sprintf('Total size: %s Mb', roundr(mb, 1))))
+  
   if (!is.null(by))
     out <- out[order(out[[by]], decreasing = decreasing), ]
   
