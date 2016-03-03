@@ -7,9 +7,7 @@
 dlt_table(low, high, delta = 10)
 }
 \arguments{
-\item{low}{lowest true DLT rate, percent}
-
-\item{high}{highest true DLT rate, percent}
+\item{low, high}{lowest and highest true DLT rate, percent}
 
 \item{delta}{interval of DLT rate sequence; default is 10}
 }

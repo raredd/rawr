@@ -8,18 +8,14 @@ simon2(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,
   del = 1, minimax = FALSE)
 }
 \arguments{
-\item{p0}{null hypothesis response probability}
-
-\item{pa}{alternative hypothesis response probability}
+\item{p0, pa}{null and alternative hypothesis response probability}
 
 \item{n1max}{maximum number of subjects entered during the first stage; 
 ignored if <= 0}
 
 \item{ntmax}{maximum total number of total subjects}
 
-\item{alpha}{type-I error rate}
-
-\item{beta}{type-II error rate}
+\item{alpha, beta}{type-I and type-II errors}
 
 \item{del}{searches for designs where the expected number of subjects under 
 the null with within \code{del} of the minimum possible value}
@@ -47,24 +43,24 @@ the columns in \code{$designs}.}
 Function for sample sizes for Simon optimal two-stage, single-arm designs.
 }
 \details{
-For two-stage designs for studies with binary endpoints, searches 
-over possible two-stage sampling designs to find those that minimize the 
+For two-stage designs for studies with binary endpoints, searches over
+possible two-stage sampling designs to find those that minimize the
 expected number of subjects, subject to specified constraints.
 }
 \examples{
-\donttest{
 simon2(.2, c(.4, .5))
 simon2(p0 = seq(.55, .6, by = .01), pa = .75, ntmax = 60)
 
+\donttest{
 ## compare this function to results from desmon::simon
 simon2(.4, .6)
-## requires desmon package
-simon(.4, .6)
+## from desmon package
+rawr:::simon(.4, .6)
 }
 
 }
 \author{
-Robert Gray (\code{simon}); Robert Redd (\code{simon2})
+Robert Gray (\code{desmon::simon}); Robert Redd (\code{simon2})
 }
 \references{
 Simon R (1989). Optimal two-stage designs for phase II clinical 

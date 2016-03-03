@@ -25,16 +25,17 @@ package which tests for a difference in \emph{scale parameters} rather than
 medians.
 }
 \examples{
-set.seed(1618)
+set.seed(1)
 X <- list(rnorm(10), rnorm(10, 1), rnorm(20, 2))
 moods_test(X)
 
 plot(density(X[[1]]), xlim = range(unlist(X)), ylim = c(0, .5))
-for (x in 2:3) lines(density(X[[x]]), col = x)
+for (x in 2:3)
+  lines(density(X[[x]]), col = x)
 
 }
 \seealso{
-\code{\link{mood.test}}, \code{\link{kruskal.test}}, 
+\code{\link{mood.test}}; \code{\link{kruskal.test}};
 \code{\link{wilcox.test}}
 }
 

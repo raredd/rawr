@@ -1399,7 +1399,7 @@ sort_matrix <- function(m, margin = 1L, order) {
   dd <- data.frame(t(m))
   dd[] <- lapply(dd, factor, levels = order)
   m <- m[, do.call('order', dd)]
-  if (margin == 1)
+  if (margin == 1L)
     m else t(m)
 }
 

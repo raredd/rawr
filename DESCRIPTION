@@ -4,6 +4,8 @@ Title: rawr miscellaneous
 Version: 0.8.0
 Authors@R: person("Robert", "Redd", email = "raredd01@gmail.com",
   role = c("aut", "cre"))
+Author: Robert Redd
+Maintainer: Robert Redd <raredd01@gmail.com>
 Description: Miscellaneous plotting, statistical, analysis, and utility
     functions.
 Suggests:

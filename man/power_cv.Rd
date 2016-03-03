@@ -28,20 +28,21 @@ power_cv(n = NULL, f = NULL, cv = NULL, sig.level = NULL,
 \item{distribution}{underlying distribution assumption}
 }
 \value{
-Object of class "\code{power.htest}," a list of the arguments
-(including the computed one) augmented with method and note elements
+Object of class \code{power.htest}, a list of the arguments (including
+the computed) augmented with method and note elements.
 }
 \description{
 Compute power of test using mean ratios and coefficients of variation or 
 determine other parameters to obtain target power.
 }
 \details{
-Exactly one of n, f, cv, sig.level, and power must be NULL
+Exactly one of \code{n}, \code{f}, \code{cv}, \code{sig.level}, and
+\code{power} must be \code{NULL}.
 }
 \note{
-\code{\link{uniroot}} is used to solve power equation for unknowns, 
-so you may see errors from it, notably about inability to bracket the root 
-when invalid arguments are given.
+\code{\link{uniroot}} is used to solve power equation for unknowns, so one
+may see errors from it, notably about inability to bracket the root when
+invalid arguments are given.
 }
 \examples{
 power_cv(n = NULL, 1.25, .2, .05, .8, distribution = 'normal')

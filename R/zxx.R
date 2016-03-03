@@ -1458,7 +1458,7 @@ cum_reset <- function(x, value = 0L, FUN = cumsum) {
 #' \code{length(x)} for each match found in \code{x}.
 #' 
 #' @references
-#' Adapted from http://stackoverflow.com/questions/33027611/how-to-index-a-vector-sequence-within-a-vector-sequence/33028695
+#' Adapted from \url{http://stackoverflow.com/questions/33027611/how-to-index-a-vector-sequence-within-a-vector-sequence/33028695}
 #' 
 #' @seealso
 #' \code{\link{grep}}; \code{\link[rawr]{mgrep}}; \code{\link[rawr]{\%==\%}}

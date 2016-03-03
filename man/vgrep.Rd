@@ -34,7 +34,7 @@ which(vgrepl(c(1, 0, 1, NA), x)[[1]])
 
 }
 \references{
-Adapted from http://stackoverflow.com/questions/33027611/how-to-index-a-vector-sequence-within-a-vector-sequence/33028695
+Adapted from \url{http://stackoverflow.com/questions/33027611/how-to-index-a-vector-sequence-within-a-vector-sequence/33028695}
 }
 \seealso{
 \code{\link{grep}}; \code{\link[rawr]{mgrep}}; \code{\link[rawr]{\%==\%}}
