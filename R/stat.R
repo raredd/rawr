@@ -9,29 +9,27 @@
 #' Calculates confidence intervales for binomial probabilities for specified 
 #' type-I error (\code{alpha}) using exact, Wilson, or asymptotic methods.
 #'    
+#' If \code{method = 'all'}, \code{r} and \code{n} should each be length 1.
+#' The "exact" method uses the \code{\link{df}} distribution to comupte exact
+#' intervals (based on the binomial cdf); the "wilson" interval is score-test-
+#' based; the "asymptotic"  is the asymptotic normal interval.
+#' 
+#' The "wilson" method has been preferred by Agresti and Coull.
+#' 
 #' @param r number of responses (successes)
 #' @param n number of observations (trials)
 #' @param alpha type-I error probability
 #' @param round integer value specifying number of decimal places to round 
 #' (default is no rounding); see \code{\link{round}}
 #' @param method character strings specifying which method to use; see details
-#' @param inc.r logical; include \code{r} in return
-#' @param inc.n logical; include \code{n} in return
-#' @param df logical; coerce return matrix to data frame
 #' 
-#' @details
-#' The "all" option, which shows results from each calculation method, only 
-#' works where \code{r} and \code{n} are of length 1. The "exact" method uses 
-#' the \code{\link{df}} distribution to comupte exact intervales (based on the 
-#' binomial cdf); the "wilson" interval is score-test-based; the "asymptotic" 
-#' is the asymptotic normal interval.
+#' @return
+#' A matrix containing the computed interval(s) and their widths.
 #' 
-#' The "wilson" method has been preferred by Agresti and Coull.
+#' @author
+#' Rollin Brant, Frank Harrell, and Brad Biggerstaff; modifications by Robert
+#' Redd
 #' 
-#' @return A matrix or data frame containing the computed intervals, their 
-#' widths, and, optionally, \code{r} and \code{n}.
-#' @author Rollin Brant, Frank Harrell, and Brad Biggerstaff; modifications by 
-#' Robert Redd
 #' @references Agresti, A. and B.A. Coull. Approximate is better than "exact" 
 #' for interval extimation of binomial proportions. \emph{American 
 #' Statistician}. \strong{59}:119-126, 1998.
@@ -40,7 +38,9 @@
 #' \strong{16}:101-133, 2001.
 #' @references Newcombe, R.G. Logit confidence intervals and the inverse sinh 
 #' transformation, \emph{American Statistician}. \strong{55}:200-202, 2001.
-#' @seealso \code{\link[Hmisc]{binconf}}, \code{binci} (desmon package)
+#' 
+#' @seealso
+#' \code{\link[Hmisc]{binconf}}; \code{desmon::binci}
 #' 
 #' @examples
 #' bincon(0:10, 10)
@@ -49,122 +49,112 @@
 #' @export
 
 bincon <- function(r, n, alpha = 0.05, round = NULL,
-                   method = c('exact','wilson','asymptotic','all'), 
-                   inc.r = TRUE, inc.n = TRUE, df = FALSE) {
+                   method = c('exact','wilson','asymptotic','all')) {
   
   # error checks
-  if (any(r < 0) | any(r > n)) stop('invalid response value')
-  if (alpha >= 1 | alpha <= 0) stop('alpha must be between 0 and 1')
+  if (any(r < 0) | any(r > n))
+    stop('invalid response value')
+  if (alpha >= 1 | alpha <= 0)
+    stop('alpha must be between 0 and 1')
   
   method <- match.arg(method)
   bc <- function(r, n, alpha, method) {
     nu1 <- 2 * (n - r + 1)
     nu2 <- 2 * r
-    ll <- if (r > 0) 
-      r / (r + qf(1 - alpha / 2, nu1, nu2) * (n - r + 1))
-    else 0
+    ll <- if (r > 0)
+      r / (r + qf(1 - alpha / 2, nu1, nu2) * (n - r + 1)) else 0
     nu1p <- nu2 + 2
     nu2p <- nu1 - 2
     pp <- if (r < n) 
-      qf(1 - alpha / 2, nu1p, nu2p)
-    else 1
+      qf(1 - alpha / 2, nu1p, nu2p) else 1
     ul <- ((r + 1) * pp) / (n - r + (r + 1) * pp)
     zcrit <- -qnorm(alpha / 2)
     z2 <- zcrit * zcrit
     p <- r / n
-    cl <- (p + z2 / 2 / n + c(-1, 1) * zcrit * 
+    cl <- (p + z2 / 2 / n + c(-1, 1) * zcrit *
              sqrt((p * (1 - p) + z2 / 4 / n) / n)) / (1 + z2 / n)
     if (r == 1) 
       cl[1] <- -log(1 - alpha) / n
     if (r == (n - 1)) 
       cl[2] <- 1 + log(1 - alpha) / n
-    asymp.lcl <- r / n - qnorm(1 - alpha / 2) * 
+    asymp.lcl <- r / n - qnorm(1 - alpha / 2) *
       sqrt(((r / n) * (1 - r / n)) / n)
-    asymp.ucl <- r / n + qnorm(1 - alpha / 2) * 
+    asymp.ucl <- r / n + qnorm(1 - alpha / 2) *
       sqrt(((r / n) * (1 - r / n)) / n)
     res <- rbind(c(ll, ul), cl, c(asymp.lcl, asymp.ucl))
     res <- cbind(rep(r / n, 3), res)
-    switch(method, 
-           exact = res[1, ], 
-           wilson = res[2, ], 
-           asymptotic = res[3, ], 
+    switch(method,
+           exact = res[1, ],
+           wilson = res[2, ],
+           asymptotic = res[3, ],
            all = res, res)
   }
   
-  if ((length(r) != length(n)) & length(r) == 1) 
+  if ((length(r) != length(n)) & length(r) == 1)
     r <- rep(r, length(n))
-  if ((length(r) != length(n)) & length(n) == 1) 
+  if ((length(r) != length(n)) & length(n) == 1)
     n <- rep(n, length(r))
   if ((length(r) > 1 | length(n) > 1) & method == 'all') {
     method <- 'exact'
-    warning("method = 'all' will not work with vectors... 
-            setting method = 'exact' ")
+    warning('Multiple confidence intervals should use one method. ',
+            'Using \'exact\' method', domain = NA)
   }
   if (method == 'all' & length(r) == 1 & length(n) == 1) {
     mat <- bc(r, n, alpha, method)
-    mat <- cbind(mat, mat[ ,3] - mat[ ,2])
-    dimnames(mat) <- list(c('Exact', 'Wilson', 'Asymptotic'), 
+    mat <- cbind(mat, mat[, 3] - mat[, 2])
+    dimnames(mat) <- list(c('Exact', 'Wilson', 'Asymptotic'),
                           c('PointEst', 'Lower', 'Upper','Width'))
-    if (inc.n) 
-      mat <- cbind(Trials = n, mat)
-    if (inc.r) 
-      mat <- cbind(Responses = r, mat)
-    if (df) 
-      mat <- as.data.frame(mat)
-    return(mat)
+    if (!is.null(round))
+      mat[, 2:4] <- round(mat[, 2:4], digits = round)
+    
+    return(cbind(Responses = r, Trials = n, mat))
   }
   
   mat <- matrix(ncol = 3, nrow = length(r))
-  for (i in 1:length(r)) 
+  for (i in 1:length(r))
     mat[i, ] <- bc(r[i], n[i], alpha = alpha, method = method)
   
-  mat <- cbind(mat, mat[ ,3] - mat[ ,2])
-  
-  colnames(mat) <- c('PointEst','Lower','Upper','Width')
+  mat <- `colnames<-`(cbind(mat, mat[, 3] - mat[, 2]),
+                      c('PointEst','Lower','Upper','Width'))
   
   if (!is.null(round))
-    mat[ ,2:4] <- round(mat[ ,2:4], digits = round)
+    mat[, 2:4] <- round(mat[, 2:4], digits = round)
   
-  if (inc.n) 
-    mat <- cbind(Trials = n, mat)
-  if (inc.r) 
-    mat <- cbind(Responses = r, mat)
-  if (df) 
-    mat <- as.data.frame(mat, row.names = NULL)
-  
-  mat
-  }
+  cbind(Responses = r, Trials = n, mat)
+}
 
 #' Single-stage designs
 #' 
+#' @description
 #' Function for sample sizes for single-stage designs in early clinical trial 
 #' phases (generally phases I and II) based on exact binomial method.
 #' 
-#' @param p0low start value of p0
-#' @param p0high highest value of p0
-#' @param p1low start value of p1
-#' @param p1high highest value of p1
+#' Cycles through possible designs constrained by \code{alpha}, \code{beta},
+#' and \code{n.max} arguments for specified ranges of \code{p0} and \code{p1}.
+#' 
+#' @param p0low,p0high low and high values for p0
+#' @param p1low,p1high low and high values for p1
 #' @param n.max maximum sample size allowed (or feasible)
 #' @param r cut-off value for responses expected; usually best to leave 
-#' \code{r = n.max} (default); useful if you know a maximum number of responses
-#' that may occur
-#' @param alpha type-I error rate
-#' @param beta type-II error rate
+#' \code{r = n.max} (default); useful if the maximum number of responses that
+#' may occur is known
+#' @param alpha,beta type-I and type-II errors
 #' 
-#' @details Cycles through possible designs constrained by alpha, beta, and 
-#' n.max arguments for specified ranges of p0 and p1.
+#' @return
+#' Sample size, overall power, and overall type-I error rate
+#' 
 #' @references Khan, Sarker, Hackshaw. Smaller sample sizes for phase II trials
 #' based on exact tests with actual error rates by trading-off their nominal 
 #' levels of significance and power. \emph{British J of Cancer} (2012) 107, 
 #' 1801-9.
-#' @return Sample size, overall power, and overall type-I error rate
-#' @seealso \code{ph2single} (clinfun package); \code{bin1samp} (desmon 
-#' package); bintest.sas (SAS macro)
+#' 
+#' @seealso \code{\link[clinfun]{ph2single}}; \code{desmon::bin1samp}; bintest,
+#' \href{https://github.com/raredd/sascros/blob/master/bintest.sas}{SAS macro}
 #' 
 #' @examples
 #' bintest(p0low = .2, p1low = .5, n.max  = 25)
 #' 
-#' # example in sas macro
+#' ## example in sas macro
 #' bintest(.1, .15, .2, .2, n.max = 80, alpha = .08, beta = .24)
 #' 
 #' @export
@@ -172,53 +162,43 @@ bincon <- function(r, n, alpha = 0.05, round = NULL,
 bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max, 
                      r = n.max, alpha = .1, beta = .1) {
   
-  if (r < 1) stop('ERROR: Number of responders must be >1')
+  stopifnot(alpha %inside% c(0,1) & beta %inside% c(0,1))
+  if (r < 1)
+    stop('Number of responders must be >1')
   
-  # find all combinations of null, alternative, sample size, and responses
-  mat <- expand.grid(seq(p0low, p0high, by = .01), 
-                     seq(p1low, p1high, .01), 
-                     1:n.max, 
-                     1:r)
-  # we require > r responders out of n
-  mat <- as.matrix(within(mat, r2 <- mat[ ,4] + 1))
-  colnames(mat) <- c('p0','p1','n','r','r2')
+  mat <- expand.grid(seq(p0low, p0high, by = .01), seq(p1low, p1high, .01),
+                     1:n.max, 1:r)
   
-  # remove instances where p1 <= p0 or r >= n
-  mat <- mat[!(mat[ ,2] <= mat[ ,1] | mat[ ,4] >= mat[ ,3]), ]
+  ## require > r responders out of n and remove where p1 <= p0 or r >= n
+  mat <- `colnames<-`(as.matrix(within(mat, r2 <- mat[, 4] + 1)),
+                      c('p0','p1','n','r','r2'))
+  mat <- mat[!(mat[, 2] <= mat[, 1] | mat[, 4] >= mat[, 3]), ]
   
-  # Pr(<r2 responders|p0 true): pbinom(r2, n, p0)
-  y <- pbinom(mat[ ,5], mat[ ,3], mat[ ,1])
+  ## Pr(<r2 responders|p0 true): pbinom(r2, n, p0)
+  ## Pr(>r2 responders for p0): type-I error = 1 - y
+  y <- pbinom(mat[, 5], mat[, 3], mat[, 1])
   
-  # Pr(>r2 responders for p0)
-  type1 <- 1 - y
+  ## Pr(<r2 responders | p1 true): pbinom(r2, n, p1): type-II error
+  ## Pr(>r2 responders for p1): 1 - type-II error
+  z <- pbinom(mat[, 5], mat[, 3], mat[, 2])
   
-  # Pr(<r2 responders | p1 true): pbinom(r2, n, p1): type-II error
-  z <- pbinom(mat[ ,5], mat[ ,3], mat[ ,2])
+  ## signal: p1 - p0
+  signal <- mat[, 2] - mat[, 1]
   
-  # Pr(>r2 responders for p1): 1 - type-II error
-  power <- 1 - z
-  
-  # signal: p1 - p0
-  diff <- mat[ ,2] - mat[ ,1]
-  
-  mat <- cbind(mat, y, type1, z, power, diff)
-  
+  mat <- cbind(mat, y, type1 = 1 - y, z, power = 1 - z, signal)
   alpha <- rep(alpha, times = dim(mat)[1])
   beta  <- rep(beta, times = dim(mat)[1])
   
-  # keep occurences that fit type-I/II error constraints
-  mat <- mat[mat[ ,9] > (1 - beta) & mat[ ,7] < alpha, ]
-  
-  # select pertinent variables
-  mat <- unique(as.data.frame(mat[ ,c(1:3, 5, 7, 9:10)]))
+  ## keep ones that fit type-I/II error constraints
+  mat <- mat[mat[, 9] > (1 - beta) & mat[, 7] < alpha, ]
+  mat <- unique(as.data.frame(mat[, c(1:3,5,7,9:10)]))
   mat <- mat[order(mat$n), ]
   
-  list(designs = mat,
-       call = match.call(),
-       description = 
-         c('n = overall sample size',
-           'r2 = minimum number of responders required to reject p0',
-           'diff = signal, difference in null and alternative hypotheses'))
+  list(designs = as.matrix(mat), call = match.call(),
+       description = c(
+         'n = overall sample size',
+         'r2 = minimum number of responders required to reject p0',
+         'signal = difference in null and alternative hypotheses'))
 }
 
 #' DLT table
@@ -226,8 +206,7 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
 #' Creates a standard 3x3 dose-limiting toxicity table with probabilities of
 #' dose-escalation.
 #' 
-#' @param low lowest true DLT rate, percent
-#' @param high highest true DLT rate, percent
+#' @param low,high lowest and highest true DLT rate, percent
 #' @param delta interval of DLT rate sequence; default is 10
 #' 
 #' @examples
@@ -255,6 +234,9 @@ dlt_table <- function(low, high, delta = 10) {
 #' Compute power of test using mean ratios and coefficients of variation or 
 #' determine other parameters to obtain target power.
 #' 
+#' Exactly one of \code{n}, \code{f}, \code{cv}, \code{sig.level}, and
+#' \code{power} must be \code{NULL}.
+#' 
 #' @param n number of observations (per group)
 #' @param f ratio of means (>1)
 #' @param cv coefficient of variation
@@ -264,12 +246,15 @@ dlt_table <- function(low, high, delta = 10) {
 #' @param alternative one- or two-sided test
 #' @param distribution underlying distribution assumption
 #' 
-#' @details Exactly one of n, f, cv, sig.level, and power must be NULL
-#' @return Object of class "\code{power.htest}," a list of the arguments
-#' (including the computed one) augmented with method and note elements
-#' @note \code{\link{uniroot}} is used to solve power equation for unknowns, 
-#' so you may see errors from it, notably about inability to bracket the root 
-#' when invalid arguments are given.
+#' @return
+#' Object of class \code{power.htest}, a list of the arguments (including
+#' the computed) augmented with method and note elements.
+#' 
+#' @note
+#' \code{\link{uniroot}} is used to solve power equation for unknowns, so one
+#' may see errors from it, notably about inability to bracket the root when
+#' invalid arguments are given.
+#' 
 #' @references Van Belle, G., Martin, D. Sample size as a function of 
 #' coefficient of variation and ratio of means. Am Statistician, Vol. 47, No. 3
 #' (Aug., 1993), pp. 165-7.
@@ -297,9 +282,9 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
     stop("'sig.level' must be numeric in [0, 1]")
   if (!is.null(power) && !is.numeric(power) || any(0 > power | power > 1)) 
     stop("'power' must be numeric in [0, 1]")
-  if (f < 1 ) {
-    f <- 1 / f
+  if (f < 1) {
     warning('ratio of means must be such that mu1/mu0 > 1: 1/f used')
+    f <- 1 / f
   }
   
   type <- match.arg(type)
@@ -315,7 +300,7 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
   tside <- switch(alternative, 
                   less = 1, two.sided = 2, greater = 1)
   
-  # assuming underlying t distribution
+  ## assuming underlying t distribution
   if (ttside == 1) { # one-sided, less
     p.body <- quote({
       df <- (n - 1) * tsample
@@ -343,7 +328,7 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
     })
   }
   
-  # assuming underlying normal distribution
+  ## assuming underlying normal distribution
   if (dist == 'normal') {
     p.body <- quote({
       qt <- qnorm(p = sig.level/tside, lower.tail = FALSE)
@@ -351,7 +336,7 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
     })
   }
   
-  # assuming underlying lognormal distribution with unknown variance
+  ## assuming underlying lognormal distribution with unknown variance
   if (dist == 'log.normal') {
     mat <- matrix(c(.005, -2.57583, -2.203837, .6699734, -.0524065, -.0059258,
                     .010, -2.32635, -1.821394, .5380802, .0181774, -.0584748,
@@ -371,72 +356,64 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
     })
   }
   
-  # calculate missing parameter
+  ## calculate missing parameter
   if (is.null(power)) power <- eval(p.body)
   else if (is.null(n)) 
     n <- ifelse(dist=='log.normal',ceiling(uniroot(function(n) 
       eval(p.body) - power, c(2, 1e+07))$root),uniroot(function(n) 
         eval(p.body) - power, c(2, 1e+07))$root)
-  else if (is.null(cv)) 
-  {
-    if (ttside == 2)
-      cv <- uniroot(function(cv) eval(p.body) - power, f * c(1e-07, 10))$root
-    if (ttside == 1)
-      cv <- uniroot(function(cv) eval(p.body) - power, f * c(-10, 5))$root
-    if (ttside == 3)
-      cv <- uniroot(function(cv) eval(p.body) - power, f * c(-5, 10))$root
-  }
-  else if (is.null(f)) 
-  {
-    if (ttside == 2)
-      f <- uniroot(function(f) eval(p.body) - power, cv * c(1e-07, 10))$root
-    if (ttside == 1)
-      f <- uniroot(function(f) eval(p.body) - power, cv * c(-10, 5))$root
-    if (ttside == 3)
-      f <- uniroot(function(f) eval(p.body) - power, cv * c(-5, 10))$root 
-  }
-  else if (is.null(sig.level)) 
-    sig.level <- uniroot(function(sig.level) eval(p.body) - power, 
+  else if (is.null(cv)) {
+    cv <- if (ttside == 2)
+      uniroot(function(cv) eval(p.body) - power, f * c(1e-07, 10))$root else
+        if (ttside == 1)
+          uniroot(function(cv) eval(p.body) - power, f * c(-10, 5))$root else
+            if (ttside == 3)
+              uniroot(function(cv) eval(p.body) - power, f * c(-5, 10))$root
+  } else if (is.null(f)) {
+    f <- if (ttside == 2)
+      uniroot(function(f) eval(p.body) - power, cv * c(1e-07, 10))$root else
+        if (ttside == 1)
+          uniroot(function(f) eval(p.body) - power, cv * c(-10, 5))$root else
+            if (ttside == 3)
+              uniroot(function(f) eval(p.body) - power, cv * c(-5, 10))$root
+  } else if (is.null(sig.level)) {
+    sig.level <- uniroot(function(sig.level) eval(p.body) - power,
                          c(1e-10, 1 - 1e-10))$root
-  else stop("internal error")
+  }  else stop("internal error")
   
-  # return
   NOTE <- switch(type, 
-                 paired = "n is number of *pairs*, cv is coefficient of variation of *differences* within pairs", 
-                 two.sample = "n is number in *each* group", 
+                 paired = paste('n is number of *pairs*, cv is coefficient of',
+                                'variation of *differences* within pairs'),
+                 two.sample = 'n is number in *each* group',
                  one.sample = NULL)
-  METHOD <- paste(switch(type, 
-                         one.sample = "One-sample", 
-                         two.sample = "Two-sample", 
-                         paired = "Paired"), 
-                  "t test power calculation")
-  structure(list(n = n, f = f, cv = cv, sig.level = sig.level, power = power, 
-                 alternative = alternative, 
-                 distributon = dist, 
-                 note = NOTE, 
+  METHOD <- paste(switch(type,
+                         one.sample = "One-sample",
+                         two.sample = "Two-sample",
+                         paired = "Paired"),
+                  't test power calculation')
+  structure(list(n = n, f = f, cv = cv, sig.level = sig.level, power = power,
+                 alternative = alternative, distributon = dist, note = NOTE,
                  method = METHOD),
-            class = "power.htest")
+            class = 'power.htest')
 }
 
 #' Simon two-stage designs
 #' 
 #' Function for sample sizes for Simon optimal two-stage, single-arm designs.
+#' 
+#' For two-stage designs for studies with binary endpoints, searches over
+#' possible two-stage sampling designs to find those that minimize the
+#' expected number of subjects, subject to specified constraints.
 #'    
-#' @param p0 null hypothesis response probability
-#' @param pa alternative hypothesis response probability
+#' @param p0,pa null and alternative hypothesis response probability
 #' @param n1max maximum number of subjects entered during the first stage; 
 #' ignored if <= 0
 #' @param ntmax maximum total number of total subjects
-#' @param alpha type-I error rate
-#' @param beta type-II error rate
+#' @param alpha,beta type-I and type-II errors
 #' @param del searches for designs where the expected number of subjects under 
 #' the null with within \code{del} of the minimum possible value
 #' @param minimax logical; if \code{TRUE}, only searches for designs which will
 #' minimize the maximum sample size
-#' 
-#' @details  For two-stage designs for studies with binary endpoints, searches 
-#' over possible two-stage sampling designs to find those that minimize the 
-#' expected number of subjects, subject to specified constraints.
 #' 
 #' @return
 #' Returns a list with components:
@@ -454,22 +431,23 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
 #' \item{\code{$description}}{a text string giving a brief description of 
 #' the columns in \code{$designs}.}
 #' 
-#' @author Robert Gray (\code{simon}); Robert Redd (\code{simon2})
-#' @references Simon R (1989). Optimal two-stage designs for phase II clinical 
-#' trials. \emph{Controlled Clinical Trials}, 10:1-10.
-#' 
 #' @seealso desmon package: \code{simon}, \code{twostg}, \code{bin1samp},
 #' \code{pickwin}, \code{rp21}
 #' 
+#' @author Robert Gray (\code{desmon::simon}); Robert Redd (\code{simon2})
+#' 
+#' @references Simon R (1989). Optimal two-stage designs for phase II clinical 
+#' trials. \emph{Controlled Clinical Trials}, 10:1-10.
+#' 
 #' @examples
-#' \donttest{
 #' simon2(.2, c(.4, .5))
 #' simon2(p0 = seq(.55, .6, by = .01), pa = .75, ntmax = 60)
 #' 
+#' \donttest{
 #' ## compare this function to results from desmon::simon
 #' simon2(.4, .6)
-#' ## requires desmon package
-#' simon(.4, .6)
+#' ## from desmon package
+#' rawr:::simon(.4, .6)
 #' }
 #' 
 #' @export
@@ -484,10 +462,10 @@ simon2 <- function(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,
                          '[[', 1),
                   sapply(seq_len(nrow(args)), function(x) catlist(args[x, ])))
   
-  list(designs = tmp,
-       call = match.call(),
+  list(designs = tmp, call = match.call(),
        description = c('n1, n2 = cases 1st stage and additional # in 2nd',
-                       'r1, r2 = max # responses 1st stage and total to declare trt inactive'))
+                       paste('r1, r2 = max # responses 1st stage and total to',
+                             'declare trt inactive')))
 }
 
 simon <- function(p0, pa, n1max = 0, ntmax = 1e5, alpha = 0.1, beta = 0.1,
@@ -666,16 +644,18 @@ bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20) {
 #' @param X a list of two or more numeric vectors
 #' @param ... additional parameters passed to \code{\link{fisher.test}}
 #' 
-#' @seealso \code{\link{mood.test}}, \code{\link{kruskal.test}}, 
+#' @seealso
+#' \code{\link{mood.test}}; \code{\link{kruskal.test}};
 #' \code{\link{wilcox.test}}
 #' 
 #' @examples
-#' set.seed(1618)
+#' set.seed(1)
 #' X <- list(rnorm(10), rnorm(10, 1), rnorm(20, 2))
 #' moods_test(X)
 #' 
 #' plot(density(X[[1]]), xlim = range(unlist(X)), ylim = c(0, .5))
-#' for (x in 2:3) lines(density(X[[x]]), col = x)
+#' for (x in 2:3)
+#'   lines(density(X[[x]]), col = x)
 #' 
 #' @export
 
@@ -686,7 +666,7 @@ moods_test <- function(X, ...) {
   zzz <- fisher.test(x < m, g, ...)
   zzz$method <- sprintf('Mood\'s median test of %s groups', length(ng))
   zzz$data <- table(x < m, g, dnn = c('< median', 'group'))
-  return(zzz)
+  zzz
 }
 
 #' Fake GLM
@@ -711,7 +691,8 @@ moods_test <- function(X, ...) {
 #' the result of a clall to a family function; see \code{\link{family}}
 #' @param data a data frame
 #' 
-#' @references \url{https://gist.github.com/MrFlick/ae299d8f3760f02de6bf}
+#' @references
+#' \url{https://gist.github.com/MrFlick/ae299d8f3760f02de6bf}
 #' 
 #' @examples
 #' f1 <- glm(vs ~ mpg + wt + disp, data = mtcars, family = 'binomial')
@@ -807,12 +788,14 @@ fakeglm <- function(formula, ..., family, data = NULL) {
 #' Find greatest common divisor of two integers.
 #' 
 #' @param x,y integers
+#' 
 #' @examples
 #' gcd(99, 2048)
 #' gcd(2 ** (1:12), 2048)
+#' 
 #' @export
 
-gcd <- function(x, y) ifelse(r <- x%%y, Recall(y, r), y)
+gcd <- function(x, y) ifelse(r <- x %% y, Recall(y, r), y)
 
 #' Install bioconductor
 #' 
@@ -826,6 +809,7 @@ gcd <- function(x, y) ifelse(r <- x%%y, Recall(y, r), y)
 #' install.bioc()
 #' install.bioc('Biostrings')
 #' }
+#' 
 #' @export
 
 install.bioc <- function(pkgs, upgrade = FALSE) {
