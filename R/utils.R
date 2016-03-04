@@ -5,7 +5,7 @@
 #
 # psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill, interleave,
 # outer2, merge2, locf, roll_fun, classMethods, regcaptures, cast, melt, view,
-# view2, clist, rapply2, sort_matrix, insert_matrix
+# view2, clist, rapply2, sort_matrix, insert_matrix, tryCatch2
 ###
 
 
@@ -1446,4 +1446,63 @@ insert_matrix <- function(m, rowsep, colsep, rowrep = NA, colrep = rowrep) {
   if (!missing(colsep))
     m <- im_(m, colsep, colrep)
   m
+}
+
+#' tryCatch2
+#' 
+#' Modification of \code{\link{tryCatch}} which allows recovery from errors,
+#' warnings, messages, and interrupts while returning the value from
+#' \code{expr}.
+#' 
+#' @param expr an expression
+#' 
+#' @return
+#' A list of at least \code{$value}. If \code{expr} is evaluated with no error,
+#' warning, messages, or interrupts, then a list with a single element,
+#' \code{$value}, is returned with the value of \code{expr}. If any other
+#' condition is triggered, a corresponding element will be appended to the
+#' list with \code{$value}. For errors, \code{$value} will be \code{NULL}.
+#' 
+#' @author
+#' Martin Morgan, Jan Gorecki, Robert Redd (modifications)
+#' 
+#' @seealso
+#' \href{http://stackoverflow.com/questions/4948361/how-do-i-save-warnings-and-errors-as-output-from-a-function}{SO question};
+#' \code{\link[logR]{tryCatch2}}
+#' 
+#' @examples
+#' tryCatch2(1)
+#' tryCatch2(stop('halt at once!'))
+#' 
+#' l <- alist(1, simpleError('oops'), stop('halt!'), warning('hmm'), message('hey'))
+#' lapply(l, function(x) tryCatch2(eval(x)))
+#' 
+#' l <- lapply(list(1,-1,'a'), function(x) tryCatch2(log(x)))
+#' rm_null(l)
+#' 
+#' @export
+
+tryCatch2 <- function(expr) {
+  E <- W <- M <- I <- V <- NULL
+  e.handler <- function(e){
+    E <<- e
+    NULL
+  }
+  w.handler <- function(w) {
+    W <<- c(W, list(w))
+    invokeRestart('muffleWarning')
+  }
+  m.handler <- function(m) {
+    attributes(m$call) <- NULL
+    M <<- c(M, list(m))
+  }
+  i.handler <- function(i) {
+    I <<- i
+    NULL
+  }
+  V <- suppressMessages(withCallingHandlers(
+    tryCatch(expr, error = e.handler, interrupt = i.handler),
+    warning = w.handler, message = m.handler))
+  l <- list(error = E, warning = W, message = M, interrupt = I)
+  c(list(value = V), Filter(Negate(is.null), l))
 }

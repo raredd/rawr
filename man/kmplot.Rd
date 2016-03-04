@@ -4,48 +4,37 @@
 \alias{kmplot}
 \title{Survival curves}
 \usage{
-kmplot(s, lty.surv = 1, lwd.surv = 1, col.surv = seq_along(s$strata)
-  \%||\% 1, mark = 3, mar = NULL, lty.ci = 0, lwd.ci = 1,
-  col.ci = col.surv, col.band = col.surv, atrisk = TRUE,
-  atrisk.lab = "Number at risk", atrisk.lines = TRUE, strata.lab = NULL,
-  strata.expr = NULL, strata.order = seq(length(s$n)), extra.margin = 5,
-  xaxs = "S", xlim = c(0, max(s$time)), ylim = c(0, 1),
-  xaxis.at = pretty(s$time), xaxis.lab = xaxis.at,
+kmplot(s, lty.surv = 1, lwd.surv = 1, col.surv = col.surv, mark = 3,
+  lty.ci = 0, lwd.ci = 1, col.ci = col.surv, col.band = FALSE,
+  atrisk = TRUE, atrisk.lab = "Number at risk", atrisk.lines = TRUE,
+  strata.lab = NULL, strata.expr = NULL, strata.order = seq(length(s$n)),
+  extra.margin = 5, xaxs = "S", xlim = c(0, max(s$time)), ylim = c(0,
+  1), xaxis.at = pretty(s$time), xaxis.lab = xaxis.at,
   yaxis.at = pretty(ylim), yaxis.lab = yaxis.at, xlab = "Time",
-  ylab = "Survival probability", main = "", cex.axis = 1,
-  legend = !is.null(s$strata), legend.pos = "bottomleft", grid = FALSE,
-  lty.grid = 1, lwd.grid = 1, col.grid = grey(0.9), add = FALSE,
+  ylab = "Survival probability", main = "", cex.axis = par("cex.axis"),
+  legend = !is.null(s$strata), mar = NULL, add = FALSE,
   panel.first = NULL, panel.last = NULL, ...)
 }
 \arguments{
-\item{s}{object of class \code{\link[survival]{survfit}} or 
-\code{survfit.cox}}
+\item{s}{an object of class \code{\link{survfit}} or \code{survfit.cox}}
 
-\item{lty.surv}{line type for survival curve(s); see \code{\link{par}}}
-
-\item{lwd.surv}{line width for survival curve(s)}
-
-\item{col.surv}{line color for survival curve(s); either numeric or 
-character string(s); hexadecimal format also works}
+\item{lty.surv, lwd.surv, col.surv}{line type, width, and color for survival
+curve(s); colors may be either numeric, color names as character string(s),
+or hexadecimal string(s)}
 
 \item{mark}{numeric plotting character (\code{\link{pch}}) or character 
-string, i.e., \code{''}, \code{'|'}, etc}
+string, e.g., \code{''}, \code{'|'}}
 
-\item{mar}{margins; see \code{mar} section in \code{\link{par}}}
+\item{lty.ci, lwd.ci, col.ci}{line type, width, and color for confidence
+interval(s); not plotted (i.e., \code{= 0}) by default}
 
-\item{lty.ci}{line type for confidence interval(s); not plotted (\code{= 0})
-by default}
+\item{col.band}{color for confidence band(s); either as numeric, color
+string(s), or hexadecimal string(s); if \code{TRUE}, \code{col.surv}
+values will be used; if \code{FALSE}, \code{NA}, or \code{NULL}, no
+bands will be plotted; also note that this is not a true confidence band;
+see details}
 
-\item{lwd.ci}{line width for confidence interval(s)}
-
-\item{col.ci}{line color for confidence interval(s); either numeric or 
-character string(s); hexadecimal format also works}
-
-\item{col.band}{line color for confidence band(s); either \code{NULL}, 
-numeric, or character string(s); hexadecimal format also works; note that 
-this is not a true confidence band; see details}
-
-\item{atrisk}{logical; if \code{TRUE}, draws at risk table}
+\item{atrisk}{logical; if \code{TRUE} (default), draws at risk table}
 
 \item{atrisk.lab}{heading for at risk table}
 
@@ -73,23 +62,16 @@ are long}
 
 \item{xaxis.lab, yaxis.lab}{x- and y-axis tick labels}
 
-\item{xlab, ylab}{x-axis label}
+\item{xlab, ylab}{x- and y-axis labels}
 
 \item{main}{title of plot}
 
 \item{cex.axis}{text size for axes labels, legend, at risk table}
 
-\item{legend}{logical; draw legend}
+\item{legend}{logical or a keyword (see \code{\link{legend}}); if
+\code{TRUE}, the default position is \code{"bottomleft"}}
 
-\item{legend.pos}{legend position}
-
-\item{grid}{logical; draw grid in background}
-
-\item{lty.grid}{line type for grid}
-
-\item{lwd.grid}{line width for grid}
-
-\item{col.grid}{line color for grid}
+\item{mar}{margins; see \code{mar} section in \code{\link{par}}}
 
 \item{add}{logical; if \code{TRUE}, \code{par} is not refreshed; allows for
 multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}}
@@ -104,11 +86,12 @@ returning from the function}
 \code{tcl}, \code{cex.lab}, \code{xaxs}, etc) passed to \code{par}}
 }
 \description{
-Plot Kaplan-Meier or Cox proportional hazards models with at-risk table.
+Plot Kaplan-Meier or Cox proportional hazards model with optional at-risk
+table.
 }
 \details{
-Line specifications (\code{lty.surv}, \code{lwd.surv}, etc) will be
-recycled if needed.
+Line specifications (e.g., \code{lty.surv}, \code{lwd.surv}, etc) will be
+recycled as needed.
 
 \code{xaxs} is the style of the x-axis; see \code{\link{par}}. The default
 for \code{kmplot} is \code{"S"} which is equivalent to \code{xaxs = "i"}
@@ -117,18 +100,17 @@ but with the maximum \code{xlim} value increased by 4\%. Other styles for
 plotting and the previous value for \code{kmplot}) and \code{"i"} which
 will \emph{not} add padding to the ends of the axes.
 
-If \code{col.band != NULL}, a confidence band is plotted; however, this is
-not a confidence band in the statistical sense, i.e., a xx-percent chance 
-of containing the entire population of the survival curve which are wider 
-than the point-wise confidence limits.
-
-Rather, it refers to a band of color plotted between the confidence 
-limits calculated in the survfit object. That is, the xx-percent 
+If \code{col.band} is not \code{NULL}, \code{NA}, or \code{FALSE}, a
+confidence band is plotted; however, this is not a confidence band in the
+statistical sense, i.e., a xx-percent chance of containing the entire
+population of the survival curve which are wider than the point-wise
+confidence limits. Rather, it refers to a band of color plotted between
+the confidence limits calculated in the survfit object. That is, the xx-\% 
 confidence interval (plotted when \code{lty.ci != 0}) and the confidence
-bands are identical, just two ways of plotting the same invervals.
+bands are identical--just two ways of plotting the same invervals.
 
 When saving plots, it is highly recommended to use \code{\link{png}}, 
-\code{\link{svg}}, \code{\link{pdf}}, etc instead of exporting directly
+\code{\link{svg}}, \code{\link{pdf}}, etc. instead of exporting directly
 from the \code{R} graphics device. Doing so may cause the at risk table or
 legend to be mis-aligned.
 }
@@ -138,7 +120,7 @@ library('survival')
 kmfit1 <- survfit(Surv(time, status) ~ sex, data = colon)
 kmfit2 <- survfit(Surv(time, status) ~ rx + adhere, data = colon)
 
-## simple example, draw in r window
+## basic usage
 kmplot(kmfit1)
 
 ## expressions in at risk table
@@ -146,31 +128,31 @@ kmplot(kmfit1, strata.lab = c('Female','Male'),
        strata.expr = expression(widetilde(ring(Female)), 
                                 phantom() >= Male))
 
-## using mfrow options, use ADD = TRUE
-png('kmplot2.png', width = 750, height = 1200, pointsize = 14)
+## when using mfrow options, use ADD = TRUE
+png('./kmplot1.png', width = 750, height = 1200, pointsize = 14)
 par(mfrow = c(2, 1))
 kmplot(kmfit1, add = TRUE)
 kmplot(kmfit2, add = TRUE, extra.margin = 8)
 dev.off()
 
 ## more complex example
-pdf('tmp.pdf', height = 8, width = 11, pointsize = 12)
-kmplot(kmfit2, 
+pdf('./kmplot2.pdf', height = 8, width = 11, pointsize = 12, family = 'serif')
+kmplot(kmfit2,
        mark = '',                         # no censor mark
        lty.ci = 2,                        # dashed line for CIs
        xaxis.at = c(0, .5, 1:9) * 365,    # change days to years
+       panel.first = abline(v = c(0, .5, 1:9) * 365, lty = 3),
        xaxis.lab = c(0, .5, 1:9),         # label years
-       yaxis.lab = pretty(c(0, 1)) * 100, # change to percent
+       yaxis.lab = pretty(0:1) * 100,     # change to percent
        xlab = 'Time (years)', ylab = 'Percent survival', 
-       col.surv = c('blue', 'red', 'green', 'black','purple','orange'), 
-       strata.lab = c('Obs ','Obs+ ','Lev ','Lev+ ','Lev5fu','Lev5fu+'),
+       col.surv = c('blue','red','green','black','purple','orange'), 
        extra.margin = 6,        # increase margin for long strata labels
-       strata.order = c(5, 6, 3, 1, 4, 2), 
-       # col.band = NULL,       # remove confidence bands
+       strata.lab = c('Obs','Obs+','Lev','Lev+','Lev5fu','Lev5fu+'),
+       strata.order = c(5,6,3,1,4,2),      # order by survival estimates
        font = 2,                # bold table text
        bty = 'l',               # L box type around plot
        tcl = .5)                # change length/direction of ticks
-title(main='Chemotherapy for stage B/C colon cancer', 
+title(main = 'Chemotherapy for stage B/C colon cancer', 
       adj = .5, font.main = 1, line = 0.5, cex.main = 1)
 dev.off()
 }
@@ -179,7 +161,7 @@ dev.off()
 \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
 }
 \seealso{
-\code{\link[plotr]{ggsurv}}; \code{survival:::plot.survfit};
-\code{\link{kmplot_by}}
+\code{\link{kmplot_by}}; \code{survival:::plot.survfit};
+\code{\link[plotr]{ggsurv}}
 }
 

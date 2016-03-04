@@ -6,10 +6,11 @@
 
 #' Survival curves
 #' 
-#' Plot Kaplan-Meier or Cox proportional hazards models with at-risk table.
+#' Plot Kaplan-Meier or Cox proportional hazards model with optional at-risk
+#' table.
 #' 
-#' Line specifications (\code{lty.surv}, \code{lwd.surv}, etc) will be
-#' recycled if needed.
+#' Line specifications (e.g., \code{lty.surv}, \code{lwd.surv}, etc) will be
+#' recycled as needed.
 #' 
 #' \code{xaxs} is the style of the x-axis; see \code{\link{par}}. The default
 #' for \code{kmplot} is \code{"S"} which is equivalent to \code{xaxs = "i"}
@@ -18,39 +19,34 @@
 #' plotting and the previous value for \code{kmplot}) and \code{"i"} which
 #' will \emph{not} add padding to the ends of the axes.
 #' 
-#' If \code{col.band != NULL}, a confidence band is plotted; however, this is
-#' not a confidence band in the statistical sense, i.e., a xx-percent chance 
-#' of containing the entire population of the survival curve which are wider 
-#' than the point-wise confidence limits.
-#' 
-#' Rather, it refers to a band of color plotted between the confidence 
-#' limits calculated in the survfit object. That is, the xx-percent 
+#' If \code{col.band} is not \code{NULL}, \code{NA}, or \code{FALSE}, a
+#' confidence band is plotted; however, this is not a confidence band in the
+#' statistical sense, i.e., a xx-percent chance of containing the entire
+#' population of the survival curve which are wider than the point-wise
+#' confidence limits. Rather, it refers to a band of color plotted between
+#' the confidence limits calculated in the survfit object. That is, the xx-\% 
 #' confidence interval (plotted when \code{lty.ci != 0}) and the confidence
-#' bands are identical, just two ways of plotting the same invervals.
+#' bands are identical--just two ways of plotting the same invervals.
 #' 
 #' When saving plots, it is highly recommended to use \code{\link{png}}, 
-#' \code{\link{svg}}, \code{\link{pdf}}, etc instead of exporting directly
+#' \code{\link{svg}}, \code{\link{pdf}}, etc. instead of exporting directly
 #' from the \code{R} graphics device. Doing so may cause the at risk table or
 #' legend to be mis-aligned.
 #' 
-#' @param s object of class \code{\link[survival]{survfit}} or 
-#' \code{survfit.cox}
-#' @param lty.surv line type for survival curve(s); see \code{\link{par}}
-#' @param lwd.surv line width for survival curve(s)
-#' @param col.surv line color for survival curve(s); either numeric or 
-#' character string(s); hexadecimal format also works
+#' @param s an object of class \code{\link{survfit}} or \code{survfit.cox}
+#' @param lty.surv,lwd.surv,col.surv line type, width, and color for survival
+#' curve(s); colors may be either numeric, color names as character string(s),
+#' or hexadecimal string(s)
 #' @param mark numeric plotting character (\code{\link{pch}}) or character 
-#' string, i.e., \code{''}, \code{'|'}, etc
-#' @param mar margins; see \code{mar} section in \code{\link{par}}
-#' @param lty.ci line type for confidence interval(s); not plotted (\code{= 0})
-#' by default
-#' @param lwd.ci line width for confidence interval(s)
-#' @param col.ci line color for confidence interval(s); either numeric or 
-#' character string(s); hexadecimal format also works
-#' @param col.band line color for confidence band(s); either \code{NULL}, 
-#' numeric, or character string(s); hexadecimal format also works; note that 
-#' this is not a true confidence band; see details
-#' @param atrisk logical; if \code{TRUE}, draws at risk table
+#' string, e.g., \code{''}, \code{'|'}
+#' @param lty.ci,lwd.ci,col.ci line type, width, and color for confidence
+#' interval(s); not plotted (i.e., \code{= 0}) by default
+#' @param col.band color for confidence band(s); either as numeric, color
+#' string(s), or hexadecimal string(s); if \code{TRUE}, \code{col.surv}
+#' values will be used; if \code{FALSE}, \code{NA}, or \code{NULL}, no
+#' bands will be plotted; also note that this is not a true confidence band;
+#' see details
+#' @param atrisk logical; if \code{TRUE} (default), draws at risk table
 #' @param atrisk.lab heading for at risk table
 #' @param atrisk.lines logical; draw lines next to strata in at risk table
 #' @param strata.lab labels used in legend and at risk table for strata; if 
@@ -67,15 +63,12 @@
 #' @param xlim,ylim x- and y-axis limits
 #' @param xaxis.at,yaxis.at positions for x- and y-axis labels and ticks
 #' @param xaxis.lab,yaxis.lab x- and y-axis tick labels
-#' @param xlab,ylab x-axis label
+#' @param xlab,ylab x- and y-axis labels
 #' @param main title of plot
 #' @param cex.axis text size for axes labels, legend, at risk table
-#' @param legend logical; draw legend
-#' @param legend.pos legend position
-#' @param grid logical; draw grid in background
-#' @param lty.grid line type for grid
-#' @param lwd.grid line width for grid
-#' @param col.grid line color for grid
+#' @param legend logical or a keyword (see \code{\link{legend}}); if
+#' \code{TRUE}, the default position is \code{"bottomleft"}
+#' @param mar margins; see \code{mar} section in \code{\link{par}}
 #' @param add logical; if \code{TRUE}, \code{par} is not refreshed; allows for
 #' multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}
 #' @param panel.first an expression to be evaluated after the plot axes are
@@ -89,8 +82,8 @@
 #' \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
 #' 
 #' @seealso
-#' \code{\link[plotr]{ggsurv}}; \code{survival:::plot.survfit};
-#' \code{\link{kmplot_by}}
+#' \code{\link{kmplot_by}}; \code{survival:::plot.survfit};
+#' \code{\link[plotr]{ggsurv}}
 #' 
 #' @examples
 #' \dontrun{
@@ -98,7 +91,7 @@
 #' kmfit1 <- survfit(Surv(time, status) ~ sex, data = colon)
 #' kmfit2 <- survfit(Surv(time, status) ~ rx + adhere, data = colon)
 #' 
-#' ## simple example, draw in r window
+#' ## basic usage
 #' kmplot(kmfit1)
 #' 
 #' ## expressions in at risk table
@@ -106,31 +99,31 @@
 #'        strata.expr = expression(widetilde(ring(Female)), 
 #'                                 phantom() >= Male))
 #' 
-#' ## using mfrow options, use ADD = TRUE
-#' png('kmplot2.png', width = 750, height = 1200, pointsize = 14)
+#' ## when using mfrow options, use ADD = TRUE
+#' png('./kmplot1.png', width = 750, height = 1200, pointsize = 14)
 #' par(mfrow = c(2, 1))
 #' kmplot(kmfit1, add = TRUE)
 #' kmplot(kmfit2, add = TRUE, extra.margin = 8)
 #' dev.off()
 #' 
 #' ## more complex example
-#' pdf('tmp.pdf', height = 8, width = 11, pointsize = 12)
-#' kmplot(kmfit2, 
+#' pdf('./kmplot2.pdf', height = 8, width = 11, pointsize = 12, family = 'serif')
+#' kmplot(kmfit2,
 #'        mark = '',                         # no censor mark
 #'        lty.ci = 2,                        # dashed line for CIs
 #'        xaxis.at = c(0, .5, 1:9) * 365,    # change days to years
+#'        panel.first = abline(v = c(0, .5, 1:9) * 365, lty = 3),
 #'        xaxis.lab = c(0, .5, 1:9),         # label years
-#'        yaxis.lab = pretty(c(0, 1)) * 100, # change to percent
+#'        yaxis.lab = pretty(0:1) * 100,     # change to percent
 #'        xlab = 'Time (years)', ylab = 'Percent survival', 
-#'        col.surv = c('blue', 'red', 'green', 'black','purple','orange'), 
-#'        strata.lab = c('Obs ','Obs+ ','Lev ','Lev+ ','Lev5fu','Lev5fu+'),
+#'        col.surv = c('blue','red','green','black','purple','orange'), 
 #'        extra.margin = 6,        # increase margin for long strata labels
-#'        strata.order = c(5, 6, 3, 1, 4, 2), 
-#'        # col.band = NULL,       # remove confidence bands
+#'        strata.lab = c('Obs','Obs+','Lev','Lev+','Lev5fu','Lev5fu+'),
+#'        strata.order = c(5,6,3,1,4,2),      # order by survival estimates
 #'        font = 2,                # bold table text
 #'        bty = 'l',               # L box type around plot
 #'        tcl = .5)                # change length/direction of ticks
-#' title(main='Chemotherapy for stage B/C colon cancer', 
+#' title(main = 'Chemotherapy for stage B/C colon cancer', 
 #'       adj = .5, font.main = 1, line = 0.5, cex.main = 1)
 #' dev.off()
 #' }
@@ -138,76 +131,58 @@
 
 kmplot <- function(s,
                    ## basic plot options
-                   lty.surv = 1, lwd.surv = 1,
-                   col.surv = seq_along(s$strata) %||% 1,
-                   mark = 3, mar = NULL,
+                   lty.surv = 1, lwd.surv = 1, col.surv = col.surv, mark = 3,
                    
                    ## confidence options
-                   lty.ci = 0, lwd.ci = 1, col.ci = col.surv,
-                   col.band = col.surv,
+                   lty.ci = 0, lwd.ci = 1, col.ci = col.surv, col.band = FALSE,
                    
                    ## at risk table options
                    atrisk = TRUE, atrisk.lab = 'Number at risk',
                    atrisk.lines = TRUE, strata.lab = NULL,
-                   strata.expr = NULL,
-                   strata.order = seq(length(s$n)),
+                   strata.expr = NULL, strata.order = seq(length(s$n)),
                    extra.margin = 5,
                    
                    ## aesthetics
-                   xaxs = 'S',
-                   xlim = c(0, max(s$time)), ylim = c(0, 1),
+                   xaxs = 'S', xlim = c(0, max(s$time)), ylim = c(0, 1),
                    xaxis.at = pretty(s$time), xaxis.lab = xaxis.at,
                    yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
                    xlab = 'Time', ylab = 'Survival probability',
-                   main = '', cex.axis = 1,
-                   legend = !is.null(s$strata), legend.pos = 'bottomleft',
+                   main = '', cex.axis = par('cex.axis'),
+                   legend = !is.null(s$strata),
                    
                    ## other options
-                   grid = FALSE, lty.grid = 1, lwd.grid = 1,
-                   col.grid = grey(.9),
-                   add = FALSE, panel.first = NULL, panel.last = NULL, ...) {
-  
-  ## error checks
+                   mar = NULL, add = FALSE,
+                   panel.first = NULL, panel.last = NULL, ...) {
   if (!inherits(s, 'survfit')) 
-    stop('s must be a \'survfit\' object')
-  
-  ## save current par settings
-  op <- par(no.readonly = TRUE)
-  
-  ng0 <- length(s$strata)
-  ng <- max(ng0, 1) 
+    stop('\'s\' must be a \'survfit\' object')
   
   ## single strata
-  if (ng0 == 0) {
+  if (!(ng <- length(s$strata))) {
     s$strata <- length(s$time)
     names(s$strata) <- 'All'
     legend <- atrisk.lines <- FALSE
-  } 
+  }
   
-  lty.surv <- rep(lty.surv, ng)
-  lwd.surv <- rep(lwd.surv, ng)
-  col.surv <- rep(col.surv, ng)
+  ng <- max(ng, 1)
+  lty.surv <- rep_len(lty.surv, ng)
+  lwd.surv <- rep_len(lwd.surv, ng)
+  if (length(col.band) == 1L)
+    if (is.null(col.band) || is.na(col.band))
+      col.band <- FALSE
+  col.surv <- if (missing(col.surv)) {
+    if (all(!col.band))
+      seq_along(s$strata) %||% 1 else rep_len(col.band, ng)
+  } else rep_len(col.surv, ng)
   
-  lty.ci <- rep(lty.ci, ng)
-  lwd.ci <- rep(lwd.ci, ng)
-  col.ci <- rep(col.ci, ng)
+  lty.ci <- rep_len(lty.ci, ng)
+  lwd.ci <- rep_len(lwd.ci, ng)
+  col.ci <- rep_len(col.ci, ng)
   
-  col.band <- rep(col.band, ng)
-  
-  ## color lines in table/legend if col.surv is undifferentiable 
-  ## between strata by using band color
-  if (is.null(col.band))
-    col.band <- NA
-  col.lines <- if (all(sapply(1:(length(col.surv) - 1), function(x)
-    identical(col.surv[x], col.surv[x + 1]))) && !(is.na(col.band)))
-    col.band else col.surv
-  # if (any(is.na(col.band)))
-  #   col.lines <- ifelse(is.na(col.band), col.surv, col.band)
-  
-  ## test:
-  ## atrisk lines inherit from col.surv if is.na(col.band)
-  ## but inherits col.band if given and not NA
-  ## kmplot(kmfit1, dev = FALSE, col.band = c('red',NA), col.surv = 'black')
+  col.band <- if (isTRUE(col.band)) {
+    col.surv
+  } else if (length(col.band) == 1L & col.band == FALSE)
+    rep_len(NA, ng) else rep_len(col.band, ng)
+  col.lines <- ifelse(is.na(col.band), col.surv, col.band)
   
   ## group names and more error checks
   gr <- c(s$strata)
@@ -221,29 +196,28 @@ kmplot <- function(s,
     stop('\n','length(unique(strata.lab)) != number of groups')
   if (suppressWarnings(any(sort(strata.order) != 1:ng)))
     stop('\n', 'sort(strata.order) must equal 1:', ng)
-  strata.lab <- gsub(' *$', '', strata.lab)  # remove white space
   if (ng == 1 & (strata.lab[1] == 'strata.lab')) {
     strata.lab <- 'Number at risk'
     atrisk.lab <- ifelse(is.null(atrisk.lab), strata.lab, atrisk.lab)
   }
   
   ## graphic parameters
+  op <- par(no.readonly = TRUE)
   par(mar = c(4 + ng, 4 + extra.margin, 4, 2) + .1)
   if (!add) {
-    par(list(mar = c(4 + ng, 4 + extra.margin, 4, 2) + .1,
-             oma = c(1, 1, 1, 1)))
+    par(list(mar = c(4 + ng, 4 + extra.margin, 4, 2) + .1, oma = c(1,1,1,1)))
     if (!atrisk) 
-      par(mar = c(3, 4, 2, 1) + .1)
+      par(mar = c(3,4,2,1) + .1)
     par(list(...))
   }
   if (!is.null(mar)) 
     par(mar = mar)
-
-  ## as in plot.survfit to adjust x-axis to start at 0
-  if (xaxs == 'S') {
-    xaxs <- 'i'
+  
+  ## as in survival:::plot.survfit, adjust x-axis to start at 0
+  xaxs <- if (xaxs == 'S') {
     xlim[2] <- xlim[2] * 1.04
-  } else xaxs <- 'r'
+    'i'
+  } else 'r'
   
   ## reformat survival estimates
   dat <- with(s, data.frame(time = time, n.risk = n.risk, n.event = n.event,
@@ -257,17 +231,9 @@ kmplot <- function(s,
        xaxt = 'n', yaxt = 'n', xaxs = xaxs)
   panel.first
   box(bty = par('bty'))
-  if (grid) {
-    par(xpd = FALSE)
-    abline(v = xaxis.at, lty = lty.grid, lwd = lwd.grid, col = col.grid)
-    abline(h = pretty(c(0, 1)), lty = lty.grid, lwd = lwd.grid, col = col.grid)
-  }
-  axis(side = 2, at = yaxis.at, las = 1,
-       labels = yaxis.lab, cex.axis = cex.axis)
-  axis(side = 1, at = xaxis.at, labels = xaxis.lab, line = -0.5, 
-       tick = FALSE, cex.axis = cex.axis)
-  axis(side = 1, at = xaxis.at, labels = rep('', length(xaxis.at)), 
-       line = 0, tick = TRUE)
+  axis(1, xaxis.at, FALSE, lwd = 0, lwd.ticks = 1)
+  axis(1, xaxis.at, xaxis.lab, FALSE, -0.5, cex.axis = cex.axis)
+  axis(2, yaxis.at, yaxis.lab, las = 1, cex.axis = cex.axis)
   title(xlab = xlab, line = 1.5, adj = .5, ...)
   title(ylab = ylab, main = main, ...)
   
@@ -278,20 +244,20 @@ kmplot <- function(s,
     padding <- abs(group.name.pos / 8)
     line.pos <- (1:ng)[order(strata.order)] + 2
     if (strata.lab[1] != FALSE) {
-      if (!is.null(strata.expr))
+      if (!is.null(strata.expr)) {
         sapply(1:length(strata.expr), function(x)
           mtext(strata.expr[[x]], side = 1, line = line.pos[x], adj = 1,
                 at = group.name.pos, col = 1, las = 1, cex = cex.axis))
-      else mtext(strata.lab, side = 1, line = line.pos, at = group.name.pos,
-              adj = 1, col = 1, las = 1, cex = cex.axis)
+      } else mtext(strata.lab, side = 1, line = line.pos, adj = 1, col = 1,
+                   at = group.name.pos, las = 1, cex = cex.axis)
     }
     
     ## draw matching lines for n at risk  
-    if (atrisk.lines) {  
+    if (atrisk.lines) {
       par(xpd = TRUE)
       for (i in 1:ng) {
-        ## mess with the 2 here to adjust the length of the atrisk.line
-        axis(side = 1, at = c(group.name.pos + padding, 0 - 2 * padding),
+        ## mess with the 4 here to adjust the length of the atrisk.line
+        axis(side = 1, at = c(group.name.pos + padding, 0 - 4 * padding),
              labels = FALSE, line = line.pos[i] + 0.6, lwd.ticks = 0,
              col = col.lines[i], lty = lty.surv[i], lwd = lwd.surv[i])
       }
@@ -301,19 +267,18 @@ kmplot <- function(s,
     ss <- summary(s, times = xaxis.at)
     if (is.null(ss$strata))
       ss$strata <- rep(1, length(ss$time))
-    d1 <- with(ss,
-               data.frame(time = time, n.risk = n.risk, strata = c(strata)))
-    d2 <- split(d1, f = d1$strata)
+    d1 <- data.frame(time = ss$time, n.risk = ss$n.risk, strata = c(ss$strata))
+    d2 <- split(d1, d1$strata)
     
     ## right-justify numbers 
     ndigits <- lapply(d2, function(x) nchar(x[, 2]))
     max.len <- max(sapply(ndigits, length))
-    L <- do.call(rbind, lapply(ndigits, function(z) {
+    L <- do.call('rbind', lapply(ndigits, function(z) {
       length(z) <- max.len
       z
     }))
     nd <- apply(L, 2, max, na.rm = TRUE)
-    for (i in seq(ng) ) {
+    for (i in seq(ng)) {
       tmp <- d2[[i]]
       w.adj <- strwidth('0', cex = cex.axis, font = par('font')) /
         2 * nd[1:nrow(tmp)]
@@ -321,24 +286,26 @@ kmplot <- function(s,
             line = line.pos[i], cex = cex.axis, adj = 1, col = 1, las = 1)
     }
     if (!is.null(atrisk.lab))
-      # mtext(side = 1, text = atrisk.lab, at = group.name.pos,
-      #       line = 1.5, adj = 1, col = 1, las = 1, cex = cex.axis)
       mtext(side = 1, text = atrisk.lab, at = par('usr')[1],
+            # at = group.name.pos,
             line = 1.5, adj = 1, col = 1, las = 1, cex = cex.axis)
-  } ## /if (atrisk)
+  }
 
   ## legend
   rlp <- strata.order
-  if (legend) {
-    bgc <- ifelse(par('bg') == 'transparent', 'white', par('bg'))
+  if (!legend == FALSE) {
+    if (isTRUE(legend))
+      legend <- 'bottomleft'
+    bgc <- if (par('bg') == 'transparent')
+      'white' else par('bg')
     if (!is.null(strata.expr)) {
-      legend(x = legend.pos, legend = strata.expr[rlp], col = col.lines[rlp], 
+      legend(legend, legend = strata.expr[rlp], col = col.lines[rlp],
              lty = lty.surv[rlp], lwd = lwd.surv[rlp], bty = 'o',
              cex = cex.axis, bg = bgc, box.col = 'transparent', inset = .01)
     } else {
       if (strata.lab[1] == FALSE)
         strata.lab <- names(s$strata)
-      legend(x = legend.pos, legend = strata.lab[rlp], col = col.lines[rlp],
+      legend(legend, legend = strata.lab[rlp], col = col.lines[rlp],
              lty = lty.surv[rlp], lwd = lwd.surv[rlp], bty = 'o',
              cex = cex.axis, bg = bgc, box.col = 'transparent', inset = .01)
     }
@@ -458,7 +425,6 @@ kmplot <- function(s,
 
 kmplot_by <- function(strata, event = 'pfs', data, by, single = TRUE,
                       lr_test = TRUE, ylab, sub, strata_lab, fig_lab, ...) {
-  # on.exit(par(xpd = FALSE))
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
   if (!missing(by)) {
@@ -496,12 +462,9 @@ kmplot_by <- function(strata, event = 'pfs', data, by, single = TRUE,
     
     kmplot(s, add = add, legend = FALSE, main = names(sp)[x], ylab = ylab, ...,
            panel.first = {
-             ## add plot text
              p <- par('usr')
-             mtext(if (!msub) sub[x] else strata, side = 3, font = 3,
-                   at = 0, line = .5, adj = 0)
-             mtext(fig[x], side = 3, at = 0 - p[2] * .05,
-                   font = 2, cex = 1.5, line = 1.2)
+             mtext(if (!msub) sub[x] else strata, 3, 0.5, FALSE, 0, 0, font = 3)
+             mtext(fig[x], 3, 1.2, FALSE, 0 - p[2] * .05, font = 2, cex = 1.5)
              
              ## add survdiff text in upper right corner
              if (lr_test && strata != '') {
