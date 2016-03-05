@@ -9,6 +9,7 @@ Maintainer: Robert Redd <raredd01@gmail.com>
 Description: Miscellaneous plotting, statistical, analysis, and utility
     functions.
 Suggests:
+    beepr,
     desmon,
     DT,
     Hmisc,

@@ -1,5 +1,5 @@
 ### blah who would use these
-# ht, progress, recoder, ident, allequal, search_df, search_hist, fapply,
+# done, ht, progress, recoder, ident, allequal, search_df, search_hist, fapply,
 # try_require, list2file, Restart, helpExtract, helpExtract_, Round, round_to,
 # updateR, read_clip, icols, fill_df, kinda_sort, rgene, install_temp,
 # nestedMerge, nestedmerge, path_extract, fname, file_name, file_ext, rm_ext,
@@ -7,6 +7,8 @@
 # justify, factors, factors_
 ###
 
+
+done <- function() while (TRUE) {beepr::beep(3); Sys.sleep(3)}
 
 #' \code{head}/\code{tail}
 #' 
