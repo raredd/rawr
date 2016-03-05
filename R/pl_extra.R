@@ -1,6 +1,6 @@
 ### plot extra
-# dodge, show_colors, show_pch, tcol, pretty_sci, oom, parse_sci, arrows2,
-# carrows
+# dodge, show_colors, show_pch, tcol, pretty_sci, oom, parse_sci, to_sci_,
+# arrows2, carrows, laxis
 ###
 
 
@@ -222,30 +222,37 @@ tcol <- function(color, trans = 255, alpha) {
 #' 
 #' @param x a numeric vector
 #' @param digits integer indicating the number of decimal places to be used
+#' @param base a positive or complex number: the base with respect to which
+#' logarithms are computed (default is 10)
 #' @param limit a numeric value whose order of magnitude will set a limit
 #' beyond which values of \code{x} will be displayed in scientific notation;
-#' default is to display numbers beyond a magnitude of 3; to display
-#' scientific notation always, use a negative value
+#' default is to display numbers beyond a magnitude of \code{base^3}; to
+#' display scientific notation always, use a negative value
+#' @param simplify logical; if \code{TRUE} (default), removes "1 x" from
+#' scientific format
 #' 
 #' @seealso
 #' \code{\link{roundr}}; \code{\link{format}}; \code{\link{sprintf}},
 #' \code{\link{rawr_parse}}
 #' 
 #' @return
-#' For \code{oom} a vector of order of magnitudes. For \code{parse_sci} an
+#' For \code{oom} an integer vector of magnitudes. For \code{parse_sci} an
 #' expression of values in scientific notation. For \code{pretty_sci} an
-#' expression of values in standard or scientific notation depending on the
-#' value of \code{limit}.
+#' expression of values in standard or scientific notation or combination
+#' depending on the value of \code{limit}.
 #' 
 #' @examples
 #' x <- 10^(1:5) / 10
 #' oom(x)
 #' 
 #' parse_sci(x)
+#' parse_sci(x, simplify = FALSE)
+#' parse_sci(x, base = 100)
+#' parse_sci(1.1 * 2 ** (1:5), 1, 2)
 #' 
 #' par(xpd = NA, mar = c(6,4,4,2) + .1)
 #' plot(1:5, type = 'n', axes = FALSE, ann = FALSE)
-#' axis(2, at = 1:5, labels = pretty_sci(x), las = 1, lwd.ticks = 0)
+#' axis(2, at = 1:5, labels = pretty_sci(x, simplify = FALSE), las = 1)
 #' 
 #' text(1:5, 0, pretty_sci(1 / x ^ 10))
 #' text(1:5, 1, pretty_sci(1 / x, digits = 3))
@@ -255,35 +262,46 @@ tcol <- function(color, trans = 255, alpha) {
 #' text(1:5, 5, pretty_sci(x, digits = 1))
 #' text(1:5, 6, pretty_sci(x ^ 10))
 #' 
-#' text(1:5, -1, pretty_sci(1 / x, limit = -1))
+#' text(1:5, -1, pretty_sci(1 / x, limit = -1, simplify = FALSE))
 #' 
 #' @export
 
-pretty_sci <- function(x, digits = 0, limit = 1e3) {
+pretty_sci <- function(x, digits = 0, base = 10,
+                       limit = base ** 3, simplify = TRUE) {
   l <- as.list(x)
-  limit <- if (limit < 0) -1 else oom(limit)
-  om <- sapply(l, oom)
+  limit <- if (limit < 0) -1 else oom(limit, base)
+  om <- sapply(l, oom, base)
   sapply(seq_along(l), function(y)
     if (abs(om[y]) > limit)
-      parse_sci(l[[y]], digits) else roundr(l[[y]], digits))
+      parse_sci(l[[y]], digits, base, simplify) else roundr(l[[y]], digits))
 }
 
 #' @rdname pretty_sci
 #' @export
-oom <- function(x) {
-  x <- format(x, scientific = TRUE)
-  as.numeric(gsub('.*e.', '', x))
+oom <- function(x, base = 10) {
+  as.integer(ifelse(x == 0, 0, floor(log(abs(x), base))))
 }
 
 #' @rdname pretty_sci
 #' @export
-parse_sci <- function(x, digits = 0) {
+parse_sci <- function(x, digits = 0, base = 10, simplify = TRUE) {
   stopifnot(is.numeric(x))
-  x <- format(x, nsmall = digits, scientific = TRUE)
+  x <- to_sci_(x, digits, base)
   x <- strsplit(x, 'e[+]?[0]?')
   xbg <- sapply(x, function(y) roundr(as.numeric(y[[1]]), digits))
   xsm <- sapply(x, '[[', 2)
-  parse(text = do.call('sprintf', list(fmt = '%s%%*%%10^%s', xbg, xsm)))
+  txt <- do.call('sprintf', list(fmt = '"%s"%%*%%%s^%s', xbg, base, xsm))
+  parse(text = if (simplify) gsub('\\"1\\"%\\*%\\s*', '', txt) else txt)
+}
+
+to_sci_ <- function(x, digits, base) {
+  ## general format(x, scientific = TRUE)
+  # base <- 2; digits = 1; x <- 1.1 * base ** (1:5)
+  # to_sci_(x, 1, base)
+  stopifnot(is.numeric(x))
+  xbg <- roundr(x / base ** oom(x, base), digits)
+  xsm <- formatC(oom(x, base), width = 2, flag = 0)
+  sprintf('%se+%s', xbg, xsm)
 }
 
 #' Add filled arrows to a plot
@@ -461,4 +479,57 @@ carrows <- function(p1, p2, arc, degree = FALSE, pad = 0.01 * 1:2,
           curve = curve, code = dir[2] %||% code, col = col, lty = 0,
           lwd = 0, fill = fill, border = border)
   invisible(list(arc = arc, centers = centers, radius = radius))
+}
+
+#' Add a logarithmic axis
+#' 
+#' Draw minor ticks on a log scale axis.
+#' 
+#' @param side an integer specifying which side of the plot the axis is to be
+#' drawn on: 1=below, 2=left, 3=above, 4=right
+#' @param nticks number of minor ticks between each pair of major ticks
+#' @param labels logical; if \code{TRUE}, major ticks will be labeled using
+#' \code{\link{pretty_sci}}
+#' @param digits,base,limit,simplify additional arguments passed to
+#' \code{\link{pretty_sci}}
+#' @param ... additional graphical parameters passed to \code{\link{par}}
+#' 
+#' @seealso
+#' \code{\link{pretty_sci}}; \code{\link[sfsmisc]{axTexpr}}; \code{\link{axis}}
+#' 
+#' @examples
+#' x <- 1:10
+#' y <- function(base) base ** x
+#' par(mar = c(3,5,3,5), las = 1)
+#' plot(x, log(y(2), 2), ann = FALSE, axes = FALSE)
+#' laxis(2, base = 2, limit = -1)
+#' 
+#' par(new = TRUE)
+#' plot(x, y(10), log = 'y', axes = FALSE, ann = FALSE)
+#' laxis(4, nticks = 10, tcl = .5, col.axis = 2)
+#' 
+#' par(new = TRUE)
+#' plot(x, x, log = 'x', axes = FALSE, ann = FALSE, xpd = NA)
+#' laxis(1, nticks = 10, tcl = -1, col.axis = 1)
+#' abline(v = x)
+#' 
+#' @export
+
+laxis <- function(side = 1L, nticks = 5, labels = TRUE, digits = 0, base = 10,
+                  limit = base ** 3, simplify = TRUE, ...) {
+  axp <- par(switch(side, 'xaxp','yaxp','xaxp','yaxp', stop('Invalid axis')))
+  yl <- c(-1, 1) + if (base == 10) log10(axp[-3]) else c(1, axp[2])
+  pp <- seq(yl[1], yl[2])
+  at0 <- at1 <- base ** pp
+  at2 <- c(sapply(pp, function(x) seq(1, base, length = nticks) * base ** x))
+  if (base != 10) {
+    at1 <- log(at1, base)
+    at2 <- log(at2, base)
+  }
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
+  par(...)
+  axis(side, at1, if (labels)
+    pretty_sci(at0, digits, base, limit, simplify) else FALSE)
+  axis(side, at2, FALSE, tcl = par('tcl') * 0.5, lwd = 0, lwd.ticks = 1)
 }
