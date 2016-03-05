@@ -6,27 +6,33 @@
 \alias{pretty_sci}
 \title{Print scientific numbers}
 \usage{
-pretty_sci(x, digits = 0, limit = 1000)
+pretty_sci(x, digits = 0, base = 10, limit = base^3, simplify = TRUE)
 
-oom(x)
+oom(x, base = 10)
 
-parse_sci(x, digits = 0)
+parse_sci(x, digits = 0, base = 10, simplify = TRUE)
 }
 \arguments{
 \item{x}{a numeric vector}
 
 \item{digits}{integer indicating the number of decimal places to be used}
 
+\item{base}{a positive or complex number: the base with respect to which
+logarithms are computed (default is 10)}
+
 \item{limit}{a numeric value whose order of magnitude will set a limit
 beyond which values of \code{x} will be displayed in scientific notation;
-default is to display numbers beyond a magnitude of 3; to display
-scientific notation always, use a negative value}
+default is to display numbers beyond a magnitude of \code{base^3}; to
+display scientific notation always, use a negative value}
+
+\item{simplify}{logical; if \code{TRUE} (default), removes "1 x" from
+scientific format}
 }
 \value{
-For \code{oom} a vector of order of magnitudes. For \code{parse_sci} an
+For \code{oom} an integer vector of magnitudes. For \code{parse_sci} an
 expression of values in scientific notation. For \code{pretty_sci} an
-expression of values in standard or scientific notation depending on the
-value of \code{limit}.
+expression of values in standard or scientific notation or combination
+depending on the value of \code{limit}.
 }
 \description{
 Functions to parse numeric vectors in scientific notation and return an
@@ -37,10 +43,13 @@ x <- 10^(1:5) / 10
 oom(x)
 
 parse_sci(x)
+parse_sci(x, simplify = FALSE)
+parse_sci(x, base = 100)
+parse_sci(1.1 * 2 ** (1:5), 1, 2)
 
 par(xpd = NA, mar = c(6,4,4,2) + .1)
 plot(1:5, type = 'n', axes = FALSE, ann = FALSE)
-axis(2, at = 1:5, labels = pretty_sci(x), las = 1, lwd.ticks = 0)
+axis(2, at = 1:5, labels = pretty_sci(x, simplify = FALSE), las = 1)
 
 text(1:5, 0, pretty_sci(1 / x ^ 10))
 text(1:5, 1, pretty_sci(1 / x, digits = 3))
@@ -50,7 +59,7 @@ text(1:5, 4, pretty_sci(x, limit = 1e2))
 text(1:5, 5, pretty_sci(x, digits = 1))
 text(1:5, 6, pretty_sci(x ^ 10))
 
-text(1:5, -1, pretty_sci(1 / x, limit = -1))
+text(1:5, -1, pretty_sci(1 / x, limit = -1, simplify = FALSE))
 
 }
 \seealso{
