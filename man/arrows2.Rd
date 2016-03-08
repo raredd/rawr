@@ -48,8 +48,8 @@ arrows2(.8, 0, .8, 1, code = 3, curve = .5, width = .5, lwd = 10, col = 3)
 
 }
 \author{
-Modifications: Robert Redd; original: Andreas Ruckstuhl, 19 May 1994;
-Cosmetic: Martin Machler, June 1998
+Original: Andreas Ruckstuhl, 19 May 1994; Cosmetic: Martin Machler, June
+1998; Modifications: Robert Redd
 }
 \seealso{
 \code{arrows}; \code{\link{carrows}}; \url{https://github.com/cran/sfsmisc}
