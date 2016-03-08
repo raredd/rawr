@@ -41,6 +41,7 @@ Functions to parse numeric vectors in scientific notation and return an
 \examples{
 x <- 10^(1:5) / 10
 oom(x)
+oom(1 / x)
 
 parse_sci(x)
 parse_sci(x, simplify = FALSE)

@@ -244,6 +244,7 @@ tcol <- function(color, trans = 255, alpha) {
 #' @examples
 #' x <- 10^(1:5) / 10
 #' oom(x)
+#' oom(1 / x)
 #' 
 #' parse_sci(x)
 #' parse_sci(x, simplify = FALSE)
@@ -295,9 +296,9 @@ parse_sci <- function(x, digits = 0, base = 10, simplify = TRUE) {
 }
 
 to_sci_ <- function(x, digits, base) {
-  ## general format(x, scientific = TRUE)
+  ## generalized format(x, scientific = TRUE)'er
   # base <- 2; digits = 1; x <- 1.1 * base ** (1:5)
-  # to_sci_(x, 1, base)
+  # rawr:::to_sci_(x, 1, base)
   stopifnot(is.numeric(x))
   xbg <- roundr(x / base ** oom(x, base), digits)
   xsm <- formatC(oom(x, base), width = 2, flag = 0)
@@ -328,8 +329,8 @@ to_sci_ <- function(x, digits, base) {
 #' \code{arrows}; \code{\link{carrows}}; \url{https://github.com/cran/sfsmisc}
 #' 
 #' @author
-#' Modifications: Robert Redd; original: Andreas Ruckstuhl, 19 May 1994;
-#' Cosmetic: Martin Machler, June 1998
+#' Original: Andreas Ruckstuhl, 19 May 1994; Cosmetic: Martin Machler, June
+#' 1998; Modifications: Robert Redd
 #' 
 #' @examples
 #' plot.new()
@@ -366,7 +367,7 @@ arrows2 <- function(x0, y0, x1 = x0, y1 = y0, size = 1,
   r.arr <- c(pol$radius, NA)
   
   segments(x0 + sadj[1], y0 + sadj[2], x1 + sadj[3], y1 + sadj[4],
-           col = col, lty = lty, lwd = lwd, lend = 1, ...)
+           col = col, lty = lty, lwd = lwd, lend = 1, xpd = NA, ...)
   
   if (code == 0L)
     return(invisible())
