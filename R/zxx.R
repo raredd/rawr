@@ -4,7 +4,7 @@
 # updateR, read_clip, icols, fill_df, kinda_sort, rgene, install_temp,
 # nestedMerge, nestedmerge, path_extract, fname, file_name, file_ext, rm_ext,
 # mgrep, mgrepl, msub, mgsub, flatten, tree, rm_null, cum_reset, vgrep, vgrepl,
-# justify, factors, factors_
+# justify, factors, factors_, sample_each
 ###
 
 
@@ -1573,4 +1573,44 @@ factors <- function(...) {
   }
   l <- lapply(list(...), factors_)
   Reduce(intersect, l)
+}
+
+#' Sample each
+#' 
+#' Sample each unique value of a vector.
+#' 
+#' @param x a vector
+#' @param n number to sample from each unique group in order; if \code{x} is
+#' a factor, \code{n} should correspond to the order of \code{levels(x)};
+#' otherwise, \code{n} will be matched with the sorted unique groups
+#' 
+#' @return
+#' A logical vector the same length as \code{x} identifying selected indices.
+#' 
+#' @seealso
+#' \code{\link{sample}}; \code{\link{kinda_sort}}
+#' 
+#' @examples
+#' x <- mtcars$gear
+#' X <- factor(x, 5:3)
+#' 
+#' sample_each(x)
+#' 
+#' mtcars[sample_each(x), ]
+#' 
+#' ## compare numeric vs factor vectors
+#' mtcars[sample_each(x, c(3,4,5)), ]
+#' mtcars[sample_each(X, c(3,4,5)), ]
+#' 
+#' @export
+
+sample_each <- function(x, n = 1L) {
+  x <- setNames(x, x)
+  lx <- table(x)
+  nT <- setNames(rep_len(n, length(lx)), names(lx))
+  nF <- lx - nT
+  x <- as.character(x)
+  idx <- ave(x, x, FUN = function(xx)
+    sample(rep(0:1, c(nF[xx[1]], nT[xx[1]]))))
+  !!as.numeric(idx)
 }
