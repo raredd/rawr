@@ -4,10 +4,10 @@
 \alias{surv_summary}
 \title{Summary of a survival curve}
 \usage{
-surv_summary(s, digits = max(getOption("digits") - 4, 3), ...)
+surv_summary(s, digits = 3L, ...)
 }
 \arguments{
-\item{s}{\code{\link[survival]{survfit}} object}
+\item{s}{a \code{\link{survfit}} object}
 
 \item{digits}{number of digits to use in printing numbers}
 
@@ -15,16 +15,16 @@ surv_summary(s, digits = max(getOption("digits") - 4, 3), ...)
 \code{\link[survival]{summary.survfit}}}
 }
 \value{
-A list with summaries for each strata; see 
-\code{\link[survival]{summary.survfit}}
+A list with \code{survival:::print.summary.survfit} matrices for each
+strata, i.e., the output printed.
 }
 \description{
 Prints and returns a list containing the survival curve, confidence limits 
-for the curve, and other information.
+for the curve, and other information which can be more useful than the
+acutal return value of \code{survival:::print.summary.survfit}.
 }
 \examples{
-library(survival)
-data(cancer)
+library('survival')
 fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)), 
                       data = cancer),
                 conf.type = 'log-log')
@@ -32,7 +32,6 @@ surv_summary(fit1, times = c(0, 100, 200))
 
 }
 \seealso{
-\code{\link[survival]{survfit}}, 
-\code{\link[survival]{print.summary.survfit}}
+\code{\link{survfit}}, \code{\link{print.summary.survfit}}
 }
 

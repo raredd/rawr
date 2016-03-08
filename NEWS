@@ -1,3 +1,8 @@
+rawr 0.8.1
+--------
+  * changes to kmplot, surv_summary, surv_table that could break existing
+    code (but should not)
+
 rawr 0.8.0
 --------
   * move survival to suggests

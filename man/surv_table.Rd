@@ -7,30 +7,27 @@
 surv_table(s, digits = 3, times = pretty(range(s$time)), ...)
 }
 \arguments{
-\item{s}{\code{\link[survival]{survfit}} object}
+\item{s}{a \code{\link[survival]{survfit}} object}
 
 \item{digits}{number of digits to use in printing numbers}
 
 \item{times}{vector of times}
 
-\item{...}{additional arguments passed to 
-\code{\link[survival]{summary.survfit}}}
+\item{...}{additional arguments passed to \code{\link{summary.survfit}}}
 }
 \value{
 A matrix (or list of matrices) with formatted summaries for each strata; see 
-\code{\link[survival]{summary.survfit}}
+\code{\link{summary.survfit}}
 }
 \description{
-Prints a formatted summary table for \code{\link[survival]{survfit}} objects
+Prints a formatted summary table for \code{\link{survfit}} objects.
 }
 \examples{
-library(survival)
-data(cancer)
-
+library('survival')
 fit0 <- survfit(coxph(Surv(time, status) ~ 1, 
                       data = cancer),
                 conf.type = 'log-log')
-surv_table(fit0, times = c(0, 100, 200))
+surv_table(fit0, times = 0:2 * 100)
 
 ## also works for list of tables
 fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)), 
@@ -39,16 +36,14 @@ fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)),
 surv_table(fit1)
 
 \dontrun{
-library(htmlTable)
-s <- `colnames<-`(surv_table(fit0, times = c(0, 200, 400, 600, 800), 
-                             digits = 2)[ , -4], 
-                  c('Time','No. at risk','No. of events','OS (95\% CI)'))
+library('htmlTable')
+s <- `colnames<-`(surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4],
+                  c('Time','No. at risk','No. of events','HR (95\% CI)'))
 htmlTable(s)
 }
 
 }
 \seealso{
-\code{\link[survival]{survfit}}, 
-\code{\link[survival]{print.summary.survfit}}
+\code{\link{survfit}}, \code{\link{print.summary.survfit}}
 }
 

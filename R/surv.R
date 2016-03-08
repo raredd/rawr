@@ -522,11 +522,11 @@ local_coxph_test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
     diag(C) <- 1
   } else
     if (dim(C)[1] != n)
-      stop("C has improper dimensions\n")
+      stop('C has improper dimensions\n')
   if (is.null(d))
     d <- matrix(0, n, 1)
   if (dim(d)[1] != dim(C)[1])
-    stop("C and d do not have appropriate dimensions\n")
+    stop('C and d do not have appropriate dimensions\n')
   I. <- s$var[pos, pos]
   est <- matrix(as.vector(s$coeff[pos]), dim(C)[2])
   X <- as.numeric(t(C %*% est - d) %*% solve(t(C) %*% I. %*% C ) %*% 
@@ -599,24 +599,23 @@ surv_cp <- function(data, time.var, status.var,
 #' Summary of a survival curve
 #' 
 #' Prints and returns a list containing the survival curve, confidence limits 
-#' for the curve, and other information.
+#' for the curve, and other information which can be more useful than the
+#' acutal return value of \code{survival:::print.summary.survfit}.
 #' 
-#' @param s \code{\link[survival]{survfit}} object
+#' @param s a \code{\link{survfit}} object
 #' @param digits number of digits to use in printing numbers
 #' @param ... additional arguments passed to 
 #' \code{\link[survival]{summary.survfit}}
 #' 
 #' @return
-#' A list with summaries for each strata; see 
-#' \code{\link[survival]{summary.survfit}}
+#' A list with \code{survival:::print.summary.survfit} matrices for each
+#' strata, i.e., the output printed.
 #' 
 #' @seealso
-#' \code{\link[survival]{survfit}}, 
-#' \code{\link[survival]{print.summary.survfit}}
+#' \code{\link{survfit}}, \code{\link{print.summary.survfit}}
 #' 
 #' @examples
-#' library(survival)
-#' data(cancer)
+#' library('survival')
 #' fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)), 
 #'                       data = cancer),
 #'                 conf.type = 'log-log')
@@ -624,103 +623,94 @@ surv_cp <- function(data, time.var, status.var,
 #' 
 #' @export
 
-surv_summary <- function(s, digits = max(getOption('digits') - 4, 3), ...) {
-  ## error checks
+surv_summary <- function(s, digits = 3L, ...) {
   if (!inherits(s, 'survfit')) 
-    stop('s must be a survfit object')
+    stop('\'s\' must be a \'survfit\' object')
   x <- summary(s, ...)
   
   savedig <- options(digits = digits)
   on.exit(options(savedig))
   if (!is.null(cl <- x$call)) {
-    cat("Call: ")
+    cat('Call: ')
     dput(cl)
   }
   omit <- x$na.action
   if (length(omit)) 
-    cat(naprint(omit), "\n")
-  if (x$type == "right" || is.null(x$n.enter)) {
+    cat(naprint(omit), '\n')
+  if (x$type == 'right' || is.null(x$n.enter)) {
     mat <- cbind(x$time, x$n.risk, x$n.event, x$surv)
-    cnames <- c("time", "n.risk", "n.event")
-  } else 
-    if (x$type == "counting") {
+    cnames <- c('time', 'n.risk', 'n.event')
+  } else if (x$type == 'counting') {
       mat <- cbind(x$time, x$n.risk, x$n.event, x$n.enter, x$n.censor, x$surv)
-      cnames <- c("time", "n.risk", "n.event", "entered", "censored")
+      cnames <- c(time, 'n.risk', 'n.event', 'entered', 'censored')
     }
-  if (is.matrix(x$surv)) 
-    ncurve <- ncol(x$surv)
-  else ncurve <- 1
-  if (ncurve == 1) {
-    cnames <- c(cnames, "survival")
+  ncurve <- if (is.matrix(x$surv))
+    ncol(x$surv) else 1L
+  if (ncurve == 1L) {
+    cnames <- c(cnames, 'survival')
     if (!is.null(x$std.err)) {
       if (is.null(x$lower)) {
         mat <- cbind(mat, x$std.err)
-        cnames <- c(cnames, "std.err")
+        cnames <- c(cnames, 'std.err')
       } else {
         mat <- cbind(mat, x$std.err, x$lower, x$upper)
-        cnames <- c(cnames, "std.err", 
-                    paste("lower ", x$conf.int * 100, "% CI", sep = ""),
-                    paste("upper ", x$conf.int * 100, "% CI", sep = ""))
+        cnames <- c(cnames, 'std.err', 
+                    paste0('lower ', x$conf.int * 100, '% CI'),
+                    paste0('upper ', x$conf.int * 100, '% CI'))
       }
     }
-  } else 
-    cnames <- c(cnames, paste("survival", seq(ncurve), sep = ""))
+  } else cnames <- c(cnames, paste0('survival', seq(ncurve)))
   if (!is.null(x$start.time)) {
-    mat.keep <- mat[ , 1] >= x$start.time
+    mat.keep <- mat[, 1] >= x$start.time
     mat <- mat[mat.keep, , drop = FALSE]
     if (is.null(dim(mat))) 
-      stop(paste("No information available using start.time =", 
-                 x$start.time, "."))
+      stop(paste('No information available using start.time =', x$start.time))
   }
   if (!is.matrix(mat)) 
-    mat <- matrix(mat, nrow = 1)
+    mat <- matrix(mat, nrow = 1L)
   if (!is.null(mat)) {
     dimnames(mat) <- list(NULL, cnames)
     if (is.null(x$strata)) {
-      cat("\n")
-      invisible(prmatrix(mat, rowlab = rep("", nrow(mat))))
+      cat('\n')
+      invisible(prmatrix(mat, rowlab = rep('', nrow(mat))))
     } else {
       strata <- x$strata
       if (!is.null(x$start.time))
         strata <- strata[mat.keep]
       invisible(setNames(lapply(levels(strata), function(i) {
         who <- (strata == i)
-        cat("\n               ", i, "\n")
+        cat('\n               ', i, '\n')
         if (sum(who) == 1)
           prmatrix(mat[who, ])
-        else prmatrix(mat[who, ], rowlab = rep("", sum(who)))
+        else prmatrix(mat[who, ], rowlab = rep('', sum(who)))
       }), levels(strata)))
     }
-  } else 
-    stop("There are no events to print. Use the option censored = TRUE ",
-         "with the summary function to see the censored observations.")
+  } else stop('There are no events to print. Use the option censored = TRUE ',
+              'with the summary function to see the censored observations.')
 }
 
 #' Summary table
 #' 
-#' Prints a formatted summary table for \code{\link[survival]{survfit}} objects
+#' Prints a formatted summary table for \code{\link{survfit}} objects.
 #' 
-#' @param s \code{\link[survival]{survfit}} object
+#' @param s a \code{\link[survival]{survfit}} object
 #' @param digits number of digits to use in printing numbers
 #' @param times vector of times
-#' @param ... additional arguments passed to 
-#' \code{\link[survival]{summary.survfit}}
+#' @param ... additional arguments passed to \code{\link{summary.survfit}}
 #' 
 #' @return
 #' A matrix (or list of matrices) with formatted summaries for each strata; see 
-#' \code{\link[survival]{summary.survfit}}
+#' \code{\link{summary.survfit}}
+#' 
 #' @seealso
-#' \code{\link[survival]{survfit}}, 
-#' \code{\link[survival]{print.summary.survfit}}
+#' \code{\link{survfit}}, \code{\link{print.summary.survfit}}
 #' 
 #' @examples
-#' library(survival)
-#' data(cancer)
-#' 
+#' library('survival')
 #' fit0 <- survfit(coxph(Surv(time, status) ~ 1, 
 #'                       data = cancer),
 #'                 conf.type = 'log-log')
-#' surv_table(fit0, times = c(0, 100, 200))
+#' surv_table(fit0, times = 0:2 * 100)
 #' 
 #' ## also works for list of tables
 #' fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)), 
@@ -729,31 +719,31 @@ surv_summary <- function(s, digits = max(getOption('digits') - 4, 3), ...) {
 #' surv_table(fit1)
 #' 
 #' \dontrun{
-#' library(htmlTable)
-#' s <- `colnames<-`(surv_table(fit0, times = c(0, 200, 400, 600, 800), 
-#'                              digits = 2)[ , -4], 
-#'                   c('Time','No. at risk','No. of events','OS (95% CI)'))
+#' library('htmlTable')
+#' s <- `colnames<-`(surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4],
+#'                   c('Time','No. at risk','No. of events','HR (95% CI)'))
 #' htmlTable(s)
 #' }
 #' 
 #' @export
 
 surv_table <- function(s, digits = 3, times = pretty(range(s$time)), ...) {
-  tmp <- capture.output(summ <- surv_summary(s, digits = digits,
-                                             times = times, ...))
+  tmp <- capture.output(
+    summ <- surv_summary(s, digits = digits, times = times, ...)
+  )
   f <- function(x, d = digits, vars = vars) {
     vars = colnames(x)
-    tmpvar <- colnames(x)[grep('survival|std.err|lower|upper', colnames(x))]
+    g <- function(wh, x = x, cn = vars) cn[grepl(wh, cn)]
+    tmpvar <- g('survival|std.err|lower|upper')
     x[, tmpvar] <- roundr(x[, tmpvar], digits = d)
-    surv <- sprintf('%s (%s, %s)', 
-                    x[, colnames(x)[grepl('survival', colnames(x))]],
-                    x[, colnames(x)[grepl('lower', colnames(x))]],
-                    x[, colnames(x)[grepl('upper', colnames(x))]])
-    `colnames<-`(cbind(x[, c(setdiff(vars, tmpvar), 'std.err')], surv),
-                 c('Time','No. at risk','No. event','Std.Error',
-                   sprintf('OR (%s%% CI)', s$conf.int * 100)))
+    surv <- sprintf('%s (%s, %s)',
+                    x[, g('survival')], x[, g('lower')], x[, g('upper')])
+    cn <- c('Time','No. at risk','No. event','Std.Error',
+            sprintf('HR (%s%% CI)', s$conf.int * 100))
+    `colnames<-`(cbind(x[, c(setdiff(vars, tmpvar), 'std.err')], surv), cn)
   }
-  if (is.list(summ)) Map(f = f, summ) else f(summ)
+  if (is.list(summ))
+    Map(f = f, summ) else f(summ)
 }
 
 #' Pairwise survival group comparisons
