@@ -40,7 +40,7 @@ keep any trailing 0s.
 not ideal (0.000, 1.00, etc) and will leave others unchanged.
 }
 \examples{
-pvals <- c(.13354, .060123, .004233, .00000016223)
+pvals <- c(.13354, .060123, .004233, .00000016223, 1, -1)
 pvalr(pvals, digits = 3)
 pvalr(pvals, digits = 3, show.p = TRUE)
 

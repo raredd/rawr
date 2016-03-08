@@ -355,7 +355,7 @@ intr <- function(..., fun = median, conf = NULL, digits = 0, na.rm = FALSE) {
 #' \code{\link[rawr]{roundr}}
 #' 
 #' @examples
-#' pvals <- c(.13354, .060123, .004233, .00000016223)
+#' pvals <- c(.13354, .060123, .004233, .00000016223, 1, -1)
 #' pvalr(pvals, digits = 3)
 #' pvalr(pvals, digits = 3, show.p = TRUE)
 #' 
@@ -363,23 +363,20 @@ intr <- function(..., fun = median, conf = NULL, digits = 0, na.rm = FALSE) {
 
 pvalr <- function(pvals, sig.limit = .001, digits = 3, html = FALSE, 
                   show.p = FALSE) {
+  show.p <- show.p + 1L
+  html <- html + 1L
   sapply(pvals, function(x, sig.limit) {
     if (is.na(x))
       return(NA)
     if (x >= 1)
-      return('1')
+      return(paste0(c('','p ')[show.p], c('> ','%gt; ')[html], '0.99'))
     if (x < sig.limit) {
-      if (show.p) p <- 'p ' else p <- ''
-      if (html)
-        return(sprintf('%s&lt; %s', p, format(sig.limit))) else
-          return(sprintf('%s< %s', p, format(sig.limit)))
+      paste0(c('', 'p ')[show.p], c('< ', '%lt; ')[html], format(sig.limit))
     } else {
-      if (show.p) p <- 'p = ' else p <- ''
-      if (x > .1)
-        return(sprintf('%s%s', p, roundr(x, digits = 2))) else
-          return(sprintf('%s%s', p, roundr(x, digits = digits)))
+      nd <- c(digits, 2, 1)[findInterval(x, c(-Inf, .1, .5, Inf))]
+      paste0(c('','p = ')[show.p], roundr(x, nd))
     }
-  }, sig.limit = sig.limit)
+  }, sig.limit)
 }
 
 #' @rdname pvalr
