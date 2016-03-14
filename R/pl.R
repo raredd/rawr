@@ -8,137 +8,126 @@
 #' Joint and marginal distributions scatterplots with \code{\link{tplot}}s on
 #' margins.
 #' 
-#' @param x x-axis variable
-#' @param y y-axis variable
-#' @param z group variable
-#' @param main overall title for the plot
-#' @param sub sub-title for the plot (below x-axis)
-#' @param xlab x-axis label
-#' @param ylab y-axis label
+#' @param x,y x- and y-axis variables
+#' @param z grouping variable
+#' @param main,sub main- and sub-titles (below x-axis) for the plot
+#' @param xlab,ylab x- and y-axis labels
 #' @param names labels for \code{x} and \code{y} variables
-#' @param xlim x-axis limits
-#' @param ylim y-axis limits
+#' @param xlim,ylim x- and y-axis limits
 #' @param axes logical; draw axes
 #' @param frame.plot logical; draw box around \code{x-y} plot
-#' @param log character, "x", "y", or "xy" for logarithmic scale; sets negative
-#' values to \code{\link{NA}} and gives a warning; see \code{\link{xy.coords}}
-#' @param xratio ratio of \code{x-y} plot to bar plots along x-axis; see 
-#' \code{widths} in \code{\link{layout}}
-#' @param yratio ratio of \code{x-y} plot to bar plots along x-axis; see
-#' \code{heights} in \code{\link{layout}}
-#' @param show.n logical; show number in each group
-#' @param show.na logical; show number missing in each group
+#' @param log \code{"x"}, \code{"y"}, or \code{"xy"} for logarithmic scale or
+#' \code{""} for none (default); sets negative values to \code{\link{NA}} and
+#' gives a warning; see \code{\link{xy.coords}}
+#' @param xratio,yratio proportion of x- and y-axes allotted for scatterplots;
+#' see \code{widths} and \code{heights} in \code{\link{layout}}
+#' @param show.n,show.na logical; show total and missing in each group
 #' @param cex.n size of \code{show.n} and \code{show.na} text
 #' @param ann logical; annotate plot
-#' @param asp numeric, giving the \strong{asp}ect ratio \emph{y/x}; see 
+#' @param asp numeric, giving the \strong{asp}ect ratio \emph{y/x}; see
 #' \code{\link{plot.window}}
-#' @param panel.first an "expression" to be evaluated after the plot axes are 
-#' set up but before any plotting takes place; this can be useful for drawing 
-#' background grids or scatterplot smooths; note that this works by lazy 
-#' evaluation: passing this argument from other plot methods may well not work 
+#' @param panel.first an "expression" to be evaluated after the plot axes are
+#' set up but before any plotting takes place; this can be useful for drawing
+#' background grids or scatterplot smooths; note that this works by lazy
+#' evaluation: passing this argument from other plot methods may well not work
 #' since it may be evaluated too early; see also \code{\link{plot.default}}
-#' @param panel.last an expression to be evaluated after plotting has taken 
-#' place but before the axes, title, and box are added; see the comments about 
+#' @param panel.last an expression to be evaluated after plotting has taken
+#' place but before the axes, title, and box are added; see the comments about
 #' \code{panel.first}
-#' @param ... further arguments passed to \code{par} (\code{las}, \code{pch}, 
+#' @param ... further arguments passed to \code{par} (\code{las}, \code{pch},
 #' etc) and/or \code{\link{tplot}} (\code{group.col}, \code{group.pch}, etc)
 #' 
-#' @references
-#' \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
+#' @return
+#' A list with components \code{x} and \code{y} corresponding to boxplots
+#' on x- and y-axes, respectively. See \code{\link{boxplot}} or
+#' \code{\link{tplot}} for a detailed description of each list.
 #' 
+#' @references
+#' \href{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}{Tatsuki
+#' \code{jmplot}}; \code{\link{tplot}}; \code{\link{boxplot}}
+#'
 #' @examples
-#' set.seed(1618)
+#' set.seed(1)
 #' dat <- data.frame(x = rnorm(100, 20, 5),
 #'                   y = rexp(100),
 #'                   z = c('M','F'),
 #'                   zz = c(LETTERS[1:4]))
-#' with(dat, jmplot(x, y, zz, type = 'db', jit = .02, col = 1:4, las = 1,
-#'      group.col = TRUE, pch = 1:4, group.pch = TRUE, boxcol = grey(.9), 
-#'      cex.n = .5))
-#'        
+#' with(dat,
+#'   jmplot(x, y, zz, type = 'db', jit = .02, col = 1:4, las = 1, cex.n = .5,
+#'          group.col = TRUE, pch = 1:4, group.pch = TRUE, boxcol = grey(.9))
+#' )
+#'
 #' @export
 
-jmplot <- function(x, y, z, 
+jmplot <- function(x, y, z,
+                   ## labels/aesthetics
+                   main = '', sub = '', xlab, ylab, names,
                    
-                   ## labels
-                   main, sub, xlab, ylab, names, 
+                   ## additional aesthetics
+                   xlim, ylim, axes = TRUE, frame.plot = axes,
+                   log = '', xratio = .8, yratio = xratio,
                    
-                   ## axes stuff
-                   xlim, ylim, axes = TRUE, frame.plot = axes, 
-                   log = '', xratio = .8, yratio = xratio, 
+                   ## n/missing for each group
+                   show.n = TRUE, show.na = show.n, cex.n = 1,
                    
-                   ## more options
-                   show.n = TRUE, show.na = TRUE, cex.n, 
-                   ann = par('ann'), asp = NA, 
-                   panel.first = NULL, panel.last = NULL,
-                   
-                   ...) {
+                   ## extra stuff
+                   ann = par('ann'), asp = NA,
+                   panel.first = NULL, panel.last = NULL, ...) {
   
-  localTplot <- function(..., type = 'b', horizontal = FALSE) 
+  ## helpers
+  localTplot <- function(..., type = 'b', horizontal = FALSE)
     tplot(..., type = type, axes = FALSE, horizontal = horizontal)
-  eliminateTplot <- function(func, ..., type, dist, jit, names, group.col, 
-                             boxcol, boxborder, group.pch, median.line, 
-                             mean.line, median.pars, mean.pars, boxplot.pars, 
-                             my.gray, axes, frame.plot, add, horizontal) 
+  eliminateTplot <- function(func, ..., type, dist, jit, names, group.col,
+                             boxcol, boxborder, group.pch, median.line,
+                             mean.line, median.pars, mean.pars, boxplot.pars,
+                             border.col, axes, frame.plot, add, horizontal) {
     func(...)
-  
-  localPlot <- function(xy, ..., lwd) 
+  }
+  localPlot <- function(xy, ..., lwd)
     eliminateTplot(plot.xy, xy, 'p', ...)
-  localAxis <- function(..., col, bg, pch, cex, lty, lwd) 
+  localAxis <- function(..., col, bg, pch, cex, lty, lwd)
     eliminateTplot(axis, ...)
-  localBox <- function(..., col, bg, pch, cex, lty, lwd) 
+  localBox <- function(..., col, bg, pch, cex, lty, lwd)
     eliminateTplot(box, ...)
-  localWindow <- function(..., col, bg, pch, cex, lty, lwd) 
+  localWindow <- function(..., col, bg, pch, cex, lty, lwd)
     eliminateTplot(plot.window, ...)
-  localTitle <- function(..., col, bg, pch, cex, lty, lwd) 
+  localTitle <- function(..., col, bg, pch, cex, lty, lwd)
     eliminateTplot(title, ...)
+  ## calculate xlim, ylim
+  lim <- function(z) {
+    r <- range(z, na.rm = TRUE, finite = TRUE)
+    # pm <- diff(r) / 20
+    # r + pm * c(-1,1)
+  }
   
   z <- as.factor(z)
   xy <- xy.coords(x, y, deparse(substitute(x)), deparse(substitute(y)), log)
   
   ## defaults
-  if (missing(names)) 
-    names <- levels(z)
-  if (missing(xlab)) 
-    xlab <- xy$xlab
-  if (missing(ylab)) 
-    ylab <- xy$ylab
-  if (missing(sub)) sub <- ''
-  if (missing(main)) main <- ''
+  if (missing(names)) names <- levels(z)
+  if (missing(xlab))  xlab <- xy$xlab
+  if (missing(ylab))  ylab <- xy$ylab
+  if (missing(xlim))  xlim <- lim(xy$x)
+  if (missing(ylim))  ylim <- lim(xy$y)
   
   op <- par(no.readonly = TRUE)
   mar <- op$mar
   ## set the layout
-  layout(matrix(c(1, 3, 0, 2), 2), 
-         widths = c(xratio, 1 - xratio), 
+  layout(matrix(c(1,3,0,2), 2), widths = c(xratio, 1 - xratio),
          heights = c(1 - yratio, yratio))
-  par(mar = c(0, 0, 0, 0), 
-      oma = c(0,0, mar[3], mar[4]) + op$oma)
-  
-  ## calculate xlim, ylim
-  lim <- function(z) {
-    r <- range(z, na.rm = TRUE, finite = TRUE)
-    #     pm <- diff(r) / 20
-    #     r + pm * c(-1,1)
-  }
-  if (missing(xlim)) 
-    xlim <- lim(xy$x)
-  if (missing(ylim)) 
-    ylim <- lim(xy$y)
-  if (missing(cex.n)) 
-    cex.n <- 1
+  par(mar = c(0,0,0,0), oma = c(0,0, mar[3], mar[4]) + op$oma)
   
   ## plot x distribution on top
   par(mar = c(0, mar[2], 0, 0))
-  localTplot(x ~ z, ylim = xlim, horizontal = TRUE, 
-             show.n = FALSE, show.na = FALSE, ...)
+  X <- localTplot(x ~ z, ylim = xlim, horizontal = TRUE,
+                  show.n = FALSE, show.na = FALSE, ...)
   if (axes) 
     localAxis(side = 2, at = 1:nlevels(z), labels = names, ...)
   
   ## plot y distribution on right
   par(mar = c(mar[1], 0, 0, 0))
-  localTplot(y ~ z, ylim = ylim, show.n = show.n, show.na = show.na, 
-             cex.n = cex.n, ...)
+  Y <- localTplot(y ~ z, ylim = ylim, horizontal = FALSE,
+                  show.n = show.n, show.na = show.na, cex.n = cex.n, ...)
   if (axes) 
     localAxis(side = 1, at = 1:nlevels(z), labels = names, ...)
   
@@ -150,44 +139,44 @@ jmplot <- function(x, y, z,
   localPlot(xy, xlim = xlim, ylim = ylim, ...)
   panel.last
   
-  ## add axes
+  ## plot options
   if (axes) {
     localAxis(side = 1, ...)
     localAxis(side = 2, ...)
   }
-  if (frame.plot) 
+  if (frame.plot)
     localBox(...)
-  ## add titles
   if (ann) {
     localTitle(sub = sub, xlab = xlab, ylab = ylab, ...)
     localTitle(main = main, outer = TRUE, ...)
   }
+  invisible(list(x = X, y = Y))
 }
 
-#' tplot (boxplot)
+#' tplot
 #' 
-#' An alternative to \code{\link{boxplot}}. The individual data can be shown 
+#' An alternative to \code{\link{boxplot}}. The individual data can be shown
 #' (either in the foreground or background) with jittering if necessary.
 #' 
-#' @param formula a \code{\link{formula}}, such as \code{y ~ grp}, where y is 
-#' a numeric vector of data values to be split into groups according to the 
+#' @param formula a \code{\link{formula}}, such as \code{y ~ grp}, where y is
+#' a numeric vector of data values to be split into groups according to the
 #' grouping variable \code{grp} (usually a factor)
-#' @param data a data frame (or list) from which the variables in formula 
+#' @param data a data frame (or list) from which the variables in formula
 #' should be taken
-#' @param subset an optional vector specifying a subset of observations to be 
+#' @param subset an optional vector specifying a subset of observations to be
 #' used for plotting
 #' @param na.action a function which indicates what should happen when the data
 #' contain \code{\link{NA}}s; the default is to ignore missing values in either
 #' the response or the group
-#' @param x for specifying data from which the boxplots are to be produced; 
+#' @param x for specifying data from which the boxplots are to be produced;
 #' either a numeric vector or a single list containing such vectors; additional
-#' unnamed arguments specify further data as separate vectors (each 
+#' unnamed arguments specify further data as separate vectors (each
 #' corresponding to a component boxplot); \code{NA}s are allowed in the data
-#' @param ... for the \code{formula} method, named arguments to be passed to 
+#' @param ... for the \code{formula} method, named arguments to be passed to
 #' the default method
 #' 
 #' for the default method, unnamed arguments are additional data vectors
-#' (unless x is a list when they are ignored), and named arguments are 
+#' (unless x is a list when they are ignored), and named arguments are
 #' arguments and \code{\link{par}}s to be passed to \code{\link{bxp}}
 #' @param type type of plot (dot, dot-box, box-dot, box)
 #' @param main,sub overall title and sub-title for the plot (below x-axis)
@@ -205,41 +194,49 @@ jmplot <- function(x, y, z,
 #' @param boxplot.pars additional list of graphical parameters for box plots
 #' @param col plotting color
 #' @param group.col logical; if \code{TRUE}, color by group; otherwise by order
-#' @param boxcol fill color
-#' @param boxborder border color
+#' @param boxcol,bordercol box fill and border colors
 #' @param pch plotting character
 #' @param group.pch logical; if \code{TRUE}, \code{pch} by group; o/w, by order
 #' @param cex \strong{c}haracter \strong{ex}pansion value
 #' @param group.cex logical; if \code{TRUE}, groups will use the same
 #' \code{cex} value; otherwise, points will have individual values, recycled if
 #' necessary
-#' @param median.line logical; draw median line
-#' @param mean.line logical; draw mean line
-#' @param median.pars list of graphical parameters for median line
-#' @param mean.pars see above
-#' @param show.n logical; show number in each group
-#' @param show.na logical; show number missing in each group
+#' @param median.line,mean.line logical; draw median, mean lines
+#' @param median.pars,mean.pars list of graphical parameters for median, mean
+#' lines
+#' @param show.n,show.na logical; show total and missing in each group
 #' @param cex.n character expansion for \code{show.n} and \code{show.na}
-#' @param my.gray default border color
 #' @param ann logical; annotate plot
 #' @param add logical; add to an existing plot
-#' @param panel.first an "expression" to be evaluated after the plot axes are 
-#' set up but before any plotting takes place; this can be useful for drawing 
-#' background grids or scatterplot smooths; note that this works by lazy 
-#' evaluation: passing this argument from other plot methods may well not work 
+#' @param panel.first an "expression" to be evaluated after the plot axes are
+#' set up but before any plotting takes place; this can be useful for drawing
+#' background grids or scatterplot smooths; note that this works by lazy
+#' evaluation: passing this argument from other plot methods may well not work
 #' since it may be evaluated too early; see also \code{\link{plot.default}}
-#' @param panel.last an expression to be evaluated after plotting has taken 
-#' place but before the axes, title, and box are added; see the comments about 
+#' @param panel.last an expression to be evaluated after plotting has taken
+#' place but before the axes, title, and box are added; see the comments about
 #' \code{panel.first}
-#' 
+#'
 #' @return
-#' A list with length equal to the number of groups
-#' 
+#' A list with the following components (see \code{\link{boxplot}}:
+#' \item{\code{$stats}}{a matrix, each column contains the extreme of the lower
+#' whisker, the lower hinge, the median, the upper hinge and the extreme of the
+#' upper whisker for one group/plot. If all the inputs have the same class
+#' attribute, so will this component.}
+#' \item{\code{$n}}{a vector with the number of observations in each group.}
+#' \item{\code{$conf}}{a matrix where each column contains the lower and upper
+#' extremes of the notch.}
+#' \item{\code{$out}}{the values of any data points which lie beyond the
+#' extremes of the whiskers.}
+#' \item{\code{$group}}{a vector of the same length as \code{out} whose
+#' elements indicate to which group the outlier belongs.}
+#' \item{\code{$names}}{a vector of names for the groups.}
+#'
 #' @seealso
 #' \href{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}{Tatsuki
 #' \code{tplot}}; \href{http://data.vanderbilt.edu/~graywh/dotplot/}{web app
-#' for Tatsuki \code{tplot}}
-#' 
+#' for Tatsuki \code{tplot}}; \code{\link{boxplot}}; \code{\link{jmplot}}
+#'
 #' @examples
 #' ## equivalent ways to call tplot
 #' ## the formula method is a convenience function for the first case
@@ -261,8 +258,8 @@ jmplot <- function(x, y, z,
 #' set.seed(1)
 #' dat <- data.frame(age = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
 #'                   sex = sample(c('Female', 'Male'), 80, replace = TRUE),
-#'                   group = paste0('Group ', 
-#'                                  sample(1:4, 40, prob = c(2, 5, 4, 1), 
+#'                   group = paste0('Group ',
+#'                                  sample(1:4, 40, prob = c(2, 5, 4, 1),
 #'                                         replace = TRUE)))
 #' dat[1:5, 'age'] <- NA
 #' 
@@ -279,31 +276,29 @@ tplot <- function(x, ...) UseMethod('tplot')
 
 #' @rdname tplot
 #' @export
-tplot.default <- function(x, ...,
-                          type = c('d','db','bd','b'), jit = 0.1, dist,
+tplot.default <- function(x, ..., type = c('d','db','bd','b'), jit = 0.1, dist,
+                          
                           ## labels/aesthetics
-                          main, sub, xlab, ylab, names, xlim, ylim,
-                          col, group.col = TRUE, boxcol, boxborder,
+                          main = '', sub = '', xlab = '', ylab = '',
+                          names, xlim, ylim,
+                          col, group.col = TRUE, boxcol = 'grey90',
+                          bordercol = 'black',
                           pch = par('pch'), group.pch = TRUE,
                           cex = par('cex'), group.cex = FALSE,
                           
                           ## additional aesthetics
-                          median.line = FALSE, mean.line = FALSE, 
-                          median.pars = list(col = par('col')), 
+                          median.line = FALSE, mean.line = FALSE,
+                          median.pars = list(col = par('col')),
                           mean.pars = median.pars, boxplot.pars,
                           
                           ## n/missing for each group
                           show.n = TRUE, show.na = TRUE, cex.n,
                           
                           ## extra stuff
-                          my.gray = gray(0.75), ann = par('ann'),
-                          axes = TRUE, frame.plot = axes,
+                          ann = par('ann'), axes = TRUE, frame.plot = axes,
                           add = FALSE, at, horizontal = FALSE,
                           
                           panel.first = NULL, panel.last = NULL) {
-  
-  op <- par(no.readonly = TRUE)
-  
   ## helpers
   localPoints <- function(..., tick) points(...)
   localAxis   <- function(..., bg, cex, lty, lwd) axis(...)
@@ -327,12 +322,13 @@ tplot.default <- function(x, ...,
         attr(groups, 'names') <- 1:n
       names <- attr(groups, 'names')
     }
+  zzz <- do.call('boxplot', list(x = x, plot = FALSE, names = names))
   
   ## number and size of groups
   ng <- length(groups)
-  l <- sapply(groups, length)
-  g <- factor(rep(1:ng, l), levels = 1:ng, labels = names(groups))
-  nv <- sum(l)
+  lg <- sapply(groups, length)
+  nv <- sum(lg)
+  g <- factor(rep(1:ng, lg), levels = 1:ng, labels = names(groups))
   
   if (missing(at))
     at <- 1:ng
@@ -351,22 +347,14 @@ tplot.default <- function(x, ...,
     else xlim <- c(0.5, max(at) + 0.5)
   }
   
-  if (missing(xlab))   xlab <- ''
-  if (missing(ylab))   ylab <- ''
-  if (missing(main))   main <- ''
-  if (missing(sub))    sub  <- ''
-  if (missing(boxcol)) boxcol <- 'grey97'
-  
   type <- match.arg(type, choices = c('d','db','bd','b'), several.ok = TRUE)
   ## type of plot for each group
   type <- rep(type, length.out = ng)
   
   ## default colors
   ## 50% gray for box/dots in back, otherwise default color
-  defcols <- c(my.gray, par('col'))
+  defcols <- c(bordercol, par('col'))
   
-  if (missing(boxborder))
-    boxborder <- defcols[2 - grepl('.b', type)]
   if (missing(col)) {
     col <- defcols[2 - grepl('.d', type)]
     group.col <- TRUE
@@ -374,13 +362,13 @@ tplot.default <- function(x, ...,
   if (missing(boxplot.pars))
     boxplot.pars <- NULL
   
-  boxborder <- rep(boxborder, length.out = ng)
   boxcol <- rep(boxcol, length.out = ng)
+  boxborder <- rep(bordercol, length.out = ng)
   
   if (group.col) {
     ## colors by group
     g.col <- rep(col, length.out = ng)
-    col <- rep(g.col, l)
+    col <- rep(g.col, lg)
   } else {
     ## colors by individual or global
     col   <- rep(col, length.out = nv)
@@ -388,18 +376,19 @@ tplot.default <- function(x, ...,
   }
   pch <- if (group.pch) {
     ## plot characters by group
-    rep(rep(pch, length.out = ng), l)
+    rep(rep(pch, length.out = ng), lg)
   } else {
     ## plot characters by individual or global
     rep(pch, length.out = nv)
   }
   cex <- if (group.cex) {
     ## plot characters by group
-    rep(rep(cex, length.out = ng), l)
+    rep(rep(cex, length.out = ng), lg)
   } else {
     ## plot characters by individual or global
     rep(cex, length.out = nv)
   }
+  if (missing(cex.n)) cex.n <- 1
   
   ## split colors and plot characters into groups
   col <- split(col, g)
@@ -409,25 +398,25 @@ tplot.default <- function(x, ...,
   ## remove any NAs from the data and options
   nonas <- lapply(groups, function(x) !is.na(x))
   l2 <- sapply(groups, function(x) sum(is.na(x)))
-  groups <- mapply('[', groups, nonas, SIMPLIFY = FALSE)
-  l <- sapply(groups, length)
-  col <- mapply('[', col, nonas, SIMPLIFY = FALSE)
-  pch <- mapply('[', pch, nonas, SIMPLIFY = FALSE)
-  cex <- mapply('[', cex, nonas, SIMPLIFY = FALSE)
+  groups <- Map('[', groups, nonas)
+  col <- Map('[', col, nonas)
+  pch <- Map('[', pch, nonas)
+  cex <- Map('[', cex, nonas)
   
   ## mean and median line for each group
   mean.line   <- rep(mean.line, length.out = ng)
   median.line <- rep(median.line, length.out = ng)
   
   ## defaults for dist and jit for groups
-  if (missing(dist) || is.na(dist) || is.null(dist)) 
+  if (missing(dist) || is.na(dist) || is.null(dist))
     dist <- diff(range(ylim)) / 100
-  if (missing(jit) || is.na(jit) || is.null(jit)) 
+  if (missing(jit) || is.na(jit) || is.null(jit))
     jit <- 0.025 * ng
   groups <- lapply(groups, grouping_, dif = dist)
   ## rawr:::grouping_; rawr:::jit_
   
   ## set up new plot unless adding to existing one
+  op <- par(no.readonly = TRUE)
   if (!add) {
     plot.new()
     if (horizontal)
@@ -441,6 +430,7 @@ tplot.default <- function(x, ...,
   
   for (i in 1:ng) {
     to.plot <- groups[[i]]
+    nn <- names(groups)
     gs <- to.plot$g.si
     hms <- to.plot$hmsf
     x <- rep(at[i], nrow(to.plot)) + jit_(gs, hms) * jit
@@ -448,16 +438,16 @@ tplot.default <- function(x, ...,
     
     ## dots behind
     if (type[i] == 'bd') {
-      boxplotout <- do.call('boxplot',
-                            c(list(x = y, at = at[i], plot = FALSE, add = FALSE,
-                                   axes = FALSE, col = boxcol[i], 
-                                   border = boxborder[i], outline = FALSE, 
-                                   horizontal = horizontal), boxplot.pars))
-      notoplot <- (y <=  boxplotout$stats[5,]) & (y >=  boxplotout$stats[1,])
+      bp <- do.call('boxplot',
+                    c(list(x = y, at = at[i], plot = FALSE, add = FALSE,
+                           axes = FALSE, col = boxcol[i],
+                           border = boxborder[i], outline = FALSE,
+                           horizontal = horizontal), boxplot.pars))
+      notoplot <- (y <= bp$stats[5,]) & (y >= bp$stats[1,])
       if (sum(notoplot) > 0)
         col[[i]][notoplot] <- '#bfbfbf'
       if (horizontal) {
-        do.call('localPoints', c(list(x = y, y = x, pch = pch[[i]], 
+        do.call('localPoints', c(list(x = y, y = x, pch = pch[[i]],
                                       col = col[[i]], cex = cex[[i]]),
                                  pars))
       } else do.call('localPoints', c(list(x = x, y = y, pch = pch[[i]],
@@ -466,42 +456,40 @@ tplot.default <- function(x, ...,
     }
     ## box in front
     if (type[i] %in% c('bd', 'b')) {
-      boxplotout <- do.call('boxplot',
-                            c(list(x = y, at = at[i], add = TRUE, 
-                                   axes = FALSE, col = boxcol[i], 
-                                   border = boxborder[i], outline = FALSE, 
-                                   horizontal = horizontal), boxplot.pars))
-      toplot <- (y > boxplotout$stats[5,]) | (y < boxplotout$stats[1,])
-      if (sum(toplot) > 0) 
-        if (col[[i]][toplot][1] == '#bfbfbf') 
+      bp <- do.call('boxplot',
+                    c(list(x = y, at = at[i], add = TRUE, axes = FALSE,
+                           col = boxcol[i], border = boxborder[i],
+                           outline = FALSE, horizontal = horizontal),
+                      boxplot.pars))
+      toplot <- (y > bp$stats[5,]) | (y < bp$stats[1,])
+      if (sum(toplot) > 0)
+        if (col[[i]][toplot][1] == '#bfbfbf')
           col[[i]][toplot] <- 1
       if (horizontal) {
-        do.call('localPoints', 
+        do.call('localPoints',
                 c(list(x = y[toplot], y = x[toplot], pch = pch[[i]][toplot],
                        col = col[[i]][toplot], cex = cex[[i]][toplot]),
                   pars))
-      } else do.call('localPoints', c(list(x = x[toplot], y = y[toplot],
-                                           pch = pch[[i]][toplot],
-                                           col = col[[i]][toplot],
-                                           cex = cex[[i]][toplot]),
-                                      pars))
+      } else
+        do.call('localPoints',
+                c(list(x = x[toplot], y = y[toplot], pch = pch[[i]][toplot],
+                       col = col[[i]][toplot], cex = cex[[i]][toplot]), pars))
     }
     ## box behind
     if (type[i] == 'db')
-      boxplotout <- do.call('boxplot',
-                            c(list(x = y, at = at[i], add = TRUE, axes = FALSE,
-                                   col = boxcol[i], border = boxborder[i],
-                                   outline = FALSE, horizontal = horizontal),
-                              boxplot.pars))
+      bp <- do.call('boxplot',
+                    c(list(x = y, at = at[i], add = TRUE, axes = FALSE,
+                           col = boxcol[i], border = boxborder[i],
+                           outline = FALSE, horizontal = horizontal),
+                      boxplot.pars))
     ## dots in front
     if (type[i] %in% c('db', 'd')) {
       if (horizontal)
         do.call('localPoints', c(list(x = y, y = x, pch = pch[[i]],
-                                      col = col[[i]], cex = cex[[i]]),
-                                 pars))
-      else do.call('localPoints', c(list(x = x, y = y, pch = pch[[i]],
-                                         col = col[[i]], cex = cex[[i]]),
-                                    pars))
+                                      col = col[[i]], cex = cex[[i]]), pars))
+      else
+        do.call('localPoints', c(list(x = x, y = y, pch = pch[[i]],
+                                      col = col[[i]], cex = cex[[i]]), pars))
     }
     
     ## mean and median lines
@@ -513,34 +501,28 @@ tplot.default <- function(x, ...,
     if (median.line[i]) {
       if (horizontal)
         do.call('lines', c(list(rep(median(y), 2), at[i] + Lme), median.pars))
-      else do.call('lines', c(list(at[i] + Lme, rep(median(y), 2)), median.pars))
+      else
+        do.call('lines', c(list(at[i] + Lme, rep(median(y), 2)), median.pars))
     }
-    
-    ## use return value of boxplot instead
-    # out[[i]] <- data.frame(to.plot, col = col[[i]], pch = pch[[i]])
-    out[[i]] <- if (type[i] == 'd')
-      boxplot(x = y, at = at[i], plot = FALSE) else boxplotout
   }
+    
   panel.last
   
   if (axes) {
-    do.call('localAxis', c(list(side = 1 + horizontal, at = at,
-                                labels = names), pars))
+    do.call('localAxis',
+            c(list(side = 1 + horizontal, at = at, labels = names), pars))
     do.call('localAxis', c(list(side = 2 - horizontal), pars))
   }
   
   ## frame and text, optional sample sizes
-  if (show.n) {
-    if (missing(cex.n))
-      cex.n <- 1
+  if (show.n)
     do.call('localMtext',
             if (show.na)
-              c(list(sprintf('n = %s\nmissing = %s', l, l2),
+              c(list(sprintf('n = %s\nmissing = %s', lg, l2),
                      side = 3 + horizontal, at = at),
                 pars, list(xaxt = 's', yaxt = 's'))
-            else c(list(paste0('n = ', l), side = 3 + horizontal, at = at),
+            else c(list(paste0('n = ', lg), side = 3 + horizontal, at = at),
                    pars, list(xaxt = 's', yaxt = 's')))
-  }
   if (frame.plot)
     do.call('localBox', pars)
   if (ann) {
@@ -550,10 +532,8 @@ tplot.default <- function(x, ...,
     else do.call('localTitle', c(list(main = main, sub = sub,
                                       xlab = xlab, ylab = ylab), pars))
   }
-  
-  names(out) <- names(groups)
-  invisible(if (length(out) == 1L) out[[1]] else Reduce(clist, out))
-  }
+  invisible(zzz)
+}
 
 #' @rdname tplot
 #' @export
@@ -618,44 +598,46 @@ tplot.formula <- function(formula, data = NULL, ...,
 #' @param formula a \code{\link{formula}}, such as \code{y ~ group}, where y
 #' is a numeric vector of data values to be split into groups according to the
 #' grouping variable \code{group} (usually a factor)
-#' @param data a data frame (or list) from which the variables in formula 
+#' @param data a data frame (or list) from which the variables in formula
 #' should be taken
-#' @param subset an optional vector specifying a subset of observations to be 
+#' @param subset an optional vector specifying a subset of observations to be
 #' used for plotting
 #' @param na.action a function which indicates what should happen when the data
 #' contain \code{\link{NA}}s; the default is to ignore missing values in either
 #' the response or the group
-#' @param x x-axis variable
-#' @param y y-axis variable
-#' @param ... for the \code{formula} method, named arguments to be passed to 
+#' @param x,y x- and y-axis variables
+#' @param ... for the \code{formula} method, named arguments to be passed to
 #' the default method
 #' 
 #' for the default method, unnamed arguments are additional data vectors
-#' (unless x is a list when they are ignored), and named arguments are 
+#' (unless x is a list when they are ignored), and named arguments are
 #' arguments and \code{\link{par}}s to be passed to \code{\link{plot}}
-#' @param bkgr logical; fill boxes with gray scale based on density
+#' @param bg.col logical or color name to fill boxes with based on density; if
+#' \code{FALSE}, gridlines are drawn to distinguish boxes; if \code{TRUE},
+#' grayscale is used as the default color
 #' @param col plotting color
 #' @param pch \strong{p}lotting \strong{ch}aracter
-#' @param cex numerical value giving the amount by which plotting text and 
-#' symbols should be magnified relative to the default; this starts as 1 when 
-#' a device is opened and is reset when the layout is changed, e.g., by setting
-#' \code{mfrow}
+#' @param cex numerical value giving the amount by which plotting text and
+#' symbols should be magnified relative to the default; this starts as 1
+#' when a device is opened and is reset when the layout is changed, e.g.,
+#' by setting \code{mfrow}
 #' 
 #' @return
-#' An \code{\link{invisible}} table corresponding to the plot cell counts.
+#' A table (invisibly) corresponding to the plot cell counts.
 #' 
 #' @references
-#' \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
+#' \href{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}{Tatsuki
+#' \code{dsplot}}
 #' 
 #' @examples
 #' set.seed(1)
 #' x <- round(rnorm(400, 100, 4))
 #' y <- round(rnorm(400, 200, 4))
 #' sex <- sample(c('Female', 'Male'), 400, replace = TRUE)
-#' dsplot(y ~ x, pch = 19, col = 1 + (sex %in% 'Female'), cex = .6,
-#'        xlab = 'measurement 1', ylab = 'measurement 2', bty = 'L')
-#' legend('bottomright', pch = 19, col = 1:2, 
-#'        legend = c('Male', 'Female'), cex = .8)
+#' dsplot(y ~ x, pch = 19, col = 1 + (sex %in% 'Female'), cex = .6, bty = 'l',
+#'        xlab = 'measurement 1', ylab = 'measurement 2', bg.col = 'tomato')
+#' legend('bottomright', pch = 19, col = 1:2, bty = 'n',
+#'        legend = c('Male', 'Female'))
 #'        
 #' @export
 
@@ -663,24 +645,35 @@ dsplot <- function(x, ...) UseMethod('dsplot')
 
 #' @rdname dsplot
 #' @export
-dsplot.default <- function(x, y, ..., bkgr = TRUE, col = 1,
+dsplot.default <- function(x, y, ..., bg.col = TRUE, col = 1,
                            pch = 19, cex = 0.8) {
-  
-  op <- par(no.readonly = TRUE)
-  on.exit(par(op))
-  
   # if (any(x != round(x), na.rm = TRUE) | any(y != round(y), na.rm = TRUE))
   #   stop('\'x\' must be integer values', '\n')
   
+  ## helpers
+  square.coordinates <- function(box.size) {
+    x.c <- y.c <- 1
+    for (i in 2:box.size)
+      x.c <- c(x.c, every.other.element.x(i))
+    for (j in 2:box.size)
+      y.c <- c(y.c, every.other.element.y(j))
+    data.frame(x.c, y.c)
+  }
+  ## vector 1,n,2,n,3,n, ...,  n, n for x
+  ## vector n,1,n,2,n,3, ..., n-1,n for y
+  every.other.element.x <- function(n) c(rbind(1:n, rep(n, n)))[-(2 * n)]
+  every.other.element.y <- function(n) c(rbind(rep(n, n), 1:n))[-(2 * n)]
+  
   L <- length(x)
   cc <- complete.cases(x, y)
-  
   if (length(pch) < L) pch <- rep(pch, length.out = L)
   if (length(col) < L) col <- rep(col, length.out = L)
   if (length(cex) < L) cex <- rep(cex, length.out = L)
   
   x <- x[cc]
   y <- y[cc]
+  X <- range(x) + c(0, 1)
+  Y <- range(y) + c(0, 1)
   pch <- pch[cc]
   col <- col[cc]
   cex <- cex[cc]
@@ -690,38 +683,26 @@ dsplot.default <- function(x, y, ..., bkgr = TRUE, col = 1,
   tab <- table(x, y)
   max.freq <- max(tab)
   box.size <- ceiling(sqrt(max.freq))
-  X <- range(x) + c(0, 1)
-  Y <- range(y) + c(0, 1)
-  plot(X, Y, las = 1, type = 'n', xaxs = 'i', yaxs = 'i', bty = 'n', 
+  
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
+  plot(X, Y, las = 1, type = 'n', xaxs = 'i', yaxs = 'i', bty = 'n',
        xaxt = 'n', yaxt = 'n', ...)
   axis(1, at = pretty(x) + .5, labels = pretty(x), tick = FALSE, las = 1)
   axis(2, at = pretty(y) + .5, labels = pretty(y), tick = FALSE, las = 1)
   
-  if (!bkgr) {
+  if (bg.col == FALSE) {
     for (i in y.levels)
       segments(min(x), i, max(x), i, col = grey(.9))
     for (i in x.levels)
       segments(i, min(y), i, max(x), col = grey(.9))
   }
   
-  ## vector 1,n,2,n,3,n, ...,  n, n for x
-  ## vector n,1,n,2,n,3, ..., n-1,n for y
-  every.other.element.x <- function(n) c(rbind(1:n, rep(n, n)))[-(2 * n)]
-  every.other.element.y <- function(n) c(rbind(rep(n, n), 1:n))[-(2 * n)]
-  
-  square.coordinates <- function(box.size) {
-    x.c <- y.c <- 1
-    for (i in 2:box.size)
-      x.c <- c(x.c, every.other.element.x(i))
-    for (j in 2:box.size)
-      y.c <- c(y.c, every.other.element.y(j))
-    data.frame(x.c, y.c)
-  }
-  
   sc <- square.coordinates(box.size)
   coord <- (1:box.size) / (box.size + 1)
   off.set <- coord[1] / 4
-  grey.scale <- rev(seq(.65, .95, length = max.freq))
+  alpha <- seq(0.2, 0.9, length = max.freq)
+  bg.col <- if (isTRUE(bg.col)) 'grey' else bg.col[1]
   
   dat <- data.frame(id = 1:length(x), x, y)
   dat <- dat[order(dat$x, dat$y), ]
@@ -743,21 +724,22 @@ dsplot.default <- function(x, y, ..., bkgr = TRUE, col = 1,
   dat$col <- col
   dat$pch <- pch
   
-  if (bkgr) {
+  if (!bg.col == FALSE) {
     for (i in x.levels) {
       for (j in y.levels) {
         n <- sum(x == i & y == j)
-        if (n > 0) { 
-          rect(i + off.set, j + off.set, i + 1 - off.set, j + 1 - off.set, 
-               border = grey(grey.scale[n]), col = grey(grey.scale[n]))
+        if (n > 0) {
+          col <- adjustcolor(bg.col, alpha[n])
+          rect(i + off.set, j + off.set, i + 1 - off.set, j + 1 - off.set,
+               border = col, col = col)
         }
       }
     }
   }
-  points(dat$x + coord[sc[dat$idx, 1]] + dat$lx, dat$y + 
-           coord[sc[dat$idx, 2]] + dat$ly, pch = dat$pch, 
-         col = dat$col, cex = cex)
-  invisible(table(factor(y, levels = rev(min(y):max(y))), 
+  points(dat$x + coord[sc[dat$idx, 1]] + dat$lx,
+         dat$y + coord[sc[dat$idx, 2]] + dat$ly,
+         pch = dat$pch, col = dat$col, cex = cex)
+  invisible(table(factor(y, levels = rev(min(y):max(y))),
                   factor(x, levels = min(x):max(x))))
 }
 
@@ -1193,7 +1175,7 @@ check_river_format <- function(data, bar_data) {
   fmt3 <- c("'data.frame': n obs. of 5 variables:",
             " $ id            : any ",
             " $ dt_tox_start  :Class 'Date'",
-            " $ dt_tox_end    :Class 'Date'", 
+            " $ dt_tox_end    :Class 'Date'",
             " $ tox_grade     : factor ",
             " $ tox_desc      : any ")
   
@@ -1298,7 +1280,7 @@ dose_esc <- function(dose, col.dose, nstep = 3, dose.exp, col.exp,
                      xlab = 'Time', ylab = 'Dose', xlim = NULL, ylim = NULL,
                      squish = length(dose) %/% 3) {
   nlevel <- table(dose)
-  xlab <- if (missing(xlab)) 'Time' else xlab 
+  xlab <- if (missing(xlab)) 'Time' else xlab
   ylab <- if (missing(ylab)) paste('Dose', seq_along(nlevel)) else ylab
   dose.exp <- if (missing(dose.exp)) NULL else c(0, dose.exp)
   col.exp  <- if (missing(col.exp)) {

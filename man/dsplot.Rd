@@ -8,14 +8,14 @@
 \usage{
 dsplot(x, ...)
 
-\method{dsplot}{default}(x, y, ..., bkgr = TRUE, col = 1, pch = 19,
+\method{dsplot}{default}(x, y, ..., bg.col = TRUE, col = 1, pch = 19,
   cex = 0.8)
 
 \method{dsplot}{formula}(formula, data = NULL, ..., subset,
   na.action = NULL)
 }
 \arguments{
-\item{x}{x-axis variable}
+\item{x, y}{x- and y-axis variables}
 
 \item{...}{for the \code{formula} method, named arguments to be passed to
 the default method
@@ -24,18 +24,18 @@ for the default method, unnamed arguments are additional data vectors
 (unless x is a list when they are ignored), and named arguments are
 arguments and \code{\link{par}}s to be passed to \code{\link{plot}}}
 
-\item{y}{y-axis variable}
-
-\item{bkgr}{logical; fill boxes with gray scale based on density}
+\item{bg.col}{logical or color name to fill boxes with based on density; if
+\code{FALSE}, gridlines are drawn to distinguish boxes; if \code{TRUE},
+grayscale is used as the default color}
 
 \item{col}{plotting color}
 
 \item{pch}{\strong{p}lotting \strong{ch}aracter}
 
 \item{cex}{numerical value giving the amount by which plotting text and
-symbols should be magnified relative to the default; this starts as 1 when
-a device is opened and is reset when the layout is changed, e.g., by setting
-\code{mfrow}}
+symbols should be magnified relative to the default; this starts as 1
+when a device is opened and is reset when the layout is changed, e.g.,
+by setting \code{mfrow}}
 
 \item{formula}{a \code{\link{formula}}, such as \code{y ~ group}, where y
 is a numeric vector of data values to be split into groups according to the
@@ -52,7 +52,7 @@ contain \code{\link{NA}}s; the default is to ignore missing values in either
 the response or the group}
 }
 \value{
-An \code{\link{invisible}} table corresponding to the plot cell counts.
+A table (invisibly) corresponding to the plot cell counts.
 }
 \description{
 This creates a scatter plot (sort of) for discrete, bivariate data; an
@@ -63,13 +63,14 @@ set.seed(1)
 x <- round(rnorm(400, 100, 4))
 y <- round(rnorm(400, 200, 4))
 sex <- sample(c('Female', 'Male'), 400, replace = TRUE)
-dsplot(y ~ x, pch = 19, col = 1 + (sex \%in\% 'Female'), cex = .6,
-       xlab = 'measurement 1', ylab = 'measurement 2', bty = 'L')
-legend('bottomright', pch = 19, col = 1:2,
-       legend = c('Male', 'Female'), cex = .8)
+dsplot(y ~ x, pch = 19, col = 1 + (sex \%in\% 'Female'), cex = .6, bty = 'l',
+       xlab = 'measurement 1', ylab = 'measurement 2', bg.col = 'tomato')
+legend('bottomright', pch = 19, col = 1:2, bty = 'n',
+       legend = c('Male', 'Female'))
        
 }
 \references{
-\url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
+\href{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}{Tatsuki
+\code{dsplot}}
 }
 

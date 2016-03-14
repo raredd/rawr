@@ -4,34 +4,34 @@
 \alias{tplot}
 \alias{tplot.default}
 \alias{tplot.formula}
-\title{tplot (boxplot)}
+\title{tplot}
 \usage{
 tplot(x, ...)
 
 \method{tplot}{default}(x, ..., type = c("d", "db", "bd", "b"), jit = 0.1,
-  dist, main, sub, xlab, ylab, names, xlim, ylim, col, group.col = TRUE,
-  boxcol, boxborder, pch = par("pch"), group.pch = TRUE, cex = par("cex"),
+  dist, main = "", sub = "", xlab = "", ylab = "", names, xlim, ylim,
+  col, group.col = TRUE, boxcol = "grey90", bordercol = "black",
+  pch = par("pch"), group.pch = TRUE, cex = par("cex"),
   group.cex = FALSE, median.line = FALSE, mean.line = FALSE,
   median.pars = list(col = par("col")), mean.pars = median.pars,
-  boxplot.pars, show.n = TRUE, show.na = TRUE, cex.n,
-  my.gray = gray(0.75), ann = par("ann"), axes = TRUE,
-  frame.plot = axes, add = FALSE, at, horizontal = FALSE,
+  boxplot.pars, show.n = TRUE, show.na = TRUE, cex.n, ann = par("ann"),
+  axes = TRUE, frame.plot = axes, add = FALSE, at, horizontal = FALSE,
   panel.first = NULL, panel.last = NULL)
 
 \method{tplot}{formula}(formula, data = NULL, ..., subset, na.action = NULL,
   panel.first = NULL, panel.last = NULL)
 }
 \arguments{
-\item{x}{for specifying data from which the boxplots are to be produced; 
+\item{x}{for specifying data from which the boxplots are to be produced;
 either a numeric vector or a single list containing such vectors; additional
-unnamed arguments specify further data as separate vectors (each 
+unnamed arguments specify further data as separate vectors (each
 corresponding to a component boxplot); \code{NA}s are allowed in the data}
 
-\item{...}{for the \code{formula} method, named arguments to be passed to 
+\item{...}{for the \code{formula} method, named arguments to be passed to
 the default method
 
 for the default method, unnamed arguments are additional data vectors
-(unless x is a list when they are ignored), and named arguments are 
+(unless x is a list when they are ignored), and named arguments are
 arguments and \code{\link{par}}s to be passed to \code{\link{bxp}}}
 
 \item{type}{type of plot (dot, dot-box, box-dot, box)}
@@ -53,9 +53,7 @@ respectively}
 
 \item{group.col}{logical; if \code{TRUE}, color by group; otherwise by order}
 
-\item{boxcol}{fill color}
-
-\item{boxborder}{border color}
+\item{boxcol, bordercol}{box fill and border colors}
 
 \item{pch}{plotting character}
 
@@ -67,23 +65,16 @@ respectively}
 \code{cex} value; otherwise, points will have individual values, recycled if
 necessary}
 
-\item{median.line}{logical; draw median line}
+\item{median.line, mean.line}{logical; draw median, mean lines}
 
-\item{mean.line}{logical; draw mean line}
-
-\item{median.pars}{list of graphical parameters for median line}
-
-\item{mean.pars}{see above}
+\item{median.pars, mean.pars}{list of graphical parameters for median, mean
+lines}
 
 \item{boxplot.pars}{additional list of graphical parameters for box plots}
 
-\item{show.n}{logical; show number in each group}
-
-\item{show.na}{logical; show number missing in each group}
+\item{show.n, show.na}{logical; show total and missing in each group}
 
 \item{cex.n}{character expansion for \code{show.n} and \code{show.na}}
-
-\item{my.gray}{default border color}
 
 \item{ann}{logical; annotate plot}
 
@@ -97,24 +88,24 @@ necessary}
 
 \item{horizontal}{logical; flip axes}
 
-\item{panel.first}{an "expression" to be evaluated after the plot axes are 
-set up but before any plotting takes place; this can be useful for drawing 
-background grids or scatterplot smooths; note that this works by lazy 
-evaluation: passing this argument from other plot methods may well not work 
+\item{panel.first}{an "expression" to be evaluated after the plot axes are
+set up but before any plotting takes place; this can be useful for drawing
+background grids or scatterplot smooths; note that this works by lazy
+evaluation: passing this argument from other plot methods may well not work
 since it may be evaluated too early; see also \code{\link{plot.default}}}
 
-\item{panel.last}{an expression to be evaluated after plotting has taken 
-place but before the axes, title, and box are added; see the comments about 
+\item{panel.last}{an expression to be evaluated after plotting has taken
+place but before the axes, title, and box are added; see the comments about
 \code{panel.first}}
 
-\item{formula}{a \code{\link{formula}}, such as \code{y ~ grp}, where y is 
-a numeric vector of data values to be split into groups according to the 
+\item{formula}{a \code{\link{formula}}, such as \code{y ~ grp}, where y is
+a numeric vector of data values to be split into groups according to the
 grouping variable \code{grp} (usually a factor)}
 
-\item{data}{a data frame (or list) from which the variables in formula 
+\item{data}{a data frame (or list) from which the variables in formula
 should be taken}
 
-\item{subset}{an optional vector specifying a subset of observations to be 
+\item{subset}{an optional vector specifying a subset of observations to be
 used for plotting}
 
 \item{na.action}{a function which indicates what should happen when the data
@@ -122,10 +113,22 @@ contain \code{\link{NA}}s; the default is to ignore missing values in either
 the response or the group}
 }
 \value{
-A list with length equal to the number of groups
+A list with the following components (see \code{\link{boxplot}}:
+\item{\code{$stats}}{a matrix, each column contains the extreme of the lower
+whisker, the lower hinge, the median, the upper hinge and the extreme of the
+upper whisker for one group/plot. If all the inputs have the same class
+attribute, so will this component.}
+\item{\code{$n}}{a vector with the number of observations in each group.}
+\item{\code{$conf}}{a matrix where each column contains the lower and upper
+extremes of the notch.}
+\item{\code{$out}}{the values of any data points which lie beyond the
+extremes of the whiskers.}
+\item{\code{$group}}{a vector of the same length as \code{out} whose
+elements indicate to which group the outlier belongs.}
+\item{\code{$names}}{a vector of names for the groups.}
 }
 \description{
-An alternative to \code{\link{boxplot}}. The individual data can be shown 
+An alternative to \code{\link{boxplot}}. The individual data can be shown
 (either in the foreground or background) with jittering if necessary.
 }
 \examples{
@@ -149,8 +152,8 @@ tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd',
 set.seed(1)
 dat <- data.frame(age = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
                   sex = sample(c('Female', 'Male'), 80, replace = TRUE),
-                  group = paste0('Group ', 
-                                 sample(1:4, 40, prob = c(2, 5, 4, 1), 
+                  group = paste0('Group ',
+                                 sample(1:4, 40, prob = c(2, 5, 4, 1),
                                         replace = TRUE)))
 dat[1:5, 'age'] <- NA
 
@@ -165,6 +168,6 @@ tplot(age ~ group, data = dat, las = 1, cex.n = .8, cex.axis = 1, bty = 'L',
 \seealso{
 \href{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}{Tatsuki
 \code{tplot}}; \href{http://data.vanderbilt.edu/~graywh/dotplot/}{web app
-for Tatsuki \code{tplot}}
+for Tatsuki \code{tplot}}; \code{\link{boxplot}}; \code{\link{jmplot}}
 }
 

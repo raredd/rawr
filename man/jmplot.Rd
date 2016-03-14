@@ -4,85 +4,81 @@
 \alias{jmplot}
 \title{Joint-marginal plot}
 \usage{
-jmplot(x, y, z, main, sub, xlab, ylab, names, xlim, ylim, axes = TRUE,
-  frame.plot = axes, log = "", xratio = 0.8, yratio = xratio,
-  show.n = TRUE, show.na = TRUE, cex.n, ann = par("ann"), asp = NA,
-  panel.first = NULL, panel.last = NULL, ...)
+jmplot(x, y, z, main = "", sub = "", xlab, ylab, names, xlim, ylim,
+  axes = TRUE, frame.plot = axes, log = "", xratio = 0.8,
+  yratio = xratio, show.n = TRUE, show.na = show.n, cex.n = 1,
+  ann = par("ann"), asp = NA, panel.first = NULL, panel.last = NULL,
+  ...)
 }
 \arguments{
-\item{x}{x-axis variable}
+\item{x, y}{x- and y-axis variables}
 
-\item{y}{y-axis variable}
+\item{z}{grouping variable}
 
-\item{z}{group variable}
+\item{main, sub}{main- and sub-titles (below x-axis) for the plot}
 
-\item{main}{overall title for the plot}
-
-\item{sub}{sub-title for the plot (below x-axis)}
-
-\item{xlab}{x-axis label}
-
-\item{ylab}{y-axis label}
+\item{xlab, ylab}{x- and y-axis labels}
 
 \item{names}{labels for \code{x} and \code{y} variables}
 
-\item{xlim}{x-axis limits}
-
-\item{ylim}{y-axis limits}
+\item{xlim, ylim}{x- and y-axis limits}
 
 \item{axes}{logical; draw axes}
 
 \item{frame.plot}{logical; draw box around \code{x-y} plot}
 
-\item{log}{character, "x", "y", or "xy" for logarithmic scale; sets negative
-values to \code{\link{NA}} and gives a warning; see \code{\link{xy.coords}}}
+\item{log}{\code{"x"}, \code{"y"}, or \code{"xy"} for logarithmic scale or
+\code{""} for none (default); sets negative values to \code{\link{NA}} and
+gives a warning; see \code{\link{xy.coords}}}
 
-\item{xratio}{ratio of \code{x-y} plot to bar plots along x-axis; see 
-\code{widths} in \code{\link{layout}}}
+\item{xratio, yratio}{proportion of x- and y-axes allotted for scatterplots;
+see \code{widths} and \code{heights} in \code{\link{layout}}}
 
-\item{yratio}{ratio of \code{x-y} plot to bar plots along x-axis; see
-\code{heights} in \code{\link{layout}}}
-
-\item{show.n}{logical; show number in each group}
-
-\item{show.na}{logical; show number missing in each group}
+\item{show.n, show.na}{logical; show total and missing in each group}
 
 \item{cex.n}{size of \code{show.n} and \code{show.na} text}
 
 \item{ann}{logical; annotate plot}
 
-\item{asp}{numeric, giving the \strong{asp}ect ratio \emph{y/x}; see 
+\item{asp}{numeric, giving the \strong{asp}ect ratio \emph{y/x}; see
 \code{\link{plot.window}}}
 
-\item{panel.first}{an "expression" to be evaluated after the plot axes are 
-set up but before any plotting takes place; this can be useful for drawing 
-background grids or scatterplot smooths; note that this works by lazy 
-evaluation: passing this argument from other plot methods may well not work 
+\item{panel.first}{an "expression" to be evaluated after the plot axes are
+set up but before any plotting takes place; this can be useful for drawing
+background grids or scatterplot smooths; note that this works by lazy
+evaluation: passing this argument from other plot methods may well not work
 since it may be evaluated too early; see also \code{\link{plot.default}}}
 
-\item{panel.last}{an expression to be evaluated after plotting has taken 
-place but before the axes, title, and box are added; see the comments about 
+\item{panel.last}{an expression to be evaluated after plotting has taken
+place but before the axes, title, and box are added; see the comments about
 \code{panel.first}}
 
-\item{...}{further arguments passed to \code{par} (\code{las}, \code{pch}, 
+\item{...}{further arguments passed to \code{par} (\code{las}, \code{pch},
 etc) and/or \code{\link{tplot}} (\code{group.col}, \code{group.pch}, etc)}
+}
+\value{
+A list with components \code{x} and \code{y} corresponding to boxplots
+on x- and y-axes, respectively. See \code{\link{boxplot}} or
+\code{\link{tplot}} for a detailed description of each list.
 }
 \description{
 Joint and marginal distributions scatterplots with \code{\link{tplot}}s on
 margins.
 }
 \examples{
-set.seed(1618)
+set.seed(1)
 dat <- data.frame(x = rnorm(100, 20, 5),
                   y = rexp(100),
                   z = c('M','F'),
                   zz = c(LETTERS[1:4]))
-with(dat, jmplot(x, y, zz, type = 'db', jit = .02, col = 1:4, las = 1,
-     group.col = TRUE, pch = 1:4, group.pch = TRUE, boxcol = grey(.9), 
-     cex.n = .5))
-       
+with(dat,
+  jmplot(x, y, zz, type = 'db', jit = .02, col = 1:4, las = 1, cex.n = .5,
+         group.col = TRUE, pch = 1:4, group.pch = TRUE, boxcol = grey(.9))
+)
+
 }
 \references{
-\url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
+\href{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}{Tatsuki
+\code{jmplot}}; \code{\link{tplot}}; \code{\link{boxplot}}
 }
 
