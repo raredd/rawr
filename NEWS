@@ -2,6 +2,9 @@ rawr 0.8.1
 --------
   * changes to kmplot, surv_summary, surv_table that could break existing
     code (but should not)
+  * changes to tabler_by, tabler_by2, tox_worst will probably break
+    exisiting code relying on default arguments
+  * changes to jmplot, dsplot, tplot (set defaults, rename some args)
 
 rawr 0.8.0
 --------
