@@ -28,7 +28,7 @@ cat(readLines(p), sep = '\\n')
 #  proc format;
 #    value $jc 'one' = 'management'
 #              'two' = 'non-management';
-#    value rate 
+#    value rate
 #           -99 = 'not applicable'
 #            -1 = 'missing'
 #             0 = 'terrible'
@@ -55,19 +55,19 @@ cat(readLines(p), sep = '\\n')
 
 #  $jc
 #    'management' 'non-management'; 
-#         "'one'"           "'two'" 
+#         "'one'"           "'two'"
 #  
 #  $rate
 #  'not applicable'        'missing'       'terrible'           'poor' 
-#             "-99"             "-1"              "0"              "1" 
+#             "-99"             "-1"              "0"              "1"
 #            'fair'           'good'      'excellent' 
-#               "2"              "3"              "4" 
+#               "2"              "3"              "4"
 #  
 #  $with_comments
 #  'not applicable'        'missing'       'terrible'           'poor' 
-#             "-99"             "-1"              "0"              "1" 
+#             "-99"             "-1"              "0"              "1"
 #            'fair'           'good'      'excellent' 
-#               "2"              "3"              "4" 
+#               "2"              "3"              "4"
 
 names(pp[[3]][match(c('1','-99','2','0'), pp[[3]])])
 

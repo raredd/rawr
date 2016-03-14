@@ -10,7 +10,7 @@ tcol(color, trans = 255, alpha)
 \item{color}{vector of color names (or hexadecimal) as character strings
 or integers corresponding to colors in the current \code{\link{palette}}}
 
-\item{trans}{alpha transparency defined as an integer in the range 
+\item{trans}{alpha transparency defined as an integer in the range
 \code{[0, 255]} where \code{0} is fully transparent and \code{255} is fully
 visible; see details}
 

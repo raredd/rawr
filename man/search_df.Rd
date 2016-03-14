@@ -13,16 +13,16 @@ search_df(pattern, data, col.name, var = 0, ignore.case = TRUE, ...)
 
 \item{col.name}{column name in \code{data} to search}
 
-\item{var}{variation; maximum distance allowed for a match; see 
+\item{var}{variation; maximum distance allowed for a match; see
 \code{\link{agrep}}}
 
-\item{ignore.case}{logical; if \code{FALSE}, the pattern matching is 
+\item{ignore.case}{logical; if \code{FALSE}, the pattern matching is
 \emph{case-sensitive}, and if \code{TRUE}, case is ignored during matching}
 
 \item{...}{additional arguments passed to \code{\link{agrep}}}
 }
 \value{
-Subset of the original \code{data} where the \code{pattern} was found in 
+Subset of the original \code{data} where the \code{pattern} was found in
 the specified \code{col.name}.
 }
 \description{

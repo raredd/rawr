@@ -21,7 +21,7 @@ the cell entries of \code{x}}
 A matrix formatted as \code{ftable} would print.
 }
 \description{
-\code{\link{ftable}}s can look nice, but are only \code{\link{cat}}'d to 
+\code{\link{ftable}}s can look nice, but are only \code{\link{cat}}'d to
 the console and, thus, not easily used (or manipulated). 
 \code{\link{write.ftable}} does not write \code{ftable}s as they print,
 so here we are.

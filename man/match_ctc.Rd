@@ -4,14 +4,14 @@
 \alias{match_ctc}
 \title{Match CTCAE codes}
 \usage{
-match_ctc(..., version = 4)
+match_ctc(..., version = 4L)
 }
 \arguments{
-\item{...}{character string(s) of toxicity codes (usually of the form 
+\item{...}{character string(s) of toxicity codes (usually of the form
 \code{AB123} but can handle \code{AB-123} or \code{AB 123}) or keyword(s)
 to be matched in the toxicity description}
 
-\item{version}{version number; default is 
+\item{version}{version number; default is \code{4}
 \href{http://www.dfhcc.harvard.edu/fileadmin/DFHCC_Admin/Clinical_Trials/QACT/Policies_and_Procedures/CTCToxVersion4.pdf}{CTCAE v4}}
 }
 \value{
@@ -28,10 +28,10 @@ paper trials where only the toxicity codes are reported excluding (the more
 meaningful) descriptions.
 }
 \examples{
-codes <- sample(ctcae_v4$tox_code, 10)
+codes <- sample(rawr::ctcae_v4$tox_code, 10)
 match_ctc(codes)
 
-match_ctc('injury', version = 3)
+match_ctc('injury', version = 3L)
 match_ctc('aortic', 'arterial')
 
 }

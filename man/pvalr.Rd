@@ -16,7 +16,7 @@ pvalr2(pvals, html = FALSE, show.p = FALSE)
 
 \item{sig.limit}{lower bound for precision}
 
-\item{digits}{integer; number of decimal places; see also 
+\item{digits}{integer; number of decimal places; see also
 \code{\link[rawr]{roundr}}}
 
 \item{html}{logical; if \code{TRUE}, uses \code{&lt;} instead of \code{<}}

@@ -9,7 +9,7 @@ merge2(l, ...)
 \arguments{
 \item{l}{list of data frames or objects to be coerced}
 
-\item{...}{additional arguments passed to \code{merge} (eg, \code{by}, 
+\item{...}{additional arguments passed to \code{merge} (eg, \code{by},
 \code{all}, etc)}
 }
 \description{

@@ -11,7 +11,7 @@ rescaler(x, to = c(0, 1), from = range(x, na.rm = TRUE))
 
 \item{to}{output range (numeric vector of length two)}
 
-\item{from}{input range (numeric vector of length two); if not given, 
+\item{from}{input range (numeric vector of length two); if not given,
 \code{from} is calculated from the range of \code{x}}
 }
 \description{

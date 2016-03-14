@@ -9,7 +9,7 @@ local_coxph_test(s, pos, C = NULL, d = NULL, digits = 3)
 \arguments{
 \item{s}{survival object of class \code{\link[survival]{coxph}}}
 
-\item{pos}{vector of positions of \code{\link{coefficients}} of interest 
+\item{pos}{vector of positions of \code{\link{coefficients}} of interest
 from \code{summary(coxph)}; defaults to \code{1:length(coef(s))}}
 
 \item{C, d}{\code{C}, a q-by-p matrix, and \code{d}, a q-by-1 matrix, define

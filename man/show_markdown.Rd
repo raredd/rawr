@@ -73,7 +73,8 @@ getOption('markdown.HTML.stylesheet')
 ## apply another style sheet by setting the option or passing
 ## arguments directly to markdown::markdownToHTML
 
-## here are two css files in this package
+## here are four css files in this package
+list.files(system.file(package = 'rawr', 'styles'))
 kcss <- system.file(package = 'rawr', 'styles', 'knitr.css')
 gcss <- system.file(package = 'rawr', 'styles', 'github.css')
 ## file.show(gcss)

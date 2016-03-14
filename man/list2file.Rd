@@ -11,7 +11,7 @@ list2file(l, targetdir = getwd(), sep, ...)
 
 \item{targetdir}{target directory (created if doesn't exist)}
 
-\item{sep}{field separator string; default is none which results in 
+\item{sep}{field separator string; default is none which results in
 \code{.rda} data files; "\code{,}" creates \code{.csv} files; any other
 separator will create \code{.dat} files}
 

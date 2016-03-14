@@ -8,7 +8,7 @@ surv_cp(data, time.var, status.var, covars = setdiff(names(data), c(time.var,
   status.var)))
 }
 \arguments{
-\item{data}{data frame with survival time, survival status, and other 
+\item{data}{data frame with survival time, survival status, and other
 covariates}
 
 \item{time.var}{\code{data} variable name representing survival time}

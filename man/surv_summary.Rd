@@ -11,7 +11,7 @@ surv_summary(s, digits = 3L, ...)
 
 \item{digits}{number of digits to use in printing numbers}
 
-\item{...}{additional arguments passed to 
+\item{...}{additional arguments passed to
 \code{\link[survival]{summary.survfit}}}
 }
 \value{
@@ -19,13 +19,13 @@ A list with \code{survival:::print.summary.survfit} matrices for each
 strata, i.e., the output printed.
 }
 \description{
-Prints and returns a list containing the survival curve, confidence limits 
+Prints and returns a list containing the survival curve, confidence limits
 for the curve, and other information which can be more useful than the
 acutal return value of \code{survival:::print.summary.survfit}.
 }
 \examples{
 library('survival')
-fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)), 
+fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)),
                       data = cancer),
                 conf.type = 'log-log')
 surv_summary(fit1, times = c(0, 100, 200))

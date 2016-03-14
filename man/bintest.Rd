@@ -14,7 +14,7 @@ bintest(p0low, p0high = p0low, p1low, p1high = p1low, n.max, r = n.max,
 
 \item{n.max}{maximum sample size allowed (or feasible)}
 
-\item{r}{cut-off value for responses expected; usually best to leave 
+\item{r}{cut-off value for responses expected; usually best to leave
 \code{r = n.max} (default); useful if the maximum number of responses that
 may occur is known}
 
@@ -24,7 +24,7 @@ may occur is known}
 Sample size, overall power, and overall type-I error rate
 }
 \description{
-Function for sample sizes for single-stage designs in early clinical trial 
+Function for sample sizes for single-stage designs in early clinical trial
 phases (generally phases I and II) based on exact binomial method.
 
 Cycles through possible designs constrained by \code{alpha}, \code{beta},
@@ -39,8 +39,8 @@ bintest(.1, .15, .2, .2, n.max = 80, alpha = .08, beta = .24)
 }
 \references{
 Khan, Sarker, Hackshaw. Smaller sample sizes for phase II trials
-based on exact tests with actual error rates by trading-off their nominal 
-levels of significance and power. \emph{British J of Cancer} (2012) 107, 
+based on exact tests with actual error rates by trading-off their nominal
+levels of significance and power. \emph{British J of Cancer} (2012) 107,
 1801-9.
 }
 \seealso{

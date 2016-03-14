@@ -17,11 +17,11 @@ populations.
 }
 \details{
 Mood's median test is an exact test which dichotomizes values in each group
-above or below the median of the pooled data. The test is conservative in 
+above or below the median of the pooled data. The test is conservative in
 small sample sizes.
 
 Note that this test is different than \code{\link{mood.test}} in the stats
-package which tests for a difference in \emph{scale parameters} rather than 
+package which tests for a difference in \emph{scale parameters} rather than
 medians.
 }
 \examples{

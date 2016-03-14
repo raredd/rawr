@@ -8,10 +8,10 @@ sas_mget(libpath, dsn, saspath, fmtpath, catalog = FALSE, log.file, ...,
   force = FALSE)
 }
 \arguments{
-\item{libpath}{directory to data set(s) as character string; if missing, 
+\item{libpath}{directory to data set(s) as character string; if missing,
 searches the current working directory}
 
-\item{dsn}{data set name(s); either \code{data1} or \code{data1.sas7bdat} 
+\item{dsn}{data set name(s); either \code{data1} or \code{data1.sas7bdat}
 will work; if missing or \code{NULL}, all \code{.sas7bdat} files found in
 \code{libpath} will be read}
 
@@ -24,7 +24,7 @@ Note that specifying \code{saspath} is not required if v9.2 is installed in
 the default directory (i.e.,
 \code{c:/program files/sasfoundation/9.2/sas.exe});
 
-For previous versions or if\code{SAS} is not installed in the default 
+For previous versions or if\code{SAS} is not installed in the default
 directory, it will be necessary to supply \code{saspath} to \code{sas.exe}}
 
 \item{fmtpath}{path to a format \code{.sas} file as character string; 
@@ -39,12 +39,12 @@ this is \code{FALSE} since using cross-platform catalogs throws errors, so
 \code{fmtpath} is given; set \code{catalog = TRUE} if you are sure that
 the format catalog is native to windows}
 
-\item{log.file}{name of \code{SAS} log file; default value will create 
+\item{log.file}{name of \code{SAS} log file; default value will create
 \code{_temp_.log} in the \code{libpath} directory}
 
 \item{...}{additional arguments passed to \code{\link[Hmisc]{sas.get}}}
 
-\item{force}{logical; by default, user must interactively allow 
+\item{force}{logical; by default, user must interactively allow
 \code{sas_mget} to continue reading all data sets; set to \code{TRUE} to
 ignore this or for non-interactive \code{R}}
 }

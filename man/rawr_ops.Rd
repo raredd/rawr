@@ -53,7 +53,7 @@ include \code{\link{NA}}s.
 or \code{NULL}, but if \code{NULL} is the result of \code{f}, it is
 desirable to return some other default value without errors.
 
-\code{\%:\%} is useful for obtaining a range of \code{colnames} or 
+\code{\%:\%} is useful for obtaining a range of \code{colnames} or
 \code{names} by literal character strings rather than by index.
 }
 \examples{

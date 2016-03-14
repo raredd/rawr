@@ -17,15 +17,15 @@ num2char(num, informal = FALSE, cap = TRUE)
 Convert a number to a character string representation.
 }
 \details{
-Whole numbers twenty-one through ninety-nine are hyphenated when they are 
+Whole numbers twenty-one through ninety-nine are hyphenated when they are
 written out whether used alone or as part of a larger number; for example: 
-twenty-one. Whole numbers are also hyphenated when they are part of larger 
-numbers that are written out - but not other parts of large numbers; for 
-example, 5,264 is written "five thousand two hundred sixty-four." The rule 
-applies only to two-word numbers; for example, 603 is written out, e.g., 
-"six hundred three" (formal) or "six hundred and three" (informal). A whole 
-number followed by hundred, thousand, etc., would be written as, for 
-example, "one hundred," and not hyphenated. In a phrase like "one hundred 
+twenty-one. Whole numbers are also hyphenated when they are part of larger
+numbers that are written out - but not other parts of large numbers; for
+example, 5,264 is written "five thousand two hundred sixty-four." The rule
+applies only to two-word numbers; for example, 603 is written out, e.g.,
+"six hundred three" (formal) or "six hundred and three" (informal). A whole
+number followed by hundred, thousand, etc., would be written as, for
+example, "one hundred," and not hyphenated. In a phrase like "one hundred
 and ten years," no hyphenation should be added.
 }
 \examples{

@@ -8,7 +8,7 @@ fapply(X, FUN, ...)
 }
 \arguments{
 \item{X}{a vector (atomic or list) or an \code{\link{expression}} object; 
-other objects (including classed objects) will be coerced by 
+other objects (including classed objects) will be coerced by
 \code{base::\link{as.list}}.}
 
 \item{FUN}{a list of functions to be applied to each element of \code{X}; 
@@ -19,11 +19,11 @@ be defined arguments for each function in \code{FUN}; otherwise, you will
 need to define a function before passing to \code{FUN}; see examples}
 }
 \value{
-A data frame where \code{nrow} equals the length of \code{X} and 
+A data frame where \code{nrow} equals the length of \code{X} and
 \code{ncol} equals the length of \code{FUN}.
 }
 \description{
-A simple modification to the \code{*apply} functions which allows a list of 
+A simple modification to the \code{*apply} functions which allows a list of
 functions to be passed simultaneously.
 }
 \examples{

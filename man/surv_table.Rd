@@ -16,7 +16,7 @@ surv_table(s, digits = 3, times = pretty(range(s$time)), ...)
 \item{...}{additional arguments passed to \code{\link{summary.survfit}}}
 }
 \value{
-A matrix (or list of matrices) with formatted summaries for each strata; see 
+A matrix (or list of matrices) with formatted summaries for each strata; see
 \code{\link{summary.survfit}}
 }
 \description{
@@ -24,23 +24,21 @@ Prints a formatted summary table for \code{\link{survfit}} objects.
 }
 \examples{
 library('survival')
-fit0 <- survfit(coxph(Surv(time, status) ~ 1, 
+fit0 <- survfit(coxph(Surv(time, status) ~ 1,
                       data = cancer),
                 conf.type = 'log-log')
 surv_table(fit0, times = 0:2 * 100)
 
 ## also works for list of tables
-fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)), 
+fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)),
                       data = cancer),
                 conf.type = 'log-log', conf.int = 0.9)
 surv_table(fit1)
 
-\dontrun{
 library('htmlTable')
 s <- `colnames<-`(surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4],
                   c('Time','No. at risk','No. of events','HR (95\% CI)'))
 htmlTable(s)
-}
 
 }
 \seealso{

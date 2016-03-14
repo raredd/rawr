@@ -17,13 +17,13 @@ Recursive functions to merge nested lists.
 }
 \details{
 \code{nestedmerge} recursively calls itself to merge similarly-structured
-named \emph{or} unnamed lists. Unnamed lists results in a "horizontal" 
+named \emph{or} unnamed lists. Unnamed lists results in a "horizontal"
 merge; named lists will be matched based on names. In either case, the
 matching element (or list(s) of elements(s)) should also have the same
 structure.
 
 \code{nestedMerge} is a convenience wrapper for \code{nestedmerge} in cases
-where list \code{a} contains elements not in list \code{b}. If using 
+where list \code{a} contains elements not in list \code{b}. If using
 \code{nestedmerge} in this case, only elements of list \code{a} will be
 merged and returned.
 }

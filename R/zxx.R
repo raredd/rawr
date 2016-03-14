@@ -79,7 +79,7 @@ progress <- function (value, max.value, textbar = FALSE) {
   oo <- options()
   on.exit(options(oo))
   options(scipen = 10)
-  if (!is.numeric(value)) 
+  if (!is.numeric(value))
     stop("\'value\' must be numeric")
   if (missing(max.value)) {
     max.value <- 100
@@ -110,7 +110,7 @@ progress <- function (value, max.value, textbar = FALSE) {
     backspaces <- f(rep('\b', m * 2))
     if (erase.only) message <- ''
     else {
-      message <- f('|', f(rep('=', max(0, r - 1))), 
+      message <- f('|', f(rep('=', max(0, r - 1))),
                    f(rep(' ', max(0, m - r))), '|')
       cat(backspaces, message, sprintf('  %s%%', round(pct * 100)), sep = '')
     }
@@ -127,7 +127,7 @@ progress <- function (value, max.value, textbar = FALSE) {
       cat(backspaces, message, sep = '')
     }
   }
-  if (.Platform$OS.type == 'windows') 
+  if (.Platform$OS.type == 'windows')
     flush.console()
   cat('\n')
 }
@@ -137,14 +137,14 @@ progress <- function (value, max.value, textbar = FALSE) {
 #' Recodes numeric, character, and factor values in a vector, list, matrix,
 #' or data frame.
 #' 
-#' When recoding a factor variable with a new level, \code{recoder} 
+#' When recoding a factor variable with a new level, \code{recoder}
 #' automatically adds the corresponding level to \code{levels(object)} to
 #' avoid errors.
 #' 
-#' The function currently recursively replaces \code{pattern[i]} with 
+#' The function currently recursively replaces \code{pattern[i]} with
 #' \code{replacement[i]} in sequential order, so if you intend to swap values,
 #' say \code{a} and \code{b}, in an \code{object}, \code{recoder} will instead
-#' first replace all occurrences of \code{a} with \code{b} and then all 
+#' first replace all occurrences of \code{a} with \code{b} and then all
 #' occurrences of \code{b} with \code{a} resulting in the \code{object} with no
 #' \code{b} occurrences; see examples. I will (may) fix this eventually.
 #' 
@@ -193,7 +193,7 @@ recoder <- function(object, pattern, replacement, ...) {
   options(stringsAsFactors = FALSE)
   
   if (is.factor(object)) {
-    cat('level(s)', 
+    cat('level(s)',
         levels(factor(levels = setdiff(replacement, levels(object)))),
         'added to factor variable', deparse(m$object),'\n')
     levels(object) <- c(levels(object), replacement)
@@ -207,7 +207,7 @@ recoder <- function(object, pattern, replacement, ...) {
   switcher <- function(f, g, h) {
     if (is.na(g))
       f[is.na(f)] <- h else f[f == g] <- h
-    f
+      f
   }
   superswitcher <- function(x, y, z){
     DF <- data.frame(y, z, stringsAsFactors = FALSE)
@@ -217,12 +217,12 @@ recoder <- function(object, pattern, replacement, ...) {
         if (sum(z %in% DF[i, 1]) == 0) {
           z <<- z
         } else {
-          z <<- switcher(z, DF[i, 1], as.character(DF[i, 2])) 
+          z <<- switcher(z, DF[i, 1], as.character(DF[i, 2]))
         }
       })
     } else {
       lapply(1:nrow(DF), function(i) {
-        z <<- switcher(z, DF[i, 1], DF[i, 2]) 
+        z <<- switcher(z, DF[i, 1], DF[i, 2])
       })
     }
     z
@@ -255,22 +255,22 @@ recoder <- function(object, pattern, replacement, ...) {
 
 #' Test two or more objects for exact equality
 #' 
-#' The safe and reliable way to test two or more objects for being exactly 
+#' The safe and reliable way to test two or more objects for being exactly
 #' equal; returns \code{TRUE} in this case, \code{FALSE} in every other case.
 #'    
 #' @param ... any \code{R} objects
-#' @param num.eq logical indicating if (\code{\link{double}} and 
+#' @param num.eq logical indicating if (\code{\link{double}} and
 #' \code{\link{complex}} non-\code{\link{NA}}) numbers should be compared using
-#' \code{\link{==}} ("equal"), or by bitwise comparison. The latter 
+#' \code{\link{==}} ("equal"), or by bitwise comparison. The latter
 #' (non-default) differentiates between -0 and +0.
-#' @param single.NA logical indicating if there is conceptually just one 
-#' numeric \code{NA} and one \code{\link{NaN}}; \code{single.NA = FALSE} 
+#' @param single.NA logical indicating if there is conceptually just one
+#' numeric \code{NA} and one \code{\link{NaN}}; \code{single.NA = FALSE}
 #' differentiates bit patterns.
-#' @param attrib.as.set logical indicating if \code{\link{attributes}} of 
+#' @param attrib.as.set logical indicating if \code{\link{attributes}} of
 #' \code{...} should be treated as \emph{unordered} tagged pairlists ("sets"); 
-#' this currently also applies to \code{\link{slot}}s of S4 objects. It may 
+#' this currently also applies to \code{\link{slot}}s of S4 objects. It may
 #' well be too strict to set \code{attrib.as.set = FALSE}.
-#' @param ignore.bytecode logical indicating if byte code should be ignored 
+#' @param ignore.bytecode logical indicating if byte code should be ignored
 #' when comparing \code{\link{closure}}s.
 #' @param ignore.environment logical indicating if their environments should be
 #' ignored when comparing \code{closure}s.
@@ -376,14 +376,14 @@ allequal <- function(..., tolerance = .Machine$double.eps ^ 0.5, scale = NULL,
 #' @param pattern string to find
 #' @param data data frame to search
 #' @param col.name column name in \code{data} to search
-#' @param var variation; maximum distance allowed for a match; see 
+#' @param var variation; maximum distance allowed for a match; see
 #' \code{\link{agrep}}
-#' @param ignore.case logical; if \code{FALSE}, the pattern matching is 
+#' @param ignore.case logical; if \code{FALSE}, the pattern matching is
 #' \emph{case-sensitive}, and if \code{TRUE}, case is ignored during matching
 #' @param ... additional arguments passed to \code{\link{agrep}}
 #' 
 #' @return
-#' Subset of the original \code{data} where the \code{pattern} was found in 
+#' Subset of the original \code{data} where the \code{pattern} was found in
 #' the specified \code{col.name}.
 #' 
 #' @examples
@@ -410,7 +410,7 @@ search_df <- function(pattern, data, col.name, var = 0,
 #' 
 #' Searches Rhistory file for pattern matches.
 #' 
-#' @param x numeric or character; if numeric, shows the most recent \code{n} 
+#' @param x numeric or character; if numeric, shows the most recent \code{n}
 #' lines in \code{.Rhistory}; if character, searches for pattern matches
 #' @param ... additional arguments passed to \code{\link{grep}}
 #' 
@@ -439,11 +439,11 @@ search_hist <- function (x, ...) {
 
 #' Apply list of functions over list or vector
 #' 
-#' A simple modification to the \code{*apply} functions which allows a list of 
+#' A simple modification to the \code{*apply} functions which allows a list of
 #' functions to be passed simultaneously.
 #' 
 #' @param X a vector (atomic or list) or an \code{\link{expression}} object; 
-#' other objects (including classed objects) will be coerced by 
+#' other objects (including classed objects) will be coerced by
 #' \code{base::\link{as.list}}.
 #' @param FUN a list of functions to be applied to each element of \code{X}; 
 #' see \code{\link{lapply}}:"Details"
@@ -451,7 +451,7 @@ search_hist <- function (x, ...) {
 #' be defined arguments for each function in \code{FUN}; otherwise, you will
 #' need to define a function before passing to \code{FUN}; see examples
 #' 
-#' @return A data frame where \code{nrow} equals the length of \code{X} and 
+#' @return A data frame where \code{nrow} equals the length of \code{X} and
 #' \code{ncol} equals the length of \code{FUN}.
 #' 
 #' @examples
@@ -485,7 +485,7 @@ fapply <- function(X, FUN, ...) {
 #' @export
 
 try_require <- function(package) {
-  package <- ifelse(!is.character(substitute(package)), 
+  package <- ifelse(!is.character(substitute(package)),
                     as.character(substitute(package)), package)
   available <- suppressMessages(
     suppressWarnings(sapply(package, require, quietly = TRUE,
@@ -502,7 +502,7 @@ try_require <- function(package) {
 #' 
 #' @param l a list of data frames or matrices
 #' @param targetdir target directory (created if doesn't exist)
-#' @param sep field separator string; default is none which results in 
+#' @param sep field separator string; default is none which results in
 #' \code{.rda} data files; "\code{,}" creates \code{.csv} files; any other
 #' separator will create \code{.dat} files
 #' @param ... additional arguments passed to \code{\link{save}} if \code{sep}
@@ -543,8 +543,8 @@ list2file <- function(l, targetdir = getwd(), sep, ...) {
       save(x, file = sprintf('%s/%s.rda', targetdir, x), ...))
   } else
     sapply(names(l), function(x)
-      write.table(get(x, envir = e), 
-                  file = sprintf('%s/%s.%s', targetdir, x, 
+      write.table(get(x, envir = e),
+                  file = sprintf('%s/%s.%s', targetdir, x,
                                  ifelse(sep == ',','csv','dat')),
                   row.names = FALSE, quote = FALSE, ...))
   message(sprintf('NOTE: %s written to %s', iprint(names(l)), targetdir))
@@ -555,7 +555,7 @@ list2file <- function(l, targetdir = getwd(), sep, ...) {
 #' 
 #' Ends current and restarts a clean \code{R} session.
 #' 
-#' @param afterRestartCommand character string of command(s) to be 
+#' @param afterRestartCommand character string of command(s) to be
 #' executed after restarting
 #' 
 #' @examples
@@ -587,14 +587,14 @@ Restart <- function(afterRestartCommand = '')
 #' for use in Sweave or R-markdown documents.
 #' 
 #' The \code{type} argument accepts:
-#' \itemize{ 
+#' \itemize{
 #' \item \code{"m_code"}: Markdown code chunks; for use with markdown documents
 #' when highlighted code is expected.
-#' \item \code{"m_text"}: Markdown plain text; for use with markdown documents 
+#' \item \code{"m_text"}: Markdown plain text; for use with markdown documents
 #' where regular text is expected.
-#' \item \code{"s_code"}: Sweave code chunks; for use with Sweave documents 
+#' \item \code{"s_code"}: Sweave code chunks; for use with Sweave documents
 #' where highlighted code is expected.
-#' \item \code{"s_text"}: Sweave plain text; for use with Sweave documents 
+#' \item \code{"s_text"}: Sweave plain text; for use with Sweave documents
 #' where regular text is expected.
 #' }
 #' 
@@ -621,11 +621,11 @@ Restart <- function(afterRestartCommand = '')
 #' @param show.sections logical; if \code{TRUE}, returns \code{section} options
 #' for \code{FUN}
 #' @param section section to extract (default is \code{"Usage"}
-#' @param type type of character vector you want returned; default is 
+#' @param type type of character vector you want returned; default is
 #' \code{"m_code"}, see details
 #' @param ... additional arguments passed to \code{\link[utils]{help}}
 #' 
-#' @return 
+#' @return
 #' A character vector to be used in a Sweave or Rmarkdown document.
 #' 
 #' @examples
@@ -658,7 +658,7 @@ helpExtract <- function(FUN, show.sections = FALSE, section = 'Usage',
   X[B] <- 1
   out <- split(x, cumsum(X))
   vgrepl <- Vectorize(grepl)
-  out <- out[which(sapply(out, function(x) 
+  out <- out[which(sapply(out, function(x)
     any(vgrepl(section, x[1], ignore.case = TRUE))))]
   # out <- unlist(sapply(out, '[', -(1:2)))
   out <- if (length(section) > 1) unname(unlist(out)) else out[[1]][-(1:2)]
@@ -691,11 +691,11 @@ helpExtract_ <- function(FUN, ...) {
       datafile <- db$datafile
       compressed <- db$compressed
       envhook <- db$envhook
-      fetch <- function(key) 
+      fetch <- function(key)
         lazyLoadDBfetch(vals[key][[1L]], datafile, compressed, envhook)
       if (length(key)) {
-        if (!key %in% vars) 
-          stop(gettextf("No help on %s found in RdDB %s", 
+        if (!key %in% vars)
+          stop(gettextf("No help on %s found in RdDB %s",
                         sQuote(key), sQuote(filebase)), domain = NA)
         fetch(key)
       } else {
@@ -705,7 +705,7 @@ helpExtract_ <- function(FUN, ...) {
       }
     }
     res <- lazyLoadDBexec(filebase, fun)
-    if (length(key)) 
+    if (length(key))
       res
     else invisible(res)
   }
@@ -714,12 +714,12 @@ helpExtract_ <- function(FUN, ...) {
   getHelpFile <- function(file) {
     path <- dirname(file)
     dirpath <- dirname(path)
-    if (!file.exists(dirpath)) 
+    if (!file.exists(dirpath))
       stop(gettextf("invalid %s argument", sQuote("file")), domain = NA)
     pkgname <- basename(dirpath)
     RdDB <- file.path(path, pkgname)
-    if (!file.exists(paste(RdDB, "rdx", sep = "."))) 
-      stop(gettextf("package %s exists but was not installed under R >= 2.10.0 so help cannot be accessed", 
+    if (!file.exists(paste(RdDB, "rdx", sep = ".")))
+      stop(gettextf("package %s exists but was not installed under R >= 2.10.0 so help cannot be accessed",
                     sQuote(pkgname)), domain = NA)
     fetchRdDB(RdDB, basename(file))
   }
@@ -1001,7 +1001,7 @@ fill_df <- function(data, key, ids, fill, values) {
 
 kinda_sort <- function(x, n, decreasing = FALSE, indices) {
   lx <- length(x)
-  n <- if (missing(n)) ceiling(0.1 * lx) else if (n > lx) lx else n 
+  n <- if (missing(n)) ceiling(0.1 * lx) else if (n > lx) lx else n
   wh <- if (!missing(indices)) indices else sample(seq.int(lx), size = n)
   y <- x[wh]
   x[wh] <- NA
@@ -1048,9 +1048,9 @@ rgene <- function(n = 1, alpha = LETTERS[1:5], nalpha = 2:5,
 #' @param pkgs character vector of the names of packages whose current
 #' versions should be downloaded from the repositories
 #' @param lib character vector giving the library directories where to install
-#' \code{pkgs}; recycled as needed; if missing (default), a 
+#' \code{pkgs}; recycled as needed; if missing (default), a
 #' \code{\link{tempdir}} will be created
-#' @param ... additional arguments passed to 
+#' @param ... additional arguments passed to
 #' \code{\link[utils]{install.packages}}
 #' 
 #' @examples
@@ -1078,13 +1078,13 @@ install_temp <- function(pkgs, lib, ...) {
 #' Recursive functions to merge nested lists.
 #' 
 #' \code{nestedmerge} recursively calls itself to merge similarly-structured
-#' named \emph{or} unnamed lists. Unnamed lists results in a "horizontal" 
+#' named \emph{or} unnamed lists. Unnamed lists results in a "horizontal"
 #' merge; named lists will be matched based on names. In either case, the
 #' matching element (or list(s) of elements(s)) should also have the same
 #' structure.
 #' 
 #' \code{nestedMerge} is a convenience wrapper for \code{nestedmerge} in cases
-#' where list \code{a} contains elements not in list \code{b}. If using 
+#' where list \code{a} contains elements not in list \code{b}. If using
 #' \code{nestedmerge} in this case, only elements of list \code{a} will be
 #' merged and returned.
 #' 
@@ -1524,7 +1524,7 @@ vgrepl <- function(pattern, x) {
 #' 
 #' @export
 
-justify <- function(string, width = getOption('width') / 2, 
+justify <- function(string, width = getOption('width') / 2,
                     fill = c('random', 'right', 'left')) {
   strs <- strwrap(string, width = width)
   paste(fill_spaces_(strs, width, match.arg(fill)), collapse = '\n')

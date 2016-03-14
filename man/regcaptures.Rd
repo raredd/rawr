@@ -16,7 +16,7 @@ A list with a matrix of captures for each string in \code{x}. Note that the
 column names of each matrix will be the starting positions of the captures.
 }
 \description{
-Extract the captured substrings from match data obtained by 
+Extract the captured substrings from match data obtained by
 \code{\link{regexpr}}, \code{\link{gregexpr}}, or \code{\link{regexec}}.
 }
 \examples{

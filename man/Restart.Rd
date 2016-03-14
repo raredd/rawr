@@ -7,7 +7,7 @@
 Restart(afterRestartCommand = "")
 }
 \arguments{
-\item{afterRestartCommand}{character string of command(s) to be 
+\item{afterRestartCommand}{character string of command(s) to be
 executed after restarting}
 }
 \description{

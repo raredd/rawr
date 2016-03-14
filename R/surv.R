@@ -28,7 +28,7 @@
 #' confidence interval (plotted when \code{lty.ci != 0}) and the confidence
 #' bands are identical--just two ways of plotting the same invervals.
 #' 
-#' When saving plots, it is highly recommended to use \code{\link{png}}, 
+#' When saving plots, it is highly recommended to use \code{\link{png}},
 #' \code{\link{svg}}, \code{\link{pdf}}, etc. instead of exporting directly
 #' from the \code{R} graphics device. Doing so may cause the at risk table or
 #' legend to be mis-aligned.
@@ -37,7 +37,7 @@
 #' @param lty.surv,lwd.surv,col.surv line type, width, and color for survival
 #' curve(s); colors may be either numeric, color names as character string(s),
 #' or hexadecimal string(s)
-#' @param mark numeric plotting character (\code{\link{pch}}) or character 
+#' @param mark numeric plotting character (\code{\link{pch}}) or character
 #' string, e.g., \code{''}, \code{'|'}
 #' @param lty.ci,lwd.ci,col.ci line type, width, and color for confidence
 #' interval(s); not plotted (i.e., \code{= 0}) by default
@@ -49,11 +49,11 @@
 #' @param atrisk logical; if \code{TRUE} (default), draws at risk table
 #' @param atrisk.lab heading for at risk table
 #' @param atrisk.lines logical; draw lines next to strata in at risk table
-#' @param strata.lab labels used in legend and at risk table for strata; if 
+#' @param strata.lab labels used in legend and at risk table for strata; if
 #' \code{NULL} (default), labels created in \code{survfit} are used; if only
 #' one strata is present, "All" is used by default; if \code{FALSE}, labels
 #' are not used
-#' @param strata.expr an alternative to \code{strata.lab} which allows for 
+#' @param strata.expr an alternative to \code{strata.lab} which allows for
 #' \code{\link{bquote}} or \code{\link{expression}} to be passed to labels for
 #' at risk table; note that \code{strata.expr} trumps \code{strata.lab}
 #' @param strata.order order of strata in legend and at risk table
@@ -75,7 +75,7 @@
 #' set up but before any plotting takes place
 #' @param panel.last an expression to be evaluated after plotting but before
 #' returning from the function
-#' @param ... additional parameters (\code{font}, \code{mfrow}, \code{bty}, 
+#' @param ... additional parameters (\code{font}, \code{mfrow}, \code{bty},
 #' \code{tcl}, \code{cex.lab}, \code{xaxs}, etc) passed to \code{par}
 #' 
 #' @references
@@ -96,7 +96,7 @@
 #' 
 #' ## expressions in at risk table
 #' kmplot(kmfit1, strata.lab = c('Female','Male'),
-#'        strata.expr = expression(widetilde(ring(Female)), 
+#'        strata.expr = expression(widetilde(ring(Female)),
 #'                                 phantom() >= Male))
 #' 
 #' ## when using mfrow options, use ADD = TRUE
@@ -115,15 +115,15 @@
 #'        panel.first = abline(v = c(0, .5, 1:9) * 365, lty = 3),
 #'        xaxis.lab = c(0, .5, 1:9),         # label years
 #'        yaxis.lab = pretty(0:1) * 100,     # change to percent
-#'        xlab = 'Time (years)', ylab = 'Percent survival', 
-#'        col.surv = c('blue','red','green','black','purple','orange'), 
+#'        xlab = 'Time (years)', ylab = 'Percent survival',
+#'        col.surv = c('blue','red','green','black','purple','orange'),
 #'        extra.margin = 6,        # increase margin for long strata labels
 #'        strata.lab = c('Obs','Obs+','Lev','Lev+','Lev5fu','Lev5fu+'),
 #'        strata.order = c(5,6,3,1,4,2),      # order by survival estimates
 #'        font = 2,                # bold table text
 #'        bty = 'l',               # L box type around plot
 #'        tcl = .5)                # change length/direction of ticks
-#' title(main = 'Chemotherapy for stage B/C colon cancer', 
+#' title(main = 'Chemotherapy for stage B/C colon cancer',
 #'       adj = .5, font.main = 1, line = 0.5, cex.main = 1)
 #' dev.off()
 #' }
@@ -153,7 +153,7 @@ kmplot <- function(s,
                    ## other options
                    mar = NULL, add = FALSE,
                    panel.first = NULL, panel.last = NULL, ...) {
-  if (!inherits(s, 'survfit')) 
+  if (!inherits(s, 'survfit'))
     stop('\'s\' must be a \'survfit\' object')
   
   ## single strata
@@ -166,7 +166,7 @@ kmplot <- function(s,
   ng <- max(ng, 1)
   lty.surv <- rep_len(lty.surv, ng)
   lwd.surv <- rep_len(lwd.surv, ng)
-  if (length(col.band) == 1L)
+  if (length(col.band) <= 1L)
     if (is.null(col.band) || is.na(col.band))
       col.band <- FALSE
   col.surv <- if (missing(col.surv)) {
@@ -206,11 +206,11 @@ kmplot <- function(s,
   par(mar = c(4 + ng, 4 + extra.margin, 4, 2) + .1)
   if (!add) {
     par(list(mar = c(4 + ng, 4 + extra.margin, 4, 2) + .1, oma = c(1,1,1,1)))
-    if (!atrisk) 
+    if (!atrisk)
       par(mar = c(3,4,2,1) + .1)
     par(list(...))
   }
-  if (!is.null(mar)) 
+  if (!is.null(mar))
     par(mar = mar)
   
   ## as in survival:::plot.survfit, adjust x-axis to start at 0
@@ -226,7 +226,7 @@ kmplot <- function(s,
                             order = rep(1:ng, gr)))
   dat.list <- split(dat, f = dat$order)
   
-  ## plot (but not survival curves) 
+  ## plot (but not survival curves)
   plot(0, type = 'n', xlim = xlim, ylim = ylim, ann = FALSE, bty = 'n',
        xaxt = 'n', yaxt = 'n', xaxs = xaxs)
   panel.first
@@ -270,7 +270,7 @@ kmplot <- function(s,
     d1 <- data.frame(time = ss$time, n.risk = ss$n.risk, strata = c(ss$strata))
     d2 <- split(d1, d1$strata)
     
-    ## right-justify numbers 
+    ## right-justify numbers
     ndigits <- lapply(d2, function(x) nchar(x[, 2]))
     max.len <- max(sapply(ndigits, length))
     L <- do.call('rbind', lapply(ndigits, function(z) {
@@ -290,7 +290,7 @@ kmplot <- function(s,
             # at = group.name.pos,
             line = 1.5, adj = 1, col = 1, las = 1, cex = cex.axis)
   }
-
+  
   ## legend
   rlp <- strata.order
   if (!legend == FALSE) {
@@ -310,7 +310,7 @@ kmplot <- function(s,
              cex = cex.axis, bg = bgc, box.col = 'transparent', inset = .01)
     }
   }
-
+  
   ## survival and confidence lines
   for (i in 1:ng) {
     tmp <- dat.list[[i]]
@@ -335,7 +335,7 @@ kmplot <- function(s,
     }
     
     ## survival curves
-    lines(s[i], conf.int = FALSE, col = col.surv[i], lty = lty.surv[i], 
+    lines(s[i], conf.int = FALSE, col = col.surv[i], lty = lty.surv[i],
           lwd = lwd.surv, mark = mark, xpd = FALSE)
   }
   panel.last
@@ -492,7 +492,7 @@ kmplot_by <- function(strata, event = 'pfs', data, by, single = TRUE,
 #' comlex hypotheses.
 #' 
 #' @param s survival object of class \code{\link[survival]{coxph}}
-#' @param pos vector of positions of \code{\link{coefficients}} of interest 
+#' @param pos vector of positions of \code{\link{coefficients}} of interest
 #' from \code{summary(coxph)}; defaults to \code{1:length(coef(s))}
 #' @param C,d \code{C}, a q-by-p matrix, and \code{d}, a q-by-1 matrix, define
 #' the null hypothesis being checked; default is a global test on the variables
@@ -539,7 +539,7 @@ local_coxph_test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
 #' Converts a data frame to counting process notation and allows for time-
 #' dependent variables to be introduced.
 #' 
-#' @param data data frame with survival time, survival status, and other 
+#' @param data data frame with survival time, survival status, and other
 #' covariates
 #' @param time.var \code{data} variable name representing survival time
 #' @param status.var \code{data} variable name representing status
@@ -562,8 +562,8 @@ local_coxph_test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
 #' 
 #' @export
 
-surv_cp <- function(data, time.var, status.var, 
-                      covars = setdiff(names(data), c(time.var, status.var))) {
+surv_cp <- function(data, time.var, status.var,
+                    covars = setdiff(names(data), c(time.var, status.var))) {
   
   ## sorted times, append to 0
   t.sort <- c(0, sort(unique(data[[time.var]])))
@@ -577,7 +577,7 @@ surv_cp <- function(data, time.var, status.var,
   f <- function(i)
     data.frame(start = head(t.list[[i]], -1),
                stop = tail(t.list[[i]], -1),
-               data[i, c(status.var, covars)], 
+               data[i, c(status.var, covars)],
                row.names = NULL)
   
   n <- length(t.list)
@@ -590,7 +590,7 @@ surv_cp <- function(data, time.var, status.var,
   ## lapply creates vectors 0,0,0,...,1 based on length of t.list
   ## substract 2 because the lag takes one away, then need one for the 1 at end
   ## this is then multiplied by status to correct it
-  keep.status <- do.call(c, lapply(t.list, function(x) 
+  keep.status <- do.call(c, lapply(t.list, function(x)
     c(rep(0, length(x) - 2), 1)))
   data[status.var] <- data[status.var] * keep.status
   data
@@ -598,13 +598,13 @@ surv_cp <- function(data, time.var, status.var,
 
 #' Summary of a survival curve
 #' 
-#' Prints and returns a list containing the survival curve, confidence limits 
+#' Prints and returns a list containing the survival curve, confidence limits
 #' for the curve, and other information which can be more useful than the
 #' acutal return value of \code{survival:::print.summary.survfit}.
 #' 
 #' @param s a \code{\link{survfit}} object
 #' @param digits number of digits to use in printing numbers
-#' @param ... additional arguments passed to 
+#' @param ... additional arguments passed to
 #' \code{\link[survival]{summary.survfit}}
 #' 
 #' @return
@@ -616,7 +616,7 @@ surv_cp <- function(data, time.var, status.var,
 #' 
 #' @examples
 #' library('survival')
-#' fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)), 
+#' fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)),
 #'                       data = cancer),
 #'                 conf.type = 'log-log')
 #' surv_summary(fit1, times = c(0, 100, 200))
@@ -624,7 +624,7 @@ surv_cp <- function(data, time.var, status.var,
 #' @export
 
 surv_summary <- function(s, digits = 3L, ...) {
-  if (!inherits(s, 'survfit')) 
+  if (!inherits(s, 'survfit'))
     stop('\'s\' must be a \'survfit\' object')
   x <- summary(s, ...)
   
@@ -635,15 +635,15 @@ surv_summary <- function(s, digits = 3L, ...) {
     dput(cl)
   }
   omit <- x$na.action
-  if (length(omit)) 
+  if (length(omit))
     cat(naprint(omit), '\n')
   if (x$type == 'right' || is.null(x$n.enter)) {
     mat <- cbind(x$time, x$n.risk, x$n.event, x$surv)
     cnames <- c('time', 'n.risk', 'n.event')
   } else if (x$type == 'counting') {
-      mat <- cbind(x$time, x$n.risk, x$n.event, x$n.enter, x$n.censor, x$surv)
-      cnames <- c(time, 'n.risk', 'n.event', 'entered', 'censored')
-    }
+    mat <- cbind(x$time, x$n.risk, x$n.event, x$n.enter, x$n.censor, x$surv)
+    cnames <- c(time, 'n.risk', 'n.event', 'entered', 'censored')
+  }
   ncurve <- if (is.matrix(x$surv))
     ncol(x$surv) else 1L
   if (ncurve == 1L) {
@@ -654,7 +654,7 @@ surv_summary <- function(s, digits = 3L, ...) {
         cnames <- c(cnames, 'std.err')
       } else {
         mat <- cbind(mat, x$std.err, x$lower, x$upper)
-        cnames <- c(cnames, 'std.err', 
+        cnames <- c(cnames, 'std.err',
                     paste0('lower ', x$conf.int * 100, '% CI'),
                     paste0('upper ', x$conf.int * 100, '% CI'))
       }
@@ -663,10 +663,10 @@ surv_summary <- function(s, digits = 3L, ...) {
   if (!is.null(x$start.time)) {
     mat.keep <- mat[, 1] >= x$start.time
     mat <- mat[mat.keep, , drop = FALSE]
-    if (is.null(dim(mat))) 
+    if (is.null(dim(mat)))
       stop(paste('No information available using start.time =', x$start.time))
   }
-  if (!is.matrix(mat)) 
+  if (!is.matrix(mat))
     mat <- matrix(mat, nrow = 1L)
   if (!is.null(mat)) {
     dimnames(mat) <- list(NULL, cnames)
@@ -681,8 +681,8 @@ surv_summary <- function(s, digits = 3L, ...) {
         who <- (strata == i)
         cat('\n               ', i, '\n')
         if (sum(who) == 1)
-          prmatrix(mat[who, ])
-        else prmatrix(mat[who, ], rowlab = rep('', sum(who)))
+          prmatrix(mat[who, , drop = FALSE])
+        else prmatrix(mat[who, , drop = FALSE], rowlab = rep('', sum(who)))
       }), levels(strata)))
     }
   } else stop('There are no events to print. Use the option censored = TRUE ',
@@ -699,7 +699,7 @@ surv_summary <- function(s, digits = 3L, ...) {
 #' @param ... additional arguments passed to \code{\link{summary.survfit}}
 #' 
 #' @return
-#' A matrix (or list of matrices) with formatted summaries for each strata; see 
+#' A matrix (or list of matrices) with formatted summaries for each strata; see
 #' \code{\link{summary.survfit}}
 #' 
 #' @seealso
@@ -707,28 +707,26 @@ surv_summary <- function(s, digits = 3L, ...) {
 #' 
 #' @examples
 #' library('survival')
-#' fit0 <- survfit(coxph(Surv(time, status) ~ 1, 
+#' fit0 <- survfit(coxph(Surv(time, status) ~ 1,
 #'                       data = cancer),
 #'                 conf.type = 'log-log')
 #' surv_table(fit0, times = 0:2 * 100)
 #' 
 #' ## also works for list of tables
-#' fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)), 
+#' fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)),
 #'                       data = cancer),
 #'                 conf.type = 'log-log', conf.int = 0.9)
 #' surv_table(fit1)
 #' 
-#' \dontrun{
 #' library('htmlTable')
 #' s <- `colnames<-`(surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4],
 #'                   c('Time','No. at risk','No. of events','HR (95% CI)'))
 #' htmlTable(s)
-#' }
 #' 
 #' @export
 
 surv_table <- function(s, digits = 3, times = pretty(range(s$time)), ...) {
-  tmp <- capture.output(
+  capture.output(
     summ <- surv_summary(s, digits = digits, times = times, ...)
   )
   f <- function(x, d = digits, vars = vars) {
@@ -740,7 +738,8 @@ surv_table <- function(s, digits = 3, times = pretty(range(s$time)), ...) {
                     x[, g('survival')], x[, g('lower')], x[, g('upper')])
     cn <- c('Time','No. at risk','No. event','Std.Error',
             sprintf('HR (%s%% CI)', s$conf.int * 100))
-    `colnames<-`(cbind(x[, c(setdiff(vars, tmpvar), 'std.err')], surv), cn)
+    `colnames<-`(cbind(x[, c(setdiff(vars, tmpvar), 'std.err'),
+                         drop = FALSE], surv), cn)
   }
   if (is.list(summ))
     Map(f = f, summ) else f(summ)
@@ -810,7 +809,7 @@ survdiff_pairs <- function(s, ..., method = 'bonferroni',
   for (ii in seq_along(unq))
     for (jj in (seq_along(unq))[-ii])
       res[ii, jj] <- survdiff(as.formula(s$call$formula), ...,
-                        data = data[data[, rhs] %in% unq[c(ii, jj)], ])$chisq
+                              data = data[data[, rhs] %in% unq[c(ii, jj)], ])$chisq
   
   pvu <- apply(res, 1:2, function(x) pchisq(x, 1, lower.tail = FALSE))
   pvc <- t(pvu)[upper.tri(pvu)]

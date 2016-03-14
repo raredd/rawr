@@ -21,7 +21,7 @@ dodge(x, ...)
 \code{y} is a numeric vector of data values to be split into groups
 according to the grouping variable, \code{group}}
 
-\item{data}{optional matrix or data frame containing the variables in 
+\item{data}{optional matrix or data frame containing the variables in
 \code{formula}; by default, the variables are taken from
 \code{environment(formula)}}
 

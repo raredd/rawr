@@ -6,7 +6,7 @@
 
 #' Binomial probability confidence intervals
 #' 
-#' Calculates confidence intervales for binomial probabilities for specified 
+#' Calculates confidence intervales for binomial probabilities for specified
 #' type-I error (\code{alpha}) using exact, Wilson, or asymptotic methods.
 #'    
 #' If \code{method = 'all'}, \code{r} and \code{n} should each be length 1.
@@ -19,7 +19,7 @@
 #' @param r number of responses (successes)
 #' @param n number of observations (trials)
 #' @param alpha type-I error probability
-#' @param round integer value specifying number of decimal places to round 
+#' @param round integer value specifying number of decimal places to round
 #' (default is no rounding); see \code{\link{round}}
 #' @param method character strings specifying which method to use; see details
 #' 
@@ -30,13 +30,13 @@
 #' Rollin Brant, Frank Harrell, and Brad Biggerstaff; modifications by Robert
 #' Redd
 #' 
-#' @references Agresti, A. and B.A. Coull. Approximate is better than "exact" 
-#' for interval extimation of binomial proportions. \emph{American 
+#' @references Agresti, A. and B.A. Coull. Approximate is better than "exact"
+#' for interval extimation of binomial proportions. \emph{American
 #' Statistician}. \strong{59}:119-126, 1998.
 #' @references Brown, L.D., T.T. Cai, and A. Das Gupta. Inverval estimation for
 #' a binomial proportion (with discussion). \emph{Statistical Science}. 
 #' \strong{16}:101-133, 2001.
-#' @references Newcombe, R.G. Logit confidence intervals and the inverse sinh 
+#' @references Newcombe, R.G. Logit confidence intervals and the inverse sinh
 #' transformation, \emph{American Statistician}. \strong{55}:200-202, 2001.
 #' 
 #' @seealso
@@ -65,7 +65,7 @@ bincon <- function(r, n, alpha = 0.05, round = NULL,
       r / (r + qf(1 - alpha / 2, nu1, nu2) * (n - r + 1)) else 0
     nu1p <- nu2 + 2
     nu2p <- nu1 - 2
-    pp <- if (r < n) 
+    pp <- if (r < n)
       qf(1 - alpha / 2, nu1p, nu2p) else 1
     ul <- ((r + 1) * pp) / (n - r + (r + 1) * pp)
     zcrit <- -qnorm(alpha / 2)
@@ -73,9 +73,9 @@ bincon <- function(r, n, alpha = 0.05, round = NULL,
     p <- r / n
     cl <- (p + z2 / 2 / n + c(-1, 1) * zcrit *
              sqrt((p * (1 - p) + z2 / 4 / n) / n)) / (1 + z2 / n)
-    if (r == 1) 
+    if (r == 1)
       cl[1] <- -log(1 - alpha) / n
-    if (r == (n - 1)) 
+    if (r == (n - 1))
       cl[2] <- 1 + log(1 - alpha) / n
     asymp.lcl <- r / n - qnorm(1 - alpha / 2) *
       sqrt(((r / n) * (1 - r / n)) / n)
@@ -126,7 +126,7 @@ bincon <- function(r, n, alpha = 0.05, round = NULL,
 #' Single-stage designs
 #' 
 #' @description
-#' Function for sample sizes for single-stage designs in early clinical trial 
+#' Function for sample sizes for single-stage designs in early clinical trial
 #' phases (generally phases I and II) based on exact binomial method.
 #' 
 #' Cycles through possible designs constrained by \code{alpha}, \code{beta},
@@ -135,7 +135,7 @@ bincon <- function(r, n, alpha = 0.05, round = NULL,
 #' @param p0low,p0high low and high values for p0
 #' @param p1low,p1high low and high values for p1
 #' @param n.max maximum sample size allowed (or feasible)
-#' @param r cut-off value for responses expected; usually best to leave 
+#' @param r cut-off value for responses expected; usually best to leave
 #' \code{r = n.max} (default); useful if the maximum number of responses that
 #' may occur is known
 #' @param alpha,beta type-I and type-II errors
@@ -144,8 +144,8 @@ bincon <- function(r, n, alpha = 0.05, round = NULL,
 #' Sample size, overall power, and overall type-I error rate
 #' 
 #' @references Khan, Sarker, Hackshaw. Smaller sample sizes for phase II trials
-#' based on exact tests with actual error rates by trading-off their nominal 
-#' levels of significance and power. \emph{British J of Cancer} (2012) 107, 
+#' based on exact tests with actual error rates by trading-off their nominal
+#' levels of significance and power. \emph{British J of Cancer} (2012) 107,
 #' 1801-9.
 #' 
 #' @seealso \code{\link[clinfun]{ph2single}}; \code{desmon::bin1samp}; bintest,
@@ -159,7 +159,7 @@ bincon <- function(r, n, alpha = 0.05, round = NULL,
 #' 
 #' @export
 
-bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max, 
+bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
                      r = n.max, alpha = .1, beta = .1) {
   
   stopifnot(alpha %inside% c(0,1) & beta %inside% c(0,1))
@@ -213,7 +213,7 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
 #' dlt_table(10, 50)
 #' dlt_table(10, 50, 5)
 #' 
-#' @export 
+#' @export
 
 dlt_table <- function(low, high, delta = 10) {
   
@@ -228,10 +228,10 @@ dlt_table <- function(low, high, delta = 10) {
   `colnames<-`(mat, c('DLT rate (%)', 'Pr(Escalation)'))
 }
 
-#' Power calculations for one- and two-sample t-tests using ratio of means and 
+#' Power calculations for one- and two-sample t-tests using ratio of means and
 #' coefficients of variation
 #' 
-#' Compute power of test using mean ratios and coefficients of variation or 
+#' Compute power of test using mean ratios and coefficients of variation or
 #' determine other parameters to obtain target power.
 #' 
 #' Exactly one of \code{n}, \code{f}, \code{cv}, \code{sig.level}, and
@@ -255,10 +255,10 @@ dlt_table <- function(low, high, delta = 10) {
 #' may see errors from it, notably about inability to bracket the root when
 #' invalid arguments are given.
 #' 
-#' @references Van Belle, G., Martin, D. Sample size as a function of 
+#' @references Van Belle, G., Martin, D. Sample size as a function of
 #' coefficient of variation and ratio of means. Am Statistician, Vol. 47, No. 3
 #' (Aug., 1993), pp. 165-7.
-#' @references Martin, D.C., and van Belle, G. Approximations for Power and 
+#' @references Martin, D.C., and van Belle, G. Approximations for Power and
 #' Sample Size for Student's t-Test. Technical Report 125 (1991), University of
 #' Washington, Dept. of Biostatistics.
 #' 
@@ -269,8 +269,8 @@ dlt_table <- function(low, high, delta = 10) {
 #' 
 #' @export
 
-power_cv <- function(n = NULL, f = NULL, cv = NULL, 
-                     sig.level = NULL, power = NULL, 
+power_cv <- function(n = NULL, f = NULL, cv = NULL,
+                     sig.level = NULL, power = NULL,
                      type = c('two.sample', 'one.sample', 'paired'),
                      alternative = c('two.sided', 'less', 'greater'),
                      distribution = c('t', 'normal', 'log.normal')) {
@@ -278,9 +278,9 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
   if (sum(sapply(list(n, f, cv, sig.level, power), is.null)) != 1)
     stop('exactly one of n, f, cv, power, sig.level must be NULL')
   if (!is.null(sig.level) && !is.numeric(sig.level) || 
-        any(0 > sig.level | sig.level > 1)) 
+      any(0 > sig.level | sig.level > 1))
     stop("'sig.level' must be numeric in [0, 1]")
-  if (!is.null(power) && !is.numeric(power) || any(0 > power | power > 1)) 
+  if (!is.null(power) && !is.numeric(power) || any(0 > power | power > 1))
     stop("'power' must be numeric in [0, 1]")
   if (f < 1) {
     warning('ratio of means must be such that mu1/mu0 > 1: 1/f used')
@@ -293,11 +293,11 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
   if (dist == 'log.normal' && !(sig.level %in% c(0.01, 0.05)))
     stop('cannot use desired significance level:
          use 5% or 10% type-I error probability')
-  tsample <- switch(type, 
+  tsample <- switch(type,
                     one.sample = 1, two.sample = 2, paired = 1)
-  ttside <- switch(alternative, 
+  ttside <- switch(alternative,
                    less = 1, two.sided = 2, greater = 3)
-  tside <- switch(alternative, 
+  tside <- switch(alternative,
                   less = 1, two.sided = 2, greater = 1)
   
   ## assuming underlying t distribution
@@ -305,7 +305,7 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
     p.body <- quote({
       df <- (n - 1) * tsample
       qt <- qt(p = sig.level/tside, df = df, lower.tail = TRUE)
-      pt(q = -(-qt + (sqrt(n)*(f-1))/(cv*(f**2+1)**.5)), df = df, 
+      pt(q = -(-qt + (sqrt(n)*(f-1))/(cv*(f**2+1)**.5)), df = df,
          lower.tail = TRUE)
     })
   }
@@ -313,9 +313,9 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
     p.body <- quote({
       df <- (n - 1) * tsample
       qt <- qt(sig.level/tside, df, lower.tail = FALSE)
-      pt(q = -qt + (sqrt(n)*(f-1))/(cv*(f**2+1)**.5), df = df, 
+      pt(q = -qt + (sqrt(n)*(f-1))/(cv*(f**2+1)**.5), df = df,
          lower.tail = TRUE)/2 + 
-        pt(q = -(-qt + (sqrt(n)*(f-1))/(cv*(f**2+1)**.5)), df = df, 
+        pt(q = -(-qt + (sqrt(n)*(f-1))/(cv*(f**2+1)**.5)), df = df,
            lower.tail = FALSE)/2
     })
   }
@@ -323,7 +323,7 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
     p.body <- quote({
       df <- (n - 1) * tsample
       qt <- qt(sig.level/tside, df = df, lower.tail = FALSE)
-      pt(q = -(-qt + (sqrt(n)*(f-1))/(cv*(f**2+1)**.5)), df = df, 
+      pt(q = -(-qt + (sqrt(n)*(f-1))/(cv*(f**2+1)**.5)), df = df,
          lower.tail = FALSE)
     })
   }
@@ -358,9 +358,9 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
   
   ## calculate missing parameter
   if (is.null(power)) power <- eval(p.body)
-  else if (is.null(n)) 
-    n <- ifelse(dist=='log.normal',ceiling(uniroot(function(n) 
-      eval(p.body) - power, c(2, 1e+07))$root),uniroot(function(n) 
+  else if (is.null(n))
+    n <- ifelse(dist=='log.normal',ceiling(uniroot(function(n)
+      eval(p.body) - power, c(2, 1e+07))$root),uniroot(function(n)
         eval(p.body) - power, c(2, 1e+07))$root)
   else if (is.null(cv)) {
     cv <- if (ttside == 2)
@@ -381,7 +381,7 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
                          c(1e-10, 1 - 1e-10))$root
   }  else stop("internal error")
   
-  NOTE <- switch(type, 
+  NOTE <- switch(type,
                  paired = paste('n is number of *pairs*, cv is coefficient of',
                                 'variation of *differences* within pairs'),
                  two.sample = 'n is number in *each* group',
@@ -410,25 +410,25 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
 #' ignored if <= 0
 #' @param ntmax maximum total number of total subjects
 #' @param alpha,beta type-I and type-II errors
-#' @param del searches for designs where the expected number of subjects under 
+#' @param del searches for designs where the expected number of subjects under
 #' the null with within \code{del} of the minimum possible value
 #' @param minimax logical; if \code{TRUE}, only searches for designs which will
 #' minimize the maximum sample size
 #' 
 #' @return
-#' Returns a list with components:
-#' \item{\code{$designs}}{a matrix with a row giving a summary of each 
-#' design which meets the criteria. The columns are: \code{n1}, the number of 
-#' subjects entered in the first stage; \code{r1}, the cutoff for stopping at 
+#' A list with the following components:
+#' \item{\code{$designs}}{a matrix with a row giving a summary of each
+#' design which meets the criteria. The columns are: \code{n1}, the number of
+#' subjects entered in the first stage; \code{r1}, the cutoff for stopping at
 #' the first stage (continue if the number of responses is > \code{r1}); 
 #' \code{n2}, the additional number of subjects enrolled in the second stage; 
 #' \code{r2}, the cutoff for inactivity after the second stage (reject the null
 #' if the number of responses is > \code{r2}); \code{Pstop1.H0}, the
 #' probability of stopping after the first stage under H0 (\code{p0}); 
-#' \code{size}, the actual type-I error; \code{type2}, the actual type-II 
+#' \code{size}, the actual type-I error; \code{type2}, the actual type-II
 #' error; \code{E.tot.n.H0}, the expected number of subjects under H0}
 #' \item{\code{$call}}{the call to \code{simon2}.}
-#' \item{\code{$description}}{a text string giving a brief description of 
+#' \item{\code{$description}}{a text string giving a brief description of
 #' the columns in \code{$designs}.}
 #' 
 #' @seealso desmon package: \code{simon}, \code{twostg}, \code{bin1samp},
@@ -436,7 +436,7 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
 #' 
 #' @author Robert Gray (\code{desmon::simon}); Robert Redd (\code{simon2})
 #' 
-#' @references Simon R (1989). Optimal two-stage designs for phase II clinical 
+#' @references Simon R (1989). Optimal two-stage designs for phase II clinical
 #' trials. \emph{Controlled Clinical Trials}, 10:1-10.
 #' 
 #' @examples
@@ -457,8 +457,8 @@ simon2 <- function(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,
   
   args <- expand.grid(p0 = p0, pa = pa)
   tmp <- setNames(lapply(Map(simon, p0 = args[['p0']], pa = args[['pa']],
-                             n1max = n1max, alpha = alpha, beta = beta, 
-                             del = del, minimax = minimax), 
+                             n1max = n1max, alpha = alpha, beta = beta,
+                             del = del, minimax = minimax),
                          '[[', 1),
                   sapply(seq_len(nrow(args)), function(x) catlist(args[x, ])))
   
@@ -477,23 +477,23 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5, alpha = 0.1, beta = 0.1,
   ## n1max = max # subject in first stage
   
   if (alpha > .5 | alpha <= 0 | 1 - beta <= alpha | beta <= 0 | p0 <= 0 | p0 >= pa | 
-        pa >= 1 | n1max > ntmax) stop('invalid arguments')
+      pa >= 1 | n1max > ntmax) stop('invalid arguments')
   ## determine min sample size first stage
   n1min <- max(ceiling(log(beta) / log(1 - pa)), 2)
-  if (n1min > ntmax) 
+  if (n1min > ntmax)
     stop('no valid designs')
   ## optimal one-sample design
   u1 <- bin1samp(p0, pa, alpha, beta)
   ## include even if n > n1max
   z <- matrix(c(u1[1:2], 0, u1[2], 1, u1[5:6], u1[1]), nrow = 1)
   if (n1min < u1[1]) {
-    if (n1max > 0) 
-      n1max <- min(n1max, u1[1] - 1) 
+    if (n1max > 0)
+      n1max <- min(n1max, u1[1] - 1)
     else n1max <- u1[1] - 1
-  } else 
+  } else
     if (n1min == u1[1]) {
-      if (n1max > 0) 
-        n1max <- min(n1max, u1[1]) 
+      if (n1max > 0)
+        n1max <- min(n1max, u1[1])
       else n1max <- u1[1]
     } else
       stop('no valid designs')
@@ -501,7 +501,7 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5, alpha = 0.1, beta = 0.1,
   
   n1max <- min(n1max,ntmax)
   
-  ## determine min total sample size 
+  ## determine min total sample size
   ## (use randomized decision rule on boundary for single sample)
   b <- 0
   n <- u1[1]
@@ -559,21 +559,21 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5, alpha = 0.1, beta = 0.1,
                 ntmax <- i + j
                 ## need to reset to min E.H0 at min # cases
                 e0 <- e1
-              } else 
-                if (i + j == ntmax) 
+              } else
+                if (i + j == ntmax)
                   e0 <- min(e0, e1)
             } else {
               e0 <- min(e0, e1)
             }
-            z <- rbind(z, c(i, r1, j, r2, b0[r1 + 1], 
+            z <- rbind(z, c(i, r1, j, r2, b0[r1 + 1],
                             1 - b0[r2 + 1], ba[r2 + 1], e1))
           } else {
             j <- j + 1
             if (minimax) {
-              if (i + j > ntmax) 
+              if (i + j > ntmax)
                 q <- 1 
             } else {
-              if (e1 > e0 + del | i + j > ntmax) 
+              if (e1 > e0 + del | i + j > ntmax)
                 q <- 1
             }
           }
@@ -582,7 +582,7 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5, alpha = 0.1, beta = 0.1,
     }
   }
   
-  dimnames(z) <- list(NULL, c('n1', 'r1', 'n2', 'r2', 'Pstop1.H0', 
+  dimnames(z) <- list(NULL, c('n1', 'r1', 'n2', 'r2', 'Pstop1.H0',
                               'size', 'type2', 'E.tot.n.H0'))
   z <- z[z[ , 1] + z[ , 3] <= ntmax, ,drop = FALSE]
   z <- z[z[ , 8] <= e0 + del, , drop = FALSE]
@@ -594,7 +594,7 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5, alpha = 0.1, beta = 0.1,
 }
 
 bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20) {
-  if (p0 == pa) 
+  if (p0 == pa)
     stop('p0 should not be equal to pa')
   b <- 1
   x <- round(p0 * n.min)
@@ -609,7 +609,7 @@ bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20) {
       size <- s[sub][1]
       b <- pbinom(x, n, pa)
     }
-  } else 
+  } else
     if (pa < p0) {
       
       while (b > beta) {
@@ -634,11 +634,11 @@ bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20) {
 #' populations.
 #' 
 #' Mood's median test is an exact test which dichotomizes values in each group
-#' above or below the median of the pooled data. The test is conservative in 
+#' above or below the median of the pooled data. The test is conservative in
 #' small sample sizes.
 #' 
 #' Note that this test is different than \code{\link{mood.test}} in the stats
-#' package which tests for a difference in \emph{scale parameters} rather than 
+#' package which tests for a difference in \emph{scale parameters} rather than
 #' medians.
 #' 
 #' @param X a list of two or more numeric vectors
@@ -719,7 +719,7 @@ fakeglm <- function(formula, ..., family, data = NULL) {
     if (is.ordered(x)) return('ordered')
     if (is.factor(x)) return('factor')
     if (is.character(x)) return('character')
-    if (is.matrix(x) && is.numeric(x)) 
+    if (is.matrix(x) && is.numeric(x))
       return(paste('nmatrix', ncol(x), sep = '.'))
     if (is.numeric(x)) return('numeric')
     return('other')

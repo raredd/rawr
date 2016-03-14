@@ -15,7 +15,7 @@ for \code{FUN}}
 
 \item{section}{section to extract (default is \code{"Usage"}}
 
-\item{type}{type of character vector you want returned; default is 
+\item{type}{type of character vector you want returned; default is
 \code{"m_code"}, see details}
 
 \item{...}{additional arguments passed to \code{\link[utils]{help}}}
@@ -29,14 +29,14 @@ for use in Sweave or R-markdown documents.
 }
 \details{
 The \code{type} argument accepts:
-\itemize{ 
+\itemize{
 \item \code{"m_code"}: Markdown code chunks; for use with markdown documents
 when highlighted code is expected.
-\item \code{"m_text"}: Markdown plain text; for use with markdown documents 
+\item \code{"m_text"}: Markdown plain text; for use with markdown documents
 where regular text is expected.
-\item \code{"s_code"}: Sweave code chunks; for use with Sweave documents 
+\item \code{"s_code"}: Sweave code chunks; for use with Sweave documents
 where highlighted code is expected.
-\item \code{"s_text"}: Sweave plain text; for use with Sweave documents 
+\item \code{"s_text"}: Sweave plain text; for use with Sweave documents
 where regular text is expected.
 }
 

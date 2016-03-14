@@ -24,14 +24,14 @@ Recodes numeric, character, and factor values in a vector, list, matrix,
 or data frame.
 }
 \details{
-When recoding a factor variable with a new level, \code{recoder} 
+When recoding a factor variable with a new level, \code{recoder}
 automatically adds the corresponding level to \code{levels(object)} to
 avoid errors.
 
-The function currently recursively replaces \code{pattern[i]} with 
+The function currently recursively replaces \code{pattern[i]} with
 \code{replacement[i]} in sequential order, so if you intend to swap values,
 say \code{a} and \code{b}, in an \code{object}, \code{recoder} will instead
-first replace all occurrences of \code{a} with \code{b} and then all 
+first replace all occurrences of \code{a} with \code{b} and then all
 occurrences of \code{b} with \code{a} resulting in the \code{object} with no
 \code{b} occurrences; see examples. I will (may) fix this eventually.
 }

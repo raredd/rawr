@@ -38,7 +38,7 @@ cbind(rep(1, 10), roll_fun(rep(1, 10), 5, sum))
 dat <- data.frame(x = c(1,1,2,2,2,3,4,5,5,5),
                   y = 1:10)
 ## compare:
-within(dat, 
+within(dat,
   z <- unlist(by(dat, dat$x, function(ii)
           roll_fun(ii$y, length(ii$y), sum))))
 do.call('rbind', by(dat, dat$x, cumsum))

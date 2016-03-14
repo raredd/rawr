@@ -39,7 +39,7 @@ Functions to parse numeric vectors in scientific notation and return an
 \code{\link{expression}} for a pretty display.
 }
 \examples{
-x <- 10^(1:5) / 10
+x <- 10 ** (1:5) / 10
 oom(x)
 oom(1 / x)
 
@@ -52,13 +52,13 @@ par(xpd = NA, mar = c(6,4,4,2) + .1)
 plot(1:5, type = 'n', axes = FALSE, ann = FALSE)
 axis(2, at = 1:5, labels = pretty_sci(x, simplify = FALSE), las = 1)
 
-text(1:5, 0, pretty_sci(1 / x ^ 10))
+text(1:5, 0, pretty_sci(1 / x ** 10))
 text(1:5, 1, pretty_sci(1 / x, digits = 3))
 text(1:5, 2, pretty_sci(1 / x, digits = 2, limit = 1e2))
 text(1:5, 3, x)
 text(1:5, 4, pretty_sci(x, limit = 1e2))
 text(1:5, 5, pretty_sci(x, digits = 1))
-text(1:5, 6, pretty_sci(x ^ 10))
+text(1:5, 6, pretty_sci(x ** 10))
 
 text(1:5, -1, pretty_sci(1 / x, limit = -1, simplify = FALSE))
 

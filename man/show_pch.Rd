@@ -7,7 +7,7 @@
 show_pch()
 }
 \description{
-In \code{R}, there are 26 numeric plotting characters. This function shows 
+In \code{R}, there are 26 numeric plotting characters. This function shows
 these options and their respective numbers. Note that \code{col} specifies
 both the border and fill color (if applicable) for \code{0:20}; \code{pch}s
 \code{21:25} can be filled with \code{bg}.

@@ -7,7 +7,7 @@
 show_colors()
 }
 \description{
-In \code{R}, there are 657 named colors. This function shows these colors 
+In \code{R}, there are 657 named colors. This function shows these colors
 and their respective numbers. Find a color by number in the plot or by the
 name of the color with \code{colors()[n]}.
 }

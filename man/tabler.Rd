@@ -31,7 +31,7 @@ tabler(x, ...)
 \item{type}{use \code{"or"} for odds ratios; others may be added later}
 }
 \description{
-Extracts coefficients, standard errors, odds ratios, confidence intervals, 
+Extracts coefficients, standard errors, odds ratios, confidence intervals,
 p-values, etc. from model fits.
 }
 \examples{

@@ -11,10 +11,10 @@ install_temp(pkgs, lib, ...)
 versions should be downloaded from the repositories}
 
 \item{lib}{character vector giving the library directories where to install
-\code{pkgs}; recycled as needed; if missing (default), a 
+\code{pkgs}; recycled as needed; if missing (default), a
 \code{\link{tempdir}} will be created}
 
-\item{...}{additional arguments passed to 
+\item{...}{additional arguments passed to
 \code{\link[utils]{install.packages}}}
 }
 \description{

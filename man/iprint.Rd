@@ -16,7 +16,7 @@ character vectors}
 
 \item{copula}{character string to separate last two terms}
 
-\item{digits}{number of digits past the decimal point to keep; see 
+\item{digits}{number of digits past the decimal point to keep; see
 \code{\link{roundr}}}
 }
 \description{

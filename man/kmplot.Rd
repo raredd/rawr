@@ -22,7 +22,7 @@ kmplot(s, lty.surv = 1, lwd.surv = 1, col.surv = col.surv, mark = 3,
 curve(s); colors may be either numeric, color names as character string(s),
 or hexadecimal string(s)}
 
-\item{mark}{numeric plotting character (\code{\link{pch}}) or character 
+\item{mark}{numeric plotting character (\code{\link{pch}}) or character
 string, e.g., \code{''}, \code{'|'}}
 
 \item{lty.ci, lwd.ci, col.ci}{line type, width, and color for confidence
@@ -40,12 +40,12 @@ see details}
 
 \item{atrisk.lines}{logical; draw lines next to strata in at risk table}
 
-\item{strata.lab}{labels used in legend and at risk table for strata; if 
+\item{strata.lab}{labels used in legend and at risk table for strata; if
 \code{NULL} (default), labels created in \code{survfit} are used; if only
 one strata is present, "All" is used by default; if \code{FALSE}, labels
 are not used}
 
-\item{strata.expr}{an alternative to \code{strata.lab} which allows for 
+\item{strata.expr}{an alternative to \code{strata.lab} which allows for
 \code{\link{bquote}} or \code{\link{expression}} to be passed to labels for
 at risk table; note that \code{strata.expr} trumps \code{strata.lab}}
 
@@ -82,7 +82,7 @@ set up but before any plotting takes place}
 \item{panel.last}{an expression to be evaluated after plotting but before
 returning from the function}
 
-\item{...}{additional parameters (\code{font}, \code{mfrow}, \code{bty}, 
+\item{...}{additional parameters (\code{font}, \code{mfrow}, \code{bty},
 \code{tcl}, \code{cex.lab}, \code{xaxs}, etc) passed to \code{par}}
 }
 \description{
@@ -109,7 +109,7 @@ the confidence limits calculated in the survfit object. That is, the xx-\%
 confidence interval (plotted when \code{lty.ci != 0}) and the confidence
 bands are identical--just two ways of plotting the same invervals.
 
-When saving plots, it is highly recommended to use \code{\link{png}}, 
+When saving plots, it is highly recommended to use \code{\link{png}},
 \code{\link{svg}}, \code{\link{pdf}}, etc. instead of exporting directly
 from the \code{R} graphics device. Doing so may cause the at risk table or
 legend to be mis-aligned.
@@ -125,7 +125,7 @@ kmplot(kmfit1)
 
 ## expressions in at risk table
 kmplot(kmfit1, strata.lab = c('Female','Male'),
-       strata.expr = expression(widetilde(ring(Female)), 
+       strata.expr = expression(widetilde(ring(Female)),
                                 phantom() >= Male))
 
 ## when using mfrow options, use ADD = TRUE
@@ -144,15 +144,15 @@ kmplot(kmfit2,
        panel.first = abline(v = c(0, .5, 1:9) * 365, lty = 3),
        xaxis.lab = c(0, .5, 1:9),         # label years
        yaxis.lab = pretty(0:1) * 100,     # change to percent
-       xlab = 'Time (years)', ylab = 'Percent survival', 
-       col.surv = c('blue','red','green','black','purple','orange'), 
+       xlab = 'Time (years)', ylab = 'Percent survival',
+       col.surv = c('blue','red','green','black','purple','orange'),
        extra.margin = 6,        # increase margin for long strata labels
        strata.lab = c('Obs','Obs+','Lev','Lev+','Lev5fu','Lev5fu+'),
        strata.order = c(5,6,3,1,4,2),      # order by survival estimates
        font = 2,                # bold table text
        bty = 'l',               # L box type around plot
        tcl = .5)                # change length/direction of ticks
-title(main = 'Chemotherapy for stage B/C colon cancer', 
+title(main = 'Chemotherapy for stage B/C colon cancer',
       adj = .5, font.main = 1, line = 0.5, cex.main = 1)
 dev.off()
 }

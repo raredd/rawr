@@ -7,7 +7,7 @@
 search_hist(x, ...)
 }
 \arguments{
-\item{x}{numeric or character; if numeric, shows the most recent \code{n} 
+\item{x}{numeric or character; if numeric, shows the most recent \code{n}
 lines in \code{.Rhistory}; if character, searches for pattern matches}
 
 \item{...}{additional arguments passed to \code{\link{grep}}}

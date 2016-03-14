@@ -30,7 +30,7 @@ islist <- function(x) inherits(x, 'list')
 #' or \code{NULL}, but if \code{NULL} is the result of \code{f}, it is
 #' desirable to return some other default value without errors.
 #' 
-#' \code{\%:\%} is useful for obtaining a range of \code{colnames} or 
+#' \code{\%:\%} is useful for obtaining a range of \code{colnames} or
 #' \code{names} by literal character strings rather than by index.
 #' 
 #' @param a,b raw, logical, "number-like" vectors or objects
@@ -115,17 +115,17 @@ islist <- function(x) inherits(x, 'list')
 #' the files parsed for easier use.
 #' 
 #' \code{lsp} is a helper function to list exported (\code{?'::'}) and non
-#' exported (\code{?':::'}) functions (and other features from a package's 
+#' exported (\code{?':::'}) functions (and other features from a package's
 #' \code{NAMESPACE} file).
 #' 
 #' Note that \code{base} and older packages do not have a \code{NAMESPACE}
-#' file in which case, for \code{base} packages, \code{lsp} returns 
+#' file in which case, for \code{base} packages, \code{lsp} returns
 #' \code{ls(.BaseNamespaceEnv, all.names = TRUE)}, and throws an error
 #' otherwise.
 #' 
 #' Possible values for \code{what} are "\code{all}" (default), \code{NULL},
-#' "\code{exports}", "\code{imports}", "\code{dynlibs}", "\code{lazydata}", 
-#' "\code{path}", "\code{S3methods}", "\code{spec}", and others depending on 
+#' "\code{exports}", "\code{imports}", "\code{dynlibs}", "\code{lazydata}",
+#' "\code{path}", "\code{S3methods}", "\code{spec}", and others depending on
 #' the package.
 #' 
 #' \code{lsp(packagename, '?')} to see options for a specific package.
@@ -139,11 +139,11 @@ islist <- function(x) inherits(x, 'list')
 #' convert wildcard patterns to regular expressions; for \code{lsp} a text
 #' pattern or regular expression passed to \code{\link{grep}} to filter the
 #' results
-#' @param by variable to order output ('type', 'size' (default), 'sizef', 
+#' @param by variable to order output ('type', 'size' (default), 'sizef',
 #' 'nrow', or 'ncol')
 #' @param all.names logical; if \code{TRUE}, all object names are returned; if
 #' \code{FALSE}, names which begin with a \code{.} are omitted
-#' @param decreasing logical; if \code{TRUE}, displays output in decreasing 
+#' @param decreasing logical; if \code{TRUE}, displays output in decreasing
 #' order
 #' @param n number of objects to displace if \code{head} is \code{TRUE}
 #' @param package package name, as a \code{\link{name}} or literal character
@@ -204,7 +204,7 @@ lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
   
   if (length(ls(envir = as.environment(pos))) < 1L)
     stop(return(character(0)))
-  napply <- function(names, fn) 
+  napply <- function(names, fn)
     sapply(names, function(x) fn(get(x, pos = pos)))
   names <- ls(pos = pos, pattern = pattern, all.names = all.names)
   
@@ -270,14 +270,14 @@ lsp <- function(package, what, pattern) {
     if (exists('.__NAMESPACE__.', envir = ns, inherits = FALSE)) {
       wh <- get('.__NAMESPACE__.', inherits = FALSE,
                 envir = asNamespace(package, base.OK = FALSE))
-      if ('?' %in% what) 
+      if ('?' %in% what)
         return(ls(wh))
       if (!is.null(what) && !any(what %in% c('all', ls(wh))))
         stop('what is invalid; see ?rawr::lsp \'details\'')
       res <- sapply(ls(wh), function(x) getNamespaceInfo(ns, x))
-      res <- rapply(res, ls, classes = 'environment', 
+      res <- rapply(res, ls, classes = 'environment',
                     how = 'replace', all.names = TRUE)
-      if (is.null(what)) 
+      if (is.null(what))
         return(res[grep(pattern, res, perl = TRUE, ignore.case = TRUE)])
       if (what %in% 'all') {
         res <- ls(getNamespace(package), all.names = TRUE)
@@ -352,9 +352,9 @@ parse_news <- function(x) {
 #' @rdname rawr_parse
 #' @export
 parse_namespace <- function(x,
-  wh = c("import", "export", "exportPattern", "importClass",
-         "importMethod", "exportClass", "exportMethod",
-         "exportClassPattern", "useDynLib", "nativeRoutine", "S3method")) {
+                            wh = c("import", "export", "exportPattern", "importClass",
+                                   "importMethod", "exportClass", "exportMethod",
+                                   "exportClassPattern", "useDynLib", "nativeRoutine", "S3method")) {
   ## remove comments and collapse
   x <- paste0(gsub('#.*$', '', x), collapse = '')
   mm <- lapply(wh, function(xx)
@@ -391,10 +391,10 @@ parse_namespace <- function(x,
 
 psum <- function(..., na.rm = FALSE) {
   dat <- do.call('cbind', list(...))
-  res <- rowSums(dat, na.rm = na.rm) 
+  res <- rowSums(dat, na.rm = na.rm)
   idx_na <- !rowSums(!is.na(dat))
   res[idx_na] <- NA
-  res 
+  res
 }
 
 #' Rescale numeric vector
@@ -404,7 +404,7 @@ psum <- function(..., na.rm = FALSE) {
 #' 
 #' @param x numeric vector of values
 #' @param to output range (numeric vector of length two)
-#' @param from input range (numeric vector of length two); if not given, 
+#' @param from input range (numeric vector of length two); if not given,
 #' \code{from} is calculated from the range of \code{x}
 #' 
 #' @seealso
@@ -582,7 +582,7 @@ cbindx <- function (..., deparse.level = 1) {
       ii <- if (fix.na)
         2:(na - 1) else 2:na
       if (any(iV[ii])) {
-        for (i in ii[iV[ii]]) 
+        for (i in ii[iV[ii]])
           if (!is.null(nmi <- Nms(i)))
             names(argl)[i] <- nmi
       }
@@ -591,7 +591,7 @@ cbindx <- function (..., deparse.level = 1) {
     ## filling with NA's to maximum occuring nrows
     nRow <- as.numeric(sapply(argl, function(x) NROW(x)))
     maxRow <- max(nRow, na.rm = TRUE)
-    argl <- lapply(argl, function(x) 
+    argl <- lapply(argl, function(x)
       if (is.null(nrow(x))) {
         c(x, rep(NA, maxRow - length(x)))
       } else rbindx(x, matrix(nrow = maxRow - nrow(x), ncol = ncol(x))))
@@ -706,7 +706,7 @@ rbindx <- function (..., deparse.level = 1) {
     ## make all column names from common 'namesVEC'
     for (j in 1:length(argl)) {
       if (!is.null(ncol(argl[[j]]))) colnames(argl[[j]]) <- namesVEC
-    } 
+    }
     r <- do.call('rbind', c(argl[-1L], list(deparse.level = deparse.level)))
   }  
   d2 <- dim(r)
@@ -846,7 +846,7 @@ outer2 <- function(..., FUN) {
 #' Use \code{\link{merge}} to join \code{n} data frames.
 #' 
 #' @param l list of data frames or objects to be coerced
-#' @param ... additional arguments passed to \code{merge} (eg, \code{by}, 
+#' @param ... additional arguments passed to \code{merge} (eg, \code{by},
 #' \code{all}, etc)
 #' 
 #' @seealso \code{\link[plyr]{join_all}}
@@ -949,7 +949,7 @@ locf <- function(x, fromLast = FALSE, na.strings = '') {
 #' dat <- data.frame(x = c(1,1,2,2,2,3,4,5,5,5),
 #'                   y = 1:10)
 #' ## compare:
-#' within(dat, 
+#' within(dat,
 #'   z <- unlist(by(dat, dat$x, function(ii)
 #'           roll_fun(ii$y, length(ii$y), sum))))
 #' do.call('rbind', by(dat, dat$x, cumsum))
@@ -958,7 +958,7 @@ locf <- function(x, fromLast = FALSE, na.strings = '') {
 
 roll_fun <- function(x, n = 5, FUN = mean, ..., fromLast = FALSE, keep = FALSE) {
   l <- lapply(seq_along(x), function(ii) {
-    if (fromLast) 
+    if (fromLast)
       x[length(x) + 1 - tail(sequence(ii), n)]
     else x[tail(sequence(ii), n)]
   })
@@ -984,7 +984,7 @@ roll_fun <- function(x, n = 5, FUN = mean, ..., fromLast = FALSE, keep = FALSE) 
 #' @export
 
 classMethods <- function(class) {
-  if (!is.character(class)) 
+  if (!is.character(class))
     class <- class(class)
   cat(sprintf('class methods for %s:\n\n', paste0(class, collapse = ', ')))
   
@@ -1008,7 +1008,7 @@ classMethods <- function(class) {
 
 #' Extract captured substrings
 #' 
-#' Extract the captured substrings from match data obtained by 
+#' Extract the captured substrings from match data obtained by
 #' \code{\link{regexpr}}, \code{\link{gregexpr}}, or \code{\link{regexec}}.
 #' 
 #' @param x a character vector
@@ -1072,7 +1072,7 @@ regcaptures <- function(x, m) {
     } else character()
   }
   
-  Map(function(x, sos, mls) Substring(x, sos, mls), 
+  Map(function(x, sos, mls) Substring(x, sos, mls),
       x, starts, lengths, USE.NAMES = FALSE)
 }
 

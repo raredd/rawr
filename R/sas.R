@@ -8,8 +8,8 @@
 #' @description
 #' Write and run \code{SAS} code in \code{R}.
 #' 
-#' This is meant as a utility function for other \code{SAS} functions in this 
-#' package, and users are \emph{not} encouraged to use \code{r2sas} to 
+#' This is meant as a utility function for other \code{SAS} functions in this
+#' package, and users are \emph{not} encouraged to use \code{r2sas} to
 #' interface with \code{SAS} (while possible with this function, see examples).
 #' 
 #' To source an existing \code{.sas} program, see \code{\link{source_sas}}.
@@ -28,12 +28,12 @@
 #' the default directory (i.e.,
 #' \code{c:/program files/sasfoundation/9.2/sas.exe});
 #' 
-#' For previous versions or if\code{SAS} is not installed in the default 
+#' For previous versions or if\code{SAS} is not installed in the default
 #' directory, it will be necessary to supply \code{saspath} to \code{sas.exe}
-#' @param force logical; by default, user must interactively allow 
-#' \code{r2sas} to continue running \code{code}; set to \code{TRUE} to ignore 
+#' @param force logical; by default, user must interactively allow
+#' \code{r2sas} to continue running \code{code}; set to \code{TRUE} to ignore
 #' this or for non-interactive \code{R}
-#' @param out either \code{FALSE}, directory (as character string) to dump 
+#' @param out either \code{FALSE}, directory (as character string) to dump
 #' \code{.sas} program file, \code{.log} file, and any \code{SAS} output, i.e.,
 #' \code{.lst} file(s)
 #' 
@@ -92,7 +92,7 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
   if (missing(saspath)) {
     sashome <- 'c:/program files/sashome/sasfoundation/'
     saspath <- sprintf('%s%s/sas.exe', sashome,
-                  max(as.numeric(9.3, list.files(sashome)), na.rm = TRUE))
+                       max(as.numeric(9.3, list.files(sashome)), na.rm = TRUE))
     if (!file.exists(saspath))
       saspath <- 'c:/program files/sas/sasfoundation/9.2/sas.exe'
   }
@@ -134,7 +134,7 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
       on.exit(file.copy(c(sasin, lstpath, logpath), out))
       on.exit(file.remove(sasin, lstpath, logpath), add = TRUE)
       cat('\nr2sas is complete\n')
-    } else 
+    } else
       stop(sprintf('error in r2sas, see log:\n%s/%s', out, basename(logpath)))
   }
   return(invisible())
@@ -148,9 +148,9 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
 #' @param mname macro name; if missing, \code{\link{get_margs}} will search
 #' \code{mpath} for macro names; if missing and \code{get_margs} finds more
 #' than one macro in \code{mpath}, will throw an error
-#' @param args arguments passed to the macro, separated by commas (do not 
-#' include semicolons---\code{args} is passed directly as 
-#' \code{\%macro(args);} ); if unsure of the macro parameters, run 
+#' @param args arguments passed to the macro, separated by commas (do not
+#' include semicolons---\code{args} is passed directly as
+#' \code{\%macro(args);} ); if unsure of the macro parameters, run
 #' \code{rmacro} with \code{show.args = TRUE}
 #' @param saspath file path to \code{sas.exe} as character string
 #' 
@@ -161,24 +161,24 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
 #' the default directory (i.e.,
 #' \code{c:/program files/sasfoundation/9.2/sas.exe});
 #' 
-#' For previous versions or if\code{SAS} is not installed in the default 
+#' For previous versions or if\code{SAS} is not installed in the default
 #' directory, it will be necessary to supply \code{saspath} to \code{sas.exe}
 #' \code{mpath} defaults to the most recent version of \code{SAS}
 #' @param show.args logical; if \code{TRUE}, \code{rmacro} will only return
 #' the macro names and arguments found in \code{mpath}
-#' @param force logical; by default, user must interactively allow 
-#' \code{r2sas} to continue running \code{code}; set to \code{TRUE} to ignore 
+#' @param force logical; by default, user must interactively allow
+#' \code{r2sas} to continue running \code{code}; set to \code{TRUE} to ignore
 #' this or for non-interactive \code{R}
-#' @param firstArgs optional character string of (valid) \code{SAS} commands 
+#' @param firstArgs optional character string of (valid) \code{SAS} commands
 #' separated by semicolons to be excuted \emph{before} the macro; for example,
 #' \code{options <OPTIONS>;} or \code{x "cd ..";}
 #' @param lastArgs optional commands to be executed \emph{after} the macro;
 #' see \code{firstArgs}
-#' @param out either \code{FALSE}, directory (as character string) to dump 
+#' @param out either \code{FALSE}, directory (as character string) to dump
 #' \code{.sas} program file, \code{.log} file, and any \code{SAS} output,
 #' i.e., \code{.lst} file(s)
 #' 
-#' @seealso 
+#' @seealso
 #' \code{\link{get_margs}}, \code{\link{r2sas}}, \code{\link{sas_mget}}
 #' \code{\link{source_sas}}, \code{\link{parse_formats}}
 #' 
@@ -214,7 +214,7 @@ rmacro <- function(mpath, mname, args, saspath, show.args = FALSE,
     mname <- names(margs)
   if (show.args)
     return(margs)
-
+  
   if (length(mname) > 1)
     stop('run one macro per rmacro call\n')
   
@@ -307,7 +307,7 @@ get_margs <- function(mpath, mname, text) {
   }
   on.exit(close(con))
   
-  ## ignore everything between /* */, collapse, 
+  ## ignore everything between /* */, collapse,
   ## then split lines by semicolons
   macro <- paste(macro, collapse = ' ')
   macro <- gsub('/\\*[^/\\*]*?\\*/', '', macro, perl = TRUE)
@@ -319,16 +319,16 @@ get_margs <- function(mpath, mname, text) {
   ## and trim whitespace
   mcall <- unlist(lapply(macro, function(x)
     regmatches(x,
-      gregexpr('\\s*%macro\\s+(\\w+)\\((.*)\\)\\s*;{1}', x, perl = TRUE))))
+               gregexpr('\\s*%macro\\s+(\\w+)\\((.*)\\)\\s*;{1}', x, perl = TRUE))))
   mnames <- gsub('%macro|;|(?<=\\().*?(?=\\))|\\(|\\)|\\s*', '',
                  mcall, perl = TRUE)
   args <- gsub(' ','', regmatches(mcall,
-                gregexpr('(?<=\\().*?(?=\\))', mcall, perl = TRUE)))
+                                  gregexpr('(?<=\\().*?(?=\\))', mcall, perl = TRUE)))
   
   if (length(mnames) < 1)
     stop(sprintf('no valid macros found in %s\n', mpath))
   if (!missing(mname) && any(mname %ni% mnames))
-    stop(sprintf('%s not found in %s', 
+    stop(sprintf('%s not found in %s',
                  paste(mname[mname %ni% mnames], collapse = ', '), mpath))
   margs <- setNames(gsub(',', ', ', args), mnames)
   as.list(margs)[mname]
@@ -340,9 +340,9 @@ get_margs <- function(mpath, mname, text) {
 #' more \code{SAS} data sets (\code{.sas7bdat} files) into a list of \code{R}
 #' data frames.
 #' 
-#' @param libpath directory to data set(s) as character string; if missing, 
+#' @param libpath directory to data set(s) as character string; if missing,
 #' searches the current working directory
-#' @param dsn data set name(s); either \code{data1} or \code{data1.sas7bdat} 
+#' @param dsn data set name(s); either \code{data1} or \code{data1.sas7bdat}
 #' will work; if missing or \code{NULL}, all \code{.sas7bdat} files found in
 #' \code{libpath} will be read
 #' @param saspath file path to \code{sas.exe} as character string
@@ -354,7 +354,7 @@ get_margs <- function(mpath, mname, text) {
 #' the default directory (i.e.,
 #' \code{c:/program files/sasfoundation/9.2/sas.exe});
 #' 
-#' For previous versions or if\code{SAS} is not installed in the default 
+#' For previous versions or if\code{SAS} is not installed in the default
 #' directory, it will be necessary to supply \code{saspath} to \code{sas.exe}
 #' @param fmtpath path to a format \code{.sas} file as character string; 
 #' \code{SAS} throws an error if the host used to make the format catalog was
@@ -366,10 +366,10 @@ get_margs <- function(mpath, mname, text) {
 #' \code{sas_mget} will either ignore the catalog or create a new one if
 #' \code{fmtpath} is given; set \code{catalog = TRUE} if you are sure that
 #' the format catalog is native to windows
-#' @param log.file name of \code{SAS} log file; default value will create 
+#' @param log.file name of \code{SAS} log file; default value will create
 #' \code{_temp_.log} in the \code{libpath} directory
 #' @param ... additional arguments passed to \code{\link[Hmisc]{sas.get}}
-#' @param force logical; by default, user must interactively allow 
+#' @param force logical; by default, user must interactively allow
 #' \code{sas_mget} to continue reading all data sets; set to \code{TRUE} to
 #' ignore this or for non-interactive \code{R}
 #' 
@@ -401,7 +401,7 @@ get_margs <- function(mpath, mname, text) {
 #' 
 #' @export
 
-sas_mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE, 
+sas_mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
                      log.file, ..., force = FALSE) {
   
   oo <- options()
@@ -416,7 +416,7 @@ sas_mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
   if (missing(saspath)) {
     sashome <- 'c:/program files/sashome/sasfoundation/'
     saspath <- sprintf('%s%s/sas.exe', sashome,
-                 max(as.numeric(9.3, list.files(sashome)), na.rm = TRUE))
+                       max(as.numeric(9.3, list.files(sashome)), na.rm = TRUE))
     if (!file.exists(saspath))
       saspath <- 'c:/program files/sas/sasfoundation/9.2/sas.exe'
   }
@@ -432,8 +432,8 @@ sas_mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
             'Ignoring formats.', domain = NA)
     no.format <- TRUE
   }
-  dsi <- `colnames<-`(round(file.info(list.files(libpath, 
-                       full.names = TRUE))['size'] / 1000), 'size (Kb)')
+  dsi <- `colnames<-`(round(file.info(list.files(libpath,
+                                                 full.names = TRUE))['size'] / 1000), 'size (Kb)')
   p <- function(x) gsub('.sas7bdat', '', x, ignore.case = TRUE)
   
   ## check if data exists
@@ -443,17 +443,17 @@ sas_mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
       stop(sprintf('no sas data sets found in %s\n', libpath))
   } else
     if (!all(p(dsn) %in% p(dsf)))
-      stop(sprintf('data set%s not found in %s: %s\n', 
-                   ifelse(length(dsn) > 1, 's', ''), libpath, 
+      stop(sprintf('data set%s not found in %s: %s\n',
+                   ifelse(length(dsn) > 1, 's', ''), libpath,
                    paste0(p(dsn)[p(dsn) %ni% p(dsf)], collapse = ', ')))
   
   ## final warning for reading all dsn
   if (interactive() && !force) {
-    cat(sprintf('\n!!! %s data set%s will be read !!!\n\n Size in Kb:\n\n', 
+    cat(sprintf('\n!!! %s data set%s will be read !!!\n\n Size in Kb:\n\n',
                 num2char(length(dsn)), ifelse(length(dsn) > 1, 's', '')))
     print(`rownames<-`(dsi[which(p(rownames(dsi)) %in% 
-                       gsub('\\/+','/', paste0(libpath, '/', p(dsn)))), , 
-                       drop = FALSE], p(dsn)))
+                                   gsub('\\/+','/', paste0(libpath, '/', p(dsn)))), ,
+                           drop = FALSE], p(dsn)))
     cat('\n\n\n\n\n')
     check <- readline('Do you want to continue? (y/n): ')
     if (tolower(substr(check, 1, 1)) != 'y')
@@ -510,9 +510,9 @@ sas_mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
   ## sas.get wrapper
   if (force || !interactive() || tolower(substr(check, 1, 1)) == 'y') {
     dsn <- p(dsn)
-    zzz <- setNames(lapply(dsn, function(x) 
+    zzz <- setNames(lapply(dsn, function(x)
       Hmisc::sas.get(libraryName = libpath, member = x, sasprog = saspath,
-                     log.file = paste(libpath, log.file, sep = '/'), 
+                     log.file = paste(libpath, log.file, sep = '/'),
                      formats = !no.format, ...)), dsn)
     
     ## print dims for user
@@ -584,7 +584,7 @@ source_sas <- function(path, ...) {
 #' #  proc format;
 #' #    value $jc 'one' = 'management'
 #' #              'two' = 'non-management';
-#' #    value rate 
+#' #    value rate
 #' #           -99 = 'not applicable'
 #' #            -1 = 'missing'
 #' #             0 = 'terrible'
@@ -611,19 +611,19 @@ source_sas <- function(path, ...) {
 #' 
 #' #  $jc
 #' #    'management' 'non-management'; 
-#' #         "'one'"           "'two'" 
+#' #         "'one'"           "'two'"
 #' #  
 #' #  $rate
 #' #  'not applicable'        'missing'       'terrible'           'poor' 
-#' #             "-99"             "-1"              "0"              "1" 
+#' #             "-99"             "-1"              "0"              "1"
 #' #            'fair'           'good'      'excellent' 
-#' #               "2"              "3"              "4" 
+#' #               "2"              "3"              "4"
 #' #  
 #' #  $with_comments
 #' #  'not applicable'        'missing'       'terrible'           'poor' 
-#' #             "-99"             "-1"              "0"              "1" 
+#' #             "-99"             "-1"              "0"              "1"
 #' #            'fair'           'good'      'excellent' 
-#' #               "2"              "3"              "4" 
+#' #               "2"              "3"              "4"
 #' 
 #' names(pp[[3]][match(c('1','-99','2','0'), pp[[3]])])
 #' 
@@ -633,8 +633,8 @@ parse_formats <- function(path) {
   fmt <- readLines(path)
   fmt <- gsub('\\*.*;|\\/\\*.*\\*\\/', '', fmt)
   vars <- gsub('(?i)value\\W+(\\w*)|.', '\\1', fmt, perl = TRUE)
-#   vals <- gsub("(?i)([\'\"]?[a-z\\d -]+[\'\"]?\\s*=\\s*[\'\"]?[a-z\\d -,]+[\'\"]?)|.", '\\1',
-#                fmt, perl = TRUE)
+  #   vals <- gsub("(?i)([\'\"]?[a-z\\d -]+[\'\"]?\\s*=\\s*[\'\"]?[a-z\\d -,]+[\'\"]?)|.", '\\1',
+  #                fmt, perl = TRUE)
   regex <- '[\'\"].*[\'\"]|[\\w\\d-]+'
   vals <- gsub(sprintf('(?i)\\s*(%s)\\s*(=)\\s*(%s)|.', regex, regex),
                '\\1\\2\\3', fmt, perl = TRUE)

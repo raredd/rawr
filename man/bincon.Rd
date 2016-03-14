@@ -14,7 +14,7 @@ bincon(r, n, alpha = 0.05, round = NULL, method = c("exact", "wilson",
 
 \item{alpha}{type-I error probability}
 
-\item{round}{integer value specifying number of decimal places to round 
+\item{round}{integer value specifying number of decimal places to round
 (default is no rounding); see \code{\link{round}}}
 
 \item{method}{character strings specifying which method to use; see details}
@@ -23,7 +23,7 @@ bincon(r, n, alpha = 0.05, round = NULL, method = c("exact", "wilson",
 A matrix containing the computed interval(s) and their widths.
 }
 \description{
-Calculates confidence intervales for binomial probabilities for specified 
+Calculates confidence intervales for binomial probabilities for specified
 type-I error (\code{alpha}) using exact, Wilson, or asymptotic methods.
    
 If \code{method = 'all'}, \code{r} and \code{n} should each be length 1.
@@ -44,15 +44,15 @@ Rollin Brant, Frank Harrell, and Brad Biggerstaff; modifications by Robert
 Redd
 }
 \references{
-Agresti, A. and B.A. Coull. Approximate is better than "exact" 
-for interval extimation of binomial proportions. \emph{American 
+Agresti, A. and B.A. Coull. Approximate is better than "exact"
+for interval extimation of binomial proportions. \emph{American
 Statistician}. \strong{59}:119-126, 1998.
 
 Brown, L.D., T.T. Cai, and A. Das Gupta. Inverval estimation for
 a binomial proportion (with discussion). \emph{Statistical Science}. 
 \strong{16}:101-133, 2001.
 
-Newcombe, R.G. Logit confidence intervals and the inverse sinh 
+Newcombe, R.G. Logit confidence intervals and the inverse sinh
 transformation, \emph{American Statistician}. \strong{55}:200-202, 2001.
 }
 \seealso{

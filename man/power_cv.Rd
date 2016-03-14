@@ -2,7 +2,7 @@
 % Please edit documentation in R/stat.R
 \name{power_cv}
 \alias{power_cv}
-\title{Power calculations for one- and two-sample t-tests using ratio of means and 
+\title{Power calculations for one- and two-sample t-tests using ratio of means and
 coefficients of variation}
 \usage{
 power_cv(n = NULL, f = NULL, cv = NULL, sig.level = NULL,
@@ -32,7 +32,7 @@ Object of class \code{power.htest}, a list of the arguments (including
 the computed) augmented with method and note elements.
 }
 \description{
-Compute power of test using mean ratios and coefficients of variation or 
+Compute power of test using mean ratios and coefficients of variation or
 determine other parameters to obtain target power.
 }
 \details{
@@ -51,11 +51,11 @@ power_cv(13, 1.25, .2, .05, power = NULL, distribution = 'log.normal')
 
 }
 \references{
-Van Belle, G., Martin, D. Sample size as a function of 
+Van Belle, G., Martin, D. Sample size as a function of
 coefficient of variation and ratio of means. Am Statistician, Vol. 47, No. 3
 (Aug., 1993), pp. 165-7.
 
-Martin, D.C., and van Belle, G. Approximations for Power and 
+Martin, D.C., and van Belle, G. Approximations for Power and
 Sample Size for Student's t-Test. Technical Report 125 (1991), University of
 Washington, Dept. of Biostatistics.
 }
