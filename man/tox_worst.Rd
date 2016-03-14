@@ -4,57 +4,55 @@
 \alias{tox_worst}
 \title{Find most severe toxicities}
 \usage{
-tox_worst(data, id = "casenum", tox_desc = "tox_desc",
-  tox_grade = "tox_grade")
+tox_worst(data, id = "id", desc = "desc", grade = "grade", code,
+  version = 4L)
 }
 \arguments{
 \item{data}{toxicity data frame}
 
 \item{id}{column name with identifier}
 
-\item{tox_desc}{column name with toxicity descriptions (or codes)}
+\item{desc}{column name with toxicity descriptions (or codes)}
 
-\item{tox_grade}{column name with toxiticity grades; should be a factor
-with the desired order to be properly sorted}
+\item{grade}{column name with toxiticity grades; should be a factor
+with the desired order to be properly sorted, i.e., least to most severe}
+
+\item{code, version}{if \code{code} is given, \code{\link{match_ctc}} will
+match this column from \code{data} with the CTCAE \code{version} given and
+return toxicity descriptions rather than codes; if showing toxicity codes
+is desired, use \code{desc} instead}
 }
 \value{
 A list of length three with \code{tox_worst}, the filtered data frame;
-\code{data}, the input data frame sorted by \code{id}, \code{tox_desc},
-and \code{tox_grade}; and \code{duplicates}, the rows which correspond to
-duplicate \code{tox_desc} per \code{id} but of an equal or lesser 
-\code{tox_grade}.
+\code{data}, the input data frame sorted by \code{id}, \code{desc},
+and \code{grade}; and \code{duplicates}, the rows which correspond to
+duplicate \code{desc} per \code{id} but of an equal or lesser \code{grade}.
 }
 \description{
 Returns a subset of input data with worst toxicity grade per toxicity
 code per patient, ie, sorts and removes duplicates.
 }
 \examples{
-oo <- options()
-options(stringsAsFactors = FALSE)
 set.seed(1)
-
 f <- function(x, ...) sample(x, 100, replace = TRUE, ...)
-tox <- data.frame(casenum = rep(1:10, 10), phase = 1:2,
-                  tox_code = f(rawr::ctcae_v4$tox_code[1:10]),
-                  tox_grade = f(1:3, prob = c(.3, .4, .3)))
 
-tox <- cbind(tox, match_ctc(tox$tox_code)$matches[, c('tox_cat', 'tox_desc')])
+tox <- data.frame(id = rep(1:10, 10), phase = 1:2,
+                  code = f(rawr::ctcae_v4$tox_code[1:10]),
+                  grade = factor(f(1:3, prob = c(.3, .4, .3))))
 
-tox <- within(tox, {
-  tox_grade <- factor(tox_grade, levels = 1:3, 
-                      labels = c('Mild','Moderate','Severe'))
-  tox_cat <- factor(tox_cat)
-  tox_desc <- factor(tox_desc)
-})
+(tox1 <- tox_worst(tox, code = 'code'))
 
-(out <- tox_worst(tox))
+tox$desc <- factor(match_ctc(tox$code)$matches$tox_desc)
+(tox2 <- tox_worst(tox))
 
-## use tabler_by to summarize:
-tabler_by(out$tox_worst, 'tox_desc', 'tox_grade')
-options(oo)
+stopifnot(identical(tox1, tox2))
+
+## use tabler_by/tabler_by2 to summarize
+tabler_by(tox1$tox_worst, 'desc', 'grade')
+tabler_by2(tox1$tox_worst, 'desc', 'grade', stratvar = 'phase')
 
 }
 \seealso{
-\code{\link{tabler_by}}
+\code{\link{match_ctc}}, \code{\link{tabler_by}}; \code{\link{tabler_by2}}
 }
 

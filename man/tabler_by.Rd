@@ -5,10 +5,11 @@
 \alias{tabler_by2}
 \title{tabler_by}
 \usage{
-tabler_by(data, varname, byvar, n, order = FALSE, zeros, pct.col = FALSE,
-  pct.total = FALSE)
+tabler_by(data, varname, byvar, n, order = FALSE, zeros = TRUE,
+  pct = TRUE, pct.col = FALSE, pct.total = FALSE)
 
-tabler_by2(data, varname, byvar, stratvar, n, ...)
+tabler_by2(data, varname, byvar, n, stratvar, zeros = TRUE, pct = FALSE,
+  pct.col = FALSE, pct.total = FALSE)
 }
 \arguments{
 \item{data}{a data frame; variables \code{varname} and \code{byvar} should
@@ -23,7 +24,10 @@ be factors}
 \item{order}{logical; order the result by decreasing frequency}
 
 \item{zeros}{optional character string replacement for cells which have
-zero counts; will appear as \code{0 (0\%)} if not given}
+zero counts; will appear as \code{0 (0\%)} if \code{TRUE}}
+
+\item{pct}{logical; if \code{TRUE} (and \code{n} is not missing), percents
+are shown}
 
 \item{pct.col}{logical; if \code{TRUE}, percents are separated into new
 columns}
@@ -33,12 +37,9 @@ columns}
 \item{stratvar}{for \code{tabler_by2}, a factor-like variable used to
 stratify observations into mutually exclusive groups for which
 \code{tabler_by} will be performed on each subset}
-
-\item{...}{additional optional parameters passed to \code{tabler_by}:
-\code{zeros}, \code{pct.col}, or \code{pct.total}}
 }
 \description{
-This function is helpful to make simple stratified tables, faster and 
+This function is helpful to make simple stratified tables, faster and
 easier to use for simple tables than \code{\link[tables]{tabular}}.
 }
 \details{
@@ -50,11 +51,11 @@ only show counts in the table. If given, \code{length(n)} should be one or
 equal to the number of levels of \code{byvar}.
 
 If one \code{n} is given, \code{tabler_by} assumes that this is the total
-population for a subgroup, i.e., if creating a table for a subset of the 
+population for a subgroup, i.e., if creating a table for a subset of the
 data, it is only necessary to provide the total \code{n} for that group.
 
 If more than one \code{n} is given, \code{tabler_by} assumes that the
-entire data set is given to \code{data} and will use the corresponding 
+entire data set is given to \code{data} and will use the corresponding
 \code{n} to show percentages out of each respective subgroup.
 }
 \examples{
@@ -75,19 +76,19 @@ tabler_by(mt, 'vs', 'gear', n = table(mt$gear), pct.col = TRUE, zeros = '-')
 set.seed(1)
 
 f <- function(x, ...) sample(x, 100, replace = TRUE, ...)
-tox <- data.frame(casenum = rep(1:10, 10), phase = 1:2,
-                  tox_code = f(rawr::ctcae_v4$tox_code[1:100]),
-                  tox_grade = f(1:3, prob = c(.6, .3, .1)),
+tox <- data.frame(id = rep(1:10, 10), phase = 1:2,
+                  code = f(rawr::ctcae_v4$tox_code[1:100]),
+                  grade = f(1:3, prob = c(.6, .3, .1)),
                   stringsAsFactors = FALSE)
 
-tox <- cbind(tox, match_ctc(tox$tox_code)$matches[, c('tox_cat', 'tox_desc')])
+tox <- cbind(tox, match_ctc(tox$code)$matches[, c('tox_cat', 'tox_desc')])
 
-## get worst toxicities by casenum, by grade
-n <- colSums(table(tox$casenum, tox$phase) > 0)
+## get worst toxicities by id, by grade
+n <- colSums(table(tox$id, tox$phase) > 0)
 tox[] <- lapply(tox, factor)
-tox <- tox_worst(tox)$tox_worst
+tox <- tox_worst(tox, desc = 'tox_desc')$tox_worst
 
-out <- tabler_by2(tox, 'tox_desc', 'tox_grade', 'phase', zeros = '.')
+out <- tabler_by2(tox, 'tox_desc', 'grade', stratvar = 'phase', zeros = '.')
 colnames(out)[1] <- sprintf('Total<br /><font size=1>n = \%s</font>', sum(n))
 cgroup <- c('',
             sprintf('Phase I<br /><font size=1>n = \%s</font>', n[1]),
@@ -104,8 +105,8 @@ htmlTable(out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
 
 
 ## same as above but adding a level of stratification
-out <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'tox_grade', 'phase',
-                  zeros = '-')
+out <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'grade',
+                  stratvar = 'phase', zeros = '-')
 
 colnames(out)[1:2] <- c(
   'Description', sprintf('Total<br /><font size=1>n = \%s</font>', sum(n)))

@@ -1,7 +1,7 @@
 ### formatting, knitr, misc utils
 # show_html, show_markdown, show_math, roundr, intr, pvalr, pvalr2, catlist,
-# binconr, num2char, iprint, match_ctc, writeftable, tabler, tabler_by,
-# countr, tox_worst, dmy, combine_table
+# binconr, num2char, iprint, writeftable, tabler, tabler_by, tabler_by2,
+# match_ctc, tox_worst, countr, dmy, combine_table
 ###
 
 
@@ -116,7 +116,8 @@ show_html <- function(..., use_viewer = !is.null(getOption('viewer'))) {
 #' ## apply another style sheet by setting the option or passing
 #' ## arguments directly to markdown::markdownToHTML
 #' 
-#' ## here are two css files in this package
+#' ## here are four css files in this package
+#' list.files(system.file(package = 'rawr', 'styles'))
 #' kcss <- system.file(package = 'rawr', 'styles', 'knitr.css')
 #' gcss <- system.file(package = 'rawr', 'styles', 'github.css')
 #' ## file.show(gcss)
@@ -187,14 +188,14 @@ show_markdown <- function(..., use_viewer = !is.null(getOption('viewer')),
 
 show_math <- function(..., css, use_viewer = !is.null(getOption('viewer'))) {
   mj <- "
-    <script>
-      (function () {
-        var script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src  = 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-        document.getElementsByTagName('head')[0].appendChild(script);
-      })();
-    </script>
+  <script>
+  (function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+  document.getElementsByTagName('head')[0].appendChild(script);
+  })();
+  </script>
   "
   check_expr <- function(x)
     ## use \[ expr \] instead of $$ expr $$
@@ -284,9 +285,9 @@ roundr.matrix <- function(x, digits = 1) {
 #' Calculate summary statistic with range or confidence interval.
 #' 
 #' @param ... numeric vector or string of numeric vectors
-#' @param fun summary stat function, usually \code{\link{mean}} or 
+#' @param fun summary stat function, usually \code{\link{mean}} or
 #' \code{\link{median}}
-#' @param conf width of confidence interval in \code{[0,1]}; if \code{NULL} 
+#' @param conf width of confidence interval in \code{[0,1]}; if \code{NULL}
 #' (default), returns min and max of \code{...}
 #' @param digits number of digits (includes trailing 0s)
 #' @param na.rm logical; if \code{TRUE}, any \code{\link{NA}} and \code{NaN}
@@ -300,7 +301,7 @@ roundr.matrix <- function(x, digits = 1) {
 #' intr(1:10)
 #' intr(1:10, conf = .95)
 #' # inner quartile range
-#' `colnames<-`(cbind(lapply(mtcars, intr, conf = .5), 
+#' `colnames<-`(cbind(lapply(mtcars, intr, conf = .5),
 #'                    lapply(mtcars, intr, fun = mean)),
 #'              c('median (IQR)','mean (range)'))
 #' # compare to
@@ -312,7 +313,7 @@ intr <- function(..., fun = median, conf = NULL, digits = 0, na.rm = FALSE) {
   
   lst <- list(...)
   if (is.null(conf) || conf == 0 || 
-        findInterval(conf, c(0, 1), rightmost.closed = FALSE) != 1)
+      findInterval(conf, c(0, 1), rightmost.closed = FALSE) != 1)
     conf <- 1
   
   sapply(lst, function(x) {
@@ -345,7 +346,7 @@ intr <- function(..., fun = median, conf = NULL, digits = 0, na.rm = FALSE) {
 #' @param pvals for \code{pvalr}, a numeric value or vector of p-values; for
 #' \code{pvalr2}, a vector of p-values as character strings
 #' @param sig.limit lower bound for precision
-#' @param digits integer; number of decimal places; see also 
+#' @param digits integer; number of decimal places; see also
 #' \code{\link[rawr]{roundr}}
 #' @param html logical; if \code{TRUE}, uses \code{&lt;} instead of \code{<}
 #' @param show.p logical; if \code{TRUE}, inserts \code{p = } or \code{p < }
@@ -361,7 +362,7 @@ intr <- function(..., fun = median, conf = NULL, digits = 0, na.rm = FALSE) {
 #' 
 #' @export
 
-pvalr <- function(pvals, sig.limit = .001, digits = 3, html = FALSE, 
+pvalr <- function(pvals, sig.limit = .001, digits = 3, html = FALSE,
                   show.p = FALSE) {
   show.p <- show.p + 1L
   html <- html + 1L
@@ -420,7 +421,7 @@ pvalr2 <- function(pvals, html = FALSE, show.p = FALSE) {
 #' 
 #' @export
 
-catlist <- function(l) 
+catlist <- function(l)
   paste(paste(names(l), l, sep = ' = ', collapse = ', '), sep = '')
 
 #' bincon formatter
@@ -445,7 +446,7 @@ catlist <- function(l)
 
 binconr <- function(r, n, conf = 0.95, digits = 0,
                     est = TRUE, method = 'exact') {
-  res <- roundr(bincon(r, n, alpha = 1 - conf, method = method) * 100, 
+  res <- roundr(bincon(r, n, alpha = 1 - conf, method = method) * 100,
                 digits = digits)
   zzz <- sprintf('%s%% CI: %s - %s%%', conf * 100, res[4], res[5])
   if (est)
@@ -457,15 +458,15 @@ binconr <- function(r, n, conf = 0.95, digits = 0,
 #' 
 #' Convert a number to a character string representation.
 #' 
-#' Whole numbers twenty-one through ninety-nine are hyphenated when they are 
+#' Whole numbers twenty-one through ninety-nine are hyphenated when they are
 #' written out whether used alone or as part of a larger number; for example: 
-#' twenty-one. Whole numbers are also hyphenated when they are part of larger 
-#' numbers that are written out - but not other parts of large numbers; for 
-#' example, 5,264 is written "five thousand two hundred sixty-four." The rule 
-#' applies only to two-word numbers; for example, 603 is written out, e.g., 
-#' "six hundred three" (formal) or "six hundred and three" (informal). A whole 
-#' number followed by hundred, thousand, etc., would be written as, for 
-#' example, "one hundred," and not hyphenated. In a phrase like "one hundred 
+#' twenty-one. Whole numbers are also hyphenated when they are part of larger
+#' numbers that are written out - but not other parts of large numbers; for
+#' example, 5,264 is written "five thousand two hundred sixty-four." The rule
+#' applies only to two-word numbers; for example, 603 is written out, e.g.,
+#' "six hundred three" (formal) or "six hundred and three" (informal). A whole
+#' number followed by hundred, thousand, etc., would be written as, for
+#' example, "one hundred," and not hyphenated. In a phrase like "one hundred
 #' and ten years," no hyphenation should be added. 
 #' 
 #' @param num number; integer value in \code{(-1e08, 1e08)}
@@ -489,7 +490,7 @@ num2char <- function(num, informal = FALSE, cap = TRUE) {
   if (num == 0) {if (cap) return('Zero') else return('zero')}
   neg <- FALSE
   if (num < 0) {neg <- TRUE; num <- abs(num)}
-  if (!num %inside% c(1, 99999999)) 
+  if (!num %inside% c(1, 99999999))
     stop("I can't count that high")
   ## helpers
   key <- c('0'='','1'='one','2'='two','3'='three','4'='four','5'='five',
@@ -505,9 +506,9 @@ num2char <- function(num, informal = FALSE, cap = TRUE) {
     x <- as.numeric(x) # if string with leading 0s is passed
     z <- paste0(' and ',
                 if (x %inside% c(21, 99) && (x %ni% seq(30, 100, 10)))
-                  paste(key[as.character(as.numeric(substr(x, 1, 1)) * 10)], 
+                  paste(key[as.character(as.numeric(substr(x, 1, 1)) * 10)],
                         key[substr(x, 2, 2)], sep = '-')
-                else 
+                else
                   key[as.character(as.numeric(x))])
     if (!informal) gsub(' and ', '', z) else z
   }
@@ -526,15 +527,15 @@ num2char <- function(num, informal = FALSE, cap = TRUE) {
   f4 <- function(x, informal = informal) {
     x <- as.numeric(x) # if string with leading 0s is passed
     if (x %inside% c(10000, 99999))
-      paste0(f1(substr(x, 1, 2), FALSE), ' thousand ', 
-             f2(substr(x, 3, 5), informal)) 
+      paste0(f1(substr(x, 1, 2), FALSE), ' thousand ',
+             f2(substr(x, 3, 5), informal))
     else f3(x, informal = informal)
   }
   f5 <- function(x, informal = informal) {
     x <- as.numeric(x) # if string with leading 0s is passed
     if (x %inside% c(100000, 999999))
-      paste0(f2(substr(x, 1, 3), FALSE), ' thousand ', 
-             f2(substr(x, 4, 6), informal)) 
+      paste0(f2(substr(x, 1, 3), FALSE), ' thousand ',
+             f2(substr(x, 4, 6), informal))
     else f4(x, informal = informal)
   }
   f6 <- function(x, informal = informal) {
@@ -570,7 +571,7 @@ num2char <- function(num, informal = FALSE, cap = TRUE) {
 #' @param wrap character string to wrap each term
 #' @param sep character string to separate the terms
 #' @param copula character string to separate last two terms
-#' @param digits number of digits past the decimal point to keep; see 
+#' @param digits number of digits past the decimal point to keep; see
 #' \code{\link{roundr}}
 #' 
 #' @seealso \code{\link{roundr}}, \code{\link[pander]{p}}
@@ -599,53 +600,9 @@ iprint <- function (..., wrap = '', sep = ', ', copula, digits = 2) {
              copula, f(tail(x, 1), wrap = wrap))
 }
 
-#' Match CTCAE codes
-#' 
-#' Convenience function to convert CTCAE (version 3 or 4) toxicity codes or
-#' descriptions with their appropriate matches. Especially useful in data from
-#' paper trials where only the toxicity codes are reported excluding (the more
-#' meaningful) descriptions.
-#' 
-#' @param ... character string(s) of toxicity codes (usually of the form 
-#' \code{AB123} but can handle \code{AB-123} or \code{AB 123}) or keyword(s)
-#' to be matched in the toxicity description
-#' @param version version number; default is 
-#' \href{http://www.dfhcc.harvard.edu/fileadmin/DFHCC_Admin/Clinical_Trials/QACT/Policies_and_Procedures/CTCToxVersion4.pdf}{CTCAE v4}
-#' 
-#' @return
-#' A list containing:
-#' 
-#' \item{\code{matches}}{a data frame of matches with toxicity codes and their
-#' respective descriptions and categories}
-#' \item{\code{version}}{CTCAE version used}
-#' 
-#' @examples
-#' codes <- sample(ctcae_v4$tox_code, 10)
-#' match_ctc(codes)
-#' 
-#' match_ctc('injury', version = 3)
-#' match_ctc('aortic', 'arterial')
-#' 
-#' @export
-
-match_ctc <- function(..., version = 4) {
-  x <- c(...)
-  dat <- if (version %ni% 3:4)
-    stop('CTCAE version should be 3 or 4') else {
-      if (version == 3)
-        rawr::ctcae_v3 else rawr::ctcae_v4
-    }
-  ## guess if input is tox code or description
-  idx <- if (any(grepl('([A-Za-z -])([0-9])', x)))
-    match(gsub('\\s*|-', '', x, perl = TRUE), dat[, 'tox_code']) else
-      grep(paste(x, collapse = '|'), dat[, 'tox_desc'], ignore.case = TRUE)
-  list(matches = `rownames<-`(dat[idx, ], NULL),
-       version = sprintf('CTCAE v%s', version))
-}
-
 #' Write ftable
 #' 
-#' \code{\link{ftable}}s can look nice, but are only \code{\link{cat}}'d to 
+#' \code{\link{ftable}}s can look nice, but are only \code{\link{cat}}'d to
 #' the console and, thus, not easily used (or manipulated). 
 #' \code{\link{write.ftable}} does not write \code{ftable}s as they print,
 #' so here we are.
@@ -686,7 +643,7 @@ writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
 
 #' Tabler
 #' 
-#' Extracts coefficients, standard errors, odds ratios, confidence intervals, 
+#' Extracts coefficients, standard errors, odds ratios, confidence intervals,
 #' p-values, etc. from model fits.
 #' 
 #' @param x an object of class \code{\link{lm}}, \code{\link{glm}},
@@ -731,7 +688,7 @@ tabler.glm <- function(x, digits = 3, level = 0.95, type = '', ...) {
                        res[, 4]), digits = digits)
     res <- cbind(res, sprintf('%s (%s, %s)', res[, 1], res[, 2], res[, 3]))
     ci <- sprintf('%s%% CI', level * 100)
-    res <- setNames(as.data.frame(res), 
+    res <- setNames(as.data.frame(res),
                     c('Odds Ratio', paste0('L ', ci),
                       paste0('U ', ci), 'Pr(>|z)', sprintf('OR (%s)', ci)))
   } else res <- round(res, digits = digits)
@@ -744,7 +701,7 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 
 #' tabler_by
 #' 
-#' This function is helpful to make simple stratified tables, faster and 
+#' This function is helpful to make simple stratified tables, faster and
 #' easier to use for simple tables than \code{\link[tables]{tabular}}.
 #' 
 #' \code{varname} and \code{byvar} should be factors, and the levels will
@@ -755,11 +712,11 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' equal to the number of levels of \code{byvar}.
 #' 
 #' If one \code{n} is given, \code{tabler_by} assumes that this is the total
-#' population for a subgroup, i.e., if creating a table for a subset of the 
+#' population for a subgroup, i.e., if creating a table for a subset of the
 #' data, it is only necessary to provide the total \code{n} for that group.
 #' 
 #' If more than one \code{n} is given, \code{tabler_by} assumes that the
-#' entire data set is given to \code{data} and will use the corresponding 
+#' entire data set is given to \code{data} and will use the corresponding
 #' \code{n} to show percentages out of each respective subgroup.
 #' 
 #' @param data a data frame; variables \code{varname} and \code{byvar} should
@@ -769,15 +726,15 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' @param n number in each group; see details
 #' @param order logical; order the result by decreasing frequency
 #' @param zeros optional character string replacement for cells which have
-#' zero counts; will appear as \code{0 (0\%)} if not given
+#' zero counts; will appear as \code{0 (0\%)} if \code{TRUE}
+#' @param pct logical; if \code{TRUE} (and \code{n} is not missing), percents
+#' are shown
 #' @param pct.col logical; if \code{TRUE}, percents are separated into new
 #' columns
 #' @param pct.total logical; if \code{TRUE}, adds percents for total column
 #' @param stratvar for \code{tabler_by2}, a factor-like variable used to
 #' stratify observations into mutually exclusive groups for which
 #' \code{tabler_by} will be performed on each subset
-#' @param ... additional optional parameters passed to \code{tabler_by}:
-#' \code{zeros}, \code{pct.col}, or \code{pct.total}
 #' 
 #' @seealso
 #' \code{\link{tox_worst}}; \code{\link{match_ctc}}
@@ -800,19 +757,19 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' set.seed(1)
 #' 
 #' f <- function(x, ...) sample(x, 100, replace = TRUE, ...)
-#' tox <- data.frame(casenum = rep(1:10, 10), phase = 1:2,
-#'                   tox_code = f(rawr::ctcae_v4$tox_code[1:100]),
-#'                   tox_grade = f(1:3, prob = c(.6, .3, .1)),
+#' tox <- data.frame(id = rep(1:10, 10), phase = 1:2,
+#'                   code = f(rawr::ctcae_v4$tox_code[1:100]),
+#'                   grade = f(1:3, prob = c(.6, .3, .1)),
 #'                   stringsAsFactors = FALSE)
 #' 
-#' tox <- cbind(tox, match_ctc(tox$tox_code)$matches[, c('tox_cat', 'tox_desc')])
+#' tox <- cbind(tox, match_ctc(tox$code)$matches[, c('tox_cat', 'tox_desc')])
 #' 
-#' ## get worst toxicities by casenum, by grade
-#' n <- colSums(table(tox$casenum, tox$phase) > 0)
+#' ## get worst toxicities by id, by grade
+#' n <- colSums(table(tox$id, tox$phase) > 0)
 #' tox[] <- lapply(tox, factor)
-#' tox <- tox_worst(tox)$tox_worst
+#' tox <- tox_worst(tox, desc = 'tox_desc')$tox_worst
 #' 
-#' out <- tabler_by2(tox, 'tox_desc', 'tox_grade', 'phase', zeros = '.')
+#' out <- tabler_by2(tox, 'tox_desc', 'grade', stratvar = 'phase', zeros = '.')
 #' colnames(out)[1] <- sprintf('Total<br /><font size=1>n = %s</font>', sum(n))
 #' cgroup <- c('',
 #'             sprintf('Phase I<br /><font size=1>n = %s</font>', n[1]),
@@ -829,8 +786,8 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' 
 #' 
 #' ## same as above but adding a level of stratification
-#' out <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'tox_grade', 'phase',
-#'                   zeros = '-')
+#' out <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'grade',
+#'                   stratvar = 'phase', zeros = '-')
 #' 
 #' colnames(out)[1:2] <- c(
 #'   'Description', sprintf('Total<br /><font size=1>n = %s</font>', sum(n)))
@@ -845,8 +802,8 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #'             
 #' @export
 
-tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros,
-                      pct.col = FALSE, pct.total = FALSE) {
+tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
+                      pct = TRUE, pct.col = FALSE, pct.total = FALSE) {
   
   rm_p <- function(x) gsub(' \\(.*\\)$', '', x)
   ord <- function(...) order(..., decreasing = TRUE)
@@ -868,7 +825,9 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros,
   nc <- ncol(ttbl)
   
   ## add percents, eg "N (x%)", to each column
-  if (!missing(n)) {
+  if (missing(n) & any(pct, pct.col, pct.total))
+    message('To show percents \'n\' should be given', domain = NA)
+  if (pct & !missing(n)) {
     ## if length(n) == 1L, use same n for all strat levels (assume subgroup)
     ## else, map each n to each strat level (assume total)
     if (length(n) == 1L)
@@ -915,7 +874,9 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros,
     o
   } else res
   
-  if (!missing(zeros)) {
+  if (!isTRUE(zeros)) {
+    if (zeros == FALSE)
+      zeros = ''
     idx <- idx:ncol(res)
     res[, idx] <- `[<-`(res[, idx], gsub('0 \\(0%\\)|^0$', zeros, res[, idx]))
   }
@@ -924,12 +885,11 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros,
 
 #' @rdname tabler_by
 #' @export
-tabler_by2 <- function(data, varname, byvar, stratvar, n, ...) {
+tabler_by2 <- function(data, varname, byvar, n, stratvar, zeros = TRUE,
+                       pct = FALSE, pct.col = FALSE, pct.total = FALSE) {
   
   rm_p <- function(x) gsub(' \\(.*\\)$', '', x)
   ord <- function(...) order(..., decreasing = TRUE)
-  dots <- modifyList(list(pct.col = 0, pct.total = 0, zeros = 0),
-                     lapply(substitute(...()), eval))
   
   stopifnot(length(byvar) == 1L &
               (missing(stratvar) || length(stratvar) == 1L) &
@@ -946,23 +906,128 @@ tabler_by2 <- function(data, varname, byvar, stratvar, n, ...) {
   N <- sum(n)
   
   ## get (second varname if ln == 2L and) overall total column(s)
-  o1 <- tabler_by(data, varname, '_strat_var_', n,
-                  ...)[, 1:(ln + dots$pct.col + dots$pct.total), drop = FALSE]
+  o1 <- tabler_by(data, varname, '_strat_var_', n, FALSE, zeros,
+                  pct, pct.col, pct.total)
+  o1 <- o1[, 1:(ln + (pct.col & pct.total)), drop = FALSE]
   ## get groups of columns for each level of byvar
   o2 <- lapply(bylvl, function(x)
     tabler_by(data[data[, '_strat_var_'] == x, ], varname, byvar, n[x],
-              FALSE, ...))
+              FALSE, zeros, pct, pct.col, pct.total))
   
   out <- do.call('cbind', c(list(o1), o2))
   rownames(out) <- locf(rownames(out))
   out <- t(t(out)[!duplicated(t(out)), ])
-  out <- out[!out[, ln] %in% c(0, dots$zeros), ]
+  out <- out[!out[, ln] %in% c(0, as.character(zeros)), ]
   out <- out[if (ln == 1L)
     ord(as.numeric(rm_p(out[, 1]))) else
       ord(-xtfrm(rownames(out)), as.numeric(rm_p(out[, ln]))), ]
   
   rownames(out)[duplicated(rownames(out))] <- ''
   out
+}
+
+#' Match CTCAE codes
+#' 
+#' Convenience function to convert CTCAE (version 3 or 4) toxicity codes or
+#' descriptions with their appropriate matches. Especially useful in data from
+#' paper trials where only the toxicity codes are reported excluding (the more
+#' meaningful) descriptions.
+#' 
+#' @param ... character string(s) of toxicity codes (usually of the form
+#' \code{AB123} but can handle \code{AB-123} or \code{AB 123}) or keyword(s)
+#' to be matched in the toxicity description
+#' @param version version number; default is \code{4}
+#' \href{http://www.dfhcc.harvard.edu/fileadmin/DFHCC_Admin/Clinical_Trials/QACT/Policies_and_Procedures/CTCToxVersion4.pdf}{CTCAE v4}
+#' 
+#' @return
+#' A list containing:
+#' 
+#' \item{\code{matches}}{a data frame of matches with toxicity codes and their
+#' respective descriptions and categories}
+#' \item{\code{version}}{CTCAE version used}
+#' 
+#' @examples
+#' codes <- sample(rawr::ctcae_v4$tox_code, 10)
+#' match_ctc(codes)
+#' 
+#' match_ctc('injury', version = 3L)
+#' match_ctc('aortic', 'arterial')
+#' 
+#' @export
+
+match_ctc <- function(..., version = 4L) {
+  x <- unlist(list(...))
+  ctc <- if (version %ni% 3:4)
+    stop('\'version\' should be 3 or 4') else {
+      if (version == 3L)
+        rawr::ctcae_v3 else rawr::ctcae_v4
+    }
+  ## guess if input is code or description
+  idx <- if (any(grepl('([A-Za-z -])([0-9])', x)))
+    match(gsub('\\s*|-', '', x, perl = TRUE), ctc[, 'tox_code']) else
+      grep(paste(x, collapse = '|'), ctc[, 'tox_desc'], ignore.case = TRUE)
+  list(matches = `rownames<-`(ctc[idx, ], NULL),
+       version = sprintf('CTCAE v%s', version))
+}
+
+#' Find most severe toxicities
+#' 
+#' Returns a subset of input data with worst toxicity grade per toxicity
+#' code per patient, ie, sorts and removes duplicates.
+#' 
+#' @param data toxicity data frame
+#' @param id column name with identifier
+#' @param desc column name with toxicity descriptions (or codes)
+#' @param grade column name with toxiticity grades; should be a factor
+#' with the desired order to be properly sorted, i.e., least to most severe
+#' @param code,version if \code{code} is given, \code{\link{match_ctc}} will
+#' match this column from \code{data} with the CTCAE \code{version} given and
+#' return toxicity descriptions rather than codes; if showing toxicity codes
+#' is desired, use \code{desc} instead
+#' 
+#' @return
+#' A list of length three with \code{tox_worst}, the filtered data frame;
+#' \code{data}, the input data frame sorted by \code{id}, \code{desc},
+#' and \code{grade}; and \code{duplicates}, the rows which correspond to
+#' duplicate \code{desc} per \code{id} but of an equal or lesser \code{grade}.
+#' 
+#' @seealso
+#' \code{\link{match_ctc}}, \code{\link{tabler_by}}; \code{\link{tabler_by2}}
+#' 
+#' @examples
+#' set.seed(1)
+#' f <- function(x, ...) sample(x, 100, replace = TRUE, ...)
+#' 
+#' tox <- data.frame(id = rep(1:10, 10), phase = 1:2,
+#'                   code = f(rawr::ctcae_v4$tox_code[1:10]),
+#'                   grade = factor(f(1:3, prob = c(.3, .4, .3))))
+#' 
+#' (tox1 <- tox_worst(tox, code = 'code'))
+#' 
+#' tox$desc <- factor(match_ctc(tox$code)$matches$tox_desc)
+#' (tox2 <- tox_worst(tox))
+#' 
+#' stopifnot(identical(tox1, tox2))
+#' 
+#' ## use tabler_by/tabler_by2 to summarize
+#' tabler_by(tox1$tox_worst, 'desc', 'grade')
+#' tabler_by2(tox1$tox_worst, 'desc', 'grade', stratvar = 'phase')
+#' 
+#' @export
+
+tox_worst <- function(data, id = 'id', desc = 'desc', grade = 'grade',
+                      code, version = 4L) {
+  if (!is.factor(data[, grade]))
+    stop('\'grade\' should be a factor with proper order')
+  if (!missing(code)) {
+    ctc <- match_ctc(data[, code], version = version)
+    data$desc <- factor(ctc$matches$tox_desc)
+    desc <- 'desc'
+  }
+  data <- data[order(data[, id], data[, desc], -xtfrm(data[, grade])), ]
+  idx <- which(duplicated(data[, c(id, desc)]))
+  list(tox_worst = if (length(idx)) data[-idx, ] else data,
+       data = data, duplicates = idx)
 }
 
 #' Count formatter
@@ -994,65 +1059,6 @@ countr <- function(top, n, lowcase = TRUE) {
                    if (lowcase) tolower(names(top)) else toupper(names(top))
                  else names(top),
                  top, round(as.numeric(top) / n * 100)))
-}
-
-#' Find most severe toxicities
-#' 
-#' Returns a subset of input data with worst toxicity grade per toxicity
-#' code per patient, ie, sorts and removes duplicates.
-#' 
-#' @param data toxicity data frame
-#' @param id column name with identifier
-#' @param tox_desc column name with toxicity descriptions (or codes)
-#' @param tox_grade column name with toxiticity grades; should be a factor
-#' with the desired order to be properly sorted
-#' 
-#' @return
-#' A list of length three with \code{tox_worst}, the filtered data frame;
-#' \code{data}, the input data frame sorted by \code{id}, \code{tox_desc},
-#' and \code{tox_grade}; and \code{duplicates}, the rows which correspond to
-#' duplicate \code{tox_desc} per \code{id} but of an equal or lesser 
-#' \code{tox_grade}.
-#' 
-#' @seealso
-#' \code{\link{tabler_by}}
-#' 
-#' @examples
-#' oo <- options()
-#' options(stringsAsFactors = FALSE)
-#' set.seed(1)
-#' 
-#' f <- function(x, ...) sample(x, 100, replace = TRUE, ...)
-#' tox <- data.frame(casenum = rep(1:10, 10), phase = 1:2,
-#'                   tox_code = f(rawr::ctcae_v4$tox_code[1:10]),
-#'                   tox_grade = f(1:3, prob = c(.3, .4, .3)))
-#' 
-#' tox <- cbind(tox, match_ctc(tox$tox_code)$matches[, c('tox_cat', 'tox_desc')])
-#' 
-#' tox <- within(tox, {
-#'   tox_grade <- factor(tox_grade, levels = 1:3, 
-#'                       labels = c('Mild','Moderate','Severe'))
-#'   tox_cat <- factor(tox_cat)
-#'   tox_desc <- factor(tox_desc)
-#' })
-#' 
-#' (out <- tox_worst(tox))
-#' 
-#' ## use tabler_by to summarize:
-#' tabler_by(out$tox_worst, 'tox_desc', 'tox_grade')
-#' options(oo)
-#' 
-#' @export
-
-tox_worst <- function(data, id = 'casenum', tox_desc = 'tox_desc', tox_grade = 'tox_grade') {
-  ## make sure grades are properly ordered
-  if (!is.factor(data[, tox_grade]))
-    stop('\'tox_grade\' should be a factor')
-  ## sort by id, toxicity, and grade
-  data <- data[order(data[, id], data[, tox_desc], -xtfrm(data[, tox_grade])), ]
-  idx <- which(duplicated(data[, c(id, tox_desc)]))
-  list(tox_worst = if (length(idx)) data[-idx, ] else data,
-       data = data, duplicates = idx)
 }
 
 #' Date parse
