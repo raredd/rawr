@@ -14,7 +14,7 @@
 #' @param formula a \code{\link{formula}}, such as \code{y ~ group}, where
 #' \code{y} is a numeric vector of data values to be split into groups
 #' according to the grouping variable, \code{group}
-#' @param data optional matrix or data frame containing the variables in 
+#' @param data optional matrix or data frame containing the variables in
 #' \code{formula}; by default, the variables are taken from
 #' \code{environment(formula)}
 #' @param x grouping variables or, equivalently, positions along x-axis
@@ -84,9 +84,9 @@ dodge.default <- function(x, y, dist, jit, ...) {
   x <- if (!missing(x) && is.list(x))
     as.numeric(do.call('interaction', x)) else
       rep_len(if (missing(x)) 1 else x, length(x))
-  if (missing(dist) || is.na(dist) || is.null(dist)) 
+  if (missing(dist) || is.na(dist) || is.null(dist))
     dist <- diff(range(x)) / 100
-  if (missing(jit) || is.na(jit) || is.null(jit)) 
+  if (missing(jit) || is.na(jit) || is.null(jit))
     jit <- 0.1
   ## call dodge on each group
   cbind.data.frame(x_new = ave(seq_along(y), x, FUN = function(ii)
@@ -96,7 +96,7 @@ dodge.default <- function(x, y, dist, jit, ...) {
 
 #' Show colors
 #' 
-#' In \code{R}, there are 657 named colors. This function shows these colors 
+#' In \code{R}, there are 657 named colors. This function shows these colors
 #' and their respective numbers. Find a color by number in the plot or by the
 #' name of the color with \code{colors()[n]}.
 #' 
@@ -130,7 +130,7 @@ show_colors <- function() {
 
 #' Show plotting characters
 #' 
-#' In \code{R}, there are 26 numeric plotting characters. This function shows 
+#' In \code{R}, there are 26 numeric plotting characters. This function shows
 #' these options and their respective numbers. Note that \code{col} specifies
 #' both the border and fill color (if applicable) for \code{0:20}; \code{pch}s
 #' \code{21:25} can be filled with \code{bg}.
@@ -167,7 +167,7 @@ show_pch <- function() {
 #' 
 #' @param color vector of color names (or hexadecimal) as character strings
 #' or integers corresponding to colors in the current \code{\link{palette}}
-#' @param trans alpha transparency defined as an integer in the range 
+#' @param trans alpha transparency defined as an integer in the range
 #' \code{[0, 255]} where \code{0} is fully transparent and \code{255} is fully
 #' visible; see details
 #' @param alpha the alpha transparency in \code{[0,1]}; \code{trans} is
@@ -200,11 +200,11 @@ tcol <- function(color, trans = 255, alpha) {
     trans <- round(rescaler(alpha, to = c(0,255), from = 0:1))
   }
   if (length(color) != length(trans) & 
-      !any(c(length(color), length(trans)) == 1)) 
+      !any(c(length(color), length(trans)) == 1))
     stop('Vector lengths are not comformable')
-  if (length(color) == 1 & length(trans) > 1) 
+  if (length(color) == 1 & length(trans) > 1)
     color <- rep(color, length(trans))
-  if (length(trans) == 1 & length(color) > 1) 
+  if (length(trans) == 1 & length(color) > 1)
     trans <- rep(trans, length(color))
   
   res <- paste0('#', apply(apply(rbind(col2rgb(color)), 2, function(x)
@@ -242,7 +242,7 @@ tcol <- function(color, trans = 255, alpha) {
 #' depending on the value of \code{limit}.
 #' 
 #' @examples
-#' x <- 10^(1:5) / 10
+#' x <- 10 ** (1:5) / 10
 #' oom(x)
 #' oom(1 / x)
 #' 
@@ -255,13 +255,13 @@ tcol <- function(color, trans = 255, alpha) {
 #' plot(1:5, type = 'n', axes = FALSE, ann = FALSE)
 #' axis(2, at = 1:5, labels = pretty_sci(x, simplify = FALSE), las = 1)
 #' 
-#' text(1:5, 0, pretty_sci(1 / x ^ 10))
+#' text(1:5, 0, pretty_sci(1 / x ** 10))
 #' text(1:5, 1, pretty_sci(1 / x, digits = 3))
 #' text(1:5, 2, pretty_sci(1 / x, digits = 2, limit = 1e2))
 #' text(1:5, 3, x)
 #' text(1:5, 4, pretty_sci(x, limit = 1e2))
 #' text(1:5, 5, pretty_sci(x, digits = 1))
-#' text(1:5, 6, pretty_sci(x ^ 10))
+#' text(1:5, 6, pretty_sci(x ** 10))
 #' 
 #' text(1:5, -1, pretty_sci(1 / x, limit = -1, simplify = FALSE))
 #' 
@@ -314,7 +314,7 @@ to_sci_ <- function(x, digits, base) {
 #' @param size,width size parameters for arrows
 #' @param curve a numeric value greater than 0 giving the curvature of the
 #' arrows; default is \code{1} for staight lines, but values less than or
-#' greater than 1 may be given for 
+#' greater than 1 may be given for
 #' @param code integer determining \emph{kind} of arrows to be drawn; arrows
 #' are drawn at \code{{x0[i], y0[i]}}, \code{{x1[i], y1[i]}}, or both for
 #' \code{code = 1:3}, respectively, or no heads drawn if \code{code = 0}
@@ -334,37 +334,42 @@ to_sci_ <- function(x, digits, base) {
 #' 
 #' @examples
 #' plot.new()
-#' plot.window(0:1, 0:1, asp = 1)
-#' arrows2(0,0,1,1, code = 3, border = 2, fill = 0)
-#' arrows2(.2, 0, .2, 1, code = 1, fill = 4, col = 4)
-#' arrows2(.4, 0, .4, 1, code = 2, fill = 2, size = .5, width = .5)
-#' arrows2(.6, 0, .6, 1, code = 3, curve = 1.5)
-#' arrows2(.8, 0, .8, 1, code = 3, curve = .5, width = .5, lwd = 10, col = 3)
+#' plot.window(c(-pi, pi), c(-1,1), asp = 1)
+#' curve(sin(x), -pi, pi, add = TRUE)
+#' xx <- seq(-pi, pi, length.out = 5)
+#' 
+#' ## arrows point to locations
+#' arrows2(xx, sin(xx), xx + 0, sin(xx + 0))
+#' 
+#' ## arrows "follow" along curve
+#' arrows2(xx, sin(xx), xx + .1, sin(xx + .1), col = 5, border = 2)
+#' 
+#' arrows2(-3,-1,3,1, code = 3, border = 2, fill = 0)
+#' arrows2(-2, -1, -2, 1, code = 1, fill = 4, col = 4)
+#' arrows2(-1, -1, -1, 1, code = 2, fill = 2, size = .5, width = .5)
+#' arrows2(0, -1, 0, 1, code = 3, curve = 1.5)
+#' arrows2(1, -1, 1, 1, code = 3, curve = .5, width = .5, lwd = 10, col = 3)
+#' arrows2(2, -1, 2, 1, code = 3, lwd = 0)
 #' 
 #' @export
 
-arrows2 <- function(x0, y0, x1 = x0, y1 = y0, size = 1,
-                    width = (sqrt(5) - 1) / 8 / cin, curve = 1, code = 2,
-                    col = par('fg'), lty = par('lty'), lwd = par('lwd'),
-                    fill = col, border = fill, sadj = c(0,0,0,0), ...) {
+arrows2 <- function(x0, y0, x1 = x0, y1 = y0, size = 1, width = 0.1 / cin,
+                    curve = 1, code = 2, col = par('fg'), lty = par('lty'),
+                    lwd = par('lwd'), fill = col, border = fill,
+                    sadj = c(0,0,0,0), ...) {
   stopifnot(length(code) == 1L & code %in% 0:3)
-  cin <- size * par('cin')[2]
-  ## inches per usr unit
-  uin <- if (is.R()) 1 / xyinch() else par('uin')
   
   ## create coordinates of a polygon for a unit arrow head
-  # x <- sqrt(seq(0, cin ^ 2, length = floor(350 * cin) + 2))
-  x <- sqrt(seq(0, cin ^ 2, length = 1000))
+  cin <- size * par('cin')[2]
+  uin <- 1 / xyinch()
+  x <- sqrt(seq(0, cin ** 2, length.out = 1000))
   delta <- 0.005 / 2.54
-  x.arr <- c(-x, -rev(x))
-  wx2 <- width * x ^ curve
-  y.arr <- c(-wx2 - delta, rev(wx2) + delta)
-  
+  wx2 <- width * x ** curve
   ## polar, NA to "break" long polygon
-  pol <- c2p(x.arr, y.arr)
+  pol <- c2p(c(-x, -rev(x)), c(-wx2 - delta, rev(wx2) + delta))
   ## rawr:::c2p
-  deg.arr <- c(pol$theta, NA)
-  r.arr <- c(pol$radius, NA)
+  deg <- c(pol$theta, NA)
+  rad <- c(pol$radius, NA)
   
   segments(x0 + sadj[1], y0 + sadj[2], x1 + sadj[3], y1 + sadj[4],
            col = col, lty = lty, lwd = lwd, lend = 1, xpd = NA, ...)
@@ -375,20 +380,20 @@ arrows2 <- function(x0, y0, x1 = x0, y1 = y0, size = 1,
   if (code %in% 2:3) {
     theta <- atan2((y1 - y0) * uin[2], (x1 - x0) * uin[1])
     lx <- length(x0)
-    Rep <- rep.int(length(deg.arr), lx)
+    Rep <- rep.int(length(deg), lx)
     xx <- rep.int(x1, Rep)
     yy <- rep.int(y1, Rep)
-    theta <- rep.int(theta, Rep) + rep.int(deg.arr, lx)
-    r.arr <- rep.int(r.arr, lx)
-    polygon(xx + r.arr * cos(theta) / uin[1],
-            yy + r.arr * sin(theta) / uin[2],
+    theta <- rep.int(theta, Rep) + rep.int(deg, lx)
+    rad <- rep.int(rad, lx)
+    polygon(xx + rad * cos(theta) / uin[1], yy + rad * sin(theta) / uin[2],
             col = fill, xpd = NA, border = border)
   }
   
   if (code %in% c(1L, 3L)) {
-    arrows2(x1, y1, x0, y0, size, width, code = 2, curve,
-            col = col, lty = 0, lwd = 0, fill = fill, border = border, ...)
+    arrows2(x1, y1, x0, y0, size, width, code = 2, curve, col = col,
+            lty = 0, lwd = 0, fill = fill, border = border, ...)
   }
+  invisible()
 }
 
 #' Curved arrows

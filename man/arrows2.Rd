@@ -4,7 +4,7 @@
 \alias{arrows2}
 \title{Add filled arrows to a plot}
 \usage{
-arrows2(x0, y0, x1 = x0, y1 = y0, size = 1, width = (sqrt(5) - 1)/8/cin,
+arrows2(x0, y0, x1 = x0, y1 = y0, size = 1, width = 0.1/cin,
   curve = 1, code = 2, col = par("fg"), lty = par("lty"),
   lwd = par("lwd"), fill = col, border = fill, sadj = c(0, 0, 0, 0),
   ...)
@@ -39,12 +39,22 @@ Draw filled arrows between pairs of points.
 }
 \examples{
 plot.new()
-plot.window(0:1, 0:1, asp = 1)
-arrows2(0,0,1,1, code = 3, border = 2, fill = 0)
-arrows2(.2, 0, .2, 1, code = 1, fill = 4, col = 4)
-arrows2(.4, 0, .4, 1, code = 2, fill = 2, size = .5, width = .5)
-arrows2(.6, 0, .6, 1, code = 3, curve = 1.5)
-arrows2(.8, 0, .8, 1, code = 3, curve = .5, width = .5, lwd = 10, col = 3)
+plot.window(c(-pi, pi), c(-1,1), asp = 1)
+curve(sin(x), -pi, pi, add = TRUE)
+xx <- seq(-pi, pi, length.out = 5)
+
+## arrows point to locations
+arrows2(xx, sin(xx), xx + 0, sin(xx + 0))
+
+## arrows "follow" along curve
+arrows2(xx, sin(xx), xx + .1, sin(xx + .1), col = 5, border = 2)
+
+arrows2(-3,-1,3,1, code = 3, border = 2, fill = 0)
+arrows2(-2, -1, -2, 1, code = 1, fill = 4, col = 4)
+arrows2(-1, -1, -1, 1, code = 2, fill = 2, size = .5, width = .5)
+arrows2(0, -1, 0, 1, code = 3, curve = 1.5)
+arrows2(1, -1, 1, 1, code = 3, curve = .5, width = .5, lwd = 10, col = 3)
+arrows2(2, -1, 2, 1, code = 3, lwd = 0)
 
 }
 \author{
