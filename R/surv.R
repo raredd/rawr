@@ -376,6 +376,10 @@ kmplot <- function(s,
 #' @param fig_lab figure panel labels; should be a character vector with
 #' length equal to the number of panels (i.e., the number of levels of
 #' \code{by} or length one if \code{by} was not given)
+#' @param add logical; if \code{TRUE} will not create a new plotting window
+#' @param reset_par logical; if \code{TRUE} (default), resets graphical
+#' parameters to settings before \code{kmplot_by} was called; set to
+#' \code{FALSE} for adding to existing plots
 #' @param ... additional arguments passed to \code{\link{kmplot}} or
 #' graphical parameters subsequently passed to \code{\link{par}}
 #' 
@@ -420,13 +424,22 @@ kmplot <- function(s,
 #' par(mfrow = c(2,2))
 #' kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3, single = FALSE,
 #'   strata_lab = c('Observation','Trt','Trt + 5-FU'))
+#' 
+#' ## use add = TRUE and reset_par = FALSE to add to a figure region without
+#' ## using the by argument
+#' par(mfrow = c(1,2))
+#' kmplot_by('rx', data = colon, col.surv = 1:3, add = TRUE)
+#' kmplot_by('sex', data = colon, col.surv = 1:3, add = TRUE)
 #'   
 #' @export
 
 kmplot_by <- function(strata, event = 'pfs', data, by, single = TRUE,
-                      lr_test = TRUE, ylab, sub, strata_lab, fig_lab, ...) {
+                      lr_test = TRUE, ylab, sub, strata_lab, fig_lab,
+                      add = FALSE, reset_par = !add, ...) {
+  dots <- match.call(expand.dots = FALSE)$`...`
   op <- par(no.readonly = TRUE)
-  on.exit(par(op))
+  if (reset_par)
+    on.exit(par(op))
   if (!missing(by)) {
     if (single) {
       add <- FALSE
@@ -438,8 +451,10 @@ kmplot_by <- function(strata, event = 'pfs', data, by, single = TRUE,
     }
     sp <- split(data, data[, by])
   } else {
-    add <- FALSE
-    par(mfrow = c(1,1))
+    if (missing(add)) {
+      add <- FALSE
+      par(mfrow = c(1,1))
+    }
     sp <- list(data)
   }
   mlabs <- missing(strata_lab)

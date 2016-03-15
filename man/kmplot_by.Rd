@@ -5,7 +5,7 @@
 \title{kmplot_by}
 \usage{
 kmplot_by(strata, event = "pfs", data, by, single = TRUE, lr_test = TRUE,
-  ylab, sub, strata_lab, fig_lab, ...)
+  ylab, sub, strata_lab, fig_lab, add = FALSE, reset_par = !add, ...)
 }
 \arguments{
 \item{strata}{character string of the strata variable}
@@ -36,6 +36,12 @@ will be removed; see examples}
 \item{fig_lab}{figure panel labels; should be a character vector with
 length equal to the number of panels (i.e., the number of levels of
 \code{by} or length one if \code{by} was not given)}
+
+\item{add}{logical; if \code{TRUE} will not create a new plotting window}
+
+\item{reset_par}{logical; if \code{TRUE} (default), resets graphical
+parameters to settings before \code{kmplot_by} was called; set to
+\code{FALSE} for adding to existing plots}
 
 \item{...}{additional arguments passed to \code{\link{kmplot}} or
 graphical parameters subsequently passed to \code{\link{par}}}
@@ -89,6 +95,12 @@ kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3, single = FALSE,
 par(mfrow = c(2,2))
 kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3, single = FALSE,
   strata_lab = c('Observation','Trt','Trt + 5-FU'))
+
+## use add = TRUE and reset_par = FALSE to add to a figure region without
+## using the by argument
+par(mfrow = c(1,2))
+kmplot_by('rx', data = colon, col.surv = 1:3, add = TRUE)
+kmplot_by('sex', data = colon, col.surv = 1:3, add = TRUE)
   
 }
 \seealso{
