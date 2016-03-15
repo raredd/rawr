@@ -14,7 +14,7 @@ executed after restarting}
 Ends current and restarts a clean \code{R} session.
 }
 \examples{
-\donttest{
+\dontrun{
 Restart("clear(); cat('Here is a clean session just for you')")
 }
 

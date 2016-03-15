@@ -559,7 +559,7 @@ list2file <- function(l, targetdir = getwd(), sep, ...) {
 #' executed after restarting
 #' 
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' Restart("clear(); cat('Here is a clean session just for you')")
 #' }
 #' 
