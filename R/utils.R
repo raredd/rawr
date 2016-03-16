@@ -201,7 +201,6 @@ NULL
 #' @export
 lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
                  decreasing = TRUE, n = 40) {
-  
   if (length(ls(envir = as.environment(pos))) < 1L)
     stop(return(character(0)))
   napply <- function(names, fn)
@@ -252,12 +251,9 @@ lsf <- function(package, file = 'DESCRIPTION') {
 #' @rdname rawr_ls
 #' @export
 lsp <- function(package, what, pattern) {
-  
   if (!is.character(substitute(package)))
     package <- deparse(substitute(package))
   ns <- asNamespace(package)
-  if (missing(what))
-    what <- 'all'
   if (missing(pattern))
     pattern <- '.*'
   
@@ -270,10 +266,13 @@ lsp <- function(package, what, pattern) {
     if (exists('.__NAMESPACE__.', envir = ns, inherits = FALSE)) {
       wh <- get('.__NAMESPACE__.', inherits = FALSE,
                 envir = asNamespace(package, base.OK = FALSE))
+      what <- if (missing(what)) 'all' else ls(wh)[pmatch(what[1], ls(wh))]
       if ('?' %in% what)
         return(ls(wh))
       if (!is.null(what) && !any(what %in% c('all', ls(wh))))
-        stop('what is invalid; see ?rawr::lsp \'details\'')
+        stop('\'what\' should be one of ',
+             paste0(shQuote(ls(wh)), collapse = ', '),
+             ', or \'all\'', domain = NA)
       res <- sapply(ls(wh), function(x) getNamespaceInfo(ns, x))
       res <- rapply(res, ls, classes = 'environment',
                     how = 'replace', all.names = TRUE)
@@ -284,8 +283,8 @@ lsp <- function(package, what, pattern) {
         return(res[grep(pattern, res, perl = TRUE, ignore.case = TRUE)])
       }
       if (any(what %in% ls(wh))) {
-        res <- res[what]
-        return(res[[grep(pattern, res, perl = TRUE, ignore.case = TRUE)]])
+        res <- res[[what]]
+        return(res[grep(pattern, res, perl = TRUE, ignore.case = TRUE)])
       }
     } else stop(sprintf('no NAMESPACE file found for package %s', package))
   }
@@ -1351,7 +1350,6 @@ clist <- function (x, y) {
 #' @export
 
 rapply2 <- function(l, FUN, classes = 'any', ...) {
-  islist <- function(x) inherits(x, 'list')
   stopifnot(islist(l))
   FUN <- match.fun(FUN)
   for (ii in seq_along(l))
