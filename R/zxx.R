@@ -1517,23 +1517,30 @@ vgrepl <- function(pattern, x) {
 #' x <- paste(rownames(mtcars), collapse = ' ')
 #' cat(justify(x))
 #' 
-#' plot.new()
-#' mtext(justify(x), line = -10, family = 'mono')
-#' mtext(justify(x, fill = 'right'), line = -10, family = 'mono', col = 2)
-#' mtext(justify(x, fill = 'left'), line = -10, family = 'mono', col = 3)
+#' 
+#' ## slight differences in whitespace for fill methods
+#' op <- par(no.readonly = TRUE)
+#' par(cex = .8, xpd = NA, family = 'mono', mar = c(5,5,5,5))
+#' plot(0, ann = FALSE, axes = FALSE, type = 'n')
+#' text(1, 0, justify(x, fill = 'random'))
+#' text(1, 0, justify(x, fill = 'right'), col = 2)
+#' text(1, 0, justify(x, fill = 'left'), col = 3)
+#' par(op)
 #' 
 #' @export
 
-justify <- function(string, width = getOption('width') / 2,
+justify <- function(string, width = getOption('width') - 10L,
                     fill = c('random', 'right', 'left')) {
+  fill <- match.arg(fill)
+  string <- gsub('\n', '\n\n', string, fixed = TRUE)
   strs <- strwrap(string, width = width)
-  paste(fill_spaces_(strs, width, match.arg(fill)), collapse = '\n')
+  paste(fill_spaces_(strs, width, fill), collapse = '\n')
 }
 
 fill_spaces_ <- function(lines, width, fill) {
   tokens <- strsplit(lines, '\\s+')
   res <- lapply(head(tokens, -1L), function(x) {
-    nspace <- length(x) - 1L
+    nspace <- max(length(x) - 1L, 1L)
     extra <- width - sum(nchar(x)) - nspace
     reps <- extra %/% nspace
     extra <- extra %% nspace
@@ -1547,7 +1554,9 @@ fill_spaces_ <- function(lines, width, fill) {
       else times[inds] <- times[(inds <- sample(nspace, extra))] + 1L
     }
     spaces <- c('', unlist(lapply(times, formatC, x = ' ', digits = NULL)))
-    paste(c(rbind(spaces, x)), collapse = '')
+    out <- paste(c(rbind(spaces, x)), collapse = '')
+    if (sum(c(nchar(x), length(x), extra)) < width / 2)
+      gsub('\\s{1,}', ' ', out) else out
   })
   c(res, paste(tail(tokens, 1L)[[1]], collapse = ' '))
 }

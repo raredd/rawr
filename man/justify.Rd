@@ -4,8 +4,8 @@
 \alias{justify}
 \title{Justify text}
 \usage{
-justify(string, width = getOption("width")/2, fill = c("random", "right",
-  "left"))
+justify(string, width = getOption("width") - 10L, fill = c("random",
+  "right", "left"))
 }
 \arguments{
 \item{string}{a character string}
@@ -21,10 +21,15 @@ Add whitespace to (monospaced) text for justified or block-style spacing.
 x <- paste(rownames(mtcars), collapse = ' ')
 cat(justify(x))
 
-plot.new()
-mtext(justify(x), line = -10, family = 'mono')
-mtext(justify(x, fill = 'right'), line = -10, family = 'mono', col = 2)
-mtext(justify(x, fill = 'left'), line = -10, family = 'mono', col = 3)
+
+## slight differences in whitespace for fill methods
+op <- par(no.readonly = TRUE)
+par(cex = .8, xpd = NA, family = 'mono', mar = c(5,5,5,5))
+plot(0, ann = FALSE, axes = FALSE, type = 'n')
+text(1, 0, justify(x, fill = 'random'))
+text(1, 0, justify(x, fill = 'right'), col = 2)
+text(1, 0, justify(x, fill = 'left'), col = 3)
+par(op)
 
 }
 \references{
