@@ -6,11 +6,15 @@
 # psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill, interleave,
 # outer2, merge2, locf, roll_fun, classMethods, regcaptures, cast, melt, view,
 # view2, clist, rapply2, sort_matrix, insert_matrix, tryCatch2
+#
+# unexported: islist, done
 ###
 
 
 ## is.list(data.frame()); islist(data.frame)
 islist <- function(x) inherits(x, 'list')
+
+done <- function() while (TRUE) {beepr::beep(3); Sys.sleep(3)}
 
 #' rawr operators
 #' 
@@ -41,7 +45,8 @@ islist <- function(x) inherits(x, 'list')
 #' @param range a numeric or character vector of length two with the indices
 #' or names from \code{object}, generally of the structure \code{c(from, to)}
 #' 
-#' @seealso \code{\link{==}}, \code{\link{\%in\%}}, \code{\link{||}}
+#' @seealso
+#' \code{\link{==}}, \code{\link{\%in\%}}, \code{\link{||}}
 #' 
 #' @examples
 #' \dontrun{
@@ -72,7 +77,6 @@ islist <- function(x) inherits(x, 'list')
 #' 
 #' @aliases oror %||% notin %ni% inside %inside% %==%
 #' @name rawr_ops
-#' @export
 
 #' @rdname rawr_ops
 #' @export
@@ -307,7 +311,7 @@ lsp <- function(package, what, pattern) {
 #' \code{\link{lsp}}, \code{\link{parse_sci}}
 #' 
 #' @return
-#' All return named lists for each section type.
+#' A named list for each section type.
 #' 
 #' @examples
 #' parse_yaml(lsf(rawr, 'desc'))
@@ -322,9 +326,7 @@ NULL
 #' @export
 parse_yaml <- function(x) {
   pattern <- '(^[^:]+):\\s+?(.*)$'
-  nn <- gsub(pattern, '\\1', x)
-  dd <- gsub(pattern, '\\2', x)
-  setNames(as.list(dd), nn)
+  setNames(as.list(gsub(pattern, '\\2', x)), gsub(pattern, '\\1', x))
 }
 
 #' @rdname rawr_parse
@@ -351,9 +353,9 @@ parse_news <- function(x) {
 #' @rdname rawr_parse
 #' @export
 parse_namespace <- function(x,
-                            wh = c("import", "export", "exportPattern", "importClass",
-                                   "importMethod", "exportClass", "exportMethod",
-                                   "exportClassPattern", "useDynLib", "nativeRoutine", "S3method")) {
+    wh = c("import", "export", "exportPattern", "importClass",
+           "importMethod", "exportClass", "exportMethod",
+           "exportClassPattern", "useDynLib", "nativeRoutine", "S3method")) {
   ## remove comments and collapse
   x <- paste0(gsub('#.*$', '', x), collapse = '')
   mm <- lapply(wh, function(xx)
@@ -451,8 +453,7 @@ clc <- function(all.names = FALSE)
 #' 
 #' @export
 
-clear <- function(...)
-  cat('\014')
+clear <- function(...) cat('\014')
 
 #' Bind objects
 #' 

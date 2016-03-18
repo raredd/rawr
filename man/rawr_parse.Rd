@@ -24,7 +24,7 @@ parse_namespace(x, wh = c("import", "export", "exportPattern", "importClass",
 \item{wh}{for \code{parse_namespace}, which types to parse and return}
 }
 \value{
-All return named lists for each section type.
+A named list for each section type.
 }
 \description{
 Some (mostly internal) simple parsers. \code{parse_yaml} can process
