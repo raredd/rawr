@@ -21,10 +21,9 @@ Add whitespace to (monospaced) text for justified or block-style spacing.
 x <- paste(rownames(mtcars), collapse = ' ')
 cat(justify(x))
 
-
 ## slight differences in whitespace for fill methods
 op <- par(no.readonly = TRUE)
-par(cex = .8, xpd = NA, family = 'mono', mar = c(5,5,5,5))
+par(cex = .8, xpd = NA, family = 'mono', mar = c(2,2,2,2))
 plot(0, ann = FALSE, axes = FALSE, type = 'n')
 text(1, 0, justify(x, fill = 'random'))
 text(1, 0, justify(x, fill = 'right'), col = 2)
@@ -33,7 +32,8 @@ par(op)
 
 }
 \references{
-Adapted from http://stackoverflow.com/questions/34710597/justify-text-in-r
+Adapted from \href{http://stackoverflow.com/questions/34710597/justify-
+text-in-r}{SO question}
 }
 \seealso{
 \code{\link{strwrap}}

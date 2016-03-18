@@ -143,8 +143,8 @@ progress <- function (value, max.value, textbar = FALSE) {
 #' \code{replacement[i]} in sequential order, so if you intend to swap values,
 #' say \code{a} and \code{b}, in an \code{object}, \code{recoder} will instead
 #' first replace all occurrences of \code{a} with \code{b} and then all
-#' occurrences of \code{b} with \code{a} resulting in the \code{object} with no
-#' \code{b} occurrences; see examples. I will (may) fix this eventually.
+#' occurrences of \code{b} with \code{a} resulting in the \code{object} with
+#' no \code{b} occurrences; see examples. I will (may) fix this eventually.
 #' 
 #' @param object object to recode
 #' @param pattern what to replace
@@ -258,20 +258,20 @@ recoder <- function(object, pattern, replacement, ...) {
 #'    
 #' @param ... any \code{R} objects
 #' @param num.eq logical indicating if (\code{\link{double}} and
-#' \code{\link{complex}} non-\code{\link{NA}}) numbers should be compared using
-#' \code{\link{==}} ("equal"), or by bitwise comparison. The latter
+#' \code{\link{complex}} non-\code{\link{NA}}) numbers should be compared
+#' using \code{\link{==}} ("equal"), or by bitwise comparison. The latter
 #' (non-default) differentiates between -0 and +0.
 #' @param single.NA logical indicating if there is conceptually just one
 #' numeric \code{NA} and one \code{\link{NaN}}; \code{single.NA = FALSE}
 #' differentiates bit patterns.
 #' @param attrib.as.set logical indicating if \code{\link{attributes}} of
-#' \code{...} should be treated as \emph{unordered} tagged pairlists ("sets"); 
+#' \code{...} should be treated as \emph{unordered} tagged pairlists ("sets");
 #' this currently also applies to \code{\link{slot}}s of S4 objects. It may
 #' well be too strict to set \code{attrib.as.set = FALSE}.
 #' @param ignore.bytecode logical indicating if byte code should be ignored
 #' when comparing \code{\link{closure}}s.
-#' @param ignore.environment logical indicating if their environments should be
-#' ignored when comparing \code{closure}s.
+#' @param ignore.environment logical indicating if their environments should
+#' be ignored when comparing \code{closure}s.
 #' 
 #' @return
 #' A single logical value, \code{TRUE} or \code{FALSE}, never \code{NA}
@@ -359,9 +359,11 @@ allequal <- function(..., tolerance = .Machine$double.eps ^ 0.5, scale = NULL,
   l <- lapply(1:(length(l) - 1), function(x)
     # do.call('all.equal', c(list(target = l[[x]], current = l[[x + 1]]),
     #                        moreArgs)))
-    do.call('all.equal', list(target = l[[x]], current = l[[x + 1]],
-                              tolerance = tolerance, check.attributes = check.attributes,
-                              scale = scale, use.names = use.names, all.names = all.names)))
+    do.call('all.equal', list(
+      target = l[[x]], current = l[[x + 1]],
+      tolerance = tolerance, check.attributes = check.attributes,
+      scale = scale, use.names = use.names, all.names = all.names))
+  )
   trues <- c(TRUE, sapply(l, isTRUE))
   trues[1] <- trues[2]
   if (all(trues)) TRUE else dots[!trues]
@@ -639,7 +641,8 @@ Restart <- function(afterRestartCommand = '')
 #' @export
 
 helpExtract <- function(FUN, show.sections = FALSE, section = 'Usage',
-                        type = c('text','md_code','md_text','sw_code','sw_text'),
+                        type = c('text','md_code','md_text',
+                                 'sw_code','sw_text'),
                         ...) {
   
   type <- match.arg(type, c('text','md_code','md_text','sw_code','sw_text'),
@@ -717,7 +720,8 @@ helpExtract_ <- function(FUN, ...) {
     pkgname <- basename(dirpath)
     RdDB <- file.path(path, pkgname)
     if (!file.exists(paste(RdDB, "rdx", sep = ".")))
-      stop(gettextf("package %s exists but was not installed under R >= 2.10.0 so help cannot be accessed",
+      stop(gettextf(paste("package %s exists but was not installed under R',
+                          '>= 2.10.0 so help cannot be accessed"),
                     sQuote(pkgname)), domain = NA)
     fetchRdDB(RdDB, basename(file))
   }
@@ -823,7 +827,8 @@ updateR <- function(update = TRUE) {
 #' @param header logical; indicates if variable names are in first line
 #' @param ... additional arguments passed to \code{\link{read.table}}
 #' 
-#' @seealso \code{\link[psych]{read.clipboard}}, \code{\link{read.table}},
+#' @seealso
+#' \code{\link[psych]{read.clipboard}}, \code{\link{read.table}},
 #' \code{\link{read.fwf}}
 #' 
 #' @export
@@ -1087,11 +1092,13 @@ install_temp <- function(pkgs, lib, ...) {
 #' merged and returned.
 #' 
 #' @param x,y lists
+#' 
 #' @seealso
-#' Adapted from \url{http://stackoverflow.com/questions/23483421/combine-merge-lists-by-elements-names-list-in-list}
+#' Adapted from \url{http://stackoverflow.com/questions/23483421/combine-
+#' merge-lists-by-elements-names-list-in-list}
 #' 
 #' @examples
-#' ## `l1` and `l2` have similar structures
+#' ## l1 and l2 have similar structures
 #' l1 <- list(a = list(1:2, NULL), b = list(1:3, NULL), c = list(1:5))
 #' l2 <- list(a = list(NULL, 0:1), b = list(NULL, 4:6))
 #' l3 <- list(a = list(NULL, 0:1), b = list(4:6))
@@ -1234,7 +1241,7 @@ rm_ext <- function(path)
 #' (\code{replacement} will be recycled if needed)
 #' 
 #' @seealso
-#' \code{\link[base]{grep}}
+#' \code{\link[base]{grep}}; \code{\link{vgrep}}
 #' 
 #' @examples
 #' ## grepping
@@ -1321,7 +1328,8 @@ mgsub <- function(pattern, replacement, x, ...)
 #' @param l a list
 #' 
 #' @references
-#' \url{https://stackoverflow.com/questions/8139677/how-to-flatten-a-list-to-a-list-without-coercion}
+#' \href{https://stackoverflow.com/questions/8139677/how-to-flatten-a-list-to-
+#' a-list-without-coercion}{SO question}
 #' 
 #' @examples
 #' (l <- list(matrix(1:3), list(1:3, 'foo'), TRUE, 'hi',
@@ -1349,7 +1357,8 @@ flatten <- function(l) {
 #' to print
 #' 
 #' @references
-#' \url{http://stackoverflow.com/questions/14188197/representing-a-directory-tree-as-a-recursive-list}
+#' \href{http://stackoverflow.com/questions/14188197/representing-a-directory-
+#' tree-as-a-recursive-list}{SO question}
 #' 
 #' @examples
 #' str(tree(system.file(package = 'rawr'), FALSE))
@@ -1386,7 +1395,8 @@ tree <- function(path = '.', full.names = FALSE, ndirs = 5, nfiles = 5) {
 #' object will not be removed
 #' 
 #' @references
-#' \url{http://stackoverflow.com/questions/26539441/r-remove-null-elements-from-list-of-lists}
+#' \href{http://stackoverflow.com/questions/26539441/r-remove-null-elements-
+#' from-list-of-lists}{SO question}
 #' 
 #' @examples
 #' str(l <- list(list(NULL),list(1),list('a', NULL)))
@@ -1434,7 +1444,8 @@ rm_null <- function(l, rm_list = TRUE) {
 #'            z = cum_reset(x, 0, function(x) ave(x, FUN = sum)))
 #' 
 #' ## x need not be numeric if FUN is appropriate for typeof(x)
-#' cum_reset(letters[1:10], c('d','g'), function(x) letters[as.numeric(factor(x))])
+#' cum_reset(letters[1:10], c('d','g'), function(x)
+#'   letters[as.numeric(factor(x))])
 #' 
 #' @export
 
@@ -1458,7 +1469,8 @@ cum_reset <- function(x, value = 0L, FUN = cumsum) {
 #' \code{length(x)} for each match found in \code{x}.
 #' 
 #' @references
-#' Adapted from \url{http://stackoverflow.com/questions/33027611/how-to-index-a-vector-sequence-within-a-vector-sequence/33028695}
+#' Adapted from \href{http://stackoverflow.com/questions/33027611/how-to-
+#' index-a-vector-sequence-within-a-vector-sequence/33028695}{SO question}
 #' 
 #' @seealso
 #' \code{\link{grep}}; \code{\link[rawr]{mgrep}}; \code{\link[rawr]{\%==\%}}
@@ -1475,7 +1487,8 @@ cum_reset <- function(x, value = 0L, FUN = cumsum) {
 #' @export
 
 vgrep <- function(pattern, x) {
-  vgrep_ <- function(pp, xx, acc = if (length(pp)) seq_along(xx) else integer()) {
+  vgrep_ <- function(pp, xx, acc = if (length(pp))
+    seq_along(xx) else integer()) {
     if (!length(pp))
       return(acc)
     Recall(pp[-1L], xx, acc[which(pp[[1L]] %==% xx[acc])] + 1L)
@@ -1509,16 +1522,16 @@ vgrepl <- function(pattern, x) {
 #' \code{\link{strwrap}}
 #' 
 #' @references
-#' Adapted from http://stackoverflow.com/questions/34710597/justify-text-in-r
+#' Adapted from \href{http://stackoverflow.com/questions/34710597/justify-
+#' text-in-r}{SO question}
 #' 
 #' @examples
 #' x <- paste(rownames(mtcars), collapse = ' ')
 #' cat(justify(x))
 #' 
-#' 
 #' ## slight differences in whitespace for fill methods
 #' op <- par(no.readonly = TRUE)
-#' par(cex = .8, xpd = NA, family = 'mono', mar = c(5,5,5,5))
+#' par(cex = .8, xpd = NA, family = 'mono', mar = c(2,2,2,2))
 #' plot(0, ann = FALSE, axes = FALSE, type = 'n')
 #' text(1, 0, justify(x, fill = 'random'))
 #' text(1, 0, justify(x, fill = 'right'), col = 2)

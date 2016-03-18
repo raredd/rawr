@@ -5,15 +5,15 @@
 
 #' Common Terminology Criteria for Adverse Events, v3
 #'
-#' A dataset containing the CTCAE (version 3) toxicity codes, descriptions, and
-#' categories.
+#' A dataset containing the CTCAE (version 3) toxicity codes, descriptions,
+#' and categories.
 #' 
 #' @source
-#' \url{http://ctep.cancer.gov/protocolDevelopment/electronic_applications/docs/ctcaev3.pdf}
+#' \href{http://ctep.cancer.gov/protocolDevelopment/electronic_applications/
+#' docs/ctcaev3.pdf}{CTCAEv3.pdf}
 #'
 #' @format
 #' A data frame with 1059 rows and 4 variables:
-#' 
 #' \tabular{lll}{
 #' \tab \code{tox_code} \tab alphanumeric toxicity code (\code{AB123}) \cr
 #' \tab \code{tox_desc} \tab description \cr
@@ -27,15 +27,15 @@
 
 #' Common Terminology Criteria for Adverse Events, v4
 #'
-#' A dataset containing the CTCAE (version 4) toxicity codes, descriptions, and
-#' categories.
+#' A dataset containing the CTCAE (version 4) toxicity codes, descriptions,
+#' and categories.
 #'  
 #' @source
-#' \url{http://evs.nci.nih.gov/ftp1/CTCAE/CTCAE_4.03_2010-06-14_QuickReference_8.5x11.pdf}
+#' \href{http://evs.nci.nih.gov/ftp1/CTCAE/CTCAE_4.03_2010-06-14_
+#' QuickReference_8.5x11.pdf}{CTCAEv4.pdf}
 #'
 #' @format
 #' A data frame with 790 rows and 5 variables:
-#' 
 #' \tabular{lll}{
 #' \tab \code{tox_code} \tab alphanumeric toxicity code (\code{AB123}) \cr
 #' \tab \code{tox_desc} \tab description \cr

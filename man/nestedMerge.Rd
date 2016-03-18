@@ -28,7 +28,7 @@ where list \code{a} contains elements not in list \code{b}. If using
 merged and returned.
 }
 \examples{
-## `l1` and `l2` have similar structures
+## l1 and l2 have similar structures
 l1 <- list(a = list(1:2, NULL), b = list(1:3, NULL), c = list(1:5))
 l2 <- list(a = list(NULL, 0:1), b = list(NULL, 4:6))
 l3 <- list(a = list(NULL, 0:1), b = list(4:6))
@@ -51,6 +51,7 @@ nestedmerge(l1, l2)
 
 }
 \seealso{
-Adapted from \url{http://stackoverflow.com/questions/23483421/combine-merge-lists-by-elements-names-list-in-list}
+Adapted from \url{http://stackoverflow.com/questions/23483421/combine-
+merge-lists-by-elements-names-list-in-list}
 }
 

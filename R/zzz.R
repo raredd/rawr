@@ -4,9 +4,8 @@ options(scipen = -1)
 ## binding notes
 if (getRversion() >= '2.15.1') {
   utils::globalVariables(
-    c('x','dd_reg','status','dt_offstudy','dt_end','dt_assess_start',
-      'desc','dd_prog','dd_assess_start','biocLite','makeCluster',
-      'detectCores','stopCluster','clusterExport','parLapply','survfit',
-      'survdiff')
+    c('x','survfit','survdiff','biocLite','dt_assess_start','dd_reg',
+      'status','dt_offstudy','dt_end','dd_prog','dd_assess_start',
+      'makeCluster','detectCores','stopCluster','clusterExport','parLapply')
   )
 }

@@ -25,7 +25,8 @@ warnings, messages, and interrupts while returning the value from
 tryCatch2(1)
 tryCatch2(stop('halt at once!'))
 
-l <- alist(1, simpleError('oops'), stop('halt!'), warning('hmm'), message('hey'))
+l <- alist(1, simpleError('oops'), stop('halt!'),
+           warning('hmm'), message('hey'))
 lapply(l, function(x) tryCatch2(eval(x)))
 
 l <- lapply(list(1,-1,'a'), function(x) tryCatch2(log(x)))
@@ -36,7 +37,8 @@ rm_null(l)
 Martin Morgan, Jan Gorecki, Robert Redd (modifications)
 }
 \seealso{
-\href{http://stackoverflow.com/questions/4948361/how-do-i-save-warnings-and-errors-as-output-from-a-function}{SO question};
+\href{http://stackoverflow.com/questions/4948361/how-do-i-save-warnings
+-and-errors-as-output-from-a-function}{SO question};
 \code{\link[logR]{tryCatch2}}
 }
 

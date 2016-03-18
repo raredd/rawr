@@ -193,7 +193,7 @@ done <- function() while (TRUE) {beepr::beep(3); Sys.sleep(3)}
 #' lsp('rawr', 'path')
 #' 
 #' ## to return everything
-#' lsp('rawr', NULL)
+#' lsp('rawr')
 #' 
 #' ## data sets
 #' lsp('rawr', 'lazydata')
@@ -205,8 +205,8 @@ NULL
 #' @export
 lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
                  decreasing = TRUE, n = 40) {
-  if (length(ls(envir = as.environment(pos))) < 1L)
-    stop(return(character(0)))
+  if (!length(ls(envir = as.environment(pos))))
+    return(character(0))
   napply <- function(names, fn)
     sapply(names, function(x) fn(get(x, pos = pos)))
   names <- ls(pos = pos, pattern = pattern, all.names = all.names)
@@ -270,9 +270,9 @@ lsp <- function(package, what, pattern) {
     if (exists('.__NAMESPACE__.', envir = ns, inherits = FALSE)) {
       wh <- get('.__NAMESPACE__.', inherits = FALSE,
                 envir = asNamespace(package, base.OK = FALSE))
-      what <- if (missing(what)) 'all' else ls(wh)[pmatch(what[1], ls(wh))]
-      if ('?' %in% what)
-        return(ls(wh))
+      what <- if (missing(what)) 'all'
+      else if ('?' %in% what) return(ls(wh)) 
+      else ls(wh)[pmatch(what[1], ls(wh))]
       if (!is.null(what) && !any(what %in% c('all', ls(wh))))
         stop('\'what\' should be one of ',
              paste0(shQuote(ls(wh)), collapse = ', '),
@@ -956,7 +956,8 @@ locf <- function(x, fromLast = FALSE, na.strings = '') {
 #' 
 #' @export
 
-roll_fun <- function(x, n = 5, FUN = mean, ..., fromLast = FALSE, keep = FALSE) {
+roll_fun <- function(x, n = 5, FUN = mean, ..., fromLast = FALSE,
+                     keep = FALSE) {
   l <- lapply(seq_along(x), function(ii) {
     if (fromLast)
       x[length(x) + 1 - tail(sequence(ii), n)]
@@ -973,7 +974,9 @@ roll_fun <- function(x, n = 5, FUN = mean, ..., fromLast = FALSE, keep = FALSE) 
 #' 
 #' @param class an object or classes as a vector of character strings
 #' 
-#' @seealso \code{\link{methods}}, \code{\link{S3Methods}}, \code{\link{class}}
+#' @seealso
+#' \code{\link{methods}}, \code{\link{S3Methods}}, \code{\link{class}}
+#' 
 #' @references \url{https://gist.github.com/MrFlick/55ed854eb935e5c21f71}
 #' 
 #' @examples
@@ -1466,14 +1469,16 @@ insert_matrix <- function(m, rowsep, colsep, rowrep = NA, colrep = rowrep) {
 #' Martin Morgan, Jan Gorecki, Robert Redd (modifications)
 #' 
 #' @seealso
-#' \href{http://stackoverflow.com/questions/4948361/how-do-i-save-warnings-and-errors-as-output-from-a-function}{SO question};
+#' \href{http://stackoverflow.com/questions/4948361/how-do-i-save-warnings
+#' -and-errors-as-output-from-a-function}{SO question};
 #' \code{\link[logR]{tryCatch2}}
 #' 
 #' @examples
 #' tryCatch2(1)
 #' tryCatch2(stop('halt at once!'))
 #' 
-#' l <- alist(1, simpleError('oops'), stop('halt!'), warning('hmm'), message('hey'))
+#' l <- alist(1, simpleError('oops'), stop('halt!'),
+#'            warning('hmm'), message('hey'))
 #' lapply(l, function(x) tryCatch2(eval(x)))
 #' 
 #' l <- lapply(list(1,-1,'a'), function(x) tryCatch2(log(x)))

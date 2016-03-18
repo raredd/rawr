@@ -32,8 +32,8 @@ The function currently recursively replaces \code{pattern[i]} with
 \code{replacement[i]} in sequential order, so if you intend to swap values,
 say \code{a} and \code{b}, in an \code{object}, \code{recoder} will instead
 first replace all occurrences of \code{a} with \code{b} and then all
-occurrences of \code{b} with \code{a} resulting in the \code{object} with no
-\code{b} occurrences; see examples. I will (may) fix this eventually.
+occurrences of \code{b} with \code{a} resulting in the \code{object} with
+no \code{b} occurrences; see examples. I will (may) fix this eventually.
 }
 \examples{
 recoder(mtcars$carb, c(1, 2), c('A','B'))

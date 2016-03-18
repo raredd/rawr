@@ -148,7 +148,8 @@ bincon <- function(r, n, alpha = 0.05, round = NULL,
 #' levels of significance and power. \emph{British J of Cancer} (2012) 107,
 #' 1801-9.
 #' 
-#' @seealso \code{\link[clinfun]{ph2single}}; \code{desmon::bin1samp}; bintest,
+#' @seealso
+#' \code{\link[clinfun]{ph2single}}; \code{desmon::bin1samp}; bintest,
 #' \href{https://github.com/raredd/sascros/blob/master/bintest.sas}{SAS macro}
 #' 
 #' @examples
@@ -431,13 +432,16 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
 #' \item{\code{$description}}{a text string giving a brief description of
 #' the columns in \code{$designs}.}
 #' 
-#' @seealso desmon package: \code{simon}, \code{twostg}, \code{bin1samp},
-#' \code{pickwin}, \code{rp21}
+#' @seealso
+#' \pkg{desmon}: \code{simon}, \code{twostg}, \code{bin1samp}, \code{pickwin},
+#' \code{rp21}
 #' 
-#' @author Robert Gray (\code{desmon::simon}); Robert Redd (\code{simon2})
+#' @author
+#' Robert Gray (\code{desmon::simon}); Robert Redd (\code{simon2})
 #' 
-#' @references Simon R (1989). Optimal two-stage designs for phase II clinical
-#' trials. \emph{Controlled Clinical Trials}, 10:1-10.
+#' @references
+#' Simon R (1989). Optimal two-stage designs for phase II clinical trials.
+#' \emph{Controlled Clinical Trials}, 10:1-10.
 #' 
 #' @examples
 #' simon2(.2, c(.4, .5))
@@ -476,8 +480,10 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5, alpha = 0.1, beta = 0.1,
   ## p0, pa, null & alt response probabilities
   ## n1max = max # subject in first stage
   
-  if (alpha > .5 | alpha <= 0 | 1 - beta <= alpha | beta <= 0 | p0 <= 0 | p0 >= pa | 
-      pa >= 1 | n1max > ntmax) stop('invalid arguments')
+  if (alpha > .5 | alpha <= 0 | 1 - beta <= alpha |
+      beta <= 0 | p0 <= 0 | p0 >= pa |
+      pa >= 1 | n1max > ntmax)
+    stop('invalid arguments')
   ## determine min sample size first stage
   n1min <- max(ceiling(log(beta) / log(1 - pa)), 2)
   if (n1min > ntmax)
@@ -589,8 +595,10 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5, alpha = 0.1, beta = 0.1,
   
   list(designs = z[order(z[ , 8]), , drop = FALSE],
        call = match.call(),
-       description = c('n1, n2 = cases 1st stage and additional # in 2nd',
-                       'r1, r2 = max # responses 1st stage and total to declare trt inactive'))
+       description = c(
+         'n1, n2 = cases 1st stage and additional # in 2nd',
+         'r1, r2 = max # responses 1st stage and total to declare trt inactive')
+  )
 }
 
 bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20) {

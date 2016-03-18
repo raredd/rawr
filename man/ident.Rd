@@ -11,8 +11,8 @@ ident(..., num.eq = TRUE, single.NA = TRUE, attrib.as.set = TRUE,
 \item{...}{any \code{R} objects}
 
 \item{num.eq}{logical indicating if (\code{\link{double}} and
-\code{\link{complex}} non-\code{\link{NA}}) numbers should be compared using
-\code{\link{==}} ("equal"), or by bitwise comparison. The latter
+\code{\link{complex}} non-\code{\link{NA}}) numbers should be compared
+using \code{\link{==}} ("equal"), or by bitwise comparison. The latter
 (non-default) differentiates between -0 and +0.}
 
 \item{single.NA}{logical indicating if there is conceptually just one
@@ -20,15 +20,15 @@ numeric \code{NA} and one \code{\link{NaN}}; \code{single.NA = FALSE}
 differentiates bit patterns.}
 
 \item{attrib.as.set}{logical indicating if \code{\link{attributes}} of
-\code{...} should be treated as \emph{unordered} tagged pairlists ("sets"); 
+\code{...} should be treated as \emph{unordered} tagged pairlists ("sets");
 this currently also applies to \code{\link{slot}}s of S4 objects. It may
 well be too strict to set \code{attrib.as.set = FALSE}.}
 
 \item{ignore.bytecode}{logical indicating if byte code should be ignored
 when comparing \code{\link{closure}}s.}
 
-\item{ignore.environment}{logical indicating if their environments should be
-ignored when comparing \code{closure}s.}
+\item{ignore.environment}{logical indicating if their environments should
+be ignored when comparing \code{closure}s.}
 }
 \value{
 A single logical value, \code{TRUE} or \code{FALSE}, never \code{NA}

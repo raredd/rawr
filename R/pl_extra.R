@@ -100,7 +100,8 @@ dodge.default <- function(x, y, dist, jit, ...) {
 #' and their respective numbers. Find a color by number in the plot or by the
 #' name of the color with \code{colors()[n]}.
 #' 
-#' @seealso \code{\link{show_pch}}
+#' @seealso
+#' \code{\link{show_pch}}
 #' 
 #' @examples
 #' show_colors()
@@ -135,7 +136,8 @@ show_colors <- function() {
 #' both the border and fill color (if applicable) for \code{0:20}; \code{pch}s
 #' \code{21:25} can be filled with \code{bg}.
 #' 
-#' @seealso \code{\link{show_colors}}
+#' @seealso
+#' \code{\link{show_colors}}
 #' 
 #' @examples
 #' show_pch()
@@ -173,8 +175,8 @@ show_pch <- function() {
 #' @param alpha the alpha transparency in \code{[0,1]}; \code{trans} is
 #' ignored if \code{alpha} is given
 #' 
-#' @seealso \code{\link{as.hexmode}}, \code{\link{col2rgb}},
-#' \code{\link{adjustcolor}}
+#' @seealso
+#' \code{\link{as.hexmode}}, \code{\link{col2rgb}}, \code{\link{adjustcolor}}
 #' 
 #' @examples
 #' cols <- c('red','green','blue')

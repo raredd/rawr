@@ -54,17 +54,17 @@ get_margs(file.path(path, 'macros.sas'), 'macro1')
 \dontrun{
 get_margs(file.path(path, 'macros.sas'), 'no_macro_with_this_name')
 
-Error in get_margs(file.path(path, "macros.sas"), "no_macro_with_this_name") : 
+Error in get_margs(file.path(path, "macros.sas"), "no_macro_with_this_name") :
  no_macro_with_this_name macro not found in ...
 
 get_margs(file.path(path, 'nomacro.sas'))
 
-## Error in get_margs(file.path(path, 'nomacro.sas')) : 
+## Error in get_margs(file.path(path, 'nomacro.sas')) :
 ##   no valid macros found in ...
 
 get_margs(file.path(path, 'onemacro.sas'), c('macro2', 'macro5'))
 
-## Error in get_margs(file.path(path, 'onemacro.sas'), c("macro2", "macro5")) : 
+## Error in get_margs(file.path(path, 'onemacro.sas'), c("macro2", "macro5")) :
 ## macro2, macro5 not found in ...
 }
 

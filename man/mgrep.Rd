@@ -60,6 +60,6 @@ mgsub(r3, x = s1, perl = TRUE)
 
 }
 \seealso{
-\code{\link[base]{grep}}
+\code{\link[base]{grep}}; \code{\link{vgrep}}
 }
 

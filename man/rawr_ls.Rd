@@ -105,7 +105,7 @@ lsp('rawr', '?')
 lsp('rawr', 'path')
 
 ## to return everything
-lsp('rawr', NULL)
+lsp('rawr')
 
 ## data sets
 lsp('rawr', 'lazydata')

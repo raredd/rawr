@@ -11,12 +11,10 @@ match_ctc(..., version = 4L)
 \code{AB123} but can handle \code{AB-123} or \code{AB 123}) or keyword(s)
 to be matched in the toxicity description}
 
-\item{version}{version number; default is \code{4}
-\href{http://www.dfhcc.harvard.edu/fileadmin/DFHCC_Admin/Clinical_Trials/QACT/Policies_and_Procedures/CTCToxVersion4.pdf}{CTCAE v4}}
+\item{version}{version number; default is CTCAE v4}
 }
 \value{
 A list containing:
-
 \item{\code{matches}}{a data frame of matches with toxicity codes and their
 respective descriptions and categories}
 \item{\code{version}}{CTCAE version used}

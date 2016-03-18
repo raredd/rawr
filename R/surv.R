@@ -127,6 +127,7 @@
 #'       adj = .5, font.main = 1, line = 0.5, cex.main = 1)
 #' dev.off()
 #' }
+#' 
 #' @export
 
 kmplot <- function(s,
@@ -519,7 +520,7 @@ kmplot_by <- function(strata, event = 'pfs', data, by, single = TRUE,
 #' \url{http://www.ddiez.com/teac/surv/}
 #' 
 #' @examples
-#' library(survival)
+#' library('survival')
 #' fit <- coxph(Surv(time, status) ~ sex + ph.ecog, data = cancer)
 #' 
 #' ## compare to summary(fit)
@@ -567,7 +568,7 @@ local_coxph_test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
 #' \url{http://www.ddiez.com/teac/surv/}
 #' 
 #' @examples
-#' library(survival)
+#' library('survival')
 #' 
 #' cp <- surv_cp(aml, 'time', 'status')
 #' coxph(Surv(start, stop, status) ~ x, data = cp)

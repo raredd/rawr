@@ -25,7 +25,7 @@ p-value of one or more factors in a model; can also be used to test more
 comlex hypotheses.
 }
 \examples{
-library(survival)
+library('survival')
 fit <- coxph(Surv(time, status) ~ sex + ph.ecog, data = cancer)
 
 ## compare to summary(fit)

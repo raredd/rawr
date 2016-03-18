@@ -156,6 +156,7 @@ title(main = 'Chemotherapy for stage B/C colon cancer',
       adj = .5, font.main = 1, line = 0.5, cex.main = 1)
 dev.off()
 }
+
 }
 \references{
 \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}

@@ -18,8 +18,8 @@ intr(..., fun = median, conf = NULL, digits = 0, na.rm = FALSE)
 \item{digits}{number of digits (includes trailing 0s)}
 
 \item{na.rm}{logical; if \code{TRUE}, any \code{\link{NA}} and \code{NaN}
-are removed from \code{...} before \code{fun} and \code{\link{quantile}} are
-computed}
+are removed from \code{...} before \code{fun} and \code{\link{quantile}}
+are computed}
 }
 \description{
 Calculate summary statistic with range or confidence interval.

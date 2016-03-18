@@ -46,7 +46,6 @@ plot(rnorm(100), col = tcol(cols, c(50, 100, 255)), pch= 16, cex = 4)
 
 }
 \seealso{
-\code{\link{as.hexmode}}, \code{\link{col2rgb}},
-\code{\link{adjustcolor}}
+\code{\link{as.hexmode}}, \code{\link{col2rgb}}, \code{\link{adjustcolor}}
 }
 

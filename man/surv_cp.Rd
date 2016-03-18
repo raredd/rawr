@@ -25,7 +25,7 @@ Converts a data frame to counting process notation and allows for time-
 dependent variables to be introduced.
 }
 \examples{
-library(survival)
+library('survival')
 
 cp <- surv_cp(aml, 'time', 'status')
 coxph(Surv(start, stop, status) ~ x, data = cp)

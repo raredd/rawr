@@ -35,7 +35,8 @@ data.frame(x = x <- rpois(15, 1),
            z = cum_reset(x, 0, function(x) ave(x, FUN = sum)))
 
 ## x need not be numeric if FUN is appropriate for typeof(x)
-cum_reset(letters[1:10], c('d','g'), function(x) letters[as.numeric(factor(x))])
+cum_reset(letters[1:10], c('d','g'), function(x)
+  letters[as.numeric(factor(x))])
 
 }
 \seealso{

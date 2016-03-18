@@ -77,6 +77,7 @@
 #' ## 
 #' ## ... will be run. Continue? (y/n): 
 #' }
+#' 
 #' @export
 
 r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
@@ -97,7 +98,7 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
       saspath <- 'c:/program files/sas/sasfoundation/9.2/sas.exe'
   }
   if (!file.exists(saspath))
-    stop('saspath is invalid--give the full path to \"sas.exe\"')
+    stop('saspath is invalid--give the full path to \"sas.exe\"', domain = NA)
   
   ## temporary .sas, .lst, .log files
   sasin   <- tempfile('_r2sas_', fileext = '.sas')
@@ -128,16 +129,17 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
     if (status == 0) {
       on.exit(file.remove(sasin, lstpath, logpath))
       cat('\nr2sas is complete\n')
-    } else stop(sprintf('error in r2sas, see log:\n%s\n', logpath))
+    } else stop(sprintf('error in r2sas, see log:\n%s\n', logpath),
+                domain = NA)
   } else {
     if (status == 0) {
       on.exit(file.copy(c(sasin, lstpath, logpath), out))
       on.exit(file.remove(sasin, lstpath, logpath), add = TRUE)
       cat('\nr2sas is complete\n')
-    } else
-      stop(sprintf('error in r2sas, see log:\n%s/%s', out, basename(logpath)))
+    } else stop(sprintf('error in r2sas, see log:\n%s/%s', out,
+                        basename(logpath)), domain = NA)
   }
-  return(invisible())
+  invisible()
 }
 
 #' Call \code{SAS} macros
@@ -282,17 +284,17 @@ rmacro <- function(mpath, mname, args, saspath, show.args = FALSE,
 #' \dontrun{
 #' get_margs(file.path(path, 'macros.sas'), 'no_macro_with_this_name')
 #' 
-#' Error in get_margs(file.path(path, "macros.sas"), "no_macro_with_this_name") : 
+#' Error in get_margs(file.path(path, "macros.sas"), "no_macro_with_this_name") :
 #'  no_macro_with_this_name macro not found in ...
 #' 
 #' get_margs(file.path(path, 'nomacro.sas'))
 #' 
-#' ## Error in get_margs(file.path(path, 'nomacro.sas')) : 
+#' ## Error in get_margs(file.path(path, 'nomacro.sas')) :
 #' ##   no valid macros found in ...
 #' 
 #' get_margs(file.path(path, 'onemacro.sas'), c('macro2', 'macro5'))
 #' 
-#' ## Error in get_margs(file.path(path, 'onemacro.sas'), c("macro2", "macro5")) : 
+#' ## Error in get_margs(file.path(path, 'onemacro.sas'), c("macro2", "macro5")) :
 #' ## macro2, macro5 not found in ...
 #' }
 #' 
@@ -318,18 +320,19 @@ get_margs <- function(mpath, mname, text) {
   ## match the macro syntax: " %macro name( ); "
   ## and trim whitespace
   mcall <- unlist(lapply(macro, function(x)
-    regmatches(x,
-               gregexpr('\\s*%macro\\s+(\\w+)\\((.*)\\)\\s*;{1}', x, perl = TRUE))))
+    regmatches(x, gregexpr('\\s*%macro\\s+(\\w+)\\((.*)\\)\\s*;{1}', x,
+                           perl = TRUE))))
   mnames <- gsub('%macro|;|(?<=\\().*?(?=\\))|\\(|\\)|\\s*', '',
                  mcall, perl = TRUE)
-  args <- gsub(' ','', regmatches(mcall,
-                                  gregexpr('(?<=\\().*?(?=\\))', mcall, perl = TRUE)))
+  args <- gsub(' ', '', regmatches(mcall, gregexpr('(?<=\\().*?(?=\\))',
+                                                   mcall, perl = TRUE)))
   
   if (length(mnames) < 1)
     stop(sprintf('no valid macros found in %s\n', mpath))
   if (!missing(mname) && any(mname %ni% mnames))
     stop(sprintf('%s not found in %s',
-                 paste(mname[mname %ni% mnames], collapse = ', '), mpath))
+                 paste(mname[mname %ni% mnames], collapse = ', '), mpath),
+         domain = NA)
   margs <- setNames(gsub(',', ', ', args), mnames)
   as.list(margs)[mname]
 }
@@ -432,8 +435,8 @@ sas_mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
             'Ignoring formats.', domain = NA)
     no.format <- TRUE
   }
-  dsi <- `colnames<-`(round(file.info(list.files(libpath,
-                                                 full.names = TRUE))['size'] / 1000), 'size (Kb)')
+  dsi <- `colnames<-`(round(file.info(list.files(
+    libpath, full.names = TRUE))['size'] / 1000), 'size (Kb)')
   p <- function(x) gsub('.sas7bdat', '', x, ignore.case = TRUE)
   
   ## check if data exists
@@ -452,14 +455,13 @@ sas_mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
     cat(sprintf('\n!!! %s data set%s will be read !!!\n\n Size in Kb:\n\n',
                 num2char(length(dsn)), ifelse(length(dsn) > 1, 's', '')))
     print(`rownames<-`(dsi[which(p(rownames(dsi)) %in% 
-                                   gsub('\\/+','/', paste0(libpath, '/', p(dsn)))), ,
-                           drop = FALSE], p(dsn)))
+      gsub('\\/+','/', paste0(libpath, '/', p(dsn)))), , drop = FALSE], p(dsn)))
     cat('\n\n\n\n\n')
     check <- readline('Do you want to continue? (y/n): ')
     if (tolower(substr(check, 1, 1)) != 'y')
       return(invisible())
   }
-  ## // initial error checks
+  ## initial error checks
   
   ## create formats native to host
   ## sas doesn't seem to like using unix format catalogs so make a copy
@@ -470,7 +472,8 @@ sas_mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
     ## dir since assume this catalog was made in unix and unusable on windows
     if (length(dcf) == 1L && file.exists(dcf)) {
       newdir <- paste0(dirname(dcf), '/old_format')
-      message(sprintf('NOTE: moving old format catalog to %s\n', newdir))
+      message(sprintf('NOTE: moving old format catalog to %s\n', newdir),
+              domain = NA)
       try({
         dir.create(newdir)
         file.copy(dcf, newdir)
@@ -493,17 +496,19 @@ sas_mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
       status <- system2(saspath, sys_args)
       
       if (status != 0) {
-        message('error in getting formats; formatting ignored\n')
-        message('see log, %s\n', paste(libpath, log.fmt, sep = '/'))
+        message('error in getting formats; formatting ignored\n', domain = NA)
+        message('see log, %s\n', paste(libpath, log.fmt, sep = '/'),
+                domain = NA)
         no.format <- TRUE
       } else no.format <- FALSE
     } else {
-      message('no formats specified, ignoring formats\n')
+      message('no formats specified, ignoring formats\n', domain = NA)
       no.format <- TRUE
     }
   } else {
     message(sprintf('%s is being used for formats\n', dcf),
-            'NOTE: sas.get will throw errors if catalog is non native\n')
+            'NOTE: sas.get will throw errors if catalog is non native\n',
+            domain = NA)
     no.format <- FALSE
   }
   
@@ -519,7 +524,8 @@ sas_mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
     cat('\nread summary:\n\n')
     dims <- sapply(zzz, dim)
     print(`rownames<-`(dims, c('rows','columns')))
-    message(sprintf('see log, %s\n', paste(libpath, log.file, sep = '/')))
+    message(sprintf('see log, %s\n', paste(libpath, log.file, sep = '/')),
+            domain = NA)
     zzz
   } else invisible()
 }

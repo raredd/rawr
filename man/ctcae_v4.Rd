@@ -5,7 +5,6 @@
 \alias{ctcae_v4}
 \title{Common Terminology Criteria for Adverse Events, v4}
 \format{A data frame with 790 rows and 5 variables:
-
 \tabular{lll}{
 \tab \code{tox_code} \tab alphanumeric toxicity code (\code{AB123}) \cr
 \tab \code{tox_desc} \tab description \cr
@@ -15,14 +14,15 @@
 Activities codes, v12 \cr
 }}
 \source{
-\url{http://evs.nci.nih.gov/ftp1/CTCAE/CTCAE_4.03_2010-06-14_QuickReference_8.5x11.pdf}
+\href{http://evs.nci.nih.gov/ftp1/CTCAE/CTCAE_4.03_2010-06-14_
+QuickReference_8.5x11.pdf}{CTCAEv4.pdf}
 }
 \usage{
 ctcae_v4
 }
 \description{
-A dataset containing the CTCAE (version 4) toxicity codes, descriptions, and
-categories.
+A dataset containing the CTCAE (version 4) toxicity codes, descriptions,
+and categories.
 }
 \seealso{
 \code{\link{ctcae_v3}}; \code{\link{match_ctc}}

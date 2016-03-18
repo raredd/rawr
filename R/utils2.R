@@ -150,7 +150,8 @@ show_markdown <- function(..., use_viewer = !is.null(getOption('viewer')),
 #' @seealso
 #' \code{\link{show_html}}, \code{\link{show_markdown}},
 #' \href{http://detexify.kirelabs.org/classify.html}{draw math symbols},
-#' \href{http://stackoverflow.com/questions/31193843/display-r-formula-elegantly-as-in-latex}{SO question}
+#' \href{http://stackoverflow.com/questions/31193843/display-r-formula-
+#' elegantly-as-in-latex}{SO question}
 #' 
 #' @examples
 #' \dontrun{
@@ -199,7 +200,8 @@ show_math <- function(..., css, use_viewer = !is.null(getOption('viewer'))) {
   "
   check_expr <- function(x)
     ## use \[ expr \] instead of $$ expr $$
-    sprintf('\\[ %s \\]', gsub('\\\\\\[|\\\\]', '', gsub('^\\$+|\\$+$', '', x)))
+    sprintf('\\[ %s \\]',
+            gsub('\\\\\\[|\\\\]', '', gsub('^\\$+|\\$+$', '', x)))
   x <- paste(sapply(c(...), check_expr), collapse = '<br />')
   if (!nzchar(x))
     return(invisible())
@@ -291,8 +293,8 @@ roundr.matrix <- function(x, digits = 1) {
 #' (default), returns min and max of \code{...}
 #' @param digits number of digits (includes trailing 0s)
 #' @param na.rm logical; if \code{TRUE}, any \code{\link{NA}} and \code{NaN}
-#' are removed from \code{...} before \code{fun} and \code{\link{quantile}} are
-#' computed
+#' are removed from \code{...} before \code{fun} and \code{\link{quantile}}
+#' are computed
 #' 
 #' @seealso
 #' \code{\link[rawr]{roundr}}
@@ -497,9 +499,9 @@ num2char <- function(num, informal = FALSE, cap = TRUE) {
            '6'='six','7'='seven','8'='eight','9'='nine','10'='ten',
            '11'='eleven','12'='twelve','13'='thirteen','14'='fourteen',
            '15'='fifteen','16'='sixteen','17'='seventeen','18'='eighteen',
-           '19'='nineteen','20'='twenty','30'='thirty','40'='forty','50'='fifty',
-           '60'='sixty','70'='seventy','80'='eighty','90'='ninety',
-           '100'='hundred','1000'='thousand','1000000'='million')
+           '19'='nineteen','20'='twenty','30'='thirty','40'='forty',
+           '50'='fifty','60'='sixty','70'='seventy','80'='eighty',
+           '90'='ninety','100'='hundred','1000'='thousand','1000000'='million')
   upcase <- function(x)
     paste(toupper(substr(x, 1, 1)), substring(x, 2), sep = '', collapse = ' ')
   f1 <- function(x, informal = informal) { # for 1-99
@@ -574,7 +576,8 @@ num2char <- function(num, informal = FALSE, cap = TRUE) {
 #' @param digits number of digits past the decimal point to keep; see
 #' \code{\link{roundr}}
 #' 
-#' @seealso \code{\link{roundr}}, \code{\link[pander]{p}}
+#' @seealso
+#' \code{\link[pander]{p}}; \code{\link{roundr}}; \code{\link{countr}}
 #' 
 #' @examples
 #' iprint('fee','fi','fo','fum')
@@ -936,12 +939,10 @@ tabler_by2 <- function(data, varname, byvar, n, stratvar, zeros = TRUE,
 #' @param ... character string(s) of toxicity codes (usually of the form
 #' \code{AB123} but can handle \code{AB-123} or \code{AB 123}) or keyword(s)
 #' to be matched in the toxicity description
-#' @param version version number; default is \code{4}
-#' \href{http://www.dfhcc.harvard.edu/fileadmin/DFHCC_Admin/Clinical_Trials/QACT/Policies_and_Procedures/CTCToxVersion4.pdf}{CTCAE v4}
+#' @param version version number; default is CTCAE v4
 #' 
 #' @return
 #' A list containing:
-#' 
 #' \item{\code{matches}}{a data frame of matches with toxicity codes and their
 #' respective descriptions and categories}
 #' \item{\code{version}}{CTCAE version used}

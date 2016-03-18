@@ -78,6 +78,7 @@ r2sas(code)
 ## 
 ## ... will be run. Continue? (y/n): 
 }
+
 }
 \seealso{
 \code{\link{rmacro}}, \code{\link{get_margs}}, \code{\link{sas_mget}},
