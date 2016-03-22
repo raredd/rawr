@@ -4,19 +4,19 @@
 \alias{get_margs}
 \title{Get arguments from \code{SAS} macros}
 \usage{
-get_margs(mpath, mname, text)
+get_margs(path, name, text)
 }
 \arguments{
-\item{mpath}{character string of path to \code{.sas} file}
+\item{path}{character string of path to \code{.sas} file}
 
-\item{mname}{macro name in \code{mpath} of interest; if missing, returns
+\item{name}{macro name in \code{path} of interest; if missing, returns
 all macros found}
 
 \item{text}{(optional) character string(s) of macros given instead of
-\code{mpath}}
+\code{path}}
 }
 \value{
-A list with macro names in \code{mpath} and their respective parameters.
+A list with macro names in \code{path} and their respective parameters.
 }
 \description{
 Reads a text file (usually \code{.sas}) and extracts \code{SAS} macro names

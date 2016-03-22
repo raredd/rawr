@@ -16,7 +16,7 @@ source_sas(path, ...)
 }
 \examples{
 \dontrun{
-source_sas('./tests/testfiles/onemacro.sas')
+source_sas(system.file('testfiles', 'onemacro.sas', package = 'rawr'))
 
 ## \%macro macro1(arg1, arg2);
 ## data data;

@@ -26,8 +26,8 @@ cat(readLines(p), sep = '\\n')
 #  */
 #  
 #  proc format;
-#    value $jc 'one' = 'management'
-#              'two' = 'non-management';
+#    value jc 'one' = 'management'
+#             'two' = 'non-management';
 #    value rate
 #           -99 = 'not applicable'
 #            -1 = 'missing'
@@ -70,6 +70,8 @@ cat(readLines(p), sep = '\\n')
 #               "2"              "3"              "4"
 
 names(pp[[3]][match(c('1','-99','2','0'), pp[[3]])])
+
+# [1] "'poor'"           "'not applicable'" "'fair'"           "'terrible'"
 
 }
 \seealso{

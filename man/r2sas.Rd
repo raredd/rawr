@@ -9,17 +9,8 @@ r2sas(code, saspath, force = FALSE, out = getwd())
 \arguments{
 \item{code}{character string of valid \code{SAS} code}
 
-\item{saspath}{file path to \code{sas.exe} as character string
-
-Usually \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
-where \code{x.x} is the \code{SAS} version number, is the correct directory
-
-Note that specifying \code{saspath} is not required if v9.2 is installed in
-the default directory (i.e.,
-\code{c:/program files/sasfoundation/9.2/sas.exe});
-
-For previous versions or if\code{SAS} is not installed in the default
-directory, it will be necessary to supply \code{saspath} to \code{sas.exe}}
+\item{saspath}{file path to \code{sas.exe} as character string, passed to
+\code{\link{sas_path}}}
 
 \item{force}{logical; by default, user must interactively allow
 \code{r2sas} to continue running \code{code}; set to \code{TRUE} to ignore

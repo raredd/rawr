@@ -4,36 +4,26 @@
 \alias{rmacro}
 \title{Call \code{SAS} macros}
 \usage{
-rmacro(mpath, mname, args, saspath, show.args = FALSE, force = FALSE,
+rmacro(path, name, args, saspath, show.args = FALSE, force = FALSE,
   firstArgs, lastArgs, out = getwd())
 }
 \arguments{
-\item{mpath}{path to macro (\code{.sas}) file as character string}
+\item{path}{path to macro (\code{.sas}) file as character string}
 
-\item{mname}{macro name; if missing, \code{\link{get_margs}} will search
-\code{mpath} for macro names; if missing and \code{get_margs} finds more
-than one macro in \code{mpath}, will throw an error}
+\item{name}{macro name; if missing, \code{\link{get_margs}} will search
+\code{path} for macro names; if missing and \code{get_margs} finds more
+than one macro in \code{path}, will throw an error}
 
 \item{args}{arguments passed to the macro, separated by commas (do not
 include semicolons---\code{args} is passed directly as
 \code{\%macro(args);} ); if unsure of the macro parameters, run
 \code{rmacro} with \code{show.args = TRUE}}
 
-\item{saspath}{file path to \code{sas.exe} as character string
-
-Usually \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
-where \code{x.x} is the \code{SAS} version number, is the correct directory
-
-Note that specifying \code{saspath} is not required if v9.2 is installed in
-the default directory (i.e.,
-\code{c:/program files/sasfoundation/9.2/sas.exe});
-
-For previous versions or if\code{SAS} is not installed in the default
-directory, it will be necessary to supply \code{saspath} to \code{sas.exe}
-\code{mpath} defaults to the most recent version of \code{SAS}}
+\item{saspath}{file path to \code{sas.exe} as character string, passed to
+\code{\link{sas_path}}}
 
 \item{show.args}{logical; if \code{TRUE}, \code{rmacro} will only return
-the macro names and arguments found in \code{mpath}}
+the macro names and arguments found in \code{path}}
 
 \item{force}{logical; by default, user must interactively allow
 \code{r2sas} to continue running \code{code}; set to \code{TRUE} to ignore
