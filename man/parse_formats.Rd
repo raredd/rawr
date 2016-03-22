@@ -73,7 +73,7 @@ names(pp[[3]][match(c('1','-99','2','0'), pp[[3]])])
 
 }
 \seealso{
-\code{\link{rmacro}}, \code{\link{r2sas}}, \code{\link{sas_mget}},
-\code{\link{source_sas}}
+\code{\link{sas_path}}, \code{\link{rmacro}}, \code{\link{r2sas}},
+\code{\link{get_margs}}, \code{\link{sas_mget}}, \code{\link{source_sas}}
 }
 

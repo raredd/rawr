@@ -70,7 +70,7 @@ get_margs(file.path(path, 'onemacro.sas'), c('macro2', 'macro5'))
 
 }
 \seealso{
-\code{\link{rmacro}}, \code{\link{r2sas}}, \code{\link{sas_mget}},
-\code{\link{source_sas}}, \code{\link{parse_formats}}
+\code{\link{sas_path}}, \code{\link{rmacro}}, \code{\link{r2sas}},
+\code{\link{sas_mget}}, \code{\link{source_sas}}, \code{\link{parse_formats}}
 }
 

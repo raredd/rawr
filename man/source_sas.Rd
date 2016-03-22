@@ -31,7 +31,7 @@ source_sas('./tests/testfiles/onemacro.sas')
 
 }
 \seealso{
-\code{\link{r2sas}}, \code{\link{rmacro}}, \code{\link{get_margs}},
-\code{\link{sas_mget}}, \code{\link{parse_formats}}
+\code{\link{sas_path}}, \code{\link{r2sas}}, \code{\link{rmacro}},
+\code{\link{get_margs}}, \code{\link{sas_mget}}, \code{\link{parse_formats}}
 }
 

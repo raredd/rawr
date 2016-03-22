@@ -77,7 +77,7 @@ data.list <- sas_mget('./tests/testfiles/')
 
 }
 \seealso{
-\code{\link{rmacro}}, \code{\link{get_margs}}, \code{\link{r2sas}},
-\code{\link{source_sas}}, \code{\link{parse_formats}}
+\code{\link{sas_path}}, \code{\link{rmacro}}, \code{\link{get_margs}},
+\code{\link{r2sas}}, \code{\link{source_sas}}, \code{\link{parse_formats}}
 }
 
