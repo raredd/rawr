@@ -31,7 +31,7 @@ sas_path <- function(saspath, sashome, version) {
     c(9.3, list.files(sashome)) else as.character(version)
   version <- numeric_version(version)
   if (missing(saspath)) {
-    saspath <- sprintf('%s%s/sas.exe', sashome, max(versions, na.rm = TRUE))
+    saspath <- sprintf('%s%s/sas.exe', sashome, max(version, na.rm = TRUE))
     if (!file.exists(saspath))
       saspath <- 'c:/program\ files/sas/sasfoundation/9.2/sas.exe'
   }
