@@ -1,7 +1,45 @@
 ## sas helpers
-# r2sas, rmacro, get_margs, sas_mget, source_sas, parse_formats
+# sas_path, r2sas, rmacro, get_margs, sas_mget, source_sas, parse_formats
 ##
 
+
+#' Get SAS path
+#' 
+#' Finds versions of sas installed and returns latest version by default.
+#' 
+#' @param saspath optional full path to \code{sas.exe}; if given, all other
+#' arguments are ignored, and \code{saspath} is only checked for existence
+#' @param sashome optional full path to directory of version directories; for
+#' \code{>9.2}, the default is \code{c:/program files/sashome/sasfoundation};
+#' for \code{9.2}, the default is \code{c:/program\ files/sas/sasfoundation}
+#' @param verison optional version to use
+#' 
+#' \code{\link{r2sas}}, \code{\link{rmacro}}, \code{\link{get_margs}},
+#' \code{\link{sas_mget}}, \code{\link{source_sas}}, \code{\link{parse_formats}}
+#' 
+#' @examples
+#' \dontrun{
+#' sas_path()
+#' sas_path(version = 9.2)
+#' }
+#' 
+#' @export
+
+sas_path <- function(saspath, sashome, version) {
+  sashome <- file.path('c:', 'program\ files', 'sashome', 'sasfoundation')
+  version <- if (missing(version))
+    c(9.3, list.files(sashome)) else as.character(version)
+  version <- numeric_version(version)
+  if (missing(saspath)) {
+    saspath <- sprintf('%s%s/sas.exe', sashome, max(versions, na.rm = TRUE))
+    if (!file.exists(saspath))
+      saspath <- 'c:/program\ files/sas/sasfoundation/9.2/sas.exe'
+  }
+  if (!file.exists(saspath))
+    stop('\'saspath\' is invalid -- give the full file path to \'sas.exe\'',
+         domain = NA)
+  saspath
+}
 
 #' r2sas
 #' 
@@ -38,8 +76,8 @@
 #' \code{.lst} file(s)
 #' 
 #' @seealso
-#' \code{\link{rmacro}}, \code{\link{get_margs}}, \code{\link{sas_mget}},
-#' \code{\link{source_sas}}, \code{\link{parse_formats}}
+#' \code{\link{sas_path}}, \code{\link{rmacro}}, \code{\link{get_margs}},
+#' \code{\link{sas_mget}}, \code{\link{source_sas}}, \code{\link{parse_formats}}
 #' 
 #' @examples
 #' \dontrun{
@@ -90,15 +128,7 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
   }
   
   ## define sas path
-  if (missing(saspath)) {
-    sashome <- 'c:/program files/sashome/sasfoundation/'
-    saspath <- sprintf('%s%s/sas.exe', sashome,
-                       max(as.numeric(9.3, list.files(sashome)), na.rm = TRUE))
-    if (!file.exists(saspath))
-      saspath <- 'c:/program files/sas/sasfoundation/9.2/sas.exe'
-  }
-  if (!file.exists(saspath))
-    stop('saspath is invalid--give the full path to \"sas.exe\"', domain = NA)
+  saspath <- sas_path(saspath)
   
   ## temporary .sas, .lst, .log files
   sasin   <- tempfile('_r2sas_', fileext = '.sas')
@@ -181,8 +211,8 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
 #' i.e., \code{.lst} file(s)
 #' 
 #' @seealso
-#' \code{\link{get_margs}}, \code{\link{r2sas}}, \code{\link{sas_mget}}
-#' \code{\link{source_sas}}, \code{\link{parse_formats}}
+#' \code{\link{sas_path}}, \code{\link{get_margs}}, \code{\link{r2sas}},
+#' \code{\link{sas_mget}}, \code{\link{source_sas}}, \code{\link{parse_formats}}
 #' 
 #' @examples
 #' \dontrun{
@@ -249,8 +279,8 @@ rmacro <- function(mpath, mname, args, saspath, show.args = FALSE,
 #' A list with macro names in \code{mpath} and their respective parameters.
 #' 
 #' @seealso
-#' \code{\link{rmacro}}, \code{\link{r2sas}}, \code{\link{sas_mget}},
-#' \code{\link{source_sas}}, \code{\link{parse_formats}}
+#' \code{\link{sas_path}}, \code{\link{rmacro}}, \code{\link{r2sas}},
+#' \code{\link{sas_mget}}, \code{\link{source_sas}}, \code{\link{parse_formats}}
 #' 
 #' @examples
 #' get_margs(text = '%macro macro(a = 1, b = 2); %mend;')
@@ -380,8 +410,8 @@ get_margs <- function(mpath, mname, text) {
 #' A list of data frames resembling the \code{SAS} data sets.
 #' 
 #' @seealso
-#' \code{\link{rmacro}}, \code{\link{get_margs}}, \code{\link{r2sas}},
-#' \code{\link{source_sas}}, \code{\link{parse_formats}}
+#' \code{\link{sas_path}}, \code{\link{rmacro}}, \code{\link{get_margs}},
+#' \code{\link{r2sas}}, \code{\link{source_sas}}, \code{\link{parse_formats}}
 #' 
 #' @examples
 #' \dontrun{
@@ -416,18 +446,10 @@ sas_mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
     log.file <- '_temp_.log'
   if (missing(libpath))
     libpath <- getwd()
-  if (missing(saspath)) {
-    sashome <- 'c:/program files/sashome/sasfoundation/'
-    saspath <- sprintf('%s%s/sas.exe', sashome,
-                       max(as.numeric(9.3, list.files(sashome)), na.rm = TRUE))
-    if (!file.exists(saspath))
-      saspath <- 'c:/program files/sas/sasfoundation/9.2/sas.exe'
-  }
-  if (!file.exists(saspath))
-    stop('saspath is invalid--give the full path to \"sas.exe\"')
+  saspath <- sas_path(saspath)
   
-  dsf <- list.files(libpath, pattern = '.sas7bdat')
-  dcf <- list.files(libpath, pattern = '.sas7bcat', full.names = TRUE)
+  dsf <- list.files(libpath, pattern = '\\.sas7bdat')
+  dcf <- list.files(libpath, pattern = '\\.sas7bcat', full.names = TRUE)
   if (length(dcf) > 1)
     stop('only one format catalog is allowed per SAS directory\n')
   if (catalog && length(dcf) == 0L) {
@@ -538,8 +560,8 @@ sas_mget <- function(libpath, dsn, saspath, fmtpath, catalog = FALSE,
 #' @param ... additional parameters passed to \code{\link{r2sas}}
 #' 
 #' @seealso
-#' \code{\link{r2sas}}, \code{\link{rmacro}}, \code{\link{get_margs}},
-#' \code{\link{sas_mget}}, \code{\link{parse_formats}}
+#' \code{\link{sas_path}}, \code{\link{r2sas}}, \code{\link{rmacro}},
+#' \code{\link{get_margs}}, \code{\link{sas_mget}}, \code{\link{parse_formats}}
 #' 
 #' @examples
 #' \dontrun{
@@ -576,8 +598,8 @@ source_sas <- function(path, ...) {
 #' labels as named character vectors.
 #' 
 #' @seealso
-#' \code{\link{rmacro}}, \code{\link{r2sas}}, \code{\link{sas_mget}},
-#' \code{\link{source_sas}}
+#' \code{\link{sas_path}}, \code{\link{rmacro}}, \code{\link{r2sas}},
+#' \code{\link{get_margs}}, \code{\link{sas_mget}}, \code{\link{source_sas}}
 #' 
 #' @examples
 #' p <- system.file('testfiles', 'formats.sas', package = 'rawr')
@@ -648,11 +670,9 @@ parse_formats <- function(path) {
   dd <- data.frame(values = vars, formats = vals, stringsAsFactors = FALSE)
   dd <- dd[with(dd, is.na(values) | nzchar(formats)), ]
   sp <- split(dd$formats, dd$values)
+  tw <- function(x) gsub('^\\s+|\\s+$', '', x)
   lapply(sp, function(x) {
-    x <- Filter(nzchar, x)
-    x <- strsplit(x, '=')
-    tw <- function(x) gsub('^\\s+|\\s+$', '', x)
-    sapply(x, function(y)
-      setNames(tw(y[1]), tw(y[2])))
+    x <- strsplit(Filter(nzchar, x), '=')
+    sapply(x, function(y) setNames(tw(y[1]), tw(y[2])))
   })
 }
