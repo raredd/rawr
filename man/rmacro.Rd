@@ -45,7 +45,7 @@ i.e., \code{.lst} file(s)}
 }
 \examples{
 \dontrun{
-rmacro('./tests/testfiles/onemacro.sas',
+rmacro(system.file('testfiles', 'onemacro.sas', package = 'rawr'),
        args = 'arg1 = 1, arg2 = 2',
        firstArgs = 'options nodate no center; x \\'cd ~/desktop\\';',
        lastArgs = 'endsas;')
@@ -68,6 +68,7 @@ rmacro('./tests/testfiles/onemacro.sas',
 }
 \seealso{
 \code{\link{sas_path}}, \code{\link{get_margs}}, \code{\link{r2sas}},
-\code{\link{sas_mget}}, \code{\link{source_sas}}, \code{\link{parse_formats}}
+\code{\link{sas_mget}}, \code{\link{source_sas}},
+\code{\link{parse_formats}}, \code{\link{sas_catalog}}
 }
 

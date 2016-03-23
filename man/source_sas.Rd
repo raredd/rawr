@@ -12,7 +12,7 @@ source_sas(path, ...)
 \item{...}{additional parameters passed to \code{\link{r2sas}}}
 }
 \description{
-\code{\link{source}}-esque function for \code{.sas} files
+\code{\link{source}}-esque function for \code{.sas} files.
 }
 \examples{
 \dontrun{
@@ -32,6 +32,7 @@ source_sas(system.file('testfiles', 'onemacro.sas', package = 'rawr'))
 }
 \seealso{
 \code{\link{sas_path}}, \code{\link{r2sas}}, \code{\link{rmacro}},
-\code{\link{get_margs}}, \code{\link{sas_mget}}, \code{\link{parse_formats}}
+\code{\link{get_margs}}, \code{\link{sas_mget}},
+\code{\link{parse_formats}}, \code{\link{sas_catalog}}
 }
 

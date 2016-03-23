@@ -2,7 +2,7 @@
 % Please edit documentation in R/sas.R
 \name{sas_path}
 \alias{sas_path}
-\title{Get SAS path}
+\title{Get \code{SAS} path}
 \usage{
 sas_path(saspath, sashome, version)
 }
@@ -14,19 +14,29 @@ arguments are ignored, and \code{saspath} is only checked for existence}
 \code{>9.2}, the default is \code{c:/program files/sashome/sasfoundation};
 for \code{9.2}, the default is \code{c:/program\ files/sas/sasfoundation}}
 
-\item{verison}{optional version to use
-
-\code{\link{r2sas}}, \code{\link{rmacro}}, \code{\link{get_margs}},
-\code{\link{sas_mget}}, \code{\link{source_sas}}, \code{\link{parse_formats}}}
+\item{version}{optional version to use}
 }
 \description{
 Finds versions of sas installed and returns latest version by default.
+
+Usually \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
+where \code{x.x} is the \code{SAS} version number, is the correct directory.
+For v9.2, the default \code{c:/program files/sasfoundation/9.2/sas.exe} is
+used.
+
+For previous versions or if \code{SAS} is not installed in the default
+directory, it will be necessary to give a full \code{saspath} to the
+\code{sas.exe}.
 }
 \examples{
 \dontrun{
 sas_path()
-sas_path(version = 9.2)
 }
 
+}
+\seealso{
+\code{\link{r2sas}}, \code{\link{rmacro}}, \code{\link{get_margs}},
+\code{\link{sas_mget}}, \code{\link{source_sas}},
+\code{\link{parse_formats}}, \code{\link{sas_catalog}}
 }
 
