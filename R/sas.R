@@ -1,6 +1,6 @@
 ## sas helpers
 # sas_path, r2sas, rmacro, get_margs, sas_mget, source_sas, parse_formats,
-# sas_catalog
+# sas_catalog, move_formats
 ##
 
 
@@ -438,19 +438,8 @@ sas_mget <- function(libpath = getwd(),
     ## if a format.sas file is given, create a format catalog
     if (is.character(fmtpath)) {
       stopifnot(file.exists(fmtpath))
-      ## if libpath contains catalogs, move to another directory
-      ## since catalog created from fmtpath must be called "formats.sas7bcat"
-      if (catalog) {
-        newdir <- file.path(libpath, '_old_formats_')
-        message('NOTE: moving old format catalog(s) to ', shQuote(newdir),
-                domain = NA)
-        tryCatch({
-          dir.create(newdir)
-          file.copy(dcf, newdir)
-          unlink(dcf)
-        }, error = function(e)
-          stop('Failed to move old formats to ', sQuote(newdir), domain = NA))
-      }
+      if (catalog)
+        stopifnot(move_formats(libpath, dcf))
       status <- sas_catalog(fmtpath, libpath, saspath)
       no.format <- if (status != 0L) {
         message('Error in getting formats -- formatting ignored', domain = NA)
@@ -651,6 +640,7 @@ parse_formats <- function(path) {
 
 sas_catalog <- function(path, libpath = dirname(path), saspath = sas_path(),
                         log = '_temp_formats_.log') {
+  stopifnot(move_formats(libpath))
   log <- file.path(libpath, log)
   sass <- c(sprintf('x \"cd %s\";', libpath),
             sprintf('libname temp_fmt \"%s\";', libpath),
@@ -663,4 +653,20 @@ sas_catalog <- function(path, libpath = dirname(path), saspath = sas_path(),
   cat(sass, sep = '\n', file = sasin, append = TRUE)
   sys_args <- paste(sasin, '-log', log)
   invisible(system2(saspath, sys_args))
+}
+
+move_formats <- function(dir, dcf = list.files(dir, pattern = '\\.sas7bcat$')) {
+  ## if dir contains catalogs, move bcat files to another directory
+  ## since catalog created must be called "formats.sas7bcat"
+  if (!length(dcf))
+    return(TRUE)
+  newdir <- file.path(dir, '_old_formats_')
+  message('NOTE: moving old format catalog(s) to ', shQuote(newdir), domain = NA)
+  tryCatch({
+    dir.create(newdir)
+    file.copy(dcf, newdir)
+    unlink(dcf)
+  }, error = function(e)
+    stop('Failed to move old formats to ', sQuote(newdir), domain = NA))
+  TRUE
 }
