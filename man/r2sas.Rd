@@ -73,6 +73,7 @@ r2sas(code)
 }
 \seealso{
 \code{\link{sas_path}}, \code{\link{rmacro}}, \code{\link{get_margs}},
-\code{\link{sas_mget}}, \code{\link{source_sas}}, \code{\link{parse_formats}}
+\code{\link{sas_mget}}, \code{\link{source_sas}},
+\code{\link{parse_formats}}, \code{\link{sas_catalog}}
 }
 
