@@ -655,7 +655,8 @@ sas_catalog <- function(path, libpath = dirname(path), saspath = sas_path(),
   invisible(system2(saspath, sys_args))
 }
 
-move_formats <- function(dir, dcf = list.files(dir, pattern = '\\.sas7bcat$')) {
+move_formats <- function(dir, dcf = list.files(dir, pattern = '\\.sas7bcat$'),
+                         unique_string = trunc(abs(rnorm(1)) * 1e6)) {
   ## if dir contains catalogs, move bcat files to another directory
   ## since catalog created must be called "formats.sas7bcat"
   if (!length(dcf))
@@ -663,7 +664,13 @@ move_formats <- function(dir, dcf = list.files(dir, pattern = '\\.sas7bcat$')) {
   newdir <- file.path(dir, '_old_formats_')
   message('NOTE: moving old format catalog(s) to ', shQuote(newdir), domain = NA)
   tryCatch({
-    dir.create(newdir)
+    if (!file.exists(newdir)) {
+      dir.create(newdir)
+    } else {
+      ## cheap way to be sure (almost) that if newdir exists and if newdir
+      ## includes some sas7bdat files, then the old will not be overwritten
+      file.rename(dcf, dcf <- gsub('\\.', paste0('_', unique_string, '.'), dcf))
+    }
     file.copy(dcf, newdir)
     unlink(dcf)
   }, error = function(e)
