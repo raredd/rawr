@@ -5,6 +5,7 @@ rawr 0.8.1
   * changes to tabler_by, tabler_by2, tox_worst will probably break
     exisiting code relying on default arguments
   * changes to jmplot, dsplot, tplot (set defaults, rename some args)
+  * major changes to sas_mget and other sas related functions
 
 rawr 0.8.0
 --------

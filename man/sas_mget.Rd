@@ -4,8 +4,10 @@
 \alias{sas_mget}
 \title{Convert multiple \code{SAS} data sets to \code{R} data frame}
 \usage{
-sas_mget(libpath, dsn, saspath, fmtpath, catalog = FALSE, log.file, ...,
-  force = FALSE)
+sas_mget(libpath = getwd(), dsn = list.files(libpath, pattern =
+  "\\\\.sas7bdat$"), saspath = sas_path(), fmtpath = NULL,
+  catalog = !(!length(list.files(libpath, pattern = "\\\\.sas7bcat$"))),
+  log.file = "_temp_.log", ..., force = FALSE)
 }
 \arguments{
 \item{libpath}{directory to data set(s) as character string; if missing,
@@ -15,29 +17,17 @@ searches the current working directory}
 will work; if missing or \code{NULL}, all \code{.sas7bdat} files found in
 \code{libpath} will be read}
 
-\item{saspath}{file path to \code{sas.exe} as character string
+\item{saspath}{file path to \code{sas.exe} as character string}
 
-Usually \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
-where \code{x.x} is the \code{SAS} version number, is the correct directory
+\item{fmtpath}{optional path to a format \code{.sas} file as character
+string; \code{SAS} throws an error if the platform used to make the format
+catalog is not the same as the current platform; \code{fmtpath} is passed
+to \code{\link{sas_catalog}}}
 
-Note that specifying \code{saspath} is not required if v9.2 is installed in
-the default directory (i.e.,
-\code{c:/program files/sasfoundation/9.2/sas.exe});
-
-For previous versions or if\code{SAS} is not installed in the default
-directory, it will be necessary to supply \code{saspath} to \code{sas.exe}}
-
-\item{fmtpath}{path to a format \code{.sas} file as character string; 
-\code{SAS} throws an error if the host used to make the format catalog was
-not on the same platform, so we create a new format catalog either by
-running a \code{proc format} macro or by making a copy of the non-native
-\code{.sas7bcat} file}
-
-\item{catalog}{logical; use the format catalog in \code{libpath}; by default
-this is \code{FALSE} since using cross-platform catalogs throws errors, so
-\code{sas_mget} will either ignore the catalog or create a new one if
-\code{fmtpath} is given; set \code{catalog = TRUE} if you are sure that
-the format catalog is native to windows}
+\item{catalog}{logical; if \code{FALSE} or multiple catalogs are found in
+\code{libpath}, catalogs will be ignored; if \code{fmtpath} is used to
+create a new catalog, any existing catalogs are moved to a new directory
+to avoid overwriting}
 
 \item{log.file}{name of \code{SAS} log file; default value will create
 \code{_temp_.log} in the \code{libpath} directory}
@@ -58,7 +48,8 @@ data frames.
 }
 \examples{
 \dontrun{
-data.list <- sas_mget('./tests/testfiles/')
+p <- system.file('testfiles', package = 'rawr')
+data.list <- sas_mget(p)
 
 ## !!! Two data set(s) will be read !!!
 ## 
@@ -78,6 +69,7 @@ data.list <- sas_mget('./tests/testfiles/')
 }
 \seealso{
 \code{\link{sas_path}}, \code{\link{rmacro}}, \code{\link{get_margs}},
-\code{\link{r2sas}}, \code{\link{source_sas}}, \code{\link{parse_formats}}
+\code{\link{r2sas}}, \code{\link{source_sas}},
+\code{\link{parse_formats}}, \code{\link{sas_catalog}}
 }
 
