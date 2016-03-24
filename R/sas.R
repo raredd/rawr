@@ -398,9 +398,7 @@ get_margs <- function(path, name, text) {
 #' p <- system.file('testfiles', package = 'rawr')
 #' data.list <- sas_mget(p)
 #' 
-#' ## !!! Two data set(s) will be read !!!
-#' ## 
-#' ##  Size in Kb:
+#' ## !!! Two data set(s) will be read
 #' ##   
 #' ##       size (Kb)
 #' ## data1         0
@@ -420,6 +418,7 @@ sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
                      log.file = '_temp_.log', ..., force = FALSE, write = FALSE) {
   dsn <- list.files(libpath, pattern = '\\.sas7bdat$')
   dcf <- list.files(libpath, pattern = '\\.sas7bcat$')
+  wdir <- file.path(libpath, '_sas_mget_')
   dsn <- rm_ext(dsf <- dsn)
   if (!length(dsn)) {
     message(sprintf('No sas data sets found in %s\n', shQuote(libpath)),
@@ -459,8 +458,9 @@ sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
   
   ## final warning for reading all dsn
   if (interactive() && !force) {
-    cat(sprintf('\n!!! %s data set%s will be read !!!\n\n Size in Kb:\n\n',
-                num2char(length(dsn)), ifelse(length(dsn) > 1, 's', '')))
+    cat(sprintf('\n!!! %s data set%s will be read%s \n\n',
+                num2char(length(dsn)), ifelse(length(dsn) > 1, 's', ''),
+                ifelse(write, paste(' and written to\n!!! ', wdir), '')))
     dd <- dsi[which(rm_ext(rownames(dsi)) %in%
                       gsub('\\/+','/', file.path(libpath, dsn))), , drop = FALSE]
     print(`rownames<-`(dd, dsn))
@@ -484,10 +484,9 @@ sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
     message(sprintf('Log file created: \'%s\'\n', file.path(libpath, log.file)),
             domain = NA)
     if (write) {
-      dir.create(write_dir <- file.path(libpath, '_sas_mget_'))
+      dir.create(wdir)
       f <- function(x, file) write.csv(x, file, row.names = FALSE)
-      mapply(f, x = zzz,
-             file = file.path(libpath, write_dir, paste0(names(zzz), '.csv')))
+      mapply(f, x = zzz, file = file.path(wdir, paste0(names(zzz), '.csv')))
     }
     zzz
   } else invisible()

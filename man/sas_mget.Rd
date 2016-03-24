@@ -53,9 +53,7 @@ data frames.
 p <- system.file('testfiles', package = 'rawr')
 data.list <- sas_mget(p)
 
-## !!! Two data set(s) will be read !!!
-## 
-##  Size in Kb:
+## !!! Two data set(s) will be read
 ##   
 ##       size (Kb)
 ## data1         0
