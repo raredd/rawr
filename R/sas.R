@@ -417,8 +417,9 @@ get_margs <- function(path, name, text) {
 sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
                      fmtpath = NULL, catalog = length(dcf) == 1L,
                      log.file = '_temp_.log', ..., force = FALSE) {
-  dsn <- rm_ext(dsf <- dsn)
+  dsn <- list.files(libpath, pattern = '\\.sas7bdat$')
   dcf <- list.files(libpath, pattern = '\\.sas7bcat$')
+  dsn <- rm_ext(dsf <- dsn)
   if (!length(dsn)) {
     message(sprintf('No sas data sets found in %s\n', shQuote(libpath)),
             domain = NA)
@@ -586,7 +587,7 @@ parse_formats <- function(path) {
 #' Because this function is intended to be used in the \code{\link{sas_mget}}
 #' pipeline, \code{sas_catalog} will move existing catalogs to a new directory
 #' keeping only a single catalog ("formats.sas7bcat") in \code{libpath} to
-#' avoid conflicts with \code{\link{Hmisc}(sas.get)}.
+#' avoid conflicts with \code{\link[Hmisc]{sas.get}}.
 #' 
 #' @seealso
 #' \code{\link{sas_path}}, \code{\link{r2sas}}, \code{\link{rmacro}},
