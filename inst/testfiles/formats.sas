@@ -3,8 +3,8 @@
 */
 
 proc format;
-  value jc 1 = 'management'
-           2 = 'non-management';
+  value $jc 'man'  = 'management'
+            'nman' = 'non-management';
   value rate 
          -99 = 'not applicable'
           -1 = 'missing'
