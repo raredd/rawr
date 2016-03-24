@@ -17,9 +17,9 @@ arguments are ignored, and \code{saspath} is only checked for existence}
 \description{
 Finds versions of sas installed and returns latest version by default.
 
-For windows usually \code{c:/program\ files/sashome/sasfoundation/x.x/sas.exe},
+For windows usually \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
 where \code{x.x} is the \code{SAS} version number is the correct directory.
-For v9.2, the default \code{c:/program\ files/sasfoundation/9.2/sas.exe} is
+For v9.2, the default \code{c:/program files/sasfoundation/9.2/sas.exe} is
 used. For linux/unix platforms, \code{sas} must be in the \code{$PATH}, or
 it will be necessary to give \code{saspath}.
 

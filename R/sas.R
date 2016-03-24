@@ -9,9 +9,9 @@
 #' @description
 #' Finds versions of sas installed and returns latest version by default.
 #' 
-#' For windows usually \code{c:/program\ files/sashome/sasfoundation/x.x/sas.exe},
+#' For windows usually \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
 #' where \code{x.x} is the \code{SAS} version number is the correct directory.
-#' For v9.2, the default \code{c:/program\ files/sasfoundation/9.2/sas.exe} is
+#' For v9.2, the default \code{c:/program files/sasfoundation/9.2/sas.exe} is
 #' used. For linux/unix platforms, \code{sas} must be in the \code{$PATH}, or
 #' it will be necessary to give \code{saspath}.
 #' 
@@ -38,8 +38,7 @@
 #' @export
 
 sas_path <- function(saspath, sashome, version) {
-  ## windows
-  sashome <- file.path('c:', 'program\ files', 'sashome', 'sasfoundation')
+  sashome <- file.path('c:', 'program files', 'sashome', 'sasfoundation')
   version <- if (missing(version))
     c(9.3, list.files(sashome)) else as.character(version)
   version <- numeric_version(version)
@@ -48,7 +47,8 @@ sas_path <- function(saspath, sashome, version) {
       saspath <- file.path(sashome, max(version, na.rm = TRUE), 'sas.exe')
       ## try 9.2 default location if the above does not work
       if (!file.exists(saspath))
-        file.path('c:', 'program\ files', 'sas', 'sasfoundation', '9.2', 'sas.exe')
+        file.path('c:', 'program files', 'sas', 'sasfoundation',
+                  '9.2', 'sas.exe') else saspath
     } else suppressWarnings(system2('which', 'sas', stdout = TRUE))
   }
   if (!length(saspath) || !file.exists(saspath))
