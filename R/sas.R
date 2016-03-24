@@ -7,7 +7,8 @@
 #' Get \code{SAS} path
 #' 
 #' @description
-#' Finds versions of sas installed and returns latest version by default.
+#' Find versions of \code{SAS} installed and return path to latest executable
+#' version by default.
 #' 
 #' For windows usually \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
 #' where \code{x.x} is the \code{SAS} version number is the correct directory.
@@ -52,7 +53,7 @@ sas_path <- function(saspath, sashome, version) {
     } else suppressWarnings(system2('which', 'sas', stdout = TRUE))
   }
   if (!length(saspath) || !file.exists(saspath))
-    stop('\'saspath\' is invalid -- give the full file path to \'sas.exe\'',
+    stop('\'saspath\' is invalid -- give full path to the sas executable',
          domain = NA)
   saspath
 }
@@ -113,7 +114,7 @@ sas_path <- function(saspath, sashome, version) {
 #' run;
 #' "
 #' 
-#' r2sas(code)
+#' r2sas(code, sas_path(), FALSE, getwd())
 #' 
 #' ## * this is a sas program file :;
 #' ## 
@@ -144,7 +145,7 @@ sas_path <- function(saspath, sashome, version) {
 #' 
 #' @export
 
-r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
+r2sas <- function(code, saspath, force, out) {
   if (interactive() && !force) {
     cat(code, '\n\n\n', sep = '\n')
     check <- readline('... will be run. Continue? (y/n): ')
@@ -159,7 +160,6 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
   
   ## run sas
   if (force || !interactive() || tolower(substr(check, 1, 1)) == 'y') {
-    saspath <- sas_path(saspath)
     cat(code, sep = '\n', file = sasin, append = TRUE)
     sys_args <- paste(sasin, '-log', logpath, '-print', lstpath)
     status <- system2(saspath, sys_args)
@@ -261,20 +261,19 @@ rmacro <- function(path, name, args, saspath, show.args = FALSE,
   if (show.args)
     return(margs)
   if (length(name) > 1L)
-    stop('run one macro per rmacro call\n')
+    stop('run one macro per \'rmacro\' call\n')
   
   ## create .sas script to call macro
   if (!missing(firstArgs))
     firstArgs <- gsub(';', '; \n', firstArgs)
   else firstArgs <- '\n'
   if (!missing(lastArgs))
-    lastArgs <- gsub(';', '; \n', lastArgs)
-  else lastArgs <- '\n'
+    lastArgs <- gsub(';', '; \n', lastArgs) else lastArgs <- '\n'
   sass <- c(sprintf('%%include \"%s\";', path),
             sprintf('%%%s(%s);', name, gsub(';','', args)))
+  saspath <- sas_path(saspath)
   
-  r2sas(code = paste(c(firstArgs, sass, lastArgs), sep = '\n'),
-        saspath = saspath, force = force, out = out)
+  r2sas(paste(c(firstArgs, sass, lastArgs), sep = '\n'), saspath, force, out)
 }
 
 #' Get arguments from \code{SAS} macros
@@ -383,6 +382,8 @@ get_margs <- function(path, name, text) {
 #' @param force logical; by default, user must interactively allow
 #' \code{sas_mget} to continue reading all data sets; set to \code{TRUE} to
 #' ignore this or for non-interactive \code{R}
+#' @param write logical; if \code{TRUE}, each data frame will be written to
+#' a \code{.csv} file in a new sub directory, \code{./_sas_mget_}
 #' 
 #' @return
 #' A list of data frames resembling the \code{SAS} data sets.
@@ -416,7 +417,7 @@ get_margs <- function(path, name, text) {
 
 sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
                      fmtpath = NULL, catalog = length(dcf) == 1L,
-                     log.file = '_temp_.log', ..., force = FALSE) {
+                     log.file = '_temp_.log', ..., force = FALSE, write = FALSE) {
   dsn <- list.files(libpath, pattern = '\\.sas7bdat$')
   dcf <- list.files(libpath, pattern = '\\.sas7bcat$')
   dsn <- rm_ext(dsf <- dsn)
@@ -473,16 +474,21 @@ sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
   if (force || !interactive() || tolower(substr(check, 1, 1)) == 'y') {
     zzz <- setNames(lapply(dsn, function(x)
       Hmisc::sas.get(libraryName = libpath, member = x, sasprog = saspath,
-                     log.file = file.path(libpath, log.file),
-                     formats = !no.format, ...)), dsn)
+        log.file = file.path(libpath, log.file), formats = !no.format, ...)
+    ), dsn)
     
     ## print dims for user
     cat('\nread summary:\n\n')
     dims <- sapply(zzz, dim)
     print(`rownames<-`(dims, c('rows','columns')))
-    message(sprintf('Log file created: %s\n',
-                    shQuote(file.path(libpath, log.file))),
+    message(sprintf('Log file created: \'%s\'\n', file.path(libpath, log.file)),
             domain = NA)
+    if (write) {
+      dir.create(write_dir <- file.path(libpath, '_sas_mget_'))
+      f <- function(x, file) write.csv(x, file, row.names = FALSE)
+      mapply(f, x = zzz,
+             file = file.path(libpath, write_dir, paste0(names(zzz), '.csv')))
+    }
     zzz
   } else invisible()
 }
@@ -633,7 +639,7 @@ move_formats <- function(dir, dcf = list.files(dir, pattern = '\\.sas7bcat$'),
     if (!file.exists(newdir)) {
       dir.create(newdir)
     } else {
-      ## cheap way to be sure (almost) that if newdir exists and if newdir
+      ## cheap way to be (almost) sure that if newdir exists and if newdir
       ## includes some sas7bdat files, then the old will not be overwritten
       file.rename(dcf, dcf <- gsub('\\.', paste0('_', unique_string, '.'), dcf))
     }

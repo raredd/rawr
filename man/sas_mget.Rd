@@ -6,7 +6,7 @@
 \usage{
 sas_mget(libpath = getwd(), dsn = dsn, saspath = sas_path(),
   fmtpath = NULL, catalog = length(dcf) == 1L, log.file = "_temp_.log",
-  ..., force = FALSE)
+  ..., force = FALSE, write = FALSE)
 }
 \arguments{
 \item{libpath}{directory to data set(s) as character string; if missing,
@@ -36,6 +36,9 @@ to avoid overwriting}
 \item{force}{logical; by default, user must interactively allow
 \code{sas_mget} to continue reading all data sets; set to \code{TRUE} to
 ignore this or for non-interactive \code{R}}
+
+\item{write}{logical; if \code{TRUE}, each data frame will be written to
+a \code{.csv} file in a new sub directory, \code{./_sas_mget_}}
 }
 \value{
 A list of data frames resembling the \code{SAS} data sets.

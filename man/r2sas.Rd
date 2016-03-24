@@ -4,7 +4,7 @@
 \alias{r2sas}
 \title{r2sas}
 \usage{
-r2sas(code, saspath, force = FALSE, out = getwd())
+r2sas(code, saspath, force, out)
 }
 \arguments{
 \item{code}{character string of valid \code{SAS} code}
@@ -59,7 +59,7 @@ data data;
 run;
 "
 
-r2sas(code)
+r2sas(code, sas_path(), FALSE, getwd())
 
 ## * this is a sas program file :;
 ## 

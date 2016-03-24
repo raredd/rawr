@@ -15,7 +15,8 @@ arguments are ignored, and \code{saspath} is only checked for existence}
 \item{version}{(optional) version to use}
 }
 \description{
-Finds versions of sas installed and returns latest version by default.
+Find versions of \code{SAS} installed and return path to latest executable
+version by default.
 
 For windows usually \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
 where \code{x.x} is the \code{SAS} version number is the correct directory.
