@@ -25,47 +25,22 @@ and parameters with any default values; see tests in examples below.
 \examples{
 get_margs(text = '\%macro macro(a = 1, b = 2); \%mend;')
 
-## $macro
-## [1] "a=1, b=2"
-
 path <- system.file('testfiles', package = 'rawr')
 get_margs(file.path(path, 'macros.sas'))
 
-## $macro1
-## [1] "arg1, arg2"
-##
-## $macro2
-## [1] "arg1=1, arg2=2, arg3=3"
-##
-## $macro3
-## [1] "arg1=, arg2="
-##
-## $macro4
-## [1] "this=, macro=, has=, many=, params=, on=, multiple=, lines="
-##
-## $macro5
-## [1] ""this=, macro=, has=, comments=, between=, each=, parameter="
-
 get_margs(file.path(path, 'macros.sas'), 'macro1')
 
-## $macro1
-## [1] "arg1, arg2"
-
 \dontrun{
-get_margs(file.path(path, 'macros.sas'), 'no_macro_with_this_name')
-
-Error in get_margs(file.path(path, "macros.sas"), "no_macro_with_this_name") :
- no_macro_with_this_name macro not found in ...
-
 get_margs(file.path(path, 'nomacro.sas'))
 
 ## Error in get_margs(file.path(path, 'nomacro.sas')) :
-##   no valid macros found in ...
+##   no valid macros found in './.../nomacro.sas'
+
 
 get_margs(file.path(path, 'onemacro.sas'), c('macro2', 'macro5'))
 
 ## Error in get_margs(file.path(path, 'onemacro.sas'), c("macro2", "macro5")) :
-## macro2, macro5 not found in ...
+##   'macro2', 'macro5' not found in './.../onemacro.sas'
 }
 
 }

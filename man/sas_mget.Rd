@@ -4,10 +4,9 @@
 \alias{sas_mget}
 \title{Convert multiple \code{SAS} data sets to \code{R} data frame}
 \usage{
-sas_mget(libpath = getwd(), dsn = list.files(libpath, pattern =
-  "\\\\.sas7bdat$"), saspath = sas_path(), fmtpath = NULL,
-  catalog = !(!length(list.files(libpath, pattern = "\\\\.sas7bcat$"))),
-  log.file = "_temp_.log", ..., force = FALSE)
+sas_mget(libpath = getwd(), dsn = dsn, saspath = sas_path(),
+  fmtpath = NULL, catalog = length(dcf) == 1L, log.file = "_temp_.log",
+  ..., force = FALSE)
 }
 \arguments{
 \item{libpath}{directory to data set(s) as character string; if missing,
@@ -17,9 +16,9 @@ searches the current working directory}
 will work; if missing or \code{NULL}, all \code{.sas7bdat} files found in
 \code{libpath} will be read}
 
-\item{saspath}{file path to \code{sas.exe} as character string}
+\item{saspath}{file path to sas executable as character string}
 
-\item{fmtpath}{optional path to a format \code{.sas} file as character
+\item{fmtpath}{(optional) path to a format \code{.sas} file as character
 string; \code{SAS} throws an error if the platform used to make the format
 catalog is not the same as the current platform; \code{fmtpath} is passed
 to \code{\link{sas_catalog}}}

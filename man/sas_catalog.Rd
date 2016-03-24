@@ -13,12 +13,26 @@ sas_catalog(path, libpath = dirname(path), saspath = sas_path(),
 \item{libpath}{directory to data set(s) as character string; if missing,
 searches the current working directory}
 
-\item{saspath}{file path to \code{sas.exe} as character string}
+\item{saspath}{file path to sas executable as character string}
 
 \item{log}{name of log file as character string}
 }
+\value{
+This function has no useful return value (other than an error code, see
+\code{\link{system2}}) but is used for its side effect of creating a
+\code{formats.sas7bcat} file and corresponding log file in \code{libpath}.
+Because this function is intended to be used in the \code{\link{sas_mget}}
+pipeline, \code{sas_catalog} will move existing catalogs to a new directory
+keeping only a single catalog ("formats.sas7bcat") in \code{libpath} to
+avoid conflicts with \code{\link{Hmisc}(sas.get)}.
+}
 \description{
-Create a \code{SAS} format catalog from a \code{.sas} file or macro.
+Create a \code{SAS} format catalog from a \code{.sas} file or macro. Note
+that if the \code{libpath} directory contains other \code{.sas7bdat} files,
+these will be moved to a new directory, \code{./_old_formats_} which is
+created if needed and old catalog files are renamed if this directory
+exists. The file created by \code{sas_catalog} will be "formats.sas7bcat"
+since this name is required by \code{\link[Hmisc]{sas.get}}.
 }
 \examples{
 \dontrun{

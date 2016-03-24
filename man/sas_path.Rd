@@ -7,30 +7,30 @@
 sas_path(saspath, sashome, version)
 }
 \arguments{
-\item{saspath}{optional full path to \code{sas.exe}; if given, all other
+\item{saspath}{(optional) full path to sas executable; if given, all other
 arguments are ignored, and \code{saspath} is only checked for existence}
 
-\item{sashome}{optional full path to directory of version directories; for
-\code{>9.2}, the default is \code{c:/program files/sashome/sasfoundation};
-for \code{9.2}, the default is \code{c:/program\ files/sas/sasfoundation}}
+\item{sashome}{(optional) full path to directory of version directories}
 
-\item{version}{optional version to use}
+\item{version}{(optional) version to use}
 }
 \description{
 Finds versions of sas installed and returns latest version by default.
 
-Usually \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
-where \code{x.x} is the \code{SAS} version number, is the correct directory.
-For v9.2, the default \code{c:/program files/sasfoundation/9.2/sas.exe} is
-used.
+For windows usually \code{c:/program\ files/sashome/sasfoundation/x.x/sas.exe},
+where \code{x.x} is the \code{SAS} version number is the correct directory.
+For v9.2, the default \code{c:/program\ files/sasfoundation/9.2/sas.exe} is
+used. For linux/unix platforms, \code{sas} must be in the \code{$PATH}, or
+it will be necessary to give \code{saspath}.
 
 For previous versions or if \code{SAS} is not installed in the default
 directory, it will be necessary to give a full \code{saspath} to the
-\code{sas.exe}.
+executable.
 }
 \examples{
 \dontrun{
 sas_path()
+sas_path('/usr/local/SAS_9.2/sas')
 }
 
 }

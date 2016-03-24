@@ -20,53 +20,7 @@ variable names and format values.
 \examples{
 p <- system.file('testfiles', 'formats.sas', package = 'rawr')
 cat(readLines(p), sep = '\\n')
-
-#  /*
-#    sas format file
-#  */
-#  
-#  proc format;
-#    value jc 1 = 'management'
-#             2 = 'non-management';
-#    value rate
-#           -99 = 'not applicable'
-#            -1 = 'missing'
-#             0 = 'terrible'
-#             1 = 'poor'
-#             2 = 'fair'
-#             3 = 'good'
-#             4 = 'excellent';
-#    value with_comments
-#           -99 = 'not applicable'
-#            -1 = 'missing'
-#             0 = 'terrible' /* comment */
-#             1 = 'poor'
-#             2 = 'fair'
-#             3 = 'good'
-#             /* 
-#               long
-#               comment
-#             */
-#             4 = 'excellent';
-#  run;
-
 parse_formats(p)
-
-#  $jc
-#    'management' 'non-management'
-#             "1"              "2"
-#  
-#  $rate
-#  'not applicable'        'missing'       'terrible'           'poor'
-#             "-99"             "-1"              "0"              "1"
-#            'fair'           'good'      'excellent'
-#               "2"              "3"              "4"
-#  
-#  $with_comments
-#  'not applicable'        'missing'       'terrible'           'poor'
-#             "-99"             "-1"              "0"              "1"
-#            'fair'           'good'      'excellent'
-#               "2"              "3"              "4"
 
 }
 \seealso{

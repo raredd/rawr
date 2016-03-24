@@ -19,7 +19,7 @@ include semicolons---\code{args} is passed directly as
 \code{\%macro(args);} ); if unsure of the macro parameters, run
 \code{rmacro} with \code{show.args = TRUE}}
 
-\item{saspath}{file path to \code{sas.exe} as character string, passed to
+\item{saspath}{file path to sas executable as character string, passed to
 \code{\link{sas_path}}}
 
 \item{show.args}{logical; if \code{TRUE}, \code{rmacro} will only return
@@ -29,11 +29,11 @@ the macro names and arguments found in \code{path}}
 \code{r2sas} to continue running \code{code}; set to \code{TRUE} to ignore
 this or for non-interactive \code{R}}
 
-\item{firstArgs}{optional character string of (valid) \code{SAS} commands
+\item{firstArgs}{(optional) character string of (valid) \code{SAS} commands
 separated by semicolons to be excuted \emph{before} the macro; for example,
 \code{options <OPTIONS>;} or \code{x "cd ..";}}
 
-\item{lastArgs}{optional commands to be executed \emph{after} the macro;
+\item{lastArgs}{(optional) commands to be executed \emph{after} the macro;
 see \code{firstArgs}}
 
 \item{out}{either \code{FALSE}, directory (as character string) to dump
@@ -47,13 +47,13 @@ i.e., \code{.lst} file(s)}
 \dontrun{
 rmacro(system.file('testfiles', 'onemacro.sas', package = 'rawr'),
        args = 'arg1 = 1, arg2 = 2',
-       firstArgs = 'options nodate no center; x \\'cd ~/desktop\\';',
+       firstArgs = 'options nodate nocenter; x \\'cd ~/desktop\\';',
        lastArgs = 'endsas;')
        
-## options nodate no center; 
+## options nodate nocenter; 
 ## x 'cd ~/desktop'; 
 ## 
-## \%include "./tests/testfiles/onemacro.sas";
+## \%include "./.../onemacro.sas";
 ## \%macro1(arg1 = 1, arg2 = 2);
 ## endsas; 
 ## 

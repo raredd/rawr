@@ -9,7 +9,7 @@ r2sas(code, saspath, force = FALSE, out = getwd())
 \arguments{
 \item{code}{character string of valid \code{SAS} code}
 
-\item{saspath}{file path to \code{sas.exe} as character string, passed to
+\item{saspath}{file path to sas executable as character string, passed to
 \code{\link{sas_path}}}
 
 \item{force}{logical; by default, user must interactively allow
@@ -45,8 +45,17 @@ x 'cd ./newfolder';
 libname lib './newfolder';
 
 data data;
+  input id x y;
+  datalines;
+  1 1 1
+  2 2 2
+  3 1 3
+  ;
+run;
+
+data data;
   set data;
-if x = 1 then delete;
+  if x = 1 then delete;
 run;
 "
 
@@ -59,10 +68,19 @@ r2sas(code)
 ## x 'cd ./newfolder';
 ## 
 ## libname lib './newfolder';
+##
+## data data;
+##   input id x y;
+##   datalines;
+##   1 1 1
+##   2 2 2
+##   3 1 3
+##   ;
+## run;
 ## 
 ## data data;
 ##   set data;
-## if x = 1 then delete;
+##   if x = 1 then delete;
 ## run;
 ## 
 ## 
