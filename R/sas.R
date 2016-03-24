@@ -9,21 +9,20 @@
 #' @description
 #' Finds versions of sas installed and returns latest version by default.
 #' 
-#' Usually \code{c:/program files/sashome/sasfoundation/x.x/sas.exe},
-#' where \code{x.x} is the \code{SAS} version number, is the correct directory.
-#' For v9.2, the default \code{c:/program files/sasfoundation/9.2/sas.exe} is
-#' used.
+#' For windows usually \code{c:/program\ files/sashome/sasfoundation/x.x/sas.exe},
+#' where \code{x.x} is the \code{SAS} version number is the correct directory.
+#' For v9.2, the default \code{c:/program\ files/sasfoundation/9.2/sas.exe} is
+#' used. For linux/unix platforms, \code{sas} must be in the \code{$PATH}, or
+#' it will be necessary to give \code{saspath}.
 #' 
 #' For previous versions or if \code{SAS} is not installed in the default
 #' directory, it will be necessary to give a full \code{saspath} to the
-#' \code{sas.exe}.
+#' executable.
 #' 
-#' @param saspath optional full path to \code{sas.exe}; if given, all other
+#' @param saspath (optional) full path to sas executable; if given, all other
 #' arguments are ignored, and \code{saspath} is only checked for existence
-#' @param sashome optional full path to directory of version directories; for
-#' \code{>9.2}, the default is \code{c:/program files/sashome/sasfoundation};
-#' for \code{9.2}, the default is \code{c:/program\ files/sas/sasfoundation}
-#' @param version optional version to use
+#' @param sashome (optional) full path to directory of version directories
+#' @param version (optional) version to use
 #' 
 #' @seealso
 #' \code{\link{r2sas}}, \code{\link{rmacro}}, \code{\link{get_margs}},
@@ -33,21 +32,26 @@
 #' @examples
 #' \dontrun{
 #' sas_path()
+#' sas_path('/usr/local/SAS_9.2/sas')
 #' }
 #' 
 #' @export
 
 sas_path <- function(saspath, sashome, version) {
+  ## windows
   sashome <- file.path('c:', 'program\ files', 'sashome', 'sasfoundation')
   version <- if (missing(version))
     c(9.3, list.files(sashome)) else as.character(version)
   version <- numeric_version(version)
   if (missing(saspath)) {
-    saspath <- file.path(sashome, max(version, na.rm = TRUE), 'sas.exe')
-    if (!file.exists(saspath))
-      saspath <- 'c:/program\ files/sas/sasfoundation/9.2/sas.exe'
+    saspath <- if (.Platform$OS.type %in% 'windows') {
+      saspath <- file.path(sashome, max(version, na.rm = TRUE), 'sas.exe')
+      ## try 9.2 default location if the above does not work
+      if (!file.exists(saspath))
+        file.path('c:', 'program\ files', 'sas', 'sasfoundation', '9.2', 'sas.exe')
+    } else suppressWarnings(system2('which', 'sas', stdout = TRUE))
   }
-  if (!file.exists(saspath))
+  if (!length(saspath) || !file.exists(saspath))
     stop('\'saspath\' is invalid -- give the full file path to \'sas.exe\'',
          domain = NA)
   saspath
@@ -69,7 +73,7 @@ sas_path <- function(saspath, sashome, version) {
 #' To convert \code{.sas7bdat} files, \code{\link{sas_mget}}.
 #' 
 #' @param code character string of valid \code{SAS} code
-#' @param saspath file path to \code{sas.exe} as character string, passed to
+#' @param saspath file path to sas executable as character string, passed to
 #' \code{\link{sas_path}}
 #' @param force logical; by default, user must interactively allow
 #' \code{r2sas} to continue running \code{code}; set to \code{TRUE} to ignore
@@ -95,8 +99,17 @@ sas_path <- function(saspath, sashome, version) {
 #' libname lib './newfolder';
 #' 
 #' data data;
+#'   input id x y;
+#'   datalines;
+#'   1 1 1
+#'   2 2 2
+#'   3 1 3
+#'   ;
+#' run;
+#' 
+#' data data;
 #'   set data;
-#' if x = 1 then delete;
+#'   if x = 1 then delete;
 #' run;
 #' "
 #' 
@@ -109,10 +122,19 @@ sas_path <- function(saspath, sashome, version) {
 #' ## x 'cd ./newfolder';
 #' ## 
 #' ## libname lib './newfolder';
+#' ##
+#' ## data data;
+#' ##   input id x y;
+#' ##   datalines;
+#' ##   1 1 1
+#' ##   2 2 2
+#' ##   3 1 3
+#' ##   ;
+#' ## run;
 #' ## 
 #' ## data data;
 #' ##   set data;
-#' ## if x = 1 then delete;
+#' ##   if x = 1 then delete;
 #' ## run;
 #' ## 
 #' ## 
@@ -186,17 +208,17 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
 #' include semicolons---\code{args} is passed directly as
 #' \code{\%macro(args);} ); if unsure of the macro parameters, run
 #' \code{rmacro} with \code{show.args = TRUE}
-#' @param saspath file path to \code{sas.exe} as character string, passed to
+#' @param saspath file path to sas executable as character string, passed to
 #' \code{\link{sas_path}}
 #' @param show.args logical; if \code{TRUE}, \code{rmacro} will only return
 #' the macro names and arguments found in \code{path}
 #' @param force logical; by default, user must interactively allow
 #' \code{r2sas} to continue running \code{code}; set to \code{TRUE} to ignore
 #' this or for non-interactive \code{R}
-#' @param firstArgs optional character string of (valid) \code{SAS} commands
+#' @param firstArgs (optional) character string of (valid) \code{SAS} commands
 #' separated by semicolons to be excuted \emph{before} the macro; for example,
 #' \code{options <OPTIONS>;} or \code{x "cd ..";}
-#' @param lastArgs optional commands to be executed \emph{after} the macro;
+#' @param lastArgs (optional) commands to be executed \emph{after} the macro;
 #' see \code{firstArgs}
 #' @param out either \code{FALSE}, directory (as character string) to dump
 #' \code{.sas} program file, \code{.log} file, and any \code{SAS} output,
@@ -211,13 +233,13 @@ r2sas <- function(code, saspath, force = FALSE, out = getwd()) {
 #' \dontrun{
 #' rmacro(system.file('testfiles', 'onemacro.sas', package = 'rawr'),
 #'        args = 'arg1 = 1, arg2 = 2',
-#'        firstArgs = 'options nodate no center; x \'cd ~/desktop\';',
+#'        firstArgs = 'options nodate nocenter; x \'cd ~/desktop\';',
 #'        lastArgs = 'endsas;')
 #'        
-#' ## options nodate no center; 
+#' ## options nodate nocenter; 
 #' ## x 'cd ~/desktop'; 
 #' ## 
-#' ## %include "./tests/testfiles/onemacro.sas";
+#' ## %include "./.../onemacro.sas";
 #' ## %macro1(arg1 = 1, arg2 = 2);
 #' ## endsas; 
 #' ## 
@@ -277,47 +299,22 @@ rmacro <- function(path, name, args, saspath, show.args = FALSE,
 #' @examples
 #' get_margs(text = '%macro macro(a = 1, b = 2); %mend;')
 #' 
-#' ## $macro
-#' ## [1] "a=1, b=2"
-#' 
 #' path <- system.file('testfiles', package = 'rawr')
 #' get_margs(file.path(path, 'macros.sas'))
 #' 
-#' ## $macro1
-#' ## [1] "arg1, arg2"
-#' ##
-#' ## $macro2
-#' ## [1] "arg1=1, arg2=2, arg3=3"
-#' ##
-#' ## $macro3
-#' ## [1] "arg1=, arg2="
-#' ##
-#' ## $macro4
-#' ## [1] "this=, macro=, has=, many=, params=, on=, multiple=, lines="
-#' ##
-#' ## $macro5
-#' ## [1] ""this=, macro=, has=, comments=, between=, each=, parameter="
-#' 
 #' get_margs(file.path(path, 'macros.sas'), 'macro1')
 #' 
-#' ## $macro1
-#' ## [1] "arg1, arg2"
-#' 
 #' \dontrun{
-#' get_margs(file.path(path, 'macros.sas'), 'no_macro_with_this_name')
-#' 
-#' Error in get_margs(file.path(path, "macros.sas"), "no_macro_with_this_name") :
-#'  no_macro_with_this_name macro not found in ...
-#' 
 #' get_margs(file.path(path, 'nomacro.sas'))
 #' 
 #' ## Error in get_margs(file.path(path, 'nomacro.sas')) :
-#' ##   no valid macros found in ...
+#' ##   no valid macros found in './.../nomacro.sas'
+#' 
 #' 
 #' get_margs(file.path(path, 'onemacro.sas'), c('macro2', 'macro5'))
 #' 
 #' ## Error in get_margs(file.path(path, 'onemacro.sas'), c("macro2", "macro5")) :
-#' ## macro2, macro5 not found in ...
+#' ##   'macro2', 'macro5' not found in './.../onemacro.sas'
 #' }
 #' 
 #' @export
@@ -371,8 +368,8 @@ get_margs <- function(path, name, text) {
 #' @param dsn data set name(s); either \code{data1} or \code{data1.sas7bdat}
 #' will work; if missing or \code{NULL}, all \code{.sas7bdat} files found in
 #' \code{libpath} will be read
-#' @param saspath file path to \code{sas.exe} as character string
-#' @param fmtpath optional path to a format \code{.sas} file as character
+#' @param saspath file path to sas executable as character string
+#' @param fmtpath (optional) path to a format \code{.sas} file as character
 #' string; \code{SAS} throws an error if the platform used to make the format
 #' catalog is not the same as the current platform; \code{fmtpath} is passed
 #' to \code{\link{sas_catalog}}
@@ -417,12 +414,11 @@ get_margs <- function(path, name, text) {
 #' 
 #' @export
 
-sas_mget <- function(libpath = getwd(),
-                     dsn = list.files(libpath, pattern = '\\.sas7bdat$'),
-                     saspath = sas_path(), fmtpath = NULL,
-                     catalog = !!length(list.files(libpath, pattern = '\\.sas7bcat$')),
+sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
+                     fmtpath = NULL, catalog = length(dcf) == 1L,
                      log.file = '_temp_.log', ..., force = FALSE) {
   dsn <- rm_ext(dsf <- dsn)
+  dcf <- list.files(libpath, pattern = '\\.sas7bcat$')
   if (!length(dsn)) {
     message(sprintf('No sas data sets found in %s\n', shQuote(libpath)),
             domain = NA)
@@ -448,7 +444,7 @@ sas_mget <- function(libpath = getwd(),
       } else FALSE
     } else {
       ## no format path, use catalog if one/ignore if multiple
-      no.format <- if (length(dcf <- list.files(libpath, pattern = '\\.sas7bcat$')) > 1L) {
+      no.format <- if (length(dcf) > 1L) {
         message(sprintf('\nMultiple catalogs found in %s:\n', shQuote(libpath)),
                 domain = NA)
         cat(dcf, sep = '\n')
@@ -544,53 +540,7 @@ source_sas <- function(path, ...) {
 #' @examples
 #' p <- system.file('testfiles', 'formats.sas', package = 'rawr')
 #' cat(readLines(p), sep = '\n')
-#' 
-#' #  /*
-#' #    sas format file
-#' #  */
-#' #  
-#' #  proc format;
-#' #    value jc 1 = 'management'
-#' #             2 = 'non-management';
-#' #    value rate
-#' #           -99 = 'not applicable'
-#' #            -1 = 'missing'
-#' #             0 = 'terrible'
-#' #             1 = 'poor'
-#' #             2 = 'fair'
-#' #             3 = 'good'
-#' #             4 = 'excellent';
-#' #    value with_comments
-#' #           -99 = 'not applicable'
-#' #            -1 = 'missing'
-#' #             0 = 'terrible' /* comment */
-#' #             1 = 'poor'
-#' #             2 = 'fair'
-#' #             3 = 'good'
-#' #             /* 
-#' #               long
-#' #               comment
-#' #             */
-#' #             4 = 'excellent';
-#' #  run;
-#' 
 #' parse_formats(p)
-#' 
-#' #  $jc
-#' #    'management' 'non-management'
-#' #             "1"              "2"
-#' #  
-#' #  $rate
-#' #  'not applicable'        'missing'       'terrible'           'poor'
-#' #             "-99"             "-1"              "0"              "1"
-#' #            'fair'           'good'      'excellent'
-#' #               "2"              "3"              "4"
-#' #  
-#' #  $with_comments
-#' #  'not applicable'        'missing'       'terrible'           'poor'
-#' #             "-99"             "-1"              "0"              "1"
-#' #            'fair'           'good'      'excellent'
-#' #               "2"              "3"              "4"
 #' 
 #' @export
 
@@ -616,13 +566,27 @@ parse_formats <- function(path) {
 
 #' \code{SAS} catalog
 #'
-#' Create a \code{SAS} format catalog from a \code{.sas} file or macro.
+#' Create a \code{SAS} format catalog from a \code{.sas} file or macro. Note
+#' that if the \code{libpath} directory contains other \code{.sas7bdat} files,
+#' these will be moved to a new directory, \code{./_old_formats_} which is
+#' created if needed and old catalog files are renamed if this directory
+#' exists. The file created by \code{sas_catalog} will be "formats.sas7bcat"
+#' since this name is required by \code{\link[Hmisc]{sas.get}}.
 #'
 #' @param path file path to a \code{.sas} file
 #' @param libpath directory to data set(s) as character string; if missing,
 #' searches the current working directory
-#' @param saspath file path to \code{sas.exe} as character string
+#' @param saspath file path to sas executable as character string
 #' @param log name of log file as character string
+#' 
+#' @return
+#' This function has no useful return value (other than an error code, see
+#' \code{\link{system2}}) but is used for its side effect of creating a
+#' \code{formats.sas7bcat} file and corresponding log file in \code{libpath}.
+#' Because this function is intended to be used in the \code{\link{sas_mget}}
+#' pipeline, \code{sas_catalog} will move existing catalogs to a new directory
+#' keeping only a single catalog ("formats.sas7bcat") in \code{libpath} to
+#' avoid conflicts with \code{\link{Hmisc}(sas.get)}.
 #' 
 #' @seealso
 #' \code{\link{sas_path}}, \code{\link{r2sas}}, \code{\link{rmacro}},
@@ -641,6 +605,7 @@ parse_formats <- function(path) {
 sas_catalog <- function(path, libpath = dirname(path), saspath = sas_path(),
                         log = '_temp_formats_.log') {
   stopifnot(move_formats(libpath))
+  ## rawr:::move_formats
   log <- file.path(libpath, log)
   sass <- c(sprintf('x \"cd %s\";', libpath),
             sprintf('libname temp_fmt \"%s\";', libpath),
