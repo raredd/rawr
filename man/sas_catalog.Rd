@@ -24,7 +24,7 @@ This function has no useful return value (other than an error code, see
 Because this function is intended to be used in the \code{\link{sas_mget}}
 pipeline, \code{sas_catalog} will move existing catalogs to a new directory
 keeping only a single catalog ("formats.sas7bcat") in \code{libpath} to
-avoid conflicts with \code{\link{Hmisc}(sas.get)}.
+avoid conflicts with \code{\link[Hmisc]{sas.get}}.
 }
 \description{
 Create a \code{SAS} format catalog from a \code{.sas} file or macro. Note
