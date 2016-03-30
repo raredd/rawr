@@ -57,6 +57,6 @@ fill_df(na_df, key_df, ids = 1:2, fill = 4)
 
 }
 \seealso{
-\code{\link{recoder}}
+\code{\link{recoder}}; \code{\link{locf}}
 }
 

@@ -16,7 +16,7 @@ lines in \code{.Rhistory}; if character, searches for pattern matches}
 A list of recent commands that match \code{pattern}.
 }
 \description{
-Searches Rhistory file for pattern matches.
+Searches \code{.Rhistory} file for pattern matches.
 }
 \examples{
 search_hist()

@@ -452,7 +452,6 @@ sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
         message('\nCatalogs will be ignored', domain = NA)
         TRUE
       } else FALSE
-      
     }
   }
   

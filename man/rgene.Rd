@@ -23,7 +23,7 @@ rgene(n = 1, alpha = LETTERS[1:5], nalpha = 2:5, num = 0:9,
 \item{seed}{seed; integer or \code{NULL}}
 }
 \description{
-Generate random gene names
+Generate random character strings from pools of letters and digits.
 }
 \examples{
 rgene()

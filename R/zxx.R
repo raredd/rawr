@@ -32,7 +32,7 @@ ht <- function(x, n = 6L, sep = NULL) {
   pn <- abs(n) / 2
   FUN <- if (is.null(dim(x)))
     function(...) setNames(c(...), NULL) else rbind
-  if (n < 0) {
+  if (n < 0L) {
     idx <- cut(1:NROW(x), breaks = 2, labels = 1:2)
     x <- split(x, idx)
     FUN('   ' = sep, tail(x[[1]], pn), head(x[[2]], pn), '    ' = sep)
@@ -106,22 +106,22 @@ progress <- function (value, max.value, textbar = FALSE) {
     pct <- as.numeric(value) / as.numeric(max.value)
     r <- floor(pct * m)
     backspaces <- f(rep('\b', m * 2))
-    if (erase.only) message <- ''
-    else {
-      message <- f('|', f(rep('=', max(0, r - 1))),
-                   f(rep(' ', max(0, m - r))), '|')
-      cat(backspaces, message, sprintf('  %s%%', round(pct * 100)), sep = '')
-    }
+    message <- if (erase.only) 
+      '' else {
+        message <- f('|', f(rep('=', max(0, r - 1))),
+                     f(rep(' ', max(0, m - r))), '|')
+        cat(backspaces, message, sprintf('  %s%%', round(pct * 100)), sep = '')
+      }
   } else {
     if (percent) {
       backspaces <- f(rep('\b', l + 14))
-      if (erase.only) message <- ''
-      else message <- paste0('Progress: ', value, '%  ')
+      message <- if (erase.only)
+        '' else paste0('Progress: ', value, '%  ')
       cat(backspaces, message, sep = '')
     } else {
       backspaces <- f(rep('\b', 2 * l + 17))
-      if (erase.only) message <- ''
-      else message <- f('Progress: ', value, ' of ', max.value, '  ')
+      message <- if (erase.only)
+        '' else f('Progress: ', value, ' of ', max.value, '  ')
       cat(backspaces, message, sep = '')
     }
   }
@@ -205,7 +205,7 @@ recoder <- function(object, pattern, replacement, ...) {
   switcher <- function(f, g, h) {
     if (is.na(g))
       f[is.na(f)] <- h else f[f == g] <- h
-      f
+    f
   }
   superswitcher <- function(x, y, z){
     DF <- data.frame(y, z, stringsAsFactors = FALSE)
@@ -401,14 +401,14 @@ search_df <- function(pattern, data, col.name, var = 0,
                       ignore.case = TRUE, ...) {
   p <- as.character(substitute(pattern))
   x <- as.character(substitute(col.name))
-  zzz <- agrep(p, data[, x], ignore.case = ignore.case,
+  idx <- agrep(p, data[, x], ignore.case = ignore.case,
                max.distance = var, ...)
-  df[zzz, ]
+  df[idx, ]
 }
 
 #' Search history
 #' 
-#' Searches Rhistory file for pattern matches.
+#' Searches \code{.Rhistory} file for pattern matches.
 #' 
 #' @param x numeric or character; if numeric, shows the most recent \code{n}
 #' lines in \code{.Rhistory}; if character, searches for pattern matches
@@ -491,7 +491,7 @@ try_require <- function(package) {
     suppressWarnings(sapply(package, require, quietly = TRUE,
                             character.only = TRUE, warn.conflicts = FALSE)))
   missing <- package[!available]
-  if (length(missing) > 0)
+  if (length(missing) > 0L)
     stop(paste(package, collapse = ', '), ' package not found.', call. = FALSE)
 }
 
@@ -904,7 +904,7 @@ icols <- function(x, pattern, keep, ...) {
 #' the values from \code{key}.
 #' 
 #' @seealso
-#' \code{\link{recoder}}
+#' \code{\link{recoder}}; \code{\link{locf}}
 #' 
 #' @examples
 #' dd <- mtcars
@@ -940,36 +940,40 @@ fill_df <- function(data, key, ids, fill, values) {
     idx[] <- lapply(data, function(x) x %in% values)
     data[as.matrix(idx)] <- NA
   }
+  
   ## get columns names not defined as ids or fill
   if (length(whk <- which(ND %ni% names(key)))) {
     whk <- ND[whk]
     keep <- data[, whk, drop = FALSE]
     data[, whk] <- list(NULL)
   } else keep <- NULL
+  
   ## error checks
   nd <- names(data)
   nad <- vapply(data, anyNA, logical(1))
   ok <- all(nad)
-  if (all(!nad)) return(data)
+  if (all(!nad))
+    return(data)
+  
   ## try to guess columns to use for ids/fill
-  ids <- if (missing(ids)) {
-    nd[which(!nad)]
-  } else if (is.numeric(ids)) nd[ids] else ids
-  fill <- if (missing(fill)) {
-    nd[which(nad)]
-  } else if (is.numeric(fill)) nd[fill] else fill
+  ids <- if (missing(ids))
+    nd[which(!nad)] else if (is.numeric(ids)) nd[ids] else ids
+  fill <- if (missing(fill))
+    nd[which(nad)] else if (is.numeric(fill)) nd[fill] else fill
+  
   ## match current data rows with rows in key and fill NAs
-  nak <- if (ok) seq.int(nrow(data)) else
-    do.call('paste0', c(key[, ids, drop = FALSE]))
-  dfk <- if (ok) seq.int(nrow(data)) else
-    do.call('paste0', c(data[, ids, drop = FALSE]))
+  nak <- if (ok)
+    seq.int(nrow(data)) else do.call('paste0', c(key[, ids, drop = FALSE]))
+  dfk <- if (ok)
+    seq.int(nrow(data)) else do.call('paste0', c(data[, ids, drop = FALSE]))
   mm <- match(dfk, nak)
   for (col in fill) {
     nnr <- which(is.na(data[, col]))
     data[nnr, col] <- key[mm[nnr], col]
   }
   # data[do.call('order', as.list(data[, c(nnk, nnf)])), ]
-  if (!is.null(keep)) cbind(data, keep)[, ND] else data[, ND]
+  if (!is.null(keep))
+    cbind(data, keep)[, ND] else data[, ND]
 }
 
 #' Kinda sort
@@ -1004,8 +1008,10 @@ fill_df <- function(data, key, ids, fill, values) {
 
 kinda_sort <- function(x, n, decreasing = FALSE, indices) {
   lx <- length(x)
-  n <- if (missing(n)) ceiling(0.1 * lx) else if (n > lx) lx else n
-  wh <- if (!missing(indices)) indices else sample(seq.int(lx), size = n)
+  n <- if (missing(n))
+    ceiling(0.1 * lx) else if (n > lx) lx else n
+  wh <- if (!missing(indices))
+    indices else sample(seq.int(lx), size = n)
   y <- x[wh]
   x[wh] <- NA
   rl <- with(rle(!is.na(x)), rep(values, lengths))
@@ -1015,6 +1021,8 @@ kinda_sort <- function(x, n, decreasing = FALSE, indices) {
 }
 
 #' Generate random gene names
+#' 
+#' Generate random character strings from pools of letters and digits.
 #' 
 #' @param n number of gene names to return
 #' @param alpha vector of letters to select from
@@ -1033,12 +1041,12 @@ kinda_sort <- function(x, n, decreasing = FALSE, indices) {
 
 rgene <- function(n = 1, alpha = LETTERS[1:5], nalpha = 2:5,
                   num = 0:9, nnum = 1:5, sep = '-', seed = NULL) {
+  ## helpers
   p0 <- function(...) paste0(..., collapse = '')
+  alphas   <- function() sample(alpha, sample(nalpha, 1), TRUE)
+  numerics <- function() sample(num, sample(nnum, 1), TRUE)
+  
   set.seed(seed)
-  alphas <- function()
-    sample(alpha, size = sample(nalpha, 1), replace = TRUE)
-  numerics <- function()
-    sample(num, size = sample(nnum, 1), replace = TRUE)
   replicate(n, p0(p0(alphas()), sep, p0(numerics())))
 }
 
@@ -1366,8 +1374,7 @@ flatten <- function(l) {
 #' @export
 
 tree <- function(path = '.', full.names = FALSE, ndirs = 5, nfiles = 5) {
-  path <- normalizePath(path, mustWork = TRUE)
-  
+  ## helper
   tree_ <- function(path = '.', full.names, n) {
     isdir <- file.info(path)$isdir
     if (!isdir) {
@@ -1383,6 +1390,7 @@ tree <- function(path = '.', full.names = FALSE, ndirs = 5, nfiles = 5) {
     out
   }
   
+  path <- normalizePath(path, mustWork = TRUE)
   head(tree_(path, full.names, nfiles), ndirs)
 }
 

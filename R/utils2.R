@@ -372,9 +372,9 @@ pvalr <- function(pvals, sig.limit = .001, digits = 3, html = FALSE,
     if (is.na(x))
       return(NA)
     if (x >= 1)
-      return(paste0(c('','p ')[show.p], c('> ','%gt; ')[html], '0.99'))
+      return(paste0(c('','p ')[show.p], c('> ','&gt; ')[html], '0.99'))
     if (x < sig.limit) {
-      paste0(c('', 'p ')[show.p], c('< ', '%lt; ')[html], format(sig.limit))
+      paste0(c('', 'p ')[show.p], c('< ', '&lt; ')[html], format(sig.limit))
     } else {
       nd <- c(digits, 2, 1)[findInterval(x, c(-Inf, .1, .5, Inf))]
       paste0(c('','p = ')[show.p], roundr(x, nd))
