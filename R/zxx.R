@@ -933,8 +933,8 @@ icols <- function(x, pattern, keep, ...) {
 #' @export
 
 fill_df <- function(data, key, ids, fill, values) {
-  ND <- names(data)
-  ## if given replace `values` with NAs
+  nn <- names(data)
+  ## if given replace "values" with NAs
   if (!missing(values)) {
     idx <- data
     idx[] <- lapply(data, function(x) x %in% values)
@@ -942,8 +942,8 @@ fill_df <- function(data, key, ids, fill, values) {
   }
   
   ## get columns names not defined as ids or fill
-  if (length(whk <- which(ND %ni% names(key)))) {
-    whk <- ND[whk]
+  if (length(whk <- which(nn %ni% names(key)))) {
+    whk <- nn[whk]
     keep <- data[, whk, drop = FALSE]
     data[, whk] <- list(NULL)
   } else keep <- NULL
@@ -951,17 +951,23 @@ fill_df <- function(data, key, ids, fill, values) {
   ## error checks
   nd <- names(data)
   nad <- vapply(data, anyNA, logical(1))
-  ok <- all(nad)
   if (all(!nad))
     return(data)
   
   ## try to guess columns to use for ids/fill
-  ids <- if (missing(ids))
-    nd[which(!nad)] else if (is.numeric(ids)) nd[ids] else ids
-  fill <- if (missing(fill))
-    nd[which(nad)] else if (is.numeric(fill)) nd[fill] else fill
+  ids <- if (missing(ids)) {
+    ids <- nd[which(!nad)]
+    message('\'ids\' : ', paste(ids, collapse = ', '), domain = NA)
+    ids
+  } else if (is.numeric(ids)) nd[ids] else ids
+  fill <- if (missing(fill)) {
+    fill <- nd[which(nad)]
+    message('\'fill\': ', paste(fill, collapse = ', '), domain = NA)
+    fill
+  } else if (is.numeric(fill)) nd[fill] else fill
   
   ## match current data rows with rows in key and fill NAs
+  ok <- all(nad)
   nak <- if (ok)
     seq.int(nrow(data)) else do.call('paste0', c(key[, ids, drop = FALSE]))
   dfk <- if (ok)
@@ -973,7 +979,8 @@ fill_df <- function(data, key, ids, fill, values) {
   }
   # data[do.call('order', as.list(data[, c(nnk, nnf)])), ]
   if (!is.null(keep))
-    cbind(data, keep)[, ND] else data[, ND]
+    cbind.data.frame(data, keep)[, nn, drop = FALSE] else
+      data[, nn, drop = FALSE]
 }
 
 #' Kinda sort
