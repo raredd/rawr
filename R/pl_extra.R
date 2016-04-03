@@ -234,8 +234,8 @@ tcol <- function(color, trans = 255, alpha) {
 #' scientific format
 #' 
 #' @seealso
-#' \code{\link{roundr}}; \code{\link{format}}; \code{\link{sprintf}},
-#' \code{\link{rawr_parse}}
+#' \code{\link[sfsmisc]{pretty10exp}}; \code{\link{roundr}};
+#' \code{\link{format}}; \code{\link{sprintf}}, \code{\link{rawr_parse}}
 #' 
 #' @return
 #' For \code{oom} an integer vector of magnitudes. For \code{parse_sci} an
