@@ -1342,3 +1342,64 @@ dose_esc <- function(dose, col.dose, nstep = 3, dose.exp, col.exp,
   
   invisible(list(x, y, col, arr, pls))
 }
+
+#' Color \code{plot.hclust}
+#' 
+#' Plot an \code{\link{hclust}} object with colored labels.
+#' 
+#' @param hc an \code{\link{hclust}} object
+#' @param labels a character vector of labels for the leaves of the tree
+#' @param col a vector of valid colors for \code{labels}
+#' @param hang the fraction of the plot height by which \code{labels} should
+#' hang below the rest of the plot; a negative value will cause \code{labels}
+#' to hang down from 0
+#' @param ... additional arguments passed to \code{\link{plot.hclust}}
+#' 
+#' @author
+#' Eva KF Chan, \url{https://github.com/ekfchan/evachan.org-Rscripts},
+#' modifications by Robert Redd
+#' 
+#' @examples
+#' hc <- hclust(dist(iris[, 1:4]))
+#' plothc(hc)
+#' plothc(hc, labels = iris$Species, col = as.numeric(iris$Species))
+#' 
+#' 
+#' ## add features below leaves
+#' plothc(hc, col = iris$Species, xlab = '', sub = '')
+#' 
+#' set.seed(1)
+#' mat <- matrix(rep(as.numeric(iris$Species), 3), 3)
+#' mat[sample(length(mat), length(mat) / 2)] <- NA
+#' mat <- sort_matrix(mat)[3:1, ]
+#' shift <- c(.5, 6)
+#' rect(col(mat) - shift[1], row(mat) - shift[2], col(mat) + shift[1],
+#'      row(mat) - shift[2] + .5, col = mat, xpd = NA, border = 'white')
+#' 
+#' @export
+
+plothc <- function(hc, labels = hc$labels, col = as.factor(labels),
+                   hang = 0.1, ...) {
+  stopifnot(inherits(hc, 'hclust'))
+  o   <- hc$order
+  ht  <- hc$height
+  col <- rep_len(if (is.factor(col)) as.numeric(col) else col, length(o))
+  labels <- as.character(if (is.null(labels)) seq_along(o) else labels)
+  
+  y <- rep(ht, 2)
+  x <- c(hc$merge)
+  
+  y <- y[which(x < 0)]
+  x <- x[which(x < 0)]
+  
+  x <- abs(x)
+  
+  y <- y[order(x)]
+  x <- x[ox <- order(x)]
+  y <- y[o] - (max(ht) * hang)
+  
+  plot(hc, labels = FALSE, hang = hang, ...)
+  text(x, y, labels = labels[o], col = col[o],
+       srt = 90, xpd = NA, adj = c(1, 0.5))
+  invisible(list(x = x[ox], y = y))
+}
