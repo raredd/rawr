@@ -243,11 +243,13 @@ jmplot <- function(x, y, z,
 #' tplot(split(mtcars$mpg, interaction(mtcars$gear, mtcars$vs)))
 #' tplot(mpg ~ gear + vs, mtcars)
 #' 
+#' 
 #' ## tplot has the same return value as boxplot
 #' identical(tplot(mtcars$mpg), boxplot(mtcars$mpg))
 #' 
+#' 
 #' ## use panel.first/panel.last like in `plot` (unavailable in `boxplot`)
-#' tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd',
+#' tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd', show.na = FALSE,
 #'       cex = c(1,5)[(mtcars$mpg > 30) + 1L],
 #'       panel.last = legend('topleft', legend = 3:5, col = 1:3, pch = 1),
 #'       panel.first = {
@@ -255,6 +257,8 @@ jmplot <- function(x, y, z,
 #'         abline(h = 1:6 * 5 + 5, lty = 'dotted', col = 'grey70')
 #'       })
 #' 
+#' 
+#' ## example with missing data
 #' set.seed(1)
 #' dat <- data.frame(age = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
 #'                   sex = sample(c('Female', 'Male'), 80, replace = TRUE),
@@ -266,9 +270,11 @@ jmplot <- function(x, y, z,
 #' tplot(age ~ group, data = dat, las = 1, cex.n = .8, cex.axis = 1, bty = 'L',
 #'       type = c('db', 'db', 'db', 'd'), names = LETTERS[1:4],
 #'       group.pch = TRUE, pch = c(15, 17, 19, 8),
-#'       group.col = FALSE, col = c('darkred', 'darkblue')[c(sex)],
+#'       group.col = FALSE, col = c('darkred', 'darkblue')[sex],
 #'       boxcol = c('lightsteelblue1', 'lightyellow1', grey(.9)),
 #'       boxplot.pars = list(notch = TRUE, boxwex = .5))
+#' legend(par('usr')[1], par('usr')[3], xpd = NA, bty = 'n',
+#'        legend = levels(dat$sex), col = c('darkred', 'darkblue'), pch = 19)
 #'
 #' @export
 
@@ -292,7 +298,7 @@ tplot.default <- function(x, ..., type = c('d','db','bd','b'), jit = 0.1, dist,
                           mean.pars = median.pars, boxplot.pars,
                           
                           ## n/missing for each group
-                          show.n = TRUE, show.na = TRUE, cex.n,
+                          show.n = TRUE, show.na = show.n, cex.n = cex,
                           
                           ## extra stuff
                           ann = par('ann'), axes = TRUE, frame.plot = axes,
@@ -332,8 +338,10 @@ tplot.default <- function(x, ..., type = c('d','db','bd','b'), jit = 0.1, dist,
   
   if (missing(at))
     at <- 1:ng
-  if (length(at) !=  ng)
-    stop("\'at\' must have same length as the number of groups")
+  if (length(at) !=  ng) {
+    warning("\'at\' must have same length as the number of groups", domain = NA)
+    at <- 1:ng
+  }
   
   ## scales
   if (missing(ylim)) {
@@ -381,6 +389,7 @@ tplot.default <- function(x, ..., type = c('d','db','bd','b'), jit = 0.1, dist,
     ## plot characters by individual or global
     rep(pch, length.out = nv)
   }
+  force(cex.n)
   cex <- if (group.cex) {
     ## plot characters by group
     rep(rep(cex, length.out = ng), lg)
@@ -388,7 +397,6 @@ tplot.default <- function(x, ..., type = c('d','db','bd','b'), jit = 0.1, dist,
     ## plot characters by individual or global
     rep(cex, length.out = nv)
   }
-  if (missing(cex.n)) cex.n <- 1
   
   ## split colors and plot characters into groups
   col <- split(col, g)
@@ -515,14 +523,16 @@ tplot.default <- function(x, ..., type = c('d','db','bd','b'), jit = 0.1, dist,
   }
   
   ## frame and text, optional sample sizes
-  if (show.n)
-    do.call('localMtext',
-            if (show.na)
-              c(list(sprintf('n = %s\nmissing = %s', lg, l2),
-                     side = 3 + horizontal, at = at),
-                pars, list(xaxt = 's', yaxt = 's'))
-            else c(list(paste0('n = ', lg), side = 3 + horizontal, at = at),
-                   pars, list(xaxt = 's', yaxt = 's')))
+  if (show.n | show.na)
+    do.call('localMtext', c(list(
+      text = sprintf('%s%s\n%s%s',
+                     if (show.n) 'n = ' else '',
+                     if (show.n) lg else '',
+                     if (show.na) 'missing = ' else '',
+                     if (show.na) l2 else ''),
+      side = 3 + horizontal, at = at, xaxt = 's', yaxt = 's'),
+      pars))
+  
   if (frame.plot)
     do.call('localBox', pars)
   if (ann) {

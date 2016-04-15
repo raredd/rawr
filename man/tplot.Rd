@@ -14,9 +14,9 @@ tplot(x, ...)
   pch = par("pch"), group.pch = TRUE, cex = par("cex"),
   group.cex = FALSE, median.line = FALSE, mean.line = FALSE,
   median.pars = list(col = par("col")), mean.pars = median.pars,
-  boxplot.pars, show.n = TRUE, show.na = TRUE, cex.n, ann = par("ann"),
-  axes = TRUE, frame.plot = axes, add = FALSE, at, horizontal = FALSE,
-  panel.first = NULL, panel.last = NULL)
+  boxplot.pars, show.n = TRUE, show.na = show.n, cex.n = cex,
+  ann = par("ann"), axes = TRUE, frame.plot = axes, add = FALSE, at,
+  horizontal = FALSE, panel.first = NULL, panel.last = NULL)
 
 \method{tplot}{formula}(formula, data = NULL, ..., subset, na.action = NULL,
   panel.first = NULL, panel.last = NULL)
@@ -137,11 +137,13 @@ An alternative to \code{\link{boxplot}}. The individual data can be shown
 tplot(split(mtcars$mpg, interaction(mtcars$gear, mtcars$vs)))
 tplot(mpg ~ gear + vs, mtcars)
 
+
 ## tplot has the same return value as boxplot
 identical(tplot(mtcars$mpg), boxplot(mtcars$mpg))
 
+
 ## use panel.first/panel.last like in `plot` (unavailable in `boxplot`)
-tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd',
+tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd', show.na = FALSE,
       cex = c(1,5)[(mtcars$mpg > 30) + 1L],
       panel.last = legend('topleft', legend = 3:5, col = 1:3, pch = 1),
       panel.first = {
@@ -149,6 +151,8 @@ tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd',
         abline(h = 1:6 * 5 + 5, lty = 'dotted', col = 'grey70')
       })
 
+
+## example with missing data
 set.seed(1)
 dat <- data.frame(age = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
                   sex = sample(c('Female', 'Male'), 80, replace = TRUE),
@@ -160,9 +164,11 @@ dat[1:5, 'age'] <- NA
 tplot(age ~ group, data = dat, las = 1, cex.n = .8, cex.axis = 1, bty = 'L',
       type = c('db', 'db', 'db', 'd'), names = LETTERS[1:4],
       group.pch = TRUE, pch = c(15, 17, 19, 8),
-      group.col = FALSE, col = c('darkred', 'darkblue')[c(sex)],
+      group.col = FALSE, col = c('darkred', 'darkblue')[sex],
       boxcol = c('lightsteelblue1', 'lightyellow1', grey(.9)),
       boxplot.pars = list(notch = TRUE, boxwex = .5))
+legend(par('usr')[1], par('usr')[3], xpd = NA, bty = 'n',
+       legend = levels(dat$sex), col = c('darkred', 'darkblue'), pch = 19)
 
 }
 \seealso{
