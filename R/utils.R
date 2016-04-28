@@ -5,7 +5,7 @@
 #
 # psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill, interleave,
 # outer2, merge2, locf, roll_fun, classMethods, regcaptures, cast, melt, view,
-# view2, clist, rapply2, sort_matrix, insert_matrix, tryCatch2
+# view2, clist, rapply2, sort_matrix, insert_matrix, tryCatch2, rleid
 #
 # unexported: islist, done
 ###
@@ -1510,3 +1510,25 @@ tryCatch2 <- function(expr) {
   l <- list(error = E, warning = W, message = M, interrupt = I)
   c(list(value = V), Filter(Negate(is.null), l))
 }
+
+#' Generate run-length type group id
+#' 
+#' For a vector, \code{x}, \code{rleid} creates a unique group variable for
+#' sequential idenitcal elements of \code{x}.
+#' 
+#' @param x a vector
+#' 
+#' @return
+#' An integer vector having the same length as \code{x}.
+#' 
+#' @seealso
+#' \code{\link{rle}}; \code{data.table::rleid}
+#' 
+#' @examples
+#' x <- LETTERS[c(1,1,2,1,1,2,3,3)]
+#' data.frame(id = x, rleid = rleid(x))
+#' 
+#' @export
+
+rleid <- function(x)
+  cumsum(c(1L, x[-length(x)] != x[-1]))
