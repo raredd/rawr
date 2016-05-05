@@ -562,10 +562,9 @@ parse_formats <- function(path) {
   dd <- data.frame(values = vars, formats = vals, stringsAsFactors = FALSE)
   dd <- dd[with(dd, is.na(values) | nzchar(formats)), ]
   sp <- split(dd$formats, dd$values)
-  tw <- function(x) gsub('^\\s+|\\s+$', '', x)
   lapply(sp, function(x) {
     x <- strsplit(Filter(nzchar, x), '=')
-    sapply(x, function(y) setNames(tw(y[1]), tw(y[2])))
+    sapply(x, function(y) setNames(trimws(y[1]), trimws(y[2])))
   })
 }
 
