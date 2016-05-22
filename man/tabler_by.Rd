@@ -6,7 +6,7 @@
 \title{tabler_by}
 \usage{
 tabler_by(data, varname, byvar, n, order = FALSE, zeros = TRUE,
-  pct = TRUE, pct.col = FALSE, pct.total = FALSE)
+  pct = TRUE, pct.col = FALSE, pct.total = FALSE, drop = TRUE)
 
 tabler_by2(data, varname, byvar, n, stratvar, zeros = TRUE, pct = FALSE,
   pct.col = FALSE, pct.total = FALSE)
@@ -33,6 +33,10 @@ are shown}
 columns}
 
 \item{pct.total}{logical; if \code{TRUE}, adds percents for total column}
+
+\item{drop}{logical; if \code{TRUE}, rows with zero total counts
+will be removed (default); \code{FALSE} case is useful when merging multiple
+\code{tabler_by} tables (eg, this is what \code{tabler_by2} does)}
 
 \item{stratvar}{for \code{tabler_by2}, a factor-like variable used to
 stratify observations into mutually exclusive groups for which
@@ -104,18 +108,23 @@ htmlTable(out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
             'proportion of patients out of respective phase total.</font>'))
 
 
-## same as above but adding a level of stratification
-out <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'grade',
-                  stratvar = 'phase', zeros = '-')
+## same as above but add level of stratification, sort by total within group
+out2 <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'grade',
+                   stratvar = 'phase', zeros = '-', pct = TRUE)
+stopifnot(
+  identical(
+    sort(unname(out[, grep('Total', colnames(out))[1]])),
+    sort(unname(out2[, grep('Total', colnames(out2))[1]]))
+))
 
-colnames(out)[1:2] <- c(
+colnames(out2)[1:2] <- c(
   'Description', sprintf('Total<br /><font size=1>n = \%s</font>', sum(n)))
 
 cgroup <- c('', '',
             sprintf('Phase I<br /><font size=1>n = \%s</font>', n[1]),
             sprintf('Phase II<br /><font size=1>n = \%s</font>', n[2]))
             
-htmlTable(out, align = 'lccccccccc', cgroup = cgroup, n.cgroup = c(1,1,4,4),
+htmlTable(out2, align = 'lccccccccc', cgroup = cgroup, n.cgroup = c(1,1,4,4),
     caption = 'Table 1: Toxicities<sup>&dagger;</sup> by category, phase,
                grade.')
             

@@ -11,7 +11,7 @@
 #' 
 #' @param ... one or more character strings
 #' @param use_viewer logical; if \code{TRUE}, attempts to use
-#' \code{rstudio::viewer} or opens in default browser on error
+#' \code{rstudioapi::viewer} or opens in default browser on error
 #' 
 #' @return
 #' The html code (invisibly) as a character string.
@@ -38,7 +38,7 @@ show_html <- function(..., use_viewer = !is.null(getOption('viewer'))) {
   if (is.null(x)) return(invisible())
   writeLines(x, con = htmlFile)
   if (use_viewer)
-    tryCatch(rstudio::viewer(htmlFile),
+    tryCatch(rstudioapi::viewer(htmlFile),
              error = function(e) {
                message('Viewer not available - opening in browser.\n',
                        'In RStudio, try installing the \'rstudio\' package.',
@@ -55,7 +55,7 @@ show_html <- function(..., use_viewer = !is.null(getOption('viewer'))) {
 #' 
 #' @param ... one or more character strings
 #' @param use_viewer logical; if \code{TRUE}, attempts to use
-#' \code{rstudio::viewer} or opens in default browser on error
+#' \code{rstudioapi::viewer} or opens in default browser on error
 #' @param markArgs a list of addition arguments passed to
 #' \code{\link[markdown]{markdownToHTML}}
 #' 
@@ -139,13 +139,13 @@ show_markdown <- function(..., use_viewer = !is.null(getOption('viewer')),
 
 #' Show math equations
 #' 
-#' Displays math equations in \code{rstudio::viewer} or browser using the
+#' Displays math equations in \code{rstudioapi::viewer} or browser using the
 #' \href{http://www.mathjax.org}{MathJax} javascript engine.
 #' 
 #' @param ... one or more character strings
 #' @param css optional css formatting
 #' @param use_viewer logical; if \code{TRUE}, attempts to use
-#' \code{rstudio::viewer} or opens in default browser on error
+#' \code{rstudioapi::viewer} or opens in default browser on error
 #' 
 #' @seealso
 #' \code{\link{show_html}}, \code{\link{show_markdown}},
@@ -735,6 +735,9 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' @param pct.col logical; if \code{TRUE}, percents are separated into new
 #' columns
 #' @param pct.total logical; if \code{TRUE}, adds percents for total column
+#' @param drop logical; if \code{TRUE}, rows with zero total counts
+#' will be removed (default); \code{FALSE} case is useful when merging multiple
+#' \code{tabler_by} tables (eg, this is what \code{tabler_by2} does)
 #' @param stratvar for \code{tabler_by2}, a factor-like variable used to
 #' stratify observations into mutually exclusive groups for which
 #' \code{tabler_by} will be performed on each subset
@@ -788,25 +791,31 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #'             'proportion of patients out of respective phase total.</font>'))
 #' 
 #' 
-#' ## same as above but adding a level of stratification
-#' out <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'grade',
-#'                   stratvar = 'phase', zeros = '-')
+#' ## same as above but add level of stratification, sort by total within group
+#' out2 <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'grade',
+#'                    stratvar = 'phase', zeros = '-', pct = TRUE)
+#' stopifnot(
+#'   identical(
+#'     sort(unname(out[, grep('Total', colnames(out))[1]])),
+#'     sort(unname(out2[, grep('Total', colnames(out2))[1]]))
+#' ))
 #' 
-#' colnames(out)[1:2] <- c(
+#' colnames(out2)[1:2] <- c(
 #'   'Description', sprintf('Total<br /><font size=1>n = %s</font>', sum(n)))
 #' 
 #' cgroup <- c('', '',
 #'             sprintf('Phase I<br /><font size=1>n = %s</font>', n[1]),
 #'             sprintf('Phase II<br /><font size=1>n = %s</font>', n[2]))
 #'             
-#' htmlTable(out, align = 'lccccccccc', cgroup = cgroup, n.cgroup = c(1,1,4,4),
+#' htmlTable(out2, align = 'lccccccccc', cgroup = cgroup, n.cgroup = c(1,1,4,4),
 #'     caption = 'Table 1: Toxicities<sup>&dagger;</sup> by category, phase,
 #'                grade.')
 #'             
 #' @export
 
 tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
-                      pct = TRUE, pct.col = FALSE, pct.total = FALSE) {
+                      pct = TRUE, pct.col = FALSE, pct.total = FALSE,
+                      drop = TRUE) {
   
   rm_p <- function(x) gsub(' \\(.*\\)$', '', x)
   ord <- function(...) order(..., decreasing = TRUE)
@@ -863,22 +872,31 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
   
   ## use ftable formatting, replace table with new one
   ftbl <- writeftable(ftbl)
-  idx <- which(colSums(apply(ftbl, 2, Negate(nzchar))) == nr)
-  res <- cbind(ftbl[, -(idx:ncol(ftbl)), drop = FALSE], `colnames<-`(res, cn))
+  ftbl <- as.matrix(locf(as.data.frame(ftbl)))
+  
+  ## column that separates labels from counts
+  ftbl[is.na(ftbl)] <- ''
+  idx  <- which(colSums(apply(ftbl, 2, Negate(nzchar))) == nr)
+  
+  res  <- cbind(ftbl[, -(idx:ncol(ftbl)), drop = FALSE], `colnames<-`(res, cn))
   
   ## order by group variable (if given) and total
-  res <- if (order) {
-    o <- data.frame(res[, c(varname[1], 'Total')], stringsAsFactors = FALSE)
+  o <- if (order) {
+    o <- data.frame(res[, c(varname, 'Total')], stringsAsFactors = FALSE)
     o <- within(locf(o), Total <- as.numeric(Total))
-    o <- if (length(varname) == 1L)
-      ord(o[, 2]) else ord(-xtfrm(o[, 1]), o[, 2])
-    o <- res[o, ]
-    o[, 1] <- res[, 1]
-    o
-  } else res
+    if (length(varname) == 1L)
+      ord(o[, 'Total']) else ord(-xtfrm(o[, 1]), o[, 'Total'])
+  } else seq(nrow(res))
+  res <- res[o, ]
+  
+  ## remove rows with 0 total since not dropped in ftable
+  if (drop)
+    res <- res[res[, 'Total'] %ni% '0', ]
+  if (length(varname) != 1)
+    res[, 1] <- ifelse(duplicated(res[, 1]), '', res[, 1])
   
   if (!isTRUE(zeros)) {
-    if (zeros == FALSE)
+    if (identical(FALSE, zeros))
       zeros = ''
     idx <- idx:ncol(res)
     res[, idx] <- `[<-`(res[, idx], gsub('0 \\(0%\\)|^0$', zeros, res[, idx]))
@@ -910,23 +928,26 @@ tabler_by2 <- function(data, varname, byvar, n, stratvar, zeros = TRUE,
   
   ## get (second varname if ln == 2L and) overall total column(s)
   o1 <- tabler_by(data, varname, '_strat_var_', n, FALSE, zeros,
-                  pct, pct.col, pct.total)
+                  pct, pct.col, pct.total, drop = FALSE)
   o1 <- o1[, 1:(ln + (pct.col & pct.total)), drop = FALSE]
+  
   ## get groups of columns for each level of byvar
   o2 <- lapply(bylvl, function(x)
     tabler_by(data[data[, '_strat_var_'] == x, ], varname, byvar, n[x],
-              FALSE, zeros, pct, pct.col, pct.total))
+              FALSE, zeros, pct, pct.col, pct.total, drop = FALSE))
   
-  out <- do.call('cbind', c(list(o1), o2))
-  rownames(out) <- locf(rownames(out))
-  out <- t(t(out)[!duplicated(t(out)), ])
-  out <- out[!out[, ln] %in% c(0, as.character(zeros)), ]
-  out <- out[if (ln == 1L)
-    ord(as.numeric(rm_p(out[, 1]))) else
-      ord(-xtfrm(rownames(out)), as.numeric(rm_p(out[, ln]))), ]
+  res <- do.call('cbind', c(list(o1), o2))
+  rownames(res) <- locf(rownames(res))
   
-  rownames(out)[duplicated(rownames(out))] <- ''
-  out
+  ## remove duplicate columns, rows with 0 total, order using varname input
+  res <- t(t(res)[!duplicated(t(res)), ])
+  res <- res[!res[, ln] %in% c('0', as.character(zeros)), ]
+  res <- res[if (ln == 1L)
+    ord(as.numeric(rm_p(res[, 1]))) else
+      ord(-xtfrm(rownames(res)), as.numeric(rm_p(res[, ln]))), ]
+  
+  rownames(res)[duplicated(rownames(res))] <- ''
+  res
 }
 
 #' Match CTCAE codes
