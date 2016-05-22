@@ -1230,8 +1230,8 @@ melt <- function(data, varying = list(1:ncol(data)), ...) {
 #' prefixed by \code{Data:}
 #' @param ... additional arguments passed to \code{\link[DT]{datatable}}
 #' @param use_viewer logical; if \code{TRUE}, opens in the
-#' \code{\link[rstudio]{viewer}} if available; otherwise, opens in the default
-#' browser
+#' \code{\link[rstudioapi]{viewer}} if available; otherwise, opens in the
+#' default browser
 #' 
 #' @examples
 #' view2(mtcars)
@@ -1259,10 +1259,10 @@ view2 <- function(x, use_viewer = FALSE, ...) {
     htmlwidgets::saveWidget(x, htmlFile, selfcontained = TRUE) else
       writeLines(x, con = htmlFile)
   if (use_viewer)
-    tryCatch(rstudio::viewer(htmlFile),
+    tryCatch(rstudioapi::viewer(htmlFile),
              error = function(e) {
                message('Viewer not available - opening in browser.\n',
-                       'In RStudio, try installing the \'rstudio\' package.',
+                       'In RStudio, try installing the \'rstudioapi\' package.',
                        domain = NA)
                browseURL(htmlFile)
              }) else browseURL(htmlFile)
@@ -1471,7 +1471,8 @@ insert_matrix <- function(m, rowsep, colsep, rowrep = NA, colrep = rowrep) {
 #' @seealso
 #' \href{http://stackoverflow.com/questions/4948361/how-do-i-save-warnings
 #' -and-errors-as-output-from-a-function}{SO question};
-#' \code{\link[logR]{tryCatch2}}
+#' \code{\link[logR]{tryCatch2}}; \href{https://github.com/jangorecki/logR}{
+#' \pkg{logR} github repo}
 #' 
 #' @examples
 #' tryCatch2(1)
