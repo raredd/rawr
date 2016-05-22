@@ -1,12 +1,17 @@
 Package: rawr
 Type: Package
 Title: rawr miscellaneous
-Version: 0.8.1
+Version: 0.8.2
 Authors@R: person("Robert", "Redd", email = "raredd01@gmail.com",
   role = c("aut", "cre"))
 Author: Robert Redd
 Maintainer: Robert Redd <raredd01@gmail.com>
 Description: Miscellaneous functions.
+Imports:
+    graphics,
+    methods,
+    stats,
+    utils
 Suggests:
     beepr,
     desmon,
@@ -17,7 +22,7 @@ Suggests:
     knitr,
     markdown,
     parallel,
-    rstudio,
+    rstudioapi,
     survival,
     testthat
 License: GPL-2
