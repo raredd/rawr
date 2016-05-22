@@ -11,7 +11,7 @@ show_markdown(..., use_viewer = !is.null(getOption("viewer")),
 \item{...}{one or more character strings}
 
 \item{use_viewer}{logical; if \code{TRUE}, attempts to use
-\code{rstudio::viewer} or opens in default browser on error}
+\code{rstudioapi::viewer} or opens in default browser on error}
 
 \item{markArgs}{a list of addition arguments passed to
 \code{\link[markdown]{markdownToHTML}}}

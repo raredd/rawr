@@ -12,10 +12,10 @@ show_math(..., css, use_viewer = !is.null(getOption("viewer")))
 \item{css}{optional css formatting}
 
 \item{use_viewer}{logical; if \code{TRUE}, attempts to use
-\code{rstudio::viewer} or opens in default browser on error}
+\code{rstudioapi::viewer} or opens in default browser on error}
 }
 \description{
-Displays math equations in \code{rstudio::viewer} or browser using the
+Displays math equations in \code{rstudioapi::viewer} or browser using the
 \href{http://www.mathjax.org}{MathJax} javascript engine.
 }
 \examples{

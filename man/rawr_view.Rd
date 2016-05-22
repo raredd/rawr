@@ -20,8 +20,8 @@ prefixed by \code{Data:}}
 \item{...}{additional arguments passed to \code{\link[DT]{datatable}}}
 
 \item{use_viewer}{logical; if \code{TRUE}, opens in the
-\code{\link[rstudio]{viewer}} if available; otherwise, opens in the default
-browser}
+\code{\link[rstudioapi]{viewer}} if available; otherwise, opens in the
+default browser}
 }
 \description{
 Convenience functons to use the base \code{R} data viewer (\code{view}
