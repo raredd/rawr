@@ -387,13 +387,13 @@ allequal <- function(..., tolerance = .Machine$double.eps ^ 0.5, scale = NULL,
 #' the specified \code{col.name}.
 #' 
 #' @examples
-#' df <- data.frame(islands = names(islands)[1:32], mtcars)
-#' search_df(New, df, islands)
-#' search_df(ho, df, islands, var = 0.2) # too much variation
-#' search_df(ho, df, islands, var = 0)
-#' search_df('Axel Hieberg', df, islands) # misspelled, not enough variation
-#' search_df('Axel Hieberg', df, islands, var = 2)
-#' search_df(19, df, mpg)
+#' dd <- data.frame(islands = names(islands)[1:32], mtcars)
+#' search_df(New, dd, islands)
+#' search_df(ho, dd, islands, var = 0.2) # too much variation
+#' search_df(ho, dd, islands, var = 0)
+#' search_df('Axel Hieberg', dd, islands) # misspelled, not enough variation
+#' search_df('Axel Hieberg', dd, islands, var = 2)
+#' search_df(19, dd, mpg)
 #' 
 #' @export
 
@@ -403,7 +403,7 @@ search_df <- function(pattern, data, col.name, var = 0,
   x <- as.character(substitute(col.name))
   idx <- agrep(p, data[, x], ignore.case = ignore.case,
                max.distance = var, ...)
-  df[idx, ]
+  data[idx, ]
 }
 
 #' Search history
