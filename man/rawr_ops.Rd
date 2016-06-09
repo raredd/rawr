@@ -50,11 +50,12 @@ the \code{interval} (inclusive).
 include \code{\link{NA}}s.
 
 \code{\%||\%} is useful for a function, \code{f}, that may return a value
-or \code{NULL}, but if \code{NULL} is the result of \code{f}, it is
-desirable to return some other default value without errors.
+or \code{NULL}; however if \code{NULL} is the return value of \code{f}, it
+is desirable to return some other default value.
 
-\code{\%:\%} is useful for obtaining a range of \code{colnames} or
-\code{names} by literal character strings rather than by index.
+\code{\%:\%} is useful for obtaining a range of a vector (usually
+\code{colnames} or \code{names} of a matrix or data frame) by literal
+character strings rather than by index.
 }
 \examples{
 \dontrun{
@@ -72,10 +73,11 @@ a \%in\% b   # TRUE  TRUE TRUE
 ## desired results
 a \%==\% b   # FALSE TRUE FALSE
 
-f <- function(x0 = TRUE) NULL || x0
-f() # error
-f <- function(x0 = TRUE) NULL \%||\% x0
-f() # TRUE
+NULL || TRUE   # error
+NULL \%||\% TRUE # TRUE
+
+1:5 \%:\% c(3,5)
+letters \%:\% c('e', 'n')
 
 ## these are equivalent
 mtcars \%:\% c('hp','vs')

@@ -24,23 +24,23 @@ done <- function() while (TRUE) {beepr::beep(3); Sys.sleep(3)}
 #' 
 #' \code{\%inside\%} returns a logical vector indicating if \code{x} is inside
 #' the \code{interval} (inclusive).
-#' 
 #'
 #' \code{\%=\%} is an operator combining the qualities of \code{\link{==}} and
 #' \code{\link{\%in\%}} to compare vectors in a pairwise manner which may
 #' include \code{\link{NA}}s.
 #' 
 #' \code{\%||\%} is useful for a function, \code{f}, that may return a value
-#' or \code{NULL}, but if \code{NULL} is the result of \code{f}, it is
-#' desirable to return some other default value without errors.
+#' or \code{NULL}; however if \code{NULL} is the return value of \code{f}, it
+#' is desirable to return some other default value.
 #' 
-#' \code{\%:\%} is useful for obtaining a range of \code{colnames} or
-#' \code{names} by literal character strings rather than by index.
+#' \code{\%:\%} is useful for obtaining a range of a vector (usually
+#' \code{colnames} or \code{names} of a matrix or data frame) by literal
+#' character strings rather than by index.
 #' 
-#' @param a,b raw, logical, "number-like" vectors or objects
 #' @param x vector or \code{NULL}; the values to be matched
 #' @param table vector or \code{NULL}; the values to be matched against
 #' @param interval numeric vector of length two representing the interval
+#' @param a,b raw, logical, "number-like" vectors or objects
 #' @param object a \emph{named} vector or list, a matrix or data frame
 #' @param range a numeric or character vector of length two with the indices
 #' or names from \code{object}, generally of the structure \code{c(from, to)}
@@ -64,10 +64,11 @@ done <- function() while (TRUE) {beepr::beep(3); Sys.sleep(3)}
 #' ## desired results
 #' a %==% b   # FALSE TRUE FALSE
 #' 
-#' f <- function(x0 = TRUE) NULL || x0
-#' f() # error
-#' f <- function(x0 = TRUE) NULL %||% x0
-#' f() # TRUE
+#' NULL || TRUE   # error
+#' NULL %||% TRUE # TRUE
+#' 
+#' 1:5 %:% c(3,5)
+#' letters %:% c('e', 'n')
 #' 
 #' ## these are equivalent
 #' mtcars %:% c('hp','vs')
@@ -77,6 +78,7 @@ done <- function() while (TRUE) {beepr::beep(3); Sys.sleep(3)}
 #' 
 #' @aliases oror %||% notin %ni% inside %inside% %==%
 #' @name rawr_ops
+NULL
 
 #' @rdname rawr_ops
 #' @export
