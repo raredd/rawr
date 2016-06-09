@@ -101,7 +101,9 @@ done <- function() while (TRUE) {beepr::beep(3); Sys.sleep(3)}
 #' @rdname rawr_ops
 #' @export
 '%:%' <- function(object, range) {
-  FUN <- if (is.matrix(object)) colnames else names
+  FUN <- if (!is.null(dim(object))) {
+    if (is.matrix(object)) colnames else names
+  } else identity
   wh <- if (is.numeric(range)) range else which(FUN(object) %in% range)
   FUN(object)[seq(wh[1], wh[2])]
 }
