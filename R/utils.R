@@ -5,7 +5,8 @@
 #
 # psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill, interleave,
 # outer2, merge2, locf, roll_fun, classMethods, regcaptures, cast, melt, view,
-# view2, clist, rapply2, sort_matrix, insert_matrix, tryCatch2, rleid
+# view2, clist, rapply2, sort_matrix, insert_matrix, tryCatch2, rleid,
+# droplevels2
 #
 # unexported: islist, done
 ###
@@ -1537,3 +1538,27 @@ tryCatch2 <- function(expr) {
 
 rleid <- function(x)
   cumsum(c(1L, x[-length(x)] != x[-1]))
+
+#' Drop factor levels
+#' 
+#' Drop factor levels preserving the range, i.e., unused levels between
+#' \code{min_level} and \code{max_level} will not be dropped.
+#' 
+#' @param x a factor variable
+#' @param min_level,max_level min and max unused factor levels to include
+#' 
+#' @seealso
+#' \code{\link{droplevels}}
+#' 
+#' @examples
+#' x <- factor(c('b','d'), levels = letters[1:5])
+#' droplevels(x)
+#' droplevels2(x)
+#' droplevels2(x, min_level = 2, max_level = 5)
+#' 
+#' @export
+
+droplevels2 <- function(x, min_level = 1, max_level = max(as.numeric(x)), ...) {
+  stopifnot(is.factor(x))
+  factor(x, levels = levels(x)[min_level:max_level])
+}
