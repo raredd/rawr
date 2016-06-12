@@ -6,10 +6,10 @@
 \alias{river2}
 \title{River plots}
 \usage{
-river(data, bar_data, id, at = id, legend = "topleft", xlim, ylim,
-  rev = FALSE, stagger = TRUE)
+river(data, bar_data, id, at, legend = "topleft", xlim, ylim, rev = FALSE,
+  stagger = TRUE)
 
-river2(data, bar_data, bar_data2, id = 1, legend = "topleft", xlim, ylim,
+river2(data, bar_data, bar_data2, id, legend = "topleft", xlim, ylim,
   rev = FALSE, stagger = FALSE, split = FALSE)
 
 check_river_format(data, bar_data)

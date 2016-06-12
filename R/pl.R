@@ -513,7 +513,7 @@ tplot.default <- function(x, ..., type = c('d','db','bd','b'), jit = 0.1, dist,
         do.call('lines', c(list(at[i] + Lme, rep(median(y), 2)), median.pars))
     }
   }
-    
+  
   panel.last
   
   if (axes) {
@@ -781,7 +781,7 @@ dsplot.formula <- function(formula, data = NULL, ...,
   mf <- eval(m, parent.frame())
   n <- nrow(mf)
   response <- attr(attr(mf, 'terms'), 'response')
-
+  
   if (!missing(subset)) {
     s <- eval(subset.expr, data, parent.frame())
     args <- lapply(args, do_sub_, x, n, s)
@@ -970,23 +970,28 @@ waffle <- function(mat, xpad = 0, ypad = .05, ..., reset_par = TRUE) {
 #' 
 #' @export
 
-river <- function(data, bar_data, id, at = id, legend = 'topleft',
+river <- function(data, bar_data, id, at, legend = 'topleft',
                   xlim, ylim, rev = FALSE, stagger = TRUE) {
   ## error checks
   dd <- check_river_format(data)
   bd <- check_river_format(data, bar_data)
   
+  nn <- as.character(unique(dd$id))
+  if (missing(id))
+    id <- nn
+  if (missing(at))
+    at <- seq_along(nn)
+  if (rev)
+    at <- rev(at)
+  stopifnot(length(at) == length(id))
+  if (!all(id %in% nn))
+    stop('invalid id: ', id)
+  
   dd <- merge(bd, dd, by = 'id', all = TRUE)
-  nn <- seq_along(unique(dd$id))
   
   ## colors for resp - PD:CR
   cols <- c('red','transparent','yellow','orange',
             'deepskyblue','dodgerblue3','blue4')
-  
-  if (missing(id))
-    id <- nn else stopifnot(all(id %in% nn & length(at) == length(id)))
-  if (rev)
-    at <- rev(at)
   
   ## convert dates to days with origin at first id reg (ie, ref date == 0)
   dts <- grep('^dt_', names(dd))
@@ -1027,7 +1032,7 @@ river <- function(data, bar_data, id, at = id, legend = 'topleft',
   sp <- split(dd, dd$id, drop = FALSE)
   
   for (ii in id) {
-    ## lines at specific points requires new index
+    ## lines at specific points require new index
     jj <- at[which(id %in% ii)]
     
     # with(dd[ii, ], {
@@ -1060,7 +1065,7 @@ river <- function(data, bar_data, id, at = id, legend = 'topleft',
 
 #' @rdname river
 #' @export
-river2 <- function(data, bar_data, bar_data2, id = 1, legend = 'topleft',
+river2 <- function(data, bar_data, bar_data2, id, legend = 'topleft',
                    xlim, ylim, rev = FALSE, stagger = FALSE, split = FALSE) {
   ## error checks
   if (!missing(data)) {
@@ -1084,6 +1089,8 @@ river2 <- function(data, bar_data, bar_data2, id = 1, legend = 'topleft',
     bar_data <- data.frame(id = data$id, dt_assess = data$dt_reg, resp = NA)
   }
   
+  if (!any(c(data$id, bar_data$id, bar_data2$id) %in% id))
+    stop('invalid id: ', id)
   dd <- check_river_format(data)
   bd <- check_river_format(data, bar_data)
   td <- check_river_format(data, bar_data2)
