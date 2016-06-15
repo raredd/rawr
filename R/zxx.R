@@ -4,7 +4,7 @@
 # updateR, read_clip, icols, fill_df, kinda_sort, rgene, install_temp,
 # nestedMerge, nestedmerge, path_extract, fname, file_name, file_ext, rm_ext,
 # mgrep, mgrepl, msub, mgsub, flatten, tree, rm_null, cum_reset, vgrep, vgrepl,
-# justify, factors, factors_, sample_each
+# justify, factors, factors_, sample_each, pickcol
 ###
 
 
@@ -1648,4 +1648,72 @@ sample_each <- function(x, n = 1L) {
   idx <- ave(x, x, FUN = function(xx)
     sample(rep(0:1, c(nF[xx[1]], nT[xx[1]]))))
   !!as.numeric(idx)
+}
+
+#' Pick elements from columns
+#' 
+#' This function will return \code{\link{colnames}} or column values (if
+#' \code{value = TRUE}) for "indicator-like" matrices or data frames.
+#' 
+#' @param data a data frame or matrix
+#' @param ind if \code{value = FALSE}, a vector (usually a single value)
+#' which, for each row, will return the corresponding column name; if
+#' \code{value = FALSE} (default), a vector of values to be \emph{ignored}
+#' @param value logical; if \code{TRUE}, returns column value; otherwise,
+#' returns column names (default)
+#' 
+#' @return
+#' If \code{value} is \code{FALSE} (default), the column names of \code{data}
+#' for which each row of \code{data} contained \code{ind}.
+#' 
+#' If \code{value} is \code{TRUE}, the column values of \code{data} which are
+#' \emph{not} values of \code{ind}.
+#' 
+#' @references
+#' Modified \href{http://stackoverflow.com/a/37824983/2994949}{SO answer}.
+#' 
+#' @examples
+#' set.seed(1)
+#' ss <- sample(10)
+#' dd <- as.matrix(ftable(1:10, ss))
+#' 
+#' all(pickcol(dd) == ss)
+#' 
+#' rn <- rnorm(10)
+#' dd[dd == 1] <- rn
+#' all(pickcol(dd, value = TRUE, ind = 0) == rowSums(dd))
+#' 
+#' 
+#' dd <- data.frame(x = c(1,0,0), y = c(0,0,1), z = c(0,1,0),
+#'                  a = c('one','',''), b = c('','','three'), c = c('','two',''))
+#' 
+#' pickcol(dd[1:2])
+#' pickcol(dd[1:2], 0)
+#' pickcol(dd[1:3] + 1, ind = 2)
+#' 
+#' pickcol(dd[4:6], value = TRUE, ind = '')
+#' pickcol(dd, value = TRUE, ind = c('', 0:1))
+#' 
+#' dd[dd == ''] <- NA
+#' pickcol(dd[4:6], value = TRUE)
+#' 
+#' @export
+
+pickcol <- function(data, ind = 1, value = FALSE) {
+  if (value) {
+    if (!is.na(ind))
+      data <- recoder(data, ind, NA)
+    ## pad with NA if no matches in rows
+    idx <- rbind(which(!is.na(data), arr.ind = TRUE),
+                 cbind(seq(nrow(data)), NA))
+    idx <- idx[!duplicated(idx[, 1]), ]
+    return(data[idx[order(idx[, 1]), ]])
+  }
+  # colnames(data)[do.call('pmax', data.frame(data == ind) * col(data))]
+  x <- NA
+  data <- recoder(data, ind, rn <- rnorm(1))
+  data <- +(data == rn)
+  sel <- rowSums(data) == 1L
+  x[sel] <- max.col(data, 'first')[sel]
+  colnames(data)[x]
 }
