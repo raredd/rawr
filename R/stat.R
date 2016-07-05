@@ -1,6 +1,6 @@
 ### statistical functions
 # bincon, bintest, dlt_table, power_cv, simon2, moods_test, fakeglm, gcd,
-# install.bioc, lm.beta
+# install.bioc, lm.beta, cuzick.test
 ###
 
 
@@ -871,4 +871,164 @@ lm.beta <- function (x, weights = 1) {
   sx <- vapply(mf[, -1, drop = FALSE], sd, double(1))
   sy <- vapply(mf[,  1, drop = FALSE], sd, double(1))
   b * sx / sy * weights
+}
+
+#' Wilcoxon rank sum test for trend of ordered groups
+#' 
+#' An implementation of Cuzick's extension of the Wilcoxon rank sum test for
+#' trend in cases of three or more \emph{ordered} groups.
+#' 
+#' @param x a numeric vector of data values or a list of numeric data vectors;
+#' non-numeric elements of a list will be coerced with a warning
+#' @param g a vector or factor object giving the group for the corresponding
+#' elements of \code{x}, ignored with a warning if \code{x} is a list
+#' @param formula a formula of the form \code{response ~ group} where
+#' \code{response} gives the data values and \code{group} a vector or factor
+#' of the corresponding groups
+#' @param data an optional matrix or data frame (or similar: see
+#' \code{\link{model.frame}}) containing the variables in \code{formula}; by
+#' default the variables are taken from \code{environment(formula)}
+#' @param subset an optional vector specifying a subset of observations to be
+#' used
+#' @param na.action a function which indicates what should happen when the
+#' data contain \code{NA}s; defaults to \code{getOption("na.action")}
+#' @param alternative a character string specifying the alternative hypothesis;
+#' must be one of \code{"two.sided"} (default), \code{"greater"} or
+#' \code{"less"}
+#' @param ... further arguments to be passed to or from methods
+#' 
+#' @return
+#' A list with class "\code{htest}" containing the following components:
+#' 
+#' \item{statistic}{the value of the test statistic with a name describing it}
+#' \item{parameter}{the parameter(s) for the exact distribution of the test statistic}
+#' \item{p.value}{the p-value for the test}
+#' \item{alternative}{a character string describing the alternative hypothesis}
+#' \item{method}{a character string describing the test used}
+#' \item{data.name}{a character string giving the names of the data}
+#' \item{estimate}{the median by group}
+#' 
+#' @references
+#' Altman, D. G. 1991. \emph{Practical Statistics for Medical Research}.
+#' London: Chapman & Hall/CRC.
+#' 
+#' Cuzick, J. 1985. A Wilcoxon-type test for trend. \emph{Statistics in
+#' Medicine} \strong{4}: 87–90.
+#' 
+#' @seealso
+#' \url{https://github.com/andrewejaffe/CuzicksTest},
+#' \url{http://r.789695.n4.nabble.com/Cuzick-s-test-for-trend-td807101.html}
+#' 
+#' @examples
+#' ## Altman (1991), 217
+#' ## ocular exposure to ultraviolet radiation for 32 pairs of sunglasses
+#' ## classified into three groups according to the amount of visible light
+#' ## transmitted
+#' 
+#' x <- list(c(1.4, 1.4, 1.4, 1.6, 2.3, 2.3),
+#'           c(0.9, 1.0, 1.1, 1.1, 1.2, 1.2, 1.5, 1.9, 2.2, 2.6, 2.6, 2.6,
+#'             2.8, 2.8, 3.2, 3.5, 4.3, 5.1),
+#'           c(0.8, 1.7, 1.7, 1.7, 3.4, 7.1, 8.9, 13.5))
+#' 
+#' ## equivalent ways to call cuzick.test
+#' cuzick.test(x)
+#' cuzick.test(unlist(x), rep(seq(x), lengths(x)))
+#' cuzick.test(x ~ g, data.frame(x = unlist(x), g = rep(1:3, lengths(x))))
+#' 
+#' 
+#' ## Cuzick (1985), 87-90
+#' x <- c(0, 0, 1, 1, 2, 2, 4, 9, 0, 0, 5, 7, 8, 11, 13, 23,
+#'        25, 97, 2, 3, 6, 9, 10, 11, 11, 12, 21, 0, 3, 5, 6,
+#'        10, 19, 56, 100, 132, 2, 4, 6, 6, 6, 7, 18, 39, 60)
+#' g <- rep(1:5, c(8,10,9,9,9))
+#' cuzick.test(x, g)
+#' 
+#' @export
+
+cuzick.test <- function(x, ... ) UseMethod('cuzick.test')
+
+#' @rdname cuzick.test
+#' @export
+cuzick.test.default <- function(x, g, alternative = c('two.sided', 'greater', 'less')) {
+  ## checks adapted from stats:::kruskal.test.default
+  if (is.list(x)) {
+    if (length(x) < 2L)
+      stop('\'x\' must be a list with at least 2 elements')
+    if (!missing(g))
+      warning('\'x\' is a list, so ignoring argument \'g\'')
+    dname <- deparse(substitute(x))
+    x <- lapply(x, function(u) u <- u[complete.cases(u)])
+    if (!all(sapply(x, is.numeric)))
+      warning('some elements of \'x\' are not numeric and will be coerced')
+    l <- lengths(x)
+    if (any(l == 0L))
+      stop("all groups must contain data")
+    g <- factor(rep.int(seq_len(length(x)), l))
+    x <- unlist(x)
+  } else {
+    if (length(x) != length(g))
+      stop('\'x\' and \'g\' must have the same length')
+    dname <- paste(deparse(substitute(x)), 'and', deparse(substitute(g)))
+    OK <- complete.cases(x, g)
+    x <- x[OK]
+    g <- g[OK]
+    if (!all(is.finite(g))) 
+      stop('all group levels must be finite')
+    g <- factor(g)
+    if (nlevels(g) < 2L) 
+      stop('all observations are in the same group')
+  }
+  if (length(x) < 2L)
+    stop("not enough observations")
+  alternative <- match.arg(alternative)
+  
+  
+  stopifnot(is.factor(g))
+  
+  N <- length(g)
+  nl <- nlevels(g)
+  if (nl > length(unique(x)))
+    warning('more unique groups than unqiue response values: check call')
+  pt <- prop.table(table(g))
+  
+  ranks <- rank(x)
+  statistic <- sum(ranks * as.numeric(g))
+  
+  E_Z   <- sum(seq.int(nl) * pt)
+  E_T   <- 0.5 * N * (N + 1) * E_Z 
+  var_Z <- sum(seq.int(nl) ^ 2 * pt) - E_Z ^ 2 
+  var_T <- N ^ 2 * (N + 1) / 12 * var_Z 
+  z <- (statistic - E_T) / sqrt(var_T)
+  
+  method <- sprintf('Wilcoxon rank sum test for trend in %s ordered groups', nl)
+  pval <- switch(alternative,
+                 less = pnorm(z),
+                 greater = pnorm(z, lower.tail = FALSE),
+                 two.sided = 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE)))
+  
+  structure(list(statistic = c(z = z), p.value = pval,
+                 estimate = tapply(x, paste('median of', g), FUN = median),
+                 # conf.int = NULL, null.value = NULL, parameter = NULL,
+                 alternative = alternative, method = method, data.name = dname),
+            class = 'htest')
+}
+
+#' @rdname cuzick.test
+#' @export
+cuzick.test.formula <- function (formula, data, subset, na.action, ...) {
+  ## adapted from stats:::kruskal.test.formula
+  if (missing(formula) || (length(formula) != 3L))
+    stop('\'formula\' missing or incorrect')
+  m <- match.call(expand.dots = FALSE)
+  if (is.matrix(eval(m$data, parent.frame())))
+    m$data <- as.data.frame(data)
+  m[[1L]] <- quote(stats::model.frame)
+  mf <- eval(m, parent.frame())
+  if (length(mf) > 2L)
+    stop('\'formula\' should be of the form response ~ group')
+  dname <- paste(names(mf), collapse = ' by ')
+  names(mf) <- NULL
+  y <- do.call('cuzick.test', as.list(mf))
+  y$data.name <- dname
+  y
 }
