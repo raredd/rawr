@@ -4,7 +4,7 @@
 \alias{surv_table}
 \title{Summary table}
 \usage{
-surv_table(s, digits = 3, times = pretty(range(s$time)), ...)
+surv_table(s, digits = 3, times = pretty(s$time), maxtime = TRUE, ...)
 }
 \arguments{
 \item{s}{a \code{\link[survival]{survfit}} object}
@@ -12,6 +12,9 @@ surv_table(s, digits = 3, times = pretty(range(s$time)), ...)
 \item{digits}{number of digits to use in printing numbers}
 
 \item{times}{vector of times}
+
+\item{maxtime}{logical; if \code{TRUE}, adds the maximum time for which an
+even occurs; if \code{FALSE}, number of events may not sum to total}
 
 \item{...}{additional arguments passed to \code{\link{summary.survfit}}}
 }
@@ -24,13 +27,13 @@ Prints a formatted summary table for \code{\link{survfit}} objects.
 }
 \examples{
 library('survival')
-fit0 <- survfit(coxph(Surv(time, status) ~ 1,
+fit0 <- survfit(coxph(Surv(time, status == 2) ~ 1,
                       data = cancer),
                 conf.type = 'log-log')
-surv_table(fit0, times = 0:2 * 100)
+surv_table(fit0, times = 0:2 * 100, maxtime = FALSE)
 
 ## also works for list of tables
-fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)),
+fit1 <- survfit(coxph(Surv(time, status == 2) ~ strata(I(age > 60)),
                       data = cancer),
                 conf.type = 'log-log', conf.int = 0.9)
 surv_table(fit1)
@@ -38,7 +41,7 @@ surv_table(fit1)
 library('htmlTable')
 s <- `colnames<-`(surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4],
                   c('Time','No. at risk','No. of events','HR (95\% CI)'))
-htmlTable(s)
+htmlTable(s, caption = 'Table: Overall survival.')
 
 }
 \seealso{

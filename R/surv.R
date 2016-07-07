@@ -713,6 +713,8 @@ surv_summary <- function(s, digits = 3L, ...) {
 #' @param digits number of digits to use in printing numbers
 #' @param times vector of times
 #' @param ... additional arguments passed to \code{\link{summary.survfit}}
+#' @param maxtime logical; if \code{TRUE}, adds the maximum time for which an
+#' even occurs; if \code{FALSE}, number of events may not sum to total
 #' 
 #' @return
 #' A matrix (or list of matrices) with formatted summaries for each strata; see
@@ -723,13 +725,13 @@ surv_summary <- function(s, digits = 3L, ...) {
 #' 
 #' @examples
 #' library('survival')
-#' fit0 <- survfit(coxph(Surv(time, status) ~ 1,
+#' fit0 <- survfit(coxph(Surv(time, status == 2) ~ 1,
 #'                       data = cancer),
 #'                 conf.type = 'log-log')
-#' surv_table(fit0, times = 0:2 * 100)
+#' surv_table(fit0, times = 0:2 * 100, maxtime = FALSE)
 #' 
 #' ## also works for list of tables
-#' fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)),
+#' fit1 <- survfit(coxph(Surv(time, status == 2) ~ strata(I(age > 60)),
 #'                       data = cancer),
 #'                 conf.type = 'log-log', conf.int = 0.9)
 #' surv_table(fit1)
@@ -737,11 +739,15 @@ surv_summary <- function(s, digits = 3L, ...) {
 #' library('htmlTable')
 #' s <- `colnames<-`(surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4],
 #'                   c('Time','No. at risk','No. of events','HR (95% CI)'))
-#' htmlTable(s)
+#' htmlTable(s, caption = 'Table: Overall survival.')
 #' 
 #' @export
 
-surv_table <- function(s, digits = 3, times = pretty(range(s$time)), ...) {
+surv_table <- function(s, digits = 3, times = pretty(s$time), maxtime = TRUE, ...) {
+  if (maxtime) {
+    maxtime <- max(s$time[s$n.event > 0])
+    times <- c(times[times <= maxtime], maxtime)
+  }
   capture.output(
     summ <- surv_summary(s, digits = digits, times = times, ...)
   )
