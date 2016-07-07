@@ -1,3 +1,12 @@
+rawr 0.8.3
+--------
+  * add cuzick.test
+  * changes to surv_table to show all events (optional)
+
+rawr 0.8.2
+--------
+  * ???
+
 rawr 0.8.1
 --------
   * changes to kmplot, surv_summary, surv_table that could break existing
