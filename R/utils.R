@@ -1558,7 +1558,7 @@ rleid <- function(x)
 #' 
 #' @export
 
-droplevels2 <- function(x, min_level = 1, max_level = max(as.numeric(x)), ...) {
+droplevels2 <- function(x, min_level = 1, max_level = max(as.numeric(x))) {
   stopifnot(is.factor(x))
   factor(x, levels = levels(x)[min_level:max_level])
 }
