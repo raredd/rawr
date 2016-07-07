@@ -875,13 +875,26 @@ lm.beta <- function (x, weights = 1) {
 
 #' Wilcoxon rank sum test for trend of ordered groups
 #' 
-#' An implementation of Cuzick's extension of the Wilcoxon rank sum test for
-#' trend in cases of three or more \emph{ordered} groups.
+#' An implementation of Cuzick's extension of the Wilcoxon rank sum test to
+#' test for trend in data with three or more \emph{ordinal} groups.
+#' 
+#' Data are assumed to be from independent groups with a natual or
+#' meaningful order. If \code{x} and \code{g} are given as vectors and
+#' \code{g} is a factor, the order of \code{levels(g)} will be respected;
+#' however, if \code{g} is \emph{not} a factor, it will be coerced, and the
+#' levels will be the same as \code{levels(factor(g))}.
+#' 
+#' For example, if \code{g} is \code{c("10mg", "5mg", "15mg")}, then the
+#' groups will be ordered as \code{10mg 15mg 5mg} which may not be desired.
 #' 
 #' @param x a numeric vector of data values or a list of numeric data vectors;
-#' non-numeric elements of a list will be coerced with a warning
+#' non-numeric elements of a list will be coerced with a warning; if \code{x}
+#' is a list, the list elements are assumed to be groups ordered as
+#' \code{x[[1]], x[[2]], ..., x[[n]]}
 #' @param g a vector or factor object giving the group for the corresponding
-#' elements of \code{x}, ignored with a warning if \code{x} is a list
+#' elements of \code{x}, ignored with a warning if \code{x} is a list; if
+#' \code{g} is \emph{not} a factor, it will be coerced, and groups will be
+#' ordered as \code{sort(unique(g))}; see \code{\link{factor}}
 #' @param formula a formula of the form \code{response ~ group} where
 #' \code{response} gives the data values and \code{group} a vector or factor
 #' of the corresponding groups
@@ -892,21 +905,16 @@ lm.beta <- function (x, weights = 1) {
 #' used
 #' @param na.action a function which indicates what should happen when the
 #' data contain \code{NA}s; defaults to \code{getOption("na.action")}
-#' @param alternative a character string specifying the alternative hypothesis;
-#' must be one of \code{"two.sided"} (default), \code{"greater"} or
-#' \code{"less"}
 #' @param ... further arguments to be passed to or from methods
 #' 
 #' @return
 #' A list with class "\code{htest}" containing the following components:
 #' 
 #' \item{statistic}{the value of the test statistic with a name describing it}
-#' \item{parameter}{the parameter(s) for the exact distribution of the test statistic}
-#' \item{p.value}{the p-value for the test}
-#' \item{alternative}{a character string describing the alternative hypothesis}
+#' \item{p.value}{the p-value for the test (two-sided)}
+#' \item{estimate}{the medians by group}
 #' \item{method}{a character string describing the test used}
 #' \item{data.name}{a character string giving the names of the data}
-#' \item{estimate}{the median by group}
 #' 
 #' @references
 #' Altman, D. G. 1991. \emph{Practical Statistics for Medical Research}.
@@ -916,8 +924,10 @@ lm.beta <- function (x, weights = 1) {
 #' Medicine} \strong{4}: 87–90.
 #' 
 #' @seealso
-#' \url{https://github.com/andrewejaffe/CuzicksTest},
-#' \url{http://r.789695.n4.nabble.com/Cuzick-s-test-for-trend-td807101.html}
+#' \code{\link{kruskal.test}}, \code{\link{wilcox.test}}
+#' 
+#' \code{\link[coin]{kruskal_test}}, \code{\link[coin]{wilcox_test}} from the
+#' \pkg{\link[coin]{coin}} package
 #' 
 #' @examples
 #' ## Altman (1991), 217
@@ -943,13 +953,25 @@ lm.beta <- function (x, weights = 1) {
 #' g <- rep(1:5, c(8,10,9,9,9))
 #' cuzick.test(x, g)
 #' 
+#' 
+#' ## coercing character group vector g to factor may have undesired order
+#' set.seed(1)
+#' x <- sort(rnorm(20))
+#' g1 <- sample(paste0(c(5,10,15), 'mg'), 20, replace = TRUE)
+#' g2 <- factor(g1, levels = paste0(c(5,10,15), 'mg'))
+#' 
+#' tplot(x ~ g1, dd <- data.frame(x, g1), type = 'db',
+#'       panel.first = title(sub = pvalr(cuzick.test(x ~ g1, dd)$p.value, show.p = TRUE)))
+#' tplot(x ~ g2, dd <- data.frame(x, g2), type = 'db',
+#'       panel.first = title(sub = pvalr(cuzick.test(x ~ g2, dd)$p.value, show.p = TRUE)))
+#' 
 #' @export
 
-cuzick.test <- function(x, ... ) UseMethod('cuzick.test')
+cuzick.test <- function(x, ...) UseMethod('cuzick.test')
 
 #' @rdname cuzick.test
 #' @export
-cuzick.test.default <- function(x, g, alternative = c('two.sided', 'greater', 'less')) {
+cuzick.test.default <- function(x, g, ...) {
   ## checks adapted from stats:::kruskal.test.default
   if (is.list(x)) {
     if (length(x) < 2L)
@@ -972,44 +994,42 @@ cuzick.test.default <- function(x, g, alternative = c('two.sided', 'greater', 'l
     OK <- complete.cases(x, g)
     x <- x[OK]
     g <- g[OK]
-    if (!all(is.finite(g))) 
+    if (is.numeric(g) && !all(is.finite(g))) 
       stop('all group levels must be finite')
-    g <- factor(g)
+    g <- as.factor(g)
     if (nlevels(g) < 2L) 
       stop('all observations are in the same group')
   }
   if (length(x) < 2L)
     stop("not enough observations")
-  alternative <- match.arg(alternative)
   
-  
-  stopifnot(is.factor(g))
-  
-  N <- length(g)
-  nl <- nlevels(g)
-  if (nl > length(unique(x)))
-    warning('more unique groups than unqiue response values: check call')
-  pt <- prop.table(table(g))
-  
-  ranks <- rank(x)
-  statistic <- sum(ranks * as.numeric(g))
-  
-  E_Z   <- sum(seq.int(nl) * pt)
-  E_T   <- 0.5 * N * (N + 1) * E_Z 
-  var_Z <- sum(seq.int(nl) ^ 2 * pt) - E_Z ^ 2 
-  var_T <- N ^ 2 * (N + 1) / 12 * var_Z 
-  z <- (statistic - E_T) / sqrt(var_T)
-  
-  method <- sprintf('Wilcoxon rank sum test for trend in %s ordered groups', nl)
+  li <- as.integer(as.factor(g))
+  ng <- table(li)
+  N  <- sum(ng)
+  if (length(ng) > length(unique(x)))
+    warning('more unique groups than unique response values')
+
+  pg <- prop.table(ng)
+  T  <- sum(li * rank(x))
+  L  <- sum(seq.int(ng) * pg)
+  expT <- L * (N + 1) / 2 * N
+  varT <- (N + 1) / 12 * (sum(seq.int(ng) ** 2 * pg) - L ** 2) * N ** 2
+  z <- (T - expT) / sqrt(varT)
+
+  estimate <- tapply(x, g, median)
+  names(estimate) <- paste('median of', names(estimate))
+  method <- sprintf('Wilcoxon rank sum test for trend in %s ordered groups',
+                    length(ng))
+  ## fix alternative to two-sided only
+  # alternative <- match.arg(alternative)
+  alternative <- 'two.sided'
   pval <- switch(alternative,
                  less = pnorm(z),
                  greater = pnorm(z, lower.tail = FALSE),
                  two.sided = 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE)))
   
-  structure(list(statistic = c(z = z), p.value = pval,
-                 estimate = tapply(x, paste('median of', g), FUN = median),
-                 # conf.int = NULL, null.value = NULL, parameter = NULL,
-                 alternative = alternative, method = method, data.name = dname),
+  structure(list(statistic = c(z = z), p.value = pval, estimate = estimate,
+                 method = method, data.name = dname),
             class = 'htest')
 }
 

@@ -8,23 +8,22 @@
 \usage{
 cuzick.test(x, ...)
 
-\method{cuzick.test}{default}(x, g, alternative = c("two.sided", "greater",
-  "less"))
+\method{cuzick.test}{default}(x, g, ...)
 
 \method{cuzick.test}{formula}(formula, data, subset, na.action, ...)
 }
 \arguments{
 \item{x}{a numeric vector of data values or a list of numeric data vectors;
-non-numeric elements of a list will be coerced with a warning}
+non-numeric elements of a list will be coerced with a warning; if \code{x}
+is a list, the list elements are assumed to be groups ordered as
+\code{x[[1]], x[[2]], ..., x[[n]]}}
 
 \item{...}{further arguments to be passed to or from methods}
 
 \item{g}{a vector or factor object giving the group for the corresponding
-elements of \code{x}, ignored with a warning if \code{x} is a list}
-
-\item{alternative}{a character string specifying the alternative hypothesis;
-must be one of \code{"two.sided"} (default), \code{"greater"} or
-\code{"less"}}
+elements of \code{x}, ignored with a warning if \code{x} is a list; if
+\code{g} is \emph{not} a factor, it will be coerced, and groups will be
+ordered as \code{sort(unique(g))}; see \code{\link{factor}}}
 
 \item{formula}{a formula of the form \code{response ~ group} where
 \code{response} gives the data values and \code{group} a vector or factor
@@ -44,16 +43,24 @@ data contain \code{NA}s; defaults to \code{getOption("na.action")}}
 A list with class "\code{htest}" containing the following components:
 
 \item{statistic}{the value of the test statistic with a name describing it}
-\item{parameter}{the parameter(s) for the exact distribution of the test statistic}
-\item{p.value}{the p-value for the test}
-\item{alternative}{a character string describing the alternative hypothesis}
+\item{p.value}{the p-value for the test (two-sided)}
+\item{estimate}{the medians by group}
 \item{method}{a character string describing the test used}
 \item{data.name}{a character string giving the names of the data}
-\item{estimate}{the median by group}
 }
 \description{
-An implementation of Cuzick's extension of the Wilcoxon rank sum test for
-trend in cases of three or more \emph{ordered} groups.
+An implementation of Cuzick's extension of the Wilcoxon rank sum test to
+test for trend in data with three or more \emph{ordinal} groups.
+}
+\details{
+Data are assumed to be from independent groups with a natual or
+meaningful order. If \code{x} and \code{g} are given as vectors and
+\code{g} is a factor, the order of \code{levels(g)} will be respected;
+however, if \code{g} is \emph{not} a factor, it will be coerced, and the
+levels will be the same as \code{levels(factor(g))}.
+
+For example, if \code{g} is \code{c("10mg", "5mg", "15mg")}, then the
+groups will be ordered as \code{10mg 15mg 5mg} which may not be desired.
 }
 \examples{
 ## Altman (1991), 217
@@ -79,6 +86,18 @@ x <- c(0, 0, 1, 1, 2, 2, 4, 9, 0, 0, 5, 7, 8, 11, 13, 23,
 g <- rep(1:5, c(8,10,9,9,9))
 cuzick.test(x, g)
 
+
+## coercing character group vector g to factor may have undesired order
+set.seed(1)
+x <- sort(rnorm(20))
+g1 <- sample(paste0(c(5,10,15), 'mg'), 20, replace = TRUE)
+g2 <- factor(g1, levels = paste0(c(5,10,15), 'mg'))
+
+tplot(x ~ g1, dd <- data.frame(x, g1), type = 'db',
+      panel.first = title(sub = pvalr(cuzick.test(x ~ g1, dd)$p.value, show.p = TRUE)))
+tplot(x ~ g2, dd <- data.frame(x, g2), type = 'db',
+      panel.first = title(sub = pvalr(cuzick.test(x ~ g2, dd)$p.value, show.p = TRUE)))
+
 }
 \references{
 Altman, D. G. 1991. \emph{Practical Statistics for Medical Research}.
@@ -88,7 +107,9 @@ Cuzick, J. 1985. A Wilcoxon-type test for trend. \emph{Statistics in
 Medicine} \strong{4}: 87–90.
 }
 \seealso{
-\url{https://github.com/andrewejaffe/CuzicksTest},
-\url{http://r.789695.n4.nabble.com/Cuzick-s-test-for-trend-td807101.html}
+\code{\link{kruskal.test}}, \code{\link{wilcox.test}}
+
+\code{\link[coin]{kruskal_test}}, \code{\link[coin]{wilcox_test}} from the
+\pkg{\link[coin]{coin}} package
 }
 
