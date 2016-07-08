@@ -1001,9 +1001,15 @@ cuzick.test.default <- function(x, g, ...) {
       stop('all observations are in the same group')
   }
   if (length(x) < 2L)
-    stop("not enough observations")
+    stop('not enough observations')
   
-  li <- as.integer(as.factor(g))
+  g <- as.factor(g)
+  if (nlevels(g) != nlevels(g <- droplevels(g)))
+    warning('unused factor level(s) dropped')
+  if (nlevels(g) < 3L)
+    stop('three or more unique groups is required')
+  
+  li <- as.integer(g)
   ng <- table(li)
   N  <- sum(ng)
   if (length(ng) > length(unique(x)))
