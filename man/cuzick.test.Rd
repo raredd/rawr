@@ -50,7 +50,7 @@ A list with class "\code{htest}" containing the following components:
 }
 \description{
 An implementation of Cuzick's extension of the Wilcoxon rank sum test to
-test for trend in data with three or more \emph{ordinal} groups.
+assess trend in data with three or more \emph{ordinal} groups.
 }
 \details{
 Data are assumed to be from independent groups with a natual or
@@ -59,8 +59,9 @@ meaningful order. If \code{x} and \code{g} are given as vectors and
 however, if \code{g} is \emph{not} a factor, it will be coerced, and the
 levels will be the same as \code{levels(factor(g))}.
 
-For example, if \code{g} is \code{c("10mg", "5mg", "15mg")}, then the
-groups will be ordered as \code{10mg 15mg 5mg} which may not be desired.
+For example, if \code{g} is \code{c("5mg", "10mg", "15mg")}, then the
+groups will be ordered as \code{"10mg" "15mg" "5mg"} which may not be
+desired.
 }
 \examples{
 ## Altman (1991), 217
@@ -69,7 +70,8 @@ groups will be ordered as \code{10mg 15mg 5mg} which may not be desired.
 ## transmitted
 
 x <- list(c(1.4, 1.4, 1.4, 1.6, 2.3, 2.3),
-          c(0.9, 1.0, 1.1, 1.1, 1.2, 1.2, 1.5, 1.9, 2.2, 2.6, 2.6, 2.6,
+          c(0.9, 1.0, 1.1, 1.1, 1.2, 1.2,
+            1.5, 1.9, 2.2, 2.6, 2.6, 2.6,
             2.8, 2.8, 3.2, 3.5, 4.3, 5.1),
           c(0.8, 1.7, 1.7, 1.7, 3.4, 7.1, 8.9, 13.5))
 
@@ -107,9 +109,9 @@ Cuzick, J. 1985. A Wilcoxon-type test for trend. \emph{Statistics in
 Medicine} \strong{4}: 87–90.
 }
 \seealso{
-\code{\link{kruskal.test}}, \code{\link{wilcox.test}}
+\code{\link{kruskal.test}}; \code{\link{wilcox.test}}
 
-\code{\link[coin]{kruskal_test}}, \code{\link[coin]{wilcox_test}} from the
+\code{\link[coin]{kruskal_test}}; \code{\link[coin]{wilcox_test}} from the
 \pkg{\link[coin]{coin}} package
 }
 
