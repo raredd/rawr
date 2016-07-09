@@ -2,10 +2,14 @@ rawr 0.8.3
 --------
   * add cuzick.test
   * changes to surv_table to show all events (optional)
+  * tplot: add g argument; suppress missing text when show.na is not given
+    _and_ data contain no missing values
 
 rawr 0.8.2
 --------
-  * ???
+  * %:% vector support
+  * add pickcol, droplevels2
+  * tabler_by, tabler_by2: bug fix in ordering, overall improvements
 
 rawr 0.8.1
 --------
