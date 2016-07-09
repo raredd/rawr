@@ -158,6 +158,18 @@ jmplot <- function(x, y, z,
 #' An alternative to \code{\link{boxplot}}. The individual data can be shown
 #' (either in the foreground or background) with jittering if necessary.
 #' 
+#' @param x for specifying data from which the boxplots are to be produced;
+#' either a numeric vector or a single list containing such vectors; additional
+#' unnamed arguments specify further data as separate vectors (each
+#' corresponding to a component boxplot); \code{NA}s are allowed in the data
+#' @param g a vector or factor object giving the group for the corresponding
+#' elements of \code{x}, ignored with a warning if \code{x} is a list
+#' @param ... for the \code{formula} method, named arguments to be passed to
+#' the default method
+#' 
+#' for the default method, unnamed arguments are additional data vectors
+#' (unless x is a list when they are ignored), and named arguments are
+#' arguments and \code{\link{par}}s to be passed to \code{\link{bxp}}
 #' @param formula a \code{\link{formula}}, such as \code{y ~ grp}, where y is
 #' a numeric vector of data values to be split into groups according to the
 #' grouping variable \code{grp} (usually a factor)
@@ -168,16 +180,6 @@ jmplot <- function(x, y, z,
 #' @param na.action a function which indicates what should happen when the data
 #' contain \code{\link{NA}}s; the default is to ignore missing values in either
 #' the response or the group
-#' @param x for specifying data from which the boxplots are to be produced;
-#' either a numeric vector or a single list containing such vectors; additional
-#' unnamed arguments specify further data as separate vectors (each
-#' corresponding to a component boxplot); \code{NA}s are allowed in the data
-#' @param ... for the \code{formula} method, named arguments to be passed to
-#' the default method
-#' 
-#' for the default method, unnamed arguments are additional data vectors
-#' (unless x is a list when they are ignored), and named arguments are
-#' arguments and \code{\link{par}}s to be passed to \code{\link{bxp}}
 #' @param type type of plot (dot, dot-box, box-dot, box)
 #' @param main,sub overall title and sub-title for the plot (below x-axis)
 #' @param xlab,ylab x- and y-axis labels
@@ -238,9 +240,13 @@ jmplot <- function(x, y, z,
 #' for Tatsuki \code{tplot}}; \code{\link{boxplot}}; \code{\link{jmplot}}
 #'
 #' @examples
-#' ## equivalent ways to call tplot
-#' ## the formula method is a convenience function for the first case
-#' tplot(split(mtcars$mpg, interaction(mtcars$gear, mtcars$vs)))
+#' ## these are equivalent ways to call tplot
+#' ## formula method is a convenience function for the second (split) case
+#' x <- mtcars$mpg
+#' g <- interaction(mtcars$gear, mtcars$vs)
+#' 
+#' tplot(x, g)
+#' tplot(split(x, g))
 #' tplot(mpg ~ gear + vs, mtcars)
 #' 
 #' 
@@ -282,7 +288,7 @@ tplot <- function(x, ...) UseMethod('tplot')
 
 #' @rdname tplot
 #' @export
-tplot.default <- function(x, ..., type = c('d','db','bd','b'), jit = 0.1, dist,
+tplot.default <- function(x, g, ..., type = c('d','db','bd','b'), jit = 0.1, dist,
                           
                           ## labels/aesthetics
                           main = '', sub = '', xlab = '', ylab = '',
@@ -313,6 +319,11 @@ tplot.default <- function(x, ..., type = c('d','db','bd','b'), jit = 0.1, dist,
   localTitle  <- function(..., bg, cex, lty, lwd, tick) title(...)
   localMtext  <- function(..., bg, cex, lty, lwd, tick) mtext(..., cex = cex.n)
   
+  if (!missing(g)) {
+    if (is.list(x))
+      warning('\'x\' is a list, so ignoring argument \'g\'') else
+        x <- split(x, g)
+  }
   args <- list(x, ...)
   namedargs <- if (!is.null(attributes(args)$names))
     attributes(args)$names !=  '' else logical(length(args))
@@ -332,15 +343,15 @@ tplot.default <- function(x, ..., type = c('d','db','bd','b'), jit = 0.1, dist,
   
   ## number and size of groups
   ng <- length(groups)
-  lg <- sapply(groups, length)
+  lg <- lengths(groups)
   nv <- sum(lg)
-  g <- factor(rep(1:ng, lg), levels = 1:ng, labels = names(groups))
+  g  <- factor(rep(seq(ng), lg), levels = seq(ng), labels = names(groups))
   
   if (missing(at))
-    at <- 1:ng
+    at <- seq(ng)
   if (length(at) !=  ng) {
     warning("\'at\' must have same length as the number of groups", domain = NA)
-    at <- 1:ng
+    at <- seq(ng)
   }
   
   ## scales
@@ -349,11 +360,8 @@ tplot.default <- function(x, ..., type = c('d','db','bd','b'), jit = 0.1, dist,
     pm <- diff(r) / 20
     ylim <- r + pm * c(-1, 1)
   }
-  if (missing(xlim)) {
-    if (missing(at))
-      xlim <- c(0.5, ng + 0.5)
-    else xlim <- c(0.5, max(at) + 0.5)
-  }
+  if (missing(xlim))
+    xlim <- c(0.5, if (missing(at)) ng else max(at) + 0.5)
   
   type <- match.arg(type, choices = c('d','db','bd','b'), several.ok = TRUE)
   ## type of plot for each group
@@ -406,6 +414,8 @@ tplot.default <- function(x, ..., type = c('d','db','bd','b'), jit = 0.1, dist,
   ## remove any NAs from the data and options
   nonas <- lapply(groups, function(x) !is.na(x))
   l2 <- sapply(groups, function(x) sum(is.na(x)))
+  if (all(l2 == 0L) && missing(show.na))
+    show.na <- FALSE
   groups <- Map('[', groups, nonas)
   col <- Map('[', col, nonas)
   pch <- Map('[', pch, nonas)
@@ -451,7 +461,7 @@ tplot.default <- function(x, ..., type = c('d','db','bd','b'), jit = 0.1, dist,
                            axes = FALSE, col = boxcol[i],
                            border = boxborder[i], outline = FALSE,
                            horizontal = horizontal), boxplot.pars))
-      notoplot <- (y <= bp$stats[5,]) & (y >= bp$stats[1,])
+      notoplot <- (y <= bp$stats[5, ]) & (y >= bp$stats[1, ])
       if (sum(notoplot) > 0)
         col[[i]][notoplot] <- '#bfbfbf'
       if (horizontal) {
@@ -469,7 +479,7 @@ tplot.default <- function(x, ..., type = c('d','db','bd','b'), jit = 0.1, dist,
                            col = boxcol[i], border = boxborder[i],
                            outline = FALSE, horizontal = horizontal),
                       boxplot.pars))
-      toplot <- (y > bp$stats[5,]) | (y < bp$stats[1,])
+      toplot <- (y > bp$stats[5, ]) | (y < bp$stats[1, ])
       if (sum(toplot) > 0)
         if (col[[i]][toplot][1] == '#bfbfbf')
           col[[i]][toplot] <- 1

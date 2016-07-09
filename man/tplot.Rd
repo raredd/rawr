@@ -8,15 +8,16 @@
 \usage{
 tplot(x, ...)
 
-\method{tplot}{default}(x, ..., type = c("d", "db", "bd", "b"), jit = 0.1,
-  dist, main = "", sub = "", xlab = "", ylab = "", names, xlim, ylim,
-  col, group.col = TRUE, boxcol = "grey90", bordercol = "black",
-  pch = par("pch"), group.pch = TRUE, cex = par("cex"),
-  group.cex = FALSE, median.line = FALSE, mean.line = FALSE,
-  median.pars = list(col = par("col")), mean.pars = median.pars,
-  boxplot.pars, show.n = TRUE, show.na = show.n, cex.n = cex,
-  ann = par("ann"), axes = TRUE, frame.plot = axes, add = FALSE, at,
-  horizontal = FALSE, panel.first = NULL, panel.last = NULL)
+\method{tplot}{default}(x, g, ..., type = c("d", "db", "bd", "b"),
+  jit = 0.1, dist, main = "", sub = "", xlab = "", ylab = "", names,
+  xlim, ylim, col, group.col = TRUE, boxcol = "grey90",
+  bordercol = "black", pch = par("pch"), group.pch = TRUE,
+  cex = par("cex"), group.cex = FALSE, median.line = FALSE,
+  mean.line = FALSE, median.pars = list(col = par("col")),
+  mean.pars = median.pars, boxplot.pars, show.n = TRUE, show.na = show.n,
+  cex.n = cex, ann = par("ann"), axes = TRUE, frame.plot = axes,
+  add = FALSE, at, horizontal = FALSE, panel.first = NULL,
+  panel.last = NULL)
 
 \method{tplot}{formula}(formula, data = NULL, ..., subset, na.action = NULL,
   panel.first = NULL, panel.last = NULL)
@@ -33,6 +34,9 @@ the default method
 for the default method, unnamed arguments are additional data vectors
 (unless x is a list when they are ignored), and named arguments are
 arguments and \code{\link{par}}s to be passed to \code{\link{bxp}}}
+
+\item{g}{a vector or factor object giving the group for the corresponding
+elements of \code{x}, ignored with a warning if \code{x} is a list}
 
 \item{type}{type of plot (dot, dot-box, box-dot, box)}
 
@@ -132,9 +136,13 @@ An alternative to \code{\link{boxplot}}. The individual data can be shown
 (either in the foreground or background) with jittering if necessary.
 }
 \examples{
-## equivalent ways to call tplot
-## the formula method is a convenience function for the first case
-tplot(split(mtcars$mpg, interaction(mtcars$gear, mtcars$vs)))
+## these are equivalent ways to call tplot
+## formula method is a convenience function for the second (split) case
+x <- mtcars$mpg
+g <- interaction(mtcars$gear, mtcars$vs)
+
+tplot(x, g)
+tplot(split(x, g))
 tplot(mpg ~ gear + vs, mtcars)
 
 
