@@ -43,7 +43,7 @@ data contain \code{NA}s; defaults to \code{getOption("na.action")}}
 A list with class "\code{htest}" containing the following components:
 
 \item{statistic}{the value of the test statistic with a name describing it}
-\item{p.value}{the p-value for the test (two-sided)}
+\item{p.value}{the p-value for the test (two-sided, corrected for ties)}
 \item{estimate}{the medians by group}
 \item{method}{a character string describing the test used}
 \item{data.name}{a character string giving the names of the data}
@@ -82,6 +82,10 @@ cuzick.test(x ~ g, data.frame(x = unlist(x), g = rep(1:3, lengths(x))))
 
 
 ## Cuzick (1985), 87-90
+## mice inoculated with five cell lines which had been selected for their
+## increasing metastatic potential; number of lung metastases found in each
+## mouse after inoculation
+
 x <- c(0, 0, 1, 1, 2, 2, 4, 9, 0, 0, 5, 7, 8, 11, 13, 23,
        25, 97, 2, 3, 6, 9, 10, 11, 11, 12, 21, 0, 3, 5, 6,
        10, 19, 56, 100, 132, 2, 4, 6, 6, 6, 7, 18, 39, 60)
@@ -95,10 +99,26 @@ x <- sort(rnorm(20))
 g1 <- sample(paste0(c(5,10,15), 'mg'), 20, replace = TRUE)
 g2 <- factor(g1, levels = paste0(c(5,10,15), 'mg'))
 
-tplot(x ~ g1, dd <- data.frame(x, g1), type = 'db',
-      panel.first = title(sub = pvalr(cuzick.test(x ~ g1, dd)$p.value, show.p = TRUE)))
-tplot(x ~ g2, dd <- data.frame(x, g2), type = 'db',
-      panel.first = title(sub = pvalr(cuzick.test(x ~ g2, dd)$p.value, show.p = TRUE)))
+p1 <- cuzick.test(x, g1)$p.value
+p2 <- cuzick.test(x, g2)$p.value
+tplot(x ~ g1, data.frame(x, g1), type = 'db',
+      panel.first = title(sub = pvalr(p1, show.p = TRUE)))
+tplot(x ~ g2, data.frame(x, g2), type = 'db',
+      panel.first = title(sub = pvalr(p2, show.p = TRUE)))
+
+
+## groups need not be equally-spaced but will affect statistic/pvalue
+set.seed(1)
+x <- sort(rnorm(20))
+g1 <- sample(1:3, 20, replace = TRUE)
+g2 <- g1 + (g1 == 3)
+
+p1 <- cuzick.test(x, g1)$p.value
+p2 <- cuzick.test(x, g2)$p.value
+tplot(x ~ g1, dd <- data.frame(x, g1), type = 'db', at = sort(unique(g1)),
+      panel.first = title(sub = pvalr(p1, show.p = TRUE)))
+tplot(x ~ g2, dd <- data.frame(x, g2), type = 'db', at = sort(unique(g2)),
+      panel.first = title(sub = pvalr(p2, show.p = TRUE)))
 
 }
 \references{

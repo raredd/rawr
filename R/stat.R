@@ -912,7 +912,7 @@ lm.beta <- function (x, weights = 1) {
 #' A list with class "\code{htest}" containing the following components:
 #' 
 #' \item{statistic}{the value of the test statistic with a name describing it}
-#' \item{p.value}{the p-value for the test (two-sided)}
+#' \item{p.value}{the p-value for the test (two-sided, corrected for ties)}
 #' \item{estimate}{the medians by group}
 #' \item{method}{a character string describing the test used}
 #' \item{data.name}{a character string giving the names of the data}
@@ -949,6 +949,10 @@ lm.beta <- function (x, weights = 1) {
 #' 
 #' 
 #' ## Cuzick (1985), 87-90
+#' ## mice inoculated with five cell lines which had been selected for their
+#' ## increasing metastatic potential; number of lung metastases found in each
+#' ## mouse after inoculation
+#' 
 #' x <- c(0, 0, 1, 1, 2, 2, 4, 9, 0, 0, 5, 7, 8, 11, 13, 23,
 #'        25, 97, 2, 3, 6, 9, 10, 11, 11, 12, 21, 0, 3, 5, 6,
 #'        10, 19, 56, 100, 132, 2, 4, 6, 6, 6, 7, 18, 39, 60)
@@ -962,10 +966,26 @@ lm.beta <- function (x, weights = 1) {
 #' g1 <- sample(paste0(c(5,10,15), 'mg'), 20, replace = TRUE)
 #' g2 <- factor(g1, levels = paste0(c(5,10,15), 'mg'))
 #' 
-#' tplot(x ~ g1, dd <- data.frame(x, g1), type = 'db',
-#'       panel.first = title(sub = pvalr(cuzick.test(x ~ g1, dd)$p.value, show.p = TRUE)))
-#' tplot(x ~ g2, dd <- data.frame(x, g2), type = 'db',
-#'       panel.first = title(sub = pvalr(cuzick.test(x ~ g2, dd)$p.value, show.p = TRUE)))
+#' p1 <- cuzick.test(x, g1)$p.value
+#' p2 <- cuzick.test(x, g2)$p.value
+#' tplot(x ~ g1, data.frame(x, g1), type = 'db',
+#'       panel.first = title(sub = pvalr(p1, show.p = TRUE)))
+#' tplot(x ~ g2, data.frame(x, g2), type = 'db',
+#'       panel.first = title(sub = pvalr(p2, show.p = TRUE)))
+#' 
+#' 
+#' ## groups need not be equally-spaced but will affect statistic/pvalue
+#' set.seed(1)
+#' x <- sort(rnorm(20))
+#' g1 <- sample(1:3, 20, replace = TRUE)
+#' g2 <- g1 + (g1 == 3)
+#' 
+#' p1 <- cuzick.test(x, g1)$p.value
+#' p2 <- cuzick.test(x, g2)$p.value
+#' tplot(x ~ g1, dd <- data.frame(x, g1), type = 'db', at = sort(unique(g1)),
+#'       panel.first = title(sub = pvalr(p1, show.p = TRUE)))
+#' tplot(x ~ g2, dd <- data.frame(x, g2), type = 'db', at = sort(unique(g2)),
+#'       panel.first = title(sub = pvalr(p2, show.p = TRUE)))
 #' 
 #' @export
 
@@ -998,43 +1018,60 @@ cuzick.test.default <- function(x, g, ...) {
     g <- g[OK]
     if (is.numeric(g) && !all(is.finite(g))) 
       stop('all group levels must be finite')
-    g <- as.factor(g)
-    if (nlevels(g) < 2L) 
+    if (length(unique(g)) < 2L) 
       stop('all observations are in the same group')
   }
   if (length(x) < 2L)
     stop('not enough observations')
   
-  g <- as.factor(g)
-  if (nlevels(g) != nlevels(g <- droplevels(g)))
-    warning('unused factor level(s) dropped')
-  if (nlevels(g) < 3L)
-    stop('three or more unique groups is required')
+  if (is.factor(g) || is.character(g)) {
+    fac <- TRUE
+    g <- as.factor(g)
+    if (nlevels(g) != nlevels(g <- droplevels(g)))
+      warning('unused factor level(s) dropped')
+  } else fac <- FALSE
   
-  li <- as.integer(g)
-  ng <- table(li)
-  N  <- sum(ng)
-  if (length(ng) > length(unique(x)))
+  ux <- length(unique(x))
+  ug <- length(unique(g))
+  if (!is.numeric(x))
+    stop('\'x\' values must be numeric')
+  if (ug < 3L)
+    stop('three or more unique groups are required')
+  if (ug > ux)
     warning('more unique groups than unique response values')
-
-  pg <- prop.table(ng)
-  T  <- sum(li * rank(x))
-  L  <- sum(seq.int(ng) * pg)
-  expT <- L * (N + 1) / 2 * N
-  varT <- (N + 1) / 12 * (sum(seq.int(ng) ** 2 * pg) - L ** 2) * N ** 2
-  z <- (T - expT) / sqrt(varT)
+  
+  ## scores for each group
+  ## if g is character or factor, use 1,2,...,k
+  ## if g is numeric, dont assume equally-spaced, use sorted unique values
+  li <- if (fac) seq(ug) else as.character(sort(unique(g)))
+  ni <- table(g)[li]
+  N  <- sum(ni)
+  
+  ## sum of ranks of x for ith group; sum of weighted sum of ith group scores
+  li <- as.numeric(li)
+  Ri <- tapply(rank(x), g, sum)
+  L  <- sum(li * ni)
+  
+  ## T statistic, expected value, variance
+  T  <- sum(li * Ri)
+  eT <- (N + 1) * L / 2
+  vT <- (N + 1) / 12 * (N * sum(li ** 2 * ni) - L ** 2)
+  
+  ## correction for ties
+  ## tj: times each value of x appears; a: correction for se
+  tj <- ave(x, x, FUN = length)
+  a  <- sum(tj * (tj ** 2 - 1)) / (N * (N ** 2 - 1))
+  se_corrected <- sqrt(1 - a) * sqrt(vT)
+  se_uncorrected <- sqrt(vT)
+  
+  ## corrected test statistic: (T - expected) / se
+  correct <- TRUE
+  z <- (T - eT) / c(se_uncorrected, se_corrected)[correct + 1L]
 
   estimate <- tapply(x, g, median)
   names(estimate) <- paste('median of', names(estimate))
-  method <- sprintf('Wilcoxon rank sum test for trend in %s ordered groups',
-                    length(ng))
-  ## fix alternative to two-sided only
-  # alternative <- match.arg(alternative)
-  alternative <- 'two.sided'
-  pval <- switch(alternative,
-                 less = pnorm(z),
-                 greater = pnorm(z, lower.tail = FALSE),
-                 two.sided = 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE)))
+  method <- sprintf('Wilcoxon rank sum test for trend in %s ordered groups', ug)
+  pval <- 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE))
   
   structure(list(statistic = c(z = z), p.value = pval, estimate = estimate,
                  method = method, data.name = dname),
