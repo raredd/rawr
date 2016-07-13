@@ -371,7 +371,7 @@ pvalr <- function(pvals, sig.limit = .001, digits = 3, html = FALSE,
   sapply(pvals, function(x, sig.limit) {
     if (is.na(x))
       return(NA)
-    if (x >= 1)
+    if (x >= 0.99)
       return(paste0(c('','p ')[show.p], c('> ','&gt; ')[html], '0.99'))
     if (x < sig.limit) {
       paste0(c('', 'p ')[show.p], c('< ', '&lt; ')[html], format(sig.limit))
