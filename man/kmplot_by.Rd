@@ -4,8 +4,8 @@
 \alias{kmplot_by}
 \title{kmplot_by}
 \usage{
-kmplot_by(strata, event = "pfs", data, by, single = TRUE, lr_test = TRUE,
-  ylab, sub, strata_lab, fig_lab, add = FALSE, reset_par = !add, ...)
+kmplot_by(strata = "1", event = "pfs", data, by, single = TRUE,
+  lr_test = TRUE, ylab, sub, strata_lab, fig_lab, add = FALSE, ...)
 }
 \arguments{
 \item{strata}{character string of the strata variable}
@@ -37,11 +37,9 @@ will be removed; see examples}
 length equal to the number of panels (i.e., the number of levels of
 \code{by} or length one if \code{by} was not given)}
 
-\item{add}{logical; if \code{TRUE} will not create a new plotting window}
-
-\item{reset_par}{logical; if \code{TRUE} (default), resets graphical
-parameters to settings before \code{kmplot_by} was called; set to
-\code{FALSE} for adding to existing plots}
+\item{add}{logical; if \code{FALSE} (default), resets graphical parameters
+to settings before \code{kmplot_by} was called; set to \code{TRUE} for
+adding to existing plots}
 
 \item{...}{additional arguments passed to \code{\link{kmplot}} or
 graphical parameters subsequently passed to \code{\link{par}}}
@@ -69,7 +67,7 @@ colon <- within(colon[duplicated(colon$id), ], {
   sex <- c('Female','Male')[sex + 1]
 })
 
-kmplot_by('1', data = colon)
+kmplot_by(data = colon)
 
 ## return value is a list of survfit objects
 tmp <- kmplot_by('sex', data = colon, fig_lab = 'Figure I',
@@ -96,8 +94,7 @@ par(mfrow = c(2,2))
 kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3, single = FALSE,
   strata_lab = c('Observation','Trt','Trt + 5-FU'))
 
-## use add = TRUE and reset_par = FALSE to add to a figure region without
-## using the by argument
+## use add = TRUE to add to a figure region without using the by argument
 par(mfrow = c(1,2))
 kmplot_by('rx', data = colon, col.surv = 1:3, add = TRUE)
 kmplot_by('sex', data = colon, col.surv = 1:3, add = TRUE)

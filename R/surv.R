@@ -157,6 +157,10 @@ kmplot <- function(s,
   if (!inherits(s, 'survfit'))
     stop('\'s\' must be a \'survfit\' object')
   
+  op <- par(no.readonly = TRUE)
+  if (!add)
+    on.exit(par(op))
+  
   ## single strata
   if (!(ng <- length(s$strata))) {
     s$strata <- length(s$time)
@@ -203,7 +207,6 @@ kmplot <- function(s,
   }
   
   ## graphic parameters
-  op <- par(no.readonly = TRUE)
   par(mar = c(4 + ng, 4 + extra.margin, 4, 2) + .1)
   if (!add) {
     par(list(mar = c(4 + ng, 4 + extra.margin, 4, 2) + .1, oma = c(1,1,1,1)))
@@ -254,15 +257,12 @@ kmplot <- function(s,
     }
     
     ## draw matching lines for n at risk  
-    if (atrisk.lines) {
-      par(xpd = TRUE)
-      for (i in 1:ng) {
+    if (atrisk.lines)
+      for (i in 1:ng)
         ## mess with the 4 here to adjust the length of the atrisk.line
-        axis(side = 1, at = c(group.name.pos + padding, 0 - 4 * padding),
+        axis(1, c(group.name.pos + padding, 0 - 4 * padding), xpd = NA,
              labels = FALSE, line = line.pos[i] + 0.6, lwd.ticks = 0,
              col = col.lines[i], lty = lty.surv[i], lwd = lwd.surv[i])
-      }
-    }
     
     ## numbers at risk
     ss <- summary(s, times = xaxis.at)
@@ -316,7 +316,8 @@ kmplot <- function(s,
   for (i in 1:ng) {
     tmp <- dat.list[[i]]
     if (nrow(tmp) < 2) {
-      message('Note: strata level with one observation - no CI plotted.')
+      if (any(!is.na(col.band)))
+        message('Note: strata level with one observation - no CI plotted.')
     } else {
       x <- tmp$time
       L <- tmp$lower
@@ -341,10 +342,7 @@ kmplot <- function(s,
   }
   panel.last
   
-  ## reset par settings
-  if (!add)
-    par(op)
-  invisible()
+  invisible(dat)
 }
 
 #' kmplot_by
@@ -377,10 +375,9 @@ kmplot <- function(s,
 #' @param fig_lab figure panel labels; should be a character vector with
 #' length equal to the number of panels (i.e., the number of levels of
 #' \code{by} or length one if \code{by} was not given)
-#' @param add logical; if \code{TRUE} will not create a new plotting window
-#' @param reset_par logical; if \code{TRUE} (default), resets graphical
-#' parameters to settings before \code{kmplot_by} was called; set to
-#' \code{FALSE} for adding to existing plots
+#' @param add logical; if \code{FALSE} (default), resets graphical parameters
+#' to settings before \code{kmplot_by} was called; set to \code{TRUE} for
+#' adding to existing plots
 #' @param ... additional arguments passed to \code{\link{kmplot}} or
 #' graphical parameters subsequently passed to \code{\link{par}}
 #' 
@@ -399,7 +396,7 @@ kmplot <- function(s,
 #'   sex <- c('Female','Male')[sex + 1]
 #' })
 #' 
-#' kmplot_by('1', data = colon)
+#' kmplot_by(data = colon)
 #' 
 #' ## return value is a list of survfit objects
 #' tmp <- kmplot_by('sex', data = colon, fig_lab = 'Figure I',
@@ -426,20 +423,19 @@ kmplot <- function(s,
 #' kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3, single = FALSE,
 #'   strata_lab = c('Observation','Trt','Trt + 5-FU'))
 #' 
-#' ## use add = TRUE and reset_par = FALSE to add to a figure region without
-#' ## using the by argument
+#' ## use add = TRUE to add to a figure region without using the by argument
 #' par(mfrow = c(1,2))
 #' kmplot_by('rx', data = colon, col.surv = 1:3, add = TRUE)
 #' kmplot_by('sex', data = colon, col.surv = 1:3, add = TRUE)
 #'   
 #' @export
 
-kmplot_by <- function(strata, event = 'pfs', data, by, single = TRUE,
+kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
                       lr_test = TRUE, ylab, sub, strata_lab, fig_lab,
-                      add = FALSE, reset_par = !add, ...) {
+                      add = FALSE, ...) {
   dots <- match.call(expand.dots = FALSE)$`...`
   op <- par(no.readonly = TRUE)
-  if (reset_par)
+  if (!add)
     on.exit(par(op))
   if (!missing(by)) {
     if (single) {
@@ -468,7 +464,9 @@ kmplot_by <- function(strata, event = 'pfs', data, by, single = TRUE,
   l <- lapply(seq_along(sp), function(x) {
     form <- as.formula(sprintf('Surv(%s_time, %s_ind) ~ %s',
                                event, event, strata))
-    s <- s0 <- survfit(form, data = sp[[x]], conf.type = 'log-log')
+    s <- s0 <- survfit(form, data = sp[[x]], type = 'kaplan-meier',
+                       conf.type = 'log-log', error = 'greenwood',
+                       conf.int = 0.95, se.fit = TRUE)
     
     if (strata == '1')
       strata <- ''
