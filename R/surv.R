@@ -356,6 +356,10 @@ kmplot <- function(s,
 #' \code{"pfs_time"} and \code{"pfs_ind"} and optionally the \code{strata}
 #' column unless \code{strata = "1"}.
 #' 
+#' Alternatively, the \code{time} argument may be used instead of following
+#' the above; in this case, \code{time} and \code{event} must be variable
+#' names in \code{data}.
+#' 
 #' @param strata character string of the strata variable
 #' @param event character string indicating the event (pfs, os, ttp, etc);
 #' see details
@@ -378,6 +382,7 @@ kmplot <- function(s,
 #' @param add logical; if \code{FALSE} (default), resets graphical parameters
 #' to settings before \code{kmplot_by} was called; set to \code{TRUE} for
 #' adding to existing plots
+#' @param time character string of the time variable (optional)
 #' @param ... additional arguments passed to \code{\link{kmplot}} or
 #' graphical parameters subsequently passed to \code{\link{par}}
 #' 
@@ -390,6 +395,9 @@ kmplot <- function(s,
 #' @examples
 #' library('survival')
 #' data(colon)
+#' 
+#' kmplot_by(time = 'time', event = 'status', data = colon)
+#' 
 #' colon <- within(colon[duplicated(colon$id), ], {
 #'   pfs_time <- time
 #'   pfs_ind <- status
@@ -432,9 +440,10 @@ kmplot <- function(s,
 
 kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
                       lr_test = TRUE, ylab, sub, strata_lab, fig_lab,
-                      add = FALSE, ...) {
+                      time, add = FALSE, ...) {
   dots <- match.call(expand.dots = FALSE)$`...`
   op <- par(no.readonly = TRUE)
+  
   if (!add)
     on.exit(par(op))
   if (!missing(by)) {
@@ -460,10 +469,12 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
     LETTERS[seq_along(sp)] else if (missing(fig_lab)) '' else fig_lab
   ylab <- if (missing(ylab))
     sprintf('%s probability', toupper(event)) else ylab
+  form <- if (!missing(time))
+    sprintf('Surv(%s, %s) ~ %s', time, event, strata) else
+      sprintf('Surv(%s_time, %s_ind) ~ %s', event, event, strata)
+  form <- as.formula(form)
   
   l <- lapply(seq_along(sp), function(x) {
-    form <- as.formula(sprintf('Surv(%s_time, %s_ind) ~ %s',
-                               event, event, strata))
     s <- s0 <- survfit(form, data = sp[[x]], type = 'kaplan-meier',
                        conf.type = 'log-log', error = 'greenwood',
                        conf.int = 0.95, se.fit = TRUE)

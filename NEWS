@@ -5,6 +5,7 @@ rawr 0.8.3
   * changes to surv_table to show all events (optional)
   * tplot: add g argument; suppress missing text when show.na is not given
     _and_ data contain no missing values
+  * add time parameter to kmplot_by to avoid some initial setup
 
 rawr 0.8.2
 --------

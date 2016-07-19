@@ -5,7 +5,7 @@
 \title{kmplot_by}
 \usage{
 kmplot_by(strata = "1", event = "pfs", data, by, single = TRUE,
-  lr_test = TRUE, ylab, sub, strata_lab, fig_lab, add = FALSE, ...)
+  lr_test = TRUE, ylab, sub, strata_lab, fig_lab, time, add = FALSE, ...)
 }
 \arguments{
 \item{strata}{character string of the strata variable}
@@ -37,6 +37,8 @@ will be removed; see examples}
 length equal to the number of panels (i.e., the number of levels of
 \code{by} or length one if \code{by} was not given)}
 
+\item{time}{character string of the time variable (optional)}
+
 \item{add}{logical; if \code{FALSE} (default), resets graphical parameters
 to settings before \code{kmplot_by} was called; set to \code{TRUE} for
 adding to existing plots}
@@ -57,10 +59,17 @@ The data used should have at least three variables: \code{strata},
 example, to use progression-free survival, \code{dat} should have columns
 \code{"pfs_time"} and \code{"pfs_ind"} and optionally the \code{strata}
 column unless \code{strata = "1"}.
+
+Alternatively, the \code{time} argument may be used instead of following
+the above; in this case, \code{time} and \code{event} must be variable
+names in \code{data}.
 }
 \examples{
 library('survival')
 data(colon)
+
+kmplot_by(time = 'time', event = 'status', data = colon)
+
 colon <- within(colon[duplicated(colon$id), ], {
   pfs_time <- time
   pfs_ind <- status
