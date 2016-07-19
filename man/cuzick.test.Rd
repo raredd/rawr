@@ -8,7 +8,7 @@
 \usage{
 cuzick.test(x, ...)
 
-\method{cuzick.test}{default}(x, g, ...)
+\method{cuzick.test}{default}(x, g, details = wilcox.test, ...)
 
 \method{cuzick.test}{formula}(formula, data, subset, na.action, ...)
 }
@@ -18,12 +18,16 @@ non-numeric elements of a list will be coerced with a warning; if \code{x}
 is a list, the list elements are assumed to be groups ordered as
 \code{x[[1]], x[[2]], ..., x[[n]]}}
 
-\item{...}{further arguments to be passed to or from methods}
+\item{...}{additional arguments passed to the function given by
+\code{details}}
 
 \item{g}{a vector or factor object giving the group for the corresponding
 elements of \code{x}, ignored with a warning if \code{x} is a list; if
 \code{g} is \emph{not} a factor, it will be coerced, and groups will be
 ordered as \code{sort(unique(g))}; see \code{\link{factor}}}
+
+\item{details}{\code{FALSE} or a function to compute comparisons between
+pairs of groups; see details}
 
 \item{formula}{a formula of the form \code{response ~ group} where
 \code{response} gives the data values and \code{group} a vector or factor
@@ -47,6 +51,8 @@ A list with class "\code{htest}" containing the following components:
 \item{estimate}{the medians by group}
 \item{method}{a character string describing the test used}
 \item{data.name}{a character string giving the names of the data}
+\item{details}{a list of pairwise (\code{details}) and overall
+(\code{\link{kruskal.test}}) comparisons}
 }
 \description{
 An implementation of Cuzick's extension of the Wilcoxon rank sum test to
@@ -62,6 +68,14 @@ levels will be the same as \code{levels(factor(g))}.
 For example, if \code{g} is \code{c("5mg", "10mg", "15mg")}, then the
 groups will be ordered as \code{"10mg" "15mg" "5mg"} which may not be
 desired.
+
+Pairwise comparisons between each pair of groups is performed using the
+function given by \code{details} (default is \code{\link{wilcox.test}});
+the overall will be compared by \code{\link{kruskal.test}}. Other functions
+may be used (e.g., in cases with ties), but these need a formula method
+similar to \code{cuzick.test}, \code{wilcox.test}, etc. Common methods such
+as \code{\link[coin]{wilcox_test}} or \code{\link[coin]{kruskal_test}} from
+the \pkg{\link[coin]{coin}} package will work; see examples.
 }
 \examples{
 ## Altman (1991), 217
@@ -79,6 +93,13 @@ x <- list(c(1.4, 1.4, 1.4, 1.6, 2.3, 2.3),
 cuzick.test(x)
 cuzick.test(unlist(x), rep(seq(x), lengths(x)))
 cuzick.test(x ~ g, data.frame(x = unlist(x), g = rep(1:3, lengths(x))))
+
+
+## all pairwise comparisons are returned by default in $details
+cuzick.test(x)$details
+cuzick.test(x, alternative = 'less', correct = FALSE)$details
+cuzick.test(x, details = kruskal.test)$details
+cuzick.test(x, details = coin::wilcox_test)$details
 
 
 ## Cuzick (1985), 87-90

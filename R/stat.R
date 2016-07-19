@@ -888,6 +888,14 @@ lm.beta <- function (x, weights = 1) {
 #' groups will be ordered as \code{"10mg" "15mg" "5mg"} which may not be
 #' desired.
 #' 
+#' Pairwise comparisons between each pair of groups is performed using the
+#' function given by \code{details} (default is \code{\link{wilcox.test}});
+#' the overall will be compared by \code{\link{kruskal.test}}. Other functions
+#' may be used (e.g., in cases with ties), but these need a formula method
+#' similar to \code{cuzick.test}, \code{wilcox.test}, etc. Common methods such
+#' as \code{\link[coin]{wilcox_test}} or \code{\link[coin]{kruskal_test}} from
+#' the \pkg{\link[coin]{coin}} package will work; see examples.
+#' 
 #' @param x a numeric vector of data values or a list of numeric data vectors;
 #' non-numeric elements of a list will be coerced with a warning; if \code{x}
 #' is a list, the list elements are assumed to be groups ordered as
@@ -896,6 +904,8 @@ lm.beta <- function (x, weights = 1) {
 #' elements of \code{x}, ignored with a warning if \code{x} is a list; if
 #' \code{g} is \emph{not} a factor, it will be coerced, and groups will be
 #' ordered as \code{sort(unique(g))}; see \code{\link{factor}}
+#' @param details \code{FALSE} or a function to compute comparisons between
+#' pairs of groups; see details
 #' @param formula a formula of the form \code{response ~ group} where
 #' \code{response} gives the data values and \code{group} a vector or factor
 #' of the corresponding groups
@@ -906,7 +916,8 @@ lm.beta <- function (x, weights = 1) {
 #' used
 #' @param na.action a function which indicates what should happen when the
 #' data contain \code{NA}s; defaults to \code{getOption("na.action")}
-#' @param ... further arguments to be passed to or from methods
+#' @param ... additional arguments passed to the function given by
+#' \code{details}
 #' 
 #' @return
 #' A list with class "\code{htest}" containing the following components:
@@ -916,6 +927,8 @@ lm.beta <- function (x, weights = 1) {
 #' \item{estimate}{the medians by group}
 #' \item{method}{a character string describing the test used}
 #' \item{data.name}{a character string giving the names of the data}
+#' \item{details}{a list of pairwise (\code{details}) and overall
+#' (\code{\link{kruskal.test}}) comparisons}
 #' 
 #' @references
 #' Altman, D. G. 1991. \emph{Practical Statistics for Medical Research}.
@@ -946,6 +959,13 @@ lm.beta <- function (x, weights = 1) {
 #' cuzick.test(x)
 #' cuzick.test(unlist(x), rep(seq(x), lengths(x)))
 #' cuzick.test(x ~ g, data.frame(x = unlist(x), g = rep(1:3, lengths(x))))
+#' 
+#' 
+#' ## all pairwise comparisons are returned by default in $details
+#' cuzick.test(x)$details
+#' cuzick.test(x, alternative = 'less', correct = FALSE)$details
+#' cuzick.test(x, details = kruskal.test)$details
+#' cuzick.test(x, details = coin::wilcox_test)$details
 #' 
 #' 
 #' ## Cuzick (1985), 87-90
@@ -993,7 +1013,7 @@ cuzick.test <- function(x, ...) UseMethod('cuzick.test')
 
 #' @rdname cuzick.test
 #' @export
-cuzick.test.default <- function(x, g, ...) {
+cuzick.test.default <- function(x, g, details = wilcox.test, ...) {
   ## checks adapted from stats:::kruskal.test.default
   if (is.list(x)) {
     if (length(x) < 2L)
@@ -1073,8 +1093,29 @@ cuzick.test.default <- function(x, g, ...) {
   method <- sprintf('Wilcoxon rank sum test for trend in %s ordered groups', ug)
   pval <- 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE))
   
+  ## pairwise details
+  pw <- if (!identical(details, FALSE)) {
+    l2df <- function(l) data.frame(unlist(l), factor(rep(seq(l), lengths(l))))
+    tidy <- function(l)
+      data.frame(Filter(length, unclass(l)), stringsAsFactors = FALSE)
+    
+    sp  <- split(x, g)
+    idx <- as.list(data.frame(combn(length(sp), 2)))
+    ids <- apply(combn(names(ni), 2), 2, paste, collapse = ' vs ')
+    sp  <- lapply(idx, function(x) setNames(l2df(sp[x]), c('x', 'g')))
+    names(sp) <- ids
+    
+    pw <- lapply(sp, function(X) suppressWarnings(details(x ~ g, X, ...)))
+    PW <- tryCatch(lapply(pw, tidy), error = function(e) NULL)
+    
+    list(pairs = if (is.null(PW)) pw else
+      `rownames<-`(cbind(pairs = ids, do.call('rbind', PW)), NULL),
+      overall = tidy(kruskal.test(x, g)))
+  } else NULL
+  
   structure(list(statistic = c(z = z), p.value = pval, estimate = estimate,
-                 method = method, data.name = dname),
+                 method = method, data.name = dname,
+                 details = pw),
             class = 'htest')
 }
 
