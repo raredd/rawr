@@ -376,7 +376,7 @@ pvalr <- function(pvals, sig.limit = .001, digits = 3, html = FALSE,
     if (x < sig.limit) {
       paste0(c('', 'p ')[show.p], c('< ', '&lt; ')[html], format(sig.limit))
     } else {
-      nd <- c(digits, 2, 1)[findInterval(x, c(-Inf, .1, .5, Inf))]
+      nd <- c(digits, 2, 2)[findInterval(x, c(-Inf, .1, .5, Inf))]
       paste0(c('','p = ')[show.p], roundr(x, nd))
     }
   }, sig.limit)
