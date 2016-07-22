@@ -414,8 +414,8 @@ kmplot <- function(s,
 #' kmplot_by('rx', data = colon, col.surv = 1:3,
 #'   strata_lab = FALSE, col.band = NA)
 #' 
-#' ## multiple variables can be combined  
-#' kmplot_by('rx + sex', data = colon, strata_lab = '',
+#' ## multiple variables can be combined
+#' kmplot_by('rx + sex', data = colon, strata_lab = FALSE,
 #'   lty.surv = 1:6, col.band = NA)
 #'
 #' ## if "by" is given, default is to plot separately
@@ -444,12 +444,21 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
   dots <- match.call(expand.dots = FALSE)$`...`
   op <- par(no.readonly = TRUE)
   
+  if (inherits(strata, 'survfit')) {
+    ## if survfit object is given, extract needed vars and run as usual
+    data   <- eval(strata$call$data)
+    form   <- as.character(strata$call$formula)[-1]
+    strata <- form[length(form)]
+    event  <- gsub('(\\S+)\\)|.', '\\1', form[1])
+    time   <- gsub('\\((\\w+)|.', '\\1', form[1])
+  }
+  
   if (!add)
     on.exit(par(op))
   if (!missing(by)) {
     if (single) {
       add <- FALSE
-      par(mfrow = c(1,1))
+      par(mfrow = c(1L,1L))
     } else {
       add <- TRUE
       if (all(par('mfrow') == c(1L, 1L)))
@@ -459,13 +468,13 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
   } else {
     if (missing(add)) {
       add <- FALSE
-      par(mfrow = c(1,1))
+      par(mfrow = c(1L,1L))
     }
     sp <- list(data)
   }
   mlabs <- missing(strata_lab)
   msub <- missing(sub)
-  fig <- if (length(sp) > 1 & missing(fig_lab))
+  fig <- if (length(sp) > 1L & missing(fig_lab))
     LETTERS[seq_along(sp)] else if (missing(fig_lab)) '' else fig_lab
   ylab <- if (missing(ylab))
     sprintf('%s probability', toupper(event)) else ylab
@@ -481,9 +490,13 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
     
     if (strata == '1')
       strata <- ''
-    names(s$strata) <- if (mlabs)
-      names(s$strata) else if (length(strata_lab) == length(s$strata))
-        strata_lab else gsub('\\w+=', '', names(s$strata))
+    if (!is.null(s$strata)) {
+      names(s$strata) <- if (mlabs)
+        names(s$strata) else if (length(strata_lab) == length(s$strata))
+          strata_lab else
+            gsub('^.*?=|(?<=, ).*?=', '', names(s$strata), perl = TRUE)
+      names(s$strata) <- gsub('\\s+,', ',', trimws(names(s$strata)))
+    }
     
     kmplot(s, add = add, legend = FALSE, main = names(sp)[x], ylab = ylab, ...,
            panel.first = {
@@ -492,7 +505,12 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
              mtext(fig[x], 3, 1.2, FALSE, 0 - p[2] * .05, font = 2, cex = 1.5)
              
              ## add survdiff text in upper right corner
-             if (lr_test && strata != '') {
+             if (lr_test && (is.null(s$strata) & nzchar(strata))) {
+               warning('There is only one group -- no lr test performed',
+                       call. = FALSE)
+               lr_test <- FALSE
+             }
+             if (lr_test && nzchar(strata)) {
                sd <- survdiff(form, data = sp[[x]])
                df <- sum(1 * (colSums(if (is.matrix(sd$obs))
                  sd$exp else t(sd$exp)) > 0)) - 1
