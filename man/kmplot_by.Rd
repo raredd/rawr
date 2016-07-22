@@ -86,8 +86,8 @@ kmplot(tmp$sex)
 kmplot_by('rx', data = colon, col.surv = 1:3,
   strata_lab = FALSE, col.band = NA)
 
-## multiple variables can be combined  
-kmplot_by('rx + sex', data = colon, strata_lab = '',
+## multiple variables can be combined
+kmplot_by('rx + sex', data = colon, strata_lab = FALSE,
   lty.surv = 1:6, col.band = NA)
 
 ## if "by" is given, default is to plot separately
