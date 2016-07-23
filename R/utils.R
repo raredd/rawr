@@ -387,6 +387,10 @@ parse_namespace <- function(x,
 #' @seealso
 #' \code{\link{pmin}}, \code{\link{pmax}}
 #' 
+#' @references
+#' \href{http://stackoverflow.com/questions/13123638/there-is-pmin-and-pmax-
+#' each-taking-na-rm-why-no-psum}{SO question}
+#' 
 #' @examples
 #' x <- c(-1, NA, 4, 5)
 #' y <- c(NA, NA, 6, -1)

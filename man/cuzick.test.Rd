@@ -59,7 +59,7 @@ An implementation of Cuzick's extension of the Wilcoxon rank sum test to
 assess trend in data with three or more \emph{ordinal} groups.
 }
 \details{
-Data are assumed to be from independent groups with a natual or
+Data are assumed to be from independent groups with a natural or
 meaningful order. If \code{x} and \code{g} are given as vectors and
 \code{g} is a factor, the order of \code{levels(g)} will be respected;
 however, if \code{g} is \emph{not} a factor, it will be coerced, and the
@@ -147,7 +147,7 @@ Altman, D. G. 1991. \emph{Practical Statistics for Medical Research}.
 London: Chapman & Hall/CRC.
 
 Cuzick, J. 1985. A Wilcoxon-type test for trend. \emph{Statistics in
-Medicine} \strong{4}: 87–90.
+Medicine} \strong{4}: 87-90.
 }
 \seealso{
 \code{\link{kruskal.test}}; \code{\link{wilcox.test}}

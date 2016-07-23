@@ -29,6 +29,10 @@ psum(x, y)
 psum(x, y, na.rm = TRUE)
 
 }
+\references{
+\href{http://stackoverflow.com/questions/13123638/there-is-pmin-and-pmax-
+each-taking-na-rm-why-no-psum}{SO question}
+}
 \seealso{
 \code{\link{pmin}}, \code{\link{pmax}}
 }
