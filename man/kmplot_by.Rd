@@ -5,7 +5,8 @@
 \title{kmplot_by}
 \usage{
 kmplot_by(strata = "1", event = "pfs", data, by, single = TRUE,
-  lr_test = TRUE, ylab, sub, strata_lab, fig_lab, time, add = FALSE, ...)
+  lr_test = TRUE, ylab, sub, strata_lab, fig_lab, time, add = FALSE,
+  plot = TRUE, ...)
 }
 \arguments{
 \item{strata}{character string of the strata variable}
@@ -43,11 +44,16 @@ length equal to the number of panels (i.e., the number of levels of
 to settings before \code{kmplot_by} was called; set to \code{TRUE} for
 adding to existing plots}
 
+\item{plot}{logical; if \code{FALSE}, no plot is created but a list with
+\code{survfit}s is returned}
+
 \item{...}{additional arguments passed to \code{\link{kmplot}} or
 graphical parameters subsequently passed to \code{\link{par}}}
 }
 \value{
-Invisibly returns a list of \code{\link{survfit}} objects for each plot.
+Invisibly returns a list of \code{\link{survfit}} object(s) used to generate
+plot(s). If \code{by} was used, there will be a list element for each unique
+value.
 }
 \description{
 This function helps create stratified \code{\link{kmplot}}s quickly with
@@ -77,18 +83,19 @@ colon <- within(colon[duplicated(colon$id), ], {
 })
 
 kmplot_by(data = colon)
-
-## return value is a list of survfit objects
-tmp <- kmplot_by('sex', data = colon, fig_lab = 'Figure I',
-  strata_lab = c('F','M'), sub = 'PFS, by sex')
-kmplot(tmp$sex)
-  
 kmplot_by('rx', data = colon, col.surv = 1:3,
   strata_lab = FALSE, col.band = NA)
+
+
+## return value is a list of survfit objects
+l <- kmplot_by('sex', by = 'rx', data = colon, plot = FALSE)
+kmplot(l$`Lev+5FU`)
+
 
 ## multiple variables can be combined
 kmplot_by('rx + sex', data = colon, strata_lab = FALSE,
   lty.surv = 1:6, col.band = NA)
+
 
 ## if "by" is given, default is to plot separately
 kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3,
@@ -105,8 +112,9 @@ kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3, single = FALSE,
 
 ## use add = TRUE to add to a figure region without using the by argument
 par(mfrow = c(1,2))
-kmplot_by('rx', data = colon, col.surv = 1:3, add = TRUE)
-kmplot_by('sex', data = colon, col.surv = 1:3, add = TRUE)
+mar <- c(8,6,3,2)
+kmplot_by('rx', data = colon, strata_lab = FALSE, add = TRUE, mar = mar)
+kmplot_by('sex', data = colon, strata_lab = FALSE, add = TRUE, mar = mar)
   
 }
 \seealso{

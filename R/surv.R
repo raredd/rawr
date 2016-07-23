@@ -12,13 +12,6 @@
 #' Line specifications (e.g., \code{lty.surv}, \code{lwd.surv}, etc) will be
 #' recycled as needed.
 #' 
-#' \code{xaxs} is the style of the x-axis; see \code{\link{par}}. The default
-#' for \code{kmplot} is \code{"S"} which is equivalent to \code{xaxs = "i"}
-#' but with the maximum \code{xlim} value increased by 4\%. Other styles for
-#' \code{xaxs} currently implemented in \code{R} are \code{"r"} (default for
-#' plotting and the previous value for \code{kmplot}) and \code{"i"} which
-#' will \emph{not} add padding to the ends of the axes.
-#' 
 #' If \code{col.band} is not \code{NULL}, \code{NA}, or \code{FALSE}, a
 #' confidence band is plotted; however, this is not a confidence band in the
 #' statistical sense, i.e., a xx-percent chance of containing the entire
@@ -28,9 +21,16 @@
 #' confidence interval (plotted when \code{lty.ci != 0}) and the confidence
 #' bands are identical--just two ways of plotting the same invervals.
 #' 
+#' \code{xaxs} is the style of the x-axis; see \code{\link{par}}. The default
+#' for \code{kmplot} is \code{"S"} which is equivalent to \code{xaxs = "i"}
+#' but with the maximum \code{xlim} value increased by 4\%. Other styles for
+#' \code{xaxs} currently implemented in \code{R} are \code{"r"} (default for
+#' plotting and the previous value for \code{kmplot}) and \code{"i"} which
+#' will \emph{not} add padding to the ends of the axes.
+#' 
 #' When saving plots, it is highly recommended to use \code{\link{png}},
 #' \code{\link{svg}}, \code{\link{pdf}}, etc. instead of exporting directly
-#' from the \code{R} graphics device. Doing so may cause the at risk table or
+#' from the \code{R} graphics device. Doing so may cause the at-risk table or
 #' legend to be mis-aligned.
 #' 
 #' @param s an object of class \code{\link{survfit}} or \code{survfit.cox}
@@ -46,26 +46,26 @@
 #' values will be used; if \code{FALSE}, \code{NA}, or \code{NULL}, no
 #' bands will be plotted; also note that this is not a true confidence band;
 #' see details
-#' @param atrisk logical; if \code{TRUE} (default), draws at risk table
-#' @param atrisk.lab heading for at risk table
-#' @param atrisk.lines logical; draw lines next to strata in at risk table
-#' @param strata.lab labels used in legend and at risk table for strata; if
+#' @param atrisk logical; if \code{TRUE} (default), draws at-risk table
+#' @param atrisk.lab heading for at-risk table
+#' @param atrisk.lines logical; draw lines next to strata in at-risk table
+#' @param strata.lab labels used in legend and at-risk table for strata; if
 #' \code{NULL} (default), labels created in \code{survfit} are used; if only
 #' one strata is present, "All" is used by default; if \code{FALSE}, labels
-#' are not used
+#' are not used; if \code{TRUE}, labels will be stripped of variable names
 #' @param strata.expr an alternative to \code{strata.lab} which allows for
 #' \code{\link{bquote}} or \code{\link{expression}} to be passed to labels for
-#' at risk table; note that \code{strata.expr} trumps \code{strata.lab}
-#' @param strata.order order of strata in legend and at risk table
-#' @param extra.margin increase left margin when strata labels in at risk table
+#' at-risk table; note that \code{strata.expr} trumps \code{strata.lab}
+#' @param strata.order order of strata in legend and at-risk table
+#' @param extra.margin increase left margin when strata labels in at-risk table
 #' are long
-#' @param xaxs style of axis; see details
+#' @param xaxs style of axis; see details or \code{\link{par}}
 #' @param xlim,ylim x- and y-axis limits
 #' @param xaxis.at,yaxis.at positions for x- and y-axis labels and ticks
 #' @param xaxis.lab,yaxis.lab x- and y-axis tick labels
 #' @param xlab,ylab x- and y-axis labels
 #' @param main title of plot
-#' @param cex.axis text size for axes labels, legend, at risk table
+#' @param cex.axis text size for axes labels, legend, at-risk table
 #' @param legend logical or a keyword (see \code{\link{legend}}); if
 #' \code{TRUE}, the default position is \code{"bottomleft"}
 #' @param mar margins; see \code{mar} section in \code{\link{par}}
@@ -86,33 +86,37 @@
 #' \code{\link[plotr]{ggsurv}}
 #' 
 #' @examples
-#' \dontrun{
 #' library('survival')
 #' kmfit1 <- survfit(Surv(time, status) ~ sex, data = colon)
-#' kmfit2 <- survfit(Surv(time, status) ~ rx + adhere, data = colon)
+#' kmfit2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 #' 
 #' ## basic usage
 #' kmplot(kmfit1)
+#' kmplot(kmfit2, atrisk = FALSE)
 #' 
-#' ## expressions in at risk table
-#' kmplot(kmfit1, strata.lab = c('Female','Male'),
-#'        strata.expr = expression(widetilde(ring(Female)),
-#'                                 phantom() >= Male))
+#' ## expressions in at-risk table (strata.expr takes precedence)
+#' kmplot(kmfit1, strata.lab = c('\u2640', '\u2642'))
+#' kmplot(kmfit1, strata.lab = c('\u2640', '\u2642'),
+#'                strata.expr = expression(widetilde(ring(Female)),
+#'                                         phantom() >= Male))
 #' 
-#' ## when using mfrow options, use ADD = TRUE
-#' png('./kmplot1.png', width = 750, height = 1200, pointsize = 14)
-#' par(mfrow = c(2, 1))
-#' kmplot(kmfit1, add = TRUE)
-#' kmplot(kmfit2, add = TRUE, extra.margin = 8)
-#' dev.off()
 #' 
+#' ## when using mfrow options, use add = TRUE and same mar to align
+#' mar <- c(8,6,2,2)
+#' par(mfrow = c(1, 2))
+#' kmplot(kmfit1, add = TRUE, mar = mar)
+#' kmplot(kmfit2, add = TRUE, strata.lab = TRUE, mar = mar)
+#' 
+#' 
+#' \dontrun{
 #' ## more complex example
 #' pdf('./kmplot2.pdf', height = 8, width = 11, pointsize = 12, family = 'serif')
-#' kmplot(kmfit2,
-#'        mark = '',                         # no censor mark
-#'        lty.ci = 2,                        # dashed line for CIs
-#'        xaxis.at = c(0, .5, 1:9) * 365,    # change days to years
+#' kmplot(survfit(Surv(time, status) ~ rx+ adhere, data = colon),
+#'        legend = FALSE,
 #'        panel.first = abline(v = c(0, .5, 1:9) * 365, lty = 3),
+#'        mark = '',                         # no censor mark
+#'        lty.ci = 2, lwd.ci = .3,           # dashed line for CIs
+#'        xaxis.at = c(0, .5, 1:9) * 365,    # change days to years
 #'        xaxis.lab = c(0, .5, 1:9),         # label years
 #'        yaxis.lab = pretty(0:1) * 100,     # change to percent
 #'        xlab = 'Time (years)', ylab = 'Percent survival',
@@ -126,6 +130,7 @@
 #' title(main = 'Chemotherapy for stage B/C colon cancer',
 #'       adj = .5, font.main = 1, line = 0.5, cex.main = 1)
 #' dev.off()
+#' file.show('kmplot2.pdf')
 #' }
 #' 
 #' @export
@@ -137,7 +142,7 @@ kmplot <- function(s,
                    ## confidence options
                    lty.ci = 0, lwd.ci = 1, col.ci = col.surv, col.band = FALSE,
                    
-                   ## at risk table options
+                   ## at-risk table options
                    atrisk = TRUE, atrisk.lab = 'Number at risk',
                    atrisk.lines = TRUE, strata.lab = NULL,
                    strata.expr = NULL, strata.order = seq(length(s$n)),
@@ -185,15 +190,21 @@ kmplot <- function(s,
   
   col.band <- if (isTRUE(col.band)) {
     col.surv
-  } else if (length(col.band) == 1L & col.band == FALSE)
+  } else if (length(col.band) == 1L & identical(col.band, FALSE))
     rep_len(NA, ng) else rep_len(col.band, ng)
   col.lines <- ifelse(is.na(col.band), col.surv, col.band)
   
   ## group names and more error checks
   gr <- c(s$strata)
-  if (!is.null(strata.lab) && strata.lab == TRUE)
+  if (isTRUE(strata.lab)) {
+    ns <- names(s$strata)
+    m <- gregexpr('(?<![=<>!])=(?!=)(.+?)(?=,|$)', ns, perl = TRUE)
+    names(s$strata) <- sapply(regcaptures(ns, m), function(x)
+      paste(trimws(x), collapse = ', '))
+  }
+  if (!is.null(strata.lab) && isTRUE(strata.lab))
     strata.lab <- NULL
-  if (!is.null(strata.lab) && strata.lab == FALSE)
+  if (!is.null(strata.lab) && identical(strata.lab, FALSE))
     strata.lab <- rep(FALSE, ng)
   if (is.null(strata.lab))
     strata.lab <- names(s$strata)
@@ -209,7 +220,7 @@ kmplot <- function(s,
   ## graphic parameters
   par(mar = c(4 + ng, 4 + extra.margin, 4, 2) + .1)
   if (!add) {
-    par(list(mar = c(4 + ng, 4 + extra.margin, 4, 2) + .1, oma = c(1,1,1,1)))
+    par(list(mar = c(4 + ng, 4 + extra.margin, 4, 2) + .1, oma = rep(1, 4)))
     if (!atrisk)
       par(mar = c(3,4,2,1) + .1)
     par(list(...))
@@ -228,11 +239,11 @@ kmplot <- function(s,
                             survival = surv, std.err = std.err, lower = lower,
                             upper = upper, group = rep(strata.lab, gr),
                             order = rep(1:ng, gr)))
-  dat.list <- split(dat, f = dat$order)
+  dat.list <- split(dat, dat$order)
   
   ## plot (but not survival curves)
-  plot(0, type = 'n', xlim = xlim, ylim = ylim, ann = FALSE, bty = 'n',
-       xaxt = 'n', yaxt = 'n', xaxs = xaxs)
+  plot(0, type = 'n', xlim = xlim, ylim = ylim,
+       ann = FALSE, axes = FALSE, xaxs = xaxs)
   panel.first
   box(bty = par('bty'))
   axis(1, xaxis.at, FALSE, lwd = 0, lwd.ticks = 1)
@@ -241,7 +252,7 @@ kmplot <- function(s,
   title(xlab = xlab, line = 1.5, adj = .5, ...)
   title(ylab = ylab, main = main, ...)
   
-  ## at risk table below surv plot
+  ## at-risk table below surv plot
   if (atrisk) {
     ## write group names
     group.name.pos <- diff(par('usr')[1:2]) / -8
@@ -267,7 +278,7 @@ kmplot <- function(s,
     ## numbers at risk
     ss <- summary(s, times = xaxis.at)
     if (is.null(ss$strata))
-      ss$strata <- rep(1, length(ss$time))
+      ss$strata <- rep(1L, length(ss$time))
     d1 <- data.frame(time = ss$time, n.risk = ss$n.risk, strata = c(ss$strata))
     d2 <- split(d1, d1$strata)
     
@@ -379,15 +390,19 @@ kmplot <- function(s,
 #' @param fig_lab figure panel labels; should be a character vector with
 #' length equal to the number of panels (i.e., the number of levels of
 #' \code{by} or length one if \code{by} was not given)
+#' @param time character string of the time variable (optional)
 #' @param add logical; if \code{FALSE} (default), resets graphical parameters
 #' to settings before \code{kmplot_by} was called; set to \code{TRUE} for
 #' adding to existing plots
-#' @param time character string of the time variable (optional)
+#' @param plot logical; if \code{FALSE}, no plot is created but a list with
+#' \code{survfit}s is returned
 #' @param ... additional arguments passed to \code{\link{kmplot}} or
 #' graphical parameters subsequently passed to \code{\link{par}}
 #' 
 #' @return
-#' Invisibly returns a list of \code{\link{survfit}} objects for each plot.
+#' Invisibly returns a list of \code{\link{survfit}} object(s) used to generate
+#' plot(s). If \code{by} was used, there will be a list element for each unique
+#' value.
 #' 
 #' @seealso
 #' \code{\link{kmplot}}, \code{\link{survdiff}}
@@ -405,18 +420,19 @@ kmplot <- function(s,
 #' })
 #' 
 #' kmplot_by(data = colon)
-#' 
-#' ## return value is a list of survfit objects
-#' tmp <- kmplot_by('sex', data = colon, fig_lab = 'Figure I',
-#'   strata_lab = c('F','M'), sub = 'PFS, by sex')
-#' kmplot(tmp$sex)
-#'   
 #' kmplot_by('rx', data = colon, col.surv = 1:3,
 #'   strata_lab = FALSE, col.band = NA)
+#' 
+#' 
+#' ## return value is a list of survfit objects
+#' l <- kmplot_by('sex', by = 'rx', data = colon, plot = FALSE)
+#' kmplot(l$`Lev+5FU`)
+#' 
 #' 
 #' ## multiple variables can be combined
 #' kmplot_by('rx + sex', data = colon, strata_lab = FALSE,
 #'   lty.surv = 1:6, col.band = NA)
+#'
 #'
 #' ## if "by" is given, default is to plot separately
 #' kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3,
@@ -433,19 +449,22 @@ kmplot <- function(s,
 #' 
 #' ## use add = TRUE to add to a figure region without using the by argument
 #' par(mfrow = c(1,2))
-#' kmplot_by('rx', data = colon, col.surv = 1:3, add = TRUE)
-#' kmplot_by('sex', data = colon, col.surv = 1:3, add = TRUE)
+#' mar <- c(8,6,3,2)
+#' kmplot_by('rx', data = colon, strata_lab = FALSE, add = TRUE, mar = mar)
+#' kmplot_by('sex', data = colon, strata_lab = FALSE, add = TRUE, mar = mar)
 #'   
 #' @export
 
 kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
                       lr_test = TRUE, ylab, sub, strata_lab, fig_lab,
-                      time, add = FALSE, ...) {
+                      time, add = FALSE, plot = TRUE, ...) {
   dots <- match.call(expand.dots = FALSE)$`...`
   op <- par(no.readonly = TRUE)
   
   if (inherits(strata, 'survfit')) {
     ## if survfit object is given, extract needed vars and run as usual
+    ## TODO: currently only works if created in global environment, ie,
+    ##       cannot call
     data   <- eval(strata$call$data)
     form   <- as.character(strata$call$formula)[-1]
     strata <- form[length(form)]
@@ -453,7 +472,7 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
     time   <- gsub('\\((\\w+)|.', '\\1', form[1])
   }
   
-  if (!add)
+  if (!add & plot)
     on.exit(par(op))
   if (!missing(by)) {
     if (single) {
@@ -491,12 +510,22 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
     if (strata == '1')
       strata <- ''
     if (!is.null(s$strata)) {
-      names(s$strata) <- if (mlabs)
-        names(s$strata) else if (length(strata_lab) == length(s$strata))
-          strata_lab else
-            gsub('^.*?=|(?<=, ).*?=', '', names(s$strata), perl = TRUE)
-      names(s$strata) <- gsub('\\s+,', ',', trimws(names(s$strata)))
+      ns <- names(s$strata)
+      ns <- if (mlabs || isTRUE(strata_lab)) ns else
+        if (identical(strata_lab, FALSE)) {
+          m <- gregexpr('(?<![=<>!])=(?!=)(.+?)(?=,|$)', ns, perl = TRUE)
+          sapply(regcaptures(ns, m), function(x)
+            paste(trimws(x), collapse = ', '))
+        } else if (!length(strata_lab) == length(ns)) {
+          warning('length(strata_lab) does not equal length(s$strata)',
+                  call. = FALSE)
+          ns
+        } else if (length(strata_lab) == length(ns))
+          strata_lab else ns
+      names(s$strata) <- trimws(ns)
     }
+    if (!plot)
+      return(s0)
     
     kmplot(s, add = add, legend = FALSE, main = names(sp)[x], ylab = ylab, ...,
            panel.first = {

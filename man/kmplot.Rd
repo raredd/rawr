@@ -34,27 +34,27 @@ values will be used; if \code{FALSE}, \code{NA}, or \code{NULL}, no
 bands will be plotted; also note that this is not a true confidence band;
 see details}
 
-\item{atrisk}{logical; if \code{TRUE} (default), draws at risk table}
+\item{atrisk}{logical; if \code{TRUE} (default), draws at-risk table}
 
-\item{atrisk.lab}{heading for at risk table}
+\item{atrisk.lab}{heading for at-risk table}
 
-\item{atrisk.lines}{logical; draw lines next to strata in at risk table}
+\item{atrisk.lines}{logical; draw lines next to strata in at-risk table}
 
-\item{strata.lab}{labels used in legend and at risk table for strata; if
+\item{strata.lab}{labels used in legend and at-risk table for strata; if
 \code{NULL} (default), labels created in \code{survfit} are used; if only
 one strata is present, "All" is used by default; if \code{FALSE}, labels
-are not used}
+are not used; if \code{TRUE}, labels will be stripped of variable names}
 
 \item{strata.expr}{an alternative to \code{strata.lab} which allows for
 \code{\link{bquote}} or \code{\link{expression}} to be passed to labels for
-at risk table; note that \code{strata.expr} trumps \code{strata.lab}}
+at-risk table; note that \code{strata.expr} trumps \code{strata.lab}}
 
-\item{strata.order}{order of strata in legend and at risk table}
+\item{strata.order}{order of strata in legend and at-risk table}
 
-\item{extra.margin}{increase left margin when strata labels in at risk table
+\item{extra.margin}{increase left margin when strata labels in at-risk table
 are long}
 
-\item{xaxs}{style of axis; see details}
+\item{xaxs}{style of axis; see details or \code{\link{par}}}
 
 \item{xlim, ylim}{x- and y-axis limits}
 
@@ -66,7 +66,7 @@ are long}
 
 \item{main}{title of plot}
 
-\item{cex.axis}{text size for axes labels, legend, at risk table}
+\item{cex.axis}{text size for axes labels, legend, at-risk table}
 
 \item{legend}{logical or a keyword (see \code{\link{legend}}); if
 \code{TRUE}, the default position is \code{"bottomleft"}}
@@ -93,13 +93,6 @@ table.
 Line specifications (e.g., \code{lty.surv}, \code{lwd.surv}, etc) will be
 recycled as needed.
 
-\code{xaxs} is the style of the x-axis; see \code{\link{par}}. The default
-for \code{kmplot} is \code{"S"} which is equivalent to \code{xaxs = "i"}
-but with the maximum \code{xlim} value increased by 4\%. Other styles for
-\code{xaxs} currently implemented in \code{R} are \code{"r"} (default for
-plotting and the previous value for \code{kmplot}) and \code{"i"} which
-will \emph{not} add padding to the ends of the axes.
-
 If \code{col.band} is not \code{NULL}, \code{NA}, or \code{FALSE}, a
 confidence band is plotted; however, this is not a confidence band in the
 statistical sense, i.e., a xx-percent chance of containing the entire
@@ -109,39 +102,50 @@ the confidence limits calculated in the survfit object. That is, the xx-\%
 confidence interval (plotted when \code{lty.ci != 0}) and the confidence
 bands are identical--just two ways of plotting the same invervals.
 
+\code{xaxs} is the style of the x-axis; see \code{\link{par}}. The default
+for \code{kmplot} is \code{"S"} which is equivalent to \code{xaxs = "i"}
+but with the maximum \code{xlim} value increased by 4\%. Other styles for
+\code{xaxs} currently implemented in \code{R} are \code{"r"} (default for
+plotting and the previous value for \code{kmplot}) and \code{"i"} which
+will \emph{not} add padding to the ends of the axes.
+
 When saving plots, it is highly recommended to use \code{\link{png}},
 \code{\link{svg}}, \code{\link{pdf}}, etc. instead of exporting directly
-from the \code{R} graphics device. Doing so may cause the at risk table or
+from the \code{R} graphics device. Doing so may cause the at-risk table or
 legend to be mis-aligned.
 }
 \examples{
-\dontrun{
 library('survival')
 kmfit1 <- survfit(Surv(time, status) ~ sex, data = colon)
-kmfit2 <- survfit(Surv(time, status) ~ rx + adhere, data = colon)
+kmfit2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 
 ## basic usage
 kmplot(kmfit1)
+kmplot(kmfit2, atrisk = FALSE)
 
-## expressions in at risk table
-kmplot(kmfit1, strata.lab = c('Female','Male'),
-       strata.expr = expression(widetilde(ring(Female)),
-                                phantom() >= Male))
+## expressions in at-risk table (strata.expr takes precedence)
+kmplot(kmfit1, strata.lab = c('\\u2640', '\\u2642'))
+kmplot(kmfit1, strata.lab = c('\\u2640', '\\u2642'),
+               strata.expr = expression(widetilde(ring(Female)),
+                                        phantom() >= Male))
 
-## when using mfrow options, use ADD = TRUE
-png('./kmplot1.png', width = 750, height = 1200, pointsize = 14)
-par(mfrow = c(2, 1))
-kmplot(kmfit1, add = TRUE)
-kmplot(kmfit2, add = TRUE, extra.margin = 8)
-dev.off()
 
+## when using mfrow options, use add = TRUE and same mar to align
+mar <- c(8,6,2,2)
+par(mfrow = c(1, 2))
+kmplot(kmfit1, add = TRUE, mar = mar)
+kmplot(kmfit2, add = TRUE, strata.lab = TRUE, mar = mar)
+
+
+\dontrun{
 ## more complex example
 pdf('./kmplot2.pdf', height = 8, width = 11, pointsize = 12, family = 'serif')
-kmplot(kmfit2,
-       mark = '',                         # no censor mark
-       lty.ci = 2,                        # dashed line for CIs
-       xaxis.at = c(0, .5, 1:9) * 365,    # change days to years
+kmplot(survfit(Surv(time, status) ~ rx+ adhere, data = colon),
+       legend = FALSE,
        panel.first = abline(v = c(0, .5, 1:9) * 365, lty = 3),
+       mark = '',                         # no censor mark
+       lty.ci = 2, lwd.ci = .3,           # dashed line for CIs
+       xaxis.at = c(0, .5, 1:9) * 365,    # change days to years
        xaxis.lab = c(0, .5, 1:9),         # label years
        yaxis.lab = pretty(0:1) * 100,     # change to percent
        xlab = 'Time (years)', ylab = 'Percent survival',
@@ -155,6 +159,7 @@ kmplot(kmfit2,
 title(main = 'Chemotherapy for stage B/C colon cancer',
       adj = .5, font.main = 1, line = 0.5, cex.main = 1)
 dev.off()
+file.show('kmplot2.pdf')
 }
 
 }
