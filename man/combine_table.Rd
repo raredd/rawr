@@ -24,6 +24,7 @@ combine_table(sp)
 
 ## adding more options
 combine_table(sp, tspanner = c('one','eleven','twenty'),
+  css.cell = 'padding: 0 10 5px;',
   css.tspanner = 'text-align: center; color: red; font-style: italic;')
 
 }

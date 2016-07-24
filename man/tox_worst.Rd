@@ -48,7 +48,7 @@ tox$desc <- factor(match_ctc(tox$code)$matches$tox_desc)
 stopifnot(identical(tox1, tox2))
 
 ## use tabler_by/tabler_by2 to summarize
-tabler_by(tox1$tox_worst, 'desc', 'grade')
+tabler_by(tox1$tox_worst, 'desc', 'grade', n = 10, pct.sign = FALSE)
 tabler_by2(tox1$tox_worst, 'desc', 'grade', stratvar = 'phase')
 
 }
