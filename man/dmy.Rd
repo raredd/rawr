@@ -16,7 +16,7 @@ dmy(d, m, y, origin = c(1, 1, 1900))
 A vector of \code{\link{Date}}-formatted strings.
 }
 \description{
-Parses day, month, year columns to the standard date format.
+Parses day, month, and year columns to the standard date format.
 }
 \details{
 For two-digit years, the \code{origin} year should be specified; otherwise,
@@ -27,8 +27,7 @@ years to 2000.
 }
 \examples{
 dmy(25, 7, 13)
-
-## this function is vectorized:
+dmy(25, 7, 2013)
 dmy(NA, NA, 2000:2009)
 
 set.seed(1)
@@ -39,14 +38,10 @@ dd <- data.frame(id = 1:10,
 
 cbind(dd, dt = with(dd, dmy(day, month, year)))
 
-dd1 <- within(dd, {
-  day[sample(1:10, 5)] <- NA
-  month[sample(1:10, 2)] <- NA
-  year[sample(1:10, 2)] <- NA
-})
 
-cbind(dd1,
-      new_date = with(dd1, dmy(day, month, year, origin = c(15, 6, 2000))))
+## NAs will be filled with corresponding values of origin
+dd[, -1] <- lapply(dd[, -1], function(x) {x[sample(nrow(dd), 5)] <- NA; x})
+cbind(dd, dt = with(dd, dmy(day, month, year, origin = c(15, 6, 2000))))
 
 }
 

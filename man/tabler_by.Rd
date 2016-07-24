@@ -6,10 +6,11 @@
 \title{tabler_by}
 \usage{
 tabler_by(data, varname, byvar, n, order = FALSE, zeros = TRUE,
-  pct = TRUE, pct.col = FALSE, pct.total = FALSE, drop = TRUE)
+  pct = TRUE, pct.column = FALSE, pct.total = FALSE, pct.sign = TRUE,
+  drop = TRUE)
 
 tabler_by2(data, varname, byvar, n, stratvar, zeros = TRUE, pct = FALSE,
-  pct.col = FALSE, pct.total = FALSE)
+  pct.column = FALSE, pct.total = FALSE, pct.sign = TRUE)
 }
 \arguments{
 \item{data}{a data frame; variables \code{varname} and \code{byvar} should
@@ -29,10 +30,12 @@ zero counts; will appear as \code{0 (0\%)} if \code{TRUE}}
 \item{pct}{logical; if \code{TRUE} (and \code{n} is not missing), percents
 are shown}
 
-\item{pct.col}{logical; if \code{TRUE}, percents are separated into new
+\item{pct.column}{logical; if \code{TRUE}, percents are separated into new
 columns}
 
 \item{pct.total}{logical; if \code{TRUE}, adds percents for total column}
+
+\item{pct.sign}{logical; if \code{TRUE}, percent sign is shown}
 
 \item{drop}{logical; if \code{TRUE}, rows with zero total counts
 will be removed (default); \code{FALSE} case is useful when merging multiple
@@ -73,7 +76,7 @@ mt <- within(mtcars, {
 tabler_by(mt, 'vs', 'gear')
 tabler_by(mt, c('vs', 'carb'), 'gear', order = TRUE)
 tabler_by(mt, 'vs', 'gear', n = table(mt$gear))
-tabler_by(mt, 'vs', 'gear', n = table(mt$gear), pct.col = TRUE, zeros = '-')
+tabler_by(mt, 'vs', 'gear', n = table(mt$gear), pct.column = TRUE, zeros = '-')
 
 
 ## example workflow

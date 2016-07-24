@@ -358,25 +358,27 @@ intr <- function(..., fun = median, conf = NULL, digits = 0, na.rm = FALSE) {
 #' \code{\link[rawr]{roundr}}
 #' 
 #' @examples
-#' pvals <- c(.13354, .060123, .004233, .00000016223, 1, -1)
-#' pvalr(pvals, digits = 3)
-#' pvalr(pvals, digits = 3, show.p = TRUE)
+#' pvals <- c(-1, .00001, .004233, .060123, .13354, .4999, .51, .89, .9, 1)
+#' pvalr(pvals)
+#' pvalr(pvals, show.p = TRUE, html = TRUE)
 #' 
 #' @export
 
-pvalr <- function(pvals, sig.limit = .001, digits = 3, html = FALSE,
+pvalr <- function(pvals, sig.limit = 0.001, digits = 3, html = FALSE,
                   show.p = FALSE) {
   show.p <- show.p + 1L
-  html <- html + 1L
+  html   <- html + 1L
   sapply(pvals, function(x, sig.limit) {
     if (is.na(x))
       return(NA)
     if (x >= 0.99)
       return(paste0(c('','p ')[show.p], c('> ','&gt; ')[html], '0.99'))
+    if (x >= 0.9)
+      return(paste0(c('','p ')[show.p], c('> ','&gt; ')[html], '0.9'))
     if (x < sig.limit) {
       paste0(c('', 'p ')[show.p], c('< ', '&lt; ')[html], format(sig.limit))
     } else {
-      nd <- c(digits, 2, 2)[findInterval(x, c(-Inf, .1, .5, Inf))]
+      nd <- c(digits, 2, 1)[findInterval(x, c(-Inf, .1, .5, Inf))]
       paste0(c('','p = ')[show.p], roundr(x, nd))
     }
   }, sig.limit)
@@ -384,7 +386,7 @@ pvalr <- function(pvals, sig.limit = .001, digits = 3, html = FALSE,
 
 #' @rdname pvalr
 #' @examples
-#' pvals <- c('1.000','1.0','1','0.00000','0.123','0.6','0.0', '< 0.001')
+#' pvals <- c('0.00000', '< 0.001', '0.0', '0.123', '0.6', '1', '1.0', '1.000')
 #' pvalr2(pvals)
 #' 
 #' @export
@@ -398,9 +400,9 @@ pvalr2 <- function(pvals, html = FALSE, show.p = FALSE) {
     x <- gsub('>', '&gt;', x)
     x <- gsub('<', '&lt;', x)
   }
-  if (show.p)
-    ifelse(grepl('[<>]', pvalr2(pvals)), paste0('p ', x), paste0('p = ', x))
-  else x
+  if (!show.p)
+    x else
+      ifelse(grepl('[<>]', pvalr2(pvals)), paste0('p ', x), paste0('p = ', x))
 }
 
 #' Concatenate a named list for output
@@ -488,12 +490,10 @@ binconr <- function(r, n, conf = 0.95, digits = 0,
 #' @export
 
 num2char <- function(num, informal = FALSE, cap = TRUE) {
+  scipen <- getOption('scipen')
+  options(scipen = 999)
+  on.exit(options(scipen = scipen))
   
-  if (num == 0) {if (cap) return('Zero') else return('zero')}
-  neg <- FALSE
-  if (num < 0) {neg <- TRUE; num <- abs(num)}
-  if (!num %inside% c(1, 99999999))
-    stop("I can't count that high")
   ## helpers
   key <- c('0'='','1'='one','2'='two','3'='three','4'='four','5'='five',
            '6'='six','7'='seven','8'='eight','9'='nine','10'='ten',
@@ -502,8 +502,7 @@ num2char <- function(num, informal = FALSE, cap = TRUE) {
            '19'='nineteen','20'='twenty','30'='thirty','40'='forty',
            '50'='fifty','60'='sixty','70'='seventy','80'='eighty',
            '90'='ninety','100'='hundred','1000'='thousand','1000000'='million')
-  upcase <- function(x)
-    paste(toupper(substr(x, 1, 1)), substring(x, 2), sep = '', collapse = ' ')
+  upcase <- function(x) gsub('(^.)', '\\U\\1', x, perl = TRUE)
   f1 <- function(x, informal = informal) { # for 1-99
     x <- as.numeric(x) # if string with leading 0s is passed
     z <- paste0(' and ',
@@ -553,14 +552,25 @@ num2char <- function(num, informal = FALSE, cap = TRUE) {
              f5(substr(x, 3, 8), informal))
     else f6(x, informal = informal)
   }
-  ## trim leading/trailing whitespace
-  zzz <- gsub('^\\s+|\\s+$', '', f(num, informal = informal))
-  ## trim double whitespace
+  
+  if (isTRUE(all.equal(num, 0)))
+    return(ifelse(cap, 'Zero', 'zero'))
+  num <- if (num < 0) {
+    neg <- TRUE
+    abs(num)
+  } else {
+    neg <- FALSE
+    num
+  }
+  if (!num %inside% c(1, 99999999))
+    stop("I can\'t count that high")
+  
+  zzz <- trimws(f(num, informal = informal))
+  ## trim double whitespace and "and"s in special cases
   zzz <- upcase(gsub('\\s{2,}', ' ', zzz))
-  ## trim ands in special cases
-  zzz <- ifelse(cap, upcase(gsub('And\ |\ and*$', '', zzz)),
-                gsub('And\ |\ and*$', '', zzz))
-  zzz <- ifelse(neg, paste0('negative ', tolower(zzz)), tolower(zzz))
+  zzz <- tolower(gsub('And\ |\ and*$', '', zzz))
+  if (neg)
+    zzz <- paste('negative', zzz)
   ifelse(cap, upcase(zzz), zzz)
 }
 
@@ -732,9 +742,10 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' zero counts; will appear as \code{0 (0\%)} if \code{TRUE}
 #' @param pct logical; if \code{TRUE} (and \code{n} is not missing), percents
 #' are shown
-#' @param pct.col logical; if \code{TRUE}, percents are separated into new
+#' @param pct.column logical; if \code{TRUE}, percents are separated into new
 #' columns
 #' @param pct.total logical; if \code{TRUE}, adds percents for total column
+#' @param pct.sign logical; if \code{TRUE}, percent sign is shown
 #' @param drop logical; if \code{TRUE}, rows with zero total counts
 #' will be removed (default); \code{FALSE} case is useful when merging multiple
 #' \code{tabler_by} tables (eg, this is what \code{tabler_by2} does)
@@ -756,7 +767,7 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' tabler_by(mt, 'vs', 'gear')
 #' tabler_by(mt, c('vs', 'carb'), 'gear', order = TRUE)
 #' tabler_by(mt, 'vs', 'gear', n = table(mt$gear))
-#' tabler_by(mt, 'vs', 'gear', n = table(mt$gear), pct.col = TRUE, zeros = '-')
+#' tabler_by(mt, 'vs', 'gear', n = table(mt$gear), pct.column = TRUE, zeros = '-')
 #' 
 #' 
 #' ## example workflow
@@ -814,8 +825,8 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' @export
 
 tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
-                      pct = TRUE, pct.col = FALSE, pct.total = FALSE,
-                      drop = TRUE) {
+                      pct = TRUE, pct.column = FALSE, pct.total = FALSE,
+                      pct.sign = TRUE, drop = TRUE) {
   
   rm_p <- function(x) gsub(' \\(.*\\)$', '', x)
   ord <- function(...) order(..., decreasing = TRUE)
@@ -826,8 +837,8 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
             domain = NA)
     data[, idx] <- lapply(data[, idx, drop = FALSE], as.factor)
   }
-  if (pct.col & missing(n))
-    warning('\'n\' must be given when \'pct.col = TRUE\'', domain = NA)
+  if (pct.column & missing(n))
+    warning('\'n\' must be given when \'pct.column = TRUE\'', domain = NA)
   
   ## use ftbl format later, ttbl for counts, ptbl for percents
   ftbl <- ftable(data[, c(varname, byvar)])
@@ -837,7 +848,7 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
   nc <- ncol(ttbl)
   
   ## add percents, eg "N (x%)", to each column
-  if (missing(n) & any(pct, pct.col, pct.total))
+  if (missing(n) & any(pct, pct.column, pct.total))
     message('To show percents \'n\' should be given', domain = NA)
   if (pct & !missing(n)) {
     ## if length(n) == 1L, use same n for all strat levels (assume subgroup)
@@ -854,9 +865,11 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
                      error = function(e) apply(ptbl, 2, round, 0))
     res <- matrix(sprintf('%s (%s%%)', ttbl, ptbl), nrow = nr, ncol = nc)
     res[] <- gsub('0 (NaN%)', '0 (0%)', res, fixed = TRUE)
+    if (!pct.sign)
+      res[] <- gsub('%', '', res, fixed = TRUE)
     
     ## split percents into individual columns
-    if (pct.col) {
+    if (pct.column) {
       res <- gsub('[^0-9 ]', '', apply(res, 1, paste0, collapse = ' '))
       res <- as.matrix(read.table(text = res, colClasses = 'character'))
       cn <- interleave(cn, rep('%', nc))
@@ -907,7 +920,8 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
 #' @rdname tabler_by
 #' @export
 tabler_by2 <- function(data, varname, byvar, n, stratvar, zeros = TRUE,
-                       pct = FALSE, pct.col = FALSE, pct.total = FALSE) {
+                       pct = FALSE, pct.column = FALSE, pct.total = FALSE,
+                       pct.sign = TRUE) {
   
   rm_p <- function(x) gsub(' \\(.*\\)$', '', x)
   ord <- function(...) order(..., decreasing = TRUE)
@@ -928,13 +942,13 @@ tabler_by2 <- function(data, varname, byvar, n, stratvar, zeros = TRUE,
   
   ## get (second varname if ln == 2L and) overall total column(s)
   o1 <- tabler_by(data, varname, '_strat_var_', n, FALSE, zeros,
-                  pct, pct.col, pct.total, drop = FALSE)
-  o1 <- o1[, 1:(ln + (pct.col & pct.total)), drop = FALSE]
+                  pct, pct.column, pct.total, drop = FALSE)
+  o1 <- o1[, 1:(ln + (pct.column & pct.total)), drop = FALSE]
   
   ## get groups of columns for each level of byvar
   o2 <- lapply(bylvl, function(x)
     tabler_by(data[data[, '_strat_var_'] == x, ], varname, byvar, n[x],
-              FALSE, zeros, pct, pct.col, pct.total, drop = FALSE))
+              FALSE, zeros, pct, pct.column, pct.total, pct.sign, drop = FALSE))
   
   res <- do.call('cbind', c(list(o1), o2))
   rownames(res) <- locf(rownames(res))
@@ -1032,7 +1046,7 @@ match_ctc <- function(..., version = 4L) {
 #' stopifnot(identical(tox1, tox2))
 #' 
 #' ## use tabler_by/tabler_by2 to summarize
-#' tabler_by(tox1$tox_worst, 'desc', 'grade')
+#' tabler_by(tox1$tox_worst, 'desc', 'grade', n = 10, pct.sign = FALSE)
 #' tabler_by2(tox1$tox_worst, 'desc', 'grade', stratvar = 'phase')
 #' 
 #' @export
@@ -1076,16 +1090,14 @@ countr <- function(top, n, lowcase = TRUE) {
     n <- length(top)
     top <- table(top)
   }
-  iprint(sprintf('%s (n = %s, %s%%)',
-                 if (is.logical(lowcase))
-                   if (lowcase) tolower(names(top)) else toupper(names(top))
-                 else names(top),
-                 top, round(as.numeric(top) / n * 100)))
+  iprint(sprintf('%s (n = %s, %s%%)', if (is.logical(lowcase))
+    if (lowcase) tolower(names(top)) else toupper(names(top)) else
+      names(top), top, round(as.numeric(top) / n * 100)))
 }
 
 #' Date parse
 #' 
-#' Parses day, month, year columns to the standard date format.
+#' Parses day, month, and year columns to the standard date format.
 #' 
 #' For two-digit years, the \code{origin} year should be specified; otherwise,
 #' the default of 1900 will be used. For \code{NA} year, month, or day,
@@ -1102,8 +1114,7 @@ countr <- function(top, n, lowcase = TRUE) {
 #' 
 #' @examples
 #' dmy(25, 7, 13)
-#' 
-#' ## this function is vectorized:
+#' dmy(25, 7, 2013)
 #' dmy(NA, NA, 2000:2009)
 #' 
 #' set.seed(1)
@@ -1114,14 +1125,10 @@ countr <- function(top, n, lowcase = TRUE) {
 #' 
 #' cbind(dd, dt = with(dd, dmy(day, month, year)))
 #' 
-#' dd1 <- within(dd, {
-#'   day[sample(1:10, 5)] <- NA
-#'   month[sample(1:10, 2)] <- NA
-#'   year[sample(1:10, 2)] <- NA
-#' })
 #' 
-#' cbind(dd1,
-#'       new_date = with(dd1, dmy(day, month, year, origin = c(15, 6, 2000))))
+#' ## NAs will be filled with corresponding values of origin
+#' dd[, -1] <- lapply(dd[, -1], function(x) {x[sample(nrow(dd), 5)] <- NA; x})
+#' cbind(dd, dt = with(dd, dmy(day, month, year, origin = c(15, 6, 2000))))
 #' 
 #' @export
 
@@ -1130,6 +1137,9 @@ dmy <- function(d, m, y, origin = c(1, 1, 1900)) {
     suppressWarnings(a <- as.numeric(a))
     ifelse(is.na(a), b, a)
   }
+  d[is.na(d)] <- origin[1]
+  m[is.na(m)] <- origin[2]
+  y[is.na(y)] <- origin[3]
   y <- ifelse(nchar(y) <= 2, f(y, 0) + origin[3], f(y, 0))
   as.Date(sprintf('%04s-%02s-%02s', y, f(m, origin[2]), f(d, origin[1])))
 }
@@ -1151,12 +1161,13 @@ dmy <- function(d, m, y, origin = c(1, 1, 1900)) {
 #' 
 #' ## adding more options
 #' combine_table(sp, tspanner = c('one','eleven','twenty'),
+#'   css.cell = 'padding: 0 10 5px;',
 #'   css.tspanner = 'text-align: center; color: red; font-style: italic;')
 #' 
 #' @export
 
 combine_table <- function(l, ...) {
-  m <- match.call(expand.dots = FALSE)$...
+  m <- match.call(expand.dots = FALSE)$`...`
   lx <- sapply(l, function(x) if (is.null(nr <- nrow(x))) 1 else nr)
   ts <- m$tspanner %||% names(l) %||% rep(' ', each = length(lx))
   m$tspanner <- NULL
