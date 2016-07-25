@@ -158,18 +158,10 @@ jmplot <- function(x, y, z,
 #' An alternative to \code{\link{boxplot}}. The individual data can be shown
 #' (either in the foreground or background) with jittering if necessary.
 #' 
-#' @param x for specifying data from which the boxplots are to be produced;
-#' either a numeric vector or a single list containing such vectors; additional
-#' unnamed arguments specify further data as separate vectors (each
-#' corresponding to a component boxplot); \code{NA}s are allowed in the data
+#' @param x a numeric vector or a single list containing such vectors
 #' @param g a vector or factor object giving the group for the corresponding
 #' elements of \code{x}, ignored with a warning if \code{x} is a list
-#' @param ... for the \code{formula} method, named arguments to be passed to
-#' the default method
-#' 
-#' for the default method, unnamed arguments are additional data vectors
-#' (unless x is a list when they are ignored), and named arguments are
-#' arguments and \code{\link{par}}s to be passed to \code{\link{bxp}}
+#' @param ... additional graphical parameters passed to \code{\link{par}}
 #' @param formula a \code{\link{formula}}, such as \code{y ~ grp}, where y is
 #' a numeric vector of data values to be split into groups according to the
 #' grouping variable \code{grp} (usually a factor)
@@ -288,7 +280,7 @@ tplot <- function(x, ...) UseMethod('tplot')
 
 #' @rdname tplot
 #' @export
-tplot.default <- function(x, g, ..., type = c('d','db','bd','b'), jit = 0.1, dist,
+tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
                           
                           ## labels/aesthetics
                           main = '', sub = '', xlab = '', ylab = '',
@@ -309,7 +301,6 @@ tplot.default <- function(x, g, ..., type = c('d','db','bd','b'), jit = 0.1, dis
                           ## extra stuff
                           ann = par('ann'), axes = TRUE, frame.plot = axes,
                           add = FALSE, at, horizontal = FALSE,
-                          
                           panel.first = NULL, panel.last = NULL) {
   ## helpers
   localPoints <- function(..., tick) points(...)
@@ -320,16 +311,27 @@ tplot.default <- function(x, g, ..., type = c('d','db','bd','b'), jit = 0.1, dis
   localMtext  <- function(..., bg, cex, lty, lwd, tick) mtext(..., cex = cex.n)
   
   if (!missing(g)) {
+    if (missing(xlab))
+      xlab <- deparse(substitute(g))
     if (is.list(x))
-      warning('\'x\' is a list, so ignoring argument \'g\'') else
+      warning('\'x\' is a list -- \'g\' will be ignored', call. = FALSE) else {
+        if (missing(ylab))
+          ylab <- deparse(substitute(x))
+        if (missing(xlab))
+          xlab <- deparse(substitute(g))
         x <- split(x, g)
+      }
+  } else {
+    if (missing(xlab))
+      xlab <- deparse(substitute(x))
   }
+  
   args <- list(x, ...)
   namedargs <- if (!is.null(attributes(args)$names))
     attributes(args)$names !=  '' else logical(length(args))
   groups <- if (is.list(x)) x else args[!namedargs]
-  pars <- args[namedargs]
-  if ((n <- length(groups)) == 0)
+  pars   <- args[namedargs]
+  if ((n <- length(groups)) == 0L)
     stop('invalid first argument')
   if (length(class(groups)))
     groups <- unclass(groups)
@@ -570,6 +572,10 @@ tplot.formula <- function(formula, data = NULL, ...,
   
   args <- lapply(m$..., eval, data, parent.frame())
   nmargs <- names(args)
+  
+  form <- as.character(formula)
+  args <- modifyList(list(xlab = form[3], ylab = form[2]), args)
+  
   if ('main' %in% nmargs) args[['main']] <- enquote(args[['main']])
   if ('sub' %in% nmargs)  args[['sub']]  <- enquote(args[['sub']])
   if ('xlab' %in% nmargs) args[['xlab']] <- enquote(args[['xlab']])

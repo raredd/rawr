@@ -8,32 +8,23 @@
 \usage{
 tplot(x, ...)
 
-\method{tplot}{default}(x, g, ..., type = c("d", "db", "bd", "b"),
-  jit = 0.1, dist, main = "", sub = "", xlab = "", ylab = "", names,
-  xlim, ylim, col, group.col = TRUE, boxcol = "grey90",
-  bordercol = "black", pch = par("pch"), group.pch = TRUE,
-  cex = par("cex"), group.cex = FALSE, median.line = FALSE,
-  mean.line = FALSE, median.pars = list(col = par("col")),
-  mean.pars = median.pars, boxplot.pars, show.n = TRUE, show.na = show.n,
-  cex.n = cex, ann = par("ann"), axes = TRUE, frame.plot = axes,
-  add = FALSE, at, horizontal = FALSE, panel.first = NULL,
-  panel.last = NULL)
+\method{tplot}{default}(x, g, ..., type = "db", jit = 0.1, dist,
+  main = "", sub = "", xlab = "", ylab = "", names, xlim, ylim, col,
+  group.col = TRUE, boxcol = "grey90", bordercol = "black",
+  pch = par("pch"), group.pch = TRUE, cex = par("cex"),
+  group.cex = FALSE, median.line = FALSE, mean.line = FALSE,
+  median.pars = list(col = par("col")), mean.pars = median.pars,
+  boxplot.pars, show.n = TRUE, show.na = show.n, cex.n = cex,
+  ann = par("ann"), axes = TRUE, frame.plot = axes, add = FALSE, at,
+  horizontal = FALSE, panel.first = NULL, panel.last = NULL)
 
 \method{tplot}{formula}(formula, data = NULL, ..., subset, na.action = NULL,
   panel.first = NULL, panel.last = NULL)
 }
 \arguments{
-\item{x}{for specifying data from which the boxplots are to be produced;
-either a numeric vector or a single list containing such vectors; additional
-unnamed arguments specify further data as separate vectors (each
-corresponding to a component boxplot); \code{NA}s are allowed in the data}
+\item{x}{a numeric vector or a single list containing such vectors}
 
-\item{...}{for the \code{formula} method, named arguments to be passed to
-the default method
-
-for the default method, unnamed arguments are additional data vectors
-(unless x is a list when they are ignored), and named arguments are
-arguments and \code{\link{par}}s to be passed to \code{\link{bxp}}}
+\item{...}{additional graphical parameters passed to \code{\link{par}}}
 
 \item{g}{a vector or factor object giving the group for the corresponding
 elements of \code{x}, ignored with a warning if \code{x} is a list}
