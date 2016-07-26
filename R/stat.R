@@ -1138,3 +1138,116 @@ cuzick.test.formula <- function (formula, data, subset, na.action, ...) {
   y$data.name <- dname
   y
 }
+
+#' Jonckheere-Terpstra test
+#' 
+#' An implementation of Jonckheere's trend test for \emph{ordered} independent
+#' samples.
+#' 
+#' @param x either a two-dimensional contingency table in matrix form or a
+#' factor object
+#' @param y a factor object; ignored if x is a matrix
+#' 
+#' @return
+#' A list with class "\code{htest}" containing the following components:
+#' 
+#' \item{statistic}{the value of the test statistic with a name describing it}
+#' \item{p.value}{the p-value for the test (two-sided, corrected for ties)}
+#' \item{method}{a character string describing the test used}
+#' \item{data.name}{a character string giving the names of the data}
+#' 
+#' @references
+#' Jonckheere, A. R. (1954). A distribution-free k-sample test again ordered
+#' alternatives. \emph{Biometrika} \strong{41}:133-145.
+#' 
+#' Terpstra, T. J. (1952). The asymptotic normality and consistency of
+#' Kendall's test against trend, when ties are present in one ranking.
+#' \emph{Indagationes Mathematicae} \strong{14}:327-333.
+#' 
+#' @seealso
+#' \code{\link[stats]{cor.test}}; \code{\link[clinfin]{jonckheere.test}}
+#' 
+#' @examples
+#' (tbl <- table(mtcars$gear, mtcars$cyl))
+#' jt.test(tbl)
+#' cor.test(mtcars$gear, mtcars$cyl, method = 'k')
+#' # clinfun::(mtcars$gear, mtcars$cyl)
+#' 
+#' ## from stats::cor.test
+#' x <- c(44.4, 45.9, 41.9, 53.3, 44.7, 44.1, 50.7, 45.2, 60.1)
+#' y <- c(2.6, 3.1, 2.5, 5.0, 3.6, 4.0, 5.2, 2.8, 3.8)
+#' 
+#' cor.test(x, y, method = 'kendall', exact = FALSE)
+#' jt.test(x, y)
+#' 
+#' @export
+
+jt.test <- function(x, y = NULL) {
+  ## checks adapted from stats::fisher.test
+  dname <- deparse(substitute(x))
+  method <- 'Jonckheere-Terpstra Test'
+  if (is.data.frame(x))
+    x <- as.matrix(x)
+  if (is.matrix(x)) {
+    if (any(dim(x) < 2L))
+      stop('\'x\' must have at least 2 rows and columns')
+    if (!is.numeric(x) || any(x < 0) || anyNA(x))
+      stop("all entries of \'x\' must be nonnegative and finite")
+    if (!is.integer(x)) {
+      xo <- x
+      x <- round(x)
+      if (any(x > .Machine$integer.max))
+        stop("\'x\' has entries too large to be integer")
+      if (!isTRUE(ax <- all.equal(xo, x)))
+        warning(gettextf("\'x\' has been rounded to integer: %s", ax),
+                domain = NA)
+      storage.mode(x) <- 'integer'
+    }
+  } else {
+    if (is.null(y)) 
+      stop('if \'x\' is not a matrix, \'y\' must be given')
+    if (length(x) != length(y)) 
+      stop('\'x\' and \'y\' must have the same length')
+    dname <- paste(dname, 'and', deparse(substitute(y)))
+    ok <- complete.cases(x, y)
+    x <- as.factor(x[ok])
+    y <- as.factor(y[ok])
+    if ((nlevels(x) < 2L) || (nlevels(y) < 2L)) 
+      stop("'x' and 'y' must have at least 2 levels")
+    x <- table(x, y)
+  }
+  
+  get_PQ <- function(x, y) {
+    ## calculates P,Q scores larger,smaller than current score
+    x <- unlist(x)
+    y <- unlist(y)
+    as.integer(rowSums(vapply(x, function(z)
+      c(sum(y > z), sum(y < z)), integer(2L))))
+  }
+  
+  n  <- sum(x)
+  ti <- rowSums(x)
+  ui <- colSums(x)
+  # if (any(rowSums(!!x) > 1))
+  #   warning('Cannot compute exact p-value with ties')
+  
+  ## variance
+  vS <- (2 * (n ** 3 - sum(ti ** 3) - sum(ui ** 3)) +
+             3 * (n ** 2 - sum(ti ** 2) - sum(ui ** 2)) + 5 * n) / 18 +
+    (sum(ti ** 3) - 3 * sum(ti ** 2) + 2 * n) *
+    (sum(ui ** 3) - 3 * sum(ui ** 2) + 2 * n) / (9 * n * (n - 1) * (n - 2)) +
+    (sum(ti ** 2) - n) * (sum(ui ** 2) - n) / (2 * n * (n - 1))
+  
+  ## statistic
+  ns <- c(x)
+  sp <- c(row(x) * !!ns)
+  sp <- split(rep(sp, ns), rep(c(col(x)), ns))
+  PQ <- rowSums(vapply(seq(length(sp)), function(x)
+    get_PQ(sp[x], sp[-(1:x)]), integer(2)))
+  z <- (PQ[1] - PQ[2]) / sqrt(vS)
+  pval <- 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE))
+  
+  structure(list(statistic = c(z = z), p.value = pval,
+                 method = method, data.name = dname),
+            class = 'htest')
+}
