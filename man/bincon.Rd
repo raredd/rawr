@@ -23,7 +23,7 @@ bincon(r, n, alpha = 0.05, round = NULL, method = c("exact", "wilson",
 A matrix containing the computed interval(s) and their widths.
 }
 \description{
-Calculates confidence intervales for binomial probabilities for specified
+Calculates confidence intervals for binomial probabilities for specified
 type-I error (\code{alpha}) using exact, Wilson, or asymptotic methods.
    
 If \code{method = 'all'}, \code{r} and \code{n} should each be length 1.

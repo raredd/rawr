@@ -350,6 +350,8 @@ kmplot <- function(s,
     ## survival curves
     lines(s[i], conf.int = FALSE, col = col.surv[i], lty = lty.surv[i],
           lwd = lwd.surv, mark = mark, xpd = FALSE)
+    ## uncomment when bug in survival v2.39-5 fixed
+    # points(s[i], lwd = lwd.surv, pch = mark, col = col.surv[i], xpd = FALSE)
   }
   panel.last
   

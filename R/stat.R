@@ -1,12 +1,12 @@
 ### statistical functions
 # bincon, bintest, dlt_table, power_cv, simon2, moods_test, fakeglm, gcd,
-# install.bioc, lm.beta, cuzick.test
+# install.bioc, lm.beta, cuzick.test, jt.test
 ###
 
 
 #' Binomial probability confidence intervals
 #' 
-#' Calculates confidence intervales for binomial probabilities for specified
+#' Calculates confidence intervals for binomial probabilities for specified
 #' type-I error (\code{alpha}) using exact, Wilson, or asymptotic methods.
 #'    
 #' If \code{method = 'all'}, \code{r} and \code{n} should each be length 1.
@@ -1192,14 +1192,14 @@ jt.test <- function(x, y = NULL) {
     if (any(dim(x) < 2L))
       stop('\'x\' must have at least 2 rows and columns')
     if (!is.numeric(x) || any(x < 0) || anyNA(x))
-      stop("all entries of \'x\' must be nonnegative and finite")
+      stop('all entries of \'x\' must be nonnegative and finite')
     if (!is.integer(x)) {
       xo <- x
       x <- round(x)
       if (any(x > .Machine$integer.max))
-        stop("\'x\' has entries too large to be integer")
+        stop('\'x\' has entries too large to be integer')
       if (!isTRUE(ax <- all.equal(xo, x)))
-        warning(gettextf("\'x\' has been rounded to integer: %s", ax),
+        warning(gettextf('\'x\' has been rounded to integer: %s', ax),
                 domain = NA)
       storage.mode(x) <- 'integer'
     }
@@ -1213,7 +1213,7 @@ jt.test <- function(x, y = NULL) {
     x <- as.factor(x[ok])
     y <- as.factor(y[ok])
     if ((nlevels(x) < 2L) || (nlevels(y) < 2L)) 
-      stop("'x' and 'y' must have at least 2 levels")
+      stop('\'x\' and \'y\' must have at least 2 levels')
     x <- table(x, y)
   }
   
