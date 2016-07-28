@@ -2,56 +2,62 @@
 % Please edit documentation in R/surv.R
 \name{survdiff_pairs}
 \alias{survdiff_pairs}
-\title{Pairwise survival group comparisons}
+\title{Pairwise \code{survdiff} comparisons}
 \usage{
-survdiff_pairs(s, ..., method = "bonferroni", digits = getOption("digits"))
+survdiff_pairs(s, ..., method = "bonferroni", digits = 3L)
 }
 \arguments{
 \item{s}{an object of class \code{\link[survival]{survdiff}} or
 \code{\link[survival]{survfit}}}
 
 \item{...}{additional arguments passed to \code{\link{survdiff}} such as
-\code{na.action} to filter missing data or \code{rho} to control the type
-of test}
+\code{na.action} to filter missing data or \code{rho} to control the test}
 
 \item{method}{p-value correction method; see \code{\link{p.adjust}}}
 
 \item{digits}{integer indicating the number of decimal places to be used}
 }
 \value{
-A list of length three giving the \code{n}s, \code{chi.sq} statistic, and
-\code{p.value} for each comparison. Note that the lower triangle of
-\code{p.value} are uncorrected and the upper triangle is adjusted using
-\code{method} (the default is a Bonferroni correction, see
-\code{\link{p.adjust}})
+A list with three elements:
+\item{\code{n}}{the number of subjects in each pair of groups}
+\item{\code{chi.sq}}{the chisquare statistic for a test of equality
+between pairs of groups}
+\item{\code{p.value}}{significance for each test. The lower and upper
+triangles of the matrix are uncorrected and adjusted, respectively, for
+multiple comparisons using \code{method} (the default is a Bonferroni
+correction, see \code{\link{p.adjust}})}
 }
 \description{
-Evaluate differences in survival curves for all pairs of a grouping
-variable. This function currently works for one \code{factor}-like
-variable, and all unqiue levels are treated as a sub-group.
+Evaluate pairwise group differences in survival curves with
+\code{\link[survival]{survdiff}}. This function currently works for
+\emph{one} \code{factor}-like variable, and all unique values are treated
+as separate groups.
 }
 \examples{
 library('survival')
-fit1 <- survdiff(Surv(time, status) ~ sex, data = lung)
-survdiff_pairs(fit1)
+sdif <- survdiff(Surv(time, status) ~ sex, data = lung)
+sfit <- survfit(Surv(time, status) ~ sex, data = lung)
 
-## note that despite a numeric group variable, contrasts
-## are calculated for each unique level combination
-dd <- lung[lung$ph.ecog \%in\% 0:2, ]
-fit2 <- survdiff(Surv(time, status) ~ ph.ecog, data = dd)
-survdiff_pairs(fit2)
+stopifnot(identical(survdiff_pairs(sdif), survdiff_pairs(sfit)))
+
+ 
+## numeric and integer variables will be treated as factor-like
+sfit <- survfit(Surv(time, status) ~ extent, data = colon)
+kmplot(sfit)
+survdiff_pairs(sfit)
 
 ## compare
-survdiff(Surv(time, status) ~ ph.ecog, data = dd[dd$ph.ecog \%in\% 0:1, ])
+survdiff(Surv(time, status) ~ extent, data = colon[colon$extent \%in\% 1:2, ])
+
 
 ## for interactions, create a new variable with all levels
-dd$int <- with(dd, interaction(sex, ph.ecog))
-fit3 <- survdiff(Surv(time, status) ~ int, data = dd)
-survdiff_pairs(fit3)
+colon$int <- with(colon, interaction(sex, extent))
+sfit <- survfit(Surv(time, status) ~ int, data = colon)
+survdiff_pairs(sfit, rho = 1, method = 'BH')
 
 }
 \seealso{
 \code{\link[rawr]{pvalr}}; \code{\link{survdiff}}; \code{\link{p.adjust}};
-\code{\link[rms]{contrast}}
+\code{\link[rms]{contrast}} from the \pkg{\link[rms]{rms}} package
 }
 

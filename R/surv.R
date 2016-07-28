@@ -154,7 +154,7 @@ kmplot <- function(s,
                    yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
                    xlab = 'Time', ylab = 'Survival probability',
                    main = '', cex.axis = par('cex.axis'),
-                   legend = !is.null(s$strata),
+                   legend = !atrisk && !is.null(s$strata),
                    
                    ## other options
                    mar = NULL, add = FALSE,
@@ -825,76 +825,81 @@ surv_table <- function(s, digits = 3, times = pretty(s$time), maxtime = TRUE, ..
     Map(f = f, summ) else f(summ)
 }
 
-#' Pairwise survival group comparisons
+#' Pairwise \code{survdiff} comparisons
 #' 
-#' Evaluate differences in survival curves for all pairs of a grouping
-#' variable. This function currently works for one \code{factor}-like
-#' variable, and all unqiue levels are treated as a sub-group.
+#' Evaluate pairwise group differences in survival curves with
+#' \code{\link[survival]{survdiff}}. This function currently works for
+#' \emph{one} \code{factor}-like variable, and all unique values are treated
+#' as separate groups.
 #' 
 #' @param s an object of class \code{\link[survival]{survdiff}} or
 #' \code{\link[survival]{survfit}}
 #' @param ... additional arguments passed to \code{\link{survdiff}} such as
-#' \code{na.action} to filter missing data or \code{rho} to control the type
-#' of test
+#' \code{na.action} to filter missing data or \code{rho} to control the test
 #' @param method p-value correction method; see \code{\link{p.adjust}}
 #' @param digits integer indicating the number of decimal places to be used
 #' 
 #' @return
-#' A list of length three giving the \code{n}s, \code{chi.sq} statistic, and
-#' \code{p.value} for each comparison. Note that the lower triangle of
-#' \code{p.value} are uncorrected and the upper triangle is adjusted using
-#' \code{method} (the default is a Bonferroni correction, see
-#' \code{\link{p.adjust}})
+#' A list with three elements:
+#' \item{\code{n}}{the number of subjects in each pair of groups}
+#' \item{\code{chi.sq}}{the chisquare statistic for a test of equality
+#' between pairs of groups}
+#' \item{\code{p.value}}{significance for each test. The lower and upper
+#' triangles of the matrix are uncorrected and adjusted, respectively, for
+#' multiple comparisons using \code{method} (the default is a Bonferroni
+#' correction, see \code{\link{p.adjust}})}
 #' 
 #' @seealso
 #' \code{\link[rawr]{pvalr}}; \code{\link{survdiff}}; \code{\link{p.adjust}};
-#' \code{\link[rms]{contrast}}
+#' \code{\link[rms]{contrast}} from the \pkg{\link[rms]{rms}} package
 #' 
 #' @examples
 #' library('survival')
-#' fit1 <- survdiff(Surv(time, status) ~ sex, data = lung)
-#' survdiff_pairs(fit1)
+#' sdif <- survdiff(Surv(time, status) ~ sex, data = lung)
+#' sfit <- survfit(Surv(time, status) ~ sex, data = lung)
 #' 
-#' ## note that despite a numeric group variable, contrasts
-#' ## are calculated for each unique level combination
-#' dd <- lung[lung$ph.ecog %in% 0:2, ]
-#' fit2 <- survdiff(Surv(time, status) ~ ph.ecog, data = dd)
-#' survdiff_pairs(fit2)
+#' stopifnot(identical(survdiff_pairs(sdif), survdiff_pairs(sfit)))
+#'
+#'  
+#' ## numeric and integer variables will be treated as factor-like
+#' sfit <- survfit(Surv(time, status) ~ extent, data = colon)
+#' kmplot(sfit)
+#' survdiff_pairs(sfit)
 #' 
 #' ## compare
-#' survdiff(Surv(time, status) ~ ph.ecog, data = dd[dd$ph.ecog %in% 0:1, ])
+#' survdiff(Surv(time, status) ~ extent, data = colon[colon$extent %in% 1:2, ])
+#' 
 #' 
 #' ## for interactions, create a new variable with all levels
-#' dd$int <- with(dd, interaction(sex, ph.ecog))
-#' fit3 <- survdiff(Surv(time, status) ~ int, data = dd)
-#' survdiff_pairs(fit3)
+#' colon$int <- with(colon, interaction(sex, extent))
+#' sfit <- survfit(Surv(time, status) ~ int, data = colon)
+#' survdiff_pairs(sfit, rho = 1, method = 'BH')
 #' 
 #' @export
 
-survdiff_pairs <- function(s, ..., method = 'bonferroni',
-                           digits = getOption('digits')) {
+survdiff_pairs <- function(s, ..., method = 'bonferroni', digits = 3L) {
   stopifnot(inherits(s, c('survdiff', 'survfit')))
   rhs <- all.vars(s$call$formula)[-(1:2)]
   stopifnot(length(rhs) == 1L)
   data <- eval(s$call$data, envir = parent.frame())
   unq <- sort(unique(data[, rhs]))
   
-  res <- matrix(0, length(unq), length(unq), dimnames = list(unq, unq))
+  ch <- matrix(0, length(unq), length(unq), dimnames = list(unq, unq))
   nn <- outer(as.character(unq), as.character(unq), Vectorize(function(x, y)
     nrow(data[data[, rhs] %in% c(x, y), ])))
   
   dimnames(nn) <- list(unq, unq)
-  names(dimnames(res)) <- names(dimnames(nn)) <- c(rhs, rhs)
+  names(dimnames(ch)) <- names(dimnames(nn)) <- c(rhs, rhs)
   
   for (ii in seq_along(unq))
     for (jj in (seq_along(unq))[-ii])
-      res[ii, jj] <- survdiff(as.formula(s$call$formula), ...,
-                              data = data[data[, rhs] %in% unq[c(ii, jj)], ])$chisq
+      ch[ii, jj] <- survdiff(as.formula(s$call$formula), ...,
+                             data = data[data[, rhs] %in% unq[c(ii, jj)], ])$chisq
   
-  pvu <- apply(res, 1:2, function(x) pchisq(x, 1, lower.tail = FALSE))
+  pvu <- apply(ch, 1:2, function(x) pchisq(x, 1, lower.tail = FALSE))
   pvc <- t(pvu)[upper.tri(pvu)]
   pvc <- p.adjust(pvc, method = method, n = length(pvc))
   pvu[upper.tri(pvu)] <- pvc
   
-  lapply(list(n = nn, chi.sq = res, p.value = pvu), round, digits = digits)
+  lapply(list(n = nn, chi.sq = ch, p.value = pvu), round, digits = digits)
 }
