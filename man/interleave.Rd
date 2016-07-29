@@ -16,15 +16,18 @@ interleave(..., which)
 Interleave rows (or columns) of vectors, matrices, or data frames.
 }
 \examples{
-interleave(letters[1:3],
-           LETTERS[3:1],
-           letters[26:24])
-interleave(t(matrix(1:9, 3, 3)),
-           t(matrix(1:9 * 10, 3, 3)),
-           which = 'rbind')
-interleave(matrix(1:9, 3, 3),
-           matrix(1:9 * 10, 3, 3),
-           which = 'cbind')
+interleave(letters[1:3], LETTERS[3:1], letters[26:24])
+
+m1 <- matrix(1:9, 3, 3)
+m2 <- matrix(1:9 * 10, 3, 3)
+interleave(t(m1), t(m2), which = 'rbind')
+interleave(m1, m2, which = 'cbind')
+
+\dontrun{
+d1 <- data.frame(m1)
+interleave(d1, m2, which = 'rbind')  ## error
+interleave(d1, m2, which = 'rbindx') ## works
+}
 
 }
 \seealso{
