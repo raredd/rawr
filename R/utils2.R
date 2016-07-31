@@ -912,7 +912,7 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
     if (identical(FALSE, zeros))
       zeros = ''
     idx <- idx:ncol(res)
-    res[, idx] <- `[<-`(res[, idx], gsub('0 \\(0%\\)|^0$', zeros, res[, idx]))
+    res[, idx] <- `[<-`(res[, idx], gsub('^0.*', zeros, res[, idx]))
   }
   `rownames<-`(res[, -1], res[, 1])
 }
