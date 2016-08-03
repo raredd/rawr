@@ -83,13 +83,13 @@ NULL
 
 #' @rdname rawr_ops
 #' @export
-'%ni%' <- function(x, table) !(match(x, table, nomatch = 0) > 0)
+'%ni%' <- function(x, table) !(match(x, table, nomatch = 0L) > 0L)
 
 #' @rdname rawr_ops
 #' @export
 '%inside%' <- function(x, interval) {
   interval <- sort(interval)
-  x >= interval[1] & x <= interval[2]
+  x >= interval[1L] & x <= interval[2L]
 }
 
 #' @rdname rawr_ops
@@ -108,7 +108,7 @@ NULL
     if (is.matrix(object)) colnames else names
   } else identity
   wh <- if (is.numeric(range)) range else which(FUN(object) %in% range)
-  FUN(object)[seq(wh[1], wh[2])]
+  FUN(object)[seq(wh[1L], wh[2L])]
 }
 
 #' List utilities
@@ -208,8 +208,8 @@ NULL
 
 #' @rdname rawr_ls
 #' @export
-lss <- function (pos = 1, pattern, by = NULL, all.names = FALSE,
-                 decreasing = TRUE, n = 40) {
+lss <- function(pos = 1L, pattern, by = NULL, all.names = FALSE,
+                decreasing = TRUE, n = 40L) {
   if (!length(ls(envir = as.environment(pos))))
     return(character(0))
   napply <- function(names, fn)
@@ -538,7 +538,7 @@ bind_all <- function(..., which) {
     warning('This function is intended for vector inputs. ',
             'Use ?cbindx or ?rbindx instead.')
   l <- lapply(l, `length<-`, max(sapply(l, length)))
-  do.call(which, l)
+  do.call('which', l)
 }
 
 #' @rdname bindx
@@ -893,17 +893,23 @@ merge2 <- function(l, ...)
 #' locf(x)
 #' locf(x, TRUE)
 #' 
-#' df <- data.frame(V1 = c('Bob', NA, NA, 'Joe', NA, NA),
+#' dd <- data.frame(V1 = c('Bob', NA, NA, 'Joe', NA, NA),
 #'                  V2 = c(NA, 1, NA, NA, 2, NA), stringsAsFactors = FALSE)
 #' 
-#' locf(df)
-#' locf(df, c(FALSE, TRUE))
-#' locf(df, na.strings = 2)
+#' locf(dd)
+#' locf(dd, c(FALSE, TRUE))
+#' locf(dd, na.strings = 2)
 #' 
 #' ## note the differences for numeric and character na.strings
-#' locf(df, na.strings = c('Joe', 2))
-#' locf(df, na.strings = list('Joe', 02))
-#' locf(df, na.strings = list('Joe', '02'))
+#' locf(dd, na.strings = c('Joe', 2))
+#' locf(dd, na.strings = list('Joe', 02))
+#' locf(dd, na.strings = list('Joe', '02'))
+#' 
+#' 
+#' ## with dates
+#' dd$V2 <- as.Date(dd$V2, origin = '2000-01-01')
+#' locf(dd)
+#' locf(dd, TRUE)
 #' 
 #' @export
 
