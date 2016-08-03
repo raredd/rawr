@@ -23,17 +23,23 @@ x <- c('','','a','','b','','','','c')
 locf(x)
 locf(x, TRUE)
 
-df <- data.frame(V1 = c('Bob', NA, NA, 'Joe', NA, NA),
+dd <- data.frame(V1 = c('Bob', NA, NA, 'Joe', NA, NA),
                  V2 = c(NA, 1, NA, NA, 2, NA), stringsAsFactors = FALSE)
 
-locf(df)
-locf(df, c(FALSE, TRUE))
-locf(df, na.strings = 2)
+locf(dd)
+locf(dd, c(FALSE, TRUE))
+locf(dd, na.strings = 2)
 
 ## note the differences for numeric and character na.strings
-locf(df, na.strings = c('Joe', 2))
-locf(df, na.strings = list('Joe', 02))
-locf(df, na.strings = list('Joe', '02'))
+locf(dd, na.strings = c('Joe', 2))
+locf(dd, na.strings = list('Joe', 02))
+locf(dd, na.strings = list('Joe', '02'))
+
+
+## with dates
+dd$V2 <- as.Date(dd$V2, origin = '2000-01-01')
+locf(dd)
+locf(dd, TRUE)
 
 }
 
