@@ -111,22 +111,30 @@ dodge.default <- function(x, y, dist, jit, ...) {
 #' @export
 
 show_colors <- function() {
+  sx <- seq(x <- 22)
+  sy <- seq(y <- 30)
+  
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
-  par(mfrow = c(1,1), mai=c(.4,.4,.4,.4), oma=c(.2,0,0,.2))
-  x <- 22
-  y <- 30
-  plot(c(-1, x), c(-1, y), ann = FALSE, type = 'n', bty = 'n', axes = FALSE)
-  sapply(1:x, function(i) {
-    sapply(1:y, function(j) {
+  par(mfrow = c(1,1), mar = c(1,1,3,2), cex = .7)
+  
+  plot(c(-1, x), c(-1, y), type = 'n', ann = FALSE, axes = FALSE)
+  title('col = colors()[n]')
+  sapply(sx, function(i)
+    sapply(sy, function(j) {
       k <- y * (i - 1) + j
       co <- colors()[k]
-      rect(i - 1, j - 1, i, j, col = co, border = grey(.5))
+      rect(i - 1, j - 1, i, j, col = co, border = 'white', lwd = .5)
     })
-  })
-  text(rep(-.5, y), (1:y) - .5, 1:y, cex = 1.2 - .016 * y)
-  text((1:x) - .5, rep(-.5, x), y * (0:(x - 1)), cex = 1.2 - .022 * x)
-  title('col = colors()[n]')
+  )
+  
+  ## x-axis numbers: 0, 30, ..., 630
+  text(sx - .5, rep(-.5, x), y * (sx - 1))
+  text(sx - .5, rep(y + .5, x), y * (sx - 1))
+  
+  ## y-axis numbers: 1, 2, ..., 30
+  text(rep(-.5, y), sy - .5, sy)
+  text(rep(x + .5, y), sy - .5, sy)
 }
 
 #' Show plotting characters

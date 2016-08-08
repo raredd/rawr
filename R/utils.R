@@ -1549,7 +1549,7 @@ tryCatch2 <- function(expr) {
 #' @export
 
 rleid <- function(x)
-  cumsum(c(1L, x[-length(x)] != x[-1]))
+  cumsum(c(1L, x[-length(x)] != x[-1L]))
 
 #' Drop factor levels
 #' 
