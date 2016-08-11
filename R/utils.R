@@ -532,13 +532,12 @@ NULL
 #' @export
 bind_all <- function(..., which) {
   if (missing(which))
-    stop('specify which: \'rbind\' or \'cbind\'')
+    stop('specify combining method: \'rbind\' or \'cbind\'')
   l <- list(...)
   if (any(sapply(l, function(x) !is.null(dim(x)))))
-    warning('This function is intended for vector inputs. ',
-            'Use ?cbindx or ?rbindx instead.')
+    warning('bind_all is intended for vectors: use cbindx or rbindx instead.')
   l <- lapply(l, `length<-`, max(sapply(l, length)))
-  do.call('which', l)
+  do.call(which, l)
 }
 
 #' @rdname bindx
