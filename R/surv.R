@@ -241,7 +241,7 @@ kmplot <- function(s,
                             order = rep(1:ng, gr)))
   dat.list <- split(dat, dat$order)
   
-  ## plot (but not survival curves)
+  ## base plot
   plot(0, type = 'n', xlim = xlim, ylim = ylim,
        ann = FALSE, axes = FALSE, xaxs = xaxs)
   panel.first
@@ -411,30 +411,27 @@ kmplot <- function(s,
 #' 
 #' @examples
 #' library('survival')
-#' data(colon)
-#' 
 #' kmplot_by(time = 'time', event = 'status', data = colon)
 #' 
+#' 
+#' ## create *_ind, *_time variables, see details
 #' colon <- within(colon[duplicated(colon$id), ], {
 #'   pfs_time <- time
-#'   pfs_ind <- status
-#'   sex <- c('Female','Male')[sex + 1]
+#'   pfs_ind  <- status
+#'   sex <- c('Female','Male')[sex + 1L]
 #' })
 #' 
 #' kmplot_by(data = colon)
 #' kmplot_by('rx', data = colon, col.surv = 1:3,
 #'   strata_lab = FALSE, col.band = NA)
 #' 
-#' 
 #' ## return value is a list of survfit objects
 #' l <- kmplot_by('sex', by = 'rx', data = colon, plot = FALSE)
 #' kmplot(l$`Lev+5FU`)
 #' 
-#' 
 #' ## multiple variables can be combined
 #' kmplot_by('rx + sex', data = colon, strata_lab = FALSE,
 #'   lty.surv = 1:6, col.band = NA)
-#'
 #'
 #' ## if "by" is given, default is to plot separately
 #' kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3,
@@ -474,7 +471,7 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
     time   <- gsub('\\((\\w+)|.', '\\1', form[1])
   }
   
-  if (!add & plot)
+  if (plot & (!add | !single))
     on.exit(par(op))
   if (!missing(by)) {
     if (single) {
