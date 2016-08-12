@@ -53,6 +53,7 @@ recoder(tmp, c(1, 2), c(2, 1))
 
 }
 \seealso{
-\code{\link{fill_df}}, \code{\link[car]{recode}}
+\code{\link{fill_df}}, \code{\link[car]{recode}},
+\code{\link{combine_levels}}
 }
 

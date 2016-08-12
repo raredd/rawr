@@ -156,7 +156,8 @@ progress <- function (value, max.value, textbar = FALSE) {
 #' with the recoded variables.
 #' 
 #' @seealso
-#' \code{\link{fill_df}}, \code{\link[car]{recode}}
+#' \code{\link{fill_df}}, \code{\link[car]{recode}},
+#' \code{\link{combine_levels}}
 #' 
 #' @examples
 #' recoder(mtcars$carb, c(1, 2), c('A','B'))
@@ -191,13 +192,14 @@ recoder <- function(object, pattern, replacement, ...) {
   options(stringsAsFactors = FALSE)
   
   if (is.factor(object)) {
-    cat('level(s)',
-        levels(factor(levels = setdiff(replacement, levels(object)))),
-        'added to factor variable', deparse(m$object),'\n')
+    lvl <- setdiff(replacement, levels(object))
+    if (length(lvl))
+      cat('level(s)', levels(factor(levels = lvl)),
+          'added to factor variable', deparse(m$object),'\n')
     levels(object) <- c(levels(object), replacement)
-    #     object <- droplevels(object)
+    # object <- droplevels(object)
   }
-  if (length(replacement) == 1)
+  if (length(replacement) == 1L)
     replacement <- rep(replacement, length(pattern))
   
   ## helper functions
@@ -245,7 +247,8 @@ recoder <- function(object, pattern, replacement, ...) {
       return(tmp)
     } else {
       if (is.factor(object))
-        unlist(lapply(object, superswitcher, pattern, replacement))
+        factor(unlist(lapply(object, superswitcher, pattern, replacement)),
+               levels(object), ordered = is.ordered(object))
       else lapply(object, superswitcher, pattern, replacement)
     }
   }
