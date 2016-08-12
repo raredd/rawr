@@ -6,7 +6,7 @@
 # psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill, interleave,
 # outer2, merge2, locf, roll_fun, classMethods, regcaptures, cast, melt, view,
 # view2, clist, rapply2, sort_matrix, insert_matrix, tryCatch2, rleid,
-# droplevels2
+# droplevels2, combine_levels
 #
 # unexported: islist, done
 ###
@@ -1571,5 +1571,55 @@ rleid <- function(x)
 
 droplevels2 <- function(x, min_level = 1, max_level = max(as.numeric(x))) {
   stopifnot(is.factor(x))
-  factor(x, levels = levels(x)[min_level:max_level])
+  factor(x, levels = levels(x)[min_level:max_level], ordered = is.ordered(x))
+}
+
+#' Combine factor levels
+#' 
+#' Convenience function to combine multiple levels of a factor into a new or
+#' existing level(s).
+#' 
+#' @param x a vector
+#' @param levels a vector of unique values of \code{x} to combine; to combine
+#' values into multiple groups, use a list
+#' @param labels a vector of new labels; if \code{levels} is a vector,
+#' \code{labels} should be length 1; if \code{levels} is a list, \code{labels}
+#' (need not be a list but) should have one value for each list element of
+#' \code{levels}
+#' 
+#' @seealso
+#' \code{\link{recoder}}
+#' 
+#' @examples
+#' x <- mtcars$gear
+#' combine_levels(factor(x, ordered = TRUE), 3:4, 6)
+#' combine_levels(x, list(3:4, 5), c(3, 6))
+#' 
+#' combine_levels(iris$Species, c('setosa', 'virginica'), 'setosa')
+#' combine_levels(iris$Species, list(c('setosa', 'virginica'), 'versicolor'),
+#'                c('Setosa/Virginica','Versicolor'))
+#' 
+#' @export
+
+combine_levels <- function(x, levels, labels) {
+  levels <- if (is.list(levels))
+    levels else list(levels)
+  labels <- as.list(labels)
+  stopifnot(length(levels) == length(labels))
+  
+  ## less code but requires rawr::recoder
+  # for (ii in seq_along(levels))
+  #   x <- recoder(x, levels[[ii]], labels[[ii]])
+  # x
+  
+  xf <- as.factor(x)
+  xc <- as.character(xf)
+  xl <- levels(xf)
+
+  for (ii in seq_along(levels)) {
+    xl[xl %in% unlist(levels[[ii]])] <- unlist(labels[[ii]])
+    xc[xc %in% levels[[ii]]] <- labels[[ii]]
+  }
+
+  factor(xc, unique(xl), ordered = is.ordered(x))
 }
