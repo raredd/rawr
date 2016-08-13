@@ -477,7 +477,7 @@ sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
                        log.file = file.path(libpath, log.file),
                        formats = !no.format, ...),
         error = function(e) {
-          message('Error reading ', shQuote(dsn), ':\n', e, 'Skipping read')
+          message('Error reading ', shQuote(x), ':\n', e, 'Skipping read')
           NULL
         })
     ), dsn)
