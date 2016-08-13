@@ -472,8 +472,14 @@ sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
   ## sas.get wrapper
   if (force || !interactive() || tolower(substr(check, 1, 1)) == 'y') {
     zzz <- setNames(lapply(dsn, function(x)
-      Hmisc::sas.get(libraryName = libpath, member = x, sasprog = saspath,
-        log.file = file.path(libpath, log.file), formats = !no.format, ...)
+      tryCatch(
+        Hmisc::sas.get(libraryName = libpath, member = x, sasprog = saspath,
+                       log.file = file.path(libpath, log.file),
+                       formats = !no.format, ...),
+        error = function(e) {
+          message('Error reading ', shQuote(dsn), ':\n', e, 'Skipping read')
+          NULL
+        })
     ), dsn)
     
     ## print dims for user
