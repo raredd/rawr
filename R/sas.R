@@ -478,7 +478,7 @@ sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
                        formats = !no.format, ...),
         error = function(e) {
           message('Error reading ', shQuote(x), ':\n', e, 'Skipping read')
-          data.frame(dsn = x, error = e, stringsAsFactors = FALSE)
+          data.frame(dsn = x, error = e$message, stringsAsFactors = FALSE)
         })
     ), dsn)
     
