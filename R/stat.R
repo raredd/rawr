@@ -8,7 +8,7 @@
 #' 
 #' Calculates confidence intervals for binomial probabilities for specified
 #' type-I error (\code{alpha}) using exact, Wilson, or asymptotic methods.
-#'    
+#' 
 #' If \code{method = 'all'}, \code{r} and \code{n} should each be length 1.
 #' The "exact" method uses the \code{\link{df}} distribution to comupte exact
 #' intervals (based on the binomial cdf); the "wilson" interval is score-test-

@@ -25,13 +25,13 @@ A matrix containing the computed interval(s) and their widths.
 \description{
 Calculates confidence intervals for binomial probabilities for specified
 type-I error (\code{alpha}) using exact, Wilson, or asymptotic methods.
-   
+}
+\details{
 If \code{method = 'all'}, \code{r} and \code{n} should each be length 1.
 The "exact" method uses the \code{\link{df}} distribution to comupte exact
 intervals (based on the binomial cdf); the "wilson" interval is score-test-
 based; the "asymptotic"  is the asymptotic normal interval.
-}
-\details{
+
 The "wilson" method has been preferred by Agresti and Coull.
 }
 \examples{
