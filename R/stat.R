@@ -1,6 +1,6 @@
 ### statistical functions
 # bincon, bintest, dlt_table, power_cv, simon2, moods_test, fakeglm, gcd,
-# install.bioc, lm.beta, cuzick.test, jt.test
+# install.bioc, lm.beta, cuzick.test, jt.test, hl_est, combn_fun
 ###
 
 
@@ -1250,4 +1250,65 @@ jt.test <- function(x, y = NULL) {
   structure(list(statistic = c(z = z), p.value = pval,
                  method = method, data.name = dname),
             class = 'htest')
+}
+
+#' Hodges-Lehmann estimator
+#' 
+#' A function to calculate a nonparametric estimation of a population's
+#' location parameter for one sample described by Hodges and Lehmann (1963).
+#' 
+#' For a numeric vector \code{x} with length \code{n}, the median of the
+#' means of \code{n(n+1)/2} pairs (i.e., including the vector itself)
+#' are calculated.
+#' 
+#' For symmetric distributions, the Hodges–Lehmann statistic estimates the
+#' population's median and has greater efficiency than the sample median.
+#' For the normal distribution, the Hodges-Lehmann statistic is nearly as
+#' efficient as the sample mean and better  when estimating mixtures of
+#' normal distributions.
+#' 
+#' For non-symmetric distributions, the Hodges-Lehmann statistic estimates
+#' the population's "pseudo-median" (see \code{\link[stats]{wilcox.test}}), a
+#' location parameter that is closely related to the median. The pseudo–median
+#' is well defined for all distributions of random variables having dimension
+#' two or greater, and like the median, the pseudo–median is defined for even
+#' heavy–tailed distributions that lack any finite mean.
+#' 
+#' @param x a numeric or logical vector
+#' @param na.rm logical; if \code{TRUE}, \code{NA} values are removed
+#' 
+#' @references
+#' Hettmansperger, T. P.; McKean, J. W. (1998). \emph{Robust nonparametric
+#' statistical methods}. Kendall's Library of Statistics. \strong{5}.
+#' 
+#' Hodges, J. L.; Lehmann, E. L. (1963). "Estimation of location based on
+#' ranks". \emph{Annals of Mathematical Statistics}. \strong{34} (2): 598–611.
+#' 
+#' @seealso
+#' \code{\link{wilcox.test}}; \code{ICSNP::hl.loc}
+#' 
+#' @examples
+#' set.seed(1)
+#' x <- rnorm(100)
+#' (hl <- hl_est(x))
+#' 
+#' ## compare
+#' hl2 <- wilcox.test(x, exact = TRUE, conf.int = TRUE)
+#' identical(hl, unname(hl2$estimate))
+#' 
+#' @export
+
+hl_est <- function(x, na.rm = FALSE) {
+  stopifnot(is.numeric(x) | is.logical(x))
+  if (na.rm)
+    x <- x[!is.na(x)]
+  pmeans <- combn_fun(x, mean.default, 2L)
+  median(c(pmeans, x))
+}
+
+combn_fun <- function(x, FUN, n = 2L, ...) {
+  FUN <- match.fun(FUN)
+  n <- as.integer(n)
+  x <- combn(x, n)
+  apply(x, 2, FUN, ...)
 }
