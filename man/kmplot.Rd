@@ -5,15 +5,15 @@
 \title{Survival curves}
 \usage{
 kmplot(s, lty.surv = 1, lwd.surv = 1, col.surv = col.surv, mark = 3,
-  lty.ci = 0, lwd.ci = 1, col.ci = col.surv, col.band = FALSE,
-  atrisk = TRUE, atrisk.lab = "Number at risk", atrisk.lines = TRUE,
-  strata.lab = NULL, strata.expr = NULL, strata.order = seq(length(s$n)),
-  extra.margin = 5, xaxs = "S", xlim = c(0, max(s$time)), ylim = c(0,
-  1), xaxis.at = pretty(s$time), xaxis.lab = xaxis.at,
-  yaxis.at = pretty(ylim), yaxis.lab = yaxis.at, xlab = "Time",
-  ylab = "Survival probability", main = "", cex.axis = par("cex.axis"),
-  legend = !atrisk && !is.null(s$strata), mar = NULL, add = FALSE,
-  panel.first = NULL, panel.last = NULL, ...)
+  lwd.mark = lwd.surv, lty.ci = 0, lwd.ci = 1, col.ci = col.surv,
+  col.band = FALSE, atrisk = TRUE, atrisk.lab = "Number at risk",
+  atrisk.lines = TRUE, strata.lab = NULL, strata.expr = NULL,
+  strata.order = seq(length(s$n)), extra.margin = 5, xaxs = "S",
+  xlim = c(0, max(s$time)), ylim = c(0, 1), xaxis.at = pretty(s$time),
+  xaxis.lab = xaxis.at, yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
+  xlab = "Time", ylab = "Survival probability", main = "",
+  cex.axis = par("cex.axis"), legend = !atrisk && !is.null(s$strata),
+  mar = NULL, add = FALSE, panel.first = NULL, panel.last = NULL, ...)
 }
 \arguments{
 \item{s}{an object of class \code{\link{survfit}} or \code{survfit.cox}}
@@ -22,8 +22,10 @@ kmplot(s, lty.surv = 1, lwd.surv = 1, col.surv = col.surv, mark = 3,
 curve(s); colors may be either numeric, color names as character string(s),
 or hexadecimal string(s)}
 
-\item{mark}{numeric plotting character (\code{\link{pch}}) or character
-string, e.g., \code{''}, \code{'|'}}
+\item{mark, lwd.mark}{numeric plotting character (\code{\link{pch}}) or
+character string, e.g., \code{''}, \code{'|'}; if \code{mark = 'bump'}, a
+mark will be drawn only above the curve; \code{lwd.mark} controls the line
+width when a \code{pch} or \code{"bump"} is used}
 
 \item{lty.ci, lwd.ci, col.ci}{line type, width, and color for confidence
 interval(s); not plotted (i.e., \code{= 0}) by default}
@@ -116,31 +118,32 @@ legend to be mis-aligned.
 }
 \examples{
 library('survival')
-kmfit1 <- survfit(Surv(time, status) ~ sex, data = colon)
-kmfit2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
+km1 <- survfit(Surv(time, status) ~ sex, data = colon)
+km2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 
 ## basic usage
-kmplot(kmfit1)
-kmplot(kmfit2, atrisk = FALSE)
+kmplot(km1)
+kmplot(km1, mark = 'bump')
+kmplot(km2, atrisk = FALSE, lw = 2)
 
 ## expressions in at-risk table (strata.expr takes precedence)
-kmplot(kmfit1, strata.lab = c('\\u2640', '\\u2642'))
-kmplot(kmfit1, strata.lab = c('\\u2640', '\\u2642'),
+kmplot(km1, strata.lab = c('\\u2640', '\\u2642'))
+kmplot(km1, strata.lab = c('\\u2640', '\\u2642'),
                strata.expr = expression(widetilde(ring(Female)),
                                         phantom() >= Male))
 
 
-## when using mfrow options, use add = TRUE and same mar to align
+## when using mfrow options, use add = TRUE and same mar to align axes
 mar <- c(8,6,2,2)
 par(mfrow = c(1, 2))
-kmplot(kmfit1, add = TRUE, mar = mar)
-kmplot(kmfit2, add = TRUE, strata.lab = TRUE, mar = mar)
+kmplot(km1, add = TRUE, mar = mar)
+kmplot(km2, add = TRUE, strata.lab = TRUE, mar = mar)
 
 
 \dontrun{
-## more complex example
-pdf('./kmplot2.pdf', height = 8, width = 11, pointsize = 12, family = 'serif')
-kmplot(survfit(Surv(time, status) ~ rx+ adhere, data = colon),
+pdf(tf <- tempfile(fileext = '.pdf'), height = 8, width = 11,
+    pointsize = 12, family = 'serif')
+kmplot(survfit(Surv(time, status) ~ rx + adhere, data = colon),
        legend = FALSE,
        panel.first = abline(v = c(0, .5, 1:9) * 365, lty = 3),
        mark = '',                         # no censor mark
@@ -159,7 +162,7 @@ kmplot(survfit(Surv(time, status) ~ rx+ adhere, data = colon),
 title(main = 'Chemotherapy for stage B/C colon cancer',
       adj = .5, font.main = 1, line = 0.5, cex.main = 1)
 dev.off()
-file.show('kmplot2.pdf')
+file.show(tf)
 }
 
 }

@@ -1,5 +1,5 @@
 ### survival stuff
-# kmplot, kmplot_by, local_coxph_test, surv_cp, surv_summary, surv_table,
+# kmplot, points.survfit, kmplot_by, local_coxph_test, surv_cp, surv_summary, surv_table,
 # survdiff_pairs
 ###
 
@@ -37,8 +37,10 @@
 #' @param lty.surv,lwd.surv,col.surv line type, width, and color for survival
 #' curve(s); colors may be either numeric, color names as character string(s),
 #' or hexadecimal string(s)
-#' @param mark numeric plotting character (\code{\link{pch}}) or character
-#' string, e.g., \code{''}, \code{'|'}
+#' @param mark,lwd.mark numeric plotting character (\code{\link{pch}}) or
+#' character string, e.g., \code{''}, \code{'|'}; if \code{mark = 'bump'}, a
+#' mark will be drawn only above the curve; \code{lwd.mark} controls the line
+#' width when a \code{pch} or \code{"bump"} is used
 #' @param lty.ci,lwd.ci,col.ci line type, width, and color for confidence
 #' interval(s); not plotted (i.e., \code{= 0}) by default
 #' @param col.band color for confidence band(s); either as numeric, color
@@ -87,31 +89,32 @@
 #' 
 #' @examples
 #' library('survival')
-#' kmfit1 <- survfit(Surv(time, status) ~ sex, data = colon)
-#' kmfit2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
+#' km1 <- survfit(Surv(time, status) ~ sex, data = colon)
+#' km2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 #' 
 #' ## basic usage
-#' kmplot(kmfit1)
-#' kmplot(kmfit2, atrisk = FALSE)
+#' kmplot(km1)
+#' kmplot(km1, mark = 'bump')
+#' kmplot(km2, atrisk = FALSE, lw = 2)
 #' 
 #' ## expressions in at-risk table (strata.expr takes precedence)
-#' kmplot(kmfit1, strata.lab = c('\u2640', '\u2642'))
-#' kmplot(kmfit1, strata.lab = c('\u2640', '\u2642'),
+#' kmplot(km1, strata.lab = c('\u2640', '\u2642'))
+#' kmplot(km1, strata.lab = c('\u2640', '\u2642'),
 #'                strata.expr = expression(widetilde(ring(Female)),
 #'                                         phantom() >= Male))
 #' 
 #' 
-#' ## when using mfrow options, use add = TRUE and same mar to align
+#' ## when using mfrow options, use add = TRUE and same mar to align axes
 #' mar <- c(8,6,2,2)
 #' par(mfrow = c(1, 2))
-#' kmplot(kmfit1, add = TRUE, mar = mar)
-#' kmplot(kmfit2, add = TRUE, strata.lab = TRUE, mar = mar)
+#' kmplot(km1, add = TRUE, mar = mar)
+#' kmplot(km2, add = TRUE, strata.lab = TRUE, mar = mar)
 #' 
 #' 
 #' \dontrun{
-#' ## more complex example
-#' pdf('./kmplot2.pdf', height = 8, width = 11, pointsize = 12, family = 'serif')
-#' kmplot(survfit(Surv(time, status) ~ rx+ adhere, data = colon),
+#' pdf(tf <- tempfile(fileext = '.pdf'), height = 8, width = 11,
+#'     pointsize = 12, family = 'serif')
+#' kmplot(survfit(Surv(time, status) ~ rx + adhere, data = colon),
 #'        legend = FALSE,
 #'        panel.first = abline(v = c(0, .5, 1:9) * 365, lty = 3),
 #'        mark = '',                         # no censor mark
@@ -130,7 +133,7 @@
 #' title(main = 'Chemotherapy for stage B/C colon cancer',
 #'       adj = .5, font.main = 1, line = 0.5, cex.main = 1)
 #' dev.off()
-#' file.show('kmplot2.pdf')
+#' file.show(tf)
 #' }
 #' 
 #' @export
@@ -138,6 +141,7 @@
 kmplot <- function(s,
                    ## basic plot options
                    lty.surv = 1, lwd.surv = 1, col.surv = col.surv, mark = 3,
+                   lwd.mark = lwd.surv,
                    
                    ## confidence options
                    lty.ci = 0, lwd.ci = 1, col.ci = col.surv, col.band = FALSE,
@@ -349,13 +353,131 @@ kmplot <- function(s,
     
     ## survival curves
     lines(s[i], conf.int = FALSE, col = col.surv[i], lty = lty.surv[i],
-          lwd = lwd.surv, mark = mark, xpd = FALSE)
+          lwd = lwd.surv, mark.time = FALSE, xpd = FALSE)
     ## uncomment when bug in survival v2.39-5 fixed
     # points(s[i], lwd = lwd.surv, pch = mark, col = col.surv[i], xpd = FALSE)
+    points.kmplot(s[i], lwd = lwd.mark, pch = mark, col = col.surv[i],
+                  xpd = FALSE, bump = mark == 'bump')
   }
   panel.last
   
   invisible(dat)
+}
+
+## survival:::points.survfit with minor changes
+points.kmplot <- function(x, xscale = 1, xmax, fun, ...,
+                          bump = TRUE, plot = TRUE) {
+  if (inherits(x, 'survfitms')) {
+    x$surv <- 1 - x$prev
+    if (is.matrix(x$surv)) {
+      dimnames(x$surv) <- list(NULL, x$states)
+      if (ncol(x$surv) > 1L && any(x$states == '')) {
+        x$surv <- x$surv[, x$states != '']
+        x$p0 <- if (is.matrix(x$p0))
+          x$p0[, x$states != ''] else x$p0[x$states != '']
+      }
+    }
+    if (!is.null(x$lower)) {
+      x$lower <- 1 - x$lower
+      x$upper <- 1 - x$upper
+    }
+    if (missing(fun))
+      fun <- 'event'
+  }
+  
+  firsty <- NA ## flag used in the common args
+  conf.int <- FALSE
+  ssurv <- as.matrix(x$surv)
+  stime <- x$time
+  if(!is.null(x$upper)) {
+    supper <- as.matrix(x$upper)
+    slower <- as.matrix(x$lower)
+  } else {
+    conf.int <- FALSE
+    supper   <- NULL  ## marker for later code
+  }
+  
+  ## set up strata
+  if (is.null(x$strata)) {
+    nstrat <- 1
+    stemp <- rep(1, length(x$time)) ## same length as stime
+  } else {
+    nstrat <- length(x$strata)
+    stemp <- rep(1:nstrat, x$strata) ## same length as stime
+  }
+  ncurve <- nstrat * ncol(ssurv)
+  firsty <- matrix(firsty, nrow = nstrat, ncol = ncol(ssurv))
+  if (!missing(xmax) && any(x$time>xmax)) {
+    ## prune back the survival curves
+    ## I need to replace x's over the limit with xmax, and y's over the
+    ## limit with either the prior y value  or firsty
+    keepx  <- keepy <- NULL  ## lines to keep
+    tempn  <- table(stemp)
+    offset <- cumsum(c(0, tempn))
+    for (i in 1:nstrat) {
+      ttime <- stime[stemp == i]
+      if (all(ttime <= xmax)) {
+        keepx <- c(keepx, 1:tempn[i] + offset[i])
+        keepy <- c(keepy, 1:tempn[i] + offset[i])
+      } else {
+        bad <- min((1:tempn[i])[ttime > xmax])
+        if (bad == 1)  {  ## lost them all
+          if (!is.na(firstx)) { ## and we are plotting lines
+            keepy <- c(keepy, 1 + offset[i])
+            ssurv[1 + offset[i], ] <- firsty[i, ]
+          }
+        } else  keepy <- c(keepy, c(1:(bad-1), bad-1) + offset[i])
+        keepx <- c(keepx, (1:bad) + offset[i])
+        stime[bad + offset[i]] <- xmax
+        x$n.event[bad + offset[i]] <- 1   ## don't plot a tick mark
+      }
+    }
+    
+    ## ok, now actually prune it
+    stime <- stime[keepx]
+    stemp <- stemp[keepx]
+    x$n.event <- x$n.event[keepx]
+    if (!is.null(x$n.censor))
+      x$n.censor <- x$n.censor[keepx]
+    ssurv <- ssurv[keepy, , drop = FALSE]
+    if (!is.null(supper)) {
+      supper <- supper[keepy, , drop=FALSE]
+      slower <- slower[keepy, , drop=FALSE]
+    }
+  }
+  # stime <- stime/xscale  ## scaling is deferred until xmax processing is done
+  
+  if (!missing(fun)) {
+    if (is.character(fun)) {
+      tfun <- switch(fun,
+                     'log'      = function(x) x,
+                     'event'    = function(x) 1 - x,
+                     'cumhaz'   = function(x) -log(x),
+                     'cloglog'  = function(x) log(-log(x)),
+                     'pct'      = function(x) x * 100,
+                     'logpct'   = function(x) 100 * x,  ## special case further below
+                     'identity' = function(x) x,
+                     stop('Unrecognized function argument')
+      )
+    } else if (is.function(fun))
+      tfun <- fun
+    else stop('Invalid \'fun\' argument')
+    
+    ssurv <- tfun(ssurv)
+    if (!is.null(supper)) {
+      supper <- tfun(supper)
+      slower <- tfun(slower)
+    }
+    firsty <- tfun(firsty)
+  }
+  if (plot)
+    if (ncol(ssurv) == 1L) {
+      if (bump)
+        segments(stime, ssurv, stime, ssurv + diff(par('usr')[3:4]) / 100, ...)
+      else points(stime, ssurv, ...)
+    } else matpoints(stime, ssurv, ...)
+  
+  invisible(list(stime = stime, ssurv = ssurv))
 }
 
 #' kmplot_by
