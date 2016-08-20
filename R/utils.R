@@ -1364,8 +1364,15 @@ clist <- function (x, y) {
 #' rapply2(ll, class)
 #' rapply2(ll, log, classes = 'data.frame', base = 10)
 #' 
+#'  
 #' ## almost fully unlist a list
-#' rapply2(ll, unlist, classes = 'list')
+#' str(rapply2(ll, unlist, classes = 'list'))
+#' 
+#' ## note that data.frames are not considered lists unless explicit
+#' str(rapply2(ll, unlist, classes = c('list', 'data.frame')))
+#' 
+#' ## compare
+#' str(rapply2(ll, unlist))
 #' 
 #' @export
 
