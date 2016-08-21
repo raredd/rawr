@@ -2,9 +2,10 @@
 % Please edit documentation in R/utils2.R
 \name{binconr}
 \alias{binconr}
-\title{bincon formatter}
+\title{\code{bincon} formatter}
 \usage{
-binconr(r, n, conf = 0.95, digits = 0, est = TRUE, method = "exact")
+binconr(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
+  show_conf = TRUE, method = "exact")
 }
 \arguments{
 \item{r}{number of responses (successes)}
@@ -17,6 +18,10 @@ binconr(r, n, conf = 0.95, digits = 0, est = TRUE, method = "exact")
 
 \item{est}{logical; if \code{TRUE}, includes the point estimate}
 
+\item{frac}{logical; if \code{TRUE}, includes the fraction \code{r/n}}
+
+\item{show_conf}{logical; if \code{TRUE} includes the confidence level}
+
 \item{method}{method to use; see \code{\link{bincon}}}
 }
 \description{
@@ -24,7 +29,8 @@ Binomial confidence interval (\code{\link{bincon}}) formatter.
 }
 \examples{
 binconr(5, 10, .90, est = FALSE)
-binconr(45, 53, digits = 1)
+binconr(45, 53, digits = 1, conf = .975)
+binconr(45, 53, show_conf = FALSE, frac = TRUE)
 
 }
 \seealso{

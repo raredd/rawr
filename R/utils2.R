@@ -428,7 +428,7 @@ pvalr2 <- function(pvals, html = FALSE, show.p = FALSE) {
 catlist <- function(l)
   paste(paste(names(l), l, sep = ' = ', collapse = ', '), sep = '')
 
-#' bincon formatter
+#' \code{bincon} formatter
 #' 
 #' Binomial confidence interval (\code{\link{bincon}}) formatter.
 #' 
@@ -437,25 +437,32 @@ catlist <- function(l)
 #' @param conf level of confidence
 #' @param digits number of digits
 #' @param est logical; if \code{TRUE}, includes the point estimate
+#' @param frac logical; if \code{TRUE}, includes the fraction \code{r/n}
 #' @param method method to use; see \code{\link{bincon}}
+#' @param show_conf logical; if \code{TRUE} includes the confidence level
 #' 
 #' @seealso
 #' \code{\link{bincon}}; \code{\link[Hmisc]{binconf}}
 #' 
 #' @examples
 #' binconr(5, 10, .90, est = FALSE)
-#' binconr(45, 53, digits = 1)
+#' binconr(45, 53, digits = 1, conf = .975)
+#' binconr(45, 53, show_conf = FALSE, frac = TRUE)
 #' 
 #' @export
 
-binconr <- function(r, n, conf = 0.95, digits = 0,
-                    est = TRUE, method = 'exact') {
+binconr <- function(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
+                    show_conf = TRUE, method = 'exact') {
+  method <- match.arg(method, c('exact','wilson','asymptotic'), FALSE)
   res <- roundr(bincon(r, n, alpha = 1 - conf, method = method) * 100,
                 digits = digits)
   zzz <- sprintf('%s%% CI: %s - %s%%', conf * 100, res[4], res[5])
+  if (!show_conf)
+    zzz <- gsub('.*% CI: ', '', zzz)
   if (est)
-    sprintf('%s%% (%s)', res[3], zzz)
-  else zzz
+    zzz <- sprintf('%s%% (%s)', res[3], zzz)
+  if (frac)
+    sprintf('%s/%s, %s', r, n, zzz) else zzz
 }
 
 #' Numeric to character string
@@ -1173,4 +1180,65 @@ combine_table <- function(l, ...) {
   m$tspanner <- NULL
   do.call('htmlTable', c(list(x = do.call('rbind', l), tspanner = ts,
                               n.tspanner = lx), m))
+}
+
+#' Response table
+#' 
+#' Convenience function to calculate proportions and confidence invervals and
+#' format for easy display.
+#' 
+#' @param x a factor variable of responses; responses should be ordered as
+#' CR, PR, SD, PD, NE or similar
+#' @param r_or_better if an integer, the first \code{r_or_better} levels of
+#' \code{x} will be combined and proportions and confidence intervals will be
+#' calculated for the aggregate; if \code{FALSE}; this is not included
+#' @param conf,frac,show_conf arguments passed to \code{\link{binconr}}
+#' 
+#' @seealso
+#' \code{\link{bincon}}; \code{\link{binconr}}
+#' 
+#' @examples
+#' set.seed(1)
+#' r <- c('CR','PR','SD','PD','NE')
+#' x <- factor(sample(r, 30, replace = TRUE), r)
+#' tabler_resp(x)
+#' 
+#' y <- `[<-`(x, 1:10, value = NA)
+#' tabler_resp(y, FALSE)
+#' 
+#' library('htmlTable')
+#' htmlTable(t(as.matrix(tabler_resp(x, show_conf = FALSE))),
+#'           caption = 'Table of responses with 95% confidence intervals.',
+#'           css.cell = 'padding: .1em .5em .1em;',
+#'           cgroup = c('Evaluation', 'Outcome (95% CI)'),
+#'           n.cgroup = c(nlevels(x), 3))
+#' 
+#' @export
+
+tabler_resp <- function(x, r_or_better = 3L,
+                        conf = 0.95, frac = TRUE, show_conf = TRUE) {
+  r <- names(table(x))
+  c(resp_(x, r, conf, frac, show_conf), if (!is.integer(r_or_better))
+    NULL else r_or_better_(x, rev(r[seq(r_or_better)]), conf, frac, show_conf))
+}
+
+r_or_better_ <- function(x, r, conf, frac, show_conf) {
+  # resp_or_better_(x, c('CR','PR'), .9, TRUE, TRUE)
+  x[x %ni% r] <- NA
+  out <- if (all(is.na(x)))
+    rep('-', length(r)) else
+      sapply(seq_along(r), function(X)
+        binconr(sum(x %in% r[X:length(r)]), length(x),
+                conf, 0L, TRUE, frac, show_conf, 'exact'))
+  setNames(out, paste(r, 'or better'))
+}
+
+resp_ <- function(x, r, conf, frac, show_conf) {
+  # resp_(x, levels(x), .9, TRUE, TRUE); resp_(x, c('CR','PR'), .9, TRUE, TRUE)
+  FUN <- if ('CR' %ni% r || which(r %in% 'CR') == 1L) identity else rev
+  tbl <- table(x)[FUN(r)]
+  out <- if (all(is.na(x)))
+    rep('-', length(r)) else sapply(tbl, function(X)
+      binconr(X, sum(tbl), conf, 0L, TRUE, TRUE, show_conf, 'exact'))
+  setNames(out, FUN(r))
 }
