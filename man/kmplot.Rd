@@ -124,7 +124,7 @@ km2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 ## basic usage
 kmplot(km1)
 kmplot(km1, mark = 'bump')
-kmplot(km2, atrisk = FALSE, lw = 2)
+kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5)
 
 ## expressions in at-risk table (strata.expr takes precedence)
 kmplot(km1, strata.lab = c('\\u2640', '\\u2642'))
