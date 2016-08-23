@@ -1,7 +1,8 @@
 ### formatting, knitr, misc utils
 # show_html, show_markdown, show_math, roundr, intr, pvalr, pvalr2, catlist,
 # binconr, num2char, iprint, writeftable, tabler, tabler_by, tabler_by2,
-# match_ctc, tox_worst, countr, dmy, combine_table
+# match_ctc, tox_worst, countr, dmy, combine_table, tabler_resp, resp_,
+# r_or_better_
 ###
 
 
@@ -1222,8 +1223,18 @@ tabler_resp <- function(x, r_or_better = 3L,
     NULL else r_or_better_(x, rev(r[seq(r_or_better)]), conf, frac, show_conf))
 }
 
+resp_ <- function(x, r, conf, frac, show_conf) {
+  # resp_(x, levels(x), .9, TRUE, TRUE); resp_(x, c('CR','PR'), .9, TRUE, TRUE)
+  FUN <- if ('CR' %ni% r || which(r %in% 'CR') == 1L) identity else rev
+    tbl <- table(x)[FUN(r)]
+    out <- if (all(is.na(x)))
+    rep('-', length(r)) else sapply(tbl, function(X)
+        binconr(X, sum(tbl), conf, 0L, TRUE, TRUE, show_conf, 'exact'))
+    setNames(out, FUN(r))
+}
+
 r_or_better_ <- function(x, r, conf, frac, show_conf) {
-  # resp_or_better_(x, c('CR','PR'), .9, TRUE, TRUE)
+  # r_or_better_(x, c('CR','PR'), .9, TRUE, TRUE)
   x[x %ni% r] <- NA
   out <- if (all(is.na(x)))
     rep('-', length(r)) else
@@ -1233,12 +1244,3 @@ r_or_better_ <- function(x, r, conf, frac, show_conf) {
   setNames(out, paste(r, 'or better'))
 }
 
-resp_ <- function(x, r, conf, frac, show_conf) {
-  # resp_(x, levels(x), .9, TRUE, TRUE); resp_(x, c('CR','PR'), .9, TRUE, TRUE)
-  FUN <- if ('CR' %ni% r || which(r %in% 'CR') == 1L) identity else rev
-  tbl <- table(x)[FUN(r)]
-  out <- if (all(is.na(x)))
-    rep('-', length(r)) else sapply(tbl, function(X)
-      binconr(X, sum(tbl), conf, 0L, TRUE, TRUE, show_conf, 'exact'))
-  setNames(out, FUN(r))
-}
