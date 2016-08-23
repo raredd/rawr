@@ -4,7 +4,7 @@
 \alias{rapply2}
 \title{Recursively apply a function to a list}
 \usage{
-rapply2(l, FUN, classes = "any", ...)
+rapply2(l, FUN, classes = "any", ..., check.nested = "list" \%in\% classes)
 }
 \arguments{
 \item{l}{a list}
@@ -16,6 +16,10 @@ rapply2(l, FUN, classes = "any", ...)
 \code{"any"} to apply to every non-\code{\link{list}} element of \code{l}}
 
 \item{...}{additional arguments passed to \code{FUN}}
+
+\item{check.nested}{logical; if \code{TRUE}, for nested lists,
+\code{rapply2} will continue to walk down the list rather than stop at
+the first list (only if \code{"list" \%in\% classes})}
 }
 \value{
 A list having the same structure as \code{l} with \code{FUN} applied to
@@ -31,15 +35,26 @@ ll <- list(list(list(head(cars), list(head(cars)))), letters[1:4],
 rapply2(ll, class)
 rapply2(ll, log, classes = 'data.frame', base = 10)
 
- 
-## almost fully unlist a list
-str(rapply2(ll, unlist, classes = 'list'))
 
 ## note that data.frames are not considered lists unless explicit
+str(rapply2(ll, unlist, classes = 'list'))
 str(rapply2(ll, unlist, classes = c('list', 'data.frame')))
 
 ## compare
 str(rapply2(ll, unlist))
+
+
+## remove all elements by name
+f <- function(x) if (!is.null(names(x))) x[names(x) \%ni\% 'id'] else x
+ll <- list(a = list(id = 1, name = 'a-1'),
+           b = list(id = 1, list(id = 2, name = 'b-2'),
+                    list(id = 3, name = 'b-3', id = 3)),
+           c = list(id = 4),
+           id = 'n/a')
+
+## compare
+str(rapply2(ll, f, 'list', check.nested = FALSE))
+str(rapply2(ll, f, 'list', check.nested = TRUE))
 
 }
 \seealso{

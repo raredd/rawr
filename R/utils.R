@@ -1350,6 +1350,9 @@ clist <- function (x, y) {
 #' @param classes a character vector of \code{\link{class}} names or
 #' \code{"any"} to apply to every non-\code{\link{list}} element of \code{l}
 #' @param ... additional arguments passed to \code{FUN}
+#' @param check.nested logical; if \code{TRUE}, for nested lists,
+#' \code{rapply2} will continue to walk down the list rather than stop at
+#' the first list (only if \code{"list" \%in\% classes})
 #' 
 #' @return
 #' A list having the same structure as \code{l} with \code{FUN} applied to
@@ -1364,28 +1367,52 @@ clist <- function (x, y) {
 #' rapply2(ll, class)
 #' rapply2(ll, log, classes = 'data.frame', base = 10)
 #' 
-#'  
-#' ## almost fully unlist a list
-#' str(rapply2(ll, unlist, classes = 'list'))
 #' 
 #' ## note that data.frames are not considered lists unless explicit
+#' str(rapply2(ll, unlist, classes = 'list'))
 #' str(rapply2(ll, unlist, classes = c('list', 'data.frame')))
 #' 
 #' ## compare
 #' str(rapply2(ll, unlist))
 #' 
+#' 
+#' ## remove all elements by name
+#' f <- function(x) if (!is.null(names(x))) x[names(x) %ni% 'id'] else x
+#' ll <- list(a = list(id = 1, name = 'a-1'),
+#'            b = list(id = 1, list(id = 2, name = 'b-2'),
+#'                     list(id = 3, name = 'b-3', id = 3)),
+#'            c = list(id = 4),
+#'            id = 'n/a')
+#' 
+#' ## compare
+#' str(rapply2(ll, f, 'list', check.nested = FALSE))
+#' str(rapply2(ll, f, 'list', check.nested = TRUE))
+#' 
 #' @export
 
-rapply2 <- function(l, FUN, classes = 'any', ...) {
+
+rapply2 <- function(l, FUN, classes = 'any', ...,
+                    check.nested = 'list' %in% classes) {
   stopifnot(islist(l))
   FUN <- match.fun(FUN)
+  is.nested <- if (check.nested)
+    function(l) any(vapply(l, islist, NA)) else function(l) FALSE
   for (ii in seq_along(l))
-    l[[ii]] <- if (islist(l[[ii]]) & ('list' %ni% classes))
-      Recall(l[[ii]], FUN, classes, ...) else
+    l[[ii]] <- if (is.nested(l[[ii]]) ||
+                   (islist(l[[ii]]) & ('list' %ni% classes)))
+      Recall(l[[ii]], FUN, classes, ..., check.nested = check.nested) else
         if (any(classes == 'any') || inherits(l[[ii]], classes))
           FUN(l[[ii]], ...) else l[[ii]]
-  l
+  if ('list' %in% classes & !identical(FUN, unlist))
+    FUN(l, ...) else l
 }
+
+# depth <- function(this, thisdepth = 0L) {
+#   # http://stackoverflow.com/questions/13432863/determine-level-of-nesting-in-r
+#   if (!islist(this))
+#     return(thisdepth)
+#   lapply(this, depth, thisdepth + 1L)
+# }
 
 #' Sort matrix
 #' 
