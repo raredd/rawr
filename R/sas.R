@@ -1,6 +1,6 @@
 ## sas helpers
 # sas_path, r2sas, rmacro, get_margs, sas_mget, source_sas, parse_formats,
-# sas_catalog, move_formats
+# parse_formats2, apply_formats, sas_catalog, move_formats
 ##
 
 
@@ -538,6 +538,12 @@ source_sas <- function(path, ...) {
 #' variable names and format values.
 #' 
 #' @param path character string of path to \code{.sas} file
+#' @param fmt a character string with formats to parse
+#' @param clean logical; if \code{TRUE} (default), the parsed formats will be
+#' cleaned of quotes and extra whitespace
+#' @param x a vector of data usually taking a small number of distinct values
+#' @param droplevels logical; if \code{TRUE}, unused factor levels will be
+#' dropped; default is not to drop unused levels
 #' 
 #' @return
 #' A list with format names in \code{path} and their respective values and
@@ -553,10 +559,23 @@ source_sas <- function(path, ...) {
 #' cat(readLines(p), sep = '\n')
 #' parse_formats(p)
 #' 
+#' 
+#' ## named vector of formats from string
+#' fmt <- '0 = something, 1 = something else; 2 = yada. -9=yadayadayada, .C=blah'
+#' parse_formats2(fmt)
+#' 
+#' ## use to format factor variables
+#' x <- sample(0:2, 10, TRUE)
+#' table(apply_formats(x, fmt), x)
+#' apply_formats(x, fmt, droplevels = TRUE)
+#' 
+#' ## reordered if all levels are numeric and positive
+#' parse_formats2('1=yes, 0=no, 2=maybe')
+#' 
 #' @export
 
 parse_formats <- function(path) {
-  fmt <- readLines(path)
+  fmt <- rm_nonascii(readLines(path))
   fmt <- gsub('\\*.*;|\\/\\*.*\\*\\/', '', fmt)
   vars <- gsub('(?i)value\\W+(\\w*)|.', '\\1', fmt, perl = TRUE)
   #   vals <- gsub("(?i)([\'\"]?[a-z\\d -]+[\'\"]?\\s*=\\s*[\'\"]?[a-z\\d -,]+[\'\"]?)|.", '\\1',
@@ -572,6 +591,44 @@ parse_formats <- function(path) {
     x <- strsplit(Filter(nzchar, x), '=')
     sapply(x, function(y) setNames(trimws(y[1]), trimws(y[2])))
   })
+}
+
+#' @rdname parse_formats
+#' @export
+parse_formats2 <- function(fmt, clean = TRUE) {
+  stopifnot(length(fmt) == 1L)
+  x <- rm_nonascii(fmt)
+  
+  ## capture unique levels
+  p <- '([0-9.\\-A-Z]+)\\s*='
+  m <- gregexpr(p, x, perl = TRUE)
+  levels <- c(regcaptures(x, m)[[1]])
+  
+  ## capture corresponding labels
+  p <- '[A-Z.\\-0-9]+\\s*=\\s*(.*?)(?=[ ,.;]*[0-9.\\-A-Z]+\\s*=|[ ,.;]*$)'
+  m <- gregexpr(p, x, perl = TRUE)
+  labels <- c(regcaptures(x, m)[[1]])
+  
+  if (clean)
+    labels <- trimws(gsub('[\'\"]', '', labels))
+  
+  ## sort if all levels are numeric and positive
+  ok <- !any(grepl('\\D', levels))
+  setNames(labels, levels)[if (ok) order(as.numeric(levels)) else seq(levels)]
+}
+
+#' @rdname parse_formats
+#' @export
+apply_formats <- function(x, fmt, clean = TRUE, droplevels = FALSE) {
+  fmt <- parse_formats2(fmt, clean)
+  out <- factor(x, names(fmt), fmt)
+  if (droplevels)
+    out <- droplevels(out)
+  ok <- sum(diag(table(out, x))) == sum(table(x))
+  if (!ok)
+    warning('Number of non-missing vales does not match original vector.',
+            call. = FALSE)
+  out
 }
 
 #' \code{SAS} catalog

@@ -4,7 +4,7 @@
 # updateR, read_clip, icols, fill_df, kinda_sort, rgene, install_temp,
 # nestedMerge, nestedmerge, path_extract, fname, file_name, file_ext, rm_ext,
 # mgrep, mgrepl, msub, mgsub, flatten, tree, rm_null, cum_reset, vgrep, vgrepl,
-# justify, factors, factors_, sample_each, pickcol
+# justify, factors, factors_, sample_each, pickcol, lunique, rm_nonascii
 ###
 
 
@@ -1720,3 +1720,26 @@ pickcol <- function(data, ind = 1, value = FALSE) {
   x[sel] <- max.col(data, 'first')[sel]
   colnames(data)[x]
 }
+
+#' Number of unique values
+#' 
+#' @param x a vector
+#' @param na.rm logical; if \code{TRUE}, \code{NA} will not be counted as a
+#' unique level; default is to include
+#' 
+#' @examples
+#' x <- c(1:5, NA)
+#' lunique(factor(x))
+#' lunique(x, TRUE)
+#' 
+#' @export
+
+lunique <- function(x, na.rm = FALSE) length(unique(if (na.rm) sort(x) else x))
+
+#' Remove non ASCII characters
+#' 
+#' @param x a character vector
+#' 
+#' @export
+
+rm_nonascii <- function(x) gsub('[^\x20-\x7E]', '', x)
