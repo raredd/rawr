@@ -1,6 +1,8 @@
 ### survival stuff
-# kmplot, points.kmplot, kmplot_by, local_coxph_test, surv_cp, surv_summary,
-# surv_table, survdiff_pairs
+# kmplot, kmplot_by, local_coxph_test, surv_cp, surv_summary, surv_table,
+# survdiff_pairs, lr_text
+#
+# unexported: points.kmplot, lr_text
 ###
 
 
@@ -70,6 +72,10 @@
 #' @param cex.axis text size for axes labels, legend, at-risk table
 #' @param legend logical or a keyword (see \code{\link{legend}}); if
 #' \code{TRUE}, the default position is \code{"bottomleft"}
+#' @param lr_test logical or numeric; if \code{TRUE}, a log-rank test will be
+#' performed and the results added to the top-right corner of the plot; if
+#' numeric, the value is passed as \code{rho} controlling the type of test
+#' performed; see \code{\link{survdiff}}
 #' @param mar margins; see \code{mar} section in \code{\link{par}}
 #' @param add logical; if \code{TRUE}, \code{par} is not refreshed; allows for
 #' multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}
@@ -94,7 +100,7 @@
 #' 
 #' ## basic usage
 #' kmplot(km1)
-#' kmplot(km1, mark = 'bump')
+#' kmplot(km1, mark = 'bump', lr_test = TRUE)
 #' kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5)
 #' 
 #' ## expressions in at-risk table (strata.expr takes precedence)
@@ -161,7 +167,7 @@ kmplot <- function(s,
                    legend = !atrisk && !is.null(s$strata),
                    
                    ## other options
-                   mar = NULL, add = FALSE,
+                   lr_test = FALSE, mar = NULL, add = FALSE,
                    panel.first = NULL, panel.last = NULL, ...) {
   if (!inherits(s, 'survfit'))
     stop('\'s\' must be a \'survfit\' object')
@@ -169,11 +175,32 @@ kmplot <- function(s,
   op <- par(no.readonly = TRUE)
   if (!add)
     on.exit(par(op))
+  if (is.logical(lr_test)) {
+    rho <- 0
+  } else if (is.numeric(lr_test)) {
+    rho <- lr_test
+    lr_test <- TRUE
+  } else {
+    rho <- 0
+    lr_test <- TRUE
+  }
+  
+  svar <- as.character(form <- s$call$formula)
+  svar <- svar[length(svar)]
+  sdat <- s$.data %||% {
+    sdat <- deparse(s$call$data)
+    get(sdat, where(gsub('[$[].*', '', sdat)))
+  }
   
   ## single strata
   if (!(ng <- length(s$strata))) {
     s$strata <- length(s$time)
-    names(s$strata) <- 'All'
+    if (length(svar == 1L) & svar != '1') {
+      svar <- tryCatch(
+        names(Filter(length, table(sdat[, svar]))),
+        error = function(e) NULL)
+    }
+    names(s$strata) <- if (!is.null(svar) & svar != '1') svar else 'All'
     legend <- atrisk.lines <- FALSE
   }
   
@@ -227,7 +254,7 @@ kmplot <- function(s,
     par(list(mar = c(4 + ng, 4 + extra.margin, 4, 2) + .1, oma = rep(1, 4)))
     if (!atrisk)
       par(mar = c(3,4,2,1) + .1)
-    par(list(...))
+    par(...)
   }
   if (!is.null(mar))
     par(mar = mar)
@@ -309,7 +336,7 @@ kmplot <- function(s,
   
   ## legend
   rlp <- strata.order
-  if (!legend == FALSE) {
+  if (!identical(legend, FALSE)) {
     if (isTRUE(legend))
       legend <- 'bottomleft'
     bgc <- if (par('bg') == 'transparent')
@@ -359,6 +386,18 @@ kmplot <- function(s,
     points.kmplot(s[i], lwd = lwd.mark, pch = mark, col = col.surv[i],
                   xpd = FALSE, bump = mark == 'bump')
   }
+  
+  ## add survdiff text in upper right corner
+  if (lr_test) {
+    txt <- lr_text(as.formula(s$call$formula), sdat, rho)
+    if (identical(txt, FALSE))
+      message('There is only one group',
+              if (svar == '1') '' else paste(' for', svar),
+              ' -- no lr test performed')
+    else mtext(txt, side = 3, at = par('usr')[2], adj = 1,
+               font = 3, cex = .8, line = .5)
+  }
+  
   panel.last
   
   invisible(dat)
@@ -480,6 +519,25 @@ points.kmplot <- function(x, xscale = 1, xmax, fun, ...,
   invisible(list(stime = stime, ssurv = ssurv))
 }
 
+lr_text <- function(formula, data, rho = 0, ...) {
+  # lr_text(Surv(time, status) ~ 1, lung); lr_text(Surv(time, status) ~ sex, lung)
+  sd <- tryCatch(survdiff(formula, data, rho = rho, ...),
+                 error = function(e) {
+                   if (any(grepl('(?i)[1no]+ group', e)))
+                     TRUE else e
+                 })
+  if (isTRUE(sd))
+    return(FALSE)
+  if (!inherits(sd, 'survdiff'))
+    stop(sd)
+  df <- sum(1 * (colSums(if (is.matrix(sd$obs))
+    sd$exp else t(sd$exp)) > 0)) - 1
+  p.value <- 1 - pchisq(sd$chisq, df)
+  txt <- sprintf('%s (%s df), %s', roundr(sd$chisq, 1),
+                 df, pvalr(p.value, show.p = TRUE))
+  bquote(paste(chi^2, ' = ', .(txt)))
+}
+
 #' kmplot_by
 #' 
 #' This function helps create stratified \code{\link{kmplot}}s quickly with
@@ -502,8 +560,10 @@ points.kmplot <- function(x, xscale = 1, xmax, fun, ...,
 #' @param by optional character string of stratification variable
 #' @param single logical; if \code{TRUE}, each level of \code{by} will be
 #' drawn in a separate window
-#' @param lr_test logical; if \code{TRUE}, a log-rank test will be performed
-#' and the results added to the top-right corner of the plot
+#' @param lr_test logical or numeric; if \code{TRUE}, a log-rank test will be
+#' performed and the results added to the top-right corner of the plot; if
+#' numeric, the value is passed as \code{rho} controlling the type of test
+#' performed; see \code{\link{survdiff}}
 #' @param ylab y-axis label
 #' @param sub sub-title displayed in upper left corner; should be a character
 #' vector with length equal to the number of panels (i.e., the number of
@@ -537,56 +597,70 @@ points.kmplot <- function(x, xscale = 1, xmax, fun, ...,
 #' 
 #' 
 #' ## create *_ind, *_time variables, see details
-#' colon <- within(colon[duplicated(colon$id), ], {
+#' colon2 <- within(colon[duplicated(colon$id), ], {
 #'   pfs_time <- time
 #'   pfs_ind  <- status
 #'   sex <- c('Female','Male')[sex + 1L]
+#'   sex1 <- 'Male'
 #' })
 #' 
-#' kmplot_by(data = colon)
-#' kmplot_by('rx', data = colon, col.surv = 1:3,
+#' ## 
+#' kmplot_by(data = colon2)
+#' kmplot_by('sex1', data = colon2)
+#' 
+#' kmplot_by('rx', data = colon2, col.surv = 1:3,
 #'   strata_lab = FALSE, col.band = NA)
 #' 
 #' ## return value is a list of survfit objects
-#' l <- kmplot_by('sex', by = 'rx', data = colon, plot = FALSE)
-#' kmplot(l$`Lev+5FU`)
+#' l <- kmplot_by('sex', by = 'rx', data = colon2, plot = FALSE)
+#' sapply(l, kmplot)
+#' sapply(l, kmplot_by)
 #' 
 #' ## multiple variables can be combined
-#' kmplot_by('rx + sex', data = colon, strata_lab = FALSE,
+#' kmplot_by('rx + sex', data = colon2, strata_lab = FALSE,
 #'   lty.surv = 1:6, col.band = NA)
 #'
 #' ## if "by" is given, default is to plot separately
-#' kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3,
+#' kmplot_by('rx', data = colon2, by = 'sex', col.surv = 1:3,
 #'   strata_lab = c('Observation','Trt','Trt + 5-FU'))
 #' 
 #' ## if single = FALSE, uses n2mfrow function to set par('mfrow')
-#' kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3, single = FALSE,
+#' kmplot_by('rx', data = colon2, by = 'sex', col.surv = 1:3, single = FALSE,
 #'   strata_lab = c('Observation','Trt','Trt + 5-FU'))
 #'   
 #' ## if par('mfrow') is anything other than c(1,1), uses current setting
 #' par(mfrow = c(2,2))
-#' kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3, single = FALSE,
+#' kmplot_by('rx', data = colon2, by = 'sex', col.surv = 1:3, single = FALSE,
 #'   strata_lab = c('Observation','Trt','Trt + 5-FU'))
 #' 
 #' ## use add = TRUE to add to a figure region without using the by argument
 #' par(mfrow = c(1,2))
 #' mar <- c(8,6,3,2)
-#' kmplot_by('rx', data = colon, strata_lab = FALSE, add = TRUE, mar = mar)
-#' kmplot_by('sex', data = colon, strata_lab = FALSE, add = TRUE, mar = mar)
+#' kmplot_by('rx', data = colon2, strata_lab = FALSE, add = TRUE, mar = mar)
+#' kmplot_by('sex', data = colon2, strata_lab = FALSE, add = TRUE, mar = mar)
 #'   
 #' @export
 
 kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
                       lr_test = TRUE, ylab, sub, strata_lab, fig_lab,
                       time, add = FALSE, plot = TRUE, ...) {
-  dots <- match.call(expand.dots = FALSE)$`...`
   op <- par(no.readonly = TRUE)
+  if (is.logical(lr_test)) {
+    rho <- 0
+  } else if (is.numeric(lr_test)) {
+    rho <- lr_test
+    lr_test <- TRUE
+  } else {
+    rho <- 0
+    lr_test <- TRUE
+  }
   
   if (inherits(strata, 'survfit')) {
     ## if survfit object is given, extract needed vars and run as usual
-    ## TODO: currently only works if created in global environment, ie,
-    ##       cannot call
-    data   <- eval(strata$call$data)
+    if (is.null(data <- strata$.data)) {
+      data <- deparse(strata$call$data)
+      data <- get(data, where(gsub('[$[].*', '', data)))
+    }
     form   <- as.character(strata$call$formula)[-1]
     strata <- form[length(form)]
     event  <- gsub('(\\S+)\\)|.', '\\1', form[1])
@@ -601,7 +675,7 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
       par(mfrow = c(1L,1L))
     } else {
       add <- TRUE
-      if (all(par('mfrow') == c(1L, 1L)))
+      if (all(par('mfrow') == c(1L,1L)))
         par(mfrow = n2mfrow(length(unique(data[, by]))))
     }
     sp <- split(data, data[, by])
@@ -624,9 +698,11 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
   form <- as.formula(form)
   
   l <- lapply(seq_along(sp), function(x) {
-    s <- s0 <- survfit(form, data = sp[[x]], type = 'kaplan-meier',
-                       conf.type = 'log-log', error = 'greenwood',
-                       conf.int = 0.95, se.fit = TRUE)
+    s <- s0 <- eval(substitute(
+      survfit(form, data = sp[[x]], type = 'kaplan-meier',
+              conf.type = 'log-log', error = 'greenwood',
+              conf.int = 0.95, se.fit = TRUE), list(form = form)))
+    s$.data <- s0$.data <- sp[[x]]
     
     if (strata == '1')
       strata <- ''
@@ -651,25 +727,19 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
     kmplot(s, add = add, legend = FALSE, main = names(sp)[x], ylab = ylab, ...,
            panel.first = {
              p <- par('usr')
-             mtext(if (!msub) sub[x] else strata, 3, 0.5, FALSE, 0, 0, font = 3)
+             mtxt <- if (!msub) sub[x] else strata
+             mtext(mtxt, 3, 0.5, FALSE, 0, 0, font = 3)
              mtext(fig[x], 3, 1.2, FALSE, 0 - p[2] * .05, font = 2, cex = 1.5)
              
              ## add survdiff text in upper right corner
-             if (lr_test && (is.null(s$strata) & nzchar(strata))) {
-               warning('There is only one group -- no lr test performed',
-                       call. = FALSE)
-               lr_test <- FALSE
-             }
-             if (lr_test && nzchar(strata)) {
-               sd <- survdiff(form, data = sp[[x]])
-               df <- sum(1 * (colSums(if (is.matrix(sd$obs))
-                 sd$exp else t(sd$exp)) > 0)) - 1
-               pv <- 1 - pchisq(sd$chisq, df)
-               txt <- sprintf('%s (%s df), %s', roundr(sd$chisq, 1),
-                              df, pvalr(pv, show.p = TRUE))
-               txt <- bquote(paste(chi^2, ' = ', .(txt)))
-               mtext(txt, side = 3, at = p[2], adj = 1,
-                     font = 3, cex = .8, line = .5)
+             if (lr_test) {
+               txt <- lr_text(form, sp[[x]], rho)
+               if (identical(txt, FALSE))
+                 message('There is only one group',
+                         if (nzchar(mtxt)) paste(' for', mtxt) else '',
+                         ' -- no lr test performed')
+               else mtext(txt, side = 3, at = p[2], adj = 1,
+                          font = 3, cex = .8, line = .5)
              }
            })
     s0
@@ -707,24 +777,26 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
 #' @export
 
 local_coxph_test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
+  stopifnot(inherits(s, 'coxph'))
   if (missing(pos))
-    pos <- 1:length(coef(s))
+    pos <- seq(coef(s))
   n <- length(pos)
   if (is.null(C)) {
     C <- matrix(0, n, n)
     diag(C) <- 1
-  } else
-    if (dim(C)[1] != n)
+  } else if (dim(C)[1] != n)
       stop('C has improper dimensions\n')
   if (is.null(d))
     d <- matrix(0, n, 1)
   if (dim(d)[1] != dim(C)[1])
-    stop('C and d do not have appropriate dimensions\n')
+    stop('C and d do not have appropriate dimensions')
   I. <- s$var[pos, pos]
   est <- matrix(as.vector(s$coeff[pos]), dim(C)[2])
-  X <- as.numeric(t(C %*% est - d) %*% solve(t(C) %*% I. %*% C ) %*% 
-                    (C %*% est - d))
-  signif(1 - pchisq(X, dim(C)[1]), digits)
+  chisq <- as.numeric(t(C %*% est - d) %*% solve(t(C) %*% I. %*% C ) %*%
+                        (C %*% est - d))
+  df <- dim(C)[1]
+  p.value <- signif(1 - pchisq(chisq, df), digits)
+  list(est = est, chisq = chisq, df = df, p.value = p.value)
 }
 
 #' Create counting process data
@@ -746,7 +818,6 @@ local_coxph_test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
 #' 
 #' @examples
 #' library('survival')
-#' 
 #' cp <- surv_cp(aml, 'time', 'status')
 #' coxph(Surv(start, stop, status) ~ x, data = cp)
 #' 
@@ -772,10 +843,7 @@ surv_cp <- function(data, time.var, status.var,
                stop = tail(t.list[[i]], -1),
                data[i, c(status.var, covars)],
                row.names = NULL)
-  
-  n <- length(t.list)
-  datl <- Map(f, 1:n)
-  data <- do.call(rbind, datl)
+  data <- do.call('rbind', Map('f', seq(t.list)))
   
   ## create the correct status need last time for each
   ## subject with status=1 to to be status=1 but all others status=0
@@ -783,8 +851,8 @@ surv_cp <- function(data, time.var, status.var,
   ## lapply creates vectors 0,0,0,...,1 based on length of t.list
   ## substract 2 because the lag takes one away, then need one for the 1 at end
   ## this is then multiplied by status to correct it
-  keep.status <- do.call(c, lapply(t.list, function(x)
-    c(rep(0, length(x) - 2), 1)))
+  keep.status <- do.call('c', lapply(t.list, function(x)
+    c(rep(0L, length(x) - 2L), 1L)))
   data[status.var] <- data[status.var] * keep.status
   data
 }
@@ -819,10 +887,9 @@ surv_cp <- function(data, time.var, status.var,
 surv_summary <- function(s, digits = 3L, ...) {
   if (!inherits(s, 'survfit'))
     stop('\'s\' must be a \'survfit\' object')
-  x <- summary(s, ...)
+  on.exit(options(digits = getOption('digits')))
   
-  savedig <- options(digits = digits)
-  on.exit(options(savedig))
+  x <- summary(s, ...)
   if (!is.null(cl <- x$call)) {
     cat('Call: ')
     dput(cl)
@@ -941,7 +1008,7 @@ surv_table <- function(s, digits = 3, times = pretty(s$time), maxtime = TRUE, ..
                          drop = FALSE], surv), cn)
   }
   if (is.list(summ))
-    Map(f = f, summ) else f(summ)
+    Map('f', summ) else f(summ)
 }
 
 #' Pairwise \code{survdiff} comparisons

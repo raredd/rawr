@@ -13,7 +13,8 @@ kmplot(s, lty.surv = 1, lwd.surv = 1, col.surv = col.surv, mark = 3,
   xaxis.lab = xaxis.at, yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
   xlab = "Time", ylab = "Survival probability", main = "",
   cex.axis = par("cex.axis"), legend = !atrisk && !is.null(s$strata),
-  mar = NULL, add = FALSE, panel.first = NULL, panel.last = NULL, ...)
+  lr_test = FALSE, mar = NULL, add = FALSE, panel.first = NULL,
+  panel.last = NULL, ...)
 }
 \arguments{
 \item{s}{an object of class \code{\link{survfit}} or \code{survfit.cox}}
@@ -73,6 +74,11 @@ are long}
 \item{legend}{logical or a keyword (see \code{\link{legend}}); if
 \code{TRUE}, the default position is \code{"bottomleft"}}
 
+\item{lr_test}{logical or numeric; if \code{TRUE}, a log-rank test will be
+performed and the results added to the top-right corner of the plot; if
+numeric, the value is passed as \code{rho} controlling the type of test
+performed; see \code{\link{survdiff}}}
+
 \item{mar}{margins; see \code{mar} section in \code{\link{par}}}
 
 \item{add}{logical; if \code{TRUE}, \code{par} is not refreshed; allows for
@@ -123,7 +129,7 @@ km2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 
 ## basic usage
 kmplot(km1)
-kmplot(km1, mark = 'bump')
+kmplot(km1, mark = 'bump', lr_test = TRUE)
 kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5)
 
 ## expressions in at-risk table (strata.expr takes precedence)

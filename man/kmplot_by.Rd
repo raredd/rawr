@@ -21,8 +21,10 @@ see details}
 \item{single}{logical; if \code{TRUE}, each level of \code{by} will be
 drawn in a separate window}
 
-\item{lr_test}{logical; if \code{TRUE}, a log-rank test will be performed
-and the results added to the top-right corner of the plot}
+\item{lr_test}{logical or numeric; if \code{TRUE}, a log-rank test will be
+performed and the results added to the top-right corner of the plot; if
+numeric, the value is passed as \code{rho} controlling the type of test
+performed; see \code{\link{survdiff}}}
 
 \item{ylab}{y-axis label}
 
@@ -76,42 +78,47 @@ kmplot_by(time = 'time', event = 'status', data = colon)
 
 
 ## create *_ind, *_time variables, see details
-colon <- within(colon[duplicated(colon$id), ], {
+colon2 <- within(colon[duplicated(colon$id), ], {
   pfs_time <- time
   pfs_ind  <- status
   sex <- c('Female','Male')[sex + 1L]
+  sex1 <- 'Male'
 })
 
-kmplot_by(data = colon)
-kmplot_by('rx', data = colon, col.surv = 1:3,
+## 
+kmplot_by(data = colon2)
+kmplot_by('sex1', data = colon2)
+
+kmplot_by('rx', data = colon2, col.surv = 1:3,
   strata_lab = FALSE, col.band = NA)
 
 ## return value is a list of survfit objects
-l <- kmplot_by('sex', by = 'rx', data = colon, plot = FALSE)
-kmplot(l$`Lev+5FU`)
+l <- kmplot_by('sex', by = 'rx', data = colon2, plot = FALSE)
+sapply(l, kmplot)
+sapply(l, kmplot_by)
 
 ## multiple variables can be combined
-kmplot_by('rx + sex', data = colon, strata_lab = FALSE,
+kmplot_by('rx + sex', data = colon2, strata_lab = FALSE,
   lty.surv = 1:6, col.band = NA)
 
 ## if "by" is given, default is to plot separately
-kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3,
+kmplot_by('rx', data = colon2, by = 'sex', col.surv = 1:3,
   strata_lab = c('Observation','Trt','Trt + 5-FU'))
 
 ## if single = FALSE, uses n2mfrow function to set par('mfrow')
-kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3, single = FALSE,
+kmplot_by('rx', data = colon2, by = 'sex', col.surv = 1:3, single = FALSE,
   strata_lab = c('Observation','Trt','Trt + 5-FU'))
   
 ## if par('mfrow') is anything other than c(1,1), uses current setting
 par(mfrow = c(2,2))
-kmplot_by('rx', data = colon, by = 'sex', col.surv = 1:3, single = FALSE,
+kmplot_by('rx', data = colon2, by = 'sex', col.surv = 1:3, single = FALSE,
   strata_lab = c('Observation','Trt','Trt + 5-FU'))
 
 ## use add = TRUE to add to a figure region without using the by argument
 par(mfrow = c(1,2))
 mar <- c(8,6,3,2)
-kmplot_by('rx', data = colon, strata_lab = FALSE, add = TRUE, mar = mar)
-kmplot_by('sex', data = colon, strata_lab = FALSE, add = TRUE, mar = mar)
+kmplot_by('rx', data = colon2, strata_lab = FALSE, add = TRUE, mar = mar)
+kmplot_by('sex', data = colon2, strata_lab = FALSE, add = TRUE, mar = mar)
   
 }
 \seealso{

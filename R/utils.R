@@ -8,7 +8,7 @@
 # view2, clist, rapply2, sort_matrix, insert_matrix, tryCatch2, rleid,
 # droplevels2, combine_levels
 #
-# unexported: islist, done
+# unexported: islist, done, where
 ###
 
 
@@ -16,6 +16,16 @@
 islist <- function(x) inherits(x, 'list')
 
 done <- function() while (TRUE) {beepr::beep(3); Sys.sleep(3)}
+
+## recursively find env where x is defined
+where <- function(x, env = parent.frame()) {
+  stopifnot(is.character(x), length(x) == 1L)
+  if (identical(env, emptyenv())) {
+    stop(x, ' not found', call. = FALSE)
+  }
+  if (exists(x, env, inherits = FALSE))
+    env else Recall(x, parent.env(env))
+}
 
 #' rawr operators
 #' 
@@ -447,7 +457,7 @@ rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
 #' 
 #' Clear the workspace by removing all objects in \code{\link{ls}}.
 #' 
-#' @param all.names logical; if \code{TRUE}, also removes hidden files
+#' @param all.names logical; if \code{TRUE}, also removes hidden (dot) objects
 #' 
 #' @export
 
