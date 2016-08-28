@@ -7,7 +7,7 @@
 clc(all.names = FALSE)
 }
 \arguments{
-\item{all.names}{logical; if \code{TRUE}, also removes hidden files}
+\item{all.names}{logical; if \code{TRUE}, also removes hidden (dot) objects}
 }
 \description{
 Clear the workspace by removing all objects in \code{\link{ls}}.

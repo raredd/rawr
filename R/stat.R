@@ -1165,13 +1165,13 @@ cuzick.test.formula <- function (formula, data, subset, na.action, ...) {
 #' \emph{Indagationes Mathematicae} \strong{14}:327-333.
 #' 
 #' @seealso
-#' \code{\link[stats]{cor.test}}; \code{\link[clinfin]{jonckheere.test}}
+#' \code{\link[stats]{cor.test}}; \code{clinfin::jonckheere.test}
 #' 
 #' @examples
 #' (tbl <- table(mtcars$gear, mtcars$cyl))
 #' jt.test(tbl)
-#' cor.test(mtcars$gear, mtcars$cyl, method = 'k')
-#' # clinfun::(mtcars$gear, mtcars$cyl)
+#' cor.test(mtcars$gear, mtcars$cyl, method = 'kendall')
+#' # clinfun::jonckheere.test(mtcars$gear, mtcars$cyl)
 #' 
 #' ## from stats::cor.test
 #' x <- c(44.4, 45.9, 41.9, 53.3, 44.7, 44.1, 50.7, 45.2, 60.1)

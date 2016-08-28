@@ -26,7 +26,6 @@ dependent variables to be introduced.
 }
 \examples{
 library('survival')
-
 cp <- surv_cp(aml, 'time', 'status')
 coxph(Surv(start, stop, status) ~ x, data = cp)
 
