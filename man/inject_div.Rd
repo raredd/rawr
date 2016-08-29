@@ -22,7 +22,7 @@ Inject an html division tag with style attribute.
 library('htmlTable')
 htmlTable(inject_div(head(cars), c(2,2), style = 'border: dashed 1px;'))
 
-htmlTable(inject_div(head(cars), cbind(c(2,2), c(2,1), c(5,2)),
+htmlTable(inject_div(head(cars), rbind(c(2,2), c(2,1), c(5,2)),
                      style = 'background-color: yellow;'))
 
 htmlTable(inject_div(head(cars), c(2,2,2,1,5,2),
