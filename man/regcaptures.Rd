@@ -2,14 +2,24 @@
 % Please edit documentation in R/utils.R
 \name{regcaptures}
 \alias{regcaptures}
+\alias{regcaptures2}
 \title{Extract captured substrings}
 \usage{
-regcaptures(x, m)
+regcaptures(x, m, use.names = TRUE)
+
+regcaptures2(x, pattern)
 }
 \arguments{
 \item{x}{a character vector}
 
 \item{m}{an object with match data}
+
+\item{use.names}{logical; if \code{FALSE}, all names (capture names and
+list names) will be stripped; if \code{TRUE} (default) and capture groups
+have names, these will be used; otherwise, match start positions will be
+used}
+
+\item{pattern}{a character string containing a regular expression}
 }
 \value{
 A list with a matrix of captures for each string in \code{x}. Note that the
@@ -21,8 +31,20 @@ Extract the captured substrings from match data obtained by
 }
 \examples{
 x <- c('larry:35,M', 'alison:22,F', 'dave:,M', 'lily:55,F', 'no data')
-m <- regexpr('(.*):(\\\\d+)?,([MF])?', x, perl = TRUE)
+p1 <- '(.*):(\\\\d+)?,([MF])?'
+p2 <- '(?<name>.*):(?<age>\\\\d+)?,(?<sex>[MF])?'
+
+m <- regexpr(p1, x, perl = TRUE)
 regcaptures(x, m)
+do.call('rbind.data.frame', regcaptures(x, m, use.names = FALSE))
+
+## regcaptures2 is a convenience function for the two-step
+regcaptures2(x, p1)
+
+## both will use named captures (if perl = TRUE)
+regcaptures(x, gregexpr(p2, x, perl = TRUE))
+do.call('rbind.data.frame', regcaptures2(x, p2))
+
 
 x <- 'ACCACCACCAC'
 m <- gregexpr('(?=([AC]C))', x, perl = TRUE)
@@ -32,13 +54,13 @@ m <- gregexpr('(?=(CC))', x, perl = TRUE)
 regcaptures(x, m)[[1]]
 
 ## compare:
-mapply(function(xx) substr(x, xx, xx + 1), m[[1]])
+mapply(function(xx) substr(x, xx, xx + 1L), m[[1]])
 
 }
 \references{
 \url{https://gist.github.com/MrFlick/10413321}
 }
 \seealso{
-\code{\link{regmatches}}
+\code{\link{regmatches}}; \code{\link{grep}}; \code{\link{regex}}
 }
 

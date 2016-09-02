@@ -1042,18 +1042,36 @@ classMethods <- function(class) {
 #' 
 #' @param x a character vector
 #' @param m an object with match data
+#' @param pattern a character string containing a regular expression
+#' @param use.names logical; if \code{FALSE}, all names (capture names and
+#' list names) will be stripped; if \code{TRUE} (default) and capture groups
+#' have names, these will be used; otherwise, match start positions will be
+#' used
 #' 
 #' @return
 #' A list with a matrix of captures for each string in \code{x}. Note that the
 #' column names of each matrix will be the starting positions of the captures.
 #' 
-#' @seealso \code{\link{regmatches}}
+#' @seealso \code{\link{regmatches}}; \code{\link{grep}}; \code{\link{regex}}
+#' 
 #' @references \url{https://gist.github.com/MrFlick/10413321}
 #' 
 #' @examples
 #' x <- c('larry:35,M', 'alison:22,F', 'dave:,M', 'lily:55,F', 'no data')
-#' m <- regexpr('(.*):(\\d+)?,([MF])?', x, perl = TRUE)
+#' p1 <- '(.*):(\\d+)?,([MF])?'
+#' p2 <- '(?<name>.*):(?<age>\\d+)?,(?<sex>[MF])?'
+#' 
+#' m <- regexpr(p1, x, perl = TRUE)
 #' regcaptures(x, m)
+#' do.call('rbind.data.frame', regcaptures(x, m, use.names = FALSE))
+#' 
+#' ## regcaptures2 is a convenience function for the two-step
+#' regcaptures2(x, p1)
+#' 
+#' ## both will use named captures (if perl = TRUE)
+#' regcaptures(x, gregexpr(p2, x, perl = TRUE))
+#' do.call('rbind.data.frame', regcaptures2(x, p2))
+#' 
 #' 
 #' x <- 'ACCACCACCAC'
 #' m <- gregexpr('(?=([AC]C))', x, perl = TRUE)
@@ -1063,11 +1081,13 @@ classMethods <- function(class) {
 #' regcaptures(x, m)[[1]]
 #' 
 #' ## compare:
-#' mapply(function(xx) substr(x, xx, xx + 1), m[[1]])
+#' mapply(function(xx) substr(x, xx, xx + 1L), m[[1]])
 #' 
 #' @export
 
-regcaptures <- function(x, m) {
+regcaptures <- function(x, m, use.names = TRUE) {
+  on.exit(options(stringsAsFactors = getOption('stringsAsFactors')))
+  options(stringsAsFactors = FALSE)
   if (length(x) != length(m))
     stop('\'x\' and \'m\' must have the same length')
   msg <- 'No capture data found'
@@ -1083,27 +1103,36 @@ regcaptures <- function(x, m) {
   if (ili) {
     if (any(sapply(m, function(x) is.null(attr(x, 'capture.start')))))
       stop(msg)
-    starts <- lapply(m, function(x) attr(x, 'capture.start'))
-    lengths <- lapply(m, function(x) attr(x, 'capture.length'))
+    cs <- lapply(m, function(x) attr(x, 'capture.start'))
+    cl <- lapply(m, function(x) attr(x, 'capture.length'))
+    cn <- lapply(m, function(x) attr(x, 'capture.names'))
   } else {
     if (is.null(attr(m, 'capture.start')))
       stop(msg)
-    starts <- data.frame(t(attr(m, 'capture.start')))
-    lengths <- data.frame(t(attr(m, 'capture.length')))
+    cs <- data.frame(t(attr(m, 'capture.start')))
+    cl <- data.frame(t(attr(m, 'capture.length')))
+    cn <- data.frame(attr(m, 'capture.names'))
   }
   
-  Substring <- function(x, starts, lens) {
-    if (!all(starts < 0)) {
+  Substring <- function(x, starts, lengths, names) {
+    if (!all(starts < 0L)) {
       ss <- t(mapply(function(x, st, ln)
-        substring(x, st, st + ln - 1), x, data.frame(t(starts)),
-        data.frame(t(lens)), USE.NAMES = FALSE))
-      `colnames<-`(ss, starts)
-    } else character()
+        substring(x, st, st + ln - 1L), x, data.frame(t(starts)),
+        data.frame(t(lengths)), USE.NAMES = FALSE))
+      `colnames<-`(ss, if (!use.names) NULL else
+        if (all(!nzchar(names))) starts else names)
+    } else character(0L)
   }
   
-  Map(function(x, sos, mls) Substring(x, sos, mls),
-      x, starts, lengths, USE.NAMES = FALSE)
+  Map(function(x, s, l, n)
+    Substring(x, s, l, n), x, cs, cl, cn, USE.NAMES = use.names)
 }
+
+#' @rdname regcaptures
+#' @export
+
+regcaptures2 <- function(x, pattern)
+  regcaptures(x, gregexpr(pattern, x, perl = TRUE))
 
 #' Reshape data
 #' 
