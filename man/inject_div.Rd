@@ -9,8 +9,8 @@ inject_div(x, where, style = "")
 \arguments{
 \item{x}{a matrix or data frame}
 
-\item{where}{a matrix or vector (of the form c(row, col, row, col, ...))
-specifying which cells to change}
+\item{where}{an \code{nx2} matrix of row and column indices or vector (of
+the form c(row, col, row, col, ...)) specifying which cells to select}
 
 \item{style}{vector of character string(s) applied to each cell, recycled
 if necessary}

@@ -1264,7 +1264,7 @@ jt.test <- function(x, y = NULL) {
 #' For symmetric distributions, the Hodges–Lehmann statistic estimates the
 #' population's median and has greater efficiency than the sample median.
 #' For the normal distribution, the Hodges-Lehmann statistic is nearly as
-#' efficient as the sample mean and better  when estimating mixtures of
+#' efficient as the sample mean and better when estimating mixtures of
 #' normal distributions.
 #' 
 #' For non-symmetric distributions, the Hodges-Lehmann statistic estimates
