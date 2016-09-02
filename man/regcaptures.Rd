@@ -7,7 +7,7 @@
 \usage{
 regcaptures(x, m, use.names = TRUE)
 
-regcaptures2(x, pattern)
+regcaptures2(x, pattern, use.names = TRUE)
 }
 \arguments{
 \item{x}{a character vector}

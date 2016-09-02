@@ -1086,11 +1086,11 @@ classMethods <- function(class) {
 #' @export
 
 regcaptures <- function(x, m, use.names = TRUE) {
-  on.exit(options(stringsAsFactors = getOption('stringsAsFactors')))
-  options(stringsAsFactors = FALSE)
   if (length(x) != length(m))
     stop('\'x\' and \'m\' must have the same length')
-  msg <- 'No capture data found'
+  on.exit(options(stringsAsFactors = getOption('stringsAsFactors')))
+  options(stringsAsFactors = FALSE)
+  
   ili <- is.list(m)
   useBytes <- if (ili)
     any(unlist(lapply(m, attr, 'useBytes'))) else any(attr(m, 'useBytes'))
@@ -1100,6 +1100,8 @@ regcaptures <- function(x, m, use.names = TRUE) {
     if (any(ind))
       Encoding(x[ind]) <- 'bytes'
   }
+  
+  msg <- 'No capture data found'
   if (ili) {
     if (any(sapply(m, function(x) is.null(attr(x, 'capture.start')))))
       stop(msg)
@@ -1119,8 +1121,10 @@ regcaptures <- function(x, m, use.names = TRUE) {
       ss <- t(mapply(function(x, st, ln)
         substring(x, st, st + ln - 1L), x, data.frame(t(starts)),
         data.frame(t(lengths)), USE.NAMES = FALSE))
-      `colnames<-`(ss, if (!use.names) NULL else
-        if (all(!nzchar(names))) starts else names)
+      tryCatch(`colnames<-`(ss, if (!use.names) NULL else
+        if (all(!nzchar(names))) starts else names),
+        error = function(e) if (grepl('not equal to array extent', e))
+          `colnames<-`(ss, NULL) else e)
     } else character(0L)
   }
   
@@ -1131,8 +1135,8 @@ regcaptures <- function(x, m, use.names = TRUE) {
 #' @rdname regcaptures
 #' @export
 
-regcaptures2 <- function(x, pattern)
-  regcaptures(x, gregexpr(pattern, x, perl = TRUE))
+regcaptures2 <- function(x, pattern, use.names = TRUE)
+  regcaptures(x, gregexpr(pattern, x, perl = TRUE), use.names)
 
 #' Reshape data
 #' 
