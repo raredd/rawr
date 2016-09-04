@@ -9,8 +9,7 @@
 #' and categories.
 #' 
 #' @source
-#' \href{http://ctep.cancer.gov/protocolDevelopment/electronic_applications/
-#' docs/ctcaev3.pdf}{CTCAEv3.pdf}
+#' \href{http://ctep.cancer.gov/protocolDevelopment/electronic_applications/docs/ctcaev3.pdf}{CTCAEv3.pdf}
 #'
 #' @format
 #' A data frame with 1059 rows and 4 variables:
@@ -31,8 +30,7 @@
 #' and categories.
 #'  
 #' @source
-#' \href{http://evs.nci.nih.gov/ftp1/CTCAE/CTCAE_4.03_2010-06-14_
-#' QuickReference_8.5x11.pdf}{CTCAEv4.pdf}
+#' \href{http://evs.nci.nih.gov/ftp1/CTCAE/CTCAE_4.03_2010-06-14_QuickReference_8.5x11.pdf}{CTCAEv4.pdf}
 #'
 #' @format
 #' A data frame with 790 rows and 5 variables:

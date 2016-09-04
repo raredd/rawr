@@ -154,7 +154,7 @@ tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd', show.na = FALSE,
 ## example with missing data
 set.seed(1)
 dat <- data.frame(age = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
-                  sex = sample(c('Female', 'Male'), 80, replace = TRUE),
+                  sex = factor(sample(c('Female', 'Male'), 80, replace = TRUE)),
                   group = paste0('Group ',
                                  sample(1:4, 40, prob = c(2, 5, 4, 1),
                                         replace = TRUE)))

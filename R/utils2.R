@@ -151,8 +151,7 @@ show_markdown <- function(..., use_viewer = !is.null(getOption('viewer')),
 #' @seealso
 #' \code{\link{show_html}}, \code{\link{show_markdown}},
 #' \href{http://detexify.kirelabs.org/classify.html}{draw math symbols},
-#' \href{http://stackoverflow.com/questions/31193843/display-r-formula-
-#' elegantly-as-in-latex}{SO question}
+#' \href{http://stackoverflow.com/questions/31193843/display-r-formula-elegantly-as-in-latex}{SO question}
 #' 
 #' @examples
 #' \dontrun{

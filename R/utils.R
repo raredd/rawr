@@ -398,8 +398,7 @@ parse_namespace <- function(x,
 #' \code{\link{pmin}}, \code{\link{pmax}}
 #' 
 #' @references
-#' \href{http://stackoverflow.com/questions/13123638/there-is-pmin-and-pmax-
-#' each-taking-na-rm-why-no-psum}{SO question}
+#' \href{http://stackoverflow.com/questions/13123638/there-is-pmin-and-pmax-each-taking-na-rm-why-no-psum}{SO question}
 #' 
 #' @examples
 #' x <- c(-1, NA, 4, 5)
@@ -1562,8 +1561,7 @@ insert_matrix <- function(m, rowsep, colsep, rowrep = NA, colrep = rowrep) {
 #' Martin Morgan, Jan Gorecki, Robert Redd (modifications)
 #' 
 #' @seealso
-#' \href{http://stackoverflow.com/questions/4948361/how-do-i-save-warnings
-#' -and-errors-as-output-from-a-function}{SO question};
+#' \href{http://stackoverflow.com/questions/4948361/how-do-i-save-warnings-and-errors-as-output-from-a-function}{SO question};
 #' \code{\link[logR]{tryCatch2}}; \href{https://github.com/jangorecki/logR}{
 #' \pkg{logR} github repo}
 #' 

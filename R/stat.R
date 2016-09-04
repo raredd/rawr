@@ -1261,7 +1261,7 @@ jt.test <- function(x, y = NULL) {
 #' means of \code{n(n+1)/2} pairs (i.e., including the vector itself)
 #' are calculated.
 #' 
-#' For symmetric distributions, the Hodges–Lehmann statistic estimates the
+#' For symmetric distributions, the Hodges-Lehmann statistic estimates the
 #' population's median and has greater efficiency than the sample median.
 #' For the normal distribution, the Hodges-Lehmann statistic is nearly as
 #' efficient as the sample mean and better when estimating mixtures of
@@ -1269,10 +1269,10 @@ jt.test <- function(x, y = NULL) {
 #' 
 #' For non-symmetric distributions, the Hodges-Lehmann statistic estimates
 #' the population's "pseudo-median" (see \code{\link[stats]{wilcox.test}}), a
-#' location parameter that is closely related to the median. The pseudo–median
+#' location parameter that is closely related to the median. The pseudo-median
 #' is well defined for all distributions of random variables having dimension
-#' two or greater, and like the median, the pseudo–median is defined for even
-#' heavy–tailed distributions that lack any finite mean.
+#' two or greater, and like the median, the pseudo-median is defined for even
+#' heavy-tailed distributions that lack any finite mean.
 #' 
 #' @param x a numeric or logical vector
 #' @param na.rm logical; if \code{TRUE}, \code{NA} values are removed
@@ -1282,7 +1282,7 @@ jt.test <- function(x, y = NULL) {
 #' statistical methods}. Kendall's Library of Statistics. \strong{5}.
 #' 
 #' Hodges, J. L.; Lehmann, E. L. (1963). "Estimation of location based on
-#' ranks". \emph{Annals of Mathematical Statistics}. \strong{34} (2): 598–611.
+#' ranks." \emph{Annals of Mathematical Statistics}. \strong{34} (2): 598-611.
 #' 
 #' @seealso
 #' \code{\link{wilcox.test}}; \code{ICSNP::hl.loc}

@@ -12,8 +12,7 @@
 \tab \code{ctc_version} \tab version number \cr
 }}
 \source{
-\href{http://ctep.cancer.gov/protocolDevelopment/electronic_applications/
-docs/ctcaev3.pdf}{CTCAEv3.pdf}
+\href{http://ctep.cancer.gov/protocolDevelopment/electronic_applications/docs/ctcaev3.pdf}{CTCAEv3.pdf}
 }
 \usage{
 ctcae_v3

@@ -14,6 +14,8 @@ Imports:
     utils
 Suggests:
     beepr,
+    clinfun,
+    coin,
     desmon,
     DT,
     Hmisc,

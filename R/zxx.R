@@ -1346,8 +1346,7 @@ mgsub <- function(pattern, replacement, x, ...)
 #' @param l a list
 #' 
 #' @references
-#' \href{https://stackoverflow.com/questions/8139677/how-to-flatten-a-list-to-
-#' a-list-without-coercion}{SO question}
+#' \href{https://stackoverflow.com/questions/8139677/how-to-flatten-a-list-to-a-list-without-coercion}{SO question}
 #' 
 #' @examples
 #' (l <- list(matrix(1:3), list(1:3, 'foo'), TRUE, 'hi',
@@ -1375,8 +1374,7 @@ flatten <- function(l) {
 #' to print
 #' 
 #' @references
-#' \href{http://stackoverflow.com/questions/14188197/representing-a-directory-
-#' tree-as-a-recursive-list}{SO question}
+#' \href{http://stackoverflow.com/questions/14188197/representing-a-directory-tree-as-a-recursive-list}{SO question}
 #' 
 #' @examples
 #' str(tree(system.file(package = 'rawr'), FALSE))
@@ -1413,8 +1411,7 @@ tree <- function(path = '.', full.names = FALSE, ndirs = 5, nfiles = 5) {
 #' object will not be removed
 #' 
 #' @references
-#' \href{http://stackoverflow.com/questions/26539441/r-remove-null-elements-
-#' from-list-of-lists}{SO question}
+#' \href{http://stackoverflow.com/questions/26539441/r-remove-null-elements-from-list-of-lists}{SO question}
 #' 
 #' @examples
 #' str(l <- list(list(NULL),list(1),list('a', NULL)))
@@ -1487,8 +1484,7 @@ cum_reset <- function(x, value = 0L, FUN = cumsum) {
 #' \code{length(x)} for each match found in \code{x}.
 #' 
 #' @references
-#' Adapted from \href{http://stackoverflow.com/questions/33027611/how-to-
-#' index-a-vector-sequence-within-a-vector-sequence/33028695}{SO question}
+#' Adapted from \href{http://stackoverflow.com/questions/33027611/how-to-index-a-vector-sequence-within-a-vector-sequence/33028695}{SO question}
 #' 
 #' @seealso
 #' \code{\link{grep}}; \code{\link[rawr]{mgrep}}; \code{\link[rawr]{\%==\%}}
@@ -1540,8 +1536,7 @@ vgrepl <- function(pattern, x) {
 #' \code{\link{strwrap}}
 #' 
 #' @references
-#' Adapted from \href{http://stackoverflow.com/questions/34710597/justify-
-#' text-in-r}{SO question}
+#' Adapted from \href{http://stackoverflow.com/questions/34710597/justify-text-in-r}{SO question}
 #' 
 #' @examples
 #' x <- paste(rownames(mtcars), collapse = ' ')

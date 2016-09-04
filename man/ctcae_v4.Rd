@@ -14,8 +14,7 @@
 Activities codes, v12 \cr
 }}
 \source{
-\href{http://evs.nci.nih.gov/ftp1/CTCAE/CTCAE_4.03_2010-06-14_
-QuickReference_8.5x11.pdf}{CTCAEv4.pdf}
+\href{http://evs.nci.nih.gov/ftp1/CTCAE/CTCAE_4.03_2010-06-14_QuickReference_8.5x11.pdf}{CTCAEv4.pdf}
 }
 \usage{
 ctcae_v4

@@ -22,7 +22,6 @@ str(rm_null(l, FALSE))
 
 }
 \references{
-\href{http://stackoverflow.com/questions/26539441/r-remove-null-elements-
-from-list-of-lists}{SO question}
+\href{http://stackoverflow.com/questions/26539441/r-remove-null-elements-from-list-of-lists}{SO question}
 }
 
