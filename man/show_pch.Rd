@@ -4,7 +4,10 @@
 \alias{show_pch}
 \title{Show plotting characters}
 \usage{
-show_pch()
+show_pch(...)
+}
+\arguments{
+\item{...}{ignored}
 }
 \description{
 In \code{R}, there are 26 numeric plotting characters. This function shows

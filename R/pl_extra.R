@@ -96,27 +96,49 @@ dodge.default <- function(x, y, dist, jit, ...) {
 
 #' Show colors
 #' 
-#' In \code{R}, there are 657 named colors. This function shows these colors
-#' and their respective numbers. Find a color by number in the plot or by the
-#' name of the color with \code{colors()[n]}.
+#' \code{R} includes 657 named \code{\link{colors}}. This function shows these
+#' and their respective indices. Find a color by number in the plot or by the
+#' name of the color with \code{show_colors(n)} or find the indices with
+#' \code{show_colors('color name')}.
+#' 
+#' @param ... integer(s) in \code{1:657} corresponding to the built-in color
+#' name index or color name string(s)
+#' 
+#' @return
+#' If \code{...} is missing, a plot will be drawn. If an integer is given, the
+#' color name will be returned; if a color name string is given, the matching
+#' index will be returned. For the latter two options, no plot is drawn.
 #' 
 #' @seealso
-#' \code{\link{show_pch}}
+#' \code{\link{show_pch}}, \code{\link{colors}}
 #' 
 #' @examples
 #' show_colors()
-#' colors()[81]
-#' # [1] "darkgreen"
+#' 
+#' show_colors(81)
+#' show_colors('darkgreen')
+#' 
+#' x <- show_colors(sample(657, 10))
+#' stopifnot(identical(x, show_colors(show_colors(x))))
 #' 
 #' @export
 
-show_colors <- function() {
-  sx <- seq(x <- 22)
-  sy <- seq(y <- 30)
+show_colors <- function(...) {
+  dots <- c(...)
+  if  (is.numeric(dots)) {
+    stopifnot(dots %inside% c(1,657))
+    return(colors(FALSE)[as.integer(dots)])
+  } else if (is.character(dots)) {
+    dots <- gsub('[^a-z0-9]', '', tolower(dots))
+    return(match(dots, colors(FALSE)))
+  } else if (length(dots))
+    warning('... should be missing, %in% 1:657, or a color name')
   
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
   par(mfrow = c(1,1), mar = c(1,1,3,2), cex = .7)
+  sx <- seq(x <- 22)
+  sy <- seq(y <- 30)
   
   plot(c(-1, x), c(-1, y), type = 'n', ann = FALSE, axes = FALSE)
   title('col = colors()[n]')
@@ -135,6 +157,7 @@ show_colors <- function() {
   ## y-axis numbers: 1, 2, ..., 30
   text(rep(-.5, y), sy - .5, sy)
   text(rep(x + .5, y), sy - .5, sy)
+  invisible(NULL)
 }
 
 #' Show plotting characters
@@ -144,6 +167,8 @@ show_colors <- function() {
 #' both the border and fill color (if applicable) for \code{0:20}; \code{pch}s
 #' \code{21:25} can be filled with \code{bg}.
 #' 
+#' @param ... ignored
+#' 
 #' @seealso
 #' \code{\link{show_colors}}
 #' 
@@ -152,7 +177,7 @@ show_colors <- function() {
 #' 
 #' @export
 
-show_pch <- function() {
+show_pch <- function(...) {
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
   par(xpd = TRUE, mfrow = c(1, 1), mai = c(.4,.4,.4,.4), oma = c(.2,0,0,.2))
@@ -161,6 +186,7 @@ show_pch <- function() {
   plot(x, y, pch = 0:25, axes = FALSE, bg = 'gray', cex = 2, col = 'red')
   text(x = x, y = y, labels = 0:25, pos = 4, cex = 1.5, offset = 1)
   text(x = 4, y = 0, labels = 'plotting characters 0:25', cex = 1.5)
+  invisible(NULL)
 }
 
 #' Transparent colors

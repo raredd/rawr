@@ -4,20 +4,34 @@
 \alias{show_colors}
 \title{Show colors}
 \usage{
-show_colors()
+show_colors(...)
+}
+\arguments{
+\item{...}{integer(s) in \code{1:657} corresponding to the built-in color
+name index or color name string(s)}
+}
+\value{
+If \code{...} is missing, a plot will be drawn. If an integer is given, the
+color name will be returned; if a color name string is given, the matching
+index will be returned. For the latter two options, no plot is drawn.
 }
 \description{
-In \code{R}, there are 657 named colors. This function shows these colors
-and their respective numbers. Find a color by number in the plot or by the
-name of the color with \code{colors()[n]}.
+\code{R} includes 657 named \code{\link{colors}}. This function shows these
+and their respective indices. Find a color by number in the plot or by the
+name of the color with \code{show_colors(n)} or find the indices with
+\code{show_colors('color name')}.
 }
 \examples{
 show_colors()
-colors()[81]
-# [1] "darkgreen"
+
+show_colors(81)
+show_colors('darkgreen')
+
+x <- show_colors(sample(657, 10))
+stopifnot(identical(x, show_colors(show_colors(x))))
 
 }
 \seealso{
-\code{\link{show_pch}}
+\code{\link{show_pch}}, \code{\link{colors}}
 }
 
