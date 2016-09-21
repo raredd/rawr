@@ -163,7 +163,7 @@ bincon <- function(r, n, alpha = 0.05, round = NULL,
 bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
                      r = n.max, alpha = .1, beta = .1) {
   
-  stopifnot(alpha %inside% c(0,1) & beta %inside% c(0,1))
+  stopifnot(alpha %inside% c(0,1), beta %inside% c(0,1))
   if (r < 1)
     stop('Number of responders must be >1')
   
@@ -749,7 +749,7 @@ fakeglm <- function(formula, ..., family, data = NULL) {
   }
   out$terms <- tt
   coef <- numeric(0)
-  stopifnot(length(dots) > 1 & !is.null(names(dots)))
+  stopifnot(length(dots) > 1, !is.null(names(dots)))
   for (ii in seq_along(dots)) {
     if ((n <- names(dots)[ii]) != '') {
       v <- dots[[ii]]

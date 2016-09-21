@@ -1016,28 +1016,31 @@ surv_table <- function(s, digits = 3, times = pretty(s$time), maxtime = TRUE, ..
 #' Evaluate pairwise group differences in survival curves with
 #' \code{\link[survival]{survdiff}}. This function currently works for
 #' \emph{one} \code{factor}-like variable, and all unique values are treated
-#' as separate groups.
+#' as separate groups. To use multiple predictors, create a new variable
+#' as the \code{\link{interaction}} of two or more predictors.
 #' 
 #' @param s an object of class \code{\link[survival]{survdiff}} or
 #' \code{\link[survival]{survfit}}
 #' @param ... additional arguments passed to \code{\link{survdiff}} such as
-#' \code{na.action} to filter missing data or \code{rho} to control the test
-#' @param method p-value correction method; see \code{\link{p.adjust}}
+#' \code{na.action} or \code{rho} to control the test
+#' @param method p-value correction method (default is \code{'holm'}; see
+#' \code{\link{p.adjust}}
 #' @param digits integer indicating the number of decimal places to be used
 #' 
 #' @return
 #' A list with three elements:
 #' \item{\code{n}}{the number of subjects in each pair of groups}
-#' \item{\code{chi.sq}}{the chisquare statistic for a test of equality
+#' \item{\code{chi.sq}}{the chi-square statistic for a test of equality
 #' between pairs of groups}
 #' \item{\code{p.value}}{significance for each test. The lower and upper
 #' triangles of the matrix are uncorrected and adjusted, respectively, for
-#' multiple comparisons using \code{method} (the default is a Bonferroni
+#' multiple comparisons using \code{method} (the default is the Holm
 #' correction, see \code{\link{p.adjust}})}
 #' 
 #' @seealso
 #' \code{\link[rawr]{pvalr}}; \code{\link{survdiff}}; \code{\link{p.adjust}};
-#' \code{\link[rms]{contrast}} from the \pkg{\link[rms]{rms}} package
+#' \code{\link[rms]{contrast}} from the \pkg{\link[rms]{rms}} package;
+#' \code{\link{pairwise.table}}
 #' 
 #' @examples
 #' library('survival')
@@ -1063,29 +1066,28 @@ surv_table <- function(s, digits = 3, times = pretty(s$time), maxtime = TRUE, ..
 #' 
 #' @export
 
-survdiff_pairs <- function(s, ..., method = 'bonferroni', digits = 3L) {
-  stopifnot(inherits(s, c('survdiff', 'survfit')))
-  rhs <- all.vars(s$call$formula)[-(1:2)]
-  stopifnot(length(rhs) == 1L)
+survdiff_pairs <- function(s, ..., method = p.adjust.methods, digits = 3L) {
+  method <- match.arg(method)
+  stopifnot(inherits(s, c('survdiff', 'survfit')),
+            length(rhs <- all.vars(s$call$formula)[-(1:2)]) == 1L)
   data <- eval(s$call$data, envir = parent.frame())
-  unq <- sort(unique(data[, rhs]))
+  unq  <- as.character(sort(unique(data[, rhs])))
   
-  ch <- matrix(0, length(unq), length(unq), dimnames = list(unq, unq))
+  pwchisq <- function(i, j) {
+    data <- data[data[, rhs] %in% c(unq[i], unq[j]), ]
+    survdiff(as.formula(s$call$formula), data = data, ...)$chisq
+  }
+  
   nn <- outer(as.character(unq), as.character(unq), Vectorize(function(x, y)
     nrow(data[data[, rhs] %in% c(x, y), ])))
+  nn[upper.tri(nn, FALSE)] <- NA
   
-  dimnames(nn) <- list(unq, unq)
-  names(dimnames(ch)) <- names(dimnames(nn)) <- c(rhs, rhs)
+  chisq <- rbind(NA, cbind(pairwise.table(pwchisq, unq, 'none'), NA))
+  dimnames(chisq) <- dimnames(nn) <- list(unq, unq)
   
-  for (ii in seq_along(unq))
-    for (jj in (seq_along(unq))[-ii])
-      ch[ii, jj] <- survdiff(as.formula(s$call$formula), ...,
-                             data = data[data[, rhs] %in% unq[c(ii, jj)], ])$chisq
+  p.value <- apply(chisq, 1:2, function(x) pchisq(x, 1, lower.tail = FALSE))
+  p.value[upper.tri(p.value, FALSE)] <-
+    p.adjust(na.omit(c(t(p.value))), method = method)
   
-  pvu <- apply(ch, 1:2, function(x) pchisq(x, 1, lower.tail = FALSE))
-  pvc <- t(pvu)[upper.tri(pvu)]
-  pvc <- p.adjust(pvc, method = method, n = length(pvc))
-  pvu[upper.tri(pvu)] <- pvc
-  
-  lapply(list(n = nn, chi.sq = ch, p.value = pvu), round, digits = digits)
+  lapply(list(n = nn, chi.sq  = chisq, p.value = p.value), round, digits)
 }

@@ -4,34 +4,36 @@
 \alias{survdiff_pairs}
 \title{Pairwise \code{survdiff} comparisons}
 \usage{
-survdiff_pairs(s, ..., method = "bonferroni", digits = 3L)
+survdiff_pairs(s, ..., method = p.adjust.methods, digits = 3L)
 }
 \arguments{
 \item{s}{an object of class \code{\link[survival]{survdiff}} or
 \code{\link[survival]{survfit}}}
 
 \item{...}{additional arguments passed to \code{\link{survdiff}} such as
-\code{na.action} to filter missing data or \code{rho} to control the test}
+\code{na.action} or \code{rho} to control the test}
 
-\item{method}{p-value correction method; see \code{\link{p.adjust}}}
+\item{method}{p-value correction method (default is \code{'holm'}; see
+\code{\link{p.adjust}}}
 
 \item{digits}{integer indicating the number of decimal places to be used}
 }
 \value{
 A list with three elements:
 \item{\code{n}}{the number of subjects in each pair of groups}
-\item{\code{chi.sq}}{the chisquare statistic for a test of equality
+\item{\code{chi.sq}}{the chi-square statistic for a test of equality
 between pairs of groups}
 \item{\code{p.value}}{significance for each test. The lower and upper
 triangles of the matrix are uncorrected and adjusted, respectively, for
-multiple comparisons using \code{method} (the default is a Bonferroni
+multiple comparisons using \code{method} (the default is the Holm
 correction, see \code{\link{p.adjust}})}
 }
 \description{
 Evaluate pairwise group differences in survival curves with
 \code{\link[survival]{survdiff}}. This function currently works for
 \emph{one} \code{factor}-like variable, and all unique values are treated
-as separate groups.
+as separate groups. To use multiple predictors, create a new variable
+as the \code{\link{interaction}} of two or more predictors.
 }
 \examples{
 library('survival')
@@ -58,6 +60,7 @@ survdiff_pairs(sfit, rho = 1, method = 'BH')
 }
 \seealso{
 \code{\link[rawr]{pvalr}}; \code{\link{survdiff}}; \code{\link{p.adjust}};
-\code{\link[rms]{contrast}} from the \pkg{\link[rms]{rms}} package
+\code{\link[rms]{contrast}} from the \pkg{\link[rms]{rms}} package;
+\code{\link{pairwise.table}}
 }
 

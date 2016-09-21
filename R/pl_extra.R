@@ -393,7 +393,7 @@ arrows2 <- function(x0, y0, x1 = x0, y1 = y0, size = 1, width = 0.1 / cin,
                     curve = 1, code = 2, col = par('fg'), lty = par('lty'),
                     lwd = par('lwd'), fill = col, border = fill,
                     sadj = c(0,0,0,0), ...) {
-  stopifnot(length(code) == 1L & code %in% 0:3)
+  stopifnot(length(code) == 1L, code %in% 0:3)
   
   ## create coordinates of a polygon for a unit arrow head
   cin <- size * par('cin')[2]
