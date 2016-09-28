@@ -632,10 +632,8 @@ Restart <- function(afterRestartCommand = '')
 #' A character vector to be used in a Sweave or Rmarkdown document.
 #' 
 #' @examples
-#' helpExtract(print, type = 'text')
-#' 
-#' cat(helpExtract(print), sep = '\n')
-#' 
+#' helpExtract(print)
+#' cat(helpExtract(print, section = 'ex'), sep = '\n')
 #' cat(helpExtract(print, type = 'md_text', section = 'description'))
 #' 
 #' ## selecting multiple sections prints section names
@@ -645,12 +643,10 @@ Restart <- function(afterRestartCommand = '')
 
 helpExtract <- function(FUN, show.sections = FALSE, section = 'Usage',
                         type = c('text','md_code','md_text',
-                                 'sw_code','sw_text'),
-                        ...) {
-  
-  type <- match.arg(type, c('text','md_code','md_text','sw_code','sw_text'),
-                    several.ok = FALSE)
-  FUN <- ifelse(!is.character(substitute(FUN)), deparse(substitute(FUN)), FUN)
+                                 'sw_code','sw_text'), ...) {
+  type <- match.arg(type)
+  FUN  <- if (is.function(FUN))
+    deparse(substitute(FUN)) else as.character(FUN)
   x <- helpExtract_(FUN, ...)
   
   ## section start lines
@@ -658,17 +654,20 @@ helpExtract <- function(FUN, show.sections = FALSE, section = 'Usage',
   x <- gsub('_\b', '', x, fixed = TRUE)
   if (show.sections)
     return(gsub(':','', x[B]))
+  
   X <- rep(0, length(x))
   X[B] <- 1
   out <- split(x, cumsum(X))
-  vgrepl <- Vectorize(grepl)
+  
   out <- out[which(sapply(out, function(x)
-    any(vgrepl(section, x[1], ignore.case = TRUE))))]
+    any(Vectorize(grepl)(section, x[1], ignore.case = TRUE))))]
   # out <- unlist(sapply(out, '[', -(1:2)))
-  out <- if (length(section) > 1) unname(unlist(out)) else out[[1]][-(1:2)]
+  out <- if (length(section) > 1L)
+    unname(unlist(out)) else out[[1]][-(1:2)]
+  
   while (TRUE) {
     out <- out[-length(out)]
-    if (out[length(out)] != '')
+    if (nzchar(out[length(out)]))
       break
   }
   
@@ -710,8 +709,7 @@ helpExtract_ <- function(FUN, ...) {
     }
     res <- lazyLoadDBexec(filebase, fun)
     if (length(key))
-      res
-    else invisible(res)
+      res else invisible(res)
   }
   
   ## utils:::.getHelpFile
