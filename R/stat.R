@@ -1,4 +1,6 @@
 ### statistical functions
+# rpart_utils: parent, subset_rpart
+#
 # bincon, bintest, dlt_table, power_cv, simon2, moods_test, fakeglm, gcd,
 # install.bioc, lm.beta, cuzick.test, jt.test, hl_est, combn_fun
 ###
@@ -1311,4 +1313,81 @@ combn_fun <- function(x, FUN, n = 2L, ...) {
   n <- as.integer(n)
   x <- combn(x, n)
   apply(x, 2, FUN, ...)
+}
+
+#' \code{rpart} utilities
+#' 
+#' @description
+#' Utilities for the \pkg{\link{rpart}} package:
+#' 
+#' \code{parent} returns all parent nodes of \code{node}.
+#' 
+#' \code{subset_rpart} and \code{subset_rpart2} (in examples) return a
+#' subset of the data used in \code{rpart} for any intermediate or terminal
+#' \code{node}.
+#' 
+#' @param node an integer representing the node number
+#' @param tree an object returned from \code{rpart}
+#' 
+#' @return
+#' \code{parent} returns a vector representing the path from the root to
+#' \code{node}.
+#' 
+#' \code{subset_rpart} returns the data frame of observations in \code{node}.
+#' 
+#' @seealso
+#' \url{http://stackoverflow.com/questions/36086990/how-to-climb-the-tree-structure-of-rpart-object-using-path-in-order-to-purge-man}
+#' 
+#' \url{http://stackoverflow.com/questions/36748531/getting-the-observations-in-a-rparts-node-i-e-cart}
+#' 
+#' @examples
+#' \dontrun{
+#' library('rpart')
+#' (fit <- rpart(Kyphosis ~ Age + Number + Start, kyphosis, minsplit = 5))
+#' 
+#' parent(15)
+#' parent(23)
+#' 
+#' ## children nodes should have identical paths
+#' identical(head(parent(28), -1), head(parent(29), -1))
+#' 
+#' ## terminal nodes should combine to original data
+#' nodes <- as.integer(rownames(fit$frame[fit$frame$var %in% '<leaf>', ]))
+#' sum(sapply(nodes, function(x) nrow(subset_rpart(fit, x))))
+#' 
+#' ## all nodes
+#' nodes <- as.integer(rownames(fit$frame))
+#' sapply(nodes, function(x) nrow(subset_rpart(fit, x)))
+#' 
+#' 
+#' subset_rpart2 <- function(tree, node = 1) {
+#'   require('partykit')
+#'   ptree <- as.party(tree)
+#'   ptree$data <- model.frame(eval(tree$call$data, parent.frame(1L)))
+#'   data_party(ptree, node)[, seq(ptree$data)]
+#' }
+#' 
+#' ## note differences in nodes labels in party vs rpart
+#' dim(subset_rpart(fit, 4))
+#' dim(subset_rpart2(fit, 3))
+#' }
+#' 
+#' @aliases parent subset_rpart
+#' @name rpart_utils
+
+#' @rdname rpart_utils
+#' @export
+parent <- function(node) {
+  if (node[1] != 1)
+    c(Recall(if (node %% 2 == 0L) node / 2 else (node - 1) / 2), node)
+  else node
+}
+
+#' @rdname rpart_utils
+#' @export
+subset_rpart <- function(tree, node = 1) {
+  data <- eval(tree$call$data, parent.frame(1L))
+  wh <- sapply(as.integer(rownames(tree$frame)), parent)
+  wh <- unique(unlist(wh[sapply(wh, function(x) node %in% x)]))
+  data[rownames(tree$frame)[tree$where] %in% wh[wh >= node], ]
 }
