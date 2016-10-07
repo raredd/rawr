@@ -538,6 +538,16 @@ lr_text <- function(formula, data, rho = 0, ...) {
   bquote(paste(chi^2, ' = ', .(txt)))
 }
 
+lr_pval <- function(s, details = FALSE) {
+  # lr_pval(sdif); lr_pval(sfit, TRUE)
+  if (inherits(s, 'survfit'))
+    s <- survdiff(as.formula(s$call$formula), eval(s$call$data))
+  stopifnot(inherits(s, 'survdiff'))
+  pv <- pchisq(chi <- s$chisq, df <- length(s$n) - 1L, lower.tail = FALSE)
+  if (details)
+    list(chisq = chi, df = df, p.value = pv) else pv
+}
+
 #' kmplot_by
 #' 
 #' This function helps create stratified \code{\link{kmplot}}s quickly with
@@ -982,12 +992,13 @@ surv_summary <- function(s, digits = 3L, ...) {
 #' 
 #' library('htmlTable')
 #' s <- `colnames<-`(surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4],
-#'                   c('Time','No. at risk','No. of events','HR (95% CI)'))
+#'                   c('Time','No. at risk','No. of events','Surv (95% CI)'))
 #' htmlTable(s, caption = 'Table: Overall survival.')
 #' 
 #' @export
 
-surv_table <- function(s, digits = 3, times = pretty(s$time), maxtime = TRUE, ...) {
+surv_table <- function(s, digits = 3, times = pretty(s$time),
+                       maxtime = TRUE, ...) {
   if (maxtime) {
     maxtime <- max(s$time[s$n.event > 0])
     times <- c(times[times <= maxtime], maxtime)
@@ -1003,7 +1014,7 @@ surv_table <- function(s, digits = 3, times = pretty(s$time), maxtime = TRUE, ..
     surv <- sprintf('%s (%s, %s)',
                     x[, g('survival')], x[, g('lower')], x[, g('upper')])
     cn <- c('Time','No. at risk','No. event','Std.Error',
-            sprintf('HR (%s%% CI)', s$conf.int * 100))
+            sprintf('Surv (%s%% CI)', s$conf.int * 100))
     `colnames<-`(cbind(x[, c(setdiff(vars, tmpvar), 'std.err'),
                          drop = FALSE], surv), cn)
   }

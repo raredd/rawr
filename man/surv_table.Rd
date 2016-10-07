@@ -40,7 +40,7 @@ surv_table(fit1)
 
 library('htmlTable')
 s <- `colnames<-`(surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4],
-                  c('Time','No. at risk','No. of events','HR (95\% CI)'))
+                  c('Time','No. at risk','No. of events','Surv (95\% CI)'))
 htmlTable(s, caption = 'Table: Overall survival.')
 
 }
