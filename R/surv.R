@@ -1,8 +1,8 @@
 ### survival stuff
 # kmplot, kmplot_by, local_coxph_test, surv_cp, surv_summary, surv_table,
-# survdiff_pairs, lr_text
+# survdiff_pairs
 #
-# unexported: points.kmplot, lr_text
+# unexported: points.kmplot, lr_text, lr_pval
 ###
 
 
@@ -53,6 +53,8 @@
 #' @param atrisk logical; if \code{TRUE} (default), draws at-risk table
 #' @param atrisk.lab heading for at-risk table
 #' @param atrisk.lines logical; draw lines next to strata in at-risk table
+#' @param atrisk.col logical or a vector with colors for atrisk table text; if
+#' \code{TRUE}, \code{col.surv} will be used
 #' @param strata.lab labels used in legend and at-risk table for strata; if
 #' \code{NULL} (default), labels created in \code{survfit} are used; if only
 #' one strata is present, "All" is used by default; if \code{FALSE}, labels
@@ -100,8 +102,10 @@
 #' 
 #' ## basic usage
 #' kmplot(km1)
-#' kmplot(km1, mark = 'bump', lr_test = TRUE)
+#' kmplot(km1, atrisk.col = c('grey50','tomato'))
+#' kmplot(km1, mark = 'bump', lr_test = TRUE, atrisk.lines = FALSE)
 #' kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5)
+#' 
 #' 
 #' ## expressions in at-risk table (strata.expr takes precedence)
 #' kmplot(km1, strata.lab = c('\u2640', '\u2642'))
@@ -154,7 +158,8 @@ kmplot <- function(s,
                    
                    ## at-risk table options
                    atrisk = TRUE, atrisk.lab = 'Number at risk',
-                   atrisk.lines = TRUE, strata.lab = NULL,
+                   atrisk.lines = TRUE, atrisk.col = !atrisk.lines,
+                   strata.lab = NULL,
                    strata.expr = NULL, strata.order = seq(length(s$n)),
                    extra.margin = 5,
                    
@@ -241,7 +246,7 @@ kmplot <- function(s,
     strata.lab <- names(s$strata)
   if (length(unique(strata.lab)) != ng && strata.lab[1] != FALSE)
     stop('\n','length(unique(strata.lab)) != number of groups')
-  if (suppressWarnings(any(sort(strata.order) != 1:ng)))
+  if (suppressWarnings(any(sort(strata.order) != seq.int(ng))))
     stop('\n', 'sort(strata.order) must equal 1:', ng)
   if (ng == 1 & (strata.lab[1] == 'strata.lab')) {
     strata.lab <- 'Number at risk'
@@ -269,7 +274,7 @@ kmplot <- function(s,
   dat <- with(s, data.frame(time = time, n.risk = n.risk, n.event = n.event,
                             survival = surv, std.err = std.err, lower = lower,
                             upper = upper, group = rep(strata.lab, gr),
-                            order = rep(1:ng, gr)))
+                            order = rep(seq.int(ng), gr)))
   dat.list <- split(dat, dat$order)
   
   ## base plot
@@ -285,22 +290,28 @@ kmplot <- function(s,
   
   ## at-risk table below surv plot
   if (atrisk) {
+    ## set colors for lines of text
+    col.atrisk <- if (isTRUE(atrisk.col))
+      col.lines else if (length(atrisk.col) == ng)
+        atrisk.col else rep_len(1L, ng)
+    
     ## write group names
     group.name.pos <- diff(par('usr')[1:2]) / -8
-    padding <- abs(group.name.pos / 8)
-    line.pos <- (1:ng)[order(strata.order)] + 2
-    if (strata.lab[1] != FALSE) {
-      if (!is.null(strata.expr)) {
-        sapply(1:length(strata.expr), function(x)
+    padding  <- abs(group.name.pos / 8)
+    line.pos <- seq.int(ng)[order(strata.order)] + 2
+    
+    if (strata.lab[1] != FALSE)
+      if (!is.null(strata.expr))
+        sapply(seq.int(length(strata.expr)), function(x)
           mtext(strata.expr[[x]], side = 1, line = line.pos[x], adj = 1,
-                at = group.name.pos, col = 1, las = 1, cex = cex.axis))
-      } else mtext(strata.lab, side = 1, line = line.pos, adj = 1, col = 1,
-                   at = group.name.pos, las = 1, cex = cex.axis)
-    }
+                at = group.name.pos, col = col.atrisk[x], las = 1,
+                cex = cex.axis))
+    else mtext(strata.lab, side = 1, line = line.pos, adj = 1, las = 1,
+               col = col.atrisk, at = group.name.pos, cex = cex.axis)
     
     ## draw matching lines for n at risk  
     if (atrisk.lines)
-      for (i in 1:ng)
+      for (i in seq.int(ng))
         ## mess with the 4 here to adjust the length of the atrisk.line
         axis(1, c(group.name.pos + padding, 0 - 4 * padding), xpd = NA,
              labels = FALSE, line = line.pos[i] + 0.6, lwd.ticks = 0,
@@ -309,7 +320,7 @@ kmplot <- function(s,
     ## numbers at risk
     ss <- summary(s, times = xaxis.at)
     if (is.null(ss$strata))
-      ss$strata <- rep(1L, length(ss$time))
+      ss$strata <- rep_len(1L, length(ss$time))
     d1 <- data.frame(time = ss$time, n.risk = ss$n.risk, strata = c(ss$strata))
     d2 <- split(d1, d1$strata)
     
@@ -321,12 +332,12 @@ kmplot <- function(s,
       z
     }))
     nd <- apply(L, 2, max, na.rm = TRUE)
-    for (i in seq(ng)) {
+    for (i in seq.int(ng)) {
       tmp <- d2[[i]]
       w.adj <- strwidth('0', cex = cex.axis, font = par('font')) /
-        2 * nd[1:nrow(tmp)]
-      mtext(side = 1, at = tmp$time + w.adj, text = tmp$n.risk,
-            line = line.pos[i], cex = cex.axis, adj = 1, col = 1, las = 1)
+        2 * nd[seq.int(nrow(tmp))]
+      mtext(side = 1, at = tmp$time + w.adj, text = tmp$n.risk, las = 1,
+            line = line.pos[i], cex = cex.axis, adj = 1, col = col.atrisk[i])
     }
     if (!is.null(atrisk.lab))
       mtext(side = 1, text = atrisk.lab, at = par('usr')[1],
@@ -355,9 +366,9 @@ kmplot <- function(s,
   }
   
   ## survival and confidence lines
-  for (i in 1:ng) {
+  for (i in seq.int(ng)) {
     tmp <- dat.list[[i]]
-    if (nrow(tmp) < 2) {
+    if (nrow(tmp) < 2L) {
       if (any(!is.na(col.band)))
         message('Note: strata level with one observation - no CI plotted.')
     } else {
@@ -442,7 +453,7 @@ points.kmplot <- function(x, xscale = 1, xmax, fun, ...,
     stemp <- rep(1, length(x$time)) ## same length as stime
   } else {
     nstrat <- length(x$strata)
-    stemp <- rep(1:nstrat, x$strata) ## same length as stime
+    stemp <- rep(seq.int(nstrat), x$strata) ## same length as stime
   }
   ncurve <- nstrat * ncol(ssurv)
   firsty <- matrix(firsty, nrow = nstrat, ncol = ncol(ssurv))

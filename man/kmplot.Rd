@@ -7,14 +7,14 @@
 kmplot(s, lty.surv = 1, lwd.surv = 1, col.surv = col.surv, mark = 3,
   lwd.mark = lwd.surv, lty.ci = 0, lwd.ci = 1, col.ci = col.surv,
   col.band = FALSE, atrisk = TRUE, atrisk.lab = "Number at risk",
-  atrisk.lines = TRUE, strata.lab = NULL, strata.expr = NULL,
-  strata.order = seq(length(s$n)), extra.margin = 5, xaxs = "S",
-  xlim = c(0, max(s$time)), ylim = c(0, 1), xaxis.at = pretty(s$time),
-  xaxis.lab = xaxis.at, yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
-  xlab = "Time", ylab = "Survival probability", main = "",
-  cex.axis = par("cex.axis"), legend = !atrisk && !is.null(s$strata),
-  lr_test = FALSE, mar = NULL, add = FALSE, panel.first = NULL,
-  panel.last = NULL, ...)
+  atrisk.lines = TRUE, atrisk.col = !atrisk.lines, strata.lab = NULL,
+  strata.expr = NULL, strata.order = seq(length(s$n)), extra.margin = 5,
+  xaxs = "S", xlim = c(0, max(s$time)), ylim = c(0, 1),
+  xaxis.at = pretty(s$time), xaxis.lab = xaxis.at,
+  yaxis.at = pretty(ylim), yaxis.lab = yaxis.at, xlab = "Time",
+  ylab = "Survival probability", main = "", cex.axis = par("cex.axis"),
+  legend = !atrisk && !is.null(s$strata), lr_test = FALSE, mar = NULL,
+  add = FALSE, panel.first = NULL, panel.last = NULL, ...)
 }
 \arguments{
 \item{s}{an object of class \code{\link{survfit}} or \code{survfit.cox}}
@@ -42,6 +42,9 @@ see details}
 \item{atrisk.lab}{heading for at-risk table}
 
 \item{atrisk.lines}{logical; draw lines next to strata in at-risk table}
+
+\item{atrisk.col}{logical or a vector with colors for atrisk table text; if
+\code{TRUE}, \code{col.surv} will be used}
 
 \item{strata.lab}{labels used in legend and at-risk table for strata; if
 \code{NULL} (default), labels created in \code{survfit} are used; if only
@@ -129,8 +132,10 @@ km2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 
 ## basic usage
 kmplot(km1)
-kmplot(km1, mark = 'bump', lr_test = TRUE)
+kmplot(km1, atrisk.col = c('grey50','tomato'))
+kmplot(km1, mark = 'bump', lr_test = TRUE, atrisk.lines = FALSE)
 kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5)
+
 
 ## expressions in at-risk table (strata.expr takes precedence)
 kmplot(km1, strata.lab = c('\\u2640', '\\u2642'))
