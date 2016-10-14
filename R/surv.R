@@ -1,6 +1,6 @@
 ### survival stuff
 # kmplot, kmplot_by, local_coxph_test, surv_cp, surv_summary, surv_table,
-# survdiff_pairs
+# survdiff_pairs, landmark
 #
 # unexported: points.kmplot, lr_text, lr_pval
 ###
@@ -191,19 +191,21 @@ kmplot <- function(s,
   }
   
   svar <- as.character(form <- s$call$formula)
-  svar <- svar[length(svar)]
+  svar <- svar[-(1:2)]
   sdat <- s$.data %||% {
     sdat <- deparse(s$call$data)
-    get(sdat, where(gsub('[$[].*', '', sdat)))
+    sname <- gsub('[$[].*', '', sdat)
+    tryCatch(get(sdat, where(sname)), error = function(e) NULL)
   }
   
   ## single strata
   if (!(ng <- length(s$strata))) {
     s$strata <- length(s$time)
-    if (length(svar == 1L) & svar != '1') {
-      svar <- tryCatch(
-        names(Filter(length, table(sdat[, svar]))),
-        error = function(e) NULL)
+    if (length(svar) == 1L & svar != '1') {
+      svar <- tryCatch({
+        tbl <- table(sdat[, svar])
+        names(tbl)[tbl > 0]
+      }, error = function(e) NULL)
     }
     names(s$strata) <- if (!is.null(svar) & svar != '1') svar else 'All'
     legend <- atrisk.lines <- FALSE
@@ -233,11 +235,12 @@ kmplot <- function(s,
   ## group names and more error checks
   gr <- c(s$strata)
   if (isTRUE(strata.lab)) {
-    ns <- names(s$strata)
-    m <- gregexpr('(?<![=<>!])=(?!=)(.+?)(?=,|$)', ns, perl = TRUE)
-    names(s$strata) <- sapply(regcaptures(ns, m), function(x)
-      paste(trimws(x), collapse = ', '))
+    svar <- colnames(model.frame(form, sdat)[, -1, drop = FALSE])
+    cl <- c(list(strata), lapply(svar, as.symbol), shortlabel = TRUE)
+    mode(cl) <- 'call'
+    names(s$strata) <- levels(eval(cl, model.frame(form, sdat)))
   }
+  
   if (!is.null(strata.lab) && isTRUE(strata.lab))
     strata.lab <- NULL
   if (!is.null(strata.lab) && identical(strata.lab, FALSE))
@@ -400,7 +403,7 @@ kmplot <- function(s,
   
   ## add survdiff text in upper right corner
   if (lr_test) {
-    txt <- lr_text(as.formula(s$call$formula), sdat, rho)
+    txt <- lr_text(as.formula(form), sdat, rho)
     if (identical(txt, FALSE))
       message('There is only one group',
               if (svar == '1') '' else paste(' for', svar),
@@ -531,16 +534,26 @@ points.kmplot <- function(x, xscale = 1, xmax, fun, ...,
 }
 
 lr_text <- function(formula, data, rho = 0, ...) {
-  # lr_text(Surv(time, status) ~ 1, lung); lr_text(Surv(time, status) ~ sex, lung)
-  sd <- tryCatch(survdiff(formula, data, rho = rho, ...),
-                 error = function(e) {
-                   if (any(grepl('(?i)[1no]+ group', e)))
-                     TRUE else e
-                 })
+  # lr_text(Surv(time, status) ~ 1, lung) ## error
+  # lr_text(Surv(time, status == 1) ~ sex, lung[lung$time < 50, ]) ## warning
+  # lr_text(Surv(time, status) ~ sex, lung)
+  
+  capture.output(
+    ## Warning message: In pchisq(x$chisq, df) : NaNs produced
+    ## this warning is only produced during print.survdiff
+    sd <- tryCatch(print(survdiff(formula, data, rho = rho, ...)),
+                   warning = function(w) '',
+                   error = function(e) {
+                     if (any(grepl('(?i)[1no]+ group', e)))
+                       TRUE else e
+                   })
+  )
   if (isTRUE(sd))
     return(FALSE)
+  if (identical(sd, ''))
+    return(sd)
   if (!inherits(sd, 'survdiff'))
-    stop(sd)
+    stop(sd, call. = FALSE)
   df <- sum(1 * (colSums(if (is.matrix(sd$obs))
     sd$exp else t(sd$exp)) > 0)) - 1
   p.value <- 1 - pchisq(sd$chisq, df)
@@ -552,7 +565,7 @@ lr_text <- function(formula, data, rho = 0, ...) {
 lr_pval <- function(s, details = FALSE) {
   # lr_pval(sdif); lr_pval(sfit, TRUE)
   if (inherits(s, 'survfit'))
-    s <- survdiff(as.formula(s$call$formula), eval(s$call$data))
+    s <- survdiff(as.formula(s$call$formula), eval(s$.data %||% s$call$data))
   stopifnot(inherits(s, 'survdiff'))
   pv <- pchisq(chi <- s$chisq, df <- length(s$n) - 1L, lower.tail = FALSE)
   if (details)
@@ -1112,4 +1125,82 @@ survdiff_pairs <- function(s, ..., method = p.adjust.methods, digits = 3L) {
     p.adjust(na.omit(c(t(p.value))), method = method)
   
   lapply(list(n = nn, chi.sq  = chisq, p.value = p.value), round, digits)
+}
+
+## landmark
+
+#' Landmark
+#' 
+#' Fit survival curves for landmark time points.
+#' 
+#' @param s a \code{\link[survival]{survfit}} object
+#' @param times a vector of landmark times
+#' @param lr_test logical or numeric; if \code{TRUE}, a log-rank test will be
+#' performed and the results added to the top-right corner of the plot; if
+#' numeric, the value is passed as \code{rho} controlling the type of test
+#' performed; see \code{\link{survdiff}}
+#' @param adjust_start logical; if \code{TRUE}, each landmark plot will begin
+#' at the y-axis
+#' @param ... additional parameters passed to \code{\link{kmplot}}
+#' @param add logical; if \code{TRUE}, plots are added to current plot
+#' 
+#' @return
+#' A data frame with the sample size, chi-square statistic, degrees of
+#' freedom, and p-value for the test (the type of test can be controlled by
+#' using a numeric value for \code{lr_test}, passed as \code{rho} to
+#' \code{\link{survdiff}}).
+#' 
+#' @examples
+#' library('survival')
+#' s <- survfit(Surv(time, status) ~ node4, colon)
+#' landmark(s, times = c(500, 1000, 2500))
+#' 
+#' layout(matrix(c(1,1,1,1,2,3), 2))
+#' landmark(s, times = c(500, 2500), adjust_start = TRUE, add = TRUE)
+#' 
+#' @export
+
+landmark <- function(s, times = NULL, lr_test = TRUE, adjust_start = FALSE,
+                     ..., add = FALSE) {
+  form <- s$call$formula
+  data <- eval(s$call$data)
+  tvar <- survival:::terms.inner(form)[1]
+  
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
+  if (!add) {
+    plot.new()
+    par(mfrow = n2mfrow(length(times) + 1L))
+  }
+  
+  st <- data.frame(n = sum(s$n), lr_pval(s, TRUE), row.names = 'Total')
+  kmplot(s, ..., add = TRUE, lr_test = lr_test,
+         panel.first = {
+           abline(v = times, col = 2)
+           if (length(times))
+             mtext(seq_along(times), at = times, cex = .8, col = 2)
+         })
+  
+  sd <- 
+    if (length(times))
+      lapply(times, function(ii) {
+        tmp <- data[data[, tvar] > ii, ]
+        if (adjust_start)
+          tmp[, tvar] <- tmp[, tvar] - ii
+        si <- eval(substitute(survfit(formula, tmp),
+                              list(formula = as.formula(form))))
+        si$.data <- tmp
+        at <- pretty(si$time)
+        
+        kmplot(si, ..., add = TRUE, lr_test = lr_test, xaxis.at = at,
+               xaxis.lab = ifelse(adjust_start, ii, 0) + at,
+               panel.first = {
+                 abline(v = ii, col = if (adjust_start) 0 else 2)
+                 mtext(which(times %in% ii), at = par('usr')[1],
+                       col = 2, cex = 1.5, font = 2, line = 1)
+               })
+        data.frame(n = sum(si$n), lr_pval(si, TRUE), row.names = ii)
+      }) else NULL
+  
+  invisible(do.call('rbind', c(list(st), sd)))
 }
