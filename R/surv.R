@@ -197,17 +197,21 @@ kmplot <- function(s,
     sname <- gsub('[$[].*', '', sdat)
     tryCatch(get(sdat, where(sname)), error = function(e) NULL)
   }
+  ## remove missing here for special case: all NA for one strata level
+  ## drops level in s$strata but not in table(sdat[, svar])
+  sdat <- na.omit(sdat[, all.vars(form)])
   
   ## single strata
+  one <- identical(svar, '1')
   if (!(ng <- length(s$strata))) {
     s$strata <- length(s$time)
-    if (length(svar) == 1L & svar != '1') {
+    if (length(svar) == 1L & !one) {
       svar <- tryCatch({
         tbl <- table(sdat[, svar])
         names(tbl)[tbl > 0]
       }, error = function(e) NULL)
     }
-    names(s$strata) <- if (!is.null(svar) & svar != '1') svar else 'All'
+    names(s$strata) <- if (!is.null(svar) & !one) svar else 'All'
     legend <- atrisk.lines <- FALSE
   }
   
