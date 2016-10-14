@@ -236,7 +236,9 @@ kmplot <- function(s,
   gr <- c(s$strata)
   if (isTRUE(strata.lab)) {
     svar <- colnames(model.frame(form, sdat)[, -1, drop = FALSE])
-    cl <- c(list(strata), lapply(svar, as.symbol), shortlabel = TRUE)
+    cl <- c(list(survival::strata),
+            lapply(svar, as.symbol),
+            shortlabel = TRUE)
     mode(cl) <- 'call'
     names(s$strata) <- levels(eval(cl, model.frame(form, sdat)))
   }
@@ -744,9 +746,12 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
       ns <- names(s$strata)
       ns <- if (mlabs || isTRUE(strata_lab)) ns else
         if (identical(strata_lab, FALSE)) {
-          m <- gregexpr('(?<![=<>!])=(?!=)(.+?)(?=,|$)', ns, perl = TRUE)
-          sapply(regcaptures(ns, m), function(x)
-            paste(trimws(x), collapse = ', '))
+          svar <- colnames(model.frame(form, s$.data)[, -1, drop = FALSE])
+          cl <- c(list(survival::strata),
+                  lapply(svar, as.symbol),
+                  shortlabel = TRUE)
+          mode(cl) <- 'call'
+          levels(eval(cl, model.frame(form, s$.data)))
         } else if (!length(strata_lab) == length(ns)) {
           warning('length(strata_lab) does not equal length(s$strata)',
                   call. = FALSE)
