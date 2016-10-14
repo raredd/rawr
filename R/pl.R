@@ -1,5 +1,5 @@
 ### plot functions
-# jmplot, tplot, dsplot, waffle, river, river2, dose_esc
+# jmplot, tplot, dsplot, waffle, river, river2, dose_esc, plothc, waterfall
 ###
 
 
@@ -1425,4 +1425,85 @@ plothc <- function(hc, labels = hc$labels, col = as.factor(labels),
   text(x, y, labels = labels[o], col = col[o],
        srt = 90, xpd = NA, adj = c(1, 0.5))
   invisible(list(x = x[ox], y = y))
+}
+
+#' Waterall plot
+#' 
+#' Draw two types of waterfall plots.
+#' 
+#' @param x a numeric vector
+#' @param type type of waterfall plot; \code{type = 1} draws sorted bars for
+#' values of \code{x}; \code{type = 2} starts from 0 and draws bars according
+#' to the magnitude and direction of \code{x}
+#' @param col a vector of colors having 1) the same length as \code{x}; length
+#' 2 (for negative and positive values if \code{type = 2}) or more to be used
+#' for color interpolation; see \code{\link{colorRampPalette}}
+#' \code{length(x)}; or 3)
+#' @param ... additional arguments passed to \code{\link{barplot}}, to/from
+#' other methods, or to \code{\link{par}}
+#' @param arrows logical if \code{TRUE} and \code{type = 2}, arrows are drawn
+#' in the direction of each bar
+#' @param panel.first an "expression" to be evaluated after the plot axes are
+#' set up but before any plotting takes place; this can be useful for drawing
+#' background grids or scatterplot smooths; note that this works by lazy
+#' evaluation: passing this argument from other plot methods may well not work
+#' since it may be evaluated too early; see also \code{\link{plot.default}}
+#' @param panel.last an expression to be evaluated after plotting has taken
+#' place but before the axes, title, and box are added; see the comments about
+#' \code{panel.first}
+#' 
+#' @examples
+#' set.seed(1)
+#' change <- runif(20, -1, 1) * 100
+#' col <- c(PD = 'red', SD = 'blue', CR = 'chartreuse4')
+#' 
+#' ## interpolation
+#' waterfall(change, col = col)
+#' 
+#' ## discrete breaks
+#' waterfall(change, col = as.character(cut(change, c(-Inf, -50, 50, Inf), col)))
+#' legend('top', names(col), fill = col, horiz = TRUE, bty = 'n', border = NA)
+#' title(xlab = 'Patient', ylab = '% change', main = 'waterfall', line = 1)
+#' 
+#' 
+#' ## type 2
+#' waterfall(change, col = col, type = 2,
+#'           panel.first = grid(),
+#'           panel.last = {
+#'             axis(2, las = 1)
+#'             title(main = 'waterfall - type 2')
+#'           }
+#' )
+#' 
+#' @export
+
+waterfall <- function(x, type = 1L, col = c('red','blue'), ..., arrows = TRUE,
+                      panel.first = NULL, panel.last = NULL) {
+  m  <- match.call(expand.dots = FALSE)$`...`
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
+  
+  o   <- order(x, na.last = NA)
+  rx  <- range(x, na.rm = TRUE)
+  col <- if (type == 2L)
+    rep_len(col, 2L) else if (length(col) != length(x))
+      colorRampPalette(col)(1000)[(x - rx[1]) / diff(rx) * 999 + 1][o] else
+        col[o]
+  bp <- barplot(x[o], plot = FALSE)
+  
+  plot.new()
+  plot.window(range(bp), if (is.null(m$ylim))
+    extendrange(if (type == 2L) cumsum(x) else x) else eval(m$ylim))
+  
+  panel.first
+  if (type == 2L) {
+    dx <- diff(c(bp))[1] * .4
+    rect(bp - dx, y0 <- cumsum(c(0, x[-length(x)])), bp + dx, y1 <- cumsum(x),
+         col = col[(x > 0) + 1L], border = NA, xpd = NA)
+    if (arrows)
+      arrows(bp, y0, bp, y1, lwd = 2, length = .1, xpd = NA, col = 0)
+  } else barplot(x[o], border = NA, col = col, ..., xpd = NA, add = TRUE)
+  panel.last
+  
+  invisible(bp)
 }
