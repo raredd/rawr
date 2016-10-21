@@ -4,7 +4,7 @@
 \alias{waterfall}
 \title{Waterall plot}
 \usage{
-waterfall(x, type = 1L, col = c("red", "blue"), ..., arrows = TRUE,
+waterfall(x, type = 1L, col = c("red", "blue"), ..., arrows = type == 2L,
   panel.first = NULL, panel.last = NULL)
 }
 \arguments{
@@ -15,15 +15,14 @@ values of \code{x}; \code{type = 2} starts from 0 and draws bars according
 to the magnitude and direction of \code{x}}
 
 \item{col}{a vector of colors having 1) the same length as \code{x}; length
-2 (for negative and positive values if \code{type = 2}) or more to be used
-for color interpolation; see \code{\link{colorRampPalette}}
-\code{length(x)}; or 3)}
+2 (for negative and positive values if \code{type = 2}) or otherwise to be
+used for color interpolation (\code{\link{colorRampPalette}})}
 
 \item{...}{additional arguments passed to \code{\link{barplot}}, to/from
 other methods, or to \code{\link{par}}}
 
-\item{arrows}{logical if \code{TRUE} and \code{type = 2}, arrows are drawn
-in the direction of each bar}
+\item{arrows}{logical; if \code{TRUE}, arrows are drawn in the direction
+of each bar}
 
 \item{panel.first}{an "expression" to be evaluated after the plot axes are
 set up but before any plotting takes place; this can be useful for drawing
@@ -34,6 +33,10 @@ since it may be evaluated too early; see also \code{\link{plot.default}}}
 \item{panel.last}{an expression to be evaluated after plotting has taken
 place but before the axes, title, and box are added; see the comments about
 \code{panel.first}}
+}
+\value{
+A numeric vector giving the coordinates of all the bar midpoints drawn; see
+\code{\link{barplot}}.
 }
 \description{
 Draw two types of waterfall plots.
@@ -49,17 +52,13 @@ waterfall(change, col = col)
 ## discrete breaks
 waterfall(change, col = as.character(cut(change, c(-Inf, -50, 50, Inf), col)))
 legend('top', names(col), fill = col, horiz = TRUE, bty = 'n', border = NA)
-title(xlab = 'Patient', ylab = '\% change', main = 'waterfall', line = 1)
+title(xlab = 'Patient', ylab = '\% change', main = 'waterfall', line = 2)
 
 
 ## type 2
-waterfall(change, col = col, type = 2,
-          panel.first = grid(),
-          panel.last = {
-            axis(2, las = 1)
-            title(main = 'waterfall - type 2')
-          }
-)
+waterfall(change, type = 2, col = col, panel.first = grid())
+title(main = 'waterfall - type 2')
+axis(2, las = 1)
 
 }
 

@@ -1436,13 +1436,12 @@ plothc <- function(hc, labels = hc$labels, col = as.factor(labels),
 #' values of \code{x}; \code{type = 2} starts from 0 and draws bars according
 #' to the magnitude and direction of \code{x}
 #' @param col a vector of colors having 1) the same length as \code{x}; length
-#' 2 (for negative and positive values if \code{type = 2}) or more to be used
-#' for color interpolation; see \code{\link{colorRampPalette}}
-#' \code{length(x)}; or 3)
+#' 2 (for negative and positive values if \code{type = 2}) or otherwise to be
+#' used for color interpolation (\code{\link{colorRampPalette}})
 #' @param ... additional arguments passed to \code{\link{barplot}}, to/from
 #' other methods, or to \code{\link{par}}
-#' @param arrows logical if \code{TRUE} and \code{type = 2}, arrows are drawn
-#' in the direction of each bar
+#' @param arrows logical; if \code{TRUE}, arrows are drawn in the direction
+#' of each bar
 #' @param panel.first an "expression" to be evaluated after the plot axes are
 #' set up but before any plotting takes place; this can be useful for drawing
 #' background grids or scatterplot smooths; note that this works by lazy
@@ -1451,6 +1450,10 @@ plothc <- function(hc, labels = hc$labels, col = as.factor(labels),
 #' @param panel.last an expression to be evaluated after plotting has taken
 #' place but before the axes, title, and box are added; see the comments about
 #' \code{panel.first}
+#' 
+#' @return
+#' A numeric vector giving the coordinates of all the bar midpoints drawn; see
+#' \code{\link{barplot}}.
 #' 
 #' @examples
 #' set.seed(1)
@@ -1463,46 +1466,55 @@ plothc <- function(hc, labels = hc$labels, col = as.factor(labels),
 #' ## discrete breaks
 #' waterfall(change, col = as.character(cut(change, c(-Inf, -50, 50, Inf), col)))
 #' legend('top', names(col), fill = col, horiz = TRUE, bty = 'n', border = NA)
-#' title(xlab = 'Patient', ylab = '% change', main = 'waterfall', line = 1)
+#' title(xlab = 'Patient', ylab = '% change', main = 'waterfall', line = 2)
 #' 
 #' 
 #' ## type 2
-#' waterfall(change, col = col, type = 2,
-#'           panel.first = grid(),
-#'           panel.last = {
-#'             axis(2, las = 1)
-#'             title(main = 'waterfall - type 2')
-#'           }
-#' )
+#' waterfall(change, type = 2, col = col, panel.first = grid())
+#' title(main = 'waterfall - type 2')
+#' axis(2, las = 1)
 #' 
 #' @export
 
-waterfall <- function(x, type = 1L, col = c('red','blue'), ..., arrows = TRUE,
+waterfall <- function(x, type = 1L, col = c('red','blue'), ...,
+                      arrows = type == 2L,
                       panel.first = NULL, panel.last = NULL) {
   m  <- match.call(expand.dots = FALSE)$`...`
-  op <- par(no.readonly = TRUE)
-  on.exit(par(op))
+  # op <- par(no.readonly = TRUE)
+  # on.exit(par(op))
   
-  o   <- order(x, na.last = NA)
-  rx  <- range(x, na.rm = TRUE)
+  o  <- order(x, na.last = NA)
+  rx <- range(x, na.rm = TRUE)
+  bp <- barplot(x[o], plot = FALSE)
+
+  type <- if (!type[1L] %in% 1:2) {
+    warning('\'type\' should be 1 or 2 - defaulting to 1\n', call. = FALSE)
+    1
+  } else type[1L]
+  
   col <- if (type == 2L)
     rep_len(col, 2L) else if (length(col) != length(x))
       colorRampPalette(col)(1000)[(x - rx[1]) / diff(rx) * 999 + 1][o] else
         col[o]
-  bp <- barplot(x[o], plot = FALSE)
   
   plot.new()
-  plot.window(range(bp), if (is.null(m$ylim))
-    extendrange(if (type == 2L) cumsum(x) else x) else eval(m$ylim))
-  
+  plot.window(if (is.null(m$xlim)) range(bp) else eval(m$xlim),
+              if (is.null(m$ylim))
+                extendrange(if (type == 2L) cumsum(x) else x) else eval(m$ylim))
   panel.first
+
   if (type == 2L) {
     dx <- diff(c(bp))[1] * .4
     rect(bp - dx, y0 <- cumsum(c(0, x[-length(x)])), bp + dx, y1 <- cumsum(x),
          col = col[(x > 0) + 1L], border = NA, xpd = NA)
-    if (arrows)
-      arrows(bp, y0, bp, y1, lwd = 2, length = .1, xpd = NA, col = 0)
-  } else barplot(x[o], border = NA, col = col, ..., xpd = NA, add = TRUE)
+  } else {
+    y0 <- 0
+    y1 <- x[o]
+    barplot(x[o], border = NA, col = col, ..., xpd = NA, add = TRUE)
+  }
+  
+  if (arrows)
+    arrows(bp, y0, bp, y1, lwd = 2, length = .1, xpd = NA, col = 0)
   panel.last
   
   invisible(bp)
