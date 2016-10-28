@@ -795,9 +795,9 @@ rbindfill2 <- function(..., use.rownames = FALSE) {
 
 #' Interleave rows or columns
 #' 
-#' Interleave rows (or columns) of vectors, matrices, or data frames.
+#' Interleave rows (or columns) of vectors, matrices, data frames, or lists.
 #' 
-#' @param ... vectors, matrices, or data frames
+#' @param ... vectors, matrices, data frames, or lists
 #' @param which joining method to use (\code{'rbind'} or \code{'cbind'}) when
 #' \code{...} are matrices or data frames
 #' @seealso \code{\link{bindx}}
@@ -805,13 +805,22 @@ rbindfill2 <- function(..., use.rownames = FALSE) {
 #' @examples
 #' interleave(letters[1:3], LETTERS[3:1], letters[26:24])
 #' 
+#' 
 #' m1 <- matrix(1:9, 3, 3)
 #' m2 <- matrix(1:9 * 10, 3, 3)
 #' interleave(t(m1), t(m2), which = 'rbind')
 #' interleave(m1, m2, which = 'cbind')
 #' 
-#' \dontrun{
+#' 
 #' d1 <- data.frame(m1)
+#' interleave(d1, d1, which = 'cbind')
+#' 
+#' l <- list(d1, d1)
+#' interleave(l, which = 'cbind')
+#' interleave(l, l, l, which = 'cbind')
+#' 
+#' 
+#' \dontrun{
 #' interleave(d1, m2, which = 'rbind')  ## error
 #' interleave(d1, m2, which = 'rbindx') ## works
 #' }
@@ -819,16 +828,18 @@ rbindfill2 <- function(..., use.rownames = FALSE) {
 #' @export
 
 interleave <- function(..., which) {
-  l <- list(...)
+  l <- if (islist(..1))
+    c(...) else list(...)
   if (all(sapply(l, function(x) is.null(dim(x)))))
     return(c(do.call('rbind', l)))
-  else {
-    which <- match.arg(which, c('rbind','cbind','rbindx','cbindx'))
-    if (which %in% c('rbind', 'rbindx'))
-      return(do.call(which, l)[order(sequence(sapply(l, nrow))), ])
-    else if (which %in% c('cbind', 'cbindx'))
-      return(do.call(which, l)[, order(sequence(sapply(l, ncol)))])
-  }
+  
+  which <- match.arg(which, c('rbind','cbind','rbindx','cbindx'))
+  
+  if (which %in% c('rbind', 'rbindx'))
+    do.call(which, l)[order(sequence(sapply(l, nrow))), ]
+  else if (which %in% c('cbind', 'cbindx'))
+    do.call(which, l)[, order(sequence(sapply(l, ncol)))]
+  else stop('Invalid \'which\' argument')
 }
 
 #' Outer product of n-dimensional arrays
