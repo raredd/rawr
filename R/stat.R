@@ -959,7 +959,7 @@ lm.beta <- function (x, weights = 1) {
 #' 
 #' ## equivalent ways to call cuzick.test
 #' cuzick.test(x)
-#' cuzick.test(unlist(x), rep(seq(x), lengths(x)))
+#' cuzick.test(unlist(x), rep(seq_along(x), lengths(x)))
 #' cuzick.test(x ~ g, data.frame(x = unlist(x), g = rep(1:3, lengths(x))))
 #' 
 #' 
@@ -1065,7 +1065,7 @@ cuzick.test.default <- function(x, g, details = wilcox.test, ...) {
   ## scores for each group
   ## if g is character or factor, use 1,2,...,k
   ## if g is numeric, dont assume equally-spaced, use sorted unique values
-  li <- if (fac) seq(ug) else as.character(sort(unique(g)))
+  li <- if (fac) seq.int(ug) else as.character(sort(unique(g)))
   ni <- table(g)[li]
   N  <- sum(ni)
   
@@ -1097,7 +1097,8 @@ cuzick.test.default <- function(x, g, details = wilcox.test, ...) {
   
   ## pairwise details
   pw <- if (!identical(details, FALSE)) {
-    l2df <- function(l) data.frame(unlist(l), factor(rep(seq(l), lengths(l))))
+    l2df <- function(l)
+      data.frame(unlist(l), factor(rep(seq_along(l), lengths(l))))
     tidy <- function(l)
       data.frame(Filter(length, unclass(l)), stringsAsFactors = FALSE)
     
@@ -1244,7 +1245,7 @@ jt.test <- function(x, y = NULL) {
   ns <- c(x)
   sp <- c(row(x) * !!ns)
   sp <- split(rep(sp, ns), rep(c(col(x)), ns))
-  PQ <- rowSums(vapply(seq(length(sp)), function(x)
+  PQ <- rowSums(vapply(seq_len(length(sp)), function(x)
     get_PQ(sp[x], sp[-(1:x)]), integer(2)))
   z <- (PQ[1] - PQ[2]) / sqrt(vS)
   pval <- 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE))
@@ -1364,7 +1365,10 @@ combn_fun <- function(x, FUN, n = 2L, ...) {
 #'   require('partykit')
 #'   ptree <- as.party(tree)
 #'   ptree$data <- model.frame(eval(tree$call$data, parent.frame(1L)))
-#'   data_party(ptree, node)[, seq(ptree$data)]
+#'   ## retain transformed variables but drop those not in formula
+#'   ## http://stackoverflow.com/a/36816883/2994949
+#'   # ptree$data <- model.frame(tree)
+#'   data_party(ptree, node)[, seq_along(ptree$data)]
 #' }
 #' 
 #' ## note differences in nodes labels in party vs rpart

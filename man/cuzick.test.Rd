@@ -91,7 +91,7 @@ x <- list(c(1.4, 1.4, 1.4, 1.6, 2.3, 2.3),
 
 ## equivalent ways to call cuzick.test
 cuzick.test(x)
-cuzick.test(unlist(x), rep(seq(x), lengths(x)))
+cuzick.test(unlist(x), rep(seq_along(x), lengths(x)))
 cuzick.test(x ~ g, data.frame(x = unlist(x), g = rep(1:3, lengths(x))))
 
 

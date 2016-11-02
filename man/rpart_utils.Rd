@@ -54,7 +54,10 @@ subset_rpart2 <- function(tree, node = 1) {
   require('partykit')
   ptree <- as.party(tree)
   ptree$data <- model.frame(eval(tree$call$data, parent.frame(1L)))
-  data_party(ptree, node)[, seq(ptree$data)]
+  ## retain transformed variables but drop those not in formula
+  ## http://stackoverflow.com/a/36816883/2994949
+  # ptree$data <- model.frame(tree)
+  data_party(ptree, node)[, seq_along(ptree$data)]
 }
 
 ## note differences in nodes labels in party vs rpart
