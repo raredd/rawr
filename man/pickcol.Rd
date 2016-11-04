@@ -4,7 +4,7 @@
 \alias{pickcol}
 \title{Pick elements from columns}
 \usage{
-pickcol(data, ind = 1, value = FALSE)
+pickcol(data, ind = 1L, value = FALSE)
 }
 \arguments{
 \item{data}{a data frame or matrix}
@@ -52,8 +52,5 @@ pickcol(dd, value = TRUE, ind = c('', 0:1))
 dd[dd == ''] <- NA
 pickcol(dd[4:6], value = TRUE)
 
-}
-\references{
-Modified \href{http://stackoverflow.com/a/37824983/2994949}{SO answer}.
 }
 

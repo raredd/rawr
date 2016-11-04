@@ -1665,9 +1665,6 @@ sample_each <- function(x, n = 1L) {
 #' If \code{value} is \code{TRUE}, the column values of \code{data} which are
 #' \emph{not} values of \code{ind}.
 #' 
-#' @references
-#' Modified \href{http://stackoverflow.com/a/37824983/2994949}{SO answer}.
-#' 
 #' @examples
 #' set.seed(1)
 #' ss <- sample(10)
@@ -1695,23 +1692,19 @@ sample_each <- function(x, n = 1L) {
 #' 
 #' @export
 
-pickcol <- function(data, ind = 1, value = FALSE) {
-  if (value) {
-    if (!is.na(ind))
-      data <- recoder(data, ind, NA)
-    ## pad with NA if no matches in rows
-    idx <- rbind(which(!is.na(data), arr.ind = TRUE),
-                 cbind(seq(nrow(data)), NA))
-    idx <- idx[!duplicated(idx[, 1]), ]
-    return(data[idx[order(idx[, 1]), ]])
-  }
-  # colnames(data)[do.call('pmax', data.frame(data == ind) * col(data))]
-  x <- NA
-  data <- recoder(data, ind, rn <- rnorm(1))
-  data <- +(data == rn)
-  sel <- rowSums(data) == 1L
-  x[sel] <- max.col(data, 'first')[sel]
-  colnames(data)[x]
+pickcol <- function(data, ind = 1L, value = FALSE) {
+  zzz <- apply(data, 1, function(x) {
+    if (value) {
+      x[x %in% ind] <- NA
+      if  (length(x <- x[!is.na(x)]) > 1L)
+        toString(x) else x
+    } else {
+      idx <- x %in% ind
+      if (sum(idx))
+        toString(names(x[idx])) else NA
+    }
+  })
+  unname(zzz)
 }
 
 #' Number of unique values
