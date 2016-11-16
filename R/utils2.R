@@ -1174,12 +1174,14 @@ dmy <- function(d, m, y, origin = c(1, 1, 1900)) {
 #' @export
 
 combine_table <- function(l, ...) {
+  l <- if (!islist(l))
+    list(l) else l
   m <- match.call(expand.dots = FALSE)$`...`
   lx <- sapply(l, function(x) if (is.null(nr <- nrow(x))) 1 else nr)
   ts <- m$tspanner %||% names(l) %||% rep(' ', each = length(lx))
   m$tspanner <- NULL
-  do.call('htmlTable', c(list(x = do.call('rbind', l), tspanner = ts,
-                              n.tspanner = lx), m))
+  x <- c(list(x = do.call('rbind', l), tspanner = ts, n.tspanner = lx), m)
+  do.call('htmlTable', x)
 }
 
 #' Response table
