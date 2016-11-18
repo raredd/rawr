@@ -1033,11 +1033,13 @@ surv_summary <- function(s, digits = 3L, ...) {
 surv_table <- function(s, digits = 3, times = pretty(s$time),
                        maxtime = TRUE, ...) {
   if (maxtime) {
-    maxtime <- max(s$time[s$n.event > 0])
+    idx <- s$n.event > 0
+    maxtime <- max(s$time[if (any(idx))
+      idx else seq_along(idx) == length(idx)])
     times <- c(times[times <= maxtime], maxtime)
   }
   capture.output(
-    summ <- surv_summary(s, digits = digits, times = times, ...)
+    summ <- surv_summary(s, digits = digits, times = unique(times), ...)
   )
   f <- function(x, d = digits, vars = vars) {
     vars = colnames(x)
