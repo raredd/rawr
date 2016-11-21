@@ -718,7 +718,7 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
       if (all(par('mfrow') == c(1L,1L)))
         par(mfrow = n2mfrow(length(unique(data[, by]))))
     }
-    sp <- split(data, data[, by])
+    sp <- split(data, droplevels(data[, by]))
   } else {
     if (missing(add)) {
       add <- FALSE
@@ -770,7 +770,7 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
     kmplot(s, add = add, legend = FALSE, main = names(sp)[x], ylab = ylab, ...,
            panel.first = {
              p <- par('usr')
-             mtxt <- if (!msub) sub[x] else strata
+             mtxt <- if (!msub) rep_len(sub, length(sp))[x] else strata
              mtext(mtxt, 3, 0.5, FALSE, 0, 0, font = 3)
              mtext(fig[x], 3, 1.2, FALSE, 0 - p[2] * .05, font = 2, cex = 1.5)
              
