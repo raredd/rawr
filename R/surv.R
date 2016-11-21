@@ -409,7 +409,8 @@ kmplot <- function(s,
   
   ## add survdiff text in upper right corner
   if (lr_test) {
-    txt <- lr_text(as.formula(form), sdat, rho)
+    txt <- tryCatch(lr_text(as.formula(form), sdat, rho),
+                    error = function(e) 'n/a')
     if (identical(txt, FALSE))
       message('There is only one group',
               if (svar == '1') '' else paste(' for', svar),
@@ -559,7 +560,7 @@ lr_text <- function(formula, data, rho = 0, ...) {
   if (identical(sd, ''))
     return(sd)
   if (!inherits(sd, 'survdiff'))
-    stop(sd, call. = FALSE)
+    stop(sd)
   df <- sum(1 * (colSums(if (is.matrix(sd$obs))
     sd$exp else t(sd$exp)) > 0)) - 1
   p.value <- 1 - pchisq(sd$chisq, df)
@@ -776,7 +777,8 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
              
              ## add survdiff text in upper right corner
              if (lr_test) {
-               txt <- lr_text(form, sp[[x]], rho)
+               txt <- tryCatch(lr_text(form, sp[[x]], rho),
+                               error = function(e) 'n/a')
                if (identical(txt, FALSE))
                  message('There is only one group',
                          if (nzchar(mtxt)) paste(' for', mtxt) else '',
