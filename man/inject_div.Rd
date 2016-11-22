@@ -4,13 +4,14 @@
 \alias{inject_div}
 \title{Inject div}
 \usage{
-inject_div(x, where, style = "")
+inject_div(x, where, style)
 }
 \arguments{
 \item{x}{a matrix or data frame}
 
 \item{where}{an \code{nx2} matrix of row and column indices or vector (of
-the form c(row, col, row, col, ...)) specifying which cells to select}
+the form c(row, col, row, col, ...)) specifying which cells to select; if
+\code{where} is missing, \code{style} is recycled for all cells}
 
 \item{style}{vector of character string(s) applied to each cell, recycled
 if necessary}
@@ -20,15 +21,31 @@ Inject an html division tag with style attribute.
 }
 \examples{
 library('htmlTable')
-htmlTable(inject_div(head(cars), c(2,2), style = 'border: dashed 1px;'))
+htmlTable(
+  inject_div(head(cars), c(2,2), style = 'border: dashed 1px;')
+)
 
-htmlTable(inject_div(head(cars), rbind(c(2,2), c(2,1), c(5,2)),
-                     style = 'background-color: yellow;'))
+## if where is missing, style is recycled over all cells
+htmlTable(
+  inject_div(mtcars,
+             style = c('color: red;', 'color: blue', 'border: dashed 1px;')
+  )
+)
 
-htmlTable(inject_div(head(cars), c(2,2,2,1,5,2),
-                     style = c('background-color: red; color: white;',
-                               'border: solid 1px;',
-                               'font-weight: 900; color: blue;')))
+htmlTable(
+  inject_div(head(cars),
+             rbind(c(2,2), c(2,1), c(5,2)),
+             'background-color: yellow;')
+)
+
+htmlTable(
+  inject_div(head(cars),
+             c(2,2,2,1,5,2),
+             c('background-color: red; color: white;',
+               'border: solid 1px;',
+               'font-weight: 900; color: blue;')
+  )
+)
 
 }
 \seealso{

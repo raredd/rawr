@@ -1251,7 +1251,8 @@ r_or_better_ <- function(x, r, conf, frac, show_conf) {
 #' 
 #' @param x a matrix or data frame
 #' @param where an \code{nx2} matrix of row and column indices or vector (of
-#' the form c(row, col, row, col, ...)) specifying which cells to select
+#' the form c(row, col, row, col, ...)) specifying which cells to select; if
+#' \code{where} is missing, \code{style} is recycled for all cells
 #' @param style vector of character string(s) applied to each cell, recycled
 #' if necessary
 #' 
@@ -1260,22 +1261,40 @@ r_or_better_ <- function(x, r, conf, frac, show_conf) {
 #' 
 #' @examples 
 #' library('htmlTable')
-#' htmlTable(inject_div(head(cars), c(2,2), style = 'border: dashed 1px;'))
+#' htmlTable(
+#'   inject_div(head(cars), c(2,2), style = 'border: dashed 1px;')
+#' )
 #' 
-#' htmlTable(inject_div(head(cars), rbind(c(2,2), c(2,1), c(5,2)),
-#'                      style = 'background-color: yellow;'))
+#' ## if where is missing, style is recycled over all cells
+#' htmlTable(
+#'   inject_div(mtcars,
+#'              style = c('color: red;', 'color: blue', 'border: dashed 1px;')
+#'   )
+#' )
 #' 
-#' htmlTable(inject_div(head(cars), c(2,2,2,1,5,2),
-#'                      style = c('background-color: red; color: white;',
-#'                                'border: solid 1px;',
-#'                                'font-weight: 900; color: blue;')))
+#' htmlTable(
+#'   inject_div(head(cars),
+#'              rbind(c(2,2), c(2,1), c(5,2)),
+#'              'background-color: yellow;')
+#' )
+#' 
+#' htmlTable(
+#'   inject_div(head(cars),
+#'              c(2,2,2,1,5,2),
+#'              c('background-color: red; color: white;',
+#'                'border: solid 1px;',
+#'                'font-weight: 900; color: blue;')
+#'   )
+#' )
 #' 
 #' @export
 
-inject_div <- function(x, where, style = '') {
-  if (!all(sapply(style, nzchar)))
+inject_div <- function(x, where, style) {
+  if (missing(style))
     return(x)
-  where <- matrix(where, ncol = 2L, byrow = !is.matrix(where))
+  where <- if (missing(where) & !missing(style) || !length(where))
+    which(row(x) > 0L, arr.ind = TRUE) else
+      matrix(where, ncol = 2L, byrow = !is.matrix(where))
   style <- rep_len(style, nrow(where))
   x[where] <- sprintf('<div style=\'%s\'>%s</div>',
                       gsub(';*$', ';', style), x[where])
