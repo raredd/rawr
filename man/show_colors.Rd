@@ -4,11 +4,14 @@
 \alias{show_colors}
 \title{Show colors}
 \usage{
-show_colors(...)
+show_colors(..., plot = FALSE)
 }
 \arguments{
 \item{...}{integer(s) in \code{1:657} corresponding to the built-in color
 name index or color name string(s)}
+
+\item{plot}{logical; if \code{TRUE}, integers or color names in \code{dots}
+will be plotted with corresponding number and name}
 }
 \value{
 If \code{...} is missing, a plot will be drawn. If an integer is given, the
@@ -29,6 +32,10 @@ show_colors('darkgreen')
 
 x <- show_colors(sample(657, 10))
 stopifnot(identical(x, show_colors(show_colors(x))))
+
+## these plots are identical
+show_colors(x, plot = TRUE)
+show_colors(show_colors(x), plot = TRUE)
 
 }
 \seealso{

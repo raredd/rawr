@@ -103,6 +103,8 @@ dodge.default <- function(x, y, dist, jit, ...) {
 #' 
 #' @param ... integer(s) in \code{1:657} corresponding to the built-in color
 #' name index or color name string(s)
+#' @param plot logical; if \code{TRUE}, integers or color names in \code{dots}
+#' will be plotted with corresponding number and name
 #' 
 #' @return
 #' If \code{...} is missing, a plot will be drawn. If an integer is given, the
@@ -121,18 +123,36 @@ dodge.default <- function(x, y, dist, jit, ...) {
 #' x <- show_colors(sample(657, 10))
 #' stopifnot(identical(x, show_colors(show_colors(x))))
 #' 
+#' ## these plots are identical
+#' show_colors(x, plot = TRUE)
+#' show_colors(show_colors(x), plot = TRUE)
+#' 
 #' @export
 
-show_colors <- function(...) {
+show_colors <- function(..., plot = FALSE) {
   dots <- c(...)
-  if  (is.numeric(dots)) {
-    stopifnot(dots %inside% c(1,657))
-    return(colors(FALSE)[as.integer(dots)])
+  cols <- if (is.numeric(dots)) {
+    stopifnot(dots %inside% c(1, 657))
+    colors(FALSE)[as.integer(dots)]
   } else if (is.character(dots)) {
     dots <- gsub('[^a-z0-9]', '', tolower(dots))
-    return(match(dots, colors(FALSE)))
+    match(dots, colors(FALSE))
   } else if (length(dots))
     warning('... should be missing, %in% 1:657, or a color name')
+  
+  if (!is.null(dots)) {
+    if (plot) {
+      cc <- if (is.numeric(cols))   Recall(cols) else cols
+      cn <- if (is.character(cols)) Recall(cols) else cols
+      x <- seq_along(cc)
+      y <- rev(x)
+      plot(x, y, pch = 16, cex = 3, col = cc,
+           axes = FALSE, ann = FALSE, xpd = NA)
+      text(x, y, pos = 3, col = 1, xpd = NA, labels = cn)
+      text(x, y, pos = 1, col = 1, xpd = NA, labels = cc)
+    }
+    return(cols)
+  }
   
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
