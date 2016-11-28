@@ -117,7 +117,8 @@ NULL
   FUN <- if (!is.null(dim(object))) {
     if (is.matrix(object)) colnames else names
   } else identity
-  wh <- if (is.numeric(range)) range else which(FUN(object) %in% range)
+  wh <- if (is.numeric(range))
+    range else which(FUN(object) %in% range)
   FUN(object)[seq(wh[1L], wh[2L])]
 }
 

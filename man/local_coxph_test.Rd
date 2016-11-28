@@ -10,7 +10,7 @@ local_coxph_test(s, pos, C = NULL, d = NULL, digits = 3)
 \item{s}{survival object of class \code{\link[survival]{coxph}}}
 
 \item{pos}{vector of positions of \code{\link{coefficients}} of interest
-from \code{summary(coxph)}; defaults to \code{1:length(coef(s))}}
+from \code{summary(coxph)}; defaults to \code{seq_along(coef(s))}}
 
 \item{C, d}{\code{C}, a q-by-p matrix, and \code{d}, a q-by-1 matrix, define
 the null hypothesis being checked; default is a global test on the variables
@@ -31,6 +31,7 @@ fit <- coxph(Surv(time, status) ~ sex + ph.ecog, data = cancer)
 ## compare to summary(fit)
 local_coxph_test(fit)
 local_coxph_test(fit, 2)
+
 
 }
 \references{

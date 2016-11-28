@@ -157,8 +157,8 @@ show_colors <- function(..., plot = FALSE) {
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
   par(mfrow = c(1,1), mar = c(1,1,3,2), cex = .7)
-  sx <- seq(x <- 22)
-  sy <- seq(y <- 30)
+  sx <- seq.int(x <- 22)
+  sy <- seq.int(y <- 30)
   
   plot(c(-1, x), c(-1, y), type = 'n', ann = FALSE, axes = FALSE)
   title('col = colors()[n]')
@@ -508,7 +508,7 @@ carrows <- function(p1, p2, arc, degree = FALSE, pad = 0.01 * 1:2,
                     border = NA) {
   
   code_ <- function(x) c(2,0,1)[match(x, -1:1)]
-  pad_ <- function(x, pad) ht(x, -length(x) * (1 - pad))
+  pad_  <- function(x, pad) ht(x, -length(x) * (1 - pad))
   
   ## try to guess code for arrows2
   slope <- (p2[2] - p1[2]) / (p2[1] - p1[1])
@@ -525,7 +525,7 @@ carrows <- function(p1, p2, arc, degree = FALSE, pad = 0.01 * 1:2,
     p2r(x[1], x[2], centers[1], centers[2]))
   
   ## convert polar to cart and plot lines/arrows
-  theta <- seq(arc[1], arc[2], length = 500) + if (flip) pi else 0
+  theta <- seq(arc[1], arc[2], length.out = 500) + if (flip) pi else 0
   pad <- rep_len(pad, 2)
   th <- pad_(theta, pad[1])
   xx <- centers[1] + radius * cos(th)
@@ -583,7 +583,8 @@ laxis <- function(side = 1L, nticks = 5, labels = TRUE, digits = 0, base = 10,
   yl <- c(-1, 1) + if (base == 10) log10(axp[-3]) else c(1, axp[2])
   pp <- seq(yl[1], yl[2])
   at0 <- at1 <- base ** pp
-  at2 <- c(sapply(pp, function(x) seq(1, base, length = nticks) * base ** x))
+  at2 <- c(sapply(pp, function(x)
+    seq(1, base, length.out = nticks) * base ** x))
   if (base != 10) {
     at1 <- log(at1, base)
     at2 <- log(at2, base)

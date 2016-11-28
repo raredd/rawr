@@ -1220,8 +1220,7 @@ path_extract <- function(path) {
 fname <- function(path) {
   xx <- basename(path)
   pattern <- '(^\\.[^ .]+$|[^:\\/]*?[.$]?)(?:\\.([^ :\\/.]*))?$'
-  m <- gregexpr(pattern, xx, perl = TRUE)
-  `colnames<-`(regcaptures(xx, m)[[1]], c('filename','extension'))
+  `colnames<-`(regcaptures2(xx, pattern)[[1]], c('filename','extension'))
 }
 
 #' @rdname path_extract

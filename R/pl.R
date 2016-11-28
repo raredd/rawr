@@ -347,13 +347,15 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
   ng <- length(groups)
   lg <- lengths(groups)
   nv <- sum(lg)
-  g  <- factor(rep(seq(ng), lg), levels = seq(ng), labels = names(groups))
+  g  <- factor(rep(seq.int(ng), lg),
+               levels = seq.int(ng),
+               labels = names(groups))
   
   if (missing(at))
-    at <- seq(ng)
+    at <- seq.int(ng)
   if (length(at) !=  ng) {
     warning("\'at\' must have same length as the number of groups", domain = NA)
-    at <- seq(ng)
+    at <- seq.int(ng)
   }
   
   ## scales

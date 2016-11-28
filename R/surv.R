@@ -160,7 +160,7 @@ kmplot <- function(s,
                    atrisk = TRUE, atrisk.lab = 'Number at risk',
                    atrisk.lines = TRUE, atrisk.col = !atrisk.lines,
                    strata.lab = NULL,
-                   strata.expr = NULL, strata.order = seq(length(s$n)),
+                   strata.expr = NULL, strata.order = seq_along(s$n),
                    extra.margin = 5,
                    
                    ## aesthetics
@@ -801,7 +801,7 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
 #' 
 #' @param s survival object of class \code{\link[survival]{coxph}}
 #' @param pos vector of positions of \code{\link{coefficients}} of interest
-#' from \code{summary(coxph)}; defaults to \code{1:length(coef(s))}
+#' from \code{summary(coxph)}; defaults to \code{seq_along(coef(s))}
 #' @param C,d \code{C}, a q-by-p matrix, and \code{d}, a q-by-1 matrix, define
 #' the null hypothesis being checked; default is a global test on the variables
 #' in \code{pos}, i.e., \code{C} is the identity matrix, and \code{d} is a
@@ -819,13 +819,16 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
 #' local_coxph_test(fit)
 #' local_coxph_test(fit, 2)
 #' 
+#' 
 #' @export
 
 local_coxph_test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
   stopifnot(inherits(s, 'coxph'))
   if (missing(pos))
-    pos <- seq(coef(s))
+    pos <- seq_along(coef(s))
   n <- length(pos)
+  if (!(n <- length(pos)) || !length(coef(s)))
+    stop('Model has no coefficients')
   if (is.null(C)) {
     C <- matrix(0, n, n)
     diag(C) <- 1
@@ -884,11 +887,11 @@ surv_cp <- function(data, time.var, status.var,
   ## remove one from end of x, stop by removing first of x
   ## include the status variable and covariates in the dataframe
   f <- function(i)
-    data.frame(start = head(t.list[[i]], -1),
-               stop = tail(t.list[[i]], -1),
+    data.frame(start = head(t.list[[i]], -1L),
+               stop = tail(t.list[[i]], -1L),
                data[i, c(status.var, covars)],
                row.names = NULL)
-  data <- do.call('rbind', Map('f', seq(t.list)))
+  data <- do.call('rbind', Map('f', seq_along(t.list)))
   
   ## create the correct status need last time for each
   ## subject with status=1 to to be status=1 but all others status=0
@@ -932,7 +935,9 @@ surv_cp <- function(data, time.var, status.var,
 surv_summary <- function(s, digits = 3L, ...) {
   if (!inherits(s, 'survfit'))
     stop('\'s\' must be a \'survfit\' object')
-  on.exit(options(digits = getOption('digits')))
+  oo <- options()
+  on.exit(options(oo))
+  options(digits = digits)
   
   x <- summary(s, ...)
   if (!is.null(cl <- x$call)) {
@@ -964,7 +969,7 @@ surv_summary <- function(s, digits = 3L, ...) {
                     paste0('upper ', x$conf.int * 100, '% CI'))
       }
     }
-  } else cnames <- c(cnames, paste0('survival', seq(ncurve)))
+  } else cnames <- c(cnames, paste0('survival', seq.int(ncurve)))
   if (!is.null(x$start.time)) {
     mat.keep <- mat[, 1] >= x$start.time
     mat <- mat[mat.keep, , drop = FALSE]

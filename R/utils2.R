@@ -906,7 +906,7 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
     o <- within(locf(o), Total <- as.numeric(Total))
     if (length(varname) == 1L)
       ord(o[, 'Total']) else ord(-xtfrm(o[, 1]), o[, 'Total'])
-  } else seq(nrow(res))
+  } else seq.int(nrow(res))
   res <- res[o, ]
   
   ## remove rows with 0 total since not dropped in ftable
@@ -1220,8 +1220,10 @@ combine_table <- function(l, ...) {
 tabler_resp <- function(x, r_or_better = 3L,
                         conf = 0.95, frac = TRUE, show_conf = TRUE) {
   r <- names(table(x))
-  c(resp_(x, r, conf, frac, show_conf), if (!is.integer(r_or_better))
-    NULL else r_or_better_(x, rev(r[seq(r_or_better)]), conf, frac, show_conf))
+  c(resp_(x, r, conf, frac, show_conf),
+    if (!is.integer(r_or_better))
+      NULL else
+        r_or_better_(x, rev(r[seq.int(r_or_better)]), conf, frac, show_conf))
 }
 
 resp_ <- function(x, r, conf, frac, show_conf) {
