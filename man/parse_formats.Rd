@@ -26,12 +26,21 @@ cleaned of quotes and extra whitespace}
 dropped; default is not to drop unused levels}
 }
 \value{
-A list with format names in \code{path} and their respective values and
-labels as named character vectors.
+For \code{parse_formats}, a list with format names in \code{path} and their
+respective values and labels as named character vectors.
+
+For \code{parse_formats2}, a character vector of formats with labels as
+names.
+
+For \code{apply_formats}, the input vector, \code{x}, recoded with the
+formats given by \code{fmt}.
 }
 \description{
-Reads a text file (usually \code{.sas}) and extracts \code{SAS} format
-variable names and format values.
+\code{parse_formats} and \code{parse_formats2} read text files (usually
+\code{.sas}) or character strings, respectively, and extract \code{SAS}
+format variable names and format values. \code{apply_formats} takes a
+vector, \code{x}, of codes and applies the corresponding \code{fmt} to
+each.
 }
 \examples{
 p <- system.file('testfiles', 'formats.sas', package = 'rawr')
@@ -43,13 +52,16 @@ parse_formats(p)
 fmt <- '0 = something, 1 = something else; 2 = yada. -9=yadayadayada, .C=blah'
 parse_formats2(fmt)
 
-## use to format factor variables
+## reordered if all levels are numeric and positive
+parse_formats2('1=yes, 0=no, 2=maybe')
+
+
+## use apply_formats to format factor variables
+apply_formats('.C', fmt, droplevels = TRUE)
+
 x <- sample(0:2, 10, TRUE)
 table(apply_formats(x, fmt), x)
 apply_formats(x, fmt, droplevels = TRUE)
-
-## reordered if all levels are numeric and positive
-parse_formats2('1=yes, 0=no, 2=maybe')
 
 }
 \seealso{

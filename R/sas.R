@@ -534,8 +534,11 @@ source_sas <- function(path, ...) {
 
 #' Get formats from \code{SAS} format files
 #' 
-#' Reads a text file (usually \code{.sas}) and extracts \code{SAS} format
-#' variable names and format values.
+#' \code{parse_formats} and \code{parse_formats2} read text files (usually
+#' \code{.sas}) or character strings, respectively, and extract \code{SAS}
+#' format variable names and format values. \code{apply_formats} takes a
+#' vector, \code{x}, of codes and applies the corresponding \code{fmt} to
+#' each.
 #' 
 #' @param path character string of path to \code{.sas} file
 #' @param fmt a character string with formats to parse
@@ -546,8 +549,14 @@ source_sas <- function(path, ...) {
 #' dropped; default is not to drop unused levels
 #' 
 #' @return
-#' A list with format names in \code{path} and their respective values and
-#' labels as named character vectors.
+#' For \code{parse_formats}, a list with format names in \code{path} and their
+#' respective values and labels as named character vectors.
+#' 
+#' For \code{parse_formats2}, a character vector of formats with labels as
+#' names.
+#' 
+#' For \code{apply_formats}, the input vector, \code{x}, recoded with the
+#' formats given by \code{fmt}.
 #' 
 #' @seealso
 #' \code{\link{sas_path}}, \code{\link{rmacro}}, \code{\link{r2sas}},
@@ -564,13 +573,16 @@ source_sas <- function(path, ...) {
 #' fmt <- '0 = something, 1 = something else; 2 = yada. -9=yadayadayada, .C=blah'
 #' parse_formats2(fmt)
 #' 
-#' ## use to format factor variables
+#' ## reordered if all levels are numeric and positive
+#' parse_formats2('1=yes, 0=no, 2=maybe')
+#' 
+#' 
+#' ## use apply_formats to format factor variables
+#' apply_formats('.C', fmt, droplevels = TRUE)
+#' 
 #' x <- sample(0:2, 10, TRUE)
 #' table(apply_formats(x, fmt), x)
 #' apply_formats(x, fmt, droplevels = TRUE)
-#' 
-#' ## reordered if all levels are numeric and positive
-#' parse_formats2('1=yes, 0=no, 2=maybe')
 #' 
 #' @export
 
@@ -601,20 +613,19 @@ parse_formats2 <- function(fmt, clean = TRUE) {
   
   ## capture unique levels
   p <- '([0-9.\\-A-Z]+)\\s*='
-  m <- gregexpr(p, x, perl = TRUE)
-  levels <- c(regcaptures(x, m)[[1]])
+  levels <- c(regcaptures2(x, p)[[1]])
   
   ## capture corresponding labels
   p <- '[A-Z.\\-0-9]+\\s*=\\s*(.*?)(?=[ ,.;]*[0-9.\\-A-Z]+\\s*=|[ ,.;]*$)'
-  m <- gregexpr(p, x, perl = TRUE)
-  labels <- c(regcaptures(x, m)[[1]])
+  labels <- c(regcaptures2(x, p)[[1]])
   
   if (clean)
     labels <- trimws(gsub('[\'\"]', '', labels))
   
   ## sort if all levels are numeric and positive
   ok <- !any(grepl('\\D', levels))
-  setNames(labels, levels)[if (ok) order(as.numeric(levels)) else seq(levels)]
+  setNames(labels, levels)[if (ok)
+    order(as.numeric(levels)) else seq_along(levels)]
 }
 
 #' @rdname parse_formats
