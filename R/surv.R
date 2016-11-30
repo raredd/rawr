@@ -165,7 +165,7 @@ kmplot <- function(s,
                    
                    ## aesthetics
                    xaxs = 'S', xlim = c(0, max(s$time)), ylim = c(0, 1),
-                   xaxis.at = pretty(s$time), xaxis.lab = xaxis.at,
+                   xaxis.at = pretty(c(0, s$time)), xaxis.lab = xaxis.at,
                    yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
                    xlab = 'Time', ylab = 'Survival probability',
                    main = '', cex.axis = par('cex.axis'),
