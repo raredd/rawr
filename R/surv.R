@@ -53,18 +53,18 @@
 #' @param atrisk logical; if \code{TRUE} (default), draws at-risk table
 #' @param atrisk.lab heading for at-risk table
 #' @param atrisk.lines logical; draw lines next to strata in at-risk table
-#' @param atrisk.col logical or a vector with colors for atrisk table text; if
-#' \code{TRUE}, \code{col.surv} will be used
+#' @param atrisk.col logical or a vector with colors for at-risk table text;
+#' if \code{TRUE}, \code{col.surv} will be used
 #' @param strata.lab labels used in legend and at-risk table for strata; if
 #' \code{NULL} (default), labels created in \code{survfit} are used; if only
 #' one strata is present, "All" is used by default; if \code{FALSE}, labels
 #' are not used; if \code{TRUE}, labels will be stripped of variable names
 #' @param strata.expr an alternative to \code{strata.lab} which allows for
-#' \code{\link{bquote}} or \code{\link{expression}} to be passed to labels for
-#' at-risk table; note that \code{strata.expr} trumps \code{strata.lab}
+#' \code{\link{bquote}} or \code{\link{expression}} to be passed to labels
+#' for at-risk table; note that \code{strata.expr} trumps \code{strata.lab}
 #' @param strata.order order of strata in legend and at-risk table
-#' @param extra.margin increase left margin when strata labels in at-risk table
-#' are long
+#' @param extra.margin increase left margin when strata labels in at-risk
+#' table are long
 #' @param xaxs style of axis; see details or \code{\link{par}}
 #' @param xlim,ylim x- and y-axis limits
 #' @param xaxis.at,yaxis.at positions for x- and y-axis labels and ticks
@@ -104,7 +104,8 @@
 #' kmplot(km1)
 #' kmplot(km1, atrisk.col = c('grey50','tomato'))
 #' kmplot(km1, mark = 'bump', lr_test = TRUE, atrisk.lines = FALSE)
-#' kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5)
+#' kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5, col.surv = 1:4,
+#'        col.band = c(1,0,0,4))
 #' 
 #' 
 #' ## expressions in at-risk table (strata.expr takes precedence)
@@ -134,6 +135,7 @@
 #'        yaxis.lab = pretty(0:1) * 100,     # change to percent
 #'        xlab = 'Time (years)', ylab = 'Percent survival',
 #'        col.surv = c('blue','red','green','black','purple','orange'),
+#'        col.ci   = c(0,0,0,0,'purple',0),  # CI only for one group
 #'        extra.margin = 6,        # increase margin for long strata labels
 #'        strata.lab = c('Obs','Obs+','Lev','Lev+','Lev5fu','Lev5fu+'),
 #'        strata.order = c(5,6,3,1,4,2),      # order by survival estimates
@@ -216,25 +218,25 @@ kmplot <- function(s,
   }
   
   ng <- max(ng, 1)
-  lty.surv <- rep_len(lty.surv, ng)
-  lwd.surv <- rep_len(lwd.surv, ng)
   if (length(col.band) <= 1L)
     if (is.null(col.band) || is.na(col.band))
       col.band <- FALSE
   col.surv <- if (missing(col.surv)) {
-    if (all(!col.band))
+    if (isTRUE(col.band) || all(!col.band))
       seq_along(s$strata) %||% 1 else rep_len(col.band, ng)
   } else rep_len(col.surv, ng)
   
+  col.band <- if (isTRUE(col.band))
+    col.surv else if (length(col.band) == 1L & identical(col.band, FALSE))
+      rep_len(NA, ng) else rep_len(col.band, ng)
+  col.surv <- tcol(col.surv)
+  col.band <- tcol(col.band)
+  
+  lty.surv <- rep_len(lty.surv, ng)
+  lwd.surv <- rep_len(lwd.surv, ng)
   lty.ci <- rep_len(lty.ci, ng)
   lwd.ci <- rep_len(lwd.ci, ng)
   col.ci <- rep_len(col.ci, ng)
-  
-  col.band <- if (isTRUE(col.band)) {
-    col.surv
-  } else if (length(col.band) == 1L & identical(col.band, FALSE))
-    rep_len(NA, ng) else rep_len(col.band, ng)
-  col.lines <- ifelse(is.na(col.band), col.surv, col.band)
   
   ## group names and more error checks
   gr <- c(s$strata)
@@ -301,7 +303,7 @@ kmplot <- function(s,
   if (atrisk) {
     ## set colors for lines of text
     col.atrisk <- if (isTRUE(atrisk.col))
-      col.lines else if (length(atrisk.col) == ng)
+      col.surv else if (length(atrisk.col) == ng)
         atrisk.col else rep_len(1L, ng)
     
     ## write group names
@@ -309,7 +311,7 @@ kmplot <- function(s,
     padding  <- abs(group.name.pos / 8)
     line.pos <- seq.int(ng)[order(strata.order)] + 2
     
-    if (strata.lab[1] != FALSE)
+    if (!identical(strata.lab, FALSE))
       if (!is.null(strata.expr))
         sapply(seq.int(length(strata.expr)), function(x)
           mtext(strata.expr[[x]], side = 1, line = line.pos[x], adj = 1,
@@ -324,7 +326,7 @@ kmplot <- function(s,
         ## mess with the 4 here to adjust the length of the atrisk.line
         axis(1, c(group.name.pos + padding, 0 - 4 * padding), xpd = NA,
              labels = FALSE, line = line.pos[i] + 0.6, lwd.ticks = 0,
-             col = col.lines[i], lty = lty.surv[i], lwd = lwd.surv[i])
+             col = col.surv[i], lty = lty.surv[i], lwd = lwd.surv[i])
     
     ## numbers at risk
     ss <- summary(s, times = xaxis.at)
@@ -362,13 +364,13 @@ kmplot <- function(s,
     bgc <- if (par('bg') == 'transparent')
       'white' else par('bg')
     if (!is.null(strata.expr)) {
-      legend(legend, legend = strata.expr[rlp], col = col.lines[rlp],
+      legend(legend, legend = strata.expr[rlp], col = col.surv[rlp],
              lty = lty.surv[rlp], lwd = lwd.surv[rlp], bty = 'o',
              cex = cex.axis, bg = bgc, box.col = 'transparent', inset = .01)
     } else {
-      if (strata.lab[1] == FALSE)
+      if (identical(strata.lab, FALSE))
         strata.lab <- names(s$strata)
-      legend(legend, legend = strata.lab[rlp], col = col.lines[rlp],
+      legend(legend, legend = strata.lab[rlp], col = col.surv[rlp],
              lty = lty.surv[rlp], lwd = lwd.surv[rlp], bty = 'o',
              cex = cex.axis, bg = bgc, box.col = 'transparent', inset = .01)
     }
@@ -386,14 +388,14 @@ kmplot <- function(s,
       U <- tmp$upper
       S <- tmp$survival
       naL <- which(is.na(L))
-      L[naL] <- L[naL - 1]
-      U[naL] <- U[naL - 1]
+      L[naL] <- L[naL - 1L]
+      U[naL] <- U[naL - 1L]
       lines(x, L, type = 's', col = col.ci[i], lty = lty.ci[i], lwd = lwd.ci[i])
       lines(x, U, type = 's', col = col.ci[i], lty = lty.ci[i], lwd = lwd.ci[i])
       
       ## confidence bands
       if (any(!is.na(col.band))) {
-        col.band[i] <- tcol(col.band[i], 100)
+        col.band[i] <- tcol(col.band[i], alpha = .5)
         polygon(c(x, rev(x)), c(U, rev(L)), border = NA, col = col.band[i])
       }
     }
@@ -403,6 +405,7 @@ kmplot <- function(s,
           lwd = lwd.surv, mark.time = FALSE, xpd = FALSE)
     ## uncomment when bug in survival v2.39-5 fixed
     # points(s[i], lwd = lwd.surv, pch = mark, col = col.surv[i], xpd = FALSE)
+    ## actually use this for more features
     points.kmplot(s[i], lwd = lwd.mark, pch = mark, col = col.surv[i],
                   xpd = FALSE, bump = mark == 'bump')
   }
@@ -581,14 +584,15 @@ lr_pval <- function(s, details = FALSE) {
 
 #' kmplot_by
 #' 
+#' @description
 #' This function helps create stratified \code{\link{kmplot}}s quickly with
 #' panel labels and log-rank tests for the subsets.
 #' 
-#' The data used should have at least three variables: \code{strata},
+#' \code{data} should have at least three variables: \code{strata},
 #' \code{*_time}, and \code{*_ind} where \code{*} is \code{event}. For
-#' example, to use progression-free survival, \code{dat} should have columns
+#' example, to use progression-free survival, \code{data} should have columns
 #' \code{"pfs_time"} and \code{"pfs_ind"} and optionally the \code{strata}
-#' column unless \code{strata = "1"}.
+#' column unless \code{strata = "1"} (default).
 #' 
 #' Alternatively, the \code{time} argument may be used instead of following
 #' the above; in this case, \code{time} and \code{event} must be variable
@@ -645,12 +649,12 @@ lr_pval <- function(s, details = FALSE) {
 #'   sex1 <- 'Male'
 #' })
 #' 
-#' ## 
-#' kmplot_by(data = colon2)
-#' kmplot_by('sex1', data = colon2)
+#' kmplot_by(event = 'pfs', data = colon2)
+#' kmplot_by('sex1', 'pfs', colon2)
 #' 
 #' kmplot_by('rx', data = colon2, col.surv = 1:3,
 #'   strata_lab = FALSE, col.band = NA)
+#' 
 #' 
 #' ## return value is a list of survfit objects
 #' l <- kmplot_by('sex', by = 'rx', data = colon2, plot = FALSE)
@@ -660,14 +664,16 @@ lr_pval <- function(s, details = FALSE) {
 #' ## multiple variables can be combined
 #' kmplot_by('rx + sex', data = colon2, strata_lab = FALSE,
 #'   lty.surv = 1:6, col.band = NA)
-#'
+#' 
+#' 
 #' ## if "by" is given, default is to plot separately
 #' kmplot_by('rx', data = colon2, by = 'sex', col.surv = 1:3,
 #'   strata_lab = c('Observation','Trt','Trt + 5-FU'))
 #' 
 #' ## if single = FALSE, uses n2mfrow function to set par('mfrow')
 #' kmplot_by('rx', data = colon2, by = 'sex', col.surv = 1:3, single = FALSE,
-#'   strata_lab = c('Observation','Trt','Trt + 5-FU'))
+#'   strata_lab = c('Observation','Trt','Trt + 5-FU'),
+#'   main = levels(factor(colon2$sex)))
 #'   
 #' ## if par('mfrow') is anything other than c(1,1), uses current setting
 #' par(mfrow = c(2,2))
@@ -682,8 +688,8 @@ lr_pval <- function(s, details = FALSE) {
 #'   
 #' @export
 
-kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
-                      lr_test = TRUE, ylab, sub, strata_lab, fig_lab,
+kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
+                      lr_test = TRUE, main, ylab, sub, strata_lab, fig_lab,
                       time, add = FALSE, plot = TRUE, ...) {
   op <- par(no.readonly = TRUE)
   if (is.logical(lr_test)) {
@@ -711,6 +717,7 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
   if (plot & (!add | !single))
     on.exit(par(op))
   if (!missing(by)) {
+    data[, by] <- as.factor(data[, by])
     if (single) {
       add <- FALSE
       par(mfrow = c(1L,1L))
@@ -720,6 +727,9 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
         par(mfrow = n2mfrow(length(unique(data[, by]))))
     }
     sp <- split(data, droplevels(data[, by]))
+    ## list names will be main title(s)
+    names(sp) <- rep_len(if (missing(main))
+      paste(by, names(sp), sep = '=') else main, length(sp))
   } else {
     if (missing(add)) {
       add <- FALSE
@@ -727,12 +737,15 @@ kmplot_by <- function(strata = '1', event = 'pfs', data, by, single = TRUE,
     }
     sp <- list(data)
   }
+  
   mlabs <- missing(strata_lab)
-  msub <- missing(sub)
+  msub  <- missing(sub)
   fig <- if (length(sp) > 1L & missing(fig_lab))
     LETTERS[seq_along(sp)] else if (missing(fig_lab)) '' else fig_lab
+  fig <- rep_len(fig, length(sp))
   ylab <- if (missing(ylab))
     sprintf('%s probability', toupper(event)) else ylab
+  
   form <- if (!missing(time))
     sprintf('Surv(%s, %s) ~ %s', time, event, strata) else
       sprintf('Surv(%s_time, %s_ind) ~ %s', event, event, strata)
