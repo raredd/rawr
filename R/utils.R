@@ -934,7 +934,7 @@ merge2 <- function(l, ...)
 #' @export
 
 locf <- function(x, fromLast = FALSE, na.strings = '') {
-  if (!(ok <- !is.null(nrow(x))))
+  if (!(ok <- !is.null(nrow(x))) || is.matrix(x))
     x <- data.frame(x, stringsAsFactors = FALSE)
   fromLast <- rep(fromLast, ncol(x))
   if (length(na.strings))
