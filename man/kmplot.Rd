@@ -43,8 +43,8 @@ see details}
 
 \item{atrisk.lines}{logical; draw lines next to strata in at-risk table}
 
-\item{atrisk.col}{logical or a vector with colors for atrisk table text; if
-\code{TRUE}, \code{col.surv} will be used}
+\item{atrisk.col}{logical or a vector with colors for at-risk table text;
+if \code{TRUE}, \code{col.surv} will be used}
 
 \item{strata.lab}{labels used in legend and at-risk table for strata; if
 \code{NULL} (default), labels created in \code{survfit} are used; if only
@@ -52,13 +52,13 @@ one strata is present, "All" is used by default; if \code{FALSE}, labels
 are not used; if \code{TRUE}, labels will be stripped of variable names}
 
 \item{strata.expr}{an alternative to \code{strata.lab} which allows for
-\code{\link{bquote}} or \code{\link{expression}} to be passed to labels for
-at-risk table; note that \code{strata.expr} trumps \code{strata.lab}}
+\code{\link{bquote}} or \code{\link{expression}} to be passed to labels
+for at-risk table; note that \code{strata.expr} trumps \code{strata.lab}}
 
 \item{strata.order}{order of strata in legend and at-risk table}
 
-\item{extra.margin}{increase left margin when strata labels in at-risk table
-are long}
+\item{extra.margin}{increase left margin when strata labels in at-risk
+table are long}
 
 \item{xaxs}{style of axis; see details or \code{\link{par}}}
 
@@ -134,7 +134,8 @@ km2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 kmplot(km1)
 kmplot(km1, atrisk.col = c('grey50','tomato'))
 kmplot(km1, mark = 'bump', lr_test = TRUE, atrisk.lines = FALSE)
-kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5)
+kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5, col.surv = 1:4,
+       col.band = c(1,0,0,4))
 
 
 ## expressions in at-risk table (strata.expr takes precedence)
@@ -164,6 +165,7 @@ kmplot(survfit(Surv(time, status) ~ rx + adhere, data = colon),
        yaxis.lab = pretty(0:1) * 100,     # change to percent
        xlab = 'Time (years)', ylab = 'Percent survival',
        col.surv = c('blue','red','green','black','purple','orange'),
+       col.ci   = c(0,0,0,0,'purple',0),  # CI only for one group
        extra.margin = 6,        # increase margin for long strata labels
        strata.lab = c('Obs','Obs+','Lev','Lev+','Lev5fu','Lev5fu+'),
        strata.order = c(5,6,3,1,4,2),      # order by survival estimates
