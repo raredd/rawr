@@ -258,10 +258,15 @@ tcol <- function(color, trans = 255, alpha) {
   if (length(color) != length(trans) & 
       !any(c(length(color), length(trans)) == 1))
     stop('Vector lengths are not comformable')
-  if (length(color) == 1 & length(trans) > 1)
+  if (length(color) == 1L & length(trans) > 1L)
     color <- rep(color, length(trans))
-  if (length(trans) == 1 & length(color) > 1)
+  if (length(trans) == 1L & length(color) > 1L)
     trans <- rep(trans, length(color))
+  
+  if (length(nocol <- which(color == 0))) {
+    color[nocol] <- 1
+    trans[nocol] <- NA
+  }
   
   res <- paste0('#', apply(apply(rbind(col2rgb(color)), 2, function(x)
     format(as.hexmode(x), 2)), 2, paste, collapse = ''))
