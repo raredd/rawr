@@ -4,9 +4,8 @@
 \alias{kmplot_by}
 \title{kmplot_by}
 \usage{
-kmplot_by(strata = "1", event = "pfs", data, by, single = TRUE,
-  lr_test = TRUE, ylab, sub, strata_lab, fig_lab, time, add = FALSE,
-  plot = TRUE, ...)
+kmplot_by(strata = "1", event, data, by, single = TRUE, lr_test = TRUE,
+  main, ylab, sub, strata_lab, fig_lab, time, add = FALSE, plot = TRUE, ...)
 }
 \arguments{
 \item{strata}{character string of the strata variable}
@@ -60,13 +59,12 @@ value.
 \description{
 This function helps create stratified \code{\link{kmplot}}s quickly with
 panel labels and log-rank tests for the subsets.
-}
-\details{
-The data used should have at least three variables: \code{strata},
+
+\code{data} should have at least three variables: \code{strata},
 \code{*_time}, and \code{*_ind} where \code{*} is \code{event}. For
-example, to use progression-free survival, \code{dat} should have columns
+example, to use progression-free survival, \code{data} should have columns
 \code{"pfs_time"} and \code{"pfs_ind"} and optionally the \code{strata}
-column unless \code{strata = "1"}.
+column unless \code{strata = "1"} (default).
 
 Alternatively, the \code{time} argument may be used instead of following
 the above; in this case, \code{time} and \code{event} must be variable
@@ -85,12 +83,12 @@ colon2 <- within(colon[duplicated(colon$id), ], {
   sex1 <- 'Male'
 })
 
-## 
-kmplot_by(data = colon2)
-kmplot_by('sex1', data = colon2)
+kmplot_by(event = 'pfs', data = colon2)
+kmplot_by('sex1', 'pfs', colon2)
 
 kmplot_by('rx', data = colon2, col.surv = 1:3,
   strata_lab = FALSE, col.band = NA)
+
 
 ## return value is a list of survfit objects
 l <- kmplot_by('sex', by = 'rx', data = colon2, plot = FALSE)
@@ -101,13 +99,15 @@ sapply(l, kmplot_by)
 kmplot_by('rx + sex', data = colon2, strata_lab = FALSE,
   lty.surv = 1:6, col.band = NA)
 
+
 ## if "by" is given, default is to plot separately
 kmplot_by('rx', data = colon2, by = 'sex', col.surv = 1:3,
   strata_lab = c('Observation','Trt','Trt + 5-FU'))
 
 ## if single = FALSE, uses n2mfrow function to set par('mfrow')
 kmplot_by('rx', data = colon2, by = 'sex', col.surv = 1:3, single = FALSE,
-  strata_lab = c('Observation','Trt','Trt + 5-FU'))
+  strata_lab = c('Observation','Trt','Trt + 5-FU'),
+  main = levels(factor(colon2$sex)))
   
 ## if par('mfrow') is anything other than c(1,1), uses current setting
 par(mfrow = c(2,2))
