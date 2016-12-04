@@ -72,8 +72,9 @@
 #' @param xlab,ylab x- and y-axis labels
 #' @param main title of plot
 #' @param cex.axis text size for axes labels, legend, at-risk table
-#' @param legend logical or a keyword (see \code{\link{legend}}); if
-#' \code{TRUE}, the default position is \code{"bottomleft"}
+#' @param legend logical, a vector of x/y coordinates, or a keyword (see
+#' \code{\link{legend}}); if \code{TRUE}, the default position is
+#' \code{"bottomleft"}
 #' @param lr_test logical or numeric; if \code{TRUE}, a log-rank test will be
 #' performed and the results added to the top-right corner of the plot; if
 #' numeric, the value is passed as \code{rho} controlling the type of test
@@ -217,7 +218,7 @@ kmplot <- function(s,
     legend <- atrisk.lines <- FALSE
   }
   
-  ng <- max(ng, 1)
+  ng <- max(ng, 1L)
   if (length(col.band) <= 1L)
     if (is.null(col.band) || is.na(col.band))
       col.band <- FALSE
@@ -259,7 +260,7 @@ kmplot <- function(s,
     stop('\n','length(unique(strata.lab)) != number of groups')
   if (suppressWarnings(any(sort(strata.order) != seq.int(ng))))
     stop('\n', 'sort(strata.order) must equal 1:', ng)
-  if (ng == 1 & (strata.lab[1] == 'strata.lab')) {
+  if (ng == 1L & (strata.lab[1] == 'strata.lab')) {
     strata.lab <- 'Number at risk'
     atrisk.lab <- ifelse(is.null(atrisk.lab), strata.lab, atrisk.lab)
   }
@@ -290,14 +291,16 @@ kmplot <- function(s,
   
   ## base plot
   plot(0, type = 'n', xlim = xlim, ylim = ylim,
-       ann = FALSE, axes = FALSE, xaxs = xaxs)
-  panel.first
-  box(bty = par('bty'))
-  axis(1, xaxis.at, FALSE, lwd = 0, lwd.ticks = 1)
-  axis(1, xaxis.at, xaxis.lab, FALSE, -0.5, cex.axis = cex.axis)
-  axis(2, yaxis.at, yaxis.lab, las = 1, cex.axis = cex.axis)
-  title(xlab = xlab, line = 1.5, adj = .5, ...)
-  title(ylab = ylab, main = main, ...)
+       ann = FALSE, axes = FALSE, xaxs = xaxs,
+       panel.first = panel.first,
+       panel.last = {
+         box(bty = par('bty'))
+         axis(1, xaxis.at, FALSE, lwd = 0, lwd.ticks = 1)
+         axis(1, xaxis.at, xaxis.lab, FALSE, -0.5, cex.axis = cex.axis)
+         axis(2, yaxis.at, yaxis.lab, las = 1, cex.axis = cex.axis)
+         title(xlab = xlab, line = 1.5, adj = .5, ...)
+         title(ylab = ylab, main = main, ...)
+       })
   
   ## at-risk table below surv plot
   if (atrisk) {
@@ -306,19 +309,20 @@ kmplot <- function(s,
       col.surv else if (length(atrisk.col) == ng)
         atrisk.col else rep_len(1L, ng)
     
-    ## write group names
+    ## labels for each row in at-risk table
     group.name.pos <- diff(par('usr')[1:2]) / -8
     padding  <- abs(group.name.pos / 8)
     line.pos <- seq.int(ng)[order(strata.order)] + 2
     
-    if (!identical(strata.lab, FALSE))
+    if (!identical(unique(strata.lab), FALSE)) {
       if (!is.null(strata.expr))
         sapply(seq.int(length(strata.expr)), function(x)
           mtext(strata.expr[[x]], side = 1, line = line.pos[x], adj = 1,
                 at = group.name.pos, col = col.atrisk[x], las = 1,
                 cex = cex.axis))
-    else mtext(strata.lab, side = 1, line = line.pos, adj = 1, las = 1,
-               col = col.atrisk, at = group.name.pos, cex = cex.axis)
+      else mtext(strata.lab, side = 1, line = line.pos, adj = 1, las = 1,
+                 col = col.atrisk, at = group.name.pos, cex = cex.axis)
+    }
     
     ## draw matching lines for n at risk  
     if (atrisk.lines)
@@ -364,14 +368,16 @@ kmplot <- function(s,
     bgc <- if (par('bg') == 'transparent')
       'white' else par('bg')
     if (!is.null(strata.expr)) {
-      legend(legend, legend = strata.expr[rlp], col = col.surv[rlp],
-             lty = lty.surv[rlp], lwd = lwd.surv[rlp], bty = 'o',
+      legend(legend[1], if (length(legend) > 1L) legend[2] else NULL,
+             legend = strata.expr[rlp], col = col.surv[rlp],
+             lty = lty.surv[rlp], lwd = lwd.surv[rlp], bty = 'o', xpd = NA,
              cex = cex.axis, bg = bgc, box.col = 'transparent', inset = .01)
     } else {
       if (identical(strata.lab, FALSE))
         strata.lab <- names(s$strata)
-      legend(legend, legend = strata.lab[rlp], col = col.surv[rlp],
-             lty = lty.surv[rlp], lwd = lwd.surv[rlp], bty = 'o',
+      legend(legend[1], if (length(legend) > 1L) legend[2] else NULL,
+             legend = strata.lab[rlp], col = col.surv[rlp],
+             lty = lty.surv[rlp], lwd = lwd.surv[rlp], bty = 'o', xpd = NA,
              cex = cex.axis, bg = bgc, box.col = 'transparent', inset = .01)
     }
   }
@@ -586,17 +592,19 @@ lr_pval <- function(s, details = FALSE) {
 #' 
 #' @description
 #' This function helps create stratified \code{\link{kmplot}}s quickly with
-#' panel labels and log-rank tests for the subsets.
+#' panel labels and log-rank tests for each plot.
 #' 
 #' \code{data} should have at least three variables: \code{strata},
 #' \code{*_time}, and \code{*_ind} where \code{*} is \code{event}. For
 #' example, to use progression-free survival, \code{data} should have columns
-#' \code{"pfs_time"} and \code{"pfs_ind"} and optionally the \code{strata}
-#' column unless \code{strata = "1"} (default).
+#' \code{"pfs_time"} and \code{"pfs_ind"} (in this case the user should use
+#' \code{event = 'pfs'}) and optionally the \code{strata} column unless only
+#' the null model (\code{strata = "1"} is needed (default).
 #' 
 #' Alternatively, the \code{time} argument may be used instead of following
 #' the above; in this case, \code{time} and \code{event} must be variable
-#' names in \code{data}.
+#' names in \code{data}. However, the method described above is more
+#' efficient and preferred.
 #' 
 #' @param strata character string of the strata variable
 #' @param event character string indicating the event (pfs, os, ttp, etc);
