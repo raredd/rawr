@@ -74,8 +74,9 @@ table are long}
 
 \item{cex.axis}{text size for axes labels, legend, at-risk table}
 
-\item{legend}{logical or a keyword (see \code{\link{legend}}); if
-\code{TRUE}, the default position is \code{"bottomleft"}}
+\item{legend}{logical, a vector of x/y coordinates, or a keyword (see
+\code{\link{legend}}); if \code{TRUE}, the default position is
+\code{"bottomleft"}}
 
 \item{lr_test}{logical or numeric; if \code{TRUE}, a log-rank test will be
 performed and the results added to the top-right corner of the plot; if

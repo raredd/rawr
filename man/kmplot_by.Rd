@@ -58,17 +58,19 @@ value.
 }
 \description{
 This function helps create stratified \code{\link{kmplot}}s quickly with
-panel labels and log-rank tests for the subsets.
+panel labels and log-rank tests for each plot.
 
 \code{data} should have at least three variables: \code{strata},
 \code{*_time}, and \code{*_ind} where \code{*} is \code{event}. For
 example, to use progression-free survival, \code{data} should have columns
-\code{"pfs_time"} and \code{"pfs_ind"} and optionally the \code{strata}
-column unless \code{strata = "1"} (default).
+\code{"pfs_time"} and \code{"pfs_ind"} (in this case the user should use
+\code{event = 'pfs'}) and optionally the \code{strata} column unless only
+the null model (\code{strata = "1"} is needed (default).
 
 Alternatively, the \code{time} argument may be used instead of following
 the above; in this case, \code{time} and \code{event} must be variable
-names in \code{data}.
+names in \code{data}. However, the method described above is more
+efficient and preferred.
 }
 \examples{
 library('survival')
