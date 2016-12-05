@@ -760,10 +760,26 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
   form <- as.formula(form)
   
   l <- lapply(seq_along(sp), function(x) {
-    s <- s0 <- eval(substitute(
-      survfit(form, data = sp[[x]], type = 'kaplan-meier',
-              conf.type = 'log-log', error = 'greenwood',
-              conf.int = 0.95, se.fit = TRUE), list(form = form)))
+    s <- s0 <- tryCatch({
+      eval(substitute(
+        survfit(form, data = sp[[x]], type = 'kaplan-meier',
+                conf.type = 'log-log', error = 'greenwood',
+                conf.int = 0.95, se.fit = TRUE),
+        list(form = form))
+      )
+    }, error = function(e) {
+      if (grepl('first argument must be of mode character', e)) {
+        warning('Error in survfit:\n', e, '\n',
+                'Check that \'strata\' has at least one non-missing value',
+                '\n\n', 'Returning null model: ',
+                deparse(update(form, . ~ 1)))
+        eval(substitute(
+          survfit(form, data = sp[[x]], type = 'kaplan-meier',
+                  conf.type = 'log-log', error = 'greenwood',
+                  conf.int = 0.95, se.fit = TRUE),
+          list(form = update(form, . ~ 1))))
+      } else stop(e)
+    })
     s$.data <- s0$.data <- sp[[x]]
     
     if (strata == '1')
