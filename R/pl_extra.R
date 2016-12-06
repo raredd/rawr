@@ -116,6 +116,7 @@ dodge.default <- function(x, y, dist, jit, ...) {
 #' 
 #' @examples
 #' show_colors()
+#' show_colors(grep('red|yellow', colors()), plot = TRUE)
 #' 
 #' show_colors(81)
 #' show_colors('darkgreen')
@@ -140,26 +141,29 @@ show_colors <- function(..., plot = FALSE) {
   } else if (length(dots))
     warning('... should be missing, %in% 1:657, or a color name')
   
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
+  par(mfrow = c(1,1), mar = c(1,4,1,2), cex = 1)
+  
   if (!is.null(dots)) {
     if (plot) {
       cc <- if (is.numeric(cols))   Recall(cols) else cols
       cn <- if (is.character(cols)) Recall(cols) else cols
-      x <- seq_along(cc)
-      y <- rev(x)
-      plot(x, y, pch = 16, cex = 3, col = cc,
+      m <- array(NA, n2mfrow(length(cols)))
+      x <- c(col(m)[, rev(seq.int(ncol(m)))])[seq_along(cols)]
+      y <- c(row(m))[seq_along(cols)]
+      plot(y, x, pch = 16, cex = 3, col = cc,
            axes = FALSE, ann = FALSE, xpd = NA)
-      text(x, y, pos = 3, col = 1, xpd = NA, labels = cn)
-      text(x, y, pos = 1, col = 1, xpd = NA, labels = cc)
+      text(y, x, pos = 3, col = 1, xpd = NA, labels = cn)
+      text(y, x, pos = 1, col = 1, xpd = NA, labels = cc)
     }
     return(cols)
   }
   
-  op <- par(no.readonly = TRUE)
-  on.exit(par(op))
-  par(mfrow = c(1,1), mar = c(1,1,3,2), cex = .7)
   sx <- seq.int(x <- 22)
   sy <- seq.int(y <- 30)
   
+  par(mfrow = c(1,1), mar = c(1,1,3,2), cex = .7)
   plot(c(-1, x), c(-1, y), type = 'n', ann = FALSE, axes = FALSE)
   title('col = colors()[n]')
   sapply(sx, function(i)

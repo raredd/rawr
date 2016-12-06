@@ -26,6 +26,7 @@ name of the color with \code{show_colors(n)} or find the indices with
 }
 \examples{
 show_colors()
+show_colors(grep('red|yellow', colors()), plot = TRUE)
 
 show_colors(81)
 show_colors('darkgreen')
