@@ -65,6 +65,8 @@
 #' @param strata.order order of strata in legend and at-risk table
 #' @param extra.margin increase left margin when strata labels in at-risk
 #' table are long
+#' @param median logical; if \code{TRUE}, median and confidence interval for
+#' each curve is added to at-risk table
 #' @param xaxs style of axis; see details or \code{\link{par}}
 #' @param xlim,ylim x- and y-axis limits
 #' @param xaxis.at,yaxis.at positions for x- and y-axis labels and ticks
@@ -103,10 +105,10 @@
 #' 
 #' ## basic usage
 #' kmplot(km1)
-#' kmplot(km1, atrisk.col = c('grey50','tomato'))
-#' kmplot(km1, mark = 'bump', lr_test = TRUE, atrisk.lines = FALSE)
-#' kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5, col.surv = 1:4,
-#'        col.band = c(1,0,0,4))
+#' kmplot(km1, atrisk.col = c('grey50','tomato'), lr_test = TRUE)
+#' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
+#' kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5,
+#'        col.surv = 1:4, col.band = c(1,0,0,4))
 #' 
 #' 
 #' ## expressions in at-risk table (strata.expr takes precedence)
@@ -164,10 +166,10 @@ kmplot <- function(s,
                    atrisk.lines = TRUE, atrisk.col = !atrisk.lines,
                    strata.lab = NULL,
                    strata.expr = NULL, strata.order = seq_along(s$n),
-                   extra.margin = 5,
+                   extra.margin = 5, median = FALSE,
                    
                    ## aesthetics
-                   xaxs = 'S', xlim = c(0, max(s$time)), ylim = c(0, 1),
+                   xaxs = 's', xlim = c(0, max(s$time)), ylim = c(0, 1),
                    xaxis.at = pretty(c(0, s$time)), xaxis.lab = xaxis.at,
                    yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
                    xlab = 'Time', ylab = 'Survival probability',
@@ -211,7 +213,7 @@ kmplot <- function(s,
     if (length(svar) == 1L & !one) {
       svar <- tryCatch({
         tbl <- table(sdat[, svar])
-        names(tbl)[tbl > 0]
+        names(tbl)[tbl > 0L]
       }, error = function(e) NULL)
     }
     names(s$strata) <- if (!is.null(svar) & !one) svar else 'All'
@@ -265,10 +267,10 @@ kmplot <- function(s,
     atrisk.lab <- ifelse(is.null(atrisk.lab), strata.lab, atrisk.lab)
   }
   
-  ## graphic parameters
+  ## graphical parameters
   par(mar = c(4 + ng, 4 + extra.margin, 4, 2) + .1)
   if (!add) {
-    par(list(mar = c(4 + ng, 4 + extra.margin, 4, 2) + .1, oma = rep(1, 4)))
+    par(mar = c(ng, extra.margin, -2, -2) + 4.1, oma = c(1,1,1,1 + 6 * median))
     if (!atrisk)
       par(mar = c(3,4,2,1) + .1)
     par(...)
@@ -277,7 +279,7 @@ kmplot <- function(s,
     par(mar = mar)
   
   ## as in survival:::plot.survfit, adjust x-axis to start at 0
-  xaxs <- if (xaxs == 'S') {
+  xaxs <- if (tolower(xaxs) == 's') {
     xlim[2] <- xlim[2] * 1.04
     'i'
   } else 'r'
@@ -310,9 +312,10 @@ kmplot <- function(s,
         atrisk.col else rep_len(1L, ng)
     
     ## labels for each row in at-risk table
-    group.name.pos <- diff(par('usr')[1:2]) / -8
+    usr <- par('usr')
+    group.name.pos <- diff(usr[1:2]) / -8
     padding  <- abs(group.name.pos / 8)
-    line.pos <- seq.int(ng)[order(strata.order)] + 2
+    line.pos <- seq.int(ng)[order(strata.order)] + 2L
     
     if (!identical(unique(strata.lab), FALSE)) {
       if (!is.null(strata.expr))
@@ -342,22 +345,36 @@ kmplot <- function(s,
     ## right-justify numbers
     ndigits <- lapply(d2, function(x) nchar(x[, 2]))
     max.len <- max(sapply(ndigits, length))
-    L <- do.call('rbind', lapply(ndigits, function(z) {
-      length(z) <- max.len
-      z
-    }))
+    L <- do.call('rbind', lapply(ndigits, `length<-`, max.len))
     nd <- apply(L, 2, max, na.rm = TRUE)
+    
     for (i in seq.int(ng)) {
       tmp <- d2[[i]]
       w.adj <- strwidth('0', cex = cex.axis, font = par('font')) /
         2 * nd[seq.int(nrow(tmp))]
-      mtext(side = 1, at = tmp$time + w.adj, text = tmp$n.risk, las = 1,
+      mtext(tmp$n.risk, side = 1, at = tmp$time + w.adj, las = 1,
             line = line.pos[i], cex = cex.axis, adj = 1, col = col.atrisk[i])
     }
     if (!is.null(atrisk.lab))
-      mtext(side = 1, text = atrisk.lab, at = par('usr')[1],
-            # at = group.name.pos,
+      mtext(atrisk.lab, side = 1, at = usr[1], # at = group.name.pos,
             line = 1.5, adj = 1, col = 1, las = 1, cex = cex.axis)
+    
+    ## median (ci) text on right of at-risk
+    if (median) {
+      st <- ss$table
+      st <- if (length(s$n) != 1L)
+        as.data.frame(st)[strata.order, ] else as.data.frame(t(st))
+      tt <- do.call('sprintf', c(list(
+        fmt = '%s (%s, %s)'),
+        tail(as.list(st), 3L))
+      )
+      tt <- ifelse(is.na(st$median), '-', gsub('NA', '-', tt, fixed = TRUE))
+      at <- usr[2] + diff(usr[1:2]) / 8
+      mtext(sprintf('Median (%s%% CI)', s$conf.int * 100), side = 1,
+            at = at, adj = .5, line = 1.5, col = 1, las = 1)
+      mtext(tt, side = 1, line = line.pos, las = 1,
+            at = at, adj = .5, col = col.atrisk)
+    }
   }
   
   ## legend

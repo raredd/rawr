@@ -9,7 +9,7 @@ kmplot(s, lty.surv = 1, lwd.surv = 1, col.surv = col.surv, mark = 3,
   col.band = FALSE, atrisk = TRUE, atrisk.lab = "Number at risk",
   atrisk.lines = TRUE, atrisk.col = !atrisk.lines, strata.lab = NULL,
   strata.expr = NULL, strata.order = seq_along(s$n), extra.margin = 5,
-  xaxs = "S", xlim = c(0, max(s$time)), ylim = c(0, 1),
+  median = FALSE, xaxs = "s", xlim = c(0, max(s$time)), ylim = c(0, 1),
   xaxis.at = pretty(c(0, s$time)), xaxis.lab = xaxis.at,
   yaxis.at = pretty(ylim), yaxis.lab = yaxis.at, xlab = "Time",
   ylab = "Survival probability", main = "", cex.axis = par("cex.axis"),
@@ -59,6 +59,9 @@ for at-risk table; note that \code{strata.expr} trumps \code{strata.lab}}
 
 \item{extra.margin}{increase left margin when strata labels in at-risk
 table are long}
+
+\item{median}{logical; if \code{TRUE}, median and confidence interval for
+each curve is added to at-risk table}
 
 \item{xaxs}{style of axis; see details or \code{\link{par}}}
 
@@ -133,10 +136,10 @@ km2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 
 ## basic usage
 kmplot(km1)
-kmplot(km1, atrisk.col = c('grey50','tomato'))
-kmplot(km1, mark = 'bump', lr_test = TRUE, atrisk.lines = FALSE)
-kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5, col.surv = 1:4,
-       col.band = c(1,0,0,4))
+kmplot(km1, atrisk.col = c('grey50','tomato'), lr_test = TRUE)
+kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
+kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5,
+       col.surv = 1:4, col.band = c(1,0,0,4))
 
 
 ## expressions in at-risk table (strata.expr takes precedence)
