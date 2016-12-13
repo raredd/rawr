@@ -9,7 +9,10 @@ locf(x, fromLast = FALSE, na.strings = "")
 \arguments{
 \item{x}{a vector, matrix, or data frame}
 
-\item{fromLast}{logical; if \code{TRUE}, starts from end}
+\item{fromLast}{logical or vector of logicals; if \code{TRUE}, observations
+are carried backward rather than forward; other options such as
+\code{c(TRUE, FALSE)} will call \code{locf} first for \code{fromLast = TRUE}
+follwed by calling with \code{fromLast = FALSE} on the result}
 
 \item{na.strings}{a vector of values to be treated as \code{NA}; optionally
 a list of single elements can be used for mixed data types; see examples}
@@ -21,6 +24,7 @@ non-\code{NA} value.
 \examples{
 x <- c('','','a','','b','','','','c')
 locf(x)
+locf(x, c(FALSE, TRUE))
 locf(x, TRUE)
 
 dd <- data.frame(V1 = c('Bob', NA, NA, 'Joe', NA, NA),
@@ -40,6 +44,7 @@ locf(dd, na.strings = list('Joe', '02'))
 dd$V2 <- as.Date(dd$V2, origin = '2000-01-01')
 locf(dd)
 locf(dd, TRUE)
+locf(dd, c(FALSE, TRUE))
 
 }
 

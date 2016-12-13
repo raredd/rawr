@@ -904,13 +904,17 @@ merge2 <- function(l, ...)
 #' non-\code{NA} value.
 #' 
 #' @param x a vector, matrix, or data frame
-#' @param fromLast logical; if \code{TRUE}, starts from end
+#' @param fromLast logical or vector of logicals; if \code{TRUE}, observations
+#' are carried backward rather than forward; other options such as
+#' \code{c(TRUE, FALSE)} will call \code{locf} first for \code{fromLast = TRUE}
+#' follwed by calling with \code{fromLast = FALSE} on the result
 #' @param na.strings a vector of values to be treated as \code{NA}; optionally
 #' a list of single elements can be used for mixed data types; see examples
 #' 
 #' @examples
 #' x <- c('','','a','','b','','','','c')
 #' locf(x)
+#' locf(x, c(FALSE, TRUE))
 #' locf(x, TRUE)
 #' 
 #' dd <- data.frame(V1 = c('Bob', NA, NA, 'Joe', NA, NA),
@@ -930,10 +934,14 @@ merge2 <- function(l, ...)
 #' dd$V2 <- as.Date(dd$V2, origin = '2000-01-01')
 #' locf(dd)
 #' locf(dd, TRUE)
+#' locf(dd, c(FALSE, TRUE))
 #' 
 #' @export
 
 locf <- function(x, fromLast = FALSE, na.strings = '') {
+  if (length(fromLast) > 1L)
+    x <- Recall(Recall(x, fromLast[1L], na.strings),
+                fromLast[-1L], na.strings)
   if (!(ok <- !is.null(nrow(x))) || is.matrix(x))
     x <- data.frame(x, stringsAsFactors = FALSE)
   fromLast <- rep(fromLast, ncol(x))
@@ -993,11 +1001,11 @@ locf <- function(x, fromLast = FALSE, na.strings = '') {
 #' 
 #' @export
 
-roll_fun <- function(x, n = 5, FUN = mean, ..., fromLast = FALSE,
-                     keep = FALSE) {
+roll_fun <- function(x, n = 5L, FUN = mean, ...,
+                     fromLast = FALSE, keep = FALSE) {
   l <- lapply(seq_along(x), function(ii) {
     if (fromLast)
-      x[length(x) + 1 - tail(sequence(ii), n)]
+      x[length(x) + 1L - tail(sequence(ii), n)]
     else x[tail(sequence(ii), n)]
   })
   if (keep)
