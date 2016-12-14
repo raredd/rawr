@@ -2,13 +2,16 @@
 % Please edit documentation in R/stat.R
 \name{rpart_utils}
 \alias{parent}
+\alias{rpart_group}
 \alias{rpart_utils}
 \alias{subset_rpart}
 \title{\code{rpart} utilities}
 \usage{
-parent(node)
+parent(node = 1L)
 
-subset_rpart(tree, node = 1)
+subset_rpart(tree, node = 1L)
+
+rpart_group(tree)
 }
 \arguments{
 \item{node}{an integer representing the node number}
@@ -29,6 +32,9 @@ Utilities for the \pkg{\link{rpart}} package:
 \code{subset_rpart} and \code{subset_rpart2} (in examples) return a
 subset of the data used in \code{rpart} for any intermediate or terminal
 \code{node}.
+
+\code{rpart_group} returns the terminal node label for each observation
+in the original data frame used for \code{tree}.
 }
 \examples{
 \dontrun{
@@ -39,7 +45,7 @@ parent(15)
 parent(23)
 
 ## children nodes should have identical paths
-identical(head(parent(28), -1), head(parent(29), -1))
+identical(head(parent(28), -1L), head(parent(29), -1L))
 
 ## terminal nodes should combine to original data
 nodes <- as.integer(rownames(fit$frame[fit$frame$var \%in\% '<leaf>', ]))
@@ -64,6 +70,11 @@ subset_rpart2 <- function(tree, node = 1) {
 dim(subset_rpart(fit, 4))
 dim(subset_rpart2(fit, 3))
 }
+
+
+rpart_group(fit)
+split(kyphosis, rpart_group(fit))
+  
 
 }
 \seealso{

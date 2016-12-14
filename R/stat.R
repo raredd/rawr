@@ -1327,6 +1327,9 @@ combn_fun <- function(x, FUN, n = 2L, ...) {
 #' subset of the data used in \code{rpart} for any intermediate or terminal
 #' \code{node}.
 #' 
+#' \code{rpart_group} returns the terminal node label for each observation
+#' in the original data frame used for \code{tree}.
+#' 
 #' @param node an integer representing the node number
 #' @param tree an object returned from \code{rpart}
 #' 
@@ -1350,7 +1353,7 @@ combn_fun <- function(x, FUN, n = 2L, ...) {
 #' parent(23)
 #' 
 #' ## children nodes should have identical paths
-#' identical(head(parent(28), -1), head(parent(29), -1))
+#' identical(head(parent(28), -1L), head(parent(29), -1L))
 #' 
 #' ## terminal nodes should combine to original data
 #' nodes <- as.integer(rownames(fit$frame[fit$frame$var %in% '<leaf>', ]))
@@ -1376,22 +1379,34 @@ combn_fun <- function(x, FUN, n = 2L, ...) {
 #' dim(subset_rpart2(fit, 3))
 #' }
 #' 
+#' 
+#' rpart_group(fit)
+#' split(kyphosis, rpart_group(fit))
+#'   
+#' 
 #' @aliases parent subset_rpart
 #' @name rpart_utils
 
 #' @rdname rpart_utils
 #' @export
-parent <- function(node) {
-  if (node[1] != 1)
+parent <- function(node = 1L) {
+  if (node[1L] != 1L)
     c(Recall(if (node %% 2 == 0L) node / 2 else (node - 1) / 2), node)
   else node
 }
 
 #' @rdname rpart_utils
 #' @export
-subset_rpart <- function(tree, node = 1) {
+subset_rpart <- function(tree, node = 1L) {
   data <- eval(tree$call$data, parent.frame(1L))
   wh <- sapply(as.integer(rownames(tree$frame)), parent)
   wh <- unique(unlist(wh[sapply(wh, function(x) node %in% x)]))
   data[rownames(tree$frame)[tree$where] %in% wh[wh >= node], ]
+}
+
+#' @rdname rpart_utils
+#' @export
+rpart_group <- function(tree) {
+  lbl <- labels(tree)
+  droplevels(factor(lbl[tree$where], lbl))
 }
