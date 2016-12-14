@@ -1,5 +1,5 @@
 ### statistical functions
-# rpart_utils: parent, subset_rpart
+# rpart_utils: rpart_parent, rpart_subset, rpart_nodes
 #
 # bincon, bintest, dlt_table, power_cv, simon2, moods_test, fakeglm, gcd,
 # install.bioc, lm.beta, cuzick.test, jt.test, hl_est, combn_fun
@@ -1321,23 +1321,30 @@ combn_fun <- function(x, FUN, n = 2L, ...) {
 #' @description
 #' Utilities for the \pkg{\link{rpart}} package:
 #' 
-#' \code{parent} returns all parent nodes of \code{node}.
+#' \code{rpart_parent} returns all parent nodes of \code{node}.
 #' 
-#' \code{subset_rpart} and \code{subset_rpart2} (in examples) return a
+#' \code{rpart_subset} and \code{rpart_subset2} (in examples) return a
 #' subset of the data used in \code{rpart} for any intermediate or terminal
 #' \code{node}.
 #' 
-#' \code{rpart_group} returns the terminal node label for each observation
+#' \code{rpart_nodes} returns the terminal node label for each observation
 #' in the original data frame used for \code{tree}.
 #' 
 #' @param node an integer representing the node number
 #' @param tree an object returned from \code{rpart}
+#' @param node_labels a vector of labels having the same length as the number
+#' of terminal nodes or total nodes
+#' @param droplevels logical; if \code{TRUE}, only node labels with at least
+#' one observation are used (i.e., only terminal node labels are used)
 #' 
 #' @return
-#' \code{parent} returns a vector representing the path from the root to
+#' \code{rpart_parent} returns a vector representing the path from the root to
 #' \code{node}.
 #' 
-#' \code{subset_rpart} returns the data frame of observations in \code{node}.
+#' \code{rpart_subset} returns the data frame of observations in \code{node}.
+#' For any \code{tree}, the possibilities 
+#' 
+#' \code{rpart_nodes} returns a factor variable 
 #' 
 #' @seealso
 #' \url{http://stackoverflow.com/questions/36086990/how-to-climb-the-tree-structure-of-rpart-object-using-path-in-order-to-purge-man}
@@ -1345,26 +1352,27 @@ combn_fun <- function(x, FUN, n = 2L, ...) {
 #' \url{http://stackoverflow.com/questions/36748531/getting-the-observations-in-a-rparts-node-i-e-cart}
 #' 
 #' @examples
+#' rpart_parent(116)
+#' rpart_parent(29)
+#' 
 #' \dontrun{
 #' library('rpart')
 #' (fit <- rpart(Kyphosis ~ Age + Number + Start, kyphosis, minsplit = 5))
 #' 
-#' parent(15)
-#' parent(23)
-#' 
 #' ## children nodes should have identical paths
-#' identical(head(parent(28), -1L), head(parent(29), -1L))
+#' identical(head(rpart_parent(28), -1L), head(rpart_parent(29), -1L))
 #' 
 #' ## terminal nodes should combine to original data
 #' nodes <- as.integer(rownames(fit$frame[fit$frame$var %in% '<leaf>', ]))
-#' sum(sapply(nodes, function(x) nrow(subset_rpart(fit, x))))
+#' sum(sapply(nodes, function(x) nrow(rpart_subset(fit, x))))
+#' nrow(kyphosis)
 #' 
 #' ## all nodes
 #' nodes <- as.integer(rownames(fit$frame))
-#' sapply(nodes, function(x) nrow(subset_rpart(fit, x)))
+#' sapply(nodes, function(x) nrow(rpart_subset(fit, x)))
 #' 
 #' 
-#' subset_rpart2 <- function(tree, node = 1) {
+#' rpart_subset2 <- function(tree, node = 1L) {
 #'   require('partykit')
 #'   ptree <- as.party(tree)
 #'   ptree$data <- model.frame(eval(tree$call$data, parent.frame(1L)))
@@ -1375,21 +1383,27 @@ combn_fun <- function(x, FUN, n = 2L, ...) {
 #' }
 #' 
 #' ## note differences in nodes labels in party vs rpart
-#' dim(subset_rpart(fit, 4))
-#' dim(subset_rpart2(fit, 3))
+#' dim(rpart_subset(fit, 4))
+#' dim(rpart_subset2(fit, 3))
+#' 
+#' 
+#' rpart_nodes(fit)
+#' rpart_nodes(fit, TRUE)
+#' 
+#' table(rpart_nodes(fit, letters[1:10]),
+#'       rpart_nodes(fit, letters[1:19]))
+#' 
+#' ## subset an rpart object by node id which should only include
+#' observations found in children of the node id(s) selected
+#' kyphosis$node <- rpart_nodes(fit)
+#' rpart_subset(fit, 14:15)
 #' }
 #' 
-#' 
-#' rpart_group(fit)
-#' split(kyphosis, rpart_group(fit))
-#'   
-#' 
-#' @aliases parent subset_rpart
 #' @name rpart_utils
 
 #' @rdname rpart_utils
 #' @export
-parent <- function(node = 1L) {
+rpart_parent <- function(node = 1L) {
   if (node[1L] != 1L)
     c(Recall(if (node %% 2 == 0L) node / 2 else (node - 1) / 2), node)
   else node
@@ -1397,16 +1411,42 @@ parent <- function(node = 1L) {
 
 #' @rdname rpart_utils
 #' @export
-subset_rpart <- function(tree, node = 1L) {
+rpart_subset <- function(tree, node = 1L) {
+  nodes <- sort(as.integer(rownames(tree$frame)))
+  rn    <- rpart_nodes(tree, FALSE)
+  
+  if (length(nn <- node[node %ni% nodes]))
+    stop('Node ', toString(nn), ' not found\n\nPossibilities are ',
+         iprint(nodes, digits = 0), '.\n')
+  
+  f <- function(n) {
+    idx <- unique(unlist(idx[sapply(idx, function(x)
+      sapply(n, function(y) y %in% x))]))
+    rn %in% idx[idx >= n]
+  }
+  
   data <- eval(tree$call$data, parent.frame(1L))
-  wh <- sapply(as.integer(rownames(tree$frame)), parent)
-  wh <- unique(unlist(wh[sapply(wh, function(x) node %in% x)]))
-  data[rownames(tree$frame)[tree$where] %in% wh[wh >= node], ]
+  idx  <- sapply(nodes, rpart_parent)
+  
+  data[!!rowSums(sapply(node, f)), ]
 }
 
 #' @rdname rpart_utils
 #' @export
-rpart_group <- function(tree) {
-  lbl <- labels(tree, minlength = 0L)
-  droplevels(factor(lbl[tree$where], lbl))
+rpart_nodes <- function(tree, node_labels = FALSE, droplevels = TRUE) {
+  if (identical(node_labels, FALSE))
+    return(rownames(tree$frame)[tree$where])
+  labels <- if (!isTRUE(node_labels)) {
+    if (length(node_labels) == length(table(tree$where)) ||
+        length(node_labels) == nrow(tree$frame))
+      node_labels else {
+        warning('length(labels) != number of total or terminal nodes')
+        labels(tree, minlength = 0L)
+      }
+  } else labels(tree, minlength = 0L)
+  
+  nl <- factor(labels[if (length(labels) == nrow(tree$frame))
+    tree$where else as.integer(factor(tree$where))], labels)
+  if (droplevels)
+    droplevels(nl) else nl
 }
