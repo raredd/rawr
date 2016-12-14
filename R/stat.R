@@ -1407,6 +1407,6 @@ subset_rpart <- function(tree, node = 1L) {
 #' @rdname rpart_utils
 #' @export
 rpart_group <- function(tree) {
-  lbl <- labels(tree)
+  lbl <- labels(tree, minlength = 0L)
   droplevels(factor(lbl[tree$where], lbl))
 }
