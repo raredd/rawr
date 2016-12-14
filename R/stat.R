@@ -1394,7 +1394,9 @@ combn_fun <- function(x, FUN, n = 2L, ...) {
 #'       rpart_nodes(fit, letters[1:19]))
 #' 
 #' ## subset an rpart object by node id which should only include
-#' observations found in children of the node id(s) selected
+#' ## observations found in children of the node id(s) selected
+#' identical(kyphosis, rpart_subset(fit, unique(rpart_nodes(fit))))
+#' 
 #' kyphosis$node <- rpart_nodes(fit)
 #' rpart_subset(fit, 14:15)
 #' }
