@@ -87,7 +87,7 @@ where <- function(x, env = parent.frame()) {
 #' names(mtcars[, 4:8])
 #' }
 #' 
-#' @aliases oror %||% notin %ni% inside %inside% %==%
+#' @aliases oror notin inside
 #' @name rawr_ops
 NULL
 
