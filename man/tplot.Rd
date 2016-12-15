@@ -15,8 +15,9 @@ tplot(x, ...)
   group.cex = FALSE, median.line = FALSE, mean.line = FALSE,
   median.pars = list(col = par("col")), mean.pars = median.pars,
   boxplot.pars, show.n = TRUE, show.na = show.n, cex.n = cex,
-  ann = par("ann"), axes = TRUE, frame.plot = axes, add = FALSE, at,
-  horizontal = FALSE, panel.first = NULL, panel.last = NULL)
+  test = FALSE, ann = par("ann"), axes = TRUE, frame.plot = axes,
+  add = FALSE, at, horizontal = FALSE, panel.first = NULL,
+  panel.last = NULL)
 
 \method{tplot}{formula}(formula, data = NULL, ..., subset, na.action = NULL,
   panel.first = NULL, panel.last = NULL)
@@ -70,6 +71,15 @@ lines}
 \item{show.n, show.na}{logical; show total and missing in each group}
 
 \item{cex.n}{character expansion for \code{show.n} and \code{show.na}}
+
+\item{test}{logical or function; if \code{TRUE}, a rank-sum p-value is
+added to the plot (\code{\link{wilcox.test}} or \code{\link{kruskal.test}}
+based on the number of groups)
+
+Alternatively, a function (or function name as a character string) can be
+used, e.g., \code{test = cuzick.test} or \code{function(x, g)
+cuzick.test(x, g)}; note that if \code{test} is a function, it must have
+at least two arguments with the numeric data values and group}
 
 \item{ann}{logical; annotate plot}
 
@@ -135,6 +145,15 @@ g <- interaction(mtcars$gear, mtcars$vs)
 tplot(x, g)
 tplot(split(x, g))
 tplot(mpg ~ gear + vs, mtcars)
+
+
+## add rank-sum or custom test to plot
+tplot(mpg ~ vs, mtcars, test = TRUE)   ## two groups - wilcox.test
+tplot(mpg ~ gear, mtcars, test = TRUE) ## >=2 groups - kruskal.test
+
+tplot(mpg ~ gear, mtcars, test = rawr::cuzick.test) ## trend test
+tplot(mtcars$mpg, 1:2, test = function(x, g)        ## custom test
+  wilcox.test(x ~ g, data.frame(x, g), exact = FALSE, paired = TRUE))
 
 
 ## tplot has the same return value as boxplot

@@ -200,6 +200,14 @@ jmplot <- function(x, y, z,
 #' lines
 #' @param show.n,show.na logical; show total and missing in each group
 #' @param cex.n character expansion for \code{show.n} and \code{show.na}
+#' @param test logical or function; if \code{TRUE}, a rank-sum p-value is
+#' added to the plot (\code{\link{wilcox.test}} or \code{\link{kruskal.test}}
+#' based on the number of groups)
+#' 
+#' Alternatively, a function (or function name as a character string) can be
+#' used, e.g., \code{test = cuzick.test} or \code{function(x, g)
+#' cuzick.test(x, g)}; note that if \code{test} is a function, it must have
+#' at least two arguments with the numeric data values and group
 #' @param ann logical; annotate plot
 #' @param add logical; add to an existing plot
 #' @param panel.first an "expression" to be evaluated after the plot axes are
@@ -240,6 +248,15 @@ jmplot <- function(x, y, z,
 #' tplot(x, g)
 #' tplot(split(x, g))
 #' tplot(mpg ~ gear + vs, mtcars)
+#' 
+#' 
+#' ## add rank-sum or custom test to plot
+#' tplot(mpg ~ vs, mtcars, test = TRUE)   ## two groups - wilcox.test
+#' tplot(mpg ~ gear, mtcars, test = TRUE) ## >=2 groups - kruskal.test
+#' 
+#' tplot(mpg ~ gear, mtcars, test = rawr::cuzick.test) ## trend test
+#' tplot(mtcars$mpg, 1:2, test = function(x, g)        ## custom test
+#'   wilcox.test(x ~ g, data.frame(x, g), exact = FALSE, paired = TRUE))
 #' 
 #' 
 #' ## tplot has the same return value as boxplot
@@ -299,6 +316,7 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
                           show.n = TRUE, show.na = show.n, cex.n = cex,
                           
                           ## extra stuff
+                          test = FALSE,
                           ann = par('ann'), axes = TRUE, frame.plot = axes,
                           add = FALSE, at, horizontal = FALSE,
                           panel.first = NULL, panel.last = NULL) {
@@ -526,6 +544,18 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
       else
         do.call('lines', c(list(at[i] + Lme, rep(median(y), 2)), median.pars))
     }
+  }
+  
+  if (!identical(test, FALSE)) {
+    tFUN <- if (ng == 2L)
+      function(x, g) wilcox.test(x ~ g, data.frame(x = x, g = g)) else
+        function(x, g) kruskal.test(x ~ g, data.frame(x = x, g = g))
+    if (is.function(test) || is.character(test))
+      tFUN <- match.fun(test)
+    pv <- tFUN(unlist(lapply(groups, '[[', 'vs')), g)
+    mtext(pvalr(pv$p.value, show.p = TRUE), 3, line = 0.5, cex = 1.2,
+          # at = if (ng %% 2 == 0) NA else par('usr')[2] * .95,
+          at = par('usr')[2], font = 3, adj = 1)
   }
   
   panel.last
