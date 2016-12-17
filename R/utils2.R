@@ -368,6 +368,7 @@ pvalr <- function(pvals, sig.limit = 0.001, digits = 3, html = FALSE,
                   show.p = FALSE) {
   show.p <- show.p + 1L
   html   <- html + 1L
+  stopifnot(sig.limit > 0, sig.limit < 1)
   sapply(pvals, function(x, sig.limit) {
     if (is.na(x))
       return(NA)
@@ -1082,11 +1083,14 @@ tox_worst <- function(data, id = 'id', desc = 'desc', grade = 'grade',
 #' @param n total number of observations; if not given, the length of
 #' \code{top} is used
 #' @param lowcase logical; names will be lowercase if \code{TRUE}, upper
-#' case if \code{FALSE}, and unchanged otherwise (do not use \code{\link{NA}})
+#' case if \code{FALSE}, and unchanged for any other value
 #' 
 #' @examples
-#' top <- setNames(3:1, c('gold','silver','bronze'))
+#' top <- setNames(3:1, c('Gold','Silver','Bronze'))
 #' countr(names(top))
+#' countr(names(top), lowcase = FALSE)
+#' countr(names(top), lowcase = NA)
+#' 
 #' countr(top, 10)
 #' 
 #' @export
@@ -1097,9 +1101,14 @@ countr <- function(top, n, lowcase = TRUE) {
     n <- length(top)
     top <- table(top)
   }
-  iprint(sprintf('%s (n = %s, %s%%)', if (is.logical(lowcase))
-    if (lowcase) tolower(names(top)) else toupper(names(top)) else
-      names(top), top, round(as.numeric(top) / n * 100)))
+  
+  if (is.na(lowcase) || !is.logical(lowcase))
+    lowcase <- NULL
+  
+  iprint(sprintf('%s (n = %s, %s%%)', if (isTRUE(lowcase))
+    tolower(names(top)) else if (identical(lowcase, FALSE))
+      toupper(names(top)) else names(top),
+    top, round(as.numeric(top) / n * 100)))
 }
 
 #' Date parse

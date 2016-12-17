@@ -14,14 +14,17 @@ character strings or factors}
 \code{top} is used}
 
 \item{lowcase}{logical; names will be lowercase if \code{TRUE}, upper
-case if \code{FALSE}, and unchanged otherwise (do not use \code{\link{NA}})}
+case if \code{FALSE}, and unchanged for any other value}
 }
 \description{
 Formats and prints a \emph{named} vector of counts with percentages.
 }
 \examples{
-top <- setNames(3:1, c('gold','silver','bronze'))
+top <- setNames(3:1, c('Gold','Silver','Bronze'))
 countr(names(top))
+countr(names(top), lowcase = FALSE)
+countr(names(top), lowcase = NA)
+
 countr(top, 10)
 
 }
