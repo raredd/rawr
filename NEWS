@@ -1,9 +1,16 @@
+rawr 0.8.5
+--------
+  * rpart_utils: rpart_parent, rpart_nodes, rpart_subset 
+  * add kmplot_ticks, drop default event argument in kmplot (could break code)
+  * add inject_div, regcaptures2, landmark, waterfall
+  * lr_pval, lr_text - private functions
+
 rawr 0.8.4
 --------
   * kmplot, kmplot_by: improvements, easier use; add lr_test to kmplot; fixed
     scoping issue with calling kmplot_by(kmplot_by); should not break old code
   * points.kmplot: for finer control over marks, half marks ('bump')
-  * lr_text, lr_pval, atrisk.col added
+  * kmplot - lr_text, lr_pval, atrisk.col arguments added
   * add rm_nonascii, lunique, parse_formats2, apply_formats
   * rapply2: add option to continue walking down nested list in some cases
 
@@ -132,7 +139,6 @@ rawr 0.2.0
   * minor bugs fixes
   * fixed args in ggsurv to be consistent with kmplot
   * roxygen 4.0.0
-
 
 rawr 0.1.0
 --------
