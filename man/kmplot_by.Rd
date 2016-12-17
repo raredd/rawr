@@ -25,6 +25,8 @@ performed and the results added to the top-right corner of the plot; if
 numeric, the value is passed as \code{rho} controlling the type of test
 performed; see \code{\link{survdiff}}}
 
+\item{main}{title of plot}
+
 \item{ylab}{y-axis label}
 
 \item{sub}{sub-title displayed in upper left corner; should be a character
@@ -88,39 +90,39 @@ colon2 <- within(colon[duplicated(colon$id), ], {
 kmplot_by(event = 'pfs', data = colon2)
 kmplot_by('sex1', 'pfs', colon2)
 
-kmplot_by('rx', data = colon2, col.surv = 1:3,
+kmplot_by('rx', 'pfs', data = colon2, col.surv = 1:3,
   strata_lab = FALSE, col.band = NA)
 
 
 ## return value is a list of survfit objects
-l <- kmplot_by('sex', by = 'rx', data = colon2, plot = FALSE)
+l <- kmplot_by('sex', 'pfs', colon2, 'rx', plot = FALSE)
 sapply(l, kmplot)
 sapply(l, kmplot_by)
 
 ## multiple variables can be combined
-kmplot_by('rx + sex', data = colon2, strata_lab = FALSE,
+kmplot_by('rx + sex', 'pfs', colon2, strata_lab = FALSE,
   lty.surv = 1:6, col.band = NA)
 
 
 ## if "by" is given, default is to plot separately
-kmplot_by('rx', data = colon2, by = 'sex', col.surv = 1:3,
+kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3,
   strata_lab = c('Observation','Trt','Trt + 5-FU'))
 
 ## if single = FALSE, uses n2mfrow function to set par('mfrow')
-kmplot_by('rx', data = colon2, by = 'sex', col.surv = 1:3, single = FALSE,
+kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3, single = FALSE,
   strata_lab = c('Observation','Trt','Trt + 5-FU'),
   main = levels(factor(colon2$sex)))
   
 ## if par('mfrow') is anything other than c(1,1), uses current setting
 par(mfrow = c(2,2))
-kmplot_by('rx', data = colon2, by = 'sex', col.surv = 1:3, single = FALSE,
+kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3, single = FALSE,
   strata_lab = c('Observation','Trt','Trt + 5-FU'))
 
 ## use add = TRUE to add to a figure region without using the by argument
 par(mfrow = c(1,2))
 mar <- c(8,6,3,2)
-kmplot_by('rx', data = colon2, strata_lab = FALSE, add = TRUE, mar = mar)
-kmplot_by('sex', data = colon2, strata_lab = FALSE, add = TRUE, mar = mar)
+kmplot_by('rx', 'pfs', colon2, strata_lab = FALSE, add = TRUE, mar = mar)
+kmplot_by('sex', 'pfs', colon2, strata_lab = FALSE, add = TRUE, mar = mar)
   
 }
 \seealso{

@@ -366,7 +366,7 @@ kmplot <- function(s,
         as.data.frame(st)[strata.order, ] else as.data.frame(t(st))
       tt <- do.call('sprintf', c(list(
         fmt = '%s (%s, %s)'),
-        tail(as.list(st), 3L))
+        tail(lapply(st, roundr, digits = 0L), 3L))
       )
       tt <- ifelse(is.na(st$median), '-', gsub('NA', '-', tt, fixed = TRUE))
       at <- usr[2] + diff(usr[1:2]) / 8
@@ -634,6 +634,7 @@ lr_pval <- function(s, details = FALSE) {
 #' performed and the results added to the top-right corner of the plot; if
 #' numeric, the value is passed as \code{rho} controlling the type of test
 #' performed; see \code{\link{survdiff}}
+#' @param main title of plot
 #' @param ylab y-axis label
 #' @param sub sub-title displayed in upper left corner; should be a character
 #' vector with length equal to the number of panels (i.e., the number of
@@ -677,39 +678,39 @@ lr_pval <- function(s, details = FALSE) {
 #' kmplot_by(event = 'pfs', data = colon2)
 #' kmplot_by('sex1', 'pfs', colon2)
 #' 
-#' kmplot_by('rx', data = colon2, col.surv = 1:3,
+#' kmplot_by('rx', 'pfs', data = colon2, col.surv = 1:3,
 #'   strata_lab = FALSE, col.band = NA)
 #' 
 #' 
 #' ## return value is a list of survfit objects
-#' l <- kmplot_by('sex', by = 'rx', data = colon2, plot = FALSE)
+#' l <- kmplot_by('sex', 'pfs', colon2, 'rx', plot = FALSE)
 #' sapply(l, kmplot)
 #' sapply(l, kmplot_by)
 #' 
 #' ## multiple variables can be combined
-#' kmplot_by('rx + sex', data = colon2, strata_lab = FALSE,
+#' kmplot_by('rx + sex', 'pfs', colon2, strata_lab = FALSE,
 #'   lty.surv = 1:6, col.band = NA)
 #' 
 #' 
 #' ## if "by" is given, default is to plot separately
-#' kmplot_by('rx', data = colon2, by = 'sex', col.surv = 1:3,
+#' kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3,
 #'   strata_lab = c('Observation','Trt','Trt + 5-FU'))
 #' 
 #' ## if single = FALSE, uses n2mfrow function to set par('mfrow')
-#' kmplot_by('rx', data = colon2, by = 'sex', col.surv = 1:3, single = FALSE,
+#' kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3, single = FALSE,
 #'   strata_lab = c('Observation','Trt','Trt + 5-FU'),
 #'   main = levels(factor(colon2$sex)))
 #'   
 #' ## if par('mfrow') is anything other than c(1,1), uses current setting
 #' par(mfrow = c(2,2))
-#' kmplot_by('rx', data = colon2, by = 'sex', col.surv = 1:3, single = FALSE,
+#' kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3, single = FALSE,
 #'   strata_lab = c('Observation','Trt','Trt + 5-FU'))
 #' 
 #' ## use add = TRUE to add to a figure region without using the by argument
 #' par(mfrow = c(1,2))
 #' mar <- c(8,6,3,2)
-#' kmplot_by('rx', data = colon2, strata_lab = FALSE, add = TRUE, mar = mar)
-#' kmplot_by('sex', data = colon2, strata_lab = FALSE, add = TRUE, mar = mar)
+#' kmplot_by('rx', 'pfs', colon2, strata_lab = FALSE, add = TRUE, mar = mar)
+#' kmplot_by('sex', 'pfs', colon2, strata_lab = FALSE, add = TRUE, mar = mar)
 #'   
 #' @export
 
@@ -845,6 +846,75 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
   })
   names(l) <- names(sp) %||% strata
   invisible(l)
+}
+
+#' Add ticks to \code{kmplot}
+#' 
+#' Add tick marks to a \code{\link{kmplot}} representing a specific event,
+#' \code{what}, occurring within a variable, \code{by_var}.
+#' 
+#' @param s an object of class \code{\link{survfit}}
+#' @param data the data set used to fit \code{s} which should also contain
+#' \code{by_var} and optionally \code{time}, \code{event}, and \code{strata};
+#' \code{kmplot_ticks} will attempt to select these variables based on the
+#' call to \code{survfit}
+#' @param by_var,what a variable, \code{by_var} in \code{data} for which
+#' tick marks are to be placed at each occurrence of \code{what}
+#' @param time,event,strata (optional) variables used to fit \code{s}
+#' @param col a vector of colors (one for each strata level of \code{s}) for
+#' tick marks; note these colors should match the curves of the survival plot
+#' @param ... additional arguments passed to \code{\link{points}}
+#' 
+#' @seealso
+#' \code{\link{kmplot}}; \code{\link{kmplot_by}}
+#' @examples
+#' library('survival')
+#' s <- survfit(Surv(futime, fustat) ~ rx, ovarian)
+#' 
+#' kmplot(s, add = TRUE)
+#' kmplot_ticks(s, by_var = 'resid.ds', what = 1, col = 4:5)
+#' kmplot_ticks(s, by_var = 'resid.ds', what = 2, pch = '*')
+#' 
+#' @export
+
+kmplot_ticks <- function(s, data = eval(s$call$data), by_var, what,
+                         time, event, strata,
+                         col = nlevels(factor(data[, strata])), ...) {
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
+  
+  ## lifted from kmplot_by
+  if (inherits(s, 'survfit')) {
+    if (is.null(data <- s$.data)) {
+      data <- deparse(s$call$data)
+      data <- get(data, where(gsub('[$[].*', '', data)))
+    }
+    terms <- c(survival:::terms.inner(s$call$formula),
+               tail(as.character(s$call$formula), 1L))
+    if (missing(time))
+      time <- terms[1L]
+    if (missing(event))
+      event <- terms[2L]
+    if (missing(strata))
+      strata <- terms[3L]
+  }
+  
+  nc <- length(unique(data[, strata]))
+  col <- if (missing(col))
+    seq.int(nc) else rep_len(col, nc)
+  data[, strata] <- as.factor(data[, strata])
+  data <- data[data[, by_var] %in% what, ]
+  
+  if (!nrow(data)) {
+    par(op)
+    return(invisible(NULL))
+  }
+  # segments(data[, time], y0 = rep(0, nrow(data)), y1 = par('usr')[3],
+  #          col = col[as.numeric(data[, strata])], lwd = 2, ...)
+  points(data[, time], rep(0, nrow(data)),
+         col = col[as.numeric(data[, strata])], ...)
+  
+  invisible(data)
 }
 
 #' Compute local p-value from coxph
