@@ -34,7 +34,7 @@ Create an HTML table widget using the JavaScript library DataTables
 columns.
 }
 \examples{
-\donttest{
+\dontrun{
 library('DT')
 set.seed(1)
 spark <- replicate(nrow(mtcars), round(rnorm(sample(20:100, 1)), 2), FALSE)

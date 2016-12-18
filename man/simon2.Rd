@@ -51,7 +51,7 @@ expected number of subjects, subject to specified constraints.
 simon2(.2, c(.4, .5))
 simon2(p0 = seq(.55, .6, by = .01), pa = .75, ntmax = 60)
 
-\donttest{
+\dontrun{
 ## compare this function to results from desmon::simon
 simon2(.4, .6)
 ## from desmon package
