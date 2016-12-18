@@ -2,7 +2,7 @@
 # show_html, show_markdown, show_math, roundr, intr, pvalr, pvalr2, catlist,
 # binconr, num2char, iprint, writeftable, tabler, tabler_by, tabler_by2,
 # match_ctc, tox_worst, countr, dmy, combine_table, tabler_resp, resp_,
-# r_or_better_, inject_div, sparKDT, render_sparkDT
+# r_or_better_, inject_div, sparKDT, render_sparkDT, case
 ###
 
 
@@ -311,17 +311,16 @@ roundr.matrix <- function(x, digits = 1) {
 #' 
 #' @export
 
-intr <- function(..., fun = median, conf = NULL, digits = 0, na.rm = FALSE) {
-  
+intr <- function(..., fun = median, conf = NULL, digits = 0L, na.rm = FALSE) {
   lst <- list(...)
   if (is.null(conf) || conf == 0 || 
-      findInterval(conf, c(0, 1), rightmost.closed = FALSE) != 1)
+      findInterval(conf, c(0, 1), rightmost.closed = FALSE) != 1L)
     conf <- 1
   
   sapply(lst, function(x) {
-    bounds <- quantile(x, c((1 - conf) / 2 * c(1, -1) + c(0, 1)), na.rm = na.rm)
-    bounds <- roundr(bounds, digits = digits)
-    val <- roundr(fun(x, na.rm = na.rm), digits = digits)
+    bounds <- quantile(x, c((1 - conf) / 2 * c(1,-1) + c(0,1)), na.rm = na.rm)
+    bounds <- roundr(bounds, digits)
+    val <- roundr(fun(x, na.rm = na.rm), digits)
     
     if (!conf %in% c(0, 1))
       sprintf('%s (%s%% CI: %s - %s)', val, conf * 100, bounds[1], bounds[2])
@@ -366,9 +365,10 @@ intr <- function(..., fun = median, conf = NULL, digits = 0, na.rm = FALSE) {
 
 pvalr <- function(pvals, sig.limit = 0.001, digits = 3, html = FALSE,
                   show.p = FALSE) {
+  stopifnot(sig.limit > 0, sig.limit < 1)
   show.p <- show.p + 1L
   html   <- html + 1L
-  stopifnot(sig.limit > 0, sig.limit < 1)
+  
   sapply(pvals, function(x, sig.limit) {
     if (is.na(x))
       return(NA)
@@ -455,9 +455,9 @@ catlist <- function(l)
 binconr <- function(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
                     show_conf = TRUE, method = 'exact') {
   method <- match.arg(method, c('exact','wilson','asymptotic'), FALSE)
-  res <- roundr(bincon(r, n, alpha = 1 - conf, method = method) * 100,
-                digits = digits)
+  res <- roundr(bincon(r, n, alpha = 1 - conf, method = method) * 100, digits)
   zzz <- sprintf('%s%% CI: %s - %s%%', conf * 100, res[4], res[5])
+  
   if (!show_conf)
     zzz <- gsub('.*% CI: ', '', zzz)
   if (est)
@@ -468,118 +468,106 @@ binconr <- function(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
 
 #' Numeric to character string
 #' 
-#' Convert a number to a character string representation.
+#' Convert a number to its word equivalent.
 #' 
 #' Whole numbers twenty-one through ninety-nine are hyphenated when they are
 #' written out whether used alone or as part of a larger number; for example: 
-#' twenty-one. Whole numbers are also hyphenated when they are part of larger
-#' numbers that are written out - but not other parts of large numbers; for
-#' example, 5,264 is written "five thousand two hundred sixty-four." The rule
-#' applies only to two-word numbers; for example, 603 is written out, e.g.,
-#' "six hundred three" (formal) or "six hundred and three" (informal). A whole
-#' number followed by hundred, thousand, etc., would be written as, for
-#' example, "one hundred," and not hyphenated. In a phrase like "one hundred
-#' and ten years," no hyphenation should be added. 
+#' "twenty-one" or "one million twenty-one."
 #' 
-#' @param num number; integer value in \code{(-1e08, 1e08)}
+#' Whole numbers in this range are \emph{not} hyphenated for other orders of
+#' magnitude; for example, 52,052 is written "\emph{fifty two} thousand fifty-
+#' two" and not "\emph{fifty-two} thousand fifty-two." This rule applies only
+#' to two-word numbers 21-99.
+#' 
+#' Informal and formal case differ only by the use of "and" to separate
+#' 1-99: "one hundred one" is the formal case, and "one hundred and one" is
+#' the informal case.
+#' 
+#' @param x an integer to convert to words; can be negative or positive but
+#' decimals will be rounded first
 #' @param informal logical; if \code{TRUE}, adds "and" before tens or ones
 #' @param cap logical; if \code{TRUE}, capitalizes the first word
 #' 
 #' @references
 #' \url{http://dictionary.reference.com/help/faq/language/g80.html}
 #' 
-#' @examples
-#' num2char(19401, informal = TRUE)
+#' @seealso
+#' \code{\link{case}}; adapted from
+#' \url{github.com/ateucher/useful_code/blob/master/R/numbers2words.r}
 #' 
-#' v_num2char <- Vectorize(num2char)
-#' nums <- c(-1000, 100, 10000, 3922, 3012, 201, -152, 1002, 90765432)
-#' v_num2char(nums)
+#' @examples
+#' num2char(19401, TRUE, TRUE)
+#' num2char(19401, FALSE, FALSE)
+#' 
+#' v <- Vectorize(num2char)
+#' x <- c(-1000, 100, 10000, 3922, 3012, 201, -152, 1002, 91765432)
+#' setNames(x, v(x))
 #' 
 #' @export
 
-num2char <- function(num, informal = FALSE, cap = TRUE) {
+num2char <- function(x, informal = FALSE, cap = TRUE) {
+  neg <- x < 0
+  x <- round(abs(x))
+  if (isTRUE(all.equal(x, 0)))
+    return(ifelse(cap, 'Zero', 'zero'))
+  
   scipen <- getOption('scipen')
   options(scipen = 999)
   on.exit(options(scipen = scipen))
   
   ## helpers
-  key <- c('0'='','1'='one','2'='two','3'='three','4'='four','5'='five',
-           '6'='six','7'='seven','8'='eight','9'='nine','10'='ten',
-           '11'='eleven','12'='twelve','13'='thirteen','14'='fourteen',
-           '15'='fifteen','16'='sixteen','17'='seventeen','18'='eighteen',
-           '19'='nineteen','20'='twenty','30'='thirty','40'='forty',
-           '50'='fifty','60'='sixty','70'='seventy','80'='eighty',
-           '90'='ninety','100'='hundred','1000'='thousand','1000000'='million')
-  upcase <- function(x) gsub('(^.)', '\\U\\1', x, perl = TRUE)
-  f1 <- function(x, informal = informal) { # for 1-99
-    x <- as.numeric(x) # if string with leading 0s is passed
-    z <- paste0(' and ',
-                if (x %inside% c(21, 99) && (x %ni% seq(30, 100, 10)))
-                  paste(key[as.character(as.numeric(substr(x, 1, 1)) * 10)],
-                        key[substr(x, 2, 2)], sep = '-')
-                else
-                  key[as.character(as.numeric(x))])
-    if (!informal) gsub(' and ', '', z) else z
+  num2char_ <- function(x) {
+    digits <- rev(strsplit(as.character(x), '')[[1L]])
+    nDigits <- length(digits)
+    
+    if (nDigits == 1L) as.vector(ones[digits])
+    else if (nDigits == 2L)
+      if (x <= 19) as.vector(teens[digits[1L]])
+    else trim(paste(tens[digits[2L]],
+                    Recall(as.numeric(digits[1L]))))
+    else if (nDigits == 3L)
+      trim(paste(ones[digits[3L]], 'hundred and',
+                 Recall(as.num(digits[2:1]))))
+    else {
+      nSuffix <- ((nDigits + 2) %/% 3) - 1L
+      if (nSuffix > length(suffixes))
+        stop(x, ' is too large!')
+      trim(paste(Recall(as.num(digits[
+        nDigits:(3 * nSuffix + 1L)])),
+        suffixes[nSuffix], ',' ,
+        Recall(as.num(digits[(3 * nSuffix):1]))))
+    }
   }
-  f2 <- function(x, informal = informal) {
-    x <- as.numeric(x) # if string with leading 0s is passed
-    if (x %inside% c(100, 999))
-      paste0(key[substr(x, 1, 1)], ' hundred ', f1(substr(x, 2, 3), informal))
-    else f1(x, informal = informal)
-  }
-  f3 <- function(x, informal = informal) {
-    x <- as.numeric(x) # if string with leading 0s is passed
-    if (x %inside% c(1000, 9999))
-      paste0(key[substr(x, 1, 1)], ' thousand ', f2(substr(x, 2, 4), informal))
-    else f2(x, informal = informal)
-  }
-  f4 <- function(x, informal = informal) {
-    x <- as.numeric(x) # if string with leading 0s is passed
-    if (x %inside% c(10000, 99999))
-      paste0(f1(substr(x, 1, 2), FALSE), ' thousand ',
-             f2(substr(x, 3, 5), informal))
-    else f3(x, informal = informal)
-  }
-  f5 <- function(x, informal = informal) {
-    x <- as.numeric(x) # if string with leading 0s is passed
-    if (x %inside% c(100000, 999999))
-      paste0(f2(substr(x, 1, 3), FALSE), ' thousand ',
-             f2(substr(x, 4, 6), informal))
-    else f4(x, informal = informal)
-  }
-  f6 <- function(x, informal = informal) {
-    x <- as.numeric(x) # if string with leading 0s is passed
-    if (x %inside% c(1000000, 9999999))
-      paste0(key[substr(x, 1, 1)], ' million ', f5(substr(x, 2, 7), informal))
-    else f5(x, informal = informal)
-  }
-  f <- function(x, informal = informal) {
-    x <- as.numeric(x) # if string with leading 0s is passed
-    if (x %inside% c(10000000, 99999999))
-      paste0(f1(substr(x, 1, 2), FALSE), ' million ',
-             f5(substr(x, 3, 8), informal))
-    else f6(x, informal = informal)
-  }
+  as.num <- function(...) as.numeric(paste(..., collapse = ''))
+  trim <- function(x)
+    gsub('\\s*,|,\\s*$|\\s*and\\s*$', '', trimws(x))
   
-  if (isTRUE(all.equal(num, 0)))
-    return(ifelse(cap, 'Zero', 'zero'))
-  num <- if (num < 0) {
-    neg <- TRUE
-    abs(num)
-  } else {
-    neg <- FALSE
-    num
-  }
-  if (!num %inside% c(1, 99999999))
-    stop("I can\'t count that high")
+  ## definitions
+  ones <- setNames(
+    c('','one','two','three','four','five','six','seven','eight','nine'),
+    0:9)
+  teens <- setNames(
+    c('ten','eleven','twelve',
+      paste0(c('thir', 'four','fif','six','seven','eigh','nine'), 'teen')),
+    0:9)
+  tens <- setNames(
+    c('twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'),
+    2:9)
+  suffixes <- c('thousand', 'million', 'billion', 'trillion')
   
-  zzz <- trimws(f(num, informal = informal))
-  ## trim double whitespace and "and"s in special cases
-  zzz <- upcase(gsub('\\s{2,}', ' ', zzz))
-  zzz <- tolower(gsub('And\ |\ and*$', '', zzz))
+  ## actual work
+  x <- if (length(x) > 1L)
+    trim(sapply(x, num2char_)) else num2char_(x)
   if (neg)
-    zzz <- paste('negative', zzz)
-  ifelse(cap, upcase(zzz), zzz)
+    x <- paste('negative', x)
+  if (!informal)
+    x <- gsub(' and ', ' ', x)
+  x <- gsub(sprintf('(.*%s) (%s)$',
+                    paste(tens, collapse = '|'),
+                    paste(ones, collapse = '|')),
+            '\\1-\\2', x)
+  if (cap)
+    case(x) else x
 }
 
 #' In-line printing
@@ -617,8 +605,8 @@ iprint <- function (..., wrap = '', sep = ', ', copula, digits = 2) {
     x <- roundr(x, digits = digits)
   if (len == 1L) f(x, wrap) else
     if (len == 2L) paste(f(x, wrap), collapse = copula) else
-      paste0(paste(f(head(x, -1), wrap = wrap), collapse = sep),
-             copula, f(tail(x, 1), wrap = wrap))
+      paste0(paste(f(head(x, -1L), wrap = wrap), collapse = sep),
+             copula, f(tail(x, 1L), wrap = wrap))
 }
 
 #' Write ftable
@@ -1338,7 +1326,7 @@ inject_div <- function(x, where, style) {
 #' Adapted from \url{leonawicz.github.io/HtmlWidgetExamples/ex_dt_sparkline.html}
 #' 
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' library('DT')
 #' set.seed(1)
 #' spark <- replicate(nrow(mtcars), round(rnorm(sample(20:100, 1)), 2), FALSE)
@@ -1364,7 +1352,7 @@ sparkDT <- function(data, spark, type = c('line', 'bar', 'box1', 'box2'),
                     spark_range, options = list(), ...) {
   data <- as.data.frame(data)
   if (missing(spark))
-    return(datatable(data = data, ..., options = options))
+    return(DT::datatable(data = data, ..., options = options))
   
   srange <- lapply(spark, function(x) range(unlist(x), na.rm = TRUE))
   
@@ -1399,7 +1387,7 @@ render_sparkDT <- function(data, variables, type, range, options, ...) {
   ## each column definition and type need a distinct class with variable name
   columnDefs <- lapply(idx, function(ii)
     list(targets = targets[ii],
-         render = JS(
+         render = DT::JS(
            sprintf("function(data, type, full){ return '<span class=spark%s>' + data + '</span>' }", variables[ii])
          )
     )
@@ -1427,10 +1415,70 @@ render_sparkDT <- function(data, variables, type, range, options, ...) {
   )
   js <- sprintf("function (oSettings, json) {\n %s }\n", paste(js, collapse = '\n'))
   
-  oo <- list(columnDefs = columnDefs, fnDrawCallback = JS(js))
-  dt <- do.call('datatable', c(
+  oo <- list(columnDefs = columnDefs, fnDrawCallback = DT::JS(js))
+  dt <- do.call(DT::datatable, c(
     list(data = data, options = modifyList(options, oo)), dots)
   )
-  dt$dependencies <- c(dt$dependencies, htmlwidgets:::getDependency('sparkline'))
+  dt$dependencies <- c(dt$dependencies, htmlwidgets::getDependency('sparkline'))
   dt
+}
+
+#' Letter case
+#' 
+#' Convert a text string to several common types of letter case.
+#' 
+#' This function supports the following letter cases:
+#' 
+#' \itemize{
+#' \item{first}{Only the first letter is uppercase}
+#' \item{upcase}{Each Word Is Uppercase}
+#' \item{downcase}{tHE oPPOSITE oF uPCASE}
+#' \item{camelcase}{TheStringWillBeInCamelCase}
+#' \item{upper}{EQUIVALENT TO \code{toupper}}
+#' \item{lower}{equivalent to \code{tolower}}
+#' \item{lowup}{aLtErNaTiNg cAsEs}
+#' \item{uplow}{ThE OpPoSiTe oF LoWuP}
+#' }
+#' 
+#' @param x a text string
+#' @param which case to use; can be (unambiguously) abbreviated; see details
+#' 
+#' @examples
+#' wh <- eval(formals(case)$which)
+#' x <- 'the quick brown fox'
+#' sapply(wh, case, x = x)
+#' 
+#' ## all cases are vectorized
+#' sapply(wh, case, x = strsplit(x, ' ')[[1]])
+#' 
+#' @export
+
+case <- function(x, which = c('first', 'upcase', 'downcase', 'camelcase',
+                              'upper', 'lower', 'lowup', 'uplow')) {
+  alternating <- function(x, seq) {
+    x <- strsplit(x, '')
+    x <- lapply(x, function(y) {
+      substring(y, seq, seq) <-
+        toupper(substring(y, seq, seq))
+      paste(y, collapse = '')
+    })
+    unlist(x)
+  }
+  
+  which <- switch(match.arg(which),
+    first = '(^.)',
+    upcase = '(\\b.)',
+    downcase = '(?<=[a-z])(.)',
+    camelcase = 'camelcase',
+    upper = {x <- toupper(x); TRUE},
+    lower = {x <- tolower(x); TRUE},
+    lowup = {x <- alternating(x, 0:1); TRUE},
+    uplow = {x <- alternating(x, 1:0); TRUE}
+  )
+  
+  if (isTRUE(which))
+    x
+  else if (which == 'camelcase')
+    gsub(' ', '', Recall(x, 'upcase'))
+  else gsub(which, '\\U\\1', x, perl = TRUE)
 }

@@ -4,7 +4,7 @@
 \alias{intr}
 \title{Interval formatter}
 \usage{
-intr(..., fun = median, conf = NULL, digits = 0, na.rm = FALSE)
+intr(..., fun = median, conf = NULL, digits = 0L, na.rm = FALSE)
 }
 \arguments{
 \item{...}{numeric vector or string of numeric vectors}

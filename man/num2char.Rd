@@ -4,39 +4,47 @@
 \alias{num2char}
 \title{Numeric to character string}
 \usage{
-num2char(num, informal = FALSE, cap = TRUE)
+num2char(x, informal = FALSE, cap = TRUE)
 }
 \arguments{
-\item{num}{number; integer value in \code{(-1e08, 1e08)}}
+\item{x}{an integer to convert to words; can be negative or positive but
+decimals will be rounded first}
 
 \item{informal}{logical; if \code{TRUE}, adds "and" before tens or ones}
 
 \item{cap}{logical; if \code{TRUE}, capitalizes the first word}
 }
 \description{
-Convert a number to a character string representation.
+Convert a number to its word equivalent.
 }
 \details{
 Whole numbers twenty-one through ninety-nine are hyphenated when they are
 written out whether used alone or as part of a larger number; for example: 
-twenty-one. Whole numbers are also hyphenated when they are part of larger
-numbers that are written out - but not other parts of large numbers; for
-example, 5,264 is written "five thousand two hundred sixty-four." The rule
-applies only to two-word numbers; for example, 603 is written out, e.g.,
-"six hundred three" (formal) or "six hundred and three" (informal). A whole
-number followed by hundred, thousand, etc., would be written as, for
-example, "one hundred," and not hyphenated. In a phrase like "one hundred
-and ten years," no hyphenation should be added.
+"twenty-one" or "one million twenty-one."
+
+Whole numbers in this range are \emph{not} hyphenated for other orders of
+magnitude; for example, 52,052 is written "\emph{fifty two} thousand fifty-
+two" and not "\emph{fifty-two} thousand fifty-two." This rule applies only
+to two-word numbers 21-99.
+
+Informal and formal case differ only by the use of "and" to separate
+1-99: "one hundred one" is the formal case, and "one hundred and one" is
+the informal case.
 }
 \examples{
-num2char(19401, informal = TRUE)
+num2char(19401, TRUE, TRUE)
+num2char(19401, FALSE, FALSE)
 
-v_num2char <- Vectorize(num2char)
-nums <- c(-1000, 100, 10000, 3922, 3012, 201, -152, 1002, 90765432)
-v_num2char(nums)
+v <- Vectorize(num2char)
+x <- c(-1000, 100, 10000, 3922, 3012, 201, -152, 1002, 91765432)
+setNames(x, v(x))
 
 }
 \references{
 \url{http://dictionary.reference.com/help/faq/language/g80.html}
+}
+\seealso{
+\code{\link{case}}; adapted from
+\url{github.com/ateucher/useful_code/blob/master/R/numbers2words.r}
 }
 
