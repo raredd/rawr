@@ -2,7 +2,7 @@
 # show_html, show_markdown, show_math, roundr, intr, pvalr, pvalr2, catlist,
 # binconr, num2char, iprint, writeftable, tabler, tabler_by, tabler_by2,
 # match_ctc, tox_worst, countr, dmy, combine_table, tabler_resp, resp_,
-# r_or_better_, inject_div
+# r_or_better_, inject_div, sparKDT, render_sparkDT
 ###
 
 
@@ -1310,4 +1310,127 @@ inject_div <- function(x, where, style) {
   x[where] <- sprintf('<div style=\'%s\'>%s</div>',
                       gsub(';*$', ';', style), x[where])
   x
+}
+
+#' \code{datatable}s with sparklines
+#' 
+#' Create an HTML table widget using the JavaScript library DataTables
+#' (\code{\link[DT]{datatable}}) with \code{\link[sparkline]{sparkline}}
+#' columns.
+#' 
+#' @param data a data frame or matrix
+#' @param spark a \emph{named} list of lists for each column of \code{data}
+#' for which an interactive sparkline will replace each row cell
+#' 
+#' each named list of \code{spark} should have length \code{nrow(data)} and
+#' contain at least one numeric value
+#' @param type the type of sparkline, one or more of "line", "bar", "box1",
+#' or "box2", recycled as needed; the only difference between "box1" and
+#' "box2" is the use of \code{spark_range}
+#' @param spark_range an optional list or vector (recycled as needed) giving
+#' the overall range for each list of \code{spark}; if missing, the ranges
+#' will be calculated; note this is only applicable for \code{type = "line"}
+#' or \code{type = "box1"}
+#' @param options,... \code{options} or additional arguments passed to
+#' \code{\link{datatable}}
+#' 
+#' @seealso
+#' Adapted from \url{leonawicz.github.io/HtmlWidgetExamples/ex_dt_sparkline.html}
+#' 
+#' @examples
+#' \donttest{
+#' library('DT')
+#' set.seed(1)
+#' spark <- replicate(nrow(mtcars), round(rnorm(sample(20:100, 1)), 2), FALSE)
+#' 
+#' sparkDT(mtcars, list(mpg = spark, wt = spark, disp = spark, qsec = spark))
+#' 
+#' sparkDT(mtcars, list(mpg = spark, wt = spark, disp = spark, qsec = spark),
+#'         spark_range = list(disp = c(-5, 5), mpg = c(0, 10)))
+#' 
+#' ## note difference between box1 (boxes aligned) and box2 (max size)
+#' sparkDT(mtcars[, c('mpg', 'wt')],
+#'         list(mpg = spark, wt = spark),
+#'         type = c('box1', 'box2'),
+#'         # range = c(-2, 2),
+#'         rownames = FALSE,
+#'         colnames = c('box1', 'box2')
+#' )
+#' }
+#' 
+#' @export
+
+sparkDT <- function(data, spark, type = c('line', 'bar', 'box1', 'box2'),
+                    spark_range, options = list(), ...) {
+  data <- as.data.frame(data)
+  if (missing(spark))
+    return(datatable(data = data, ..., options = options))
+  
+  srange <- lapply(spark, function(x) range(unlist(x), na.rm = TRUE))
+  
+  spark_range <- if (missing(spark_range))
+    srange else if (!is.list(spark_range))
+      setNames(list(spark_range)[rep_len(1L, length(spark))], names(spark))
+  else if (length(names(spark_range)))
+    modifyList(srange, spark_range) else setNames(spark_range, names(spark))
+  
+  spark_range <- spark_range[names(spark)]
+  
+  type <- match.arg(type, several.ok = TRUE)
+  type <- rep_len(type, length(spark))
+  
+  stopifnot(all(names(spark) %in% names(data)))
+  
+  spark <- rapply(spark, paste, collapse = ', ', how = 'list')
+  data[, names(spark)] <- lapply(spark, unlist)
+  
+  render_sparkDT(data, names(spark), type, spark_range, options, ...)
+}
+
+render_sparkDT <- function(data, variables, type, range, options, ...) {
+  ## catch case of rownames = FALSE - first spark col does not render
+  dots <- lapply(substitute(alist(...))[-1L], eval)
+  if (identical(dots$rownames, FALSE))
+    dots$rownames <- rep_len('', nrow(data))
+  
+  targets <- match(variables, names(data))
+  idx <- seq_along(targets)
+  
+  ## each column definition and type need a distinct class with variable name
+  columnDefs <- lapply(idx, function(ii)
+    list(targets = targets[ii],
+         render = JS(
+           sprintf("function(data, type, full){ return '<span class=spark%s>' + data + '</span>' }", variables[ii])
+         )
+    )
+  )
+  
+  type <- lapply(idx, function(ii) {
+    bar  <- "type: 'bar' , barColor: 'orange', negBarColor: 'purple', highlightColor:     'black'"
+    line <- "type: 'line', lineColor: 'black', fillColor:  '#cccccc', highlightLineColor: 'orange', highlightSpotColor: 'orange'"
+    box  <- "type: 'box' , lineColor: 'black', whiskerColor: 'black', outlierFillColor:   'black',  outlierLineColor:   'black',  medianColor: 'black', boxFillColor: 'orange', boxLineColor: 'black'"
+    
+    r <- range[[ii]]
+    line_range <- sprintf("%s , chartRangeMin: %s , chartRangeMax: %s",
+                          line, r[1], r[2])
+    box_range  <- sprintf("%s , chartRangeMin: %s , chartRangeMax: %s",
+                          box, r[1], r[2])
+    
+    types <- list(bar = bar, line = line_range, box1 = box_range, box2 = box)
+    
+    types[match(type[ii], names(types))]
+  })
+  
+  js <- sapply(idx, function(ii) sprintf(
+    "$('.spark%s:not(:has(canvas))').sparkline('html', { %s }); \n",
+    variables[ii], type[[ii]])
+  )
+  js <- sprintf("function (oSettings, json) {\n %s }\n", paste(js, collapse = '\n'))
+  
+  oo <- list(columnDefs = columnDefs, fnDrawCallback = JS(js))
+  dt <- do.call('datatable', c(
+    list(data = data, options = modifyList(options, oo)), dots)
+  )
+  dt$dependencies <- c(dt$dependencies, htmlwidgets:::getDependency('sparkline'))
+  dt
 }
