@@ -200,7 +200,9 @@ kmplot <- function(s,
   sdat <- s$.data %||% {
     sdat <- deparse(s$call$data)
     sname <- gsub('[$[].*', '', sdat)
-    tryCatch(get(sdat, where(sname)), error = function(e) NULL)
+    tryCatch(if (identical(sdat, sname))
+      get(sdat, where(sname)) else eval(parse(text = sdat), where(sname)),
+      error = function(e) NULL)
   }
   ## remove missing here for special case: all NA for one strata level
   ## drops level in s$strata but not in table(sdat[, svar])
@@ -217,7 +219,8 @@ kmplot <- function(s,
       }, error = function(e) NULL)
     }
     names(s$strata) <- if (!is.null(svar) & !one) svar else 'All'
-    legend <- atrisk.lines <- FALSE
+    # legend <- atrisk.lines <- FALSE
+    legend <- FALSE
   }
   
   ng <- max(ng, 1L)
@@ -308,7 +311,8 @@ kmplot <- function(s,
   if (atrisk) {
     ## set colors for lines of text
     col.atrisk <- if (isTRUE(atrisk.col))
-      col.surv else if (length(atrisk.col) == ng)
+      col.surv else if (!identical(atrisk.col, FALSE) &&
+                        length(atrisk.col) == ng)
         atrisk.col else rep_len(1L, ng)
     
     ## labels for each row in at-risk table
