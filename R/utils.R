@@ -948,7 +948,7 @@ locf <- function(x, fromLast = FALSE, na.strings = '') {
   if (length(na.strings))
     for (ii in seq_along(na.strings))
       try({
-        ## this throws an error for special cases like dates
+        ## this throws an error for special classes like dates
         x[x == unlist(na.strings[ii])] <- NA
       }, silent = TRUE)
   indx <- !is.na(x)
