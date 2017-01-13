@@ -26,7 +26,7 @@ will be calculated; note this is only applicable for \code{type = "line"}
 or \code{type = "box1"}}
 
 \item{options, ...}{\code{options} or additional arguments passed to
-\code{\link{datatable}}}
+\code{\link[DT]{datatable}}}
 }
 \description{
 Create an HTML table widget using the JavaScript library DataTables
@@ -36,6 +36,21 @@ columns.
 \examples{
 \dontrun{
 library('DT')
+
+## strings of data separated by commas should be passed to each row
+## this data will be used to generate the sparkline
+dd <- aggregate(cbind(wt, mpg) ~ gear, mtcars, function(x)
+  toString(fivenum(x)))
+sparkDT(dd)
+
+
+## for each column, create a list of vectors for each row to be plotted
+l <- sapply(c('wt', 'mpg'), function(x)
+  split(mtcars[, x], mtcars$gear), simplify = FALSE, USE.NAMES = TRUE)
+
+sparkDT(dd, l, type = 'box1')
+
+
 set.seed(1)
 spark <- replicate(nrow(mtcars), round(rnorm(sample(20:100, 1)), 2), FALSE)
 
