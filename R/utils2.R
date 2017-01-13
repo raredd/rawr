@@ -710,8 +710,11 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 
 #' tabler_by
 #' 
-#' This function is helpful to make simple stratified tables, faster and
-#' easier to use for simple tables than \code{\link[tables]{tabular}}.
+#' This function is helpful for making simple, formatted tables similar to
+#' the functionality of \code{\link[tables]{tabular}}. \code{tabler_by}
+#' creates simple tables, and \code{tabler_by2} is a wrapper which can
+#' create stratified tables (\code{tabler_by} can also achieve this but
+#' requires additional steps).
 #' 
 #' \code{varname} and \code{byvar} should be factors, and the levels will
 #' appear in the output as they occur in \code{levels(x)}.
@@ -721,12 +724,12 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' equal to the number of levels of \code{byvar}.
 #' 
 #' If one \code{n} is given, \code{tabler_by} assumes that this is the total
-#' population for a subgroup, i.e., if creating a table for a subset of the
+#' population for a subgroup, e.g., if creating a table for a subset of the
 #' data, it is only necessary to provide the total \code{n} for that group.
 #' 
 #' If more than one \code{n} is given, \code{tabler_by} assumes that the
-#' entire data set is given to \code{data} and will use the corresponding
-#' \code{n} to show percentages out of each respective subgroup.
+#' entire data set is given as \code{data} and will use the corresponding
+#' \code{n} for percentages.
 #' 
 #' @param data a data frame; variables \code{varname} and \code{byvar} should
 #' be factors
@@ -742,9 +745,10 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' columns
 #' @param pct.total logical; if \code{TRUE}, adds percents for total column
 #' @param pct.sign logical; if \code{TRUE}, percent sign is shown
-#' @param drop logical; if \code{TRUE}, rows with zero total counts
-#' will be removed (default); \code{FALSE} case is useful when merging multiple
-#' \code{tabler_by} tables (eg, this is what \code{tabler_by2} does)
+#' @param drop logical; for \code{tabler_by} if \code{TRUE}, rows with zero
+#' total counts will be removed (default); the \code{FALSE} case is useful
+#' when merging multiple \code{tabler_by} tables (eg, this is how
+#' \code{tabler_by2} aligns stratified tables)
 #' @param stratvar for \code{tabler_by2}, a factor-like variable used to
 #' stratify observations into mutually exclusive groups for which
 #' \code{tabler_by} will be performed on each subset
@@ -799,7 +803,7 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' 
 #' 
 #' ## same as above but add level of stratification, sort by total within group
-#' out2 <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'grade',
+#' out2 <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'grade', order = TRUE,
 #'                    stratvar = 'phase', zeros = '-', pct = TRUE)
 #' stopifnot(
 #'   identical(
@@ -808,11 +812,13 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' ))
 #' 
 #' colnames(out2)[1:2] <- c(
-#'   'Description', sprintf('Total<br /><font size=1>n = %s</font>', sum(n)))
+#'   'Description', sprintf('Total<br /><font size=1>n = %s</font>', sum(n))
+#' )
 #' 
 #' cgroup <- c('', '',
 #'             sprintf('Phase I<br /><font size=1>n = %s</font>', n[1]),
-#'             sprintf('Phase II<br /><font size=1>n = %s</font>', n[2]))
+#'             sprintf('Phase II<br /><font size=1>n = %s</font>', n[2])
+#' )
 #'             
 #' htmlTable(out2, align = 'lccccccccc', cgroup = cgroup, n.cgroup = c(1,1,4,4),
 #'     caption = 'Table 1: Toxicities<sup>&dagger;</sup> by category, phase,
@@ -825,7 +831,7 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
                       pct.sign = TRUE, drop = TRUE) {
   
   rm_p <- function(x) gsub(' \\(.*\\)$', '', x)
-  ord <- function(...) order(..., decreasing = TRUE)
+  ord  <- function(...) order(..., decreasing = TRUE)
   
   if (!all(wh <- sapply(data[, c(varname, byvar)], is.factor))) {
     warning(sprintf('coercing %s to factor',
@@ -915,16 +921,16 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
 
 #' @rdname tabler_by
 #' @export
-tabler_by2 <- function(data, varname, byvar, n, stratvar, zeros = TRUE,
-                       pct = FALSE, pct.column = FALSE, pct.total = FALSE,
-                       pct.sign = TRUE) {
+tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
+                       zeros = TRUE, pct = FALSE, pct.column = FALSE,
+                       pct.total = FALSE, pct.sign = TRUE) {
   
   rm_p <- function(x) gsub(' \\(.*\\)$', '', x)
-  ord <- function(...) order(..., decreasing = TRUE)
+  ord  <- function(...) order(..., decreasing = TRUE)
   
-  stopifnot(length(byvar) == 1L &
-              (missing(stratvar) || length(stratvar) == 1L) &
-              (ln <- length(varname)) <= 2L)
+  stopifnot(length(byvar) == 1L,
+            (missing(stratvar) || length(stratvar) == 1L),
+            (ln <- length(varname)) <= 2L)
   
   data[] <- lapply(data, as.factor)
   data$`_strat_var_` <- if (missing(stratvar))
@@ -944,7 +950,7 @@ tabler_by2 <- function(data, varname, byvar, n, stratvar, zeros = TRUE,
   ## get groups of columns for each level of byvar
   o2 <- lapply(bylvl, function(x)
     tabler_by(data[data[, '_strat_var_'] == x, ], varname, byvar, n[x],
-              FALSE, zeros, pct, pct.column, pct.total, pct.sign, drop = FALSE))
+              FALSE, zeros, pct, pct.column, pct.total, pct.sign, FALSE))
   
   res <- do.call('cbind', c(list(o1), o2))
   rownames(res) <- locf(rownames(res))
@@ -952,9 +958,12 @@ tabler_by2 <- function(data, varname, byvar, n, stratvar, zeros = TRUE,
   ## remove duplicate columns, rows with 0 total, order using varname input
   res <- t(t(res)[!duplicated(t(res)), ])
   res <- res[!res[, ln] %in% c('0', as.character(zeros)), ]
-  res <- res[if (ln == 1L)
-    ord(as.numeric(rm_p(res[, 1]))) else
-      ord(-xtfrm(rownames(res)), as.numeric(rm_p(res[, ln]))), ]
+  res <- res[if (!order)
+    seq.int(nrow(res)) else {
+      if (ln == 1L)
+        ord(as.numeric(rm_p(res[, 1]))) else
+          ord(-xtfrm(rownames(res)), as.numeric(rm_p(res[, ln])))
+    }, ]
   
   rownames(res)[duplicated(rownames(res))] <- ''
   res
@@ -1320,7 +1329,7 @@ inject_div <- function(x, where, style) {
 #' will be calculated; note this is only applicable for \code{type = "line"}
 #' or \code{type = "box1"}
 #' @param options,... \code{options} or additional arguments passed to
-#' \code{\link{datatable}}
+#' \code{\link[DT]{datatable}}
 #' 
 #' @seealso
 #' Adapted from \url{leonawicz.github.io/HtmlWidgetExamples/ex_dt_sparkline.html}
@@ -1328,6 +1337,21 @@ inject_div <- function(x, where, style) {
 #' @examples
 #' \dontrun{
 #' library('DT')
+#' 
+#' ## strings of data separated by commas should be passed to each row
+#' ## this data will be used to generate the sparkline
+#' dd <- aggregate(cbind(wt, mpg) ~ gear, mtcars, function(x)
+#'   toString(fivenum(x)))
+#' sparkDT(dd)
+#' 
+#' 
+#' ## for each column, create a list of vectors for each row to be plotted
+#' l <- sapply(c('wt', 'mpg'), function(x)
+#'   split(mtcars[, x], mtcars$gear), simplify = FALSE, USE.NAMES = TRUE)
+#' 
+#' sparkDT(dd, l, type = 'box1')
+#' 
+#' 
 #' set.seed(1)
 #' spark <- replicate(nrow(mtcars), round(rnorm(sample(20:100, 1)), 2), FALSE)
 #' 
@@ -1394,9 +1418,9 @@ render_sparkDT <- function(data, variables, type, range, options, ...) {
   )
   
   type <- lapply(idx, function(ii) {
-    bar  <- "type: 'bar' , barColor: 'orange', negBarColor: 'purple', highlightColor:     'black'"
-    line <- "type: 'line', lineColor: 'black', fillColor:  '#cccccc', highlightLineColor: 'orange', highlightSpotColor: 'orange'"
-    box  <- "type: 'box' , lineColor: 'black', whiskerColor: 'black', outlierFillColor:   'black',  outlierLineColor:   'black',  medianColor: 'black', boxFillColor: 'orange', boxLineColor: 'black'"
+    bar  <- "type: 'bar' ,  barColor: 'orange', negBarColor: 'purple',      highlightColor: 'black'"
+    line <- "type: 'line', lineColor: 'black',    fillColor: '#cccccc', highlightLineColor: 'orange', highlightSpotColor: 'orange'"
+    box  <- "type: 'box' , lineColor: 'black', whiskerColor: 'black' ,    outlierFillColor: 'black' ,   outlierLineColor: 'black',  medianColor: 'black', boxFillColor: 'orange', boxLineColor: 'black'"
     
     r <- range[[ii]]
     line_range <- sprintf("%s , chartRangeMin: %s , chartRangeMax: %s",

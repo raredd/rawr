@@ -9,8 +9,8 @@ tabler_by(data, varname, byvar, n, order = FALSE, zeros = TRUE,
   pct = TRUE, pct.column = FALSE, pct.total = FALSE, pct.sign = TRUE,
   drop = TRUE)
 
-tabler_by2(data, varname, byvar, n, stratvar, zeros = TRUE, pct = FALSE,
-  pct.column = FALSE, pct.total = FALSE, pct.sign = TRUE)
+tabler_by2(data, varname, byvar, n, order = FALSE, stratvar, zeros = TRUE,
+  pct = FALSE, pct.column = FALSE, pct.total = FALSE, pct.sign = TRUE)
 }
 \arguments{
 \item{data}{a data frame; variables \code{varname} and \code{byvar} should
@@ -37,17 +37,21 @@ columns}
 
 \item{pct.sign}{logical; if \code{TRUE}, percent sign is shown}
 
-\item{drop}{logical; if \code{TRUE}, rows with zero total counts
-will be removed (default); \code{FALSE} case is useful when merging multiple
-\code{tabler_by} tables (eg, this is what \code{tabler_by2} does)}
+\item{drop}{logical; for \code{tabler_by} if \code{TRUE}, rows with zero
+total counts will be removed (default); the \code{FALSE} case is useful
+when merging multiple \code{tabler_by} tables (eg, this is how
+\code{tabler_by2} aligns stratified tables)}
 
 \item{stratvar}{for \code{tabler_by2}, a factor-like variable used to
 stratify observations into mutually exclusive groups for which
 \code{tabler_by} will be performed on each subset}
 }
 \description{
-This function is helpful to make simple stratified tables, faster and
-easier to use for simple tables than \code{\link[tables]{tabular}}.
+This function is helpful for making simple, formatted tables similar to
+the functionality of \code{\link[tables]{tabular}}. \code{tabler_by}
+creates simple tables, and \code{tabler_by2} is a wrapper which can
+create stratified tables (\code{tabler_by} can also achieve this but
+requires additional steps).
 }
 \details{
 \code{varname} and \code{byvar} should be factors, and the levels will
@@ -58,12 +62,12 @@ only show counts in the table. If given, \code{length(n)} should be one or
 equal to the number of levels of \code{byvar}.
 
 If one \code{n} is given, \code{tabler_by} assumes that this is the total
-population for a subgroup, i.e., if creating a table for a subset of the
+population for a subgroup, e.g., if creating a table for a subset of the
 data, it is only necessary to provide the total \code{n} for that group.
 
 If more than one \code{n} is given, \code{tabler_by} assumes that the
-entire data set is given to \code{data} and will use the corresponding
-\code{n} to show percentages out of each respective subgroup.
+entire data set is given as \code{data} and will use the corresponding
+\code{n} for percentages.
 }
 \examples{
 mt <- within(mtcars, {
@@ -112,7 +116,7 @@ htmlTable(out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
 
 
 ## same as above but add level of stratification, sort by total within group
-out2 <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'grade',
+out2 <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'grade', order = TRUE,
                    stratvar = 'phase', zeros = '-', pct = TRUE)
 stopifnot(
   identical(
@@ -121,11 +125,13 @@ stopifnot(
 ))
 
 colnames(out2)[1:2] <- c(
-  'Description', sprintf('Total<br /><font size=1>n = \%s</font>', sum(n)))
+  'Description', sprintf('Total<br /><font size=1>n = \%s</font>', sum(n))
+)
 
 cgroup <- c('', '',
             sprintf('Phase I<br /><font size=1>n = \%s</font>', n[1]),
-            sprintf('Phase II<br /><font size=1>n = \%s</font>', n[2]))
+            sprintf('Phase II<br /><font size=1>n = \%s</font>', n[2])
+)
             
 htmlTable(out2, align = 'lccccccccc', cgroup = cgroup, n.cgroup = c(1,1,4,4),
     caption = 'Table 1: Toxicities<sup>&dagger;</sup> by category, phase,
