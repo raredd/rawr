@@ -5,8 +5,8 @@
 #
 # psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill, interleave,
 # outer2, merge2, locf, roll_fun, classMethods, regcaptures, cast, melt, view,
-# view2, clist, rapply2, sort_matrix, insert_matrix, tryCatch2, rleid,
-# droplevels2, combine_levels
+# view2, clist, rapply2, sort_matrix, insert, insert_matrix, tryCatch2, rleid,
+# droplevels2, combine_levels, rownames_to_column, column_to_rownames
 #
 # unexported: islist, done, where
 ###
@@ -1517,11 +1517,16 @@ sort_matrix <- function(m, margin = 1L, order) {
     m else t(m)
 }
 
-#' Insert rows or columns
+#' Insert
 #' 
-#' Insert rows and/or columns into a matrix.
+#' Insert rows and/or columns into a matrix or elements into a vector at
+#' specified indices. \code{insert} and \code{insert_matrix} are similar
+#' functions with the latter defined to maintain existing code.
 #' 
-#' @param m a matrix
+#' @param x a matrix
+#' @param row,col index of row or column to shift right or down,
+#' respectively
+#' @param repl replacement values, recycled if needed
 #' @param rowsep,colsep index of row or column to shift right or down,
 #' respectively
 #' @param rowrep,colrep row and column replacement values, recycled if needed;
@@ -1530,36 +1535,56 @@ sort_matrix <- function(m, margin = 1L, order) {
 #' and swap \code{rowrep} and \code{colrep}; see examples
 #' 
 #' @examples
+#' ## insert at index for vectors
+#' insert(1:5, 4)
+#' insert(1:5, 4, repl = 10)
+#' 
 #' m <- col(matrix(0, 5, 5))
-#' insert_matrix(m, 2, c(2,4,4,4))
+#' insert_matrix(m, 2, c(2,4,4,4,6))
 #' 
 #' ## anticipate number of values needed for replacement(s)
+#' # insert_matrix(m, 4, 4:5, colrep = 1:ncol(m)) ## error
 #' insert_matrix(m, 4, 4:5, colrep = 1:6)
 #' 
-#' ## these are _almost_ identical
+#' ## these are _almost_ identical -- rows are inserted first
 #' insert_matrix(m, 5, 5, 0, 1) == t(insert_matrix(t(m), 5, 5, 1, 0))
 #' 
-#' @export
+#' @name insert
 
-insert_matrix <- function(m, rowsep, colsep, rowrep = NA, colrep = rowrep) {
-  # insert_matrix(m, 4, c(5, 7))
-  # insert_matrix(m, 4, c(5, 7), sample(22), 0)
-  im_ <- function(m, idx, repl = NA) {
-    nr <- nrow(m)
-    ii <- sort(c(1:ncol(m), idx))
-    m <- m[, ii]
-    ri <- idx + seq_along(idx) - 1
-    ii <- cbind(rep(1:nr, length(idx)), rep(ri, each = nr))
-    m[ii] <- repl
-    if (!is.null(colnames(m)))
-      colnames(m)[ri] <- ''
-    m
+#' @rdname insert
+#' @export
+insert <- function(x, row, col, repl = NA) {
+  if (is.null(dim(x)))
+    return(insert_(x, c(if (!missing(row)) row, if (!missing(col)) col), repl))
+  if (!missing(row)) {
+    n <- nrow(x)
+    idx <- insert_(seq.int(n), row, NA)
+    x <- x[locf(idx, fromLast = c(FALSE, TRUE)), ]
+    x[which(is.na(idx)), ] <- repl
   }
+  if (!missing(col)) {
+    n <- ncol(x)
+    idx <- insert_(seq.int(n), col, NA)
+    x <- x[, locf(idx, fromLast = c(FALSE, TRUE))]
+    x[, which(is.na(idx))] <- repl
+  }
+  x
+}
+
+#' @rdname insert
+#' @export
+insert_matrix <- function(x, rowsep, colsep, rowrep = NA, colrep = rowrep) {
   if (!missing(rowsep))
-    m <- t(im_(t(m), rowsep, rowrep))
+    x <- insert(x, rowsep, repl = rowrep)
   if (!missing(colsep))
-    m <- im_(m, colsep, colrep)
-  m
+    x <- insert(x, col = colsep, repl = colrep)
+  x
+}
+
+insert_ <- function(x, where, what) {
+  if (max(where <- sort(where)) > length(x))
+    x <- c(x, rep(NA, max(where) - length(x) - 1L))
+  c(x, what)[order(c(seq_along(x), where - 0.5))]
 }
 
 #' tryCatch2
@@ -1717,4 +1742,52 @@ combine_levels <- function(x, levels, labels) {
   }
 
   factor(xc, unique(xl), ordered = is.ordered(x))
+}
+
+#' Rowname tools
+#' 
+#' @description
+#' Convenience functions for working with rownames.
+#' 
+#' \code{rownames_to_column} adds a column to an object using its
+#' \code{\link{rownames}}; \code{column_to_rownames} adds rownames to an
+#' object using a specified column.
+#' 
+#' @param data a matrix or data frame
+#' @param column the name of the column to create or the column name used
+#' to create the row names; if \code{column} is already used, the new name
+#' will be passed to \code{\link{make.unique}} before used
+#' @param where the location to add \code{column} or the index of the column
+#' used to create new row names; for \code{rownames_to_column}, the default
+#' is to add the new column first; optional for \code{column_to_rownames}
+#' \code{column} will be ignored if \code{where} is given
+#' 
+#' @seealso
+#' \code{\link{insert}}; \code{tibble::rownames}
+#' 
+#' @examples
+#' x <- rownames_to_column(mtcars, where = 5)
+#' identical(mtcars, column_to_rownames(x))
+#' identical(mtcars, column_to_rownames(x, where = 5))
+#' 
+#' column_to_rownames(as.matrix(mtcars), 'mpg')
+#' 
+#' @name rawr_rownames
+
+#' @rdname rawr_rownames
+#' @export
+rownames_to_column <- function(data, column = 'rownames', where = 1L) {
+  column <- make.unique(c(colnames(data), column))[ncol(data) + 1L]
+  data <- insert(data, col = where, repl = rownames(data))
+  colnames(data)[where] <- column
+  `rownames<-`(data, NULL)
+}
+
+#' @rdname rawr_rownames
+#' @export
+column_to_rownames <- function(data, column = 'rownames', where = 1L) {
+  where <- if (missing(where))
+    which(colnames(data) %in% column) else where
+  rownames(data) <- make.unique(as.character(data[, where]))
+  data[, -where]
 }
