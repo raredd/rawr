@@ -4,8 +4,8 @@
 \alias{bincon}
 \title{Binomial probability confidence intervals}
 \usage{
-bincon(r, n, alpha = 0.05, round = NULL, method = c("exact", "wilson",
-  "asymptotic", "all"))
+bincon(r, n, alpha = 0.05, digits = getOption("digits"),
+  method = c("exact", "wilson", "asymptotic", "all"))
 }
 \arguments{
 \item{r}{number of responses (successes)}
@@ -14,8 +14,7 @@ bincon(r, n, alpha = 0.05, round = NULL, method = c("exact", "wilson",
 
 \item{alpha}{type-I error probability}
 
-\item{round}{integer value specifying number of decimal places to round
-(default is no rounding); see \code{\link{round}}}
+\item{digits}{integer value specifying number of decimal places}
 
 \item{method}{character strings specifying which method to use; see details}
 }
@@ -48,14 +47,15 @@ Agresti, A. and B.A. Coull. Approximate is better than "exact"
 for interval extimation of binomial proportions. \emph{American
 Statistician}. \strong{59}:119-126, 1998.
 
-Brown, L.D., T.T. Cai, and A. Das Gupta. Inverval estimation for
-a binomial proportion (with discussion). \emph{Statistical Science}. 
+Brown, L.D., T.T. Cai, and A. Das Gupta. Inverval estimation
+for a binomial proportion (with discussion). \emph{Statistical Science}. 
 \strong{16}:101-133, 2001.
 
 Newcombe, R.G. Logit confidence intervals and the inverse sinh
 transformation, \emph{American Statistician}. \strong{55}:200-202, 2001.
 }
 \seealso{
-\code{\link[Hmisc]{binconf}}; \code{desmon::binci}
+\code{\link{binconr}}; \code{\link[Hmisc]{binconf}}; \code{desmon::binci};
+\code{desmon::twocon}
 }
 

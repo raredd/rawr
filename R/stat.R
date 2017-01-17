@@ -21,8 +21,7 @@
 #' @param r number of responses (successes)
 #' @param n number of observations (trials)
 #' @param alpha type-I error probability
-#' @param round integer value specifying number of decimal places to round
-#' (default is no rounding); see \code{\link{round}}
+#' @param digits integer value specifying number of decimal places
 #' @param method character strings specifying which method to use; see details
 #' 
 #' @return
@@ -35,14 +34,15 @@
 #' @references Agresti, A. and B.A. Coull. Approximate is better than "exact"
 #' for interval extimation of binomial proportions. \emph{American
 #' Statistician}. \strong{59}:119-126, 1998.
-#' @references Brown, L.D., T.T. Cai, and A. Das Gupta. Inverval estimation for
-#' a binomial proportion (with discussion). \emph{Statistical Science}. 
+#' @references Brown, L.D., T.T. Cai, and A. Das Gupta. Inverval estimation
+#' for a binomial proportion (with discussion). \emph{Statistical Science}. 
 #' \strong{16}:101-133, 2001.
 #' @references Newcombe, R.G. Logit confidence intervals and the inverse sinh
 #' transformation, \emph{American Statistician}. \strong{55}:200-202, 2001.
 #' 
 #' @seealso
-#' \code{\link[Hmisc]{binconf}}; \code{desmon::binci}
+#' \code{\link{binconr}}; \code{\link[Hmisc]{binconf}}; \code{desmon::binci};
+#' \code{desmon::twocon}
 #' 
 #' @examples
 #' bincon(0:10, 10)
@@ -50,9 +50,8 @@
 #' 
 #' @export
 
-bincon <- function(r, n, alpha = 0.05, round = NULL,
-                   method = c('exact','wilson','asymptotic','all')) {
-  
+bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
+                   method = c('exact', 'wilson', 'asymptotic','all')) {
   # error checks
   if (any(r < 0) | any(r > n))
     stop('invalid response value')
@@ -106,8 +105,7 @@ bincon <- function(r, n, alpha = 0.05, round = NULL,
     mat <- cbind(mat, mat[, 3] - mat[, 2])
     dimnames(mat) <- list(c('Exact', 'Wilson', 'Asymptotic'),
                           c('PointEst', 'Lower', 'Upper','Width'))
-    if (!is.null(round))
-      mat[, 2:4] <- round(mat[, 2:4], digits = round)
+    mat[, 2:4] <- round(mat[, 2:4], digits = digits)
     
     return(cbind(Responses = r, Trials = n, mat))
   }
@@ -115,12 +113,9 @@ bincon <- function(r, n, alpha = 0.05, round = NULL,
   mat <- matrix(ncol = 3, nrow = length(r))
   for (i in 1:length(r))
     mat[i, ] <- bc(r[i], n[i], alpha = alpha, method = method)
-  
   mat <- `colnames<-`(cbind(mat, mat[, 3] - mat[, 2]),
                       c('PointEst','Lower','Upper','Width'))
-  
-  if (!is.null(round))
-    mat[, 2:4] <- round(mat[, 2:4], digits = round)
+  mat[, 2:4] <- round(mat[, 2:4], digits = digits)
   
   cbind(Responses = r, Trials = n, mat)
 }

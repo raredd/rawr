@@ -454,7 +454,7 @@ catlist <- function(l)
 
 binconr <- function(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
                     show_conf = TRUE, method = 'exact') {
-  method <- match.arg(method, c('exact','wilson','asymptotic'), FALSE)
+  method <- match.arg(method, c('exact', 'wilson', 'asymptotic'), FALSE)
   res <- roundr(bincon(r, n, alpha = 1 - conf, method = method) * 100, digits)
   zzz <- sprintf('%s%% CI: %s - %s%%', conf * 100, res[4], res[5])
   
