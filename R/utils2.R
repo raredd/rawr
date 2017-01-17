@@ -710,12 +710,15 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 
 #' tabler_by
 #' 
+#' @description
 #' This function is helpful for making simple, formatted tables similar to
-#' the functionality of \code{\link[tables]{tabular}}. \code{tabler_by}
-#' creates simple tables, and \code{tabler_by2} is a wrapper which can
-#' create stratified tables (\code{tabler_by} can also achieve this but
-#' requires additional steps).
+#' the functionality of \code{\link[tables]{tabular}}.
 #' 
+#' \code{tabler_by} creates simple tables, and \code{tabler_by2} is a wrapper
+#' which can create stratified tables (\code{tabler_by} can also achieve this
+#' but requires additional steps).
+#' 
+#' @details
 #' \code{varname} and \code{byvar} should be factors, and the levels will
 #' appear in the output as they occur in \code{levels(x)}.
 #' 
@@ -744,7 +747,8 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' @param pct.column logical; if \code{TRUE}, percents are separated into new
 #' columns
 #' @param pct.total logical; if \code{TRUE}, adds percents for total column
-#' @param pct.sign logical; if \code{TRUE}, percent sign is shown
+#' @param pct.sign logical; if \code{TRUE}, percent sign is shown; otherwise,
+#' percents are shown in parens without sign
 #' @param drop logical; for \code{tabler_by} if \code{TRUE}, rows with zero
 #' total counts will be removed (default); the \code{FALSE} case is useful
 #' when merging multiple \code{tabler_by} tables (eg, this is how
@@ -856,17 +860,18 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
     ## if length(n) == 1L, use same n for all strat levels (assume subgroup)
     ## else, map each n to each strat level (assume total)
     if (length(n) == 1L)
-      n <- rep(n, ncol(ttbl) - 1)
+      n <- rep(n, ncol(ttbl) - 1L)
     if (length(n) != nlevels(data[, byvar]))
-      stop('\'n\' should be 1 or equal to nlevels(byvar)')
+      stop('\'n\' should be length 1 or nlevels(data[, byvar])')
     
     ## add percents, make them sum to 100 by column
-    ## if recursive error in Round, skip to regular round
+    ## if recursive error in rawr::Round, skip to regular round
     ptbl <- ttbl / matrix(rep(c(sum(ttbl[, 1]), n), each = nr), nr) * 100
     ptbl <- tryCatch(apply(ptbl, 2, Round, 100),
                      error = function(e) apply(ptbl, 2, round, 0))
     res <- matrix(sprintf('%s (%s%%)', ttbl, ptbl), nrow = nr, ncol = nc)
     res[] <- gsub('0 (NaN%)', '0 (0%)', res, fixed = TRUE)
+    
     if (!pct.sign)
       res[] <- gsub('%', '', res, fixed = TRUE)
     
@@ -874,7 +879,7 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
     if (pct.column) {
       res <- gsub('[^0-9 ]', '', apply(res, 1, paste0, collapse = ' '))
       res <- as.matrix(read.table(text = res, colClasses = 'character'))
-      cn <- interleave(cn, rep('%', nc))
+      cn <- interleave(cn, rep_len('%', nc))
       if (!pct.total) {
         cn <- cn[-2]
         res <- res[, -2]

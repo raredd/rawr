@@ -35,7 +35,8 @@ columns}
 
 \item{pct.total}{logical; if \code{TRUE}, adds percents for total column}
 
-\item{pct.sign}{logical; if \code{TRUE}, percent sign is shown}
+\item{pct.sign}{logical; if \code{TRUE}, percent sign is shown; otherwise,
+percents are shown in parens without sign}
 
 \item{drop}{logical; for \code{tabler_by} if \code{TRUE}, rows with zero
 total counts will be removed (default); the \code{FALSE} case is useful
@@ -48,10 +49,11 @@ stratify observations into mutually exclusive groups for which
 }
 \description{
 This function is helpful for making simple, formatted tables similar to
-the functionality of \code{\link[tables]{tabular}}. \code{tabler_by}
-creates simple tables, and \code{tabler_by2} is a wrapper which can
-create stratified tables (\code{tabler_by} can also achieve this but
-requires additional steps).
+the functionality of \code{\link[tables]{tabular}}.
+
+\code{tabler_by} creates simple tables, and \code{tabler_by2} is a wrapper
+which can create stratified tables (\code{tabler_by} can also achieve this
+but requires additional steps).
 }
 \details{
 \code{varname} and \code{byvar} should be factors, and the levels will
