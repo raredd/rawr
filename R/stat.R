@@ -138,7 +138,17 @@ bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
 #' @param alpha,beta type-I and type-II errors
 #' 
 #' @return
-#' Sample size, overall power, and overall type-I error rate
+#' A list with the following components:
+#' 
+#' \item{\code{$designs}}{a matrix with a row giving a summary of each design
+#' which meets the criteria. The columns are: \code{p0} and \code{p1}, the
+#' null and alternative hypotheses, respectively; \code{n} and \code{r2}, the
+#' overall sample size and minimum number of responses required to reject
+#' \code{p0}; \code{type1} and \code{power}, the alpha and \code{1 - beta} for
+#' the designs; and \code{signal}, the magnitude of difference between
+#' \code{p0} and \code{p1}}
+#' \item{\code{$call}}{the call to \code{bintest}}
+#' \item{\code{$description}}{help text for \code{$designs}}
 #' 
 #' @references Khan, Sarker, Hackshaw. Smaller sample sizes for phase II trials
 #' based on exact tests with actual error rates by trading-off their nominal
@@ -150,7 +160,7 @@ bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
 #' \href{https://github.com/raredd/sascros/blob/master/bintest.sas}{SAS macro}
 #' 
 #' @examples
-#' bintest(p0low = .2, p1low = .5, n.max  = 25)
+#' bintest(p0low = .2, p1low = .5, n.max = 25)
 #' 
 #' ## example in sas macro
 #' bintest(.1, .15, .2, .2, n.max = 80, alpha = .08, beta = .24)
@@ -192,7 +202,8 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
   mat <- unique(as.data.frame(mat[, c(1:3,5,7,9:10)]))
   mat <- mat[order(mat$n), ]
   
-  list(designs = as.matrix(mat), call = match.call(),
+  list(designs = `rownames<-`(as.matrix(mat), NULL),
+       call = match.call(),
        description = c(
          'n = overall sample size',
          'r2 = minimum number of responders required to reject p0',
@@ -415,19 +426,20 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
 #' 
 #' @return
 #' A list with the following components:
+#' 
 #' \item{\code{$designs}}{a matrix with a row giving a summary of each
 #' design which meets the criteria. The columns are: \code{n1}, the number of
 #' subjects entered in the first stage; \code{r1}, the cutoff for stopping at
-#' the first stage (continue if the number of responses is > \code{r1}); 
+#' the first stage (continue if the number of responses is > \code{r1});
 #' \code{n2}, the additional number of subjects enrolled in the second stage; 
 #' \code{r2}, the cutoff for inactivity after the second stage (reject the null
 #' if the number of responses is > \code{r2}); \code{Pstop1.H0}, the
-#' probability of stopping after the first stage under H0 (\code{p0}); 
+#' probability of stopping after the first stage under H0 (\code{p0});
 #' \code{size}, the actual type-I error; \code{type2}, the actual type-II
 #' error; \code{E.tot.n.H0}, the expected number of subjects under H0}
-#' \item{\code{$call}}{the call to \code{simon2}.}
+#' \item{\code{$call}}{the call to \code{simon2}}
 #' \item{\code{$description}}{a text string giving a brief description of
-#' the columns in \code{$designs}.}
+#' the columns in \code{$designs}}
 #' 
 #' @seealso
 #' \pkg{desmon}: \code{simon}, \code{twostg}, \code{bin1samp}, \code{pickwin},

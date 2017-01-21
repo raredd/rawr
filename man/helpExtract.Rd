@@ -29,20 +29,22 @@ for use in Sweave or R-markdown documents.
 }
 \details{
 The \code{type} argument accepts:
-\itemize{
-\item \code{"m_code"}: Markdown code chunks; for use with markdown documents
-when highlighted code is expected.
-\item \code{"m_text"}: Markdown plain text; for use with markdown documents
-where regular text is expected.
-\item \code{"s_code"}: Sweave code chunks; for use with Sweave documents
-where highlighted code is expected.
-\item \code{"s_text"}: Sweave plain text; for use with Sweave documents
-where regular text is expected.
+
+\tabular{llllll}{
+\tab \code{text}    \tab \tab \tab \tab plain text \cr
+\tab \code{md_code} \tab \tab \tab \tab markdown code chunks; for use with
+markdown documents when highlighted code is expected \cr
+\tab \code{md_text} \tab \tab \tab \tab markdown plain text; for use with
+markdown documents where regular text is expected \cr
+\tab \code{sw_code} \tab \tab \tab \tab sweave code chunks; for use with
+Sweave documents where highlighted code is expected \cr
+\tab \code{sw_text} \tab \tab \tab \tab sweave plain text; for use with
+Sweave documents where regular text is expected \cr
 }
 
 To see the results in the console:
 
-\code{cat(helpExtract(print, type = 'm_text'))}
+\code{cat(helpExtract(print, type = 'md_text'))}
 
 To insert a (highlighted) chunk into a markdown document:
 

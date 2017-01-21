@@ -4,13 +4,17 @@
 \alias{case}
 \title{Letter case}
 \usage{
-case(x, which = c("first", "upcase", "downcase", "camelcase", "upper",
-  "lower", "lowup", "uplow"))
+case(x, case = c("first", "upcase", "downcase", "camelcase", "upper", "lower",
+  "lowup", "uplow"), translate = FALSE)
 }
 \arguments{
 \item{x}{a text string}
 
-\item{which}{case to use; can be (unambiguously) abbreviated; see details}
+\item{case}{a case to use; can be (unambiguously) abbreviated; see details}
+
+\item{translate}{logical; if \code{TRUE}, strings will be translated to
+upper- or lowercase \emph{before} \code{case} is applied to ensure that
+the case of all characters of \code{x} is uniform}
 }
 \description{
 Convert a text string to several common types of letter case.
@@ -18,24 +22,35 @@ Convert a text string to several common types of letter case.
 \details{
 This function supports the following letter cases:
 
-\itemize{
-\item{first}{Only the first letter is uppercase}
-\item{upcase}{Each Word Is Uppercase}
-\item{downcase}{tHE oPPOSITE oF uPCASE}
-\item{camelcase}{TheStringWillBeInCamelCase}
-\item{upper}{EQUIVALENT TO \code{toupper}}
-\item{lower}{equivalent to \code{tolower}}
-\item{lowup}{aLtErNaTiNg cAsEs}
-\item{uplow}{ThE OpPoSiTe oF LoWuP}
+\tabular{llllll}{
+\tab \code{first} \tab \tab \tab \tab
+\code{Only the first letter is uppercase} \cr
+\tab \code{upcase} \tab \tab \tab \tab
+\code{Each Word Is Uppercase} \cr
+\tab \code{downcase} \tab \tab \tab \tab
+\code{tHE oPPOSITE oF uPCASE} \cr
+\tab \code{camelcase} \tab \tab \tab \tab
+\code{TheStringWillBeInCamelCase} \cr
+\tab \code{upper} \tab \tab \tab \tab
+\code{EQUIVALENT TO }\code{\link{toupper}} \cr
+\tab \code{lower} \tab \tab \tab \tab
+\code{equivalent to }\code{\link{tolower}} \cr
+\tab \code{lowup} \tab \tab \tab \tab
+\code{aLtErNaTiNg cAsEs} \cr
+\tab \code{uplow} \tab \tab \tab \tab
+\code{ThE OpPoSiTe oF LoWuP} \cr
 }
 }
 \examples{
-wh <- eval(formals(case)$which)
+cases <- eval(formals(case)$case)
 x <- 'the quick brown fox'
-sapply(wh, case, x = x)
+sapply(cases, case, x = x)
 
 ## all cases are vectorized
-sapply(wh, case, x = strsplit(x, ' ')[[1]])
+sapply(cases, case, x = strsplit(x, ' ')[[1]])
+
+case('upCASE', 'upcase', translate = FALSE) ## default
+case('upCASE', 'upcase', translate = TRUE)
 
 }
 

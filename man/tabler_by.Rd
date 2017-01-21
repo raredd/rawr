@@ -6,7 +6,7 @@
 \title{tabler_by}
 \usage{
 tabler_by(data, varname, byvar, n, order = FALSE, zeros = TRUE,
-  pct = TRUE, pct.column = FALSE, pct.total = FALSE, pct.sign = TRUE,
+  pct = FALSE, pct.column = FALSE, pct.total = FALSE, pct.sign = FALSE,
   drop = TRUE)
 
 tabler_by2(data, varname, byvar, n, order = FALSE, stratvar, zeros = TRUE,
@@ -81,8 +81,11 @@ mt <- within(mtcars, {
 
 tabler_by(mt, 'vs', 'gear')
 tabler_by(mt, c('vs', 'carb'), 'gear', order = TRUE)
-tabler_by(mt, 'vs', 'gear', n = table(mt$gear))
-tabler_by(mt, 'vs', 'gear', n = table(mt$gear), pct.column = TRUE, zeros = '-')
+
+## when length(n) > 1, each column uses a different n for percents
+tabler_by(mt, 'vs', 'gear', n = table(mt$gear), pct = TRUE)
+tabler_by(mt, 'vs', 'gear', n = table(mt$gear), zeros = '-',
+          pct = TRUE, pct.column = TRUE, pct.total = TRUE)
 
 
 ## example workflow
@@ -101,7 +104,7 @@ n <- colSums(table(tox$id, tox$phase) > 0)
 tox[] <- lapply(tox, factor)
 tox <- tox_worst(tox, desc = 'tox_desc')$tox_worst
 
-out <- tabler_by2(tox, 'tox_desc', 'grade', stratvar = 'phase', zeros = '.')
+out <- tabler_by2(tox, 'tox_desc', 'grade', stratvar = 'phase', zeros = '-')
 colnames(out)[1] <- sprintf('Total<br /><font size=1>n = \%s</font>', sum(n))
 cgroup <- c('',
             sprintf('Phase I<br /><font size=1>n = \%s</font>', n[1]),

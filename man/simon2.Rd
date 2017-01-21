@@ -25,19 +25,20 @@ minimize the maximum sample size}
 }
 \value{
 A list with the following components:
+
 \item{\code{$designs}}{a matrix with a row giving a summary of each
 design which meets the criteria. The columns are: \code{n1}, the number of
 subjects entered in the first stage; \code{r1}, the cutoff for stopping at
-the first stage (continue if the number of responses is > \code{r1}); 
+the first stage (continue if the number of responses is > \code{r1});
 \code{n2}, the additional number of subjects enrolled in the second stage; 
 \code{r2}, the cutoff for inactivity after the second stage (reject the null
 if the number of responses is > \code{r2}); \code{Pstop1.H0}, the
-probability of stopping after the first stage under H0 (\code{p0}); 
+probability of stopping after the first stage under H0 (\code{p0});
 \code{size}, the actual type-I error; \code{type2}, the actual type-II
 error; \code{E.tot.n.H0}, the expected number of subjects under H0}
-\item{\code{$call}}{the call to \code{simon2}.}
+\item{\code{$call}}{the call to \code{simon2}}
 \item{\code{$description}}{a text string giving a brief description of
-the columns in \code{$designs}.}
+the columns in \code{$designs}}
 }
 \description{
 Function for sample sizes for Simon optimal two-stage, single-arm designs.

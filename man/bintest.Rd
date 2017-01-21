@@ -21,7 +21,17 @@ may occur is known}
 \item{alpha, beta}{type-I and type-II errors}
 }
 \value{
-Sample size, overall power, and overall type-I error rate
+A list with the following components:
+
+\item{\code{$designs}}{a matrix with a row giving a summary of each design
+which meets the criteria. The columns are: \code{p0} and \code{p1}, the
+null and alternative hypotheses, respectively; \code{n} and \code{r2}, the
+overall sample size and minimum number of responses required to reject
+\code{p0}; \code{type1} and \code{power}, the alpha and \code{1 - beta} for
+the designs; and \code{signal}, the magnitude of difference between
+\code{p0} and \code{p1}}
+\item{\code{$call}}{the call to \code{bintest}}
+\item{\code{$description}}{help text for \code{$designs}}
 }
 \description{
 Function for sample sizes for single-stage designs in early clinical trial
@@ -31,7 +41,7 @@ Cycles through possible designs constrained by \code{alpha}, \code{beta},
 and \code{n.max} arguments for specified ranges of \code{p0} and \code{p1}.
 }
 \examples{
-bintest(p0low = .2, p1low = .5, n.max  = 25)
+bintest(p0low = .2, p1low = .5, n.max = 25)
 
 ## example in sas macro
 bintest(.1, .15, .2, .2, n.max = 80, alpha = .08, beta = .24)

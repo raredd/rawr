@@ -770,8 +770,11 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' 
 #' tabler_by(mt, 'vs', 'gear')
 #' tabler_by(mt, c('vs', 'carb'), 'gear', order = TRUE)
-#' tabler_by(mt, 'vs', 'gear', n = table(mt$gear))
-#' tabler_by(mt, 'vs', 'gear', n = table(mt$gear), pct.column = TRUE, zeros = '-')
+#' 
+#' ## when length(n) > 1, each column uses a different n for percents
+#' tabler_by(mt, 'vs', 'gear', n = table(mt$gear), pct = TRUE)
+#' tabler_by(mt, 'vs', 'gear', n = table(mt$gear), zeros = '-',
+#'           pct = TRUE, pct.column = TRUE, pct.total = TRUE)
 #' 
 #' 
 #' ## example workflow
@@ -790,7 +793,7 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' tox[] <- lapply(tox, factor)
 #' tox <- tox_worst(tox, desc = 'tox_desc')$tox_worst
 #' 
-#' out <- tabler_by2(tox, 'tox_desc', 'grade', stratvar = 'phase', zeros = '.')
+#' out <- tabler_by2(tox, 'tox_desc', 'grade', stratvar = 'phase', zeros = '-')
 #' colnames(out)[1] <- sprintf('Total<br /><font size=1>n = %s</font>', sum(n))
 #' cgroup <- c('',
 #'             sprintf('Phase I<br /><font size=1>n = %s</font>', n[1]),
@@ -831,8 +834,8 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' @export
 
 tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
-                      pct = TRUE, pct.column = FALSE, pct.total = FALSE,
-                      pct.sign = TRUE, drop = TRUE) {
+                      pct = FALSE, pct.column = FALSE, pct.total = FALSE,
+                      pct.sign = FALSE, drop = TRUE) {
   
   rm_p <- function(x) gsub(' \\(.*\\)$', '', x)
   ord  <- function(...) order(..., decreasing = TRUE)
@@ -855,18 +858,23 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
   
   ## add percents, eg "N (x%)", to each column
   if (missing(n) & any(pct, pct.column, pct.total))
-    message('To show percents \'n\' should be given', domain = NA)
+    warning('\'n\' must be given to show percents', domain = NA)
   if (pct & !missing(n)) {
     ## if length(n) == 1L, use same n for all strat levels (assume subgroup)
     ## else, map each n to each strat level (assume total)
-    if (length(n) == 1L)
-      n <- rep(n, ncol(ttbl) - 1L)
+    if ((ln <- length(n)) == 1L)
+      n <- rep.int(n, ncol(ttbl) - 1L)
     if (length(n) != nlevels(data[, byvar]))
       stop('\'n\' should be length 1 or nlevels(data[, byvar])')
     
     ## add percents, make them sum to 100 by column
     ## if recursive error in rawr::Round, skip to regular round
+    
+    ## pct based on counts
     ptbl <- ttbl / matrix(rep(c(sum(ttbl[, 1]), n), each = nr), nr) * 100
+    ## pct based on n
+    ptbl <- ttbl / matrix(rep(c(sum(n[seq.int(ln)]), n), each = nr), nr) * 100
+    
     ptbl <- tryCatch(apply(ptbl, 2, Round, 100),
                      error = function(e) apply(ptbl, 2, round, 0))
     res <- matrix(sprintf('%s (%s%%)', ttbl, ptbl), nrow = nr, ncol = nc)
@@ -911,7 +919,7 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
   
   ## remove rows with 0 total since not dropped in ftable
   if (drop)
-    res <- res[res[, 'Total'] %ni% '0', ]
+    res <- res[!grepl('^0', res[, 'Total']), ]
   if (length(varname) != 1)
     res[, 1] <- ifelse(duplicated(res[, 1]), '', res[, 1])
   
@@ -1098,9 +1106,12 @@ tox_worst <- function(data, id = 'id', desc = 'desc', grade = 'grade',
 #' @export
 
 countr <- function(top, n, lowcase = TRUE) {
-  ## if top is a vector of names, get table
-  if (class(top) %in% c('character','factor')) {
-    n <- length(top)
+  if (inherits(top, 'table')) {
+    ## if top is a table, get n
+    n <- if (missing(n)) sum(top) else n
+  } else {
+    ## if top is a vector, get table
+    n <- if (missing(n)) length(top) else n
     top <- table(top)
   }
   
@@ -1458,32 +1469,47 @@ render_sparkDT <- function(data, variables, type, range, options, ...) {
 #' 
 #' This function supports the following letter cases:
 #' 
-#' \itemize{
-#' \item{first}{Only the first letter is uppercase}
-#' \item{upcase}{Each Word Is Uppercase}
-#' \item{downcase}{tHE oPPOSITE oF uPCASE}
-#' \item{camelcase}{TheStringWillBeInCamelCase}
-#' \item{upper}{EQUIVALENT TO \code{toupper}}
-#' \item{lower}{equivalent to \code{tolower}}
-#' \item{lowup}{aLtErNaTiNg cAsEs}
-#' \item{uplow}{ThE OpPoSiTe oF LoWuP}
+#' \tabular{llllll}{
+#' \tab \code{first} \tab \tab \tab \tab
+#' \code{Only the first letter is uppercase} \cr
+#' \tab \code{upcase} \tab \tab \tab \tab
+#' \code{Each Word Is Uppercase} \cr
+#' \tab \code{downcase} \tab \tab \tab \tab
+#' \code{tHE oPPOSITE oF uPCASE} \cr
+#' \tab \code{camelcase} \tab \tab \tab \tab
+#' \code{TheStringWillBeInCamelCase} \cr
+#' \tab \code{upper} \tab \tab \tab \tab
+#' \code{EQUIVALENT TO }\code{\link{toupper}} \cr
+#' \tab \code{lower} \tab \tab \tab \tab
+#' \code{equivalent to }\code{\link{tolower}} \cr
+#' \tab \code{lowup} \tab \tab \tab \tab
+#' \code{aLtErNaTiNg cAsEs} \cr
+#' \tab \code{uplow} \tab \tab \tab \tab
+#' \code{ThE OpPoSiTe oF LoWuP} \cr
 #' }
 #' 
 #' @param x a text string
-#' @param which case to use; can be (unambiguously) abbreviated; see details
+#' @param case a case to use; can be (unambiguously) abbreviated; see details
+#' @param translate logical; if \code{TRUE}, strings will be translated to
+#' upper- or lowercase \emph{before} \code{case} is applied to ensure that
+#' the case of all characters of \code{x} is uniform
 #' 
 #' @examples
-#' wh <- eval(formals(case)$which)
+#' cases <- eval(formals(case)$case)
 #' x <- 'the quick brown fox'
-#' sapply(wh, case, x = x)
+#' sapply(cases, case, x = x)
 #' 
 #' ## all cases are vectorized
-#' sapply(wh, case, x = strsplit(x, ' ')[[1]])
+#' sapply(cases, case, x = strsplit(x, ' ')[[1]])
+#' 
+#' case('upCASE', 'upcase', translate = FALSE) ## default
+#' case('upCASE', 'upcase', translate = TRUE)
 #' 
 #' @export
 
-case <- function(x, which = c('first', 'upcase', 'downcase', 'camelcase',
-                              'upper', 'lower', 'lowup', 'uplow')) {
+case <- function(x, case = c('first', 'upcase', 'downcase', 'camelcase',
+                             'upper', 'lower', 'lowup', 'uplow'),
+                 translate = FALSE) {
   alternating <- function(x, seq) {
     x <- strsplit(x, '')
     x <- lapply(x, function(y) {
@@ -1494,7 +1520,12 @@ case <- function(x, which = c('first', 'upcase', 'downcase', 'camelcase',
     unlist(x)
   }
   
-  which <- switch(match.arg(which),
+  if (translate) {
+    x <- if (case %in% c('upper', 'uplow'))
+      toupper(x) else tolower(x)
+  }
+  
+  case <- switch(match.arg(case),
     first = '(^.)',
     upcase = '(\\b.)',
     downcase = '(?<=[a-z])(.)',
@@ -1505,9 +1536,9 @@ case <- function(x, which = c('first', 'upcase', 'downcase', 'camelcase',
     uplow = {x <- alternating(x, 1:0); TRUE}
   )
   
-  if (isTRUE(which))
+  if (isTRUE(case))
     x
-  else if (which == 'camelcase')
+  else if (case == 'camelcase')
     gsub(' ', '', Recall(x, 'upcase'))
-  else gsub(which, '\\U\\1', x, perl = TRUE)
+  else gsub(case, '\\U\\1', x, perl = TRUE)
 }
