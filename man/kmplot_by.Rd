@@ -5,7 +5,8 @@
 \title{kmplot_by}
 \usage{
 kmplot_by(strata = "1", event, data, by, single = TRUE, lr_test = TRUE,
-  main, ylab, sub, strata_lab, fig_lab, time, add = FALSE, plot = TRUE, ...)
+  main, ylab, sub, strata_lab, fig_lab, col.surv, time, add = FALSE,
+  plot = TRUE, ...)
 }
 \arguments{
 \item{strata}{character string of the strata variable}
@@ -40,6 +41,11 @@ will be removed; see examples}
 \item{fig_lab}{figure panel labels; should be a character vector with
 length equal to the number of panels (i.e., the number of levels of
 \code{by} or length one if \code{by} was not given)}
+
+\item{col.surv}{color for survival curves; if \code{by} is given and each
+plot is only one curve, colors will be mapped to each plot in order; if
+\code{coll.surv} is a named vector which matches the at risk labels, then
+colors are mapped to the corresponding strata; see \code{\link{kmplot}}}
 
 \item{time}{character string of the time variable (optional)}
 
@@ -87,6 +93,7 @@ colon2 <- within(colon[duplicated(colon$id), ], {
   sex1 <- 'Male'
 })
 
+## these are equivalent (with minor differences in aesthetics)
 kmplot_by(event = 'pfs', data = colon2)
 kmplot_by('sex1', 'pfs', colon2)
 
@@ -96,17 +103,23 @@ kmplot_by('rx', 'pfs', data = colon2, col.surv = 1:3,
 
 ## return value is a list of survfit objects
 l <- kmplot_by('sex', 'pfs', colon2, 'rx', plot = FALSE)
-sapply(l, kmplot)
-sapply(l, kmplot_by)
+str(lapply(l, kmplot))
+str(lapply(l, kmplot_by))
 
 ## multiple variables can be combined
-kmplot_by('rx + sex', 'pfs', colon2, strata_lab = FALSE,
-  lty.surv = 1:6, col.band = NA)
+kmplot_by('rx + sex', 'pfs', colon2, strata_lab = FALSE, lty.surv = 1:6)
 
 
 ## if "by" is given, default is to plot separately
 kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3,
   strata_lab = c('Observation','Trt','Trt + 5-FU'))
+  
+## if "by" is given and each plot has one line, "col.surv" maps to plots
+kmplot_by('rx', 'pfs', colon2, by = 'rx', xlim = c(0, 3000), col.surv = 1:3)
+
+## to keep colors mapped to the same strata across plots, use named vector
+kmplot_by('rx', 'pfs', colon2, by = 'rx', xlim = c(0, 3000),
+          col.surv = c(Lev = 'brown', Obs = 'blue', 'Lev+5FU' = 'purple'))
 
 ## if single = FALSE, uses n2mfrow function to set par('mfrow')
 kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3, single = FALSE,
@@ -121,11 +134,12 @@ kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3, single = FALSE,
 ## use add = TRUE to add to a figure region without using the by argument
 par(mfrow = c(1,2))
 mar <- c(8,6,3,2)
-kmplot_by('rx', 'pfs', colon2, strata_lab = FALSE, add = TRUE, mar = mar)
+kmplot_by( 'rx', 'pfs', colon2, strata_lab = FALSE, add = TRUE, mar = mar)
 kmplot_by('sex', 'pfs', colon2, strata_lab = FALSE, add = TRUE, mar = mar)
   
 }
 \seealso{
-\code{\link{kmplot}}, \code{\link{survdiff}}
+\code{\link{kmplot}}, \code{\link{survdiff}}; \code{\link{kmplot_data_}};
+\code{\link{lr_text}}; \code{\link{lr_pval}}; \code{\link{points.kmplot}}
 }
 

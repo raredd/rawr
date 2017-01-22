@@ -4,12 +4,13 @@
 \alias{kmplot}
 \title{Survival curves}
 \usage{
-kmplot(s, lty.surv = 1, lwd.surv = 1, col.surv = col.surv, mark = 3,
-  lwd.mark = lwd.surv, lty.ci = 0, lwd.ci = 1, col.ci = col.surv,
-  col.band = FALSE, atrisk = TRUE, atrisk.lab = "Number at risk",
-  atrisk.lines = TRUE, atrisk.col = !atrisk.lines, strata.lab = NULL,
-  strata.expr = NULL, strata.order = seq_along(s$n), extra.margin = 5,
-  median = FALSE, xaxs = "s", xlim = c(0, max(s$time)), ylim = c(0, 1),
+kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
+  col.surv = seq_along(s$n), mark = 3, lwd.mark = lwd.surv, lty.ci = 0,
+  lwd.ci = lwd.surv, col.ci = col.surv, col.band = FALSE, atrisk = TRUE,
+  atrisk.lab = "Number at risk", atrisk.lines = TRUE,
+  atrisk.col = !atrisk.lines, strata.lab = NULL, strata.expr = NULL,
+  strata.order = seq_along(s$n), extra.margin = 5, median = FALSE,
+  xaxs = "s", xlim = c(0, max(s$time)), ylim = c(0, 1),
   xaxis.at = pretty(c(0, s$time)), xaxis.lab = xaxis.at,
   yaxis.at = pretty(ylim), yaxis.lab = yaxis.at, xlab = "Time",
   ylab = "Survival probability", main = "", cex.axis = par("cex.axis"),
@@ -21,7 +22,13 @@ kmplot(s, lty.surv = 1, lwd.surv = 1, col.surv = col.surv, mark = 3,
 
 \item{lty.surv, lwd.surv, col.surv}{line type, width, and color for survival
 curve(s); colors may be either numeric, color names as character string(s),
-or hexadecimal string(s)}
+or hexadecimal string(s)
+
+colors will be assigned to curves in order of strata or may be mapped using
+a named vector (the names must match the ones given to \code{strata.lab} or
+those that are created by \code{\link[survival]{strata}}); this can be
+useful to set colors for specific strata levels in multiple plots if some
+levels are missing; see examples in \code{\link{kmplot_by}}}
 
 \item{mark, lwd.mark}{numeric plotting character (\code{\link{pch}}) or
 character string, e.g., \code{''}, \code{'|'}; if \code{mark = 'bump'}, a
@@ -101,8 +108,8 @@ returning from the function}
 \code{tcl}, \code{cex.lab}, \code{xaxs}, etc) passed to \code{par}}
 }
 \description{
-Plot Kaplan-Meier or Cox proportional hazards model with optional at-risk
-table.
+Plot Kaplan-Meier or Cox regression models with optional at-risk table,
+median survival summary, and other features.
 }
 \details{
 Line specifications (e.g., \code{lty.surv}, \code{lwd.surv}, etc) will be
@@ -160,9 +167,8 @@ kmplot(km2, add = TRUE, strata.lab = TRUE, mar = mar)
 pdf(tf <- tempfile(fileext = '.pdf'), height = 8, width = 11,
     pointsize = 12, family = 'serif')
 kmplot(survfit(Surv(time, status) ~ rx + adhere, data = colon),
-       legend = FALSE,
        panel.first = abline(v = c(0, .5, 1:9) * 365, lty = 3),
-       mark = '',                         # no censor mark
+       mark = 'bump',                     # no censor mark
        lty.ci = 2, lwd.ci = .3,           # dashed line for CIs
        xaxis.at = c(0, .5, 1:9) * 365,    # change days to years
        xaxis.lab = c(0, .5, 1:9),         # label years
@@ -172,14 +178,14 @@ kmplot(survfit(Surv(time, status) ~ rx + adhere, data = colon),
        col.ci   = c(0,0,0,0,'purple',0),  # CI only for one group
        extra.margin = 6,        # increase margin for long strata labels
        strata.lab = c('Obs','Obs+','Lev','Lev+','Lev5fu','Lev5fu+'),
-       strata.order = c(5,6,3,1,4,2),      # order by survival estimates
-       font = 2,                # bold table text
-       bty = 'l',               # L box type around plot
-       tcl = .5)                # change length/direction of ticks
+       strata.order = c(5,6,3,1,4,2),     # order by survival estimates
+       median = TRUE,                 # add median and CI
+       oma = c(0,0,0,1),              # add extra line on right for median
+       font = 2, bty = 'l', tcl = .5) # bold table text and other options
 title(main = 'Chemotherapy for stage B/C colon cancer',
-      adj = .5, font.main = 1, line = 0.5, cex.main = 1)
+      font.main = 1, line = 2.5)
 dev.off()
-file.show(tf)
+system2(getOption('pdfviewer'), tf)
 }
 
 }
@@ -188,6 +194,7 @@ file.show(tf)
 }
 \seealso{
 \code{\link{kmplot_by}}; \code{survival:::plot.survfit};
-\code{\link[plotr]{ggsurv}}
+\code{\link[plotr]{ggsurv}}; \code{\link{kmplot_data_}}; \code{\link{lr_text}};
+\code{\link{lr_pval}}; \code{\link{points.kmplot}}
 }
 
