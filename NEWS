@@ -1,3 +1,14 @@
+rawr 0.8.6
+--------
+  * add sparkDT, render_sparkDT, case
+  * major improvements to num2char (should not break existing code)
+  * minor changes to tabler_by2 - added missing order argument, better defaults
+  * add insert, rewrite insert_matrix (should not break existing code)
+  * bincon - replace "round" arg with "digits"
+  * case - add translate argument
+  * kmplot/kmplot_by - set new defaults, col.surv accepts named vector
+  * points.kmplot - update to reflect changes in survival:::points.survfit
+
 rawr 0.8.5
 --------
   * rpart_utils: rpart_parent, rpart_nodes, rpart_subset 
