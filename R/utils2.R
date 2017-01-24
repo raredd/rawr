@@ -749,9 +749,9 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' @param pct.total logical; if \code{TRUE}, adds percents for total column
 #' @param pct.sign logical; if \code{TRUE}, percent sign is shown; otherwise,
 #' percents are shown in parens without sign
-#' @param drop logical; for \code{tabler_by} if \code{TRUE}, rows with zero
-#' total counts will be removed (default); the \code{FALSE} case is useful
-#' when merging multiple \code{tabler_by} tables (eg, this is how
+#' @param drop logical; for \code{tabler_by} if \code{TRUE}, rows or columns
+#' with zero total counts will be removed (default); the \code{FALSE} case is
+#' useful when merging multiple \code{tabler_by} tables (e.g., this is how
 #' \code{tabler_by2} aligns stratified tables)
 #' @param stratvar for \code{tabler_by2}, a factor-like variable used to
 #' stratify observations into mutually exclusive groups for which
@@ -771,10 +771,34 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' tabler_by(mt, 'vs', 'gear')
 #' tabler_by(mt, c('vs', 'carb'), 'gear', order = TRUE)
 #' 
+#' 
 #' ## when length(n) > 1, each column uses a different n for percents
 #' tabler_by(mt, 'vs', 'gear', n = table(mt$gear), pct = TRUE)
 #' tabler_by(mt, 'vs', 'gear', n = table(mt$gear), zeros = '-',
 #'           pct = TRUE, pct.column = TRUE, pct.total = TRUE)
+#' 
+#' 
+#' ## use tabler_by2 to create a stratified table
+#' t1 <- tabler_by2(mt, c('vs', 'carb'), 'gear', stratvar = 'am', order = TRUE)
+#' 
+#' ## or tabler_by to do this in several steps
+#' t2 <- cbind(
+#'   tabler_by(mt, varname = c('vs', 'carb'), byvar = 'gear',
+#'             drop = FALSE)[, c('carb', 'Total')],
+#'   tabler_by(mt[mt$am == 0, ], varname = c('vs', 'carb'), byvar = 'gear',
+#'             drop = FALSE)[, -1],
+#'   tabler_by(mt[mt$am == 1, ], varname = c('vs', 'carb'), byvar = 'gear',
+#'             drop = FALSE)[, -1]
+#' )
+#' 
+#' ## order, drop extra rows/columns, set rownames
+#' rownames(t2) <- locf(rownames(t2))
+#' t2 <- t2[order(locf(rownames(t2)), -xtfrm(t2[, 2])), ]
+#' t2 <- t2[!t2[, 'Total'] %in% '0', ]
+#' t2 <- t2[, apply(t2, 2, function(x) !all(x %in% '0'))]
+#' rownames(t2)[duplicated(rownames(t2))] <- ''
+#' 
+#' identical(t1, t2) # [1] TRUE
 #' 
 #' 
 #' ## example workflow
@@ -936,7 +960,7 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
 #' @export
 tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
                        zeros = TRUE, pct = FALSE, pct.column = FALSE,
-                       pct.total = FALSE, pct.sign = TRUE) {
+                       pct.total = FALSE, pct.sign = TRUE, drop = TRUE) {
   
   rm_p <- function(x) gsub(' \\(.*\\)$', '', x)
   ord  <- function(...) order(..., decreasing = TRUE)
@@ -952,12 +976,13 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
   
   ## try to guess n, N if missing
   n <- if (missing(n))
-    setNames(colSums(table(data[, 1], data[, '_strat_var_']) > 1), bylvl) else n
+    setNames(colSums(table(data[, 1], data[, '_strat_var_']) > 1), bylvl)
+  else setNames(n, '1')
   N <- sum(n)
   
   ## get (second varname if ln == 2L and) overall total column(s)
   o1 <- tabler_by(data, varname, '_strat_var_', n, FALSE, zeros,
-                  pct, pct.column, pct.total, drop = FALSE)
+                  pct, pct.column, pct.total, pct.sign, FALSE)
   o1 <- o1[, 1:(ln + (pct.column & pct.total)), drop = FALSE]
   
   ## get groups of columns for each level of byvar
@@ -965,11 +990,14 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
     tabler_by(data[data[, '_strat_var_'] == x, ], varname, byvar, n[x],
               FALSE, zeros, pct, pct.column, pct.total, pct.sign, FALSE))
   
-  res <- do.call('cbind', c(list(o1), o2))
+  res <- do.call('cbind', c(if (length(bylvl) == 1L) NULL else list(o1), o2))
   rownames(res) <- locf(rownames(res))
   
   ## remove duplicate columns, rows with 0 total, order using varname input
-  res <- t(t(res)[!duplicated(t(res)), ])
+  # res <- t(t(res)[!duplicated(t(res)), ])
+  res <- res[, !(duplicated(colnames(res)) & colnames(res) %in% varname)]
+  if (drop)
+    res <- res[, apply(res, 2, function(x) !all(grepl('^\\s*0', x)))]
   res <- res[!res[, ln] %in% c('0', as.character(zeros)), ]
   res <- res[if (!order)
     seq.int(nrow(res)) else {
