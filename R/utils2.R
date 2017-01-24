@@ -996,9 +996,12 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
   ## remove duplicate columns, rows with 0 total, order using varname input
   # res <- t(t(res)[!duplicated(t(res)), ])
   res <- res[, !(duplicated(colnames(res)) & colnames(res) %in% varname)]
-  if (drop)
+  if (drop) {
     res <- res[, apply(res, 2, function(x) !all(grepl('^\\s*0', x)))]
-  res <- res[!res[, ln] %in% c('0', as.character(zeros)), ]
+    # res <- res[!res[, ln] %in% c('0', as.character(zeros)), ]
+    res <- res[!(grepl('^\\s*0', res[, ln]) |
+                 res[, ln] %in% as.character(zeros)), ]
+  }
   res <- res[if (!order)
     seq.int(nrow(res)) else {
       if (ln == 1L)
