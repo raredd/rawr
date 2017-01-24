@@ -10,7 +10,8 @@ tabler_by(data, varname, byvar, n, order = FALSE, zeros = TRUE,
   drop = TRUE)
 
 tabler_by2(data, varname, byvar, n, order = FALSE, stratvar, zeros = TRUE,
-  pct = FALSE, pct.column = FALSE, pct.total = FALSE, pct.sign = TRUE)
+  pct = FALSE, pct.column = FALSE, pct.total = FALSE, pct.sign = TRUE,
+  drop = TRUE)
 }
 \arguments{
 \item{data}{a data frame; variables \code{varname} and \code{byvar} should
@@ -38,9 +39,9 @@ columns}
 \item{pct.sign}{logical; if \code{TRUE}, percent sign is shown; otherwise,
 percents are shown in parens without sign}
 
-\item{drop}{logical; for \code{tabler_by} if \code{TRUE}, rows with zero
-total counts will be removed (default); the \code{FALSE} case is useful
-when merging multiple \code{tabler_by} tables (eg, this is how
+\item{drop}{logical; for \code{tabler_by} if \code{TRUE}, rows or columns
+with zero total counts will be removed (default); the \code{FALSE} case is
+useful when merging multiple \code{tabler_by} tables (e.g., this is how
 \code{tabler_by2} aligns stratified tables)}
 
 \item{stratvar}{for \code{tabler_by2}, a factor-like variable used to
@@ -82,10 +83,34 @@ mt <- within(mtcars, {
 tabler_by(mt, 'vs', 'gear')
 tabler_by(mt, c('vs', 'carb'), 'gear', order = TRUE)
 
+
 ## when length(n) > 1, each column uses a different n for percents
 tabler_by(mt, 'vs', 'gear', n = table(mt$gear), pct = TRUE)
 tabler_by(mt, 'vs', 'gear', n = table(mt$gear), zeros = '-',
           pct = TRUE, pct.column = TRUE, pct.total = TRUE)
+
+
+## use tabler_by2 to create a stratified table
+t1 <- tabler_by2(mt, c('vs', 'carb'), 'gear', stratvar = 'am', order = TRUE)
+
+## or tabler_by to do this in several steps
+t2 <- cbind(
+  tabler_by(mt, varname = c('vs', 'carb'), byvar = 'gear',
+            drop = FALSE)[, c('carb', 'Total')],
+  tabler_by(mt[mt$am == 0, ], varname = c('vs', 'carb'), byvar = 'gear',
+            drop = FALSE)[, -1],
+  tabler_by(mt[mt$am == 1, ], varname = c('vs', 'carb'), byvar = 'gear',
+            drop = FALSE)[, -1]
+)
+
+## order, drop extra rows/columns, set rownames
+rownames(t2) <- locf(rownames(t2))
+t2 <- t2[order(locf(rownames(t2)), -xtfrm(t2[, 2])), ]
+t2 <- t2[!t2[, 'Total'] \%in\% '0', ]
+t2 <- t2[, apply(t2, 2, function(x) !all(x \%in\% '0'))]
+rownames(t2)[duplicated(rownames(t2))] <- ''
+
+identical(t1, t2) # [1] TRUE
 
 
 ## example workflow
