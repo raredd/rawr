@@ -8,7 +8,7 @@
 # view2, clist, rapply2, sort_matrix, insert, insert_matrix, tryCatch2, rleid,
 # droplevels2, combine_levels, rownames_to_column, column_to_rownames
 #
-# unexported: islist, done, where
+# unexported: islist, done, where, dots
 ###
 
 
@@ -26,6 +26,8 @@ where <- function(x, env = parent.frame()) {
   if (exists(x, env, inherits = FALSE))
     env else Recall(x, parent.env(env))
 }
+
+dots <- function(...) eval(substitute(alist(...)))
 
 #' rawr operators
 #' 
