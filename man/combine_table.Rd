@@ -4,10 +4,14 @@
 \alias{combine_table}
 \title{Combine html tables}
 \usage{
-combine_table(l, ...)
+combine_table(l, tspanner, n.tspanner, ...)
 }
 \arguments{
-\item{l}{a list of matrices (preferred) or data frames}
+\item{l}{a list of matrices or data frames}
+
+\item{tspanner, n.tspanner}{table spanner labels and number of rows,
+respectively, passed to \code{\link[htmlTable]{htmlTable}}; if missing,
+\code{names(l)} and \code{sapply(l, nrow)} is used}
 
 \item{...}{additional arguments passed to \code{\link[htmlTable]{htmlTable}}}
 }
@@ -21,11 +25,15 @@ sp <- lapply(split(mtcars, rep(1:3, c(1,11,20))), as.matrix)
 
 ## basic table
 combine_table(sp)
+combine_table(sp, letters[1:3], c(2, 5, 25))
 
 ## adding more options
-combine_table(sp, tspanner = c('one','eleven','twenty'),
+combine_table(
+  caption = 'Table 1: <code>mtcars</code> data set',
+  sp, tspanner = sapply(sp, function(x) num2char(nrow(x))),
   css.cell = 'padding: 0 10 5px;',
-  css.tspanner = 'text-align: center; color: red; font-style: italic;')
+  css.tspanner = 'text-align: center; color: red; font-style: italic;'
+)
 
 }
 

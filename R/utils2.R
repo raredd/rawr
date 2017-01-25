@@ -1209,7 +1209,10 @@ dmy <- function(d, m, y, origin = c(1, 1, 1900)) {
 #' Wrapper to easily combine a list of data frames or matrices into html
 #' tables using the \pkg{htmlTable} package.
 #' 
-#' @param l a list of matrices (preferred) or data frames
+#' @param l a list of matrices or data frames
+#' @param tspanner,n.tspanner table spanner labels and number of rows,
+#' respectively, passed to \code{\link[htmlTable]{htmlTable}}; if missing,
+#' \code{names(l)} and \code{sapply(l, nrow)} is used
 #' @param ... additional arguments passed to \code{\link[htmlTable]{htmlTable}}
 #' 
 #' @examples
@@ -1218,23 +1221,28 @@ dmy <- function(d, m, y, origin = c(1, 1, 1900)) {
 #' 
 #' ## basic table
 #' combine_table(sp)
+#' combine_table(sp, letters[1:3], c(2, 5, 25))
 #' 
 #' ## adding more options
-#' combine_table(sp, tspanner = c('one','eleven','twenty'),
+#' combine_table(
+#'   caption = 'Table 1: <code>mtcars</code> data set',
+#'   sp, tspanner = sapply(sp, function(x) num2char(nrow(x))),
 #'   css.cell = 'padding: 0 10 5px;',
-#'   css.tspanner = 'text-align: center; color: red; font-style: italic;')
+#'   css.tspanner = 'text-align: center; color: red; font-style: italic;'
+#' )
 #' 
 #' @export
 
-combine_table <- function(l, ...) {
+combine_table <- function(l, tspanner, n.tspanner, ...) {
   l <- if (!islist(l))
     list(l) else l
-  m <- match.call(expand.dots = FALSE)$`...`
-  lx <- sapply(l, function(x) if (is.null(nr <- nrow(x))) 1 else nr)
-  ts <- m$tspanner %||% names(l) %||% rep(' ', each = length(lx))
-  m$tspanner <- NULL
-  x <- c(list(x = do.call('rbind', l), tspanner = ts, n.tspanner = lx), m)
-  do.call('htmlTable', x)
+  n.tspanner <- if (missing(n.tspanner))
+    sapply(l, function(x) nrow(x) %||% 1L) else n.tspanner
+  tspanner <- if (missing(tspanner))
+    names(l) %||% rep(' ', each = length(n.tspanner)) else tspanner
+  htmlTable(
+    do.call('rbind', l), tspanner = tspanner, n.tspanner = n.tspanner, ...
+  )
 }
 
 #' Response table
