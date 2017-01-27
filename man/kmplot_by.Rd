@@ -44,7 +44,7 @@ length equal to the number of panels (i.e., the number of levels of
 
 \item{col.surv}{color for survival curves; if \code{by} is given and each
 plot is only one curve, colors will be mapped to each plot in order; if
-\code{coll.surv} is a named vector which matches the at risk labels, then
+\code{col.surv} is a named vector which matches the at risk labels, then
 colors are mapped to the corresponding strata; see \code{\link{kmplot}}}
 
 \item{time}{character string of the time variable (optional)}
