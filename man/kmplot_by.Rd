@@ -5,8 +5,8 @@
 \title{kmplot_by}
 \usage{
 kmplot_by(strata = "1", event, data, by, single = TRUE, lr_test = TRUE,
-  main, ylab, sub, strata_lab, fig_lab, col.surv, time, add = FALSE,
-  plot = TRUE, ...)
+  main, ylab, sub, strata_lab, fig_lab, col.surv = NULL, map.col = FALSE,
+  time, add = FALSE, plot = TRUE, ...)
 }
 \arguments{
 \item{strata}{character string of the strata variable}
@@ -35,17 +35,20 @@ vector with length equal to the number of panels (i.e., the number of
 levels of \code{by} or length one if \code{by} was not given)}
 
 \item{strata_lab}{at-risk table strata labels; should be a character vector
-with length equal to the number of strata; otherwise, the variable labels
-will be removed; see examples}
+with length equal to the number of strata; \code{TRUE} (or equivalently
+missing) is the default, and \code{FALSE} trims the labels; see examples}
 
 \item{fig_lab}{figure panel labels; should be a character vector with
 length equal to the number of panels (i.e., the number of levels of
 \code{by} or length one if \code{by} was not given)}
 
-\item{col.surv}{color for survival curves; if \code{by} is given and each
-plot is only one curve, colors will be mapped to each plot in order; if
-\code{col.surv} is a named vector which matches the at risk labels, then
-colors are mapped to the corresponding strata; see \code{\link{kmplot}}}
+\item{col.surv}{color for individual survival curves or for all curves in
+a plot if \code{by} is given and \code{map.col = TRUE}; if \code{col.surv}
+is a named vector which matches the at risk labels, then colors are mapped
+to the corresponding strata; see \code{\link{kmplot}}}
+
+\item{map.col}{logical; if \code{TRUE}, \code{col.surv} will be the color
+of all curves in each plot (only used when \code{by} is non-missing)}
 
 \item{time}{character string of the time variable (optional)}
 
@@ -114,8 +117,9 @@ kmplot_by('rx + sex', 'pfs', colon2, strata_lab = FALSE, lty.surv = 1:6)
 kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3,
   strata_lab = c('Observation','Trt','Trt + 5-FU'))
   
-## if "by" is given and each plot has one line, "col.surv" maps to plots
-kmplot_by('rx', 'pfs', colon2, by = 'rx', xlim = c(0, 3000), col.surv = 1:3)
+## if "by" is given, use map.col  to map colors to plots
+kmplot_by('rx', 'pfs', colon2, by = 'rx', map.col = TRUE, single = FALSE)
+kmplot_by('sex', 'pfs', colon2, by = 'rx', map.col = TRUE, single = FALSE)
 
 ## to keep colors mapped to the same strata across plots, use named vector
 kmplot_by('rx', 'pfs', colon2, by = 'rx', xlim = c(0, 3000),

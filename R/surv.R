@@ -124,6 +124,10 @@
 #'                strata.expr = expression(widetilde(ring(Female)),
 #'                                         phantom() >= Male))
 #' 
+#' ## character vectors passed to strata.expr will be parsed
+#' kmplot(km1, strata.expr = c('Sex[Female]', 'Sex[Male]'))
+#' kmplot(km1, strata.lab  = c('Sex[Female]', 'Sex[Male]'))
+#' 
 #' 
 #' ## when using mfrow options, use add = TRUE and same mar to align axes
 #' mar <- c(8,6,2,2)
@@ -236,7 +240,8 @@ kmplot <- function(s,
   if (length(col.band) <= 1L)
     if (is.null(col.band) || is.na(col.band))
       col.band <- FALSE
-  col.surv <- if (missing(col.surv)) {
+  
+  col.surv <- if (missing(col.surv) || is.null(col.surv)) {
     if (isTRUE(col.band) || all(!col.band))
       seq_along(s$n)
     else rep_len(col.band, length.out = ng)
@@ -272,8 +277,10 @@ kmplot <- function(s,
     strata.lab <- rep(FALSE, ng)
   if (is.null(strata.lab))
     strata.lab <- names(s$strata)
-  if (length(unique(strata.lab)) != ng && strata.lab[1] != FALSE)
-    stop('length(unique(strata.lab)) != number of groups')
+  if (length(unique(strata.lab)) != ng && strata.lab[1] != FALSE) {
+    strata.lab <- strata.lab[seq.int(ng)]
+    warning('length(unique(strata.lab)) != number of groups')
+  }
   if (suppressWarnings(any(sort(strata.order) != seq.int(ng))))
     stop('sort(strata.order) must equal 1:', ng)
   if (ng == 1L & (strata.lab[1] == 'strata.lab')) {
@@ -290,7 +297,7 @@ kmplot <- function(s,
       sprintf('Mismatches in names(col.surv) - %s\n and strata.lab - %s\n',
               toString(shQuote(names(col.surv))),
               toString(shQuote(strata.lab))),
-      sprintf('Try %s', catlist(
+      sprintf('\nTry col.surv = c(%s)', catlist(
         setNames(as.list(shQuote(col.surv)), shQuote(strata.lab)))),
       call. = FALSE
     )
@@ -346,13 +353,15 @@ kmplot <- function(s,
     line.pos <- seq.int(ng)[order(strata.order)] + 2L
     
     if (!identical(unique(strata.lab), FALSE)) {
-      if (!is.null(strata.expr))
+      if (!is.null(strata.expr)) {
+        if (is.character(strata.expr))
+          strata.expr <- parse(text = strata.expr)
         sapply(seq.int(length(strata.expr)), function(x)
           mtext(strata.expr[[x]], side = 1, line = line.pos[x], adj = 1,
                 at = group.name.pos, col = col.atrisk[x], las = 1,
                 cex = cex.axis))
-      else mtext(strata.lab, side = 1, line = line.pos, adj = 1, las = 1,
-                 col = col.atrisk, at = group.name.pos, cex = cex.axis)
+      } else mtext(strata.lab, side = 1, line = line.pos, adj = 1, las = 1,
+                   col = col.atrisk, at = group.name.pos, cex = cex.axis)
     }
     
     ## draw matching lines for n at risk  
@@ -759,15 +768,17 @@ lr_pval <- function(s, details = FALSE) {
 #' vector with length equal to the number of panels (i.e., the number of
 #' levels of \code{by} or length one if \code{by} was not given)
 #' @param strata_lab at-risk table strata labels; should be a character vector
-#' with length equal to the number of strata; otherwise, the variable labels
-#' will be removed; see examples
+#' with length equal to the number of strata; \code{TRUE} (or equivalently
+#' missing) is the default, and \code{FALSE} trims the labels; see examples
 #' @param fig_lab figure panel labels; should be a character vector with
 #' length equal to the number of panels (i.e., the number of levels of
 #' \code{by} or length one if \code{by} was not given)
-#' @param col.surv color for survival curves; if \code{by} is given and each
-#' plot is only one curve, colors will be mapped to each plot in order; if
-#' \code{coll.surv} is a named vector which matches the at risk labels, then
-#' colors are mapped to the corresponding strata; see \code{\link{kmplot}}
+#' @param col.surv color for individual survival curves or for all curves in
+#' a plot if \code{by} is given and \code{map.col = TRUE}; if \code{col.surv}
+#' is a named vector which matches the at risk labels, then colors are mapped
+#' to the corresponding strata; see \code{\link{kmplot}}
+#' @param map.col logical; if \code{TRUE}, \code{col.surv} will be the color
+#' of all curves in each plot (only used when \code{by} is non-missing)
 #' @param time character string of the time variable (optional)
 #' @param add logical; if \code{FALSE} (default), resets graphical parameters
 #' to settings before \code{kmplot_by} was called; set to \code{TRUE} for
@@ -820,8 +831,9 @@ lr_pval <- function(s, details = FALSE) {
 #' kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3,
 #'   strata_lab = c('Observation','Trt','Trt + 5-FU'))
 #'   
-#' ## if "by" is given and each plot has one line, "col.surv" maps to plots
-#' kmplot_by('rx', 'pfs', colon2, by = 'rx', xlim = c(0, 3000), col.surv = 1:3)
+#' ## if "by" is given, use map.col  to map colors to plots
+#' kmplot_by('rx', 'pfs', colon2, by = 'rx', map.col = TRUE, single = FALSE)
+#' kmplot_by('sex', 'pfs', colon2, by = 'rx', map.col = TRUE, single = FALSE)
 #' 
 #' ## to keep colors mapped to the same strata across plots, use named vector
 #' kmplot_by('rx', 'pfs', colon2, by = 'rx', xlim = c(0, 3000),
@@ -847,7 +859,8 @@ lr_pval <- function(s, details = FALSE) {
 
 kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
                       lr_test = TRUE, main, ylab, sub, strata_lab, fig_lab,
-                      col.surv, time, add = FALSE, plot = TRUE, ...) {
+                      col.surv = NULL, map.col = FALSE, time, add = FALSE,
+                      plot = TRUE, ...) {
   op <- par(no.readonly = TRUE)
   if (is.logical(lr_test)) {
     rho <- 0
@@ -871,6 +884,11 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
     time   <- gsub('\\((\\w+)|.', '\\1', form[1])
   }
   
+  form  <- if (!missing(time))
+    sprintf('Surv(%s, %s) ~ %s', time, event, strata) else
+      sprintf('Surv(%s_time, %s_ind) ~ %s', event, event, strata)
+  form  <- as.formula(form)
+  
   if (plot & (!add | !single))
     on.exit(par(op))
   if (!missing(by)) {
@@ -892,39 +910,37 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
       add <- FALSE
       par(mfrow = c(1L,1L))
     }
+    map.col <- FALSE
     sp <- list(data)
   }
   
+  ## define these before passing to loop
   mlabs <- missing(strata_lab)
   msub  <- missing(sub)
-  fig <- if (length(sp) > 1L & missing(fig_lab))
+  fig   <- if (length(sp) > 1L & missing(fig_lab))
     LETTERS[seq_along(sp)] else if (missing(fig_lab)) '' else fig_lab
-  fig <- rep_len(fig, length(sp))
-  ylab <- if (missing(ylab))
+  fig   <- rep_len(fig, length(sp))
+  ylab  <- if (missing(ylab))
     sprintf('%s probability', toupper(event)) else ylab
   
-  form <- if (!missing(time))
-    sprintf('Surv(%s, %s) ~ %s', time, event, strata) else
-      sprintf('Surv(%s_time, %s_ind) ~ %s', event, event, strata)
-  form <- as.formula(form)
+  ## possible names for strata labels/title
+  dots <- lapply(dots(...), eval)
+  strata_names <- dots$strata.lab %||% dots$strata.expr %||%
+    if (mlabs) NULL else strata_lab
+  if (is.logical(strata_names) | anyNA(strata_names) | is.null(strata_names))
+    strata_names <- NULL
+  if (!is.null(names(strata_names)))
+    names(sp) <- strata_names
   
-  ## get cols if no col.surv given or use named vector to map colors to strata
-  sl <- survfit(form, data)
-  cols <- seq_along(sl$n)
-  user.names <- !missing(col.surv) && !is.null(names(col.surv))
-  cols <- setNames(
-    if (!missing(col.surv))
-      rep(col.surv, length.out = length(cols)) else cols,
-    if (missing(col.surv) || is.null(names(col.surv)))
-      NULL else if (is.null(names(col.surv)))
-        names(sl$strata) else names(col.surv)
-  )
-  
-  if (missing(col.surv) | !missing(by))
-    col.surv <- cols
-  if (is.null(names(col.surv)) & !missing(by))
-    col.surv <- setNames(cols, names(sl$strata))
-  
+  if (!missing(by) & is.null(names(col.surv))) {
+    sl <- survfit(form, data)
+    col.surv <- setNames(
+      col.surv %||% seq_along(sl$n),
+      if (by == strata) NULL else strata_names %||% names(sl$strata)
+    )
+    if (map.col & length(sp) != length(col.surv))
+      col.surv <- seq_along(sp)
+  }
   
   sl <- lapply(seq_along(sp), function(x) {
     tryCatch({
@@ -948,14 +964,6 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
       } else stop(e)
     })
   })
-  
-  ## map color to strata if one curve per by-plot
-  one <- all(sapply(sl, function(x) length(x$n) == 1L))
-  map.col <- one & !missing(by)
-  if (one & !user.names)
-    names(col.surv) <- NULL
-  if (!missing(strata_lab) && length(strata_lab) == length(cols))
-    names(col.surv) <- strata_lab
   
   l <- lapply(seq_along(sp), function(x) {
     s <- s0 <- sl[[x]]
@@ -984,11 +992,10 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
     if (!plot)
       return(s0)
     
+    
     kmplot(s, add = add, legend = FALSE, main = names(sp)[x], ylab = ylab, ...,
-           ## this wouldnt work for both ?
-           col.surv = if (map.col & is.null(names(col.surv)))
-             rep_len(col.surv, length(sp))[x] else col.surv,
-           # col.surv = col.surv,
+           col.surv = if (map.col)
+             unname(col.surv)[x] else col.surv,
            panel.first = {
              p <- par('usr')
              mtxt <- if (!msub)
