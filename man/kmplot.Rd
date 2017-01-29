@@ -155,6 +155,10 @@ kmplot(km1, strata.lab = c('\\u2640', '\\u2642'),
                strata.expr = expression(widetilde(ring(Female)),
                                         phantom() >= Male))
 
+## character vectors passed to strata.expr will be parsed
+kmplot(km1, strata.expr = c('Sex[Female]', 'Sex[Male]'))
+kmplot(km1, strata.lab  = c('Sex[Female]', 'Sex[Male]'))
+
 
 ## when using mfrow options, use add = TRUE and same mar to align axes
 mar <- c(8,6,2,2)
