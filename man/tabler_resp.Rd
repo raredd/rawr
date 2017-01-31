@@ -4,8 +4,8 @@
 \alias{tabler_resp}
 \title{Response table}
 \usage{
-tabler_resp(x, r_or_better = 3L, conf = 0.95, frac = TRUE,
-  show_conf = TRUE)
+tabler_resp(x, r_or_better = 3L, conf = 0.95, digits = 0L, frac = TRUE,
+  show_conf = TRUE, pct.sign = TRUE)
 }
 \arguments{
 \item{x}{a factor variable of responses; responses should be ordered as
@@ -25,17 +25,27 @@ format for easy display.
 set.seed(1)
 r <- c('CR','PR','SD','PD','NE')
 x <- factor(sample(r, 30, replace = TRUE), r)
-tabler_resp(x)
+tabler_resp(x, 3)
+tabler_resp(x, 'PR')
 
+## NAs are removed
 y <- `[<-`(x, 1:10, value = NA)
+tabler_resp(x, FALSE)
 tabler_resp(y, FALSE)
 
 library('htmlTable')
-htmlTable(t(as.matrix(tabler_resp(x, show_conf = FALSE))),
-          caption = 'Table of responses with 95\% confidence intervals.',
-          css.cell = 'padding: .1em .5em .1em;',
-          cgroup = c('Evaluation', 'Outcome (95\% CI)'),
-          n.cgroup = c(nlevels(x), 3))
+htmlTable(
+  rbind(
+    tabler_resp(x),
+    tabler_resp(x, conf = 0.9),
+    tabler_resp(x, frac = FALSE, pct.sign = FALSE,
+                show_conf = FALSE, digits = 1)
+  ),
+  caption = 'Table of responses with confidence intervals.',
+  css.cell = 'padding: 0 10 0px; white-space: nowrap;',
+  cgroup = c('Evaluation', 'Outcome (95\% CI)'),
+  n.cgroup = c(nlevels(x), 3L)
+)
 
 }
 \seealso{
