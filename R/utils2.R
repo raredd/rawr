@@ -453,7 +453,7 @@ catlist <- function(l)
 #' @export
 
 binconr <- function(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
-                    show_conf = TRUE, method = 'exact') {
+                    show_conf = TRUE, pct.sign = TRUE, method = 'exact') {
   method <- match.arg(method, c('exact', 'wilson', 'asymptotic'), FALSE)
   res <- roundr(bincon(r, n, alpha = 1 - conf, method = method) * 100, digits)
   zzz <- sprintf('%s%% CI: %s - %s%%', conf * 100, res[4], res[5])
@@ -462,6 +462,8 @@ binconr <- function(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
     zzz <- gsub('.*% CI: ', '', zzz)
   if (est)
     zzz <- sprintf('%s%% (%s)', res[3], zzz)
+  if (!pct.sign)
+    zzz <- gsub('%(?= \\()|%(?=\\))', '', zzz, perl = TRUE)
   if (frac)
     sprintf('%s/%s, %s', r, n, zzz) else zzz
 }
@@ -997,7 +999,8 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
   # res <- t(t(res)[!duplicated(t(res)), ])
   res <- res[, !(duplicated(colnames(res)) & colnames(res) %in% varname)]
   if (drop) {
-    res <- res[, apply(res, 2, function(x) !all(grepl('^\\s*0', x)))]
+    res <- res[, apply(res, 2, function(x)
+      !(all(grepl('^\\s*0', x)) | all(x %in% as.character(zeros))))]
     # res <- res[!res[, ln] %in% c('0', as.character(zeros)), ]
     res <- res[!(grepl('^\\s*0', res[, ln]) |
                  res[, ln] %in% as.character(zeros)), ]
@@ -1264,47 +1267,65 @@ combine_table <- function(l, tspanner, n.tspanner, ...) {
 #' set.seed(1)
 #' r <- c('CR','PR','SD','PD','NE')
 #' x <- factor(sample(r, 30, replace = TRUE), r)
-#' tabler_resp(x)
+#' tabler_resp(x, 3)
+#' tabler_resp(x, 'PR')
 #' 
+#' ## NAs are removed
 #' y <- `[<-`(x, 1:10, value = NA)
+#' tabler_resp(x, FALSE)
 #' tabler_resp(y, FALSE)
 #' 
 #' library('htmlTable')
-#' htmlTable(t(as.matrix(tabler_resp(x, show_conf = FALSE))),
-#'           caption = 'Table of responses with 95% confidence intervals.',
-#'           css.cell = 'padding: .1em .5em .1em;',
-#'           cgroup = c('Evaluation', 'Outcome (95% CI)'),
-#'           n.cgroup = c(nlevels(x), 3))
+#' htmlTable(
+#'   rbind(
+#'     tabler_resp(x),
+#'     tabler_resp(x, conf = 0.9),
+#'     tabler_resp(x, frac = FALSE, pct.sign = FALSE,
+#'                 show_conf = FALSE, digits = 1)
+#'   ),
+#'   caption = 'Table of responses with confidence intervals.',
+#'   css.cell = 'padding: 0 10 0px; white-space: nowrap;',
+#'   cgroup = c('Evaluation', 'Outcome (95% CI)'),
+#'   n.cgroup = c(nlevels(x), 3L)
+#' )
 #' 
 #' @export
 
-tabler_resp <- function(x, r_or_better = 3L,
-                        conf = 0.95, frac = TRUE, show_conf = TRUE) {
+tabler_resp <- function(x, r_or_better = 3L, conf = 0.95, digits = 0L,
+                        frac = TRUE, show_conf = TRUE, pct.sign = TRUE) {
   r <- names(table(x))
-  c(resp_(x, r, conf, frac, show_conf),
-    if (!is.integer(r_or_better))
-      NULL else
-        r_or_better_(x, rev(r[seq.int(r_or_better)]), conf, frac, show_conf))
+  if (is.character(r_or_better))
+    r_or_better <- if (length(wh <- which(r %in% r_or_better)))
+      wh else {
+      warning('Failed to guess \'r_or_better\'')
+      3L
+      }
+  c(resp_(x, r, conf, digits, frac, show_conf, pct.sign),
+    if (!is.numeric(r_or_better))
+      NULL else r_or_better_(x, rev(r[seq.int(r_or_better)]),
+                             conf, digits, frac, show_conf, pct.sign))
 }
 
-resp_ <- function(x, r, conf, frac, show_conf) {
-  # resp_(x, levels(x), .9, TRUE, TRUE); resp_(x, c('CR','PR'), .9, TRUE, TRUE)
+resp_ <- function(x, r, conf, digits, frac, show_conf, pct.sign) {
+  # rawr:::resp_(x, levels(x),    .9, 0L, TRUE, TRUE, TRUE)
+  # rawr:::resp_(x, c('CR','PR'), .9, 0L, TRUE, TRUE, TRUE)
   FUN <- if ('CR' %ni% r || which(r %in% 'CR') == 1L) identity else rev
     tbl <- table(x)[FUN(r)]
     out <- if (all(is.na(x)))
     rep('-', length(r)) else sapply(tbl, function(X)
-        binconr(X, sum(tbl), conf, 0L, TRUE, TRUE, show_conf, 'exact'))
+        binconr(X, sum(tbl), conf, digits, TRUE, frac,
+                show_conf, pct.sign, 'exact'))
     setNames(out, FUN(r))
 }
 
-r_or_better_ <- function(x, r, conf, frac, show_conf) {
-  # r_or_better_(x, c('CR','PR'), .9, TRUE, TRUE)
+r_or_better_ <- function(x, r, conf, digits, frac, show_conf, pct.sign) {
+  # rawr:::r_or_better_(x, c('CR','PR'), .9, 0L, TRUE, TRUE, TRUE)
   x[x %ni% r] <- NA
   out <- if (all(is.na(x)))
     rep('-', length(r)) else
       sapply(seq_along(r), function(X)
-        binconr(sum(x %in% r[X:length(r)]), length(x),
-                conf, 0L, TRUE, frac, show_conf, 'exact'))
+        binconr(sum(x %in% r[X:length(r)]), length(x), conf,
+                digits, TRUE, frac, show_conf, pct.sign, 'exact'))
   setNames(out, paste(r, 'or better'))
 }
 
