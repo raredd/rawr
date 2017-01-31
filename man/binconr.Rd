@@ -5,7 +5,7 @@
 \title{\code{bincon} formatter}
 \usage{
 binconr(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
-  show_conf = TRUE, method = "exact")
+  show_conf = TRUE, pct.sign = TRUE, method = "exact")
 }
 \arguments{
 \item{r}{number of responses (successes)}
