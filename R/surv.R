@@ -961,7 +961,9 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
                   conf.type = 'log-log', error = 'greenwood',
                   conf.int = 0.95, se.fit = TRUE),
           list(form = update(form, . ~ 1))))
-      } else stop(e)
+      } else if (grepl('less than one element in integerOneIndex', e))
+        stop('Check that \'event\' has at least one non-missing value')
+      else stop(e)
     })
   })
   
