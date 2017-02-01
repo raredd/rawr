@@ -8,7 +8,8 @@ show_colors(..., plot = FALSE)
 }
 \arguments{
 \item{...}{integer(s) in \code{1:657} corresponding to the built-in color
-name index or color name string(s)}
+name index or color name string(s); if \code{?} is included as a string or
+part of a string, color names will be searched for matches}
 
 \item{plot}{logical; if \code{TRUE}, integers or color names in \code{dots}
 will be plotted with corresponding number and name}
@@ -25,14 +26,23 @@ name of the color with \code{show_colors(n)} or find the indices with
 \code{show_colors('color name')}.
 }
 \examples{
+## typical usage
 show_colors()
+
+
+## search for color names or numbers
 show_colors(grep('red|yellow', colors()), plot = TRUE)
+## shorthand
+show_colors('?red', 'yellow', plot = TRUE)
+
 
 show_colors(81)
 show_colors('darkgreen')
 
+
 x <- show_colors(sample(657, 10))
 stopifnot(identical(x, show_colors(show_colors(x))))
+
 
 ## these plots are identical
 show_colors(x, plot = TRUE)
