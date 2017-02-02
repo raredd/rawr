@@ -1258,7 +1258,11 @@ combine_table <- function(l, tspanner, n.tspanner, ...) {
 #' @param r_or_better if an integer, the first \code{r_or_better} levels of
 #' \code{x} will be combined and proportions and confidence intervals will be
 #' calculated for the aggregate; if \code{FALSE}; this is not included
-#' @param conf,frac,show_conf arguments passed to \code{\link{binconr}}
+#' @param conf,frac,show_conf,pct.sign additional arguments passed to
+#' \code{\link{binconr}}
+#' @param total logical or numeric; if \code{TRUE}, a column with the total,
+#' i.e., \code{length(x)} is added; if numeric, \code{length(x)} and,
+#' optionally, fracton and percent out of \code{total} is added
 #' 
 #' @seealso
 #' \code{\link{bincon}}; \code{\link{binconr}}
@@ -1269,6 +1273,7 @@ combine_table <- function(l, tspanner, n.tspanner, ...) {
 #' x <- factor(sample(r, 30, replace = TRUE), r)
 #' tabler_resp(x, 3)
 #' tabler_resp(x, 'PR')
+#' tabler_resp(x, 'PR', total = 50)
 #' 
 #' ## NAs are removed
 #' y <- `[<-`(x, 1:10, value = NA)
@@ -1292,18 +1297,30 @@ combine_table <- function(l, tspanner, n.tspanner, ...) {
 #' @export
 
 tabler_resp <- function(x, r_or_better = 3L, conf = 0.95, digits = 0L,
-                        frac = TRUE, show_conf = TRUE, pct.sign = TRUE) {
-  r <- names(table(x))
+                        frac = TRUE, show_conf = TRUE, pct.sign = TRUE,
+                        total = FALSE) {
+  r  <- names(table(x))
+  lx <- length(x)
+  
   if (is.character(r_or_better))
     r_or_better <- if (length(wh <- which(r %in% r_or_better)))
       wh else {
       warning('Failed to guess \'r_or_better\'')
       3L
       }
-  c(resp_(x, r, conf, digits, frac, show_conf, pct.sign),
-    if (!is.numeric(r_or_better))
-      NULL else r_or_better_(x, rev(r[seq.int(r_or_better)]),
-                             conf, digits, frac, show_conf, pct.sign))
+  
+  out <- c(resp_(x, r, conf, digits, frac, show_conf, pct.sign),
+           if (!is.numeric(r_or_better))
+             NULL else r_or_better_(x, rev(r[seq.int(r_or_better)]),
+                                    conf, digits, frac, show_conf, pct.sign))
+  
+  tot <- if (is.numeric(total))
+    sprintf('%s/%s (%s%%)', lx, total, roundr(lx / total * 100, digits)) else lx
+  tot <- c(Total = if (!pct.sign) gsub('%', '', tot, fixed = TRUE) else tot)
+  if (!frac)
+    tot <- gsub('/\\S+', '', tot)
+  
+  c(if (total) tot else NULL, out)
 }
 
 resp_ <- function(x, r, conf, digits, frac, show_conf, pct.sign) {
@@ -1376,13 +1393,21 @@ r_or_better_ <- function(x, r, conf, digits, frac, show_conf, pct.sign) {
 inject_div <- function(x, where, style) {
   if (missing(style))
     return(x)
-  where <- if (missing(where) & !missing(style) || !length(where))
+  style <- inject_(x, where, style)
+  where <- style != ''
+  x[where] <- sprintf('<div style=\'%s\'>%s</div>',
+                      gsub(';*$', ';', style[where]), x[where])
+  x
+}
+
+inject_ <- function(x, where, what) {
+  where <- if (missing(where) & !missing(what) || !length(where))
     which(row(x) > 0L, arr.ind = TRUE) else
       matrix(where, ncol = 2L, byrow = !is.matrix(where))
-  style <- rep_len(style, nrow(where))
-  x[where] <- sprintf('<div style=\'%s\'>%s</div>',
-                      gsub(';*$', ';', style), x[where])
-  x
+  what <- rep_len(what, nrow(where))
+  mat  <- matrix('', nrow(x), ncol(x))
+  mat[where] <- what
+  mat
 }
 
 #' \code{datatable}s with sparklines
@@ -1580,12 +1605,14 @@ case <- function(x, case = c('first', 'upcase', 'downcase', 'camelcase',
     unlist(x)
   }
   
+  case <- match.arg(case)
+  
   if (translate) {
     x <- if (case %in% c('upper', 'uplow'))
       toupper(x) else tolower(x)
   }
   
-  case <- switch(match.arg(case),
+  case <- switch(case,
     first = '(^.)',
     upcase = '(\\b.)',
     downcase = '(?<=[a-z])(.)',
