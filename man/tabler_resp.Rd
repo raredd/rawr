@@ -5,7 +5,7 @@
 \title{Response table}
 \usage{
 tabler_resp(x, r_or_better = 3L, conf = 0.95, digits = 0L, frac = TRUE,
-  show_conf = TRUE, pct.sign = TRUE)
+  show_conf = TRUE, pct.sign = TRUE, total = FALSE)
 }
 \arguments{
 \item{x}{a factor variable of responses; responses should be ordered as
@@ -15,7 +15,12 @@ CR, PR, SD, PD, NE or similar}
 \code{x} will be combined and proportions and confidence intervals will be
 calculated for the aggregate; if \code{FALSE}; this is not included}
 
-\item{conf, frac, show_conf}{arguments passed to \code{\link{binconr}}}
+\item{conf, frac, show_conf, pct.sign}{additional arguments passed to
+\code{\link{binconr}}}
+
+\item{total}{logical or numeric; if \code{TRUE}, a column with the total,
+i.e., \code{length(x)} is added; if numeric, \code{length(x)} and,
+optionally, fracton and percent out of \code{total} is added}
 }
 \description{
 Convenience function to calculate proportions and confidence invervals and
@@ -27,6 +32,7 @@ r <- c('CR','PR','SD','PD','NE')
 x <- factor(sample(r, 30, replace = TRUE), r)
 tabler_resp(x, 3)
 tabler_resp(x, 'PR')
+tabler_resp(x, 'PR', total = 50)
 
 ## NAs are removed
 y <- `[<-`(x, 1:10, value = NA)
