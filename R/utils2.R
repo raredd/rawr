@@ -2,7 +2,7 @@
 # show_html, show_markdown, show_math, roundr, intr, pvalr, pvalr2, catlist,
 # binconr, num2char, iprint, writeftable, tabler, tabler_by, tabler_by2,
 # match_ctc, tox_worst, countr, dmy, combine_table, tabler_resp, resp_,
-# r_or_better_, inject_div, sparKDT, render_sparkDT, case
+# r_or_better_, inject_div, sparKDT, render_sparkDT, case, write_htmlTable
 ###
 
 
@@ -1628,4 +1628,40 @@ case <- function(x, case = c('first', 'upcase', 'downcase', 'camelcase',
   else if (case == 'camelcase')
     gsub(' ', '', Recall(x, 'upcase'))
   else gsub(case, '\\U\\1', x, perl = TRUE)
+}
+
+#' Write an \code{htmlTable} to file
+#' 
+#' Write an \code{htmlTable} object to a file with optional html attribues.
+#' 
+#' @param x a string, e.g., the return of \code{\link[htmlTable]{htmlTable}}
+#' @param file a character string naming the file to print to; \code{""},
+#' the default, prints to the console
+#' @param attributes logical; if \code{TRUE}, html attributes are added and
+#' default border color names are replaced with hexadecimal values
+#' 
+#' @examples
+#' \dontrun{
+#' library('htmlTable')
+#' x <- htmlTable(head(cars))
+#' 
+#' write_htmlTable(x)
+#' write_htmlTable(x, attributes = FALSE)
+#' }
+#' 
+#' @export
+
+write_htmlTable <- function(x, file = '', attributes = TRUE) {
+  if (attributes) {
+    x <- gsub('gr[ea]y\\s*(?=;)', '#bebebe', x, perl = TRUE)
+    x <- paste(
+      '<!DOCTYPE html>\n<html>\n<body>',
+      x,
+      '</body>\n</html>',
+      sep = '\n'
+    )
+    attr(x, 'html') <- TRUE
+    class(x) <- c('html', 'htmlTable', 'character')
+  }
+  cat(x, file = file)
 }
