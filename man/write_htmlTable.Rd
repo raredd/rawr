@@ -16,16 +16,15 @@ the default, prints to the console}
 default border color names are replaced with hexadecimal values}
 }
 \description{
-Write an \code{htmlTable} object to a file with optional html attribues.
+Write an \code{\link[htmlTable]{htmlTable}} object to a file with optional
+html attributes.
 }
 \examples{
-\dontrun{
 library('htmlTable')
 x <- htmlTable(head(cars))
 
 write_htmlTable(x)
 write_htmlTable(x, attributes = FALSE)
-}
 
 }
 

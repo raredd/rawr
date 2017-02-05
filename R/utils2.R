@@ -1632,7 +1632,8 @@ case <- function(x, case = c('first', 'upcase', 'downcase', 'camelcase',
 
 #' Write an \code{htmlTable} to file
 #' 
-#' Write an \code{htmlTable} object to a file with optional html attribues.
+#' Write an \code{\link[htmlTable]{htmlTable}} object to a file with optional
+#' html attributes.
 #' 
 #' @param x a string, e.g., the return of \code{\link[htmlTable]{htmlTable}}
 #' @param file a character string naming the file to print to; \code{""},
@@ -1641,13 +1642,11 @@ case <- function(x, case = c('first', 'upcase', 'downcase', 'camelcase',
 #' default border color names are replaced with hexadecimal values
 #' 
 #' @examples
-#' \dontrun{
 #' library('htmlTable')
 #' x <- htmlTable(head(cars))
 #' 
 #' write_htmlTable(x)
 #' write_htmlTable(x, attributes = FALSE)
-#' }
 #' 
 #' @export
 
