@@ -889,8 +889,10 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
       sprintf('Surv(%s_time, %s_ind) ~ %s', event, event, strata)
   form  <- as.formula(form)
   
+  # par(oma = c(0,0,1,0))
   if (plot & (!add | !single))
     on.exit(par(op))
+    
   if (!missing(by)) {
     data[, by] <- as.factor(data[, by])
     if (single) {
@@ -924,7 +926,8 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
     sprintf('%s probability', toupper(event)) else ylab
   
   ## possible names for strata labels/title
-  dots <- lapply(dots(...), eval)
+  dots <- lapply(dots(...), function(x)
+    tryCatch(eval(x), error = function(e) NULL))
   strata_names <- dots$strata.lab %||% dots$strata.expr %||%
     if (mlabs) NULL else strata_lab
   if (is.logical(strata_names) | anyNA(strata_names) | is.null(strata_names))
@@ -936,10 +939,12 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
     sl <- survfit(form, data)
     col.surv <- setNames(
       col.surv %||% seq_along(sl$n),
-      if (by == strata) NULL else strata_names %||% names(sl$strata)
+      if (by == strata || missing(strata_lab) || identical(strata_lab, FALSE))
+        NULL else strata_names %||% names(sl$strata)
     )
-    if (map.col & length(sp) != length(col.surv))
-      col.surv <- seq_along(sp)
+    if (length(sp) != length(col.surv))
+      col.surv <- if (map.col)
+        seq_along(sp) else rep(col.surv, length(sp))
   }
   
   sl <- lapply(seq_along(sp), function(x) {
@@ -994,16 +999,14 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
     if (!plot)
       return(s0)
     
-    
     kmplot(s, add = add, legend = FALSE, main = names(sp)[x], ylab = ylab, ...,
-           col.surv = if (map.col)
-             unname(col.surv)[x] else col.surv,
+           col.surv = if (map.col) unname(col.surv)[x] else col.surv,
            panel.first = {
              p <- par('usr')
              mtxt <- if (!msub)
                rep_len(sub, length(sp))[x] else strata
-             mtext(mtxt, 3, 0.5, FALSE, 0, 0, font = 3)
-             mtext(fig[x], 3, 0.5, FALSE, 0 - p[2] * .05, font = 2, cex = 1.5)
+             mtext(mtxt, 3, 0.25, FALSE, 0, 0, font = 3)
+             mtext(fig[x], 3, 0.25, FALSE, 0 - p[2] * .05, font = 2, cex = 1.2)
              
              ## add survdiff text in upper right corner
              if (lr_test) {
@@ -1014,7 +1017,7 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
                          if (nzchar(mtxt)) paste(' for', mtxt) else '',
                          ' -- no lr test performed')
                else mtext(txt, side = 3, at = p[2], adj = 1,
-                          font = 3, cex = .8, line = .5)
+                          font = 3, cex = .8, line = 0.25)
              }
            })
     s0
