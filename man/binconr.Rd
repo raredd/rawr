@@ -22,15 +22,27 @@ binconr(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
 
 \item{show_conf}{logical; if \code{TRUE} includes the confidence level}
 
-\item{method}{method to use; see \code{\link{bincon}}}
+\item{pct.sign}{logical; if \code{TRUE}, percent sign is shown; otherwise,
+percents are shown without sign (this does not affect the confidence text)}
+
+\item{method}{method to use (default is exact); see \code{\link{bincon}}}
 }
 \description{
 Binomial confidence interval (\code{\link{bincon}}) formatter.
+
+Note that this function will also calculate confidence intervals for
+two-stage designs by \code{method="two-stage"}. If both \code{r} and
+\code{n} are length 2, a two-stage design is assumed. If \code{r} and
+\code{n} are not both length 1 or 2, the function will fail. For vector
+inputs, see \code{\link{bincon}}.
 }
 \examples{
 binconr(5, 10, .90, est = FALSE)
 binconr(45, 53, digits = 1, conf = .975)
 binconr(45, 53, show_conf = FALSE, frac = TRUE)
+
+## length 2 vectors assume two-stage confidence intervals
+binconr(c(15, 45), c(20, 33), show_conf = FALSE, frac = TRUE)
 
 }
 \seealso{

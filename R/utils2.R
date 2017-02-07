@@ -431,7 +431,14 @@ catlist <- function(l)
 
 #' \code{bincon} formatter
 #' 
+#' @description
 #' Binomial confidence interval (\code{\link{bincon}}) formatter.
+#' 
+#' Note that this function will also calculate confidence intervals for
+#' two-stage designs by \code{method="two-stage"}. If both \code{r} and
+#' \code{n} are length 2, a two-stage design is assumed. If \code{r} and
+#' \code{n} are not both length 1 or 2, the function will fail. For vector
+#' inputs, see \code{\link{bincon}}.
 #' 
 #' @param r number of responses (successes)
 #' @param n number of observations (trials)
@@ -439,8 +446,10 @@ catlist <- function(l)
 #' @param digits number of digits
 #' @param est logical; if \code{TRUE}, includes the point estimate
 #' @param frac logical; if \code{TRUE}, includes the fraction \code{r/n}
-#' @param method method to use; see \code{\link{bincon}}
 #' @param show_conf logical; if \code{TRUE} includes the confidence level
+#' @param pct.sign logical; if \code{TRUE}, percent sign is shown; otherwise,
+#' percents are shown without sign (this does not affect the confidence text)
+#' @param method method to use (default is exact); see \code{\link{bincon}}
 #' 
 #' @seealso
 #' \code{\link{bincon}}; \code{\link[Hmisc]{binconf}}
@@ -450,12 +459,26 @@ catlist <- function(l)
 #' binconr(45, 53, digits = 1, conf = .975)
 #' binconr(45, 53, show_conf = FALSE, frac = TRUE)
 #' 
+#' ## length 2 vectors assume two-stage confidence intervals
+#' binconr(c(15, 45), c(20, 33), show_conf = FALSE, frac = TRUE)
+#' 
 #' @export
 
 binconr <- function(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
                     show_conf = TRUE, pct.sign = TRUE, method = 'exact') {
-  method <- match.arg(method, c('exact', 'wilson', 'asymptotic'), FALSE)
-  res <- roundr(bincon(r, n, alpha = 1 - conf, method = method) * 100, digits)
+  lr <- length(r)
+  ln <- length(n)
+  
+  method <- if (lr == 2L & ln == 2L)
+    'two-stage' else {
+      stopifnot(lr == 1L, ln == 1L)
+      match.arg(method, c('exact', 'wilson', 'asymptotic'), FALSE)
+    }
+  
+  bc <- bincon(r, n, alpha = 1 - conf, method = method)
+  stopifnot(nrow(bc) == 1L)
+  
+  res <- roundr(bc * 100, digits)
   zzz <- sprintf('%s%% CI: %s - %s%%', conf * 100, res[4], res[5])
   
   if (!show_conf)
@@ -465,7 +488,7 @@ binconr <- function(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
   if (!pct.sign)
     zzz <- gsub('%(?= \\()|%(?=\\))', '', zzz, perl = TRUE)
   if (frac)
-    sprintf('%s/%s, %s', r, n, zzz) else zzz
+    sprintf('%s/%s, %s', tail(r, 1L), sum(n), zzz) else zzz
 }
 
 #' Numeric to character string
@@ -1245,7 +1268,7 @@ combine_table <- function(l, tspanner, n.tspanner, ...) {
     sapply(l, function(x) nrow(x) %||% 1L) else n.tspanner
   tspanner <- if (missing(tspanner))
     names(l) %||% rep(' ', each = length(n.tspanner)) else tspanner
-  htmlTable(
+  htmlTable::htmlTable(
     do.call('rbind', l), tspanner = tspanner, n.tspanner = n.tspanner, ...
   )
 }
@@ -1262,6 +1285,7 @@ combine_table <- function(l, tspanner, n.tspanner, ...) {
 #' calculated for the aggregate; if \code{FALSE}; this is not included
 #' @param conf,frac,show_conf,pct.sign additional arguments passed to
 #' \code{\link{binconr}}
+#' @param digits number of digits past the decimal point to keep
 #' @param total logical or numeric; if \code{TRUE}, a column with the total,
 #' i.e., \code{length(x)} is added; if numeric, \code{length(x)} and,
 #' optionally, fracton and percent out of \code{total} is added

@@ -18,6 +18,8 @@ calculated for the aggregate; if \code{FALSE}; this is not included}
 \item{conf, frac, show_conf, pct.sign}{additional arguments passed to
 \code{\link{binconr}}}
 
+\item{digits}{number of digits past the decimal point to keep}
+
 \item{total}{logical or numeric; if \code{TRUE}, a column with the total,
 i.e., \code{length(x)} is added; if numeric, \code{length(x)} and,
 optionally, fracton and percent out of \code{total} is added}
