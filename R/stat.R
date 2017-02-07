@@ -1,4 +1,6 @@
 ### statistical functions
+# desmon: bin1samp, simon, twocon
+# 
 # rpart_utils: rpart_parent, rpart_subset, rpart_nodes
 #
 # bincon, bintest, dlt_table, power_cv, simon2, moods_test, fakeglm, gcd,
@@ -8,28 +10,79 @@
 
 #' Binomial probability confidence intervals
 #' 
+#' @description
 #' Calculates confidence intervals for binomial probabilities for specified
-#' type-I error (\code{alpha}) using exact, Wilson, or asymptotic methods.
+#' type-I error (\code{alpha}) using exact, Wilson, asymptotic methods, or
+#' two-stage methods.
 #' 
+#' For exact, Wilson, and asymptotic methods, \code{r} and \code{n} can be
+#' any length (the other argument is recycled as needed). For the two-stage
+#' method, \code{r} and \code{n} must each be length 2 where \code{r =
+#' c(max # responses in 1st stage that can be observed without continuing,
+#' total number of responses observed)} and \code{n = c(# of cases entered
+#' in 1st stage, # of additional cases entered in 2nd stage)}.
+#' 
+#' @details
 #' If \code{method = 'all'}, \code{r} and \code{n} should each be length 1.
 #' The "exact" method uses the \code{\link{df}} distribution to comupte exact
 #' intervals (based on the binomial cdf); the "wilson" interval is score-test-
-#' based; the "asymptotic"  is the asymptotic normal interval.
+#' based; the "asymptotic" is the asymptotic normal interval.
 #' 
 #' The "wilson" method has been preferred by Agresti and Coull.
+#' 
+#' \code{method = "two-stage"} uses the \code{\link[desmon]{twocon}} function
+#' from the \pkg{desmon} library:
+#' 
+#' First \code{n[1]} patients are entered on the study. If more than
+#' \code{r[1]} responses are observed, then an additional \code{n[2]} patients
+#' are entered. This function assumes that if the observed number of responses
+#' \code{r < r[1]}, then only \code{n[1]} patients were entered.
+#' 
+#' The estimators computed are the MLE (the observed proportion of responses),
+#' a bias corrected MLE, and an unbiased estimator, which is sometimes
+#' incorrectly described as the UMVUE.
+#' 
+#' The confidence interval is based on the exact sampling distribution.
+#' However, there is not a universally accepted ordering on the sample space
+#' in two-stage designs. The parameter \code{dp} can be used to modify the
+#' ordering by weighting points within the sample space differently.
+#' 
+#' \code{dp=0} will give the Atkinson and Brown procedure, and \code{dp=1}
+#' will order outcomes base on the MLE. The Atkinson and Brown procedure
+#' orders outcomes based solely on the number of responses, regardless of the
+#' number cases sampled.
+#' 
+#' The MLE ordering defines as more extreme those outcomes with a more extreme
+#' value of the MLE (the proportion of responses). Other powers of \code{dp},
+#' such as \code{dp=1/2}, could also be used.
+#' 
+#' Let \code{R} be the number of responses and \code{N=n[1]} if
+#' \code{R <= r[1]} and \code{N=n[1] + n[2]} if \code{R>r[1]}. In general, the
+#' outcomes that are more extreme in the high response direction are those
+#' with \code{R/(N^dp) >= r/(n^dp)}, where \code{r} and \code{n} are the
+#' observed values of \code{R} and \code{N}, and the outcomes that are more
+#' extreme in the low response direction are those with
+#' \code{R/(N^dp) <= r/(n^dp)}.
 #' 
 #' @param r number of responses (successes)
 #' @param n number of observations (trials)
 #' @param alpha type-I error probability
 #' @param digits integer value specifying number of decimal places
-#' @param method character strings specifying which method to use; see details
+#' @param method character strings specifying which method to use; can be
+#' (unambiguously) abbreviated; see details
+#' @param dp numeric value affecting the ordering of sample space in two-stage
+#' designs when \code{method = "two-stage"}
+#' 
+#' \code{dp = 0} will give the Atkinson and Brown procedure, and \code{dp = 1}
+#' (default) will order based on MLE; values such as \code{dp = 0.5} can
+#' also be used; see details
 #' 
 #' @return
 #' A matrix containing the computed interval(s) and their widths.
 #' 
 #' @author
 #' Rollin Brant, Frank Harrell, and Brad Biggerstaff; modifications by Robert
-#' Redd
+#' Redd including support for two-stage designs
 #' 
 #' @references Agresti, A. and B.A. Coull. Approximate is better than "exact"
 #' for interval extimation of binomial proportions. \emph{American
@@ -48,17 +101,42 @@
 #' bincon(0:10, 10)
 #' bincon(5, 10, method = 'all')
 #' 
+#' ## ?desmon::twocon
+#' bincon(c(3, 4), c(14, 18), method = 'two-stage', dp = 0)
+#' bincon(c(3, 4), c(14, 18), method = 'two-stage', dp = 1)
+#' 
 #' @export
 
 bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
-                   method = c('exact', 'wilson', 'asymptotic','all')) {
-  # error checks
-  if (any(r < 0) | any(r > n))
-    stop('invalid response value')
+                   method = c('exact', 'wilson', 'asymptotic', 'all',
+                              'two-stage'),
+                   dp = 1) {
   if (alpha >= 1 | alpha <= 0)
-    stop('alpha must be between 0 and 1')
+    stop('\'alpha\' must be between 0 and 1')
   
   method <- match.arg(method)
+  lr <- length(r)
+  ln <- length(n)
+  
+  if (method == 'two-stage') {
+    r <- sort(r)
+    n <- sort(n)
+    if (any(r < 0) | r[1] > n[1] | r[2] > sum(n))
+      stop('Invalid response value')
+    if (lr != 2L | ln != 2L)
+      stop('\'r\' and \'n\' should be length 2')
+    
+    mat <- twocon(n[1L], n[2L], r[1L], r[2L], 1 - alpha, dp)
+    mat <- cbind(Responses = r[2L], Trials = sum(n),
+                 PointEst = r[2L] / sum(n),
+                 Lower = mat['lower'], Upper = mat['upper'],
+                 Width = diff(mat[c('lower', 'upper')]))
+    return(`rownames<-`(mat, NULL))
+  }
+  
+  if (any(r < 0) | any(r > n))
+    stop('Invalid response value')
+  
   bc <- function(r, n, alpha, method) {
     nu1 <- 2 * (n - r + 1)
     nu2 <- 2 * r
@@ -91,16 +169,17 @@ bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
            all = res, res)
   }
   
-  if ((length(r) != length(n)) & length(r) == 1)
-    r <- rep(r, length(n))
-  if ((length(r) != length(n)) & length(n) == 1)
-    n <- rep(n, length(r))
-  if ((length(r) > 1 | length(n) > 1) & method == 'all') {
+  if ((lr != ln) & lr == 1L)
+    r <- rep(r, ln)
+  if ((lr != ln) & ln == 1L)
+    n <- rep(n, lr)
+  if ((lr > 1L | ln > 1L) & method == 'all') {
     method <- 'exact'
     warning('Multiple confidence intervals should use one method. ',
             'Using \'exact\' method', domain = NA)
   }
-  if (method == 'all' & length(r) == 1 & length(n) == 1) {
+  
+  if (method == 'all' & lr == 1L & ln == 1L) {
     mat <- bc(r, n, alpha, method)
     mat <- cbind(mat, mat[, 3] - mat[, 2])
     dimnames(mat) <- list(c('Exact', 'Wilson', 'Asymptotic'),
@@ -110,14 +189,78 @@ bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
     return(cbind(Responses = r, Trials = n, mat))
   }
   
-  mat <- matrix(ncol = 3, nrow = length(r))
-  for (i in 1:length(r))
+  mat <- matrix(ncol = 3L, nrow = lr)
+  for (i in 1:lr)
     mat[i, ] <- bc(r[i], n[i], alpha = alpha, method = method)
   mat <- `colnames<-`(cbind(mat, mat[, 3] - mat[, 2]),
-                      c('PointEst','Lower','Upper','Width'))
+                      c('PointEst', 'Lower', 'Upper', 'Width'))
   mat[, 2:4] <- round(mat[, 2:4], digits = digits)
   
   cbind(Responses = r, Trials = n, mat)
+}
+
+twocon <- function(n1, n2, r1, r, conf = 0.95, dp = 1) {
+  ## desmon::twocon
+  # 
+  # n1	  Number of cases entered during the first stage
+  # n2	  Number of additional cases to be entered during the second stage
+  # r1	  max number of responses that can be observed in the first stage
+  #       without continuing
+  # r	    total number responses observed
+  # conf	two-sided confidence level (proportion) for the confidence interval
+  # dp	  Affects the ordering of outcomes within the sample space
+  
+  if (n1 < 1 | n2 < 1 | r1 < 0 | r1 > n1 | r < 0 | r > n2 + 
+      n1 | conf <= 0 | conf >= 1) 
+    stop("invalid arguments")
+  alpha <- (1 - conf)/2
+  x1 <- 0:n1
+  x2 <- 0:n2
+  u1 <- c(outer(x1[-(1:(r1 + 1))], x2, "+"))
+  dbin2 <- function(p1, x1, x2, u1, n1, n2, r1) {
+    w1 <- dbinom(x1, n1, p1)
+    w3 <- dbinom(x2, n2, p1)
+    u2 <- c(outer(w1[-(1:(r1 + 1))], w3))
+    c(w1[1:(r1 + 1)], tapply(u2, u1, sum))
+  }
+  n <- n1 + n2
+  mle <- if (r > r1) 
+    r/n
+  else r/n1
+  mm <- c((0:r1)/n1, (r1 + 1):n/n)
+  ff <- function(p, x1, x2, u1, n1, n2, r1, mm, dbin2, mle) sum(dbin2(p, 
+                                                                      x1, x2, u1, n1, n2, r1) * mm) - mle
+  pm <- if (r <= 0) 
+    0
+  else if (r >= n) 
+    1
+  else uniroot(ff, c(1e-08, 1 - 1e-08), x1 = x1, x2 = x2, u1 = u1, 
+               n1 = n1, n2 = n2, r1 = r1, mm = mm, dbin2 = dbin2, mle = mle)$root
+  if (r1 >= r) {
+    ube <- r/n1
+  }
+  else {
+    aa <- dhyper((r1 + 1):r, n1, n2, r)
+    ube <- sum(((r1 + 1):r) * aa)/(n1 * sum(aa))
+  }
+  mm <- if (r > r1) 
+    c((n/n1)^dp * (0:r1), (r1 + 1):n)
+  else c(0:r1, (n1/n)^dp * ((r1 + 1):n))
+  s1 <- mm >= r
+  s2 <- mm <= r
+  ff2 <- function(p, x1, x2, u1, n1, n2, r1, s, dbin2, alpha) sum(dbin2(p, 
+                                                                        x1, x2, u1, n1, n2, r1)[s]) - alpha
+  pl <- if (r <= 0) 
+    0
+  else uniroot(ff2, c(1e-08, 1 - 1e-08), x1 = x1, x2 = x2, 
+               u1 = u1, n1 = n1, n2 = n2, r1 = r1, s = s1, dbin2 = dbin2, 
+               alpha = alpha)$root
+  pu <- if (r >= n) 
+    1
+  else uniroot(ff2, c(1e-08, 1 - 1e-08), x1 = x1, x2 = x2, 
+               u1 = u1, n1 = n1, n2 = n2, r1 = r1, s = s2, dbin2 = dbin2, 
+               alpha = alpha)$root
+  c(lower = pl, upper = pu, bcmle = pm, mle = mle, unbiased = ube)
 }
 
 #' Single-stage designs
@@ -225,7 +368,6 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
 #' @export
 
 dlt_table <- function(low, high, delta = 10) {
-  
   int <- seq(low, high, by = delta)
   mat <- matrix(NA, nrow = length(int), ncol = 2)
   
@@ -234,6 +376,7 @@ dlt_table <- function(low, high, delta = 10) {
     mat[ii, 2] <- dbinom(0, 3, int[ii] / 100) + 
       dbinom(1, 3, int[ii] / 100) * dbinom(0, 3, int[ii] / 100)
   }
+  
   `colnames<-`(mat, c('DLT rate (%)', 'Pr(Escalation)'))
 }
 
@@ -283,7 +426,6 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
                      type = c('two.sample', 'one.sample', 'paired'),
                      alternative = c('two.sided', 'less', 'greater'),
                      distribution = c('t', 'normal', 'log.normal')) {
-  
   if (sum(sapply(list(n, f, cv, sig.level, power), is.null)) != 1)
     stop('exactly one of n, f, cv, power, sig.level must be NULL')
   if (!is.null(sig.level) && !is.numeric(sig.level) || 
@@ -467,8 +609,8 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
 
 simon2 <- function(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,
                    del = 1, minimax = FALSE) {
-  
   args <- expand.grid(p0 = p0, pa = pa)
+  
   tmp <- setNames(lapply(Map(simon, p0 = args[['p0']], pa = args[['pa']],
                              n1max = n1max, alpha = alpha, beta = beta,
                              del = del, minimax = minimax),
@@ -481,13 +623,25 @@ simon2 <- function(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,
                              'declare trt inactive')))
 }
 
-simon <- function(p0, pa, n1max = 0, ntmax = 1e5, alpha = 0.1, beta = 0.1,
+simon <- function(p0, pa, n1max = 0, ntmax = 1e5,
+                  alpha = 0.1, beta = 0.1,
                   del = 1, minimax = FALSE) {
-  
+  ## desmon::simon
+  # 
   ## prob calculations for 2-stage phase II design
   ## optimal simon designs (minimize E(n|H0))
-  ## p0, pa, null & alt response probabilities
-  ## n1max = max # subject in first stage
+  # 
+  # p0	    Null hypothesis response probability
+  # pa	    Alternative hypothesis response probability
+  # n1max	  The maximum number of subjects entered during the first stage.
+  #         Ignored if <= 0.
+  # ntmax	  The maximum total number of subjects.
+  # alpha	  Type I error rate
+  # beta	  Type II error rate
+  # del	    Searches for designs where the expected number of subjects under
+  #         the null is within del of the minimum possible value
+  # minimax	If TRUE, only searches for designs with the total sample size equal
+  #         to the minimum possible value
   
   if (alpha > .5 | alpha <= 0 | 1 - beta <= alpha |
       beta <= 0 | p0 <= 0 | p0 >= pa |
@@ -611,6 +765,14 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5, alpha = 0.1, beta = 0.1,
 }
 
 bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20) {
+  ## desmon::bin1samp
+  # 
+  # p0	   Null hypothesis response probability
+  # pa	   Alternative hypothesis response probability
+  # alpha	 Type I error rate
+  # beta	 Type II error rate
+  # n.min	 Minimum sample size considered
+  
   if (p0 == pa)
     stop('p0 should not be equal to pa')
   b <- 1
@@ -730,6 +892,7 @@ moods_test <- function(X, ...) {
 fakeglm <- function(formula, ..., family, data = NULL) {
   dots <- list(...)
   out <- list()
+  
   ## stats:::.MFclass
   .MFclass <- function (x) {
     if (is.logical(x)) return('logical')
@@ -741,6 +904,7 @@ fakeglm <- function(formula, ..., family, data = NULL) {
     if (is.numeric(x)) return('numeric')
     return('other')
   }
+  
   tt <- terms(formula, data = data)
   if (!is.null(data)) {
     mf <- model.frame(tt, data)
@@ -759,6 +923,7 @@ fakeglm <- function(formula, ..., family, data = NULL) {
   out$terms <- tt
   coef <- numeric(0)
   stopifnot(length(dots) > 1, !is.null(names(dots)))
+  
   for (ii in seq_along(dots)) {
     if ((n <- names(dots)[ii]) != '') {
       v <- dots[[ii]]
@@ -772,6 +937,7 @@ fakeglm <- function(formula, ..., family, data = NULL) {
       coef['(Intercept)'] <- dots[[ii]]
     }
   }
+  
   out$coefficients <- coef
   out$rank <- length(coef)
   if (!missing(family)) {

@@ -5,7 +5,7 @@
 \title{Binomial probability confidence intervals}
 \usage{
 bincon(r, n, alpha = 0.05, digits = getOption("digits"),
-  method = c("exact", "wilson", "asymptotic", "all"))
+  method = c("exact", "wilson", "asymptotic", "all", "two-stage"), dp = 1)
 }
 \arguments{
 \item{r}{number of responses (successes)}
@@ -16,31 +16,85 @@ bincon(r, n, alpha = 0.05, digits = getOption("digits"),
 
 \item{digits}{integer value specifying number of decimal places}
 
-\item{method}{character strings specifying which method to use; see details}
+\item{method}{character strings specifying which method to use; can be
+(unambiguously) abbreviated; see details}
+
+\item{dp}{numeric value affecting the ordering of sample space in two-stage
+designs when \code{method = "two-stage"}
+
+\code{dp = 0} will give the Atkinson and Brown procedure, and \code{dp = 1}
+(default) will order based on MLE; values such as \code{dp = 0.5} can
+also be used; see details}
 }
 \value{
 A matrix containing the computed interval(s) and their widths.
 }
 \description{
 Calculates confidence intervals for binomial probabilities for specified
-type-I error (\code{alpha}) using exact, Wilson, or asymptotic methods.
+type-I error (\code{alpha}) using exact, Wilson, asymptotic methods, or
+two-stage methods.
+
+For exact, Wilson, and asymptotic methods, \code{r} and \code{n} can be
+any length (the other argument is recycled as needed). For the two-stage
+method, \code{r} and \code{n} must each be length 2 where \code{r =
+c(max # responses in 1st stage that can be observed without continuing,
+total number of responses observed)} and \code{n = c(# of cases entered
+in 1st stage, # of additional cases entered in 2nd stage)}.
 }
 \details{
 If \code{method = 'all'}, \code{r} and \code{n} should each be length 1.
 The "exact" method uses the \code{\link{df}} distribution to comupte exact
 intervals (based on the binomial cdf); the "wilson" interval is score-test-
-based; the "asymptotic"  is the asymptotic normal interval.
+based; the "asymptotic" is the asymptotic normal interval.
 
 The "wilson" method has been preferred by Agresti and Coull.
+
+\code{method = "two-stage"} uses the \code{\link[desmon]{twocon}} function
+from the \pkg{desmon} library:
+
+First \code{n[1]} patients are entered on the study. If more than
+\code{r[1]} responses are observed, then an additional \code{n[2]} patients
+are entered. This function assumes that if the observed number of responses
+\code{r < r[1]}, then only \code{n[1]} patients were entered.
+
+The estimators computed are the MLE (the observed proportion of responses),
+a bias corrected MLE, and an unbiased estimator, which is sometimes
+incorrectly described as the UMVUE.
+
+The confidence interval is based on the exact sampling distribution.
+However, there is not a universally accepted ordering on the sample space
+in two-stage designs. The parameter \code{dp} can be used to modify the
+ordering by weighting points within the sample space differently.
+
+\code{dp=0} will give the Atkinson and Brown procedure, and \code{dp=1}
+will order outcomes base on the MLE. The Atkinson and Brown procedure
+orders outcomes based solely on the number of responses, regardless of the
+number cases sampled.
+
+The MLE ordering defines as more extreme those outcomes with a more extreme
+value of the MLE (the proportion of responses). Other powers of \code{dp},
+such as \code{dp=1/2}, could also be used.
+
+Let \code{R} be the number of responses and \code{N=n[1]} if
+\code{R <= r[1]} and \code{N=n[1] + n[2]} if \code{R>r[1]}. In general, the
+outcomes that are more extreme in the high response direction are those
+with \code{R/(N^dp) >= r/(n^dp)}, where \code{r} and \code{n} are the
+observed values of \code{R} and \code{N}, and the outcomes that are more
+extreme in the low response direction are those with
+\code{R/(N^dp) <= r/(n^dp)}.
 }
 \examples{
 bincon(0:10, 10)
 bincon(5, 10, method = 'all')
 
+## ?desmon::twocon
+bincon(c(3, 4), c(14, 18), method = 'two-stage', dp = 0)
+bincon(c(3, 4), c(14, 18), method = 'two-stage', dp = 1)
+
 }
 \author{
 Rollin Brant, Frank Harrell, and Brad Biggerstaff; modifications by Robert
-Redd
+Redd including support for two-stage designs
 }
 \references{
 Agresti, A. and B.A. Coull. Approximate is better than "exact"
