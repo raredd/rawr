@@ -10,7 +10,8 @@ write_htmlTable(x, file = "", attributes = TRUE)
 \item{x}{a string, e.g., the return of \code{\link[htmlTable]{htmlTable}}}
 
 \item{file}{a character string naming the file to print to; \code{""},
-the default, prints to the console}
+the default, prints to the console; other values (\code{NULL}, logicals,
+etc.) return \code{x}}
 
 \item{attributes}{logical; if \code{TRUE}, html attributes are added and
 default border color names are replaced with hexadecimal values}

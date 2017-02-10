@@ -1663,7 +1663,8 @@ case <- function(x, case = c('first', 'upcase', 'downcase', 'camelcase',
 #' 
 #' @param x a string, e.g., the return of \code{\link[htmlTable]{htmlTable}}
 #' @param file a character string naming the file to print to; \code{""},
-#' the default, prints to the console
+#' the default, prints to the console; other values (\code{NULL}, logicals,
+#' etc.) return \code{x}
 #' @param attributes logical; if \code{TRUE}, html attributes are added and
 #' default border color names are replaced with hexadecimal values
 #' 
@@ -1688,5 +1689,6 @@ write_htmlTable <- function(x, file = '', attributes = TRUE) {
     attr(x, 'html') <- TRUE
     class(x) <- c('html', 'htmlTable', 'character')
   }
-  cat(x, file = file)
+  if (!is.character(file))
+    x else cat(x, file = file)
 }
