@@ -1,4 +1,4 @@
-### blah who would use these
+### some random shit
 # ht, progress, recoder, ident, allequal, search_df, search_hist, fapply,
 # try_require, list2file, Restart, helpExtract, helpExtract_, Round, round_to,
 # updateR, read_clip, icols, fill_df, kinda_sort, rgene, install_temp,
@@ -33,7 +33,7 @@ ht <- function(x, n = 6L, sep = NULL) {
   FUN <- if (is.null(dim(x)))
     function(...) setNames(c(...), NULL) else rbind
   if (n < 0L) {
-    idx <- cut(1:NROW(x), breaks = 2, labels = 1:2)
+    idx <- cut(seq.int(NROW(x)), breaks = 2, labels = 1:2)
     x <- split(x, idx)
     FUN('   ' = sep, tail(x[[1]], pn), head(x[[2]], pn), '    ' = sep)
   } else  FUN(head(x, pn), '   ' = sep, tail(x, pn))
@@ -74,15 +74,17 @@ ht <- function(x, n = 6L, sep = NULL) {
 #' @export
 
 progress <- function (value, max.value, textbar = FALSE) {
+  if (!is.numeric(value))
+    stop('\'value\' must be numeric')
+  
   oo <- options()
   on.exit(options(oo))
   options(scipen = 10)
-  if (!is.numeric(value))
-    stop("\'value\' must be numeric")
-  if (missing(max.value)) {
+  
+  percent <- if (missing(max.value)) {
     max.value <- 100
-    percent <- TRUE
-  } else percent <- FALSE
+    TRUE
+  } else FALSE
   
   f <- function(...) paste0(..., collapse = '')
   erase.only <- value > max.value
@@ -102,11 +104,12 @@ progress <- function (value, max.value, textbar = FALSE) {
     #                f(rep(' ', max(0, m - r))), '|')
     #   cat(backspaces, message, sep = '')
     # }
-    m <- getOption('width') - 5
+    m <- getOption('width') - 5L
     pct <- as.numeric(value) / as.numeric(max.value)
     r <- floor(pct * m)
     backspaces <- f(rep('\b', m * 2))
-    message <- if (erase.only) 
+    
+    message <- if (erase.only)
       '' else {
         message <- f('|', f(rep('=', max(0, r - 1))),
                      f(rep(' ', max(0, m - r))), '|')
@@ -114,12 +117,12 @@ progress <- function (value, max.value, textbar = FALSE) {
       }
   } else {
     if (percent) {
-      backspaces <- f(rep('\b', l + 14))
+      backspaces <- f(rep('\b', l + 14L))
       message <- if (erase.only)
-        '' else paste0('Progress: ', value, '%  ')
+        '' else paste0('Progress: ', round(value), '%  ')
       cat(backspaces, message, sep = '')
     } else {
-      backspaces <- f(rep('\b', 2 * l + 17))
+      backspaces <- f(rep('\b', 2 * l + 17L))
       message <- if (erase.only)
         '' else f('Progress: ', value, ' of ', max.value, '  ')
       cat(backspaces, message, sep = '')
@@ -311,8 +314,8 @@ ident <- function(..., num.eq = TRUE, single.NA = TRUE, attrib.as.set = TRUE,
                   ignore.bytecode = TRUE, ignore.environment = FALSE) {
   if (length(l <- list(...)) < 2L)
     stop('must provide at least two objects')
-  l <- sapply(1:(length(l) - 1), function(x)
-    identical(l[x], l[x + 1], num.eq = num.eq, single.NA = single.NA,
+  l <- sapply(1:(length(l) - 1L), function(x)
+    identical(l[x], l[x + 1L], num.eq = num.eq, single.NA = single.NA,
               attrib.as.set = attrib.as.set, ignore.bytecode = ignore.bytecode,
               ignore.environment = ignore.environment))
   all(l)

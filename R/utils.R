@@ -15,7 +15,17 @@
 ## is.list(data.frame()); islist(data.frame)
 islist <- function(x) inherits(x, 'list')
 
-done <- function() while (TRUE) {beepr::beep(3); Sys.sleep(3)}
+done <- function(type = c('notifier', 'beep')) {
+  type <- match.arg(type)
+  switch(type,
+    notifier = notifier::notify(
+      sprintf('R task is complete - %s', format(Sys.time(), '%I:%M')),
+      if (nzchar(Sys.getenv('RSTUDIO')))
+        'RStudio' else 'R'
+    ),
+    beep = while (TRUE) {beepr::beep(3); Sys.sleep(3)}
+  )
+}
 
 ## recursively find env where x is defined
 where <- function(x, env = parent.frame()) {

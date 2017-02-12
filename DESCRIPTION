@@ -23,6 +23,7 @@ Suggests:
     htmlwidgets,
     knitr,
     markdown,
+    notifier,
     parallel,
     rstudioapi,
     survival,
