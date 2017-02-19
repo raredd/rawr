@@ -3,10 +3,11 @@
 # rawr_ls: lss, lsf, lsp
 # rawr_parse: parse_yaml, parse_index, parse_news, parse_namespace
 #
-# psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill, interleave,
-# outer2, merge2, locf, roll_fun, classMethods, regcaptures, cast, melt, view,
-# view2, clist, rapply2, sort_matrix, insert, insert_matrix, tryCatch2, rleid,
-# droplevels2, combine_levels, rownames_to_column, column_to_rownames
+# psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill, rbindfill2,
+# rbindlist, interleave, outer2, merge2, locf, roll_fun, classMethods,
+# regcaptures, cast, melt, view, view2, clist, rapply2, sort_matrix, insert,
+# insert_matrix, tryCatch2, rleid, droplevels2, combine_levels,
+# rownames_to_column, column_to_rownames
 #
 # unexported: islist, done, where, dots
 ###
@@ -492,7 +493,7 @@ clear <- function(...) cat('\014')
 #' 
 #' \code{bind_all} and \code{rbindfill} are used for binding vectors,
 #' the latter specifically for \code{\link{rbind}}ing \emph{named} vectors
-#' a la a "stacking" merge.
+#' \emph{a la} a "stacking" merge.
 #' 
 #' \code{cbindx} and \code{rbindx} take vector-, matrix-, and data frame-like
 #' objects and bind normally, filling with \code{NA}s where dimensions are
@@ -505,8 +506,13 @@ clear <- function(...) cat('\014')
 #' otherwise, data frames without a matching column of data will be filled
 #' with \code{NA}.
 #' 
+#' \code{rbindlist} converts a list of vectors into a long data frame.
+#' 
 #' @param ... for \code{bind_all} and \code{rbindfill}, vectors;
-#' \code{cbindx} and \code{rbindx} will accept vectors, matrices, data frames
+#' \code{cbindx} and \code{rbindx} will accept vectors, matrices, data frames;
+#' data frames should be used with \code{rbindfill2} but matrices (or a
+#' combination) will work, but a data frame is returned; \code{rbindlist}
+#' accepts vectors or one or more lists
 #' @param which joining method; \code{'rbind'} or \code{'cbind'}
 #' @param deparse.level integer controlling the construction of labels in
 #' the case of non-matrix-like arguments (for the default method):\cr
@@ -546,6 +552,9 @@ clear <- function(...) cat('\014')
 #' rbindfill2(l$c, l$e)
 #' 
 #' rbindfill2(mtcars, cars)
+#' 
+#' rbindlist(x)
+#' rbindlist(l)
 #' 
 #' @name bindx
 NULL
@@ -791,7 +800,7 @@ rbindfill <- function(...) {
 #' @export
 rbindfill2 <- function(..., use.rownames = FALSE) {
   l <- list(...)
-  nn <- sapply(l, names)
+  nn <- sapply(l, colnames)
   un <- unique(unlist(nn))
   out <- lapply(l, function(x) {
     if (!all(wh <- un %in% names(x))) {
@@ -802,6 +811,19 @@ rbindfill2 <- function(..., use.rownames = FALSE) {
     } else x[, un]
   })
   res <- do.call('rbind.data.frame', out)
+  if (use.rownames)
+    res else `rownames<-`(res, NULL)
+}
+
+#' @rdname bindx
+#' @export
+rbindlist <- function(..., use.rownames = FALSE) {
+  l <- if (is.list(..1))
+    c(...) else list(...)
+  nn <- if (is.null(names(l)))
+    seq_along(l) else make.unique(names(l))
+  nn <- rep(nn, vapply(l, length, integer(1L)))
+  res <- data.frame(V1 = nn, V2 = unlist(l), stringsAsFactors = FALSE)
   if (use.rownames)
     res else `rownames<-`(res, NULL)
 }
@@ -1733,10 +1755,10 @@ droplevels2 <- function(x, min_level = 1, max_level = max(as.numeric(x))) {
 #' 
 #' @export
 
-combine_levels <- function(x, levels, labels) {
+combine_levels <- function(x, levels, labels = NULL) {
   levels <- if (is.list(levels))
     levels else list(levels)
-  labels <- as.list(labels)
+  labels <- as.list(labels %||% names(levels))
   stopifnot(length(levels) == length(labels))
   
   ## less code but requires rawr::recoder
@@ -1753,7 +1775,7 @@ combine_levels <- function(x, levels, labels) {
     xc[xc %in% levels[[ii]]] <- labels[[ii]]
   }
 
-  factor(xc, unique(xl), ordered = is.ordered(x))
+  factor(xc, unique(labels, xl), ordered = is.ordered(x))
 }
 
 #' Rowname tools

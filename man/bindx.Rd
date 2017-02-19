@@ -6,6 +6,7 @@
 \alias{cbindx}
 \alias{rbindfill}
 \alias{rbindfill2}
+\alias{rbindlist}
 \alias{rbindx}
 \title{Bind objects}
 \usage{
@@ -18,10 +19,15 @@ rbindx(..., deparse.level = 1)
 rbindfill(...)
 
 rbindfill2(..., use.rownames = FALSE)
+
+rbindlist(..., use.rownames = FALSE)
 }
 \arguments{
 \item{...}{for \code{bind_all} and \code{rbindfill}, vectors;
-\code{cbindx} and \code{rbindx} will accept vectors, matrices, data frames}
+\code{cbindx} and \code{rbindx} will accept vectors, matrices, data frames;
+data frames should be used with \code{rbindfill2} but matrices (or a
+combination) will work, but a data frame is returned; \code{rbindlist}
+accepts vectors or one or more lists}
 
 \item{which}{joining method; \code{'rbind'} or \code{'cbind'}}
 
@@ -41,7 +47,7 @@ Utilities for binding objects with inconsistent dimensions.
 \details{
 \code{bind_all} and \code{rbindfill} are used for binding vectors,
 the latter specifically for \code{\link{rbind}}ing \emph{named} vectors
-a la a "stacking" merge.
+\emph{a la} a "stacking" merge.
 
 \code{cbindx} and \code{rbindx} take vector-, matrix-, and data frame-like
 objects and bind normally, filling with \code{NA}s where dimensions are
@@ -53,6 +59,8 @@ names. \code{rbindfill2} starts with the first data frame given and
 needed to bind. Any columns with matching names will be aggregated;
 otherwise, data frames without a matching column of data will be filled
 with \code{NA}.
+
+\code{rbindlist} converts a list of vectors into a long data frame.
 }
 \examples{
 bind_all(1:5, 1:3, which = 'cbind')
@@ -80,6 +88,9 @@ do.call('rbindfill2', c(l, use.rownames = TRUE))
 rbindfill2(l$c, l$e)
 
 rbindfill2(mtcars, cars)
+
+rbindlist(x)
+rbindlist(l)
 
 }
 \seealso{

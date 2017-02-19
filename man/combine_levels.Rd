@@ -4,7 +4,7 @@
 \alias{combine_levels}
 \title{Combine factor levels}
 \usage{
-combine_levels(x, levels, labels)
+combine_levels(x, levels, labels = NULL)
 }
 \arguments{
 \item{x}{a vector}
