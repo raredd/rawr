@@ -7,20 +7,24 @@
 \alias{rbindfill}
 \alias{rbindfill2}
 \alias{rbindlist}
+\alias{rbindlist2}
 \alias{rbindx}
 \title{Bind objects}
 \usage{
 bind_all(..., which)
 
-cbindx(..., deparse.level = 1)
+cbindx(..., deparse.level = 1L)
 
-rbindx(..., deparse.level = 1)
+rbindx(..., deparse.level = 1L)
 
 rbindfill(...)
 
 rbindfill2(..., use.rownames = FALSE)
 
-rbindlist(..., use.rownames = FALSE)
+rbindlist(..., use.rownames = FALSE, use.names = FALSE)
+
+rbindlist2(data, column, split = "\\\\W+", fixed = FALSE, perl = FALSE,
+  use.rownames = any(rownames(data) != seq.int(nrow(data))))
 }
 \arguments{
 \item{...}{for \code{bind_all} and \code{rbindfill}, vectors;
@@ -37,9 +41,19 @@ the case of non-matrix-like arguments (for the default method):\cr
 \code{deparse.level = 1} or \code{2} constructs labels from the argument
 names \cr see \code{\link{cbind}}}
 
-\item{use.rownames}{logical; if \code{TRUE}, data frames in a \emph{named}
-list will retain corresponding rownames; the default is to remove rownames
-(note that this parameter is ignored if \dots is not a named list)}
+\item{use.rownames}{logical; for \code{rbindfill2}, if \code{TRUE}, data
+frames in a \emph{named} list will retain corresponding rownames; the
+default is to remove rownames (note that this parameter is ignored if
+\code{...} is not a named list)
+
+for \code{rbindlist} and \code{rbindlist2}, return a data frame with or
+without rownames; for \code{rbindlist2}, if \code{data} has no row names
+set (i.e., are \code{"1", "2", ...}), then the default is \code{FALSE}}
+
+\item{column}{for \code{rbindlist2}, the column(s) to be unnested}
+
+\item{split, fixed, perl}{arguments passed to \code{\link{strsplit}}
+controlling how nested column text should be split}
 }
 \description{
 Utilities for binding objects with inconsistent dimensions.
@@ -53,6 +67,10 @@ the latter specifically for \code{\link{rbind}}ing \emph{named} vectors
 objects and bind normally, filling with \code{NA}s where dimensions are
 not equal.
 
+\code{rbindfill} stacks named vectors into a matrix by initializing a
+matrix with all names and filling with \code{...} by row in the order
+given. Names will be a unique list of the vector names in the order given.
+
 \code{rbindfill2} row-binds data frames with zero or more common column
 names. \code{rbindfill2} starts with the first data frame given and
 \code{rbind}s subsequent data frames adding new columns of \code{NA} as
@@ -60,7 +78,13 @@ needed to bind. Any columns with matching names will be aggregated;
 otherwise, data frames without a matching column of data will be filled
 with \code{NA}.
 
-\code{rbindlist} converts a list of vectors into a long data frame.
+\code{rbindlist} converts a list of vectors into a long data frame with
+two columns: the list index where each value was stored and the values
+themselves. A third column will be added if \code{use.names = TRUE} which
+will keep the names of each vector.
+
+\code{rbindlist2} uses \code{rbindlist} to expand data frames with one or
+more nested columns.
 }
 \examples{
 bind_all(1:5, 1:3, which = 'cbind')
@@ -73,9 +97,17 @@ cbindx(m1, m2)
 rbindx(m1, m2)
 rbindx(mtcars, m2)
 
+
+## "stack" named vectors
 f <- function(x) setNames(letters[x], LETTERS[x])
 x <- lapply(list(1:5, 3:6, 2:7, 26), f)
 do.call('rbindfill', x)
+
+## "stack" matrices or data frames
+colnames(m1) <- 'B'
+colnames(m2) <- LETTERS[1:4]
+rbindfill2(m1, m2)
+rbindfill2(m2, m1)
 
 set.seed(1)
 dd <- matrix(NA, nrow = 1, ncol = 10)
@@ -83,18 +115,41 @@ dd <- as.data.frame(col(dd))
 l <- setNames(lapply(1:5, function(x) dd[, sample(x), drop = FALSE]),
               letters[1:5])
 
-Reduce(rbindfill2, l) ## or do.call('rbindfill2', l)
+Reduce('rbindfill2', l) ## or do.call('rbindfill2', l)
 do.call('rbindfill2', c(l, use.rownames = TRUE))
 rbindfill2(l$c, l$e)
 
-rbindfill2(mtcars, cars)
+rbindfill2(head(mtcars), head(cars))
 
-rbindlist(x)
+
+## "stack" a list of vectors with differing lengths
+l <- lapply(1:4, sequence)
 rbindlist(l)
+
+names(l) <- LETTERS[1:4]
+rbindlist(l)
+
+l <- lapply(l, function(x) setNames(x, letters[x]))
+rbindlist(l, use.names = TRUE)
+
+
+## unnest and stack a data frame or matrix
+dd <- data.frame(
+  id = 1:4, x = rnorm(4), y = sapply(l, toString),
+  z = sapply(l, paste, collapse = '...')
+)
+rbindlist2(dd, 'y')
+
+## rownames are kept if data contains non default rownames
+rbindlist2(`rownames<-`(dd, letters[1:4]), 'y')
+
+## multiple columns can be expanded sequentially
+rbindlist2(dd, c('y', 'z'))
+rbindlist2(dd, 'y', split = '\\\\W+(?![^3]+3)', perl = TRUE)
 
 }
 \seealso{
-\code{\link{interleave}}, \pkg{qpcR}, \code{\link{cbind}},
-\code{\link{rbind}}
+\code{\link{cbind}}; \code{\link{rbind}}; \code{\link{interleave}};
+\code{\link{clist}}; \pkg{qpcR}
 }
 

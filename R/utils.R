@@ -499,6 +499,10 @@ clear <- function(...) cat('\014')
 #' objects and bind normally, filling with \code{NA}s where dimensions are
 #' not equal.
 #' 
+#' \code{rbindfill} stacks named vectors into a matrix by initializing a
+#' matrix with all names and filling with \code{...} by row in the order
+#' given. Names will be a unique list of the vector names in the order given.
+#' 
 #' \code{rbindfill2} row-binds data frames with zero or more common column
 #' names. \code{rbindfill2} starts with the first data frame given and
 #' \code{rbind}s subsequent data frames adding new columns of \code{NA} as
@@ -506,7 +510,13 @@ clear <- function(...) cat('\014')
 #' otherwise, data frames without a matching column of data will be filled
 #' with \code{NA}.
 #' 
-#' \code{rbindlist} converts a list of vectors into a long data frame.
+#' \code{rbindlist} converts a list of vectors into a long data frame with
+#' two columns: the list index where each value was stored and the values
+#' themselves. A third column will be added if \code{use.names = TRUE} which
+#' will keep the names of each vector.
+#' 
+#' \code{rbindlist2} uses \code{rbindlist} to expand data frames with one or
+#' more nested columns.
 #' 
 #' @param ... for \code{bind_all} and \code{rbindfill}, vectors;
 #' \code{cbindx} and \code{rbindx} will accept vectors, matrices, data frames;
@@ -519,12 +529,21 @@ clear <- function(...) cat('\014')
 #' \code{deparse.level = 0} constructs no labels; the default; \cr
 #' \code{deparse.level = 1} or \code{2} constructs labels from the argument
 #' names \cr see \code{\link{cbind}}
-#' @param use.rownames logical; if \code{TRUE}, data frames in a \emph{named}
-#' list will retain corresponding rownames; the default is to remove rownames
-#' (note that this parameter is ignored if \dots is not a named list)
+#' @param use.rownames logical; for \code{rbindfill2}, if \code{TRUE}, data
+#' frames in a \emph{named} list will retain corresponding rownames; the
+#' default is to remove rownames (note that this parameter is ignored if
+#' \code{...} is not a named list)
 #' 
-#' @seealso \code{\link{interleave}}, \pkg{qpcR}, \code{\link{cbind}},
-#' \code{\link{rbind}}
+#' for \code{rbindlist} and \code{rbindlist2}, return a data frame with or
+#' without rownames; for \code{rbindlist2}, if \code{data} has no row names
+#' set (i.e., are \code{"1", "2", ...}), then the default is \code{FALSE}
+#' @param column for \code{rbindlist2}, the column(s) to be unnested
+#' @param split,fixed,perl arguments passed to \code{\link{strsplit}}
+#' controlling how nested column text should be split
+#' 
+#' @seealso
+#' \code{\link{cbind}}; \code{\link{rbind}}; \code{\link{interleave}};
+#' \code{\link{clist}}; \pkg{qpcR}
 #' 
 #' @examples
 #' bind_all(1:5, 1:3, which = 'cbind')
@@ -537,9 +556,17 @@ clear <- function(...) cat('\014')
 #' rbindx(m1, m2)
 #' rbindx(mtcars, m2)
 #' 
+#' 
+#' ## "stack" named vectors
 #' f <- function(x) setNames(letters[x], LETTERS[x])
 #' x <- lapply(list(1:5, 3:6, 2:7, 26), f)
 #' do.call('rbindfill', x)
+#' 
+#' ## "stack" matrices or data frames
+#' colnames(m1) <- 'B'
+#' colnames(m2) <- LETTERS[1:4]
+#' rbindfill2(m1, m2)
+#' rbindfill2(m2, m1)
 #' 
 #' set.seed(1)
 #' dd <- matrix(NA, nrow = 1, ncol = 10)
@@ -547,14 +574,37 @@ clear <- function(...) cat('\014')
 #' l <- setNames(lapply(1:5, function(x) dd[, sample(x), drop = FALSE]),
 #'               letters[1:5])
 #' 
-#' Reduce(rbindfill2, l) ## or do.call('rbindfill2', l)
+#' Reduce('rbindfill2', l) ## or do.call('rbindfill2', l)
 #' do.call('rbindfill2', c(l, use.rownames = TRUE))
 #' rbindfill2(l$c, l$e)
 #' 
-#' rbindfill2(mtcars, cars)
+#' rbindfill2(head(mtcars), head(cars))
 #' 
-#' rbindlist(x)
+#' 
+#' ## "stack" a list of vectors with differing lengths
+#' l <- lapply(1:4, sequence)
 #' rbindlist(l)
+#' 
+#' names(l) <- LETTERS[1:4]
+#' rbindlist(l)
+#' 
+#' l <- lapply(l, function(x) setNames(x, letters[x]))
+#' rbindlist(l, use.names = TRUE)
+#' 
+#' 
+#' ## unnest and stack a data frame or matrix
+#' dd <- data.frame(
+#'   id = 1:4, x = rnorm(4), y = sapply(l, toString),
+#'   z = sapply(l, paste, collapse = '...')
+#' )
+#' rbindlist2(dd, 'y')
+#' 
+#' ## rownames are kept if data contains non default rownames
+#' rbindlist2(`rownames<-`(dd, letters[1:4]), 'y')
+#' 
+#' ## multiple columns can be expanded sequentially
+#' rbindlist2(dd, c('y', 'z'))
+#' rbindlist2(dd, 'y', split = '\\W+(?![^3]+3)', perl = TRUE)
 #' 
 #' @name bindx
 NULL
@@ -573,7 +623,7 @@ bind_all <- function(..., which) {
 
 #' @rdname bindx
 #' @export
-cbindx <- function (..., deparse.level = 1) {
+cbindx <- function (..., deparse.level = 1L) {
   na <- nargs() - (!missing(deparse.level))    
   deparse.level <- as.integer(deparse.level)
   stopifnot(0 <= deparse.level, deparse.level <= 2)
@@ -638,6 +688,7 @@ cbindx <- function (..., deparse.level = 1) {
   }
   d2 <- dim(r)
   r <- cbind2(argl[[1]], r)
+  r <- rm_na_dimnames(r)
   if (deparse.level == 0)
     return(r)
   ism1 <- !is.null(d1 <- dim(..1)) && length(d1) == 2L
@@ -669,7 +720,7 @@ cbindx <- function (..., deparse.level = 1) {
 
 #' @rdname bindx
 #' @export
-rbindx <- function (..., deparse.level = 1) {
+rbindx <- function (..., deparse.level = 1L) {
   na <- nargs() - (!missing(deparse.level))
   deparse.level <- as.integer(deparse.level)
   stopifnot(0 <= deparse.level, deparse.level <= 2)
@@ -753,6 +804,7 @@ rbindx <- function (..., deparse.level = 1) {
   ## make all column names from common 'namesVEC'
   colnames(r) <- colnames(argl[[1]])
   r <- rbind2(argl[[1]], r)
+  r <- rm_na_dimnames(r)
   
   if (deparse.level == 0)
     return(r)
@@ -782,17 +834,41 @@ rbindx <- function (..., deparse.level = 1) {
   r
 }
 
+## set all NA dnn to NULL, mixture of NA/names to ''
+rm_na_dimnames <- function(x, which = c('row', 'col')) {
+  nn <- rownames(x)
+  if (!is.null(nn) && 'row' %in% which) {
+    if (all(na <- is.na(nn)))
+      rownames(x) <- NULL
+    else rownames(x)[na] <- ''
+  }
+  nn <- colnames(x)
+  if (!is.null(nn) && 'col' %in% which) {
+    if (all(na <- is.na(nn)))
+      colnames(x) <- NULL
+    else colnames(x)[na] <- ''
+  }
+  x
+}
+
 #' @rdname bindx
 #' @export
 rbindfill <- function(...) {
   l <- list(...)
-  nn <- sapply(l, names)
+  if (length(l) == 1L)
+    return(..1)
+  
+  nn <- lapply(l, names)
+  if (any(vapply(nn, is.null, NA)))
+    stop('\'rbindlist\' requires all vectors to be named', call. = FALSE)
+    
   un <- unique(unlist(nn))
-  len <- sapply(l, length)
-  out <- vector('list', length(len))
-  for (ii in seq_along(len)) {
+  ll <- sapply(l, length)
+  
+  out <- vector('list', length(ll))
+  for (ii in seq_along(ll))
     out[[ii]] <- unname(l[[ii]])[match(un, nn[[ii]])]
-  }
+  
   `colnames<-`(do.call('rbind', out), un)
 }
 
@@ -800,32 +876,75 @@ rbindfill <- function(...) {
 #' @export
 rbindfill2 <- function(..., use.rownames = FALSE) {
   l <- list(...)
-  nn <- sapply(l, colnames)
+  nn <- lapply(l, colnames)
   un <- unique(unlist(nn))
+  
+  if (any(vapply(nn, is.null, NA))) {
+    warning('\'rbindfill2\' requires objects with column names\n\n',
+            'Returning rbindx(...)')
+    return(do.call('rbindx', l))
+  }
+  
   out <- lapply(l, function(x) {
     if (!all(wh <- un %in% names(x))) {
-      tmp <- as.data.frame(matrix(NA, nrow = nrow(x), ncol = sum(!wh),
-                                  dimnames = list(NULL, un[!wh])))
-      res <- do.call('cbind.data.frame', list(x, tmp))
+      mat <- matrix(NA, nrow = nrow(x), ncol = sum(!wh),
+                    dimnames = list(NULL, un[!wh]))
+      res <- do.call('cbind', list(x, mat))
       res[, un]
     } else x[, un]
   })
-  res <- do.call('rbind.data.frame', out)
+  res <- do.call('rbind', out)
   if (use.rownames)
     res else `rownames<-`(res, NULL)
 }
 
 #' @rdname bindx
 #' @export
-rbindlist <- function(..., use.rownames = FALSE) {
+rbindlist <- function(..., use.rownames = FALSE, use.names = FALSE) {
   l <- if (is.list(..1))
     c(...) else list(...)
+  if (length(l) == 1L)
+    return(..1)
+  
   nn <- if (is.null(names(l)))
     seq_along(l) else make.unique(names(l))
   nn <- rep(nn, vapply(l, length, integer(1L)))
-  res <- data.frame(V1 = nn, V2 = unlist(l), stringsAsFactors = FALSE)
+  res <- data.frame(idx = nn, value = unlist(l), stringsAsFactors = FALSE)
+  
+  if (use.names)
+    res <- cbind(res, names = unlist(lapply(l, function(x)
+      if (is.null(nn <- names(x))) rep(NA, length(x)) else nn)))
+  
   if (use.rownames)
     res else `rownames<-`(res, NULL)
+}
+
+#' @rdname bindx
+#' @export
+rbindlist2 <- function(data, column, split = '\\W+', fixed = FALSE, perl = FALSE,
+                       use.rownames = any(rownames(data) != seq.int(nrow(data)))) {
+  if (missing(column) || any(column %ni% colnames(data)))
+    return(data)
+  force(use.rownames)
+  
+  while (length(column) > 1L) {
+    data <- Recall(data, column[1L], split, fixed, perl, use.rownames)
+    column <- column[-1L]
+  }
+  
+  l <- strsplit(as.character(data[, column]), split, fixed, perl)
+  if (all(lengths(l) == 1L)) {
+    message('No rows were split for column ', shQuote(column))
+    return(data)
+  }
+  l <- rawr::rbindlist(l, use.rownames = FALSE, use.names = FALSE)
+  
+  data <- data[l[, 1L], ]
+  data[, column] <- as.character(data[, column])
+  data[, column] <- l[, 2L]
+  
+  if (use.rownames)
+    data else `rownames<-`(data, NULL)
 }
 
 #' Interleave rows or columns
@@ -1386,6 +1505,8 @@ view2 <- function(x, use_viewer = FALSE, ...) {
 #' 
 #' @param x,y \emph{uniquely-named} lists or nested lists with each pair
 #' of non-\code{NULL} elements having identical classes
+#' @param how the joining method for matrics and data frames, one of
+#' \code{"cbind"} (default) or \code{"rbind"}
 #' 
 #' @return
 #' A lists with all elements from \code{x} and \code{y} joined using
@@ -1393,7 +1514,7 @@ view2 <- function(x, use_viewer = FALSE, ...) {
 #' data frames, lists for factors, and \code{\link{c}} otherwise.
 #' 
 #' @seealso
-#' \code{\link{nestedMerge}}, \code{\link{modifyList}}
+#' \code{\link{nestedMerge}}, \code{\link{modifyList}}; \code{\link{bindx}}
 #' 
 #' @examples
 #' f <- function(x) boxplot(mpg ~ vs, data = x, plot = FALSE)
@@ -1404,24 +1525,31 @@ view2 <- function(x, use_viewer = FALSE, ...) {
 #' 
 #' l1 <- list(x = factor(1:5), y = matrix(1:4, 2),
 #'            z = head(cars), l = list(zz = 1:5))
-#' l2 <- list(z = head(cbind(cars, cars)), x = factor('a'),
+#' l2 <- list(z = head(cars), x = factor('a'),
 #'            l = list(zz = 6:10))
 #' 
-#' clist(l1, l2)
-#' clist(l1, list(zzz = data.frame(1)))
+#' clist(l1, l2, how = 'rbind')
+#' clist(l1, l2, how = 'cbind')
+#' clist(l1, list(zzz = data.frame(1), l = list(zz = 5:1)))
 #' 
 #' @export
 
-clist <- function (x, y) {
+clist <- function (x, y, how = c('cbind', 'rbind')) {
+  if (missing(y))
+    return(x)
+  how <- match.arg(how)
+  
   get_fun <- function(x, y)
     switch(class(x %||% y),
-           matrix = cbind,
+           matrix = match.fun(how),
            data.frame = function(x, y)
-             do.call('cbind.data.frame', Filter(Negate(is.null), list(x, y))),
+             do.call(sprintf('%s.data.frame', how),
+                     Filter(Negate(is.null), list(x, y))),
            factor = function(...) unlist(list(...)), c)
   
   stopifnot(islist(x), islist(y))
   nn <- names(rapply(c(x, y), names, how = 'list'))
+  
   if (is.null(nn) || any(!nzchar(nn)))
     stop('All non-NULL list elements should have unique names', domain = NA)
   
