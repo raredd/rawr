@@ -4,11 +4,14 @@
 \alias{clist}
 \title{Concatenate lists}
 \usage{
-clist(x, y)
+clist(x, y, how = c("cbind", "rbind"))
 }
 \arguments{
 \item{x, y}{\emph{uniquely-named} lists or nested lists with each pair
 of non-\code{NULL} elements having identical classes}
+
+\item{how}{the joining method for matrics and data frames, one of
+\code{"cbind"} (default) or \code{"rbind"}}
 }
 \value{
 A lists with all elements from \code{x} and \code{y} joined using
@@ -27,14 +30,15 @@ stopifnot(identical(clist(bp1, bp2), bp))
 
 l1 <- list(x = factor(1:5), y = matrix(1:4, 2),
            z = head(cars), l = list(zz = 1:5))
-l2 <- list(z = head(cbind(cars, cars)), x = factor('a'),
+l2 <- list(z = head(cars), x = factor('a'),
            l = list(zz = 6:10))
 
-clist(l1, l2)
-clist(l1, list(zzz = data.frame(1)))
+clist(l1, l2, how = 'rbind')
+clist(l1, l2, how = 'cbind')
+clist(l1, list(zzz = data.frame(1), l = list(zz = 5:1)))
 
 }
 \seealso{
-\code{\link{nestedMerge}}, \code{\link{modifyList}}
+\code{\link{nestedMerge}}, \code{\link{modifyList}}; \code{\link{bindx}}
 }
 
