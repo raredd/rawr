@@ -1113,7 +1113,8 @@ install_temp <- function(pkgs, lib, ...) {
 #' @param x,y lists
 #' 
 #' @seealso
-#' Adapted from \url{http://stackoverflow.com/questions/23483421/combine-
+#' \code{\link{clist}}; adapted from
+#' \url{http://stackoverflow.com/questions/23483421/combine-
 #' merge-lists-by-elements-names-list-in-list}
 #' 
 #' @examples
@@ -1141,6 +1142,8 @@ install_temp <- function(pkgs, lib, ...) {
 #' @export
 
 nestedMerge <- function(x, y) {
+  if (missing(y))
+    return(x)
   if (islist(x) & islist(y)) {
     nn <- setdiff(names(y), names(x))
     x <- c(x, setNames(vector('list', length(nn)), nn))
@@ -1151,6 +1154,8 @@ nestedMerge <- function(x, y) {
 #' @rdname nestedMerge
 #' @export
 nestedmerge <- function(x, y) {
+  if (missing(y))
+    return(x)
   if (islist(x) & islist(y)) {
     out <- list()
     if (!is.null(names(x))) {
