@@ -930,7 +930,9 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
     tryCatch(eval(x), error = function(e) NULL))
   strata_names <- dots$strata.lab %||% dots$strata.expr %||%
     if (mlabs) NULL else strata_lab
-  if (is.logical(strata_names) | anyNA(strata_names) | is.null(strata_names))
+  if (is.logical(strata_names) |
+      !is.expression(strata_names) && anyNA(strata_names) |
+      is.null(strata_names))
     strata_names <- NULL
   if (!is.null(names(strata_names)))
     names(sp) <- strata_names
