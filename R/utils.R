@@ -1224,9 +1224,11 @@ classMethods <- function(class) {
 #' A list with a matrix of captures for each string in \code{x}. Note that the
 #' column names of each matrix will be the starting positions of the captures.
 #' 
-#' @seealso \code{\link{regmatches}}; \code{\link{grep}}; \code{\link{regex}}
+#' @seealso
+#' \code{\link{regmatches}}; \code{\link{grep}}; \code{\link{regex}}
 #' 
-#' @references \url{https://gist.github.com/MrFlick/10413321}
+#' @references
+#' \url{https://gist.github.com/MrFlick/10413321}
 #' 
 #' @examples
 #' x <- c('larry:35,M', 'alison:22,F', 'dave:,M', 'lily:55,F', 'no data')
@@ -1245,7 +1247,8 @@ classMethods <- function(class) {
 #' do.call('rbind.data.frame', regcaptures2(x, p2))
 #' 
 #' 
-#' x <- 'ACCACCACCAC'
+#' ## capture overlapping matches
+#' x <- 'ACCACCACCCAC'
 #' m <- gregexpr('(?=([AC]C))', x, perl = TRUE)
 #' regcaptures(x, m)[[1]]
 #' 
@@ -1260,7 +1263,8 @@ classMethods <- function(class) {
 regcaptures <- function(x, m, use.names = TRUE) {
   if (length(x) != length(m))
     stop('\'x\' and \'m\' must have the same length')
-  on.exit(options(stringsAsFactors = getOption('stringsAsFactors')))
+  oo <- options()
+  on.exit(options(oo))
   options(stringsAsFactors = FALSE)
   
   ili <- is.list(m)
@@ -1300,8 +1304,7 @@ regcaptures <- function(x, m, use.names = TRUE) {
     } else character(0L)
   }
   
-  Map(function(x, s, l, n)
-    Substring(x, s, l, n), x, cs, cl, cn, USE.NAMES = use.names)
+  Map(Substring, x, cs, cl, cn, USE.NAMES = use.names)
 }
 
 #' @rdname regcaptures
@@ -1720,15 +1723,21 @@ insert <- function(x, row, col, repl = NA) {
     return(insert_(x, c(if (!missing(row)) row, if (!missing(col)) col), repl))
   if (!missing(row)) {
     n <- nrow(x)
-    idx <- insert_(seq.int(n), row, NA)
-    x <- x[locf(idx, fromLast = c(FALSE, TRUE)), ]
-    x[which(is.na(idx)), ] <- repl
+    rn <- rownames(x)
+    idx_na <- insert_(seq.int(n), row, NA)
+    idx <- locf(idx_na, fromLast = c(FALSE, TRUE))
+    x <- x[idx, ]
+    rownames(x) <- rev(make.unique(rev(rn[idx])))
+    x[which(is.na(idx_na)), ] <- repl
   }
   if (!missing(col)) {
     n <- ncol(x)
-    idx <- insert_(seq.int(n), col, NA)
-    x <- x[, locf(idx, fromLast = c(FALSE, TRUE))]
-    x[, which(is.na(idx))] <- repl
+    cn <- colnames(x)
+    idx_na <- insert_(seq.int(n), col, NA)
+    idx <- locf(idx_na, fromLast = c(FALSE, TRUE))
+    x <- x[, idx, drop = FALSE]
+    colnames(x) <- cn[idx]
+    x[, which(is.na(idx_na))] <- repl
   }
   x
 }

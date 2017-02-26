@@ -46,7 +46,8 @@ regcaptures(x, gregexpr(p2, x, perl = TRUE))
 do.call('rbind.data.frame', regcaptures2(x, p2))
 
 
-x <- 'ACCACCACCAC'
+## capture overlapping matches
+x <- 'ACCACCACCCAC'
 m <- gregexpr('(?=([AC]C))', x, perl = TRUE)
 regcaptures(x, m)[[1]]
 
