@@ -17,7 +17,7 @@ tplot(x, ...)
   boxplot.pars, show.n = TRUE, show.na = show.n, cex.n = cex,
   test = FALSE, ann = par("ann"), axes = TRUE, frame.plot = axes,
   add = FALSE, at, horizontal = FALSE, panel.first = NULL,
-  panel.last = NULL)
+  panel.last = NULL, reset_par = TRUE)
 
 \method{tplot}{formula}(formula, data = NULL, ..., subset, na.action = NULL,
   panel.first = NULL, panel.last = NULL)
@@ -103,6 +103,9 @@ since it may be evaluated too early; see also \code{\link{plot.default}}}
 place but before the axes, title, and box are added; see the comments about
 \code{panel.first}}
 
+\item{reset_par}{logical; if \code{TRUE}, resets \code{\link{par}} settings
+to state before function call}
+
 \item{formula}{a \code{\link{formula}}, such as \code{y ~ grp}, where y is
 a numeric vector of data values to be split into groups according to the
 grouping variable \code{grp} (usually a factor)}
@@ -145,6 +148,18 @@ g <- interaction(mtcars$gear, mtcars$vs)
 tplot(x, g)
 tplot(split(x, g))
 tplot(mpg ~ gear + vs, mtcars)
+
+
+## horizontal plots may cut off text
+tplot(x, g, horizontal = TRUE)
+
+op <- par(no.readonly = TRUE)
+par(mar = c(5,5,5,5))
+tplot(x, g, horizontal = TRUE)
+par(op)
+
+## or rotate labels
+tplot(x, g, horizontal = TRUE, srt = -90)
 
 
 ## add rank-sum or custom test to plot

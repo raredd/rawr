@@ -218,6 +218,8 @@ jmplot <- function(x, y, z,
 #' @param panel.last an expression to be evaluated after plotting has taken
 #' place but before the axes, title, and box are added; see the comments about
 #' \code{panel.first}
+#' @param reset_par logical; if \code{TRUE}, resets \code{\link{par}} settings
+#' to state before function call
 #'
 #' @return
 #' A list with the following components (see \code{\link{boxplot}}:
@@ -248,6 +250,18 @@ jmplot <- function(x, y, z,
 #' tplot(x, g)
 #' tplot(split(x, g))
 #' tplot(mpg ~ gear + vs, mtcars)
+#' 
+#' 
+#' ## horizontal plots may cut off text
+#' tplot(x, g, horizontal = TRUE)
+#' 
+#' op <- par(no.readonly = TRUE)
+#' par(mar = c(5,5,5,5))
+#' tplot(x, g, horizontal = TRUE)
+#' par(op)
+#' 
+#' ## or rotate labels
+#' tplot(x, g, horizontal = TRUE, srt = -90)
 #' 
 #' 
 #' ## add rank-sum or custom test to plot
@@ -319,14 +333,27 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
                           test = FALSE,
                           ann = par('ann'), axes = TRUE, frame.plot = axes,
                           add = FALSE, at, horizontal = FALSE,
-                          panel.first = NULL, panel.last = NULL) {
+                          panel.first = NULL, panel.last = NULL,
+                          reset_par = TRUE) {
+  op <- par(no.readonly = TRUE)
+  if (reset_par)
+    on.exit(par(op))
+  
   ## helpers
-  localPoints <- function(..., tick) points(...)
-  localAxis   <- function(..., bg, cex, lty, lwd) axis(...)
-  localBox    <- function(..., bg, cex, lty, lwd, tick) box(...)
-  localWindow <- function(..., bg, cex, lty, lwd, tick) plot.window(...)
-  localTitle  <- function(..., bg, cex, lty, lwd, tick) title(...)
-  localMtext  <- function(..., bg, cex, lty, lwd, tick) mtext(..., cex = cex.n)
+  localAxis   <- function(..., bg, cex, lty, lwd, pos)
+    axis(...)
+  localBox    <- function(..., bg, cex, lty, lwd, tick, pos, padj)
+    box(...)
+  localMtext  <- function(..., bg, cex, lty, lwd, tick, pos, padj)
+    mtext(..., cex = cex.n)
+  localText   <- function(..., bg, cex, lty, lwd, tick, padj)
+    text(..., cex = cex.n)
+  localPoints <- function(..., tick, pos, padj)
+    points(...)
+  localTitle  <- function(..., bg, cex, lty, lwd, tick, pos, padj)
+    title(...)
+  localWindow <- function(..., bg, cex, lty, lwd, tick, pos, padj)
+    plot.window(...)
   
   if (!missing(g)) {
     if (missing(xlab))
@@ -463,6 +490,8 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
       do.call('localWindow', c(list(ylim, xlim), pars))
     else do.call('localWindow', c(list(xlim, ylim), pars))
   }
+  if (show.n && horizontal)
+    par(oma = par('oma') + c(0,0,0,2))
   panel.first
   
   out <- list()
@@ -546,6 +575,7 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
     }
   }
   
+  ## p-value for wilcoxon/kw test in upper-right corner
   if (!identical(test, FALSE)) {
     tFUN <- if (ng == 2L)
       function(x, g) wilcox.test(x ~ g, data.frame(x = x, g = g)) else
@@ -567,15 +597,28 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
   }
   
   ## frame and text, optional sample sizes
-  if (show.n | show.na)
-    do.call('localMtext', c(list(
-      text = sprintf('%s%s\n%s%s',
-                     if (show.n) 'n = ' else '',
-                     if (show.n) lg else '',
-                     if (show.na) 'missing = ' else '',
-                     if (show.na) l2 else ''),
-      side = 3 + horizontal, at = at, xaxt = 's', yaxt = 's'),
-      pars))
+  if (show.n | show.na) {
+    txt <- sprintf('%s%s\n%s%s', 
+                   ifelse(show.n, 'n = ', ''), ifelse(show.n, lg, ''),
+                   if (show.na)
+                     ifelse(l2 > 0L, 'missing = ', '') else '',
+                   if (show.na)
+                     ifelse(l2 > 0L, l2, '') else ''
+    )
+    if (horizontal)
+      do.call('localText', c(list(
+        x = (diff(ylim) * .08 * sign(ylim) + ylim)[2L], y = at,
+        labels = txt, xaxt = 's', yaxt = 's', xpd = NA
+      ), pars))
+    else
+      do.call('localText', c(list(
+        x = at, y = par('usr')[4L], labels = txt,
+        xaxt = 's', yaxt = 's', xpd = NA, pos = 3
+      ), pars))
+      # do.call('localMtext', c(list(
+      #   text = txt, side = 3 + horizontal, at = at, xaxt = 's', yaxt = 's'),
+      #   pars))
+  }
   
   if (frame.plot)
     do.call('localBox', pars)
@@ -583,8 +626,9 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
     if (horizontal)
       do.call('localTitle', c(list(main = main, sub = sub,
                                    xlab = ylab, ylab = xlab), pars))
-    else do.call('localTitle', c(list(main = main, sub = sub,
-                                      xlab = xlab, ylab = ylab), pars))
+    else
+      do.call('localTitle', c(list(main = main, sub = sub,
+                                   xlab = xlab, ylab = ylab), pars))
   }
   invisible(zzz)
 }
@@ -848,8 +892,8 @@ dsplot.formula <- function(formula, data = NULL, ...,
 #' the current \code{\link{palette}}
 #' @param xpad,ypad amount of padding between \code{rect}s along axes
 #' @param ... additional graphical parameters passed to \code{\link{par}}
-#' @param reset_par logical; if \code{TRUE}, resets \code{par} to current
-#' settings after running \code{waffle}
+#' @param reset_par logical; if \code{TRUE}, resets \code{\link{par}} settings
+#' to state before function call
 #' 
 #' @return
 #' A list of three matrices: \code{matrix}, the input matrix; \code{origin},
