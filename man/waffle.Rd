@@ -15,8 +15,8 @@ the current \code{\link{palette}}}
 
 \item{...}{additional graphical parameters passed to \code{\link{par}}}
 
-\item{reset_par}{logical; if \code{TRUE}, resets \code{par} to current
-settings after running \code{waffle}}
+\item{reset_par}{logical; if \code{TRUE}, resets \code{\link{par}} settings
+to state before function call}
 }
 \value{
 A list of three matrices: \code{matrix}, the input matrix; \code{origin},
