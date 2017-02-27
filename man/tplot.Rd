@@ -17,7 +17,7 @@ tplot(x, ...)
   boxplot.pars, show.n = TRUE, show.na = show.n, cex.n = cex,
   test = FALSE, ann = par("ann"), axes = TRUE, frame.plot = axes,
   add = FALSE, at, horizontal = FALSE, panel.first = NULL,
-  panel.last = NULL, reset_par = TRUE)
+  panel.last = NULL, reset_par = FALSE)
 
 \method{tplot}{formula}(formula, data = NULL, ..., subset, na.action = NULL,
   panel.first = NULL, panel.last = NULL)

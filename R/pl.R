@@ -334,7 +334,7 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
                           ann = par('ann'), axes = TRUE, frame.plot = axes,
                           add = FALSE, at, horizontal = FALSE,
                           panel.first = NULL, panel.last = NULL,
-                          reset_par = TRUE) {
+                          reset_par = FALSE) {
   op <- par(no.readonly = TRUE)
   if (reset_par)
     on.exit(par(op))
@@ -392,9 +392,9 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
   ng <- length(groups)
   lg <- lengths(groups)
   nv <- sum(lg)
-  g  <- factor(rep(seq.int(ng), lg),
-               levels = seq.int(ng),
-               labels = names(groups))
+  g  <- factor(rep(seq.int(ng), lg), seq.int(ng), names(groups))
+  ## .x used when test = TRUE
+  .x <- x
   
   if (missing(at))
     at <- seq.int(ng)
@@ -582,7 +582,9 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
         function(x, g) kruskal.test(x ~ g, data.frame(x = x, g = g))
     if (is.function(test) || is.character(test))
       tFUN <- match.fun(test)
-    pv <- tFUN(unlist(lapply(groups, '[[', 'vs')), g)
+    
+    # pv <- tFUN(unlist(lapply(groups, '[[', 'vs')), g)
+    pv <- tFUN(unlist(.x), g)
     mtext(pvalr(pv$p.value, show.p = TRUE), 3, line = 0.5, cex = 1.2,
           # at = if (ng %% 2 == 0) NA else par('usr')[2] * .95,
           at = par('usr')[2], font = 3, adj = 1)
