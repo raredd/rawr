@@ -1001,26 +1001,18 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
     if (!plot)
       return(s0)
     
-    kmplot(s, add = add, legend = FALSE, main = names(sp)[x], ylab = ylab, ...,
+    kmplot(s, add = add, legend = FALSE, main = names(sp)[x], ylab = ylab,
+           lr_test = lr_test, ...,
            col.surv = if (map.col) unname(col.surv)[x] else col.surv,
            panel.first = {
-             p <- par('usr')
+             ## sub label - top left margin (default: strata var)
              mtxt <- if (!msub)
                rep_len(sub, length(sp))[x] else strata
              mtext(mtxt, 3, 0.25, FALSE, 0, 0, font = 3)
-             mtext(fig[x], 3, 0.25, FALSE, 0 - p[2] * .05, font = 2, cex = 1.2)
              
-             ## add survdiff text in upper right corner
-             if (lr_test) {
-               txt <- tryCatch(lr_text(form, sp[[x]], rho),
-                               error = function(e) 'n/a')
-               if (identical(txt, FALSE))
-                 message('There is only one group',
-                         if (nzchar(mtxt)) paste(' for', mtxt) else '',
-                         ' -- no lr test performed')
-               else mtext(txt, side = 3, at = p[2], adj = 1,
-                          font = 3, cex = .8, line = 0.25)
-             }
+             ## figure label - top left outer margin (eg, A, B, C)
+             mtext(fig[x], 3, 0.25, FALSE, 0 - par('usr')[2L] * .05,
+                   font = 2, cex = 1.2)
            })
     s0
   })
