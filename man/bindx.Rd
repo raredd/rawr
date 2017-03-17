@@ -50,6 +50,11 @@ for \code{rbindlist} and \code{rbindlist2}, return a data frame with or
 without rownames; for \code{rbindlist2}, if \code{data} has no row names
 set (i.e., are \code{"1", "2", ...}), then the default is \code{FALSE}}
 
+\item{use.names}{logical; if \code{TRUE} and vectors are named, names
+are preserved and added as a column}
+
+\item{data}{a matrix or data frame}
+
 \item{column}{for \code{rbindlist2}, the column(s) to be unnested}
 
 \item{split, fixed, perl}{arguments passed to \code{\link{strsplit}}

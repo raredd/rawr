@@ -215,7 +215,8 @@ show_math <- function(..., css, use_viewer = !is.null(getOption('viewer'))) {
 #'
 #' Improved rounding formatter.
 #' 
-#' Uses \code{\link[base]{sprintf}} to round numeric value, retaining extra 0s.
+#' Uses \code{\link[base]{sprintf}} to round numeric value while keeping
+#' trailing zeros.
 #'
 #' @param x numeric value, vector, matrix, or data frame
 #' @param digits number of digits past the decimal point to keep
@@ -251,7 +252,7 @@ roundr <- function(x, digits = 1) UseMethod('roundr')
 
 #' @rdname roundr
 #' @export
-roundr.default <- function(x, digits = 1) {
+roundr.default <- function(x, digits = 1L) {
   mode.ok <- vapply(x, function(x) is.numeric(x) || is.complex(x), NA)
   if (!all(mode.ok))
     stop('non-numeric argument to mathematical function')
@@ -287,13 +288,13 @@ roundr.matrix <- function(x, digits = 1) {
 #' Calculate summary statistic with range or confidence interval.
 #' 
 #' @param ... numeric vector or string of numeric vectors
-#' @param fun summary stat function, usually \code{\link{mean}} or
+#' @param FUN summary stat function, usually \code{\link{mean}} or
 #' \code{\link{median}}
 #' @param conf width of confidence interval in \code{[0,1]}; if \code{NULL}
 #' (default), returns min and max of \code{...}
 #' @param digits number of digits (includes trailing 0s)
 #' @param na.rm logical; if \code{TRUE}, any \code{\link{NA}} and \code{NaN}
-#' are removed from \code{...} before \code{fun} and \code{\link{quantile}}
+#' are removed from \code{...} before \code{FUN} and \code{\link{quantile}}
 #' are computed
 #' 
 #' @seealso
@@ -302,30 +303,35 @@ roundr.matrix <- function(x, digits = 1) {
 #' @examples
 #' intr(1:10)
 #' intr(1:10, conf = .95)
+#' 
 #' # inner quartile range
 #' `colnames<-`(cbind(lapply(mtcars, intr, conf = .5),
-#'                    lapply(mtcars, intr, fun = mean)),
+#'                    lapply(mtcars, intr, FUN = mean)),
 #'              c('median (IQR)','mean (range)'))
 #' # compare to
 #' summary(mtcars)
 #' 
 #' @export
 
-intr <- function(..., fun = median, conf = NULL, digits = 0L, na.rm = FALSE) {
+intr <- function(..., FUN = median, conf = NULL,
+                 digits = 0L, na.rm = FALSE) {
   lst <- list(...)
   if (is.null(conf) || conf == 0 || 
-      findInterval(conf, c(0, 1), rightmost.closed = FALSE) != 1L)
-    conf <- 1
+      findInterval(conf, 0:1, rightmost.closed = FALSE) != 1L)
+    conf <- 1L
   
   sapply(lst, function(x) {
-    bounds <- quantile(x, c((1 - conf) / 2 * c(1,-1) + c(0,1)), na.rm = na.rm)
+    bounds <- quantile(x, c((1 - conf) / 2 * c(1,-1) + 0:1),
+                       na.rm = na.rm)
     bounds <- roundr(bounds, digits)
-    val <- roundr(fun(x, na.rm = na.rm), digits)
+    val <- roundr(FUN(x, na.rm = na.rm), digits)
     
-    if (!conf %in% c(0, 1))
-      sprintf('%s (%s%% CI: %s - %s)', val, conf * 100, bounds[1], bounds[2])
+    if (!conf %in% 0:1)
+      sprintf('%s (%s%% CI: %s - %s)', val, conf * 100,
+              bounds[1L], bounds[2L])
     else
-      sprintf('%s (range: %s - %s)', val, bounds[1], bounds[2])
+      sprintf('%s (range: %s - %s)', val,
+              bounds[1L], bounds[2L])
   })
 }
 
@@ -363,8 +369,8 @@ intr <- function(..., fun = median, conf = NULL, digits = 0L, na.rm = FALSE) {
 #' 
 #' @export
 
-pvalr <- function(pvals, sig.limit = 0.001, digits = 3, html = FALSE,
-                  show.p = FALSE) {
+pvalr <- function(pvals, sig.limit = 0.001, digits = 3L,
+                  html = FALSE, show.p = FALSE) {
   stopifnot(sig.limit > 0, sig.limit < 1)
   show.p <- show.p + 1L
   html   <- html + 1L
@@ -379,7 +385,7 @@ pvalr <- function(pvals, sig.limit = 0.001, digits = 3, html = FALSE,
     if (x < sig.limit) {
       paste0(c('', 'p ')[show.p], c('< ', '&lt; ')[html], format(sig.limit))
     } else {
-      nd <- c(digits, 2, 1)[findInterval(x, c(-Inf, .1, .5, Inf))]
+      nd <- c(digits, 2L, 1L)[findInterval(x, c(-Inf, .1, .5, Inf))]
       paste0(c('','p = ')[show.p], roundr(x, nd))
     }
   }, sig.limit)

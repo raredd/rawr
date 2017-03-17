@@ -4,12 +4,12 @@
 \alias{intr}
 \title{Interval formatter}
 \usage{
-intr(..., fun = median, conf = NULL, digits = 0L, na.rm = FALSE)
+intr(..., FUN = median, conf = NULL, digits = 0L, na.rm = FALSE)
 }
 \arguments{
 \item{...}{numeric vector or string of numeric vectors}
 
-\item{fun}{summary stat function, usually \code{\link{mean}} or
+\item{FUN}{summary stat function, usually \code{\link{mean}} or
 \code{\link{median}}}
 
 \item{conf}{width of confidence interval in \code{[0,1]}; if \code{NULL}
@@ -18,7 +18,7 @@ intr(..., fun = median, conf = NULL, digits = 0L, na.rm = FALSE)
 \item{digits}{number of digits (includes trailing 0s)}
 
 \item{na.rm}{logical; if \code{TRUE}, any \code{\link{NA}} and \code{NaN}
-are removed from \code{...} before \code{fun} and \code{\link{quantile}}
+are removed from \code{...} before \code{FUN} and \code{\link{quantile}}
 are computed}
 }
 \description{
@@ -27,9 +27,10 @@ Calculate summary statistic with range or confidence interval.
 \examples{
 intr(1:10)
 intr(1:10, conf = .95)
+
 # inner quartile range
 `colnames<-`(cbind(lapply(mtcars, intr, conf = .5),
-                   lapply(mtcars, intr, fun = mean)),
+                   lapply(mtcars, intr, FUN = mean)),
              c('median (IQR)','mean (range)'))
 # compare to
 summary(mtcars)

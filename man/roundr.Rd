@@ -9,7 +9,7 @@
 \usage{
 roundr(x, digits = 1)
 
-\method{roundr}{default}(x, digits = 1)
+\method{roundr}{default}(x, digits = 1L)
 
 \method{roundr}{data.frame}(x, digits = 1)
 
@@ -27,7 +27,8 @@ An object having the same class as \code{x}.
 Improved rounding formatter.
 }
 \details{
-Uses \code{\link[base]{sprintf}} to round numeric value, retaining extra 0s.
+Uses \code{\link[base]{sprintf}} to round numeric value while keeping
+trailing zeros.
 }
 \examples{
 round(0.199, 2)

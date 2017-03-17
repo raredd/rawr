@@ -5,7 +5,7 @@
 \alias{pvalr2}
 \title{p-value formatter}
 \usage{
-pvalr(pvals, sig.limit = 1e-03, digits = 3, html = FALSE,
+pvalr(pvals, sig.limit = 1e-03, digits = 3L, html = FALSE,
   show.p = FALSE)
 
 pvalr2(pvals, html = FALSE, show.p = FALSE)

@@ -537,6 +537,9 @@ clear <- function(...) cat('\014')
 #' for \code{rbindlist} and \code{rbindlist2}, return a data frame with or
 #' without rownames; for \code{rbindlist2}, if \code{data} has no row names
 #' set (i.e., are \code{"1", "2", ...}), then the default is \code{FALSE}
+#' @param use.names logical; if \code{TRUE} and vectors are named, names
+#' are preserved and added as a column
+#' @param data a matrix or data frame
 #' @param column for \code{rbindlist2}, the column(s) to be unnested
 #' @param split,fixed,perl arguments passed to \code{\link{strsplit}}
 #' controlling how nested column text should be split
