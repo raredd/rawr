@@ -1717,20 +1717,23 @@ sort_matrix <- function(m, margin = 1L, order) {
 #' ## these are _almost_ identical -- rows are inserted first
 #' insert_matrix(m, 5, 5, 0, 1) == t(insert_matrix(t(m), 5, 5, 1, 0))
 #' 
-#' @name insert
-
-#' @rdname insert
 #' @export
+
 insert <- function(x, row, col, repl = NA) {
   if (is.null(dim(x)))
-    return(insert_(x, c(if (!missing(row)) row, if (!missing(col)) col), repl))
+    return(
+      insert_(x, c(if (!missing(row)) row,
+                   if (!missing(col)) col),
+              repl)
+    )
   if (!missing(row)) {
     n <- nrow(x)
     rn <- rownames(x)
     idx_na <- insert_(seq.int(n), row, NA)
     idx <- locf(idx_na, fromLast = c(FALSE, TRUE))
     x <- x[idx, ]
-    rownames(x) <- rev(make.unique(rev(rn[idx])))
+    if (!is.null(rn))
+      rownames(x) <- rev(make.unique(rev(rn[idx])))
     x[which(is.na(idx_na)), ] <- repl
   }
   if (!missing(col)) {
@@ -1745,6 +1748,12 @@ insert <- function(x, row, col, repl = NA) {
   x
 }
 
+insert_ <- function(x, where, what) {
+  if (max(where <- sort(where)) > length(x))
+    x <- c(x, rep(NA, max(where) - length(x) - 1L))
+  c(x, what)[order(c(seq_along(x), where - 0.5))]
+}
+
 #' @rdname insert
 #' @export
 insert_matrix <- function(x, rowsep, colsep, rowrep = NA, colrep = rowrep) {
@@ -1753,12 +1762,6 @@ insert_matrix <- function(x, rowsep, colsep, rowrep = NA, colrep = rowrep) {
   if (!missing(colsep))
     x <- insert(x, col = colsep, repl = colrep)
   x
-}
-
-insert_ <- function(x, where, what) {
-  if (max(where <- sort(where)) > length(x))
-    x <- c(x, rep(NA, max(where) - length(x) - 1L))
-  c(x, what)[order(c(seq_along(x), where - 0.5))]
 }
 
 #' tryCatch2

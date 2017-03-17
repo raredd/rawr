@@ -4,12 +4,12 @@
 \alias{intr}
 \title{Interval formatter}
 \usage{
-intr(..., FUN = median, conf = NULL, digits = 0L, na.rm = FALSE)
+intr(..., fun = median, conf = NULL, digits = 0L, na.rm = FALSE)
 }
 \arguments{
 \item{...}{numeric vector or string of numeric vectors}
 
-\item{FUN}{summary stat function, usually \code{\link{mean}} or
+\item{fun}{summary stat function, usually \code{\link{mean}} or
 \code{\link{median}}}
 
 \item{conf}{width of confidence interval in \code{[0,1]}; if \code{NULL}
@@ -30,7 +30,7 @@ intr(1:10, conf = .95)
 
 # inner quartile range
 `colnames<-`(cbind(lapply(mtcars, intr, conf = .5),
-                   lapply(mtcars, intr, FUN = mean)),
+                   lapply(mtcars, intr, fun = mean)),
              c('median (IQR)','mean (range)'))
 # compare to
 summary(mtcars)

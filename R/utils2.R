@@ -288,7 +288,7 @@ roundr.matrix <- function(x, digits = 1) {
 #' Calculate summary statistic with range or confidence interval.
 #' 
 #' @param ... numeric vector or string of numeric vectors
-#' @param FUN summary stat function, usually \code{\link{mean}} or
+#' @param fun summary stat function, usually \code{\link{mean}} or
 #' \code{\link{median}}
 #' @param conf width of confidence interval in \code{[0,1]}; if \code{NULL}
 #' (default), returns min and max of \code{...}
@@ -306,14 +306,14 @@ roundr.matrix <- function(x, digits = 1) {
 #' 
 #' # inner quartile range
 #' `colnames<-`(cbind(lapply(mtcars, intr, conf = .5),
-#'                    lapply(mtcars, intr, FUN = mean)),
+#'                    lapply(mtcars, intr, fun = mean)),
 #'              c('median (IQR)','mean (range)'))
 #' # compare to
 #' summary(mtcars)
 #' 
 #' @export
 
-intr <- function(..., FUN = median, conf = NULL,
+intr <- function(..., fun = median, conf = NULL,
                  digits = 0L, na.rm = FALSE) {
   lst <- list(...)
   if (is.null(conf) || conf == 0 || 
@@ -324,7 +324,7 @@ intr <- function(..., FUN = median, conf = NULL,
     bounds <- quantile(x, c((1 - conf) / 2 * c(1,-1) + 0:1),
                        na.rm = na.rm)
     bounds <- roundr(bounds, digits)
-    val <- roundr(FUN(x, na.rm = na.rm), digits)
+    val <- roundr(fun(x, na.rm = na.rm), digits)
     
     if (!conf %in% 0:1)
       sprintf('%s (%s%% CI: %s - %s)', val, conf * 100,
