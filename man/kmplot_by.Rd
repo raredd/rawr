@@ -146,4 +146,3 @@ kmplot_by('sex', 'pfs', colon2, strata_lab = FALSE, add = TRUE, mar = mar)
 \code{\link{kmplot}}, \code{\link{survdiff}}; \code{\link{kmplot_data_}};
 \code{\link{lr_text}}; \code{\link{lr_pval}}; \code{\link{points.kmplot}}
 }
-

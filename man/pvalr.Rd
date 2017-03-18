@@ -51,4 +51,3 @@ pvalr2(pvals)
 \seealso{
 \code{\link[rawr]{roundr}}
 }
-

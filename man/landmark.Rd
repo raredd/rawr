@@ -42,4 +42,3 @@ layout(matrix(c(1,1,1,1,2,3), 2))
 landmark(s, times = c(500, 2500), adjust_start = TRUE, add = TRUE)
 
 }
-

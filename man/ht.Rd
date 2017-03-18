@@ -27,4 +27,3 @@ ht(mtcars, sep = '...')
 ht(mtcars, -6, sep = '...')
 
 }
-

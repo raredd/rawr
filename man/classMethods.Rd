@@ -24,4 +24,3 @@ classMethods(c('glm', 'lm'))
 \seealso{
 \code{\link{methods}}, \code{\link{S3Methods}}, \code{\link{class}}
 }
-

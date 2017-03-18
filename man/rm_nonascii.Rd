@@ -12,4 +12,3 @@ rm_nonascii(x)
 \description{
 Remove non ASCII characters
 }
-

@@ -35,4 +35,3 @@ psum(x, y, na.rm = TRUE)
 \seealso{
 \code{\link{pmin}}, \code{\link{pmax}}
 }
-

@@ -23,4 +23,3 @@ and event times, respectively}
 \description{
 \code{survival:::points.survfit} with additional features
 }
-

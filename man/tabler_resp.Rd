@@ -59,4 +59,3 @@ htmlTable(
 \seealso{
 \code{\link{bincon}}; \code{\link{binconr}}
 }
-

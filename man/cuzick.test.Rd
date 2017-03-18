@@ -155,4 +155,3 @@ Medicine} \strong{4}: 87-90.
 \code{\link[coin]{kruskal_test}}; \code{\link[coin]{wilcox_test}} from the
 \pkg{\link[coin]{coin}} package
 }
-

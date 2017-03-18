@@ -2,8 +2,8 @@
 % Please edit documentation in R/pl_extra.R
 \name{dodge}
 \alias{dodge}
-\alias{dodge.default}
 \alias{dodge.formula}
+\alias{dodge.default}
 \title{Point dodge}
 \usage{
 dodge(x, ...)
@@ -68,4 +68,3 @@ points(dodge(mpg ~ vs + gear, data = mtcars), col = 2, pch = 19)
 \seealso{
 \code{\link{jitter}}, \code{\link{tplot}}
 }
-

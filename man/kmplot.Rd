@@ -201,4 +201,3 @@ system2(getOption('pdfviewer'), tf)
 \code{\link[plotr]{ggsurv}}; \code{\link{kmplot_data_}}; \code{\link{lr_text}};
 \code{\link{lr_pval}}; \code{\link{points.kmplot}}
 }
-

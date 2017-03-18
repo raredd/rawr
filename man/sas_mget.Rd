@@ -72,4 +72,3 @@ data.list <- sas_mget(p)
 \code{\link{r2sas}}, \code{\link{source_sas}},
 \code{\link{parse_formats}}, \code{\link{sas_catalog}}
 }
-

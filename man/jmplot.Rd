@@ -81,4 +81,3 @@ with(dat,
 \href{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}{Tatsuki
 \code{jmplot}}; \code{\link{tplot}}; \code{\link{boxplot}}
 }
-

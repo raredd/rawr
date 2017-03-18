@@ -35,4 +35,3 @@ mtcars[sample_each(X, c(3,4,5)), ]
 \seealso{
 \code{\link{sample}}; \code{\link{kinda_sort}}
 }
-

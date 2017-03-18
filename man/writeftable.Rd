@@ -33,4 +33,3 @@ writeftable(x)
 writeftable(ftable(mtcars$vs, mtcars$gear))
 
 }
-

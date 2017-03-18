@@ -31,4 +31,3 @@ countr(names(top), frac = TRUE)
 countr(top, 10)
 
 }
-

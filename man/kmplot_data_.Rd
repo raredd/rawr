@@ -18,4 +18,3 @@ Create data frame to plot survival data
 \seealso{
 \code{\link{kmplot}}; \code{\link{kmplot_by}}
 }
-

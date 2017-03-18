@@ -64,4 +64,3 @@ two objects differ; \code{\link{Comparison}} for operators that generate
 elementwise comparisons; \code{\link{isTRUE}} is a simple wrapper based
 on \code{identical}.
 }
-

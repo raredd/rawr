@@ -3,8 +3,8 @@
 \name{read_clip}
 \alias{read_clip}
 \alias{read_clip.csv}
-\alias{read_clip.fwf}
 \alias{read_clip.tab}
+\alias{read_clip.fwf}
 \title{Read data from clipboard}
 \usage{
 read_clip(header = TRUE, ...)
@@ -33,4 +33,3 @@ returns as a data frame.
 \code{\link[psych]{read.clipboard}}, \code{\link{read.table}},
 \code{\link{read.fwf}}
 }
-

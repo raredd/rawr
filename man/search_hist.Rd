@@ -26,4 +26,3 @@ search_hist('?', fixed = TRUE)
 search_hist('\\\\?')
 
 }
-

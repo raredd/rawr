@@ -47,4 +47,3 @@ sas_catalog(p, getwd())
 \code{\link{get_margs}}, \code{\link{sas_mget}}, \code{\link{source_sas}},
 \code{\link{parse_formats}}
 }
-

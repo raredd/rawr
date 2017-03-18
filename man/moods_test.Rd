@@ -38,4 +38,3 @@ for (x in 2:3)
 \code{\link{mood.test}}; \code{\link{kruskal.test}};
 \code{\link{wilcox.test}}
 }
-

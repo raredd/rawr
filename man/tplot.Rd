@@ -209,4 +209,3 @@ legend(par('usr')[1], par('usr')[3], xpd = NA, bty = 'n',
 \code{tplot}}; \href{http://data.vanderbilt.edu/~graywh/dotplot/}{web app
 for Tatsuki \code{tplot}}; \code{\link{boxplot}}; \code{\link{jmplot}}
 }
-

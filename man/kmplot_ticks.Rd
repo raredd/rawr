@@ -41,4 +41,3 @@ kmplot_ticks(s, by_var = 'resid.ds', what = 2, pch = '*')
 \seealso{
 \code{\link{kmplot}}; \code{\link{kmplot_by}}
 }
-

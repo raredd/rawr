@@ -37,4 +37,3 @@ local_coxph_test(fit, 2)
 \references{
 \url{http://www.ddiez.com/teac/surv/}
 }
-

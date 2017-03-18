@@ -38,4 +38,3 @@ search_df('Axel Hieberg', dd, islands, var = 2)
 search_df(19, dd, mpg)
 
 }
-

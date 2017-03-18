@@ -33,4 +33,3 @@ iprint("Thelma", "Louise", copula = " & ")
 \seealso{
 \code{\link[pander]{p}}; \code{\link{roundr}}; \code{\link{countr}}
 }
-

@@ -59,4 +59,3 @@ Martin, D.C., and van Belle, G. Approximations for Power and
 Sample Size for Student's t-Test. Technical Report 125 (1991), University of
 Washington, Dept. of Biostatistics.
 }
-

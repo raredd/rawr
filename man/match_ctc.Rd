@@ -33,4 +33,3 @@ match_ctc('injury', version = 3L)
 match_ctc('aortic', 'arterial')
 
 }
-

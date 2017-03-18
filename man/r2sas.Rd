@@ -94,4 +94,3 @@ r2sas(code, sas_path(), FALSE, getwd())
 \code{\link{sas_mget}}, \code{\link{source_sas}},
 \code{\link{parse_formats}}, \code{\link{sas_catalog}}
 }
-

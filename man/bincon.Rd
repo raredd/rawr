@@ -92,10 +92,6 @@ bincon(c(3, 4), c(14, 18), method = 'two-stage', dp = 0)
 bincon(c(3, 4), c(14, 18), method = 'two-stage', dp = 1)
 
 }
-\author{
-Rollin Brant, Frank Harrell, and Brad Biggerstaff; modifications by Robert
-Redd including support for two-stage designs
-}
 \references{
 Agresti, A. and B.A. Coull. Approximate is better than "exact"
 for interval extimation of binomial proportions. \emph{American
@@ -112,4 +108,7 @@ transformation, \emph{American Statistician}. \strong{55}:200-202, 2001.
 \code{\link{binconr}}; \code{\link[Hmisc]{binconf}}; \code{desmon::binci};
 \code{desmon::twocon}
 }
-
+\author{
+Rollin Brant, Frank Harrell, and Brad Biggerstaff; modifications by Robert
+Redd including support for two-stage designs
+}

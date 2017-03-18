@@ -22,4 +22,3 @@ show_pch()
 \seealso{
 \code{\link{show_colors}}
 }
-

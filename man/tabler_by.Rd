@@ -171,4 +171,3 @@ htmlTable(out2, align = 'lccccccccc', cgroup = cgroup, n.cgroup = c(1,1,4,4),
 \seealso{
 \code{\link{tox_worst}}; \code{\link{match_ctc}}
 }
-

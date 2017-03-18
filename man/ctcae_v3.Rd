@@ -25,4 +25,3 @@ and categories.
 \code{\link{ctcae_v4}}; \code{\link{match_ctc}}
 }
 \keyword{datasets}
-

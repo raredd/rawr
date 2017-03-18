@@ -31,4 +31,3 @@ rgene(5, alpha = 'ABCD', nalpha = 1, nnum = 5:6)
 rgene(5, alpha = c('A','T','C','G'), num = '', sep = '')
 
 }
-

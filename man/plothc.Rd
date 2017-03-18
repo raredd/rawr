@@ -44,4 +44,3 @@ rect(col(mat) - shift[1], row(mat) - shift[2], col(mat) + shift[1],
 Eva KF Chan, \url{https://github.com/ekfchan/evachan.org-Rscripts},
 modifications by Robert Redd
 }
-

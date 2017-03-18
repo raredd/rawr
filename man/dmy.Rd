@@ -44,4 +44,3 @@ dd[, -1] <- lapply(dd[, -1], function(x) {x[sample(nrow(dd), 5)] <- NA; x})
 cbind(dd, dt = with(dd, dmy(day, month, year, origin = c(15, 6, 2000))))
 
 }
-

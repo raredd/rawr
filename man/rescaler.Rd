@@ -27,4 +27,3 @@ rescaler(1)
 \seealso{
 \code{\link[scales]{rescale}}; \code{\link[scales]{zero_range}}
 }
-

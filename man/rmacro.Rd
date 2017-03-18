@@ -71,4 +71,3 @@ rmacro(system.file('testfiles', 'onemacro.sas', package = 'rawr'),
 \code{\link{sas_mget}}, \code{\link{source_sas}},
 \code{\link{parse_formats}}, \code{\link{sas_catalog}}
 }
-

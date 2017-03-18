@@ -55,4 +55,3 @@ nestedmerge(l1, l2)
 \url{http://stackoverflow.com/questions/23483421/combine-
 merge-lists-by-elements-names-list-in-list}
 }
-

@@ -58,4 +58,3 @@ box()
 text(w$c[, 'x'], w$c[, 'y'], labels = palette(), col = 'white')
 
 }
-

@@ -61,4 +61,3 @@ title(main = 'waterfall - type 2')
 axis(2, las = 1)
 
 }
-

@@ -44,4 +44,3 @@ within(dat,
 do.call('rbind', by(dat, dat$x, cumsum))
 
 }
-

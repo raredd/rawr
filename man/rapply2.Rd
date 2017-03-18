@@ -60,4 +60,3 @@ str(rapply2(ll, f, 'list', check.nested = TRUE))
 \seealso{
 \code{\link{rapply}}
 }
-

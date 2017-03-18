@@ -12,4 +12,3 @@ clear(...)
 \description{
 Clear the console window.
 }
-

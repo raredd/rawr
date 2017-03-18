@@ -49,4 +49,3 @@ Kendall's test against trend, when ties are present in one ranking.
 \seealso{
 \code{\link[stats]{cor.test}}; \code{clinfin::jonckheere.test}
 }
-

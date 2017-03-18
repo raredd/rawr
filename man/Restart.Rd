@@ -19,4 +19,3 @@ Restart("clear(); cat('Here is a clean session just for you')")
 }
 
 }
-

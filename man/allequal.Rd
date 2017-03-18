@@ -47,4 +47,3 @@ allequal(cars[1], cars[, 1, drop = FALSE], cars[, -2, drop = TRUE])
 \seealso{
 \code{\link{all.equal}}, \code{\link{ident}}, \code{\link{identical}}
 }
-

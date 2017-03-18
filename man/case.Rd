@@ -53,4 +53,3 @@ case('upCASE', 'upcase', translate = FALSE) ## default
 case('upCASE', 'upcase', translate = TRUE)
 
 }
-

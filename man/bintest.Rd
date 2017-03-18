@@ -57,4 +57,3 @@ levels of significance and power. \emph{British J of Cancer} (2012) 107,
 \code{\link[clinfun]{ph2single}}; \code{desmon::bin1samp}; bintest,
 \href{https://github.com/raredd/sascros/blob/master/bintest.sas}{SAS macro}
 }
-

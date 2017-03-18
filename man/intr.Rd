@@ -39,4 +39,3 @@ summary(mtcars)
 \seealso{
 \code{\link[rawr]{roundr}}
 }
-

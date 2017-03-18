@@ -49,4 +49,3 @@ get_margs(file.path(path, 'onemacro.sas'), c('macro2', 'macro5'))
 \code{\link{sas_mget}}, \code{\link{source_sas}},
 \code{\link{parse_formats}}, \code{\link{sas_catalog}}
 }
-

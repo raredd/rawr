@@ -36,4 +36,3 @@ coxph(Surv(time, status) ~ x, data = aml)
 \references{
 \url{http://www.ddiez.com/teac/surv/}
 }
-

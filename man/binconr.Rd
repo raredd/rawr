@@ -48,4 +48,3 @@ binconr(c(15, 45), c(20, 33), show_conf = FALSE, frac = TRUE)
 \seealso{
 \code{\link{bincon}}; \code{\link[Hmisc]{binconf}}
 }
-

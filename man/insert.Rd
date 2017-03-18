@@ -46,4 +46,3 @@ insert_matrix(m, 4, 4:5, colrep = 1:6)
 insert_matrix(m, 5, 5, 0, 1) == t(insert_matrix(t(m), 5, 5, 1, 0))
 
 }
-

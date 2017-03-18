@@ -101,4 +101,3 @@ identical(reshape(w1), reshape(w2)) ## TRUE
 \seealso{
 \code{\link{reshape}}
 }
-

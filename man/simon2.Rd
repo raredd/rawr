@@ -60,9 +60,6 @@ rawr:::simon(.4, .6)
 }
 
 }
-\author{
-Robert Gray (\code{desmon::simon}); Robert Redd (\code{simon2})
-}
 \references{
 Simon R (1989). Optimal two-stage designs for phase II clinical trials.
 \emph{Controlled Clinical Trials}, 10:1-10.
@@ -71,4 +68,6 @@ Simon R (1989). Optimal two-stage designs for phase II clinical trials.
 \pkg{desmon}: \code{simon}, \code{twostg}, \code{bin1samp}, \code{pickwin},
 \code{rp21}
 }
-
+\author{
+Robert Gray (\code{desmon::simon}); Robert Redd (\code{simon2})
+}

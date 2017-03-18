@@ -39,4 +39,3 @@ view2(qtlcharts::iplot(1:5, 1:5))
 }
 
 }
-

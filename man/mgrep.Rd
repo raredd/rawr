@@ -3,8 +3,9 @@
 \name{mgrep}
 \alias{mgrep}
 \alias{mgrepl}
-\alias{mgsub}
+\alias{mgrep}
 \alias{msub}
+\alias{mgsub}
 \title{Multiple pattern matching and replacement}
 \usage{
 mgrepl(pattern, x, ..., parallel = length(pattern) > 1e+04)
@@ -62,4 +63,3 @@ mgsub(r3, x = s1, perl = TRUE)
 \seealso{
 \code{\link[base]{grep}}; \code{\link{vgrep}}
 }
-

@@ -55,4 +55,3 @@ tabler_by2(tox1$tox_worst, 'desc', 'grade', stratvar = 'phase')
 \seealso{
 \code{\link{match_ctc}}, \code{\link{tabler_by}}; \code{\link{tabler_by2}}
 }
-

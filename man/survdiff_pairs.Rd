@@ -63,4 +63,3 @@ survdiff_pairs(sfit, rho = 1, method = 'BH')
 \code{\link[rms]{contrast}} from the \pkg{\link[rms]{rms}} package;
 \code{\link{pairwise.table}}
 }
-

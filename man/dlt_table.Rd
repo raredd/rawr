@@ -20,4 +20,3 @@ dlt_table(10, 50)
 dlt_table(10, 50, 5)
 
 }
-

@@ -47,4 +47,3 @@ locf(dd, TRUE)
 locf(dd, c(FALSE, TRUE))
 
 }
-

@@ -42,4 +42,3 @@ interleave(d1, m2, which = 'rbindx') ## works
 \seealso{
 \code{\link{bindx}}
 }
-

@@ -15,4 +15,3 @@ Format results from \code{survdiff} for plotting
 \seealso{
 \code{\link{lr_pval}}
 }
-

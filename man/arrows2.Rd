@@ -57,11 +57,10 @@ arrows2(1, -1, 1, 1, code = 3, curve = .5, width = .5, lwd = 10, col = 3)
 arrows2(2, -1, 2, 1, code = 3, lwd = 0)
 
 }
+\seealso{
+\code{arrows}; \code{\link{carrows}}; \url{https://github.com/cran/sfsmisc}
+}
 \author{
 Original: Andreas Ruckstuhl, 19 May 1994; Cosmetic: Martin Machler, June
 1998; Modifications: Robert Redd
 }
-\seealso{
-\code{arrows}; \code{\link{carrows}}; \url{https://github.com/cran/sfsmisc}
-}
-

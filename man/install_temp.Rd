@@ -28,4 +28,3 @@ install_temp(c('devtools','testthat'))
 }
 
 }
-

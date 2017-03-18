@@ -12,4 +12,3 @@ try_require(package)
 \description{
 Quietly require a package, returning an error message if not installed.
 }
-

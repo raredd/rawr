@@ -21,4 +21,3 @@ install.bioc('Biostrings')
 }
 
 }
-

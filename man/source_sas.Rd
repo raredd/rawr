@@ -35,4 +35,3 @@ source_sas(system.file('testfiles', 'onemacro.sas', package = 'rawr'))
 \code{\link{get_margs}}, \code{\link{sas_mget}},
 \code{\link{parse_formats}}, \code{\link{sas_catalog}}
 }
-

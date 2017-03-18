@@ -73,4 +73,3 @@ sparkDT(mtcars[, c('mpg', 'wt')],
 \seealso{
 Adapted from \url{leonawicz.github.io/HtmlWidgetExamples/ex_dt_sparkline.html}
 }
-

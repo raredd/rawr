@@ -34,4 +34,3 @@ combine_levels(iris$Species, list(c('setosa', 'virginica'), 'versicolor'),
 \seealso{
 \code{\link{recoder}}
 }
-

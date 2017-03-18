@@ -44,4 +44,3 @@ abline(v = x)
 \seealso{
 \code{\link{pretty_sci}}; \code{\link[sfsmisc]{axTexpr}}; \code{\link{axis}}
 }
-

@@ -3,8 +3,8 @@
 \name{tabler}
 \alias{tabler}
 \alias{tabler.default}
-\alias{tabler.glm}
 \alias{tabler.lm}
+\alias{tabler.glm}
 \alias{tabler.survfit}
 \title{Tabler}
 \usage{
@@ -46,4 +46,3 @@ sfit <- survfit(Surv(time, status) ~ 1, data = cancer, conf.int = 0.9)
 tabler(sfit)
 
 }
-

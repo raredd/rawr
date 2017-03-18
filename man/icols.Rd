@@ -25,4 +25,3 @@ icols(iris, '\\\\.')
 icols(mtcars, '^[\\\\w]{2}$')
 
 }
-

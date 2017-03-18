@@ -28,4 +28,3 @@ outer2(x, x, y[1:3], FUN = prod)
 \seealso{
 \code{\link{outer}}; \code{\link{Vectorize}}
 }
-

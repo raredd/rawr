@@ -39,4 +39,3 @@ Adapted from \href{http://stackoverflow.com/questions/33027611/how-to-index-a-ve
 \seealso{
 \code{\link{grep}}; \code{\link[rawr]{mgrep}}; \code{\link[rawr]{\%==\%}}
 }
-

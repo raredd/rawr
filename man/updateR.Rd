@@ -19,4 +19,3 @@ any libraries from previous frameworks into the new library.
 \seealso{
 \code{\link{update.packages}}
 }
-

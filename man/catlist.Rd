@@ -25,4 +25,3 @@ catlist(l) # [1] "a = 1, b = 2"
 catlist(par()[1:5])
 
 }
-

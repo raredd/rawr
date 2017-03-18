@@ -73,4 +73,3 @@ legend('bottomright', pch = 19, col = 1:2, bty = 'n',
 \href{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}{Tatsuki
 \code{dsplot}}
 }
-

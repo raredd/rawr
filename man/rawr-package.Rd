@@ -2,10 +2,9 @@
 % Please edit documentation in R/rawr-package.R
 \docType{package}
 \name{rawr-package}
-\alias{rawr}
 \alias{rawr-package}
+\alias{rawr}
 \title{rawr}
 \description{
 rawr miscellaneous
 }
-

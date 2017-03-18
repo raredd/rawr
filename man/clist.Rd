@@ -41,4 +41,3 @@ clist(l1, list(zzz = data.frame(1), l = list(zz = 5:1)))
 \seealso{
 \code{\link{nestedMerge}}, \code{\link{modifyList}}; \code{\link{bindx}}
 }
-

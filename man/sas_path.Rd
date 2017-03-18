@@ -40,4 +40,3 @@ sas_path('/usr/local/SAS_9.2/sas')
 \code{\link{sas_mget}}, \code{\link{source_sas}},
 \code{\link{parse_formats}}, \code{\link{sas_catalog}}
 }
-

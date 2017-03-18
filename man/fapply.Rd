@@ -41,4 +41,3 @@ t(fapply(mtcars, list(min, mean, max, length)))
 summary(mtcars)
 
 }
-

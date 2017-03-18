@@ -37,4 +37,3 @@ Adapted from \href{http://stackoverflow.com/questions/34710597/justify-text-in-r
 \seealso{
 \code{\link{strwrap}}
 }
-

@@ -43,4 +43,3 @@ cum_reset(letters[1:10], c('d','g'), function(x)
 \code{\link{cummin}}, \code{\link{cummax}}, \code{\link{cumsum}},
 \code{\link{cumprod}}, \code{\link{ave}}
 }
-

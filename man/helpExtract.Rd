@@ -70,4 +70,3 @@ cat(helpExtract(print, type = 'md_text', section = 'description'))
 cat(helpExtract(print, section = c('references', 'see also')), sep = '\\n')
 
 }
-

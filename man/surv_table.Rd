@@ -47,4 +47,3 @@ htmlTable(s, caption = 'Table: Overall survival.')
 \seealso{
 \code{\link{survfit}}, \code{\link{print.summary.survfit}}
 }
-

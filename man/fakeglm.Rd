@@ -50,4 +50,3 @@ fakeglm(vs ~ mpg + gear, data = dat, family= 'binomial', 0, mpg = 1,
 \references{
 \url{https://gist.github.com/MrFlick/ae299d8f3760f02de6bf}
 }
-

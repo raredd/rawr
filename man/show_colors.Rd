@@ -52,4 +52,3 @@ show_colors(show_colors(x), plot = TRUE)
 \seealso{
 \code{\link{show_pch}}, \code{\link{colors}}
 }
-

@@ -18,4 +18,3 @@ Extract values from \code{survdiff} call
 \seealso{
 \code{\link{lr_text}}
 }
-

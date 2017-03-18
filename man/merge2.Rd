@@ -30,4 +30,3 @@ merge2(list(a, b, c, d), all = TRUE)
 \seealso{
 \code{\link[plyr]{join_all}}
 }
-

@@ -61,4 +61,3 @@ carrows(p1 <- p[1, ], p2 <- p[5, ], dir = c(1,0))
 \seealso{
 \code{\link{arrows2}}; \code{\link{xspline}}
 }
-

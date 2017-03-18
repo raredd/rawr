@@ -64,4 +64,3 @@ mapply(function(xx) substr(x, xx, xx + 1L), m[[1]])
 \seealso{
 \code{\link{regmatches}}; \code{\link{grep}}; \code{\link{regex}}
 }
-

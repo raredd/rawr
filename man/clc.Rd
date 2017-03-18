@@ -12,4 +12,3 @@ clc(all.names = FALSE)
 \description{
 Clear the workspace by removing all objects in \code{\link{ls}}.
 }
-

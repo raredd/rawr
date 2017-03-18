@@ -36,4 +36,3 @@ combine_table(
 )
 
 }
-

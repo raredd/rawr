@@ -28,4 +28,3 @@ write_htmlTable(x)
 write_htmlTable(x, attributes = FALSE)
 
 }
-

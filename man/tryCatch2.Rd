@@ -33,12 +33,11 @@ l <- lapply(list(1,-1,'a'), function(x) tryCatch2(log(x)))
 rm_null(l)
 
 }
-\author{
-Martin Morgan, Jan Gorecki, Robert Redd (modifications)
-}
 \seealso{
 \href{http://stackoverflow.com/questions/4948361/how-do-i-save-warnings-and-errors-as-output-from-a-function}{SO question};
 \code{\link[logR]{tryCatch2}}; \href{https://github.com/jangorecki/logR}{
 \pkg{logR} github repo}
 }
-
+\author{
+Martin Morgan, Jan Gorecki, Robert Redd (modifications)
+}

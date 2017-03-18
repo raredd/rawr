@@ -51,4 +51,3 @@ htmlTable(
 \seealso{
 \code{\link[htmlTable]{htmlTable}}
 }
-

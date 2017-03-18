@@ -47,4 +47,3 @@ setNames(x, v(x))
 \code{\link{case}}; adapted from
 \url{github.com/ateucher/useful_code/blob/master/R/numbers2words.r}
 }
-

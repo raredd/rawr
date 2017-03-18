@@ -2,8 +2,8 @@
 % Please edit documentation in R/utils2.R
 \name{roundr}
 \alias{roundr}
-\alias{roundr.data.frame}
 \alias{roundr.default}
+\alias{roundr.data.frame}
 \alias{roundr.matrix}
 \title{roundr}
 \usage{
@@ -53,4 +53,3 @@ roundr(dd)
 \seealso{
 \code{\link[base]{round}}; \code{\link[base]{sprintf}}
 }
-

@@ -53,4 +53,3 @@ dd[dd == ''] <- NA
 pickcol(dd[4:6], value = TRUE)
 
 }
-

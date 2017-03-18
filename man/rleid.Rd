@@ -24,4 +24,3 @@ data.frame(id = x, rleid = rleid(x))
 \seealso{
 \code{\link{rle}}; \code{data.table::rleid}
 }
-

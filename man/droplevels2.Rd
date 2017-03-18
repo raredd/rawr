@@ -25,4 +25,3 @@ droplevels2(x, min_level = 2, max_level = 5)
 \seealso{
 \code{\link{droplevels}}
 }
-

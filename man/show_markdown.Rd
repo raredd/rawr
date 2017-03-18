@@ -89,4 +89,3 @@ show_markdown(mkd, markArgs = list(stylesheet = kcss),
 \seealso{
 \code{\link{show_html}}, \code{\link{show_math}}
 }
-

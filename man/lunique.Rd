@@ -21,4 +21,3 @@ lunique(factor(x))
 lunique(x, TRUE)
 
 }
-

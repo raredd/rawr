@@ -19,4 +19,3 @@ round_to(mtcars$mpg, 5)
 round_to(mtcars$mpg, .5)
 
 }
-

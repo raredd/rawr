@@ -53,4 +53,3 @@ ranks." \emph{Annals of Mathematical Statistics}. \strong{34} (2): 598-611.
 \seealso{
 \code{\link{wilcox.test}}; \code{ICSNP::hl.loc}
 }
-
