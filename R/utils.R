@@ -838,7 +838,7 @@ rbindx <- function (..., deparse.level = 1L) {
 }
 
 ## set all NA dnn to NULL, mixture of NA/names to ''
-rm_na_dimnames <- function(x, which = c('row', 'col')) {
+rm_na_dimnames <- function(x, which = c('row', 'col'), rm_null = TRUE) {
   nn <- rownames(x)
   if (!is.null(nn) && 'row' %in% which) {
     if (all(na <- is.na(nn)))
@@ -851,6 +851,9 @@ rm_na_dimnames <- function(x, which = c('row', 'col')) {
       colnames(x) <- NULL
     else colnames(x)[na] <- ''
   }
+  if (rm_null)
+    if (all(sapply(dimnames(x), is.null)))
+      dimnames(x) <- NULL
   x
 }
 
@@ -1523,29 +1526,58 @@ view2 <- function(x, use_viewer = FALSE, ...) {
 #' \code{\link{nestedMerge}}, \code{\link{modifyList}}; \code{\link{bindx}}
 #' 
 #' @examples
+#' ## boxplot stats created from subsets should be identical to
+#' ## the stats generated from a single boxplot
+#' 
 #' f <- function(x) boxplot(mpg ~ vs, data = x, plot = FALSE)
+#' 
 #' bp1 <- f(mtcars[mtcars$vs == 0, ])
 #' bp2 <- f(mtcars[mtcars$vs == 1, ])
 #' bp  <- f(mtcars)
-#' stopifnot(identical(clist(bp1, bp2), bp))
+#' 
+#' identical(clist(bp1, bp2), bp)
+#' # [1] TRUE
+#' 
 #' 
 #' l1 <- list(x = factor(1:5), y = matrix(1:4, 2),
 #'            z = head(cars), l = list(zz = 1:5))
 #' l2 <- list(z = head(cars), x = factor('a'),
 #'            l = list(zz = 6:10))
+#' l3 <- list(x = factor(1:5), y = matrix(1),
+#'            z = head(cars), l = list(zz = 1:5))
 #' 
 #' clist(l1, l2, how = 'rbind')
+#' 
+#' clist(l1, l3, how = 'rbindx')[['y']]
+#' # clist(l1, l3, how = 'rbind')[['y']] ## error
+#' 
+#' clist(l1, l3, how = 'cbindx')[['y']]
+#' # clist(l1, l3, how = 'cbind')[['y']] ## error
+#' 
+#' 
+#' ## elements of y not in x are added to result
 #' clist(l1, l2, how = 'cbind')
 #' clist(l1, list(zzz = data.frame(1), l = list(zz = 5:1)))
 #' 
 #' @export
 
-clist <- function (x, y, how = c('cbind', 'rbind')) {
+clist <- function (x, y, how = c('cbind', 'rbind', 'cbindx', 'rbindx')) {
   if (missing(y))
     return(x)
-  how <- match.arg(how)
   
-  get_fun <- function(x, y)
+  stopifnot(islist(x), islist(y))
+  how <- match.arg(how)
+  cbindx.data.frame <- cbindx
+  rbindx.data.frame <- rbindx
+  
+  nn  <- names(rapply(c(x, y), names, how = 'list'))
+  if (is.null(nn) || any(!nzchar(nn)))
+    stop('All non-NULL list elements should have unique names', domain = NA)
+  
+  nn <- unique(c(names(x), names(y)))
+  z <- setNames(vector('list', length(nn)), nn)
+  
+  bind <- function(x, y)
     switch(class(x %||% y),
            matrix = match.fun(how),
            data.frame = function(x, y)
@@ -1553,19 +1585,11 @@ clist <- function (x, y, how = c('cbind', 'rbind')) {
                      Filter(Negate(is.null), list(x, y))),
            factor = function(...) unlist(list(...)), c)
   
-  stopifnot(islist(x), islist(y))
-  nn <- names(rapply(c(x, y), names, how = 'list'))
-  
-  if (is.null(nn) || any(!nzchar(nn)))
-    stop('All non-NULL list elements should have unique names', domain = NA)
-  
-  nn <- unique(c(names(x), names(y)))
-  z <- setNames(vector('list', length(nn)), nn)
-  
   for (ii in nn)
     z[[ii]] <- if (islist(x[[ii]]) && islist(y[[ii]]))
       Recall(x[[ii]], y[[ii]]) else
-        (get_fun(x[[ii]], y[[ii]]))(x[[ii]], y[[ii]])
+        (bind(x[[ii]], y[[ii]]))(x[[ii]], y[[ii]])
+  
   z
 }
 
