@@ -4,7 +4,7 @@
 \alias{clist}
 \title{Concatenate lists}
 \usage{
-clist(x, y, how = c("cbind", "rbind"))
+clist(x, y, how = c("cbind", "rbind", "cbindx", "rbindx"))
 }
 \arguments{
 \item{x, y}{\emph{uniquely-named} lists or nested lists with each pair
@@ -22,18 +22,36 @@ data frames, lists for factors, and \code{\link{c}} otherwise.
 Combine lists with mixed data types "horizontally."
 }
 \examples{
+## boxplot stats created from subsets should be identical to
+## the stats generated from a single boxplot
+
 f <- function(x) boxplot(mpg ~ vs, data = x, plot = FALSE)
+
 bp1 <- f(mtcars[mtcars$vs == 0, ])
 bp2 <- f(mtcars[mtcars$vs == 1, ])
 bp  <- f(mtcars)
-stopifnot(identical(clist(bp1, bp2), bp))
+
+identical(clist(bp1, bp2), bp)
+# [1] TRUE
+
 
 l1 <- list(x = factor(1:5), y = matrix(1:4, 2),
            z = head(cars), l = list(zz = 1:5))
 l2 <- list(z = head(cars), x = factor('a'),
            l = list(zz = 6:10))
+l3 <- list(x = factor(1:5), y = matrix(1),
+           z = head(cars), l = list(zz = 1:5))
 
 clist(l1, l2, how = 'rbind')
+
+clist(l1, l3, how = 'rbindx')[['y']]
+# clist(l1, l3, how = 'rbind')[['y']] ## error
+
+clist(l1, l3, how = 'cbindx')[['y']]
+# clist(l1, l3, how = 'cbind')[['y']] ## error
+
+
+## elements of y not in x are added to result
 clist(l1, l2, how = 'cbind')
 clist(l1, list(zzz = data.frame(1), l = list(zz = 5:1)))
 
