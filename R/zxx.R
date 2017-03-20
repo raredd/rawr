@@ -655,20 +655,20 @@ helpExtract <- function(FUN, show.sections = FALSE, section = 'Usage',
   x <- helpExtract_(FUN, ...)
   
   ## section start lines
-  B <- grep('^_', x)
+  B <- grep('^_\b._\b._', x)
   x <- gsub('_\b', '', x, fixed = TRUE)
   if (show.sections)
     return(gsub(':','', x[B]))
   
-  X <- rep(0, length(x))
-  X[B] <- 1
+  X <- rep_len(0L, length(x))
+  X[B] <- 1L
   out <- split(x, cumsum(X))
   
   out <- out[which(sapply(out, function(x)
-    any(Vectorize(grepl)(section, x[1], ignore.case = TRUE))))]
+    any(Vectorize(grepl)(section, x[1L], ignore.case = TRUE))))]
   # out <- unlist(sapply(out, '[', -(1:2)))
   out <- if (length(section) > 1L)
-    unname(unlist(out)) else out[[1]][-(1:2)]
+    unname(unlist(out)) else out[[1L]][-(1:2)]
   
   while (TRUE) {
     out <- out[-length(out)]
