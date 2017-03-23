@@ -26,6 +26,9 @@ x <- mtcars$gear
 combine_levels(factor(x, ordered = TRUE), 3:4, 6)
 combine_levels(x, list(3:4, 5), c(3, 6))
 
+## new labels can be previously-used levels
+table(x, combine_levels(x, as.list(3:5), 5:3))
+
 combine_levels(iris$Species, c('setosa', 'virginica'), 'setosa')
 combine_levels(iris$Species, list(c('setosa', 'virginica'), 'versicolor'),
                c('Setosa/Virginica','Versicolor'))

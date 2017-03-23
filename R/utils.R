@@ -1916,6 +1916,9 @@ droplevels2 <- function(x, min_level = 1, max_level = max(as.numeric(x))) {
 #' combine_levels(factor(x, ordered = TRUE), 3:4, 6)
 #' combine_levels(x, list(3:4, 5), c(3, 6))
 #' 
+#' ## new labels can be previously-used levels
+#' table(x, combine_levels(x, as.list(3:5), 5:3))
+#' 
 #' combine_levels(iris$Species, c('setosa', 'virginica'), 'setosa')
 #' combine_levels(iris$Species, list(c('setosa', 'virginica'), 'versicolor'),
 #'                c('Setosa/Virginica','Versicolor'))
@@ -1923,9 +1926,15 @@ droplevels2 <- function(x, min_level = 1, max_level = max(as.numeric(x))) {
 #' @export
 
 combine_levels <- function(x, levels, labels = NULL) {
-  levels <- if (is.list(levels))
+  levels <- if (islist(levels))
     levels else list(levels)
-  labels <- as.list(labels %||% names(levels))
+  
+  ## create unique labels (hopefully) distinct from any of levels
+  labels  <- as.list(labels %||% names(levels))
+  labels  <- lapply(labels, as.character)
+  ulabels <- lapply(labels, function(x)
+    as.character(runif(length(x))))
+  
   stopifnot(length(levels) == length(labels))
   
   ## less code but requires rawr::recoder
@@ -1935,14 +1944,16 @@ combine_levels <- function(x, levels, labels = NULL) {
   
   xf <- as.factor(x)
   xc <- as.character(xf)
-  xl <- levels(xf)
+  xl <- ol <- levels(xf)
 
   for (ii in seq_along(levels)) {
-    xl[xl %in% unlist(levels[[ii]])] <- unlist(labels[[ii]])
-    xc[xc %in% levels[[ii]]] <- labels[[ii]]
+    xl[xl %in% unlist(levels[[ii]])] <- unlist(ulabels[[ii]])
+    xc[xc %in% levels[[ii]]]         <- ulabels[[ii]]
   }
-
-  factor(xc, unique(labels, xl), ordered = is.ordered(x))
+  ## convert unique label back to desired
+  xc <- unlist(labels)[match(xc, unlist(ulabels))]
+  
+  factor(xc, unique(labels, ol), ordered = is.ordered(x))
 }
 
 #' Rowname tools
