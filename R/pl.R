@@ -601,7 +601,8 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
   ## frame and text, optional sample sizes
   if (show.n | show.na) {
     txt <- sprintf('%s%s\n%s%s', 
-                   ifelse(show.n, 'n = ', ''), ifelse(show.n, lg, ''),
+                   ifelse(rep_len(show.n, ng), 'n = ', ''),
+                   ifelse(rep_len(show.n, ng), lg, ''),
                    if (show.na)
                      ifelse(l2 > 0L, 'missing = ', '') else '',
                    if (show.na)
