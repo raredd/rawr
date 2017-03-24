@@ -223,6 +223,22 @@ h4, h5 {
 
 /* rules */
 
+.column-left{
+  float: left;
+  width: 33%;
+  text-align: left;
+}
+.column-center{
+  display: inline-block;
+  width: 33%;
+  text-align: center;
+}
+.column-right{
+  float: right;
+  width: 33%;
+  text-align: right;
+}
+
 .columns-2 {
   -webkit-columns: 2; /* chrome, safari, opera*/
   -moz-columns: 2;    /* firefox */
