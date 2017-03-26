@@ -218,22 +218,22 @@ show_math <- function(..., css, use_viewer = !is.null(getOption('viewer'))) {
 #' Uses \code{\link[base]{sprintf}} to round numeric value while keeping
 #' trailing zeros.
 #'
-#' @param x numeric value, vector, matrix, or data frame
+#' @param x numeric vector, matrix, or data frame
 #' @param digits number of digits past the decimal point to keep
 #'
 #' @return
 #' An object having the same class as \code{x}.
 #' 
 #' @seealso
-#' \code{\link[base]{round}}; \code{\link[base]{sprintf}}
+#' \code{\link[base]{round}}; \code{\link[base]{sprintf}};
+#' \code{\link{round_to}}; \code{\link{pvalr}}
 #'
 #' @examples
+#' ## compare
 #' round(0.199, 2)
-#' 
-#' ## compare to
 #' roundr(0.199, 2)
 #' 
-#' ## useful for dropping the negative sign in case 1:
+#' ## drops negative when x rounds to 0, eg, case 1:
 #' roundr(c(-0.0002, 0.0002, 0.5, -0.5, -0.002), digits = 3)
 #' 
 #' ## for matrices or data frames (including factors and/or characters)
@@ -248,37 +248,38 @@ show_math <- function(..., css, use_viewer = !is.null(getOption('viewer'))) {
 #' 
 #' @export
 
-roundr <- function(x, digits = 1) UseMethod('roundr')
+roundr <- function(x, digits = 1L) UseMethod('roundr')
 
 #' @rdname roundr
 #' @export
 roundr.default <- function(x, digits = 1L) {
-  mode.ok <- vapply(x, function(x) is.numeric(x) || is.complex(x), NA)
-  if (!all(mode.ok))
+  if (!is.numeric(x) || is.complex(x))
     stop('non-numeric argument to mathematical function')
-  res <- sprintf(paste0('%.', digits = digits, 'f'), x)
-  zzz <- paste0('0.', paste(rep('0', digits), collapse = ''))
-  res[res == paste0('-', zzz)] <- zzz
-  'names<-'(res, names(x))
+  
+  fmt <- paste0('%.', digits, 'f')
+  res <- sprintf(fmt, x)
+  
+  ## drop leading - if value is 0.00...
+  zero <- sprintf(fmt, 0)
+  res[res == paste0('-', zero)] <- zero
+  
+  setNames(res, names(x))
 }
 
 #' @rdname roundr
 #' @export
-roundr.data.frame <- function(x, digits = 1) {
-  mode.ok <- vapply(x, function(x) is.numeric(x) || is.complex(x), NA)
-  if (sum(mode.ok) < 1)
-    stop(paste0('non-numeric variables in data frame, ',
-                deparse(substitute(x))))
-  else x[]  <- lapply(seq_along(mode.ok), function(ii)
-    if (mode.ok[ii]) roundr.default(x[, ii], digits = digits) else x[, ii])
+roundr.data.frame <- function(x, digits = 1L) {
+  x[] <- lapply(x, function(ii)
+    if (is.numeric(ii) || is.complex(ii))
+      roundr.default(ii, digits = digits) else ii)
   x
 }
 
 #' @rdname roundr
 #' @export
-roundr.matrix <- function(x, digits = 1) {
+roundr.matrix <- function(x, digits = 1L) {
   if (!is.numeric(x) || is.complex(x))
-    stop(paste0('non-numeric variable in matrix, ', deparse(substitute(x))))
+    stop(deparse(substitute(x)), ' is not numeric')
   else x[] <- roundr.default(x, digits)
   x
 }
@@ -360,7 +361,7 @@ intr <- function(..., fun = median, conf = NULL,
 #' where appropriate
 #' 
 #' @seealso
-#' \code{\link[rawr]{roundr}}
+#' \code{\link[rawr]{roundr}}; \code{\link[base]{format.pval}}
 #' 
 #' @examples
 #' pvals <- c(-1, .00001, .004233, .060123, .13354, .4999, .51, .89, .9, 1)

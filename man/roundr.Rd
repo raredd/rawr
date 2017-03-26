@@ -7,16 +7,16 @@
 \alias{roundr.matrix}
 \title{roundr}
 \usage{
-roundr(x, digits = 1)
+roundr(x, digits = 1L)
 
 \method{roundr}{default}(x, digits = 1L)
 
-\method{roundr}{data.frame}(x, digits = 1)
+\method{roundr}{data.frame}(x, digits = 1L)
 
-\method{roundr}{matrix}(x, digits = 1)
+\method{roundr}{matrix}(x, digits = 1L)
 }
 \arguments{
-\item{x}{numeric value, vector, matrix, or data frame}
+\item{x}{numeric vector, matrix, or data frame}
 
 \item{digits}{number of digits past the decimal point to keep}
 }
@@ -31,12 +31,11 @@ Uses \code{\link[base]{sprintf}} to round numeric value while keeping
 trailing zeros.
 }
 \examples{
+## compare
 round(0.199, 2)
-
-## compare to
 roundr(0.199, 2)
 
-## useful for dropping the negative sign in case 1:
+## drops negative when x rounds to 0, eg, case 1:
 roundr(c(-0.0002, 0.0002, 0.5, -0.5, -0.002), digits = 3)
 
 ## for matrices or data frames (including factors and/or characters)
@@ -51,5 +50,6 @@ roundr(dd)
 
 }
 \seealso{
-\code{\link[base]{round}}; \code{\link[base]{sprintf}}
+\code{\link[base]{round}}; \code{\link[base]{sprintf}};
+\code{\link{round_to}}; \code{\link{pvalr}}
 }

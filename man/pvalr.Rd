@@ -61,5 +61,5 @@ show_html(iprint(color_pval(pvals, show.p = TRUE)))
 
 }
 \seealso{
-\code{\link[rawr]{roundr}}
+\code{\link[rawr]{roundr}}; \code{\link[base]{format.pval}}
 }
