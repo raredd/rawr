@@ -3,11 +3,11 @@
 # rawr_ls: lss, lsf, lsp
 # rawr_parse: parse_yaml, parse_index, parse_news, parse_namespace
 #
-# psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill, rbindfill2,
-# rbindlist, interleave, outer2, merge2, locf, roll_fun, classMethods,
-# regcaptures, cast, melt, view, view2, clist, rapply2, sort_matrix, insert,
-# insert_matrix, tryCatch2, rleid, droplevels2, combine_levels,
-# rownames_to_column, column_to_rownames
+# psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill,
+# rbindfill2, rbindlist, interleave, outer2, merge2, locf, roll_fun,
+# classMethods, getMethods, regcaptures, cast, melt, view, view2, clist,
+# rapply2, sort_matrix, insert, insert_matrix, tryCatch2, rleid, droplevels2,
+# combine_levels, rownames_to_column, column_to_rownames
 #
 # unexported: islist, done, where, dots
 ###
@@ -1172,16 +1172,18 @@ roll_fun <- function(x, n = 5L, FUN = mean, ...,
   sapply(if (fromLast) rev(l) else l, FUN, ...)
 }
 
-#' Show class methods
+#' Show or get methods
 #' 
-#' Lists available methods for a given class.
+#' List available methods for a given class or identify a specific method
+#' when a \code{generic} is called with \code{object}.
 #' 
-#' @param class an object or classes as a vector of character strings
+#' @param class an object or character vector of classes
 #' 
 #' @seealso
 #' \code{\link{methods}}, \code{\link{S3Methods}}, \code{\link{class}}
 #' 
-#' @references \url{https://gist.github.com/MrFlick/55ed854eb935e5c21f71}
+#' @references
+#' \url{https://gist.github.com/MrFlick/55ed854eb935e5c21f71}
 #' 
 #' @examples
 #' fit <- glm(vs ~ mpg, data = mtcars)
@@ -1205,12 +1207,41 @@ classMethods <- function(class) {
       NULL
     }
   })
-  df <- do.call('rbind', ml)
-  df <- df[!duplicated(df$n), ]
-  structure(df$m, byclass = FALSE, class = 'MethodsFunction',
-            info = data.frame(visible = df$visible, from = df$from,
-                              generic = df$generic, isS4 = df$isS4,
-                              row.names = df$m))
+  
+  dd <- do.call('rbind', ml)
+  dd <- dd[!duplicated(dd$n), ]
+  
+  structure(dd$m, byclass = FALSE, class = 'MethodsFunction',
+            info = data.frame(visible = dd$visible, from = dd$from,
+                              generic = dd$generic, isS4 = dd$isS4,
+                              row.names = dd$m))
+}
+
+#' @rdname classMethods
+#' 
+#' @param generic a generic function
+#' @param object an object to be passed to \code{generic}
+#' 
+#' @references
+#' \url{http://stackoverflow.com/questions/42738851/r-how-to-find-what-s3-method-will-be-called-on-an-object}
+#' 
+#' @examples
+#' getMethods(plot, 1)
+#' getMethods(plot, data.frame(1))
+#' getMethods(plot, density(1:2))
+#' 
+#' getMethods(print, 1)
+#' getMethods(print, ordered(1))
+#' getMethods(print, mtcars)
+#' 
+#' @export
+
+getMethods <- function(generic, object) {
+  generic <- deparse(substitute(generic))
+  f <- X <- function(x, object) UseMethod('X')
+  for (m in methods(generic))
+    assign(sub(generic, 'X', m), `body<-`(f, value = m))
+  X(object)
 }
 
 #' Extract captured substrings

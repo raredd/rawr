@@ -1,8 +1,8 @@
 ### formatting, knitr, misc utils
 # show_html, show_markdown, show_math, roundr, intr, pvalr, pvalr2, catlist,
 # binconr, num2char, iprint, writeftable, tabler, tabler_by, tabler_by2,
-# match_ctc, tox_worst, countr, dmy, combine_table, tabler_resp, resp_,
-# r_or_better_, inject_div, sparKDT, render_sparkDT, case, write_htmlTable
+# tabler_stat, tabler_resp, resp_, r_or_better_, match_ctc, tox_worst, countr,
+# dmy, combine_table, inject_div, sparKDT, render_sparkDT, case, write_htmlTable
 ###
 
 
@@ -412,6 +412,33 @@ pvalr2 <- function(pvals, html = FALSE, show.p = FALSE) {
       ifelse(grepl('[<>]', pvalr2(pvals)), paste0('p ', x), paste0('p = ', x))
 }
 
+#' @rdname pvalr
+#' 
+#' @param breaks,cols a numeric vector defining breaks in \code{(0,1)} (passed
+#' to \code{\link{findInterval}}) and the corresponding colors
+#' 
+#' @examples
+#' pvals <- c(0.00001, 0.03, .06, .11, .49, .51, .89, .9, 1)
+#' show_html(color_pval(pvals))
+#' show_html(iprint(color_pval(pvals, show.p = TRUE)))
+#' 
+#' @export
+
+color_pval <- function(pvals, breaks = c(0, .01, .05, .1, .5, 1),
+                       cols = colorRampPalette(2:1)(length(breaks)),
+                       sig.limit = 0.001, digits = 3L, show.p = FALSE,
+                       format_pval = TRUE) {
+  stopifnot(length(breaks) == length(cols))
+  pvn <- if (!is.numeric(pvals)) {
+    warning('p-values are not numeric')
+    as.numeric(gsub('[^0-9.]', '', pvals))
+  } else pvals
+  if (format_pval)
+    pvals <- rawr::pvalr(pvn, sig.limit, digits, TRUE, show.p)
+  pvc <- cols[findInterval(pvn, breaks)]
+  sprintf('<font color=\"%s\">%s</font>', pvc, pvals)
+}
+
 #' Concatenate a named list for output
 #' 
 #' Print a \emph{named} \code{list} as a character string with values.
@@ -693,6 +720,9 @@ writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
 #' @param type use \code{"or"} for odds ratios; others may be added later
 #' @param ... additional parameters passed to other methods
 #' 
+#' @seealso
+#' \code{\link{tabler_by}}; \code{\link{tabler_stat}}
+#' 
 #' @examples
 #' lmfit <- lm(mpg ~ hp + disp + wt, data = mtcars)
 #' tabler(lmfit)
@@ -714,24 +744,35 @@ tabler.default <- function(x, ...) summary(x, ...)
 
 #' @rdname tabler
 #' @export
-tabler.lm <- function(x, digits = 3, ...) {
-  res <- round(summary(x, ...)$coefficients, digits = digits)
+tabler.lm <- function(x, digits = 3L, ...) {
+  res <- data.frame(summary(x, ...)$coefficients, check.names = FALSE)
+  res[, ncol(res)] <- pvalr(res[, ncol(res)], ...)
+  res[, -ncol(res)] <- lapply(res[, -ncol(res)], round, digits = digits)
   res
 }
 
 #' @rdname tabler
 #' @export
-tabler.glm <- function(x, digits = 3, level = 0.95, type = '', ...) {
-  res <- summary(x, ...)$coefficients
+tabler.glm <- function(x, digits = 3L, level = 0.95, type = '', ...) {
+  res <- data.frame(summary(x, ...)$coefficients, check.names = FALSE)
+  res[, ncol(res)] <- pvalr(res[, ncol(res)], ...)
+  
   if (tolower(type) == 'or') {
-    res <- round(cbind(exp(cbind(coef(x), confint(x, level = level))),
-                       res[, 4]), digits = digits)
-    res <- cbind(res, sprintf('%s (%s, %s)', res[, 1], res[, 2], res[, 3]))
-    ci <- sprintf('%s%% CI', level * 100)
-    res <- setNames(as.data.frame(res),
-                    c('Odds Ratio', paste0('L ', ci),
-                      paste0('U ', ci), 'Pr(>|z)', sprintf('OR (%s)', ci)))
-  } else res <- round(res, digits = digits)
+    suppressMessages(
+      res <- cbind.data.frame(
+        exp(cbind(coef(x), confint(x, level = level))), res[, 4L]
+      )
+    )
+    fmt <- '%.df (%.df, %.df)'
+    res <- cbind(res, sprintf(chartr('d', as.character(digits), fmt),
+                              res[, 1L], res[, 2L], res[, 3L]))
+    
+    level <- level * 100
+    res <- setNames(res, c('OR', paste0(c('L', 'U'), level), 'Pr(>|z|)',
+                           sprintf('OR (%s%% CI)', level)))
+  }
+  
+  res[, 1:3] <- lapply(res[, 1:3], round, digits = digits)
   res
 }
 
@@ -1045,6 +1086,251 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
   res
 }
 
+#' Description statistics tabler
+#' 
+#' Wrapper function to create table of description statistics with tests
+#' of association.
+#' 
+#' If \code{FUN} is \code{FALSE}, no test will be performed. If \code{FUN}
+#' is a function, it must take two vector arguments: the row variable vector,
+#' \code{data$varname}, and the column variable vector, \code{data$byvar},
+#' and return a numeric p-value. Otherwise, \code{FUN} will be selected
+#' based on the input vectors:
+#' 
+#' For a continuous \code{varname}, \code{\link{wilcox.test}} or
+#' \code{\link{kruskal.test}} if \code{byvar} has two or more than two levels,
+#' respectively. If \code{varname} is not numeric (or has few unique values),
+#' \code{fisher.test} is used.
+#' 
+#' @param data a matrix or data frame with variables \code{varname} and
+#' \code{byvar}
+#' @param varname,byvar the row and column variable, respectively
+#' @param digits number of digits past the decimal point to keep
+#' @param FUN a function performing the test of association between
+#' \code{varname} and \code{byvar}; \code{FALSE} will suppress the test;
+#' see details
+#' @param color_pval logical; if \code{TRUE}, p-values will be colored
+#' by significance; see \code{\link{color_pval}}
+#' @param color_missing logical; if \code{TRUE}, rows summarizing missing
+#' values will be shown in light grey; a color string can be used for a
+#' custom color
+#' @param dagger logical or a character string giving the character to
+#' associate with \code{FUN}; if \code{FALSE}, none are used; if \code{TRUE},
+#' the defaults are used (\code{"*"} is used if \code{FUN} is given)
+#' @param ... additional arguments passed to
+#' \code{\link[Gmisc]{getDescriptionStatsBy}}
+#' 
+#' @return
+#' A matrix with additional attributes:
+#' 
+#' \item{\code{attr(,"FUN")}}{the test passed to \code{FUN} or the test
+#' selected based on \code{varname} and \code{byvar} if \code{FUN = NULL}}
+#' \item{\code{attr(,"p.value")}}{the numeric p-value returned by \code{FUN}}
+#' \item{\code{attr(,"fnames")}}{a vector of the default \code{FUN} options
+#' with names to match the appropriate \code{dagger} character; see examples;
+#' if \code{FUN} is given, the function name will be added with a new dagger
+#' symbol (\code{"*"} by default or \code{dagger} if given)}
+#' 
+#' @seealso
+#' \code{\link{tabler}}, \code{\link{tabler_by}}
+#' 
+#' @examples
+#' tabler_stat(mtcars, 'mpg', 'cyl')
+#' 
+#' tabler_stat(mtcars, 'mpg', 'cyl',
+#'   FUN = function(x, y)
+#'     cuzick.test(x ~ y, data.frame(x, y))$p.value)
+#' 
+#' 
+#' mt <- within(mtcars, {
+#'   mpg[1:5] <- carb[1:5] <- drat[1:20] <- NA
+#'   carb <- factor(carb)
+#'   cyl  <- factor(cyl)
+#' })
+#' 
+#' tbl <- lapply(names(mt)[-10L], function(x)
+#'   tabler_stat(mt, x, 'gear', percentage_sign = FALSE))
+#' 
+#' htmlTable::htmlTable(
+#'   do.call('rbind', tbl),
+#'   cgroup = c('', 'Gear', ''), n.cgroup = c(1, 3, 1),
+#'   rgroup = names(mt)[-10L], n.rgroup = sapply(tbl, nrow),
+#'   tfoot = toString(sprintf('<sup>%s</sup>%s',
+#'     names(attr(tbl[[1L]], 'fnames')), attr(tbl[[1L]], 'fnames'))[-1L])
+#' )
+#' 
+#' @export
+
+tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
+                        color_pval = TRUE, color_missing = TRUE,
+                        dagger = TRUE, ...) {
+  color_missing <- if (isTRUE(color_missing))
+    'lightgrey'
+  else if (identical(color_missing, FALSE))
+    NULL else color_missing
+  
+  x <- data[, varname]
+  y <- data[, byvar]
+  
+  pvn <- if (identical(FUN, FALSE))
+    structure(NULL, FUN = NULL)
+  else if (is.function(FUN))
+    structure(FUN(x, y), FUN = gsub('\\(.*', '', deparse(FUN)[2L]))
+  else {
+    if (is.null(FUN))
+      if (is.numeric(x) & length(unique(x)) > 10L) {
+        if (length(unique(y)) > 2L)
+          structure(Gmisc::getPvalKruskal(x, y), FUN = 'kruskal.test')
+        else structure(Gmisc::getPvalWilcox(x, y), FUN = 'wilcox.test')
+      } else structure(Gmisc::getPvalFisher(x, y), FUN = 'fisher.test')
+  }
+  
+  fname <- attr(pvn, 'FUN')
+  fnames <- setNames(paste0(c('wilcox', 'kruskal', 'fisher'), '.test'),
+                     c('&dagger;','&dagger;','&Dagger;'))
+  
+  if (!is.null(FUN)) {
+    if (!is.character(dagger))
+      dagger <- '*'
+    fnames <- c(fnames, setNames(fname, dagger))
+  }
+  
+  dagger <- if (isTRUE(dagger))
+    names(fnames)[match(fname, fnames, 3L)] else
+      if (is.character(dagger)) dagger else ''
+  fnames[1:3] <- setNames(c('Wilcoxon rank-sum test',
+                            'Kruskal-Wallis rank-sum test',
+                            'Fisher\'s exact test'),
+                          names(fnames)[1:3])
+  
+  pvc <- if (is.null(pvn))
+    pvn else {
+      if (color_pval)
+        color_pval(pvn)
+      else sprintf('<i>%s</i>', pvalr(pvn, html = TRUE))
+    }
+  
+  res <- Gmisc::getDescriptionStatsBy(
+    data[, varname], data[, byvar], digits = digits, html = TRUE,
+    add_total_col = TRUE, show_all_values = TRUE, statistics = FALSE,
+    useNA.digits = 0L, ...,
+    continuous_fn = function(...) Gmisc::describeMedian(..., iqr = FALSE)
+  )
+  
+  m <- matrix('', nrow(res))
+  m[1L, 1L] <- sprintf('<i>%s</i><sup>%s</sup>', pvc, dagger)
+  
+  ## recolor missing
+  if (is.character(color_missing)) {
+    wh <- rownames(res) %in% 'Missing'
+    rownames(res)[wh] <-  sprintf('<font color=%s><i>%s</i></font>',
+                                  color_missing, rownames(res)[wh])
+    res[wh, ] <- sprintf('<font color=%s><i>%s</i></font>',
+                         color_missing, res[wh, ])
+  }
+  
+  structure(cbind(res, m), FUN = fname, p.value = pvn, fnames = fnames)
+}
+
+#' Response table
+#' 
+#' Convenience function to calculate proportions and confidence invervals and
+#' format for easy display.
+#' 
+#' @param x a factor variable of responses; responses should be ordered as
+#' CR, PR, SD, PD, NE or similar
+#' @param r_or_better if an integer, the first \code{r_or_better} levels of
+#' \code{x} will be combined and proportions and confidence intervals will be
+#' calculated for the aggregate; if \code{FALSE}; this is not included
+#' @param conf,frac,show_conf,pct.sign additional arguments passed to
+#' \code{\link{binconr}}
+#' @param digits number of digits past the decimal point to keep
+#' @param total logical or numeric; if \code{TRUE}, a column with the total,
+#' i.e., \code{length(x)} is added; if numeric, \code{length(x)} and,
+#' optionally, fracton and percent out of \code{total} is added
+#' 
+#' @seealso
+#' \code{\link{bincon}}; \code{\link{binconr}}
+#' 
+#' @examples
+#' set.seed(1)
+#' r <- c('CR','PR','SD','PD','NE')
+#' x <- factor(sample(r, 30, replace = TRUE), r)
+#' tabler_resp(x, 3)
+#' tabler_resp(x, 'PR')
+#' tabler_resp(x, 'PR', total = 50)
+#' 
+#' ## NAs are removed
+#' y <- `[<-`(x, 1:10, value = NA)
+#' tabler_resp(x, FALSE)
+#' tabler_resp(y, FALSE)
+#' 
+#' library('htmlTable')
+#' htmlTable(
+#'   rbind(
+#'     tabler_resp(x),
+#'     tabler_resp(x, conf = 0.9),
+#'     tabler_resp(x, frac = FALSE, pct.sign = FALSE,
+#'                 show_conf = FALSE, digits = 1)
+#'   ),
+#'   caption = 'Table of responses with confidence intervals.',
+#'   css.cell = 'padding: 0 10 0px; white-space: nowrap;',
+#'   cgroup = c('Evaluation', 'Outcome (95% CI)'),
+#'   n.cgroup = c(nlevels(x), 3L)
+#' )
+#' 
+#' @export
+
+tabler_resp <- function(x, r_or_better = 3L, conf = 0.95, digits = 0L,
+                        frac = TRUE, show_conf = TRUE, pct.sign = TRUE,
+                        total = FALSE) {
+  r  <- names(table(x))
+  lx <- length(x)
+  
+  if (is.character(r_or_better))
+    r_or_better <- if (length(wh <- which(r %in% r_or_better)))
+      wh else {
+        warning('Failed to guess \'r_or_better\'')
+        3L
+      }
+  
+  out <- c(resp_(x, r, conf, digits, frac, show_conf, pct.sign),
+           if (!is.numeric(r_or_better))
+             NULL else r_or_better_(x, rev(r[seq.int(r_or_better)]),
+                                    conf, digits, frac, show_conf, pct.sign))
+  
+  tot <- if (is.numeric(total))
+    sprintf('%s/%s (%s%%)', lx, total, roundr(lx / total * 100, digits)) else lx
+  tot <- c(Total = if (!pct.sign) gsub('%', '', tot, fixed = TRUE) else tot)
+  if (!frac)
+    tot <- gsub('/\\S+', '', tot)
+  
+  c(if (total) tot else NULL, out)
+}
+
+resp_ <- function(x, r, conf, digits, frac, show_conf, pct.sign) {
+  # rawr:::resp_(x, levels(x),    .9, 0L, TRUE, TRUE, TRUE)
+  # rawr:::resp_(x, c('CR','PR'), .9, 0L, TRUE, TRUE, TRUE)
+  FUN <- if ('CR' %ni% r || which(r %in% 'CR') == 1L) identity else rev
+  tbl <- table(x)[FUN(r)]
+  out <- if (all(is.na(x)))
+    rep('-', length(r)) else sapply(tbl, function(X)
+      binconr(X, sum(tbl), conf, digits, TRUE, frac,
+              show_conf, pct.sign, 'exact'))
+  setNames(out, FUN(r))
+}
+
+r_or_better_ <- function(x, r, conf, digits, frac, show_conf, pct.sign) {
+  # rawr:::r_or_better_(x, c('CR','PR'), .9, 0L, TRUE, TRUE, TRUE)
+  x[x %ni% r] <- NA
+  out <- if (all(is.na(x)))
+    rep('-', length(r)) else
+      sapply(seq_along(r), function(X)
+        binconr(sum(x %in% r[X:length(r)]), length(x), conf,
+                digits, TRUE, frac, show_conf, pct.sign, 'exact'))
+  setNames(out, paste(r, 'or better'))
+}
+
 #' Match CTCAE codes
 #' 
 #' Convenience function to convert CTCAE (version 3 or 4) toxicity codes or
@@ -1277,105 +1563,6 @@ combine_table <- function(l, tspanner, n.tspanner, ...) {
   htmlTable::htmlTable(
     do.call('rbind', l), tspanner = tspanner, n.tspanner = n.tspanner, ...
   )
-}
-
-#' Response table
-#' 
-#' Convenience function to calculate proportions and confidence invervals and
-#' format for easy display.
-#' 
-#' @param x a factor variable of responses; responses should be ordered as
-#' CR, PR, SD, PD, NE or similar
-#' @param r_or_better if an integer, the first \code{r_or_better} levels of
-#' \code{x} will be combined and proportions and confidence intervals will be
-#' calculated for the aggregate; if \code{FALSE}; this is not included
-#' @param conf,frac,show_conf,pct.sign additional arguments passed to
-#' \code{\link{binconr}}
-#' @param digits number of digits past the decimal point to keep
-#' @param total logical or numeric; if \code{TRUE}, a column with the total,
-#' i.e., \code{length(x)} is added; if numeric, \code{length(x)} and,
-#' optionally, fracton and percent out of \code{total} is added
-#' 
-#' @seealso
-#' \code{\link{bincon}}; \code{\link{binconr}}
-#' 
-#' @examples
-#' set.seed(1)
-#' r <- c('CR','PR','SD','PD','NE')
-#' x <- factor(sample(r, 30, replace = TRUE), r)
-#' tabler_resp(x, 3)
-#' tabler_resp(x, 'PR')
-#' tabler_resp(x, 'PR', total = 50)
-#' 
-#' ## NAs are removed
-#' y <- `[<-`(x, 1:10, value = NA)
-#' tabler_resp(x, FALSE)
-#' tabler_resp(y, FALSE)
-#' 
-#' library('htmlTable')
-#' htmlTable(
-#'   rbind(
-#'     tabler_resp(x),
-#'     tabler_resp(x, conf = 0.9),
-#'     tabler_resp(x, frac = FALSE, pct.sign = FALSE,
-#'                 show_conf = FALSE, digits = 1)
-#'   ),
-#'   caption = 'Table of responses with confidence intervals.',
-#'   css.cell = 'padding: 0 10 0px; white-space: nowrap;',
-#'   cgroup = c('Evaluation', 'Outcome (95% CI)'),
-#'   n.cgroup = c(nlevels(x), 3L)
-#' )
-#' 
-#' @export
-
-tabler_resp <- function(x, r_or_better = 3L, conf = 0.95, digits = 0L,
-                        frac = TRUE, show_conf = TRUE, pct.sign = TRUE,
-                        total = FALSE) {
-  r  <- names(table(x))
-  lx <- length(x)
-  
-  if (is.character(r_or_better))
-    r_or_better <- if (length(wh <- which(r %in% r_or_better)))
-      wh else {
-      warning('Failed to guess \'r_or_better\'')
-      3L
-      }
-  
-  out <- c(resp_(x, r, conf, digits, frac, show_conf, pct.sign),
-           if (!is.numeric(r_or_better))
-             NULL else r_or_better_(x, rev(r[seq.int(r_or_better)]),
-                                    conf, digits, frac, show_conf, pct.sign))
-  
-  tot <- if (is.numeric(total))
-    sprintf('%s/%s (%s%%)', lx, total, roundr(lx / total * 100, digits)) else lx
-  tot <- c(Total = if (!pct.sign) gsub('%', '', tot, fixed = TRUE) else tot)
-  if (!frac)
-    tot <- gsub('/\\S+', '', tot)
-  
-  c(if (total) tot else NULL, out)
-}
-
-resp_ <- function(x, r, conf, digits, frac, show_conf, pct.sign) {
-  # rawr:::resp_(x, levels(x),    .9, 0L, TRUE, TRUE, TRUE)
-  # rawr:::resp_(x, c('CR','PR'), .9, 0L, TRUE, TRUE, TRUE)
-  FUN <- if ('CR' %ni% r || which(r %in% 'CR') == 1L) identity else rev
-    tbl <- table(x)[FUN(r)]
-    out <- if (all(is.na(x)))
-    rep('-', length(r)) else sapply(tbl, function(X)
-        binconr(X, sum(tbl), conf, digits, TRUE, frac,
-                show_conf, pct.sign, 'exact'))
-    setNames(out, FUN(r))
-}
-
-r_or_better_ <- function(x, r, conf, digits, frac, show_conf, pct.sign) {
-  # rawr:::r_or_better_(x, c('CR','PR'), .9, 0L, TRUE, TRUE, TRUE)
-  x[x %ni% r] <- NA
-  out <- if (all(is.na(x)))
-    rep('-', length(r)) else
-      sapply(seq_along(r), function(X)
-        binconr(sum(x %in% r[X:length(r)]), length(x), conf,
-                digits, TRUE, frac, show_conf, pct.sign, 'exact'))
-  setNames(out, paste(r, 'or better'))
 }
 
 #' Inject div

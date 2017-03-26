@@ -12,9 +12,9 @@ tabler(x, ...)
 
 \method{tabler}{default}(x, ...)
 
-\method{tabler}{lm}(x, digits = 3, ...)
+\method{tabler}{lm}(x, digits = 3L, ...)
 
-\method{tabler}{glm}(x, digits = 3, level = 0.95, type = "", ...)
+\method{tabler}{glm}(x, digits = 3L, level = 0.95, type = "", ...)
 
 \method{tabler}{survfit}(x, ...)
 }
@@ -45,4 +45,7 @@ library('survival')
 sfit <- survfit(Surv(time, status) ~ 1, data = cancer, conf.int = 0.9)
 tabler(sfit)
 
+}
+\seealso{
+\code{\link{tabler_by}}; \code{\link{tabler_stat}}
 }

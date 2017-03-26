@@ -2,24 +2,42 @@
 % Please edit documentation in R/utils.R
 \name{classMethods}
 \alias{classMethods}
-\title{Show class methods}
+\alias{getMethods}
+\title{Show or get methods}
 \usage{
 classMethods(class)
+
+getMethods(generic, object)
 }
 \arguments{
-\item{class}{an object or classes as a vector of character strings}
+\item{class}{an object or character vector of classes}
+
+\item{generic}{a generic function}
+
+\item{object}{an object to be passed to \code{generic}}
 }
 \description{
-Lists available methods for a given class.
+List available methods for a given class or identify a specific method
+when a \code{generic} is called with \code{object}.
 }
 \examples{
 fit <- glm(vs ~ mpg, data = mtcars)
 classMethods(fit)
 classMethods(c('glm', 'lm'))
 
+getMethods(plot, 1)
+getMethods(plot, data.frame(1))
+getMethods(plot, density(1:2))
+
+getMethods(print, 1)
+getMethods(print, ordered(1))
+getMethods(print, mtcars)
+
 }
 \references{
 \url{https://gist.github.com/MrFlick/55ed854eb935e5c21f71}
+
+\url{http://stackoverflow.com/questions/42738851/r-how-to-find-what-s3-method-will-be-called-on-an-object}
 }
 \seealso{
 \code{\link{methods}}, \code{\link{S3Methods}}, \code{\link{class}}

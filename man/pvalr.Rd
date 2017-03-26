@@ -3,12 +3,17 @@
 \name{pvalr}
 \alias{pvalr}
 \alias{pvalr2}
+\alias{color_pval}
 \title{p-value formatter}
 \usage{
 pvalr(pvals, sig.limit = 1e-03, digits = 3L, html = FALSE,
   show.p = FALSE)
 
 pvalr2(pvals, html = FALSE, show.p = FALSE)
+
+color_pval(pvals, breaks = c(0, 0.01, 0.05, 0.1, 0.5, 1),
+  cols = colorRampPalette(2:1)(length(breaks)), sig.limit = 1e-03,
+  digits = 3L, show.p = FALSE, format_pval = TRUE)
 }
 \arguments{
 \item{pvals}{for \code{pvalr}, a numeric value or vector of p-values; for
@@ -23,6 +28,9 @@ pvalr2(pvals, html = FALSE, show.p = FALSE)
 
 \item{show.p}{logical; if \code{TRUE}, inserts \code{p = } or \code{p < }
 where appropriate}
+
+\item{breaks, cols}{a numeric vector defining breaks in \code{(0,1)} (passed
+to \code{\link{findInterval}}) and the corresponding colors}
 }
 \description{
 Formats several cases of p-values; see details.
@@ -46,6 +54,10 @@ pvalr(pvals, show.p = TRUE, html = TRUE)
 
 pvals <- c('0.00000', '< 0.001', '0.0', '0.123', '0.6', '1', '1.0', '1.000')
 pvalr2(pvals)
+
+pvals <- c(0.00001, 0.03, .06, .11, .49, .51, .89, .9, 1)
+show_html(color_pval(pvals))
+show_html(iprint(color_pval(pvals, show.p = TRUE)))
 
 }
 \seealso{
