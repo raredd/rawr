@@ -1177,7 +1177,7 @@ roll_fun <- function(x, n = 5L, FUN = mean, ...,
 #' List available methods for a given class or identify a specific method
 #' when a \code{generic} is called with \code{object}.
 #' 
-#' @param class an object or character vector of classes
+#' @param object an object or character vector of classes
 #' @param generic an S3 generic function like \code{plot} or \code{summary}
 #' 
 #' @seealso
@@ -1817,44 +1817,52 @@ insert_matrix <- function(x, rowsep, colsep, rowrep = NA, colrep = rowrep) {
   x
 }
 
-#' tryCatch2
+#' Condition handling and recovery
 #' 
-#' Modification of \code{\link{tryCatch}} which allows recovery from errors,
-#' warnings, messages, and interrupts while returning the value from
-#' \code{expr}.
+#' Modification of \code{\link{tryCatch}} which allows recovery from warnings
+#' and messages while returning the value from \code{expr}. Note that the
+#' return value from errors and interruptions is \code{NULL}.
 #' 
 #' @param expr an expression
+#' @param ... ignored
 #' 
 #' @return
-#' A list of at least \code{$value}. If \code{expr} is evaluated with no error,
-#' warning, messages, or interrupts, then a list with a single element,
-#' \code{$value}, is returned with the value of \code{expr}. If any other
-#' condition is triggered, a corresponding element will be appended to the
-#' list with \code{$value}. For errors, \code{$value} will be \code{NULL}.
+#' If \code{expr} is evaluated with no errors, warnings, messagess, or
+#' interruptions, then only the value of \code{expr} is returned.
+#' 
+#' If \code{expr} results in one of the above conditions, then a list with
+#' the value of \code{expr} along with an additional element for the
+#' condition(s) which can be accessed with \code{$warning}, \code{$error},
+#' etc.
 #' 
 #' @author
 #' Martin Morgan, Jan Gorecki, Robert Redd (modifications)
 #' 
 #' @seealso
-#' \href{http://stackoverflow.com/questions/4948361/how-do-i-save-warnings-and-errors-as-output-from-a-function}{SO question};
-#' \code{\link[logR]{tryCatch2}}; \href{https://github.com/jangorecki/logR}{
-#' \pkg{logR} github repo}
+#' \code{\link[base]{tryCatch}}; \code{\link[logR]{tryCatch2}};
+#' \url{http://stackoverflow.com/questions/4948361/how-do-i-save-warnings-and-errors-as-output-from-a-function};
+#' \href{https://github.com/jangorecki/logR}{\pkg{logR} github repo}
 #' 
 #' @examples
+#' ## returns value if no errors, warnings, etc
 #' tryCatch2(1)
+#' 
+#' 
 #' tryCatch2(stop('halt at once!'))
+#' tryCatch2({warning('warning'); message('message'); 1})
 #' 
-#' l <- alist(1, simpleError('oops'), stop('halt!'),
-#'            warning('hmm'), message('hey'))
-#' lapply(l, function(x) tryCatch2(eval(x)))
 #' 
-#' l <- lapply(list(1,-1,'a'), function(x) tryCatch2(log(x)))
-#' rm_null(l)
+#' ## compare
+#' tryCatch({warning('this is your warning...'); 1}, warning = function(w) w)
+#' tryCatch2({warning('this is your warning...'); 1})
+#' 
+#' tryCatch({message('calculating...'); 1}, message = function(m) m)
+#' tryCatch2({message('calculating...'); 1})
 #' 
 #' @export
 
-tryCatch2 <- function(expr) {
-  E <- W <- M <- I <- V <- NULL
+tryCatch2 <- function(expr, ...) {
+  E <- W <- M <- I <- NULL
   e.handler <- function(e){
     E <<- e
     NULL
@@ -1871,11 +1879,17 @@ tryCatch2 <- function(expr) {
     I <<- i
     NULL
   }
-  V <- suppressMessages(withCallingHandlers(
+  
+  res <- suppressMessages(withCallingHandlers(
     tryCatch(expr, error = e.handler, interrupt = i.handler),
-    warning = w.handler, message = m.handler))
+    warning = w.handler, message = m.handler)
+  )
+  
   l <- list(error = E, warning = W, message = M, interrupt = I)
-  c(list(value = V), Filter(Negate(is.null), l))
+  l <- Filter(Negate(is.null), l)
+  
+  if (identical(list(), unname(l)))
+    res else c(list(value = res), l)
 }
 
 #' Generate run-length type group id

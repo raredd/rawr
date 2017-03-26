@@ -2,41 +2,50 @@
 % Please edit documentation in R/utils.R
 \name{tryCatch2}
 \alias{tryCatch2}
-\title{tryCatch2}
+\title{Condition handling and recovery}
 \usage{
-tryCatch2(expr)
+tryCatch2(expr, ...)
 }
 \arguments{
 \item{expr}{an expression}
+
+\item{...}{ignored}
 }
 \value{
-A list of at least \code{$value}. If \code{expr} is evaluated with no error,
-warning, messages, or interrupts, then a list with a single element,
-\code{$value}, is returned with the value of \code{expr}. If any other
-condition is triggered, a corresponding element will be appended to the
-list with \code{$value}. For errors, \code{$value} will be \code{NULL}.
+If \code{expr} is evaluated with no errors, warnings, messagess, or
+interruptions, then only the value of \code{expr} is returned.
+
+If \code{expr} results in one of the above conditions, then a list with
+the value of \code{expr} along with an additional element for the
+condition(s) which can be accessed with \code{$warning}, \code{$error},
+etc.
 }
 \description{
-Modification of \code{\link{tryCatch}} which allows recovery from errors,
-warnings, messages, and interrupts while returning the value from
-\code{expr}.
+Modification of \code{\link{tryCatch}} which allows recovery from warnings
+and messages while returning the value from \code{expr}. Note that the
+return value from errors and interruptions is \code{NULL}.
 }
 \examples{
+## returns value if no errors, warnings, etc
 tryCatch2(1)
+
+
 tryCatch2(stop('halt at once!'))
+tryCatch2({warning('warning'); message('message'); 1})
 
-l <- alist(1, simpleError('oops'), stop('halt!'),
-           warning('hmm'), message('hey'))
-lapply(l, function(x) tryCatch2(eval(x)))
 
-l <- lapply(list(1,-1,'a'), function(x) tryCatch2(log(x)))
-rm_null(l)
+## compare
+tryCatch({warning('this is your warning...'); 1}, warning = function(w) w)
+tryCatch2({warning('this is your warning...'); 1})
+
+tryCatch({message('calculating...'); 1}, message = function(m) m)
+tryCatch2({message('calculating...'); 1})
 
 }
 \seealso{
-\href{http://stackoverflow.com/questions/4948361/how-do-i-save-warnings-and-errors-as-output-from-a-function}{SO question};
-\code{\link[logR]{tryCatch2}}; \href{https://github.com/jangorecki/logR}{
-\pkg{logR} github repo}
+\code{\link[base]{tryCatch}}; \code{\link[logR]{tryCatch2}};
+\url{http://stackoverflow.com/questions/4948361/how-do-i-save-warnings-and-errors-as-output-from-a-function};
+\href{https://github.com/jangorecki/logR}{\pkg{logR} github repo}
 }
 \author{
 Martin Morgan, Jan Gorecki, Robert Redd (modifications)
