@@ -1178,24 +1178,40 @@ roll_fun <- function(x, n = 5L, FUN = mean, ...,
 #' when a \code{generic} is called with \code{object}.
 #' 
 #' @param class an object or character vector of classes
+#' @param generic an S3 generic function like \code{plot} or \code{summary}
 #' 
 #' @seealso
 #' \code{\link{methods}}, \code{\link{S3Methods}}, \code{\link{class}}
 #' 
 #' @references
-#' \url{https://gist.github.com/MrFlick/55ed854eb935e5c21f71}
+#' \url{https://gist.github.com/MrFlick/55ed854eb935e5c21f71};
+#' \url{http://stackoverflow.com/questions/42738851/r-how-to-find-what-s3-method-will-be-called-on-an-object}
 #' 
 #' @examples
 #' fit <- glm(vs ~ mpg, data = mtcars)
 #' classMethods(fit)
 #' classMethods(c('glm', 'lm'))
 #' 
+#' classMethods(1, plot)
+#' classMethods(data.frame(1), plot)
+#' classMethods(density(1:2), plot)
+#' 
+#' classMethods(1, print)
+#' classMethods(ordered(1), print)
+#' classMethods(mtcars, summary)
+#' 
 #' @export
 
-classMethods <- function(class) {
-  if (!is.character(class))
-    class <- class(class)
-  cat(sprintf('class methods for %s:\n\n', paste0(class, collapse = ', ')))
+classMethods <- function(object, generic = NULL) {
+  if (!is.null(generic)) {
+    generic <- if (is.character(generic))
+      generic else deparse(substitute(generic))
+    return(genericMethods(object, generic))
+  }
+  
+  class <- if (!is.character(object))
+    class(object) else object
+  message('S3 methods for objects of class ', toString(class), '\n')
   
   ml <- lapply(class, function(x) {
     sname <- gsub('([.[])', '\\\\\\1', paste0('.', x, '$'))
@@ -1217,27 +1233,9 @@ classMethods <- function(class) {
                               row.names = dd$m))
 }
 
-#' @rdname classMethods
-#' 
-#' @param generic a generic function
-#' @param object an object to be passed to \code{generic}
-#' 
-#' @references
-#' \url{http://stackoverflow.com/questions/42738851/r-how-to-find-what-s3-method-will-be-called-on-an-object}
-#' 
-#' @examples
-#' getMethods(plot, 1)
-#' getMethods(plot, data.frame(1))
-#' getMethods(plot, density(1:2))
-#' 
-#' getMethods(print, 1)
-#' getMethods(print, ordered(1))
-#' getMethods(print, mtcars)
-#' 
-#' @export
-
-getMethods <- function(generic, object) {
-  generic <- deparse(substitute(generic))
+genericMethods <- function(object, generic) {
+  generic <- if (is.character(generic))
+    generic else deparse(substitute(generic))
   f <- X <- function(x, object) UseMethod('X')
   for (m in methods(generic))
     assign(sub(generic, 'X', m), `body<-`(f, value = m))
