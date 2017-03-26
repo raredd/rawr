@@ -31,6 +31,9 @@ where appropriate}
 
 \item{breaks, cols}{a numeric vector defining breaks in \code{(0,1)} (passed
 to \code{\link{findInterval}}) and the corresponding colors}
+
+\item{format_pval}{logical; if \code{TRUE} (default), p-values will first
+be passed to \code{pvalr} to be formatted}
 }
 \description{
 Formats several cases of p-values; see details.

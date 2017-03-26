@@ -7,9 +7,9 @@
 classMethods(object, generic = NULL)
 }
 \arguments{
-\item{generic}{an S3 generic function like \code{plot} or \code{summary}}
+\item{object}{an object or character vector of classes}
 
-\item{class}{an object or character vector of classes}
+\item{generic}{an S3 generic function like \code{plot} or \code{summary}}
 }
 \description{
 List available methods for a given class or identify a specific method

@@ -417,6 +417,8 @@ pvalr2 <- function(pvals, html = FALSE, show.p = FALSE) {
 #' 
 #' @param breaks,cols a numeric vector defining breaks in \code{(0,1)} (passed
 #' to \code{\link{findInterval}}) and the corresponding colors
+#' @param format_pval logical; if \code{TRUE} (default), p-values will first
+#' be passed to \code{pvalr} to be formatted
 #' 
 #' @examples
 #' pvals <- c(0.00001, 0.03, .06, .11, .49, .51, .89, .9, 1)
@@ -430,13 +432,17 @@ color_pval <- function(pvals, breaks = c(0, .01, .05, .1, .5, 1),
                        sig.limit = 0.001, digits = 3L, show.p = FALSE,
                        format_pval = TRUE) {
   stopifnot(length(breaks) == length(cols))
+  
   pvn <- if (!is.numeric(pvals)) {
     warning('p-values are not numeric')
     as.numeric(gsub('[^0-9.]', '', pvals))
   } else pvals
+  
   if (format_pval)
     pvals <- rawr::pvalr(pvn, sig.limit, digits, TRUE, show.p)
+  
   pvc <- cols[findInterval(pvn, breaks)]
+  
   sprintf('<font color=\"%s\">%s</font>', pvc, pvals)
 }
 
