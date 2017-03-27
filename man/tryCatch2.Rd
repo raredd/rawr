@@ -4,16 +4,20 @@
 \alias{tryCatch2}
 \title{Condition handling and recovery}
 \usage{
-tryCatch2(expr, ...)
+tryCatch2(expr, ..., simplify = TRUE)
 }
 \arguments{
 \item{expr}{an expression}
 
 \item{...}{ignored}
+
+\item{simplify}{logical; if \code{TRUE}, simplifies the returned list to
+a vector if there were no exceptions}
 }
 \value{
 If \code{expr} is evaluated with no errors, warnings, messagess, or
-interruptions, then only the value of \code{expr} is returned.
+interruptions, then only the value of \code{expr} is returned unless
+\code{simplify = FALSE} in which case a list with the return value.
 
 If \code{expr} results in one of the above conditions, then a list with
 the value of \code{expr} along with an additional element for the
@@ -28,6 +32,7 @@ return value from errors and interruptions is \code{NULL}.
 \examples{
 ## returns value if no errors, warnings, etc
 tryCatch2(1)
+tryCatch2(1, simplify = FALSE)
 
 
 tryCatch2(stop('halt at once!'))

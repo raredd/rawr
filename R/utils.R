@@ -1825,10 +1825,13 @@ insert_matrix <- function(x, rowsep, colsep, rowrep = NA, colrep = rowrep) {
 #' 
 #' @param expr an expression
 #' @param ... ignored
+#' @param simplify logical; if \code{TRUE}, simplifies the returned list to
+#' a vector if there were no exceptions
 #' 
 #' @return
 #' If \code{expr} is evaluated with no errors, warnings, messagess, or
-#' interruptions, then only the value of \code{expr} is returned.
+#' interruptions, then only the value of \code{expr} is returned unless
+#' \code{simplify = FALSE} in which case a list with the return value.
 #' 
 #' If \code{expr} results in one of the above conditions, then a list with
 #' the value of \code{expr} along with an additional element for the
@@ -1846,6 +1849,7 @@ insert_matrix <- function(x, rowsep, colsep, rowrep = NA, colrep = rowrep) {
 #' @examples
 #' ## returns value if no errors, warnings, etc
 #' tryCatch2(1)
+#' tryCatch2(1, simplify = FALSE)
 #' 
 #' 
 #' tryCatch2(stop('halt at once!'))
@@ -1861,7 +1865,7 @@ insert_matrix <- function(x, rowsep, colsep, rowrep = NA, colrep = rowrep) {
 #' 
 #' @export
 
-tryCatch2 <- function(expr, ...) {
+tryCatch2 <- function(expr, ..., simplify = TRUE) {
   E <- W <- M <- I <- NULL
   e.handler <- function(e){
     E <<- e
@@ -1888,7 +1892,7 @@ tryCatch2 <- function(expr, ...) {
   l <- list(error = E, warning = W, message = M, interrupt = I)
   l <- Filter(Negate(is.null), l)
   
-  if (identical(list(), unname(l)))
+  if (identical(list(), unname(l)) & simplify)
     res else c(list(value = res), l)
 }
 
