@@ -541,7 +541,9 @@ source_sas <- function(path, ...) {
 #' each.
 #' 
 #' @param path character string of path to \code{.sas} file
-#' @param fmt a character string with formats to parse
+#' @param fmt a character string with formats to parse (or for
+#' \code{apply_formats} a vector of parsed formats, e.g., the result of
+#' \code{parse_formats} or \code{parse_formats2})
 #' @param clean logical; if \code{TRUE} (default), the parsed formats will be
 #' cleaned of quotes and extra whitespace
 #' @param x a vector of data usually taking a small number of distinct values
@@ -578,7 +580,11 @@ source_sas <- function(path, ...) {
 #' 
 #' 
 #' ## use apply_formats to format factor variables
+#' ## use an unparsed character string
 #' apply_formats('.C', fmt, droplevels = TRUE)
+#' ## or formats that have already been parsed
+#' apply_formats('.C', parse_formats2(fmt), droplevels = TRUE)
+#' 
 #' 
 #' x <- sample(0:2, 10, TRUE)
 #' table(apply_formats(x, fmt), x)
@@ -631,7 +637,8 @@ parse_formats2 <- function(fmt, clean = TRUE) {
 #' @rdname parse_formats
 #' @export
 apply_formats <- function(x, fmt, clean = TRUE, droplevels = FALSE) {
-  fmt <- parse_formats2(fmt, clean)
+  fmt <- if (is.character(fmt) & length(fmt) == 1L)
+    parse_formats2(fmt, clean) else fmt
   out <- factor(x, names(fmt), fmt)
   if (droplevels)
     out <- droplevels(out)

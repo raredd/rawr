@@ -15,7 +15,9 @@ apply_formats(x, fmt, clean = TRUE, droplevels = FALSE)
 \arguments{
 \item{path}{character string of path to \code{.sas} file}
 
-\item{fmt}{a character string with formats to parse}
+\item{fmt}{a character string with formats to parse (or for
+\code{apply_formats} a vector of parsed formats, e.g., the result of
+\code{parse_formats} or \code{parse_formats2})}
 
 \item{clean}{logical; if \code{TRUE} (default), the parsed formats will be
 cleaned of quotes and extra whitespace}
@@ -57,7 +59,11 @@ parse_formats2('1=yes, 0=no, 2=maybe')
 
 
 ## use apply_formats to format factor variables
+## use an unparsed character string
 apply_formats('.C', fmt, droplevels = TRUE)
+## or formats that have already been parsed
+apply_formats('.C', parse_formats2(fmt), droplevels = TRUE)
+
 
 x <- sample(0:2, 10, TRUE)
 table(apply_formats(x, fmt), x)
