@@ -642,7 +642,8 @@ apply_formats <- function(x, fmt, clean = TRUE, droplevels = FALSE) {
   out <- factor(x, names(fmt), fmt)
   if (droplevels)
     out <- droplevels(out)
-  ok <- sum(diag(table(out, x))) == sum(table(x))
+  # ok <- sum(diag(table(out, x))) == sum(table(x))
+  ok <- sum(is.na(out)) == sum(is.na(x))
   if (!ok)
     warning('Number of non-missing vales does not match original vector.',
             call. = FALSE)
