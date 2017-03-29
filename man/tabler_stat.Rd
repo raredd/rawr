@@ -44,6 +44,8 @@ selected based on \code{varname} and \code{byvar} if \code{FUN = NULL}}
 with names to match the appropriate \code{dagger} character; see examples;
 if \code{FUN} is given, the function name will be added with a new dagger
 symbol (\code{"*"} by default or \code{dagger} if given)}
+\item{\code{attr(,"tfoot")}}{a footnote for the table using each dagger
+and corresponding test name}
 }
 \description{
 Wrapper function to create table of description statistics with tests
@@ -84,8 +86,7 @@ htmlTable::htmlTable(
   do.call('rbind', tbl),
   cgroup = c('', 'Gear', ''), n.cgroup = c(1, 3, 1),
   rgroup = names(mt)[-10L], n.rgroup = sapply(tbl, nrow),
-  tfoot = toString(sprintf('<sup>\%s</sup>\%s',
-    names(attr(tbl[[1L]], 'fnames')), attr(tbl[[1L]], 'fnames'))[-1L])
+  tfoot = attr(tbl[[1L]], 'tfoot')
 )
 
 }

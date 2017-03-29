@@ -1138,6 +1138,8 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' with names to match the appropriate \code{dagger} character; see examples;
 #' if \code{FUN} is given, the function name will be added with a new dagger
 #' symbol (\code{"*"} by default or \code{dagger} if given)}
+#' \item{\code{attr(,"tfoot")}}{a footnote for the table using each dagger
+#' and corresponding test name}
 #' 
 #' @seealso
 #' \code{\link{tabler}}, \code{\link{tabler_by}}
@@ -1165,8 +1167,7 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #'   do.call('rbind', tbl),
 #'   cgroup = c('', 'Gear', ''), n.cgroup = c(1, 3, 1),
 #'   rgroup = names(mt)[-10L], n.rgroup = sapply(tbl, nrow),
-#'   tfoot = toString(sprintf('<sup>%s</sup>%s',
-#'     names(attr(tbl[[1L]], 'fnames')), attr(tbl[[1L]], 'fnames'))[-1L])
+#'   tfoot = attr(tbl[[1L]], 'tfoot')
 #' )
 #' 
 #' @export
@@ -1181,6 +1182,7 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
   
   x <- data[, varname]
   y <- data[, byvar]
+  n <- length(unique(na.omit(y)))
   
   res <- Gmisc::getDescriptionStatsBy(
     x, y, digits = digits, html = TRUE, add_total_col = TRUE,
@@ -1208,7 +1210,7 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
   else {
     if (is.null(FUN))
       if (is.numeric(x) & length(unique(x)) / length(x) > 0.5) {
-        if (length(unique(y)) > 2L)
+        if (n > 2L)
           structure(Gmisc::getPvalKruskal(x, y), FUN = 'kruskal.test')
         else structure(Gmisc::getPvalWilcox(x, y), FUN = 'wilcox.test')
       } else structure(Gmisc::getPvalFisher(x, y), FUN = 'fisher.test')
@@ -1232,6 +1234,9 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
                             'Fisher\'s exact test'),
                           names(fnames)[1:3])
   
+  ## only return one of wilcox/kruskal based on byvar
+  fnames <- fnames[-((n == 2L) + 1L)]
+  
   pvc <- if (is.null(pvn))
     pvn else {
       if (color_pval)
@@ -1243,7 +1248,10 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
   m[1L, 1L] <- if (!length(pvc))
     '-' else sprintf('<i>%s</i><sup>%s</sup>', pvc, dagger)
   
-  structure(cbind(res, m), FUN = fname, p.value = pvn, fnames = fnames)
+  structure(
+    cbind(res, m), FUN = fname, p.value = pvn, fnames = fnames,
+    tfoot = toString(sprintf('<sup>%s</sup>%s', names(fnames), fnames))
+  )
 }
 
 #' Response table
