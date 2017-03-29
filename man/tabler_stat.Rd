@@ -16,8 +16,9 @@ tabler_stat(data, varname, byvar, digits = 0L, FUN = NULL,
 \item{digits}{number of digits past the decimal point to keep}
 
 \item{FUN}{a function performing the test of association between
-\code{varname} and \code{byvar}; \code{FALSE} will suppress the test;
-see details}
+\code{varname} and \code{byvar}; \code{FALSE} will suppress the test but
+keep a column for p-values; \code{NA} will suppress the test and drop the
+column for p-values; see details}
 
 \item{color_pval}{logical; if \code{TRUE}, p-values will be colored
 by significance; see \code{\link{color_pval}}}
@@ -62,6 +63,8 @@ respectively. If \code{varname} is not numeric (or has few unique values),
 }
 \examples{
 tabler_stat(mtcars, 'mpg', 'cyl')
+tabler_stat(mtcars, 'mpg', 'cyl', FUN = NA)
+tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE)
 
 tabler_stat(mtcars, 'mpg', 'cyl',
   FUN = function(x, y)

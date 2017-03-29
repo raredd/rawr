@@ -1114,8 +1114,9 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' @param varname,byvar the row and column variable, respectively
 #' @param digits number of digits past the decimal point to keep
 #' @param FUN a function performing the test of association between
-#' \code{varname} and \code{byvar}; \code{FALSE} will suppress the test;
-#' see details
+#' \code{varname} and \code{byvar}; \code{FALSE} will suppress the test but
+#' keep a column for p-values; \code{NA} will suppress the test and drop the
+#' column for p-values; see details
 #' @param color_pval logical; if \code{TRUE}, p-values will be colored
 #' by significance; see \code{\link{color_pval}}
 #' @param color_missing logical; if \code{TRUE}, rows summarizing missing
@@ -1143,6 +1144,8 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' 
 #' @examples
 #' tabler_stat(mtcars, 'mpg', 'cyl')
+#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = NA)
+#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE)
 #' 
 #' tabler_stat(mtcars, 'mpg', 'cyl',
 #'   FUN = function(x, y)
@@ -1179,24 +1182,43 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
   x <- data[, varname]
   y <- data[, byvar]
   
-  pvn <- if (identical(FUN, FALSE))
+  res <- Gmisc::getDescriptionStatsBy(
+    x, y, digits = digits, html = TRUE, add_total_col = TRUE,
+    show_all_values = TRUE, statistics = FALSE, useNA.digits = 0L, ...,
+    continuous_fn = function(...) Gmisc::describeMedian(..., iqr = FALSE)
+  )
+  
+  ## recolor missing
+  if (is.character(color_missing)) {
+    wh <- rownames(res) %in% 'Missing'
+    rownames(res)[wh] <-  sprintf('<font color=%s><i>%s</i></font>',
+                                  color_missing, rownames(res)[wh])
+    res[wh, ] <- sprintf('<font color=%s><i>%s</i></font>',
+                         color_missing, res[wh, ])
+  }
+  
+  if (identical(NA, FUN))
+    return(structure(res, FUN = FALSE, p.value = NULL, fnames = NULL))
+  
+  pvn <- if (identical(FUN, FALSE)) {
+    color_pval <- FALSE
     structure(NULL, FUN = NULL)
-  else if (is.function(FUN))
+  } else if (is.function(FUN))
     structure(FUN(x, y), FUN = gsub('\\(.*', '', deparse(FUN)[2L]))
   else {
     if (is.null(FUN))
-      if (is.numeric(x) & length(unique(x)) > 10L) {
+      if (is.numeric(x) & length(unique(x)) / length(x) > 0.5) {
         if (length(unique(y)) > 2L)
           structure(Gmisc::getPvalKruskal(x, y), FUN = 'kruskal.test')
         else structure(Gmisc::getPvalWilcox(x, y), FUN = 'wilcox.test')
       } else structure(Gmisc::getPvalFisher(x, y), FUN = 'fisher.test')
   }
   
-  fname <- attr(pvn, 'FUN')
+  fname  <- attr(pvn, 'FUN')
   fnames <- setNames(paste0(c('wilcox', 'kruskal', 'fisher'), '.test'),
                      c('&dagger;','&dagger;','&Dagger;'))
   
-  if (!is.null(FUN)) {
+  if (!is.null(FUN) & !identical(FUN, FALSE)) {
     if (!is.character(dagger))
       dagger <- '*'
     fnames <- c(fnames, setNames(fname, dagger))
@@ -1217,24 +1239,9 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
       else sprintf('<i>%s</i>', pvalr(pvn, html = TRUE))
     }
   
-  res <- Gmisc::getDescriptionStatsBy(
-    data[, varname], data[, byvar], digits = digits, html = TRUE,
-    add_total_col = TRUE, show_all_values = TRUE, statistics = FALSE,
-    useNA.digits = 0L, ...,
-    continuous_fn = function(...) Gmisc::describeMedian(..., iqr = FALSE)
-  )
-  
   m <- matrix('', nrow(res))
-  m[1L, 1L] <- sprintf('<i>%s</i><sup>%s</sup>', pvc, dagger)
-  
-  ## recolor missing
-  if (is.character(color_missing)) {
-    wh <- rownames(res) %in% 'Missing'
-    rownames(res)[wh] <-  sprintf('<font color=%s><i>%s</i></font>',
-                                  color_missing, rownames(res)[wh])
-    res[wh, ] <- sprintf('<font color=%s><i>%s</i></font>',
-                         color_missing, res[wh, ])
-  }
+  m[1L, 1L] <- if (!length(pvc))
+    '-' else sprintf('<i>%s</i><sup>%s</sup>', pvc, dagger)
   
   structure(cbind(res, m), FUN = fname, p.value = pvn, fnames = fnames)
 }
