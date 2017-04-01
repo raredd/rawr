@@ -1,5 +1,5 @@
 ## sci printing in docs
-options(scipen = -1)
+options(scipen = -1L)
 
 ## binding notes
 if (getRversion() >= '2.15.1') {

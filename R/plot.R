@@ -359,7 +359,7 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
     if (missing(xlab))
       xlab <- deparse(substitute(g))
     if (is.list(x))
-      warning('\'x\' is a list -- \'g\' will be ignored', call. = FALSE) else {
+      message('\'x\' is a list -- \'g\' will be ignored', domain = NA) else {
         if (missing(ylab))
           ylab <- deparse(substitute(x))
         if (missing(xlab))
@@ -584,7 +584,14 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
       tFUN <- match.fun(test)
     
     # pv <- tFUN(unlist(lapply(groups, '[[', 'vs')), g)
-    pv <- tFUN(unlist(.x), g)
+    pv <- tryCatch(
+      tFUN(unlist(.x), g),
+      error = function(e) {
+        message('Error in test -- no p-value computed:\n\t', e$message)
+        list(p.value = NA)
+      }
+    )
+    
     mtext(pvalr(pv$p.value, show.p = TRUE), 3, line = 0.5, cex = 1.2,
           # at = if (ng %% 2 == 0) NA else par('usr')[2] * .95,
           at = par('usr')[2], font = 3, adj = 1)
