@@ -852,6 +852,7 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' 
 #' 
 #' ## when length(n) > 1, each column uses a different n for percents
+#' tabler_by(mt, 'vs', 'gear', n = 32, pct = TRUE)
 #' tabler_by(mt, 'vs', 'gear', n = table(mt$gear), pct = TRUE)
 #' tabler_by(mt, 'vs', 'gear', n = table(mt$gear), zeros = '-',
 #'           pct = TRUE, pct.column = TRUE, pct.total = TRUE)
@@ -877,7 +878,8 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' t2 <- t2[, apply(t2, 2, function(x) !all(x %in% '0'))]
 #' rownames(t2)[duplicated(rownames(t2))] <- ''
 #' 
-#' identical(t1, t2) # [1] TRUE
+#' identical(t1, t2)
+#' # [1] TRUE
 #' 
 #' 
 #' ## example workflow
@@ -914,7 +916,7 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' 
 #' ## same as above but add level of stratification, sort by total within group
 #' out2 <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'grade', order = TRUE,
-#'                    stratvar = 'phase', zeros = '-', pct = TRUE)
+#'                    stratvar = 'phase', zeros = '-', n = c(5, 5), pct = TRUE)
 #' stopifnot(
 #'   identical(
 #'     sort(unname(out[, grep('Total', colnames(out))[1]])),
@@ -939,7 +941,12 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
                       pct = FALSE, pct.column = FALSE, pct.total = FALSE,
                       pct.sign = FALSE, drop = TRUE) {
+  stopifnot(
+    length(byvar) == 1L,
+    length(varname) <= 2L
+  )
   
+  ## helpers
   rm_p <- function(x) gsub(' \\(.*\\)$', '', x)
   ord  <- function(...) order(..., decreasing = TRUE)
   
@@ -960,8 +967,11 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
   nc <- ncol(ttbl)
   
   ## add percents, eg "N (x%)", to each column
+  if (missing(n) & length(varname) == 1L)
+    n <- c(table(data[, byvar]))
   if (missing(n) & any(pct, pct.column, pct.total))
-    warning('\'n\' must be given to show percents', domain = NA)
+    warning('\'n\' must be given if pct = TRUE', domain = NA)
+  
   if (pct & !missing(n)) {
     ## if length(n) == 1L, use same n for all strat levels (assume subgroup)
     ## else, map each n to each strat level (assume total)
@@ -1040,24 +1050,26 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
 tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
                        zeros = TRUE, pct = FALSE, pct.column = FALSE,
                        pct.total = FALSE, pct.sign = TRUE, drop = TRUE) {
-  
+  ## helpers
   rm_p <- function(x) gsub(' \\(.*\\)$', '', x)
   ord  <- function(...) order(..., decreasing = TRUE)
   
-  stopifnot(length(byvar) == 1L,
-            (missing(stratvar) || length(stratvar) == 1L),
-            (ln <- length(varname)) <= 2L)
+  stopifnot(
+    length(byvar) == 1L,
+    (missing(stratvar) || length(stratvar) == 1L),
+    (ln <- length(varname)) <= 2L
+  )
   
   data[] <- lapply(data, as.factor)
   data$`_strat_var_` <- if (missing(stratvar))
     factor(1) else data[, stratvar]
   bylvl <- levels(data[, '_strat_var_'])
   
-  ## try to guess n, N if missing
-  n <- if (missing(n))
-    setNames(colSums(table(data[, 1], data[, '_strat_var_']) > 1), bylvl)
-  else setNames(n, '1')
-  N <- sum(n)
+  if (pct && missing(n)) {
+    warning('\'n\' must be given if pct = TRUE', domain = NA)
+    pct <- FALSE
+  } else if (!missing(n))
+    names(n) <- bylvl
   
   ## get (second varname if ln == 2L and) overall total column(s)
   o1 <- tabler_by(data, varname, '_strat_var_', n, FALSE, zeros,

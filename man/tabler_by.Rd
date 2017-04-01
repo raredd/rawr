@@ -85,6 +85,7 @@ tabler_by(mt, c('vs', 'carb'), 'gear', order = TRUE)
 
 
 ## when length(n) > 1, each column uses a different n for percents
+tabler_by(mt, 'vs', 'gear', n = 32, pct = TRUE)
 tabler_by(mt, 'vs', 'gear', n = table(mt$gear), pct = TRUE)
 tabler_by(mt, 'vs', 'gear', n = table(mt$gear), zeros = '-',
           pct = TRUE, pct.column = TRUE, pct.total = TRUE)
@@ -110,7 +111,8 @@ t2 <- t2[!t2[, 'Total'] \%in\% '0', ]
 t2 <- t2[, apply(t2, 2, function(x) !all(x \%in\% '0'))]
 rownames(t2)[duplicated(rownames(t2))] <- ''
 
-identical(t1, t2) # [1] TRUE
+identical(t1, t2)
+# [1] TRUE
 
 
 ## example workflow
@@ -147,7 +149,7 @@ htmlTable(out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
 
 ## same as above but add level of stratification, sort by total within group
 out2 <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'grade', order = TRUE,
-                   stratvar = 'phase', zeros = '-', pct = TRUE)
+                   stratvar = 'phase', zeros = '-', n = c(5, 5), pct = TRUE)
 stopifnot(
   identical(
     sort(unname(out[, grep('Total', colnames(out))[1]])),
