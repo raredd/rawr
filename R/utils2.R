@@ -377,7 +377,7 @@ pvalr <- function(pvals, sig.limit = 0.001, digits = 3L,
   html   <- html + 1L
   
   sapply(pvals, function(x, sig.limit) {
-    if (is.na(x))
+    if (is.na(x) | !nzchar(x))
       return(NA)
     if (x >= 0.99)
       return(paste0(c('','p ')[show.p], c('> ','&gt; ')[html], '0.99'))
@@ -404,13 +404,15 @@ pvalr2 <- function(pvals, html = FALSE, show.p = FALSE) {
   x <- gsub('(?:^1\\.|\\G)\\K0(?=0*$)', '9', x, perl = TRUE)
   x <- gsub('^1\\.', '> 0.', x)
   x <- gsub('^(0\\.0*)0$', '< \\11', x)
+  
   if (html) {
     x <- gsub('>', '&gt;', x)
     x <- gsub('<', '&lt;', x)
   }
-  if (!show.p)
-    x else
-      ifelse(grepl('[<>]', pvalr2(pvals)), paste0('p ', x), paste0('p = ', x))
+  
+  if (show.p)
+    ifelse(grepl('[<>]', pvalr2(pvals)), paste0('p ', x), paste0('p = ', x))
+  else x
 }
 
 #' @rdname pvalr
