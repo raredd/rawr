@@ -5,12 +5,16 @@
 proc format;
   value $jc 'man'  = 'management'
             'nman' = 'non-management';
-  value rate 
+  value rate
+         * missing values;
          -99 = 'not applicable'
           -1 = 'missing'
+          * bad responses ;
            0 = 'terrible'
            1 = 'poor'
+           * okay;
            2 = 'fair'
+           * good responses;
            3 = 'good'
            4 = 'excellent';
   value with_comments

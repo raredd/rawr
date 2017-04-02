@@ -1,4 +1,24 @@
-context('parse sas formats')
+context('sas-related functions')
+
+
+test_that('sas multi-line and single-line comments are removed', {
+  
+  rm_sp2 <- function(x) gsub('\\s{2,}', ' ', x)
+  
+  ans <- 'this is the text to keep'
+  
+  s1 <- 'this is the * remove this; text to keep'
+  s2 <- 'this is the * remove this; text to /* also this*/keep'
+  
+  expect_identical(
+    rm_sp2(ans), rm_sp2(rm_sas_comments(s1))
+  )
+  
+  expect_identical(
+    rm_sp2(ans), rm_sp2(rm_sas_comments(s2))
+  )
+  
+})
 
 test_that('formats are parsed correctly', {
   

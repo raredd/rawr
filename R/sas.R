@@ -1,8 +1,17 @@
-## sas helpers
+## sas-related functions
 # sas_path, r2sas, rmacro, get_margs, sas_mget, source_sas, parse_formats,
 # parse_formats2, apply_formats, sas_catalog, move_formats
+# 
+# unexported:
+# rm_sas_comments, trimwsq
 ##
 
+
+rm_sas_comments <- function(x)
+  gsub('\\*[^;]+;|\\/\\*.*?\\*\\/', '', x)
+
+trimwsq <- function(x)
+  trimws(gsub('^[\"\' ]+|[\"\' ]+$', '', trimws(x)))
 
 #' Get \code{SAS} path
 #' 
@@ -600,9 +609,6 @@ parse_formats <- function(formats, invert = FALSE) {
 }
 
 parse_formats_string <- function(x, invert) {
-  trimwsq <- function(x)
-    trimws(gsub('^[\"\' ]+|[\"\' ]+$', '', trimws(x)))
-  
   stopifnot(length(x) == 1L)
   x <- rm_nonascii(x)
   
@@ -625,9 +631,8 @@ parse_formats_string <- function(x, invert) {
 
 parse_formats_file <- function(x, invert) {
   x <- rm_nonascii(readLines(x))
-  x <- paste0(x, collapse = '_$$$_')
-  x <- strsplit(gsub('\\*[^;]+;|\\/\\*.*?\\*\\/', '', x), '_$$$_',
-                fixed = TRUE)[[1L]]
+  x <- rm_sas_comments(paste0(x, collapse = '_$$$_'))
+  x <- strsplit(x, '_$$$_', fixed = TRUE)[[1L]]
   
   ## extract format names and definitions
   name <- gsub('(?i)value\\W+(\\w*)|.', '\\1', x, perl = TRUE)
