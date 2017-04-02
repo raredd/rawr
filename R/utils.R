@@ -1,15 +1,21 @@
 ### utilities
-# rawr_ops: %ni%, %==%, %||%, %inside%, %:%
-# rawr_ls: lss, lsf, lsp
-# rawr_parse: parse_yaml, parse_index, parse_news, parse_namespace
-#
 # psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill,
 # rbindfill2, rbindlist, interleave, outer2, merge2, locf, roll_fun,
 # classMethods, getMethods, regcaptures, cast, melt, view, view2, clist,
 # rapply2, sort_matrix, insert, insert_matrix, tryCatch2, rleid, droplevels2,
 # combine_levels, rownames_to_column, column_to_rownames
-#
-# unexported: islist, done, where, dots
+# 
+# rawr_ops:
+# %ni%, %==%, %||%, %inside%, %:%
+# 
+# rawr_ls:
+# lss, lsf, lsp
+# 
+# rawr_parse:
+# parse_yaml, parse_index, parse_news, parse_namespace
+# 
+# unexported:
+# islist, done, where, dots
 ###
 
 

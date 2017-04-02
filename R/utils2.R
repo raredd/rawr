@@ -1,4 +1,4 @@
-### formatting, knitr, misc utils
+### formatting, knitr, html-related, misc utils
 # show_html, show_markdown, show_math, roundr, intr, pvalr, pvalr2, catlist,
 # binconr, num2char, iprint, writeftable, tabler, tabler_by, tabler_by2,
 # tabler_stat, tabler_resp, resp_, r_or_better_, match_ctc, tox_worst, countr,

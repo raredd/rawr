@@ -1,8 +1,9 @@
-### survival stuff
+### survival
 # kmplot, kmplot_by, local_coxph_test, surv_cp, surv_summary, surv_table,
 # survdiff_pairs, landmark
 #
-# unexported: points.kmplot, kmplot_data_, lr_text, lr_pval
+# unexported:
+# points.kmplot, kmplot_data_, lr_text, lr_pval
 ###
 
 

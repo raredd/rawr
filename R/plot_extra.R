@@ -1,4 +1,4 @@
-### plot extra
+### plot misc, extra, random
 # dodge, show_colors, show_pch, tcol, pretty_sci, oom, parse_sci, to_sci_,
 # arrows2, carrows, laxis
 ###
