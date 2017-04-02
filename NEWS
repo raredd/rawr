@@ -1,3 +1,8 @@
+rawr 0.8.7
+--------
+  * better, easier sas parsers; combine parse_formats2 into parse_formats
+  * add tests for format parsers
+
 rawr 0.8.6
 --------
   * add sparkDT, render_sparkDT, case
