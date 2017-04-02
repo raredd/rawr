@@ -24,5 +24,11 @@ proc format;
              long
              comment
            */
+           
+           /*
+             ignore this one
+           4 = "outstanding";
+           */
+           
            4 = 'excellent';
 run;

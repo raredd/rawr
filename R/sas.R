@@ -534,31 +534,31 @@ source_sas <- function(path, ...) {
 
 #' Get formats from \code{SAS} format files
 #' 
-#' \code{parse_formats} and \code{parse_formats2} read text files (usually
-#' \code{.sas}) or character strings, respectively, and extract \code{SAS}
-#' format variable names and format values. \code{apply_formats} takes a
-#' vector, \code{x}, of codes and applies the corresponding \code{fmt} to
-#' each.
+#' @description
+#' \code{parse_formats} reads text files (usually \code{*.sas}) or character
+#' strings and extract \code{SAS} format labels and values.
 #' 
-#' @param path character string of path to \code{.sas} file
-#' @param fmt a character string with formats to parse (or for
-#' \code{apply_formats} a vector of parsed formats, e.g., the result of
-#' \code{parse_formats} or \code{parse_formats2})
-#' @param clean logical; if \code{TRUE} (default), the parsed formats will be
-#' cleaned of quotes and extra whitespace
-#' @param x a vector of data usually taking a small number of distinct values
+#' \code{apply_formats} takes a vector, \code{x}, of values and applies the
+#' corresponding \code{formats}.
+#' 
+#' @param formats for \code{parse_formats} or \code{apply_formats}, a
+#' character string or a file path to a text file with formats to parse;
+#' \code{apply_formats} also supports named vectors, usually the result of
+#' \code{parse_formats}
+#' @param invert logical; if \code{TRUE}, swaps the format values and labels
+#' @param x a vector of data, usually taking a small number of distinct
+#' values which should be formatted
 #' @param droplevels logical; if \code{TRUE}, unused factor levels will be
-#' dropped; default is not to drop unused levels
+#' dropped; default is to keep unused levels
 #' 
 #' @return
-#' For \code{parse_formats}, a list with format names in \code{path} and their
-#' respective values and labels as named character vectors.
-#' 
-#' For \code{parse_formats2}, a character vector of formats with labels as
-#' names.
+#' If a file path is passed to \code{parse_formats}, a list with format names
+#' found in \code{path} and their respective values and labels as named
+#' character vectors; if a character vector is passed, a character vector of
+#' values with labels as names.
 #' 
 #' For \code{apply_formats}, the input vector, \code{x}, recoded with the
-#' formats given by \code{fmt}.
+#' formats given by \code{formats}.
 #' 
 #' @seealso
 #' \code{\link{sas_path}}, \code{\link{rmacro}}, \code{\link{r2sas}},
@@ -572,82 +572,98 @@ source_sas <- function(path, ...) {
 #' 
 #' 
 #' ## named vector of formats from string
-#' fmt <- '0 = something, 1 = something else; 2 = yada. -9=yadayadayada, .C=blah'
-#' parse_formats2(fmt)
+#' formats <- '0 = zero, 1 = uno; 2 = yada. -9=yadayadayada, .C=blah'
+#' parse_formats(formats)
 #' 
 #' ## reordered if all levels are numeric and positive
-#' parse_formats2('1=yes, 0=no, 2=maybe')
+#' parse_formats('1=yes, 0=no, 2=maybe')
+#' parse_formats('1=yes, 0=no, 2=maybe;-1=unk')
 #' 
 #' 
-#' ## use apply_formats to format factor variables
-#' ## use an unparsed character string
-#' apply_formats('.C', fmt, droplevels = TRUE)
+#' ## format factor variables from an unparsed character string
+#' apply_formats('.C', formats)
+#' apply_formats('.C', formats, droplevels = TRUE)
+#' 
 #' ## or formats that have already been parsed
-#' apply_formats('.C', parse_formats2(fmt), droplevels = TRUE)
+#' apply_formats('.C', parse_formats(formats), droplevels = TRUE)
 #' 
 #' 
 #' x <- sample(0:2, 10, TRUE)
-#' table(apply_formats(x, fmt), x)
-#' apply_formats(x, fmt, droplevels = TRUE)
+#' (fmt <- apply_formats(x, formats))
+#' table(apply_formats(x, formats), x)
 #' 
 #' @export
 
-parse_formats <- function(path) {
-  fmt <- rm_nonascii(readLines(path))
-  fmt <- gsub('\\*.*;|\\/\\*.*\\*\\/', '', fmt)
-  vars <- gsub('(?i)value\\W+(\\w*)|.', '\\1', fmt, perl = TRUE)
-  #   vals <- gsub("(?i)([\'\"]?[a-z\\d -]+[\'\"]?\\s*=\\s*[\'\"]?[a-z\\d -,]+[\'\"]?)|.", '\\1',
-  #                fmt, perl = TRUE)
-  regex <- '[\'\"].*[\'\"]|[\\w\\d-]+'
-  vals <- gsub(sprintf('(?i)\\s*(%s)\\s*(=)\\s*(%s)|.', regex, regex),
-               '\\1\\2\\3', fmt, perl = TRUE)
-  vars <- locf(vars)
-  dd <- data.frame(values = vars, formats = vals, stringsAsFactors = FALSE)
-  dd <- dd[with(dd, is.na(values) | nzchar(formats)), ]
-  sp <- split(dd$formats, dd$values)
-  lapply(sp, function(x) {
-    x <- strsplit(Filter(nzchar, x), '=')
-    sapply(x, function(y) setNames(trimws(y[1]), trimws(y[2])))
-  })
+parse_formats <- function(formats, invert = FALSE) {
+  (if (file.exists(formats))
+    parse_formats_file else parse_formats_string)(formats, invert)
+}
+
+parse_formats_string <- function(x, invert) {
+  trimwsq <- function(x)
+    trimws(gsub('^[\"\' ]+|[\"\' ]+$', '', trimws(x)))
+  
+  stopifnot(length(x) == 1L)
+  x <- rm_nonascii(x)
+  
+  ## capture unique format values
+  vpat <- '[0-9.\\-\"\'A-Za-z]+'
+  vals <- trimwsq(c(regcaptures2(x, sprintf('(%s)\\s*=', vpat))[[1L]]))
+  
+  ## capture corresponding format labels
+  lpat <- sprintf('%s\\s*=\\s*(.*?)(?=[ ,.;]*%s\\s*=|[ ,.;]*$)', vpat, vpat)
+  labs <- trimwsq(c(regcaptures2(x, lpat)[[1L]]))
+  
+  ## sort if all values are numeric and positive
+  ok <- !any(grepl('\\D', vals))
+  res <- setNames(labs, vals)[if (ok)
+    order(as.numeric(vals)) else seq_along(vals)]
+  
+  if (invert)
+    setNames(names(res), res) else res
+}
+
+parse_formats_file <- function(x, invert) {
+  x <- rm_nonascii(readLines(x))
+  x <- paste0(x, collapse = '_$$$_')
+  x <- strsplit(gsub('\\*[^;]+;|\\/\\*.*?\\*\\/', '', x), '_$$$_',
+                fixed = TRUE)[[1L]]
+  
+  ## extract format names and definitions
+  name <- gsub('(?i)value\\W+(\\w*)|.', '\\1', x, perl = TRUE)
+  name <- locf(name)
+  
+  p <- '[\'\"].*[\'\"]|[\\w\\d-]+'
+  def <- gsub(sprintf('(?i)\\s*(%s)\\s*(=)\\s*(%s)|.', p, p),
+              '\\1\\2\\3', x, perl = TRUE)
+  
+  ## separate and clean format values/labels
+  dd <- data.frame(n = name, d = def, stringsAsFactors = FALSE)
+  dd <- dd[with(dd, is.na(n) | nzchar(d)), ]
+  sp <- split(dd$d, dd$n)
+  
+  lapply(sp, function(x) parse_formats_string(toString(x), invert))
 }
 
 #' @rdname parse_formats
 #' @export
-parse_formats2 <- function(fmt, clean = TRUE) {
-  stopifnot(length(fmt) == 1L)
-  x <- rm_nonascii(fmt)
+apply_formats <- function(x, formats, invert = FALSE, droplevels = FALSE) {
+  res <- if (is.character(formats) & length(formats) == 1L)
+    parse_formats(formats, invert) else formats
+  res <- factor(x, names(res), res)
   
-  ## capture unique levels
-  p <- '([0-9.\\-A-Z]+)\\s*='
-  levels <- c(regcaptures2(x, p)[[1]])
-  
-  ## capture corresponding labels
-  p <- '[A-Z.\\-0-9]+\\s*=\\s*(.*?)(?=[ ,.;]*[0-9.\\-A-Z]+\\s*=|[ ,.;]*$)'
-  labels <- c(regcaptures2(x, p)[[1]])
-  
-  if (clean)
-    labels <- trimws(gsub('[\'\"]', '', labels))
-  
-  ## sort if all levels are numeric and positive
-  ok <- !any(grepl('\\D', levels))
-  setNames(labels, levels)[if (ok)
-    order(as.numeric(levels)) else seq_along(levels)]
-}
-
-#' @rdname parse_formats
-#' @export
-apply_formats <- function(x, fmt, clean = TRUE, droplevels = FALSE) {
-  fmt <- if (is.character(fmt) & length(fmt) == 1L)
-    parse_formats2(fmt, clean) else fmt
-  out <- factor(x, names(fmt), fmt)
   if (droplevels)
-    out <- droplevels(out)
-  # ok <- sum(diag(table(out, x))) == sum(table(x))
-  ok <- sum(is.na(out)) == sum(is.na(x))
+    res <- droplevels(res)
+  
+  ## check if formats were applied properly -- improve
+  # ok <- sum(diag(table(res, x))) == sum(table(x))
+  ok <- sum(is.na(res)) == sum(is.na(x))
+  
   if (!ok)
     warning('Number of non-missing vales does not match original vector.',
             call. = FALSE)
-  out
+  
+  res
 }
 
 #' \code{SAS} catalog
@@ -691,18 +707,23 @@ apply_formats <- function(x, fmt, clean = TRUE, droplevels = FALSE) {
 sas_catalog <- function(path, libpath = dirname(path), saspath = sas_path(),
                         log = '_temp_formats_.log') {
   stopifnot(move_formats(libpath))
-  ## rawr:::move_formats
   log <- file.path(libpath, log)
-  sass <- c(sprintf('x \"cd %s\";', libpath),
-            sprintf('libname temp_fmt \"%s\";', libpath),
-            sprintf('%%include \"%s\";', path),
-            'proc catalog catalog =  work.formats;',
-            'copy out = temp_fmt.formats;',
-            'quit;')
+  
+  sass <- c(
+    sprintf('x \"cd %s\";', libpath),
+    sprintf('libname temp_fmt \"%s\";', libpath),
+    sprintf('%%include \"%s\";', path),
+    'proc catalog catalog =  work.formats;',
+    'copy out = temp_fmt.formats;',
+    'quit;'
+  )
+  
   sasin <- file.path(libpath, '_temp_formats_.sas')
-  on.exit(unlink(sasin))
   cat(sass, sep = '\n', file = sasin, append = TRUE)
   sys_args <- paste(sasin, '-log', log)
+  
+  on.exit(unlink(sasin))
+  
   invisible(system2(saspath, sys_args))
 }
 
@@ -711,9 +732,12 @@ move_formats <- function(dir, dcf = list.files(dir, pattern = '\\.sas7bcat$'),
   ## if dir contains catalogs, move bcat files to another directory
   ## since catalog created must be called "formats.sas7bcat"
   if (!length(dcf))
-    return(TRUE)
+    return(invisible(TRUE))
+  
   newdir <- file.path(dir, '_old_formats_')
-  message('NOTE: moving old format catalog(s) to ', shQuote(newdir), domain = NA)
+  message('NOTE: moving old format catalog(s) to ', shQuote(newdir),
+          domain = NA)
+  
   tryCatch({
     if (!file.exists(newdir)) {
       dir.create(newdir)
@@ -726,5 +750,6 @@ move_formats <- function(dir, dcf = list.files(dir, pattern = '\\.sas7bcat$'),
     unlink(dcf)
   }, error = function(e)
     stop('Failed to move old formats to ', sQuote(newdir), domain = NA))
-  TRUE
+  
+  invisible(TRUE)
 }

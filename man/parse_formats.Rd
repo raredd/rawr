@@ -2,47 +2,42 @@
 % Please edit documentation in R/sas.R
 \name{parse_formats}
 \alias{parse_formats}
-\alias{parse_formats2}
 \alias{apply_formats}
 \title{Get formats from \code{SAS} format files}
 \usage{
-parse_formats(path)
+parse_formats(formats, invert = FALSE)
 
-parse_formats2(fmt, clean = TRUE)
-
-apply_formats(x, fmt, clean = TRUE, droplevels = FALSE)
+apply_formats(x, formats, invert = FALSE, droplevels = FALSE)
 }
 \arguments{
-\item{path}{character string of path to \code{.sas} file}
+\item{formats}{for \code{parse_formats} or \code{apply_formats}, a
+character string or a file path to a text file with formats to parse;
+\code{apply_formats} also supports named vectors, usually the result of
+\code{parse_formats}}
 
-\item{fmt}{a character string with formats to parse (or for
-\code{apply_formats} a vector of parsed formats, e.g., the result of
-\code{parse_formats} or \code{parse_formats2})}
+\item{invert}{logical; if \code{TRUE}, swaps the format values and labels}
 
-\item{clean}{logical; if \code{TRUE} (default), the parsed formats will be
-cleaned of quotes and extra whitespace}
-
-\item{x}{a vector of data usually taking a small number of distinct values}
+\item{x}{a vector of data, usually taking a small number of distinct
+values which should be formatted}
 
 \item{droplevels}{logical; if \code{TRUE}, unused factor levels will be
-dropped; default is not to drop unused levels}
+dropped; default is to keep unused levels}
 }
 \value{
-For \code{parse_formats}, a list with format names in \code{path} and their
-respective values and labels as named character vectors.
-
-For \code{parse_formats2}, a character vector of formats with labels as
-names.
+If a file path is passed to \code{parse_formats}, a list with format names
+found in \code{path} and their respective values and labels as named
+character vectors; if a character vector is passed, a character vector of
+values with labels as names.
 
 For \code{apply_formats}, the input vector, \code{x}, recoded with the
-formats given by \code{fmt}.
+formats given by \code{formats}.
 }
 \description{
-\code{parse_formats} and \code{parse_formats2} read text files (usually
-\code{.sas}) or character strings, respectively, and extract \code{SAS}
-format variable names and format values. \code{apply_formats} takes a
-vector, \code{x}, of codes and applies the corresponding \code{fmt} to
-each.
+\code{parse_formats} reads text files (usually \code{*.sas}) or character
+strings and extract \code{SAS} format labels and values.
+
+\code{apply_formats} takes a vector, \code{x}, of values and applies the
+corresponding \code{formats}.
 }
 \examples{
 p <- system.file('testfiles', 'formats.sas', package = 'rawr')
@@ -51,23 +46,25 @@ parse_formats(p)
 
 
 ## named vector of formats from string
-fmt <- '0 = something, 1 = something else; 2 = yada. -9=yadayadayada, .C=blah'
-parse_formats2(fmt)
+formats <- '0 = zero, 1 = uno; 2 = yada. -9=yadayadayada, .C=blah'
+parse_formats(formats)
 
 ## reordered if all levels are numeric and positive
-parse_formats2('1=yes, 0=no, 2=maybe')
+parse_formats('1=yes, 0=no, 2=maybe')
+parse_formats('1=yes, 0=no, 2=maybe;-1=unk')
 
 
-## use apply_formats to format factor variables
-## use an unparsed character string
-apply_formats('.C', fmt, droplevels = TRUE)
+## format factor variables from an unparsed character string
+apply_formats('.C', formats)
+apply_formats('.C', formats, droplevels = TRUE)
+
 ## or formats that have already been parsed
-apply_formats('.C', parse_formats2(fmt), droplevels = TRUE)
+apply_formats('.C', parse_formats(formats), droplevels = TRUE)
 
 
 x <- sample(0:2, 10, TRUE)
-table(apply_formats(x, fmt), x)
-apply_formats(x, fmt, droplevels = TRUE)
+(fmt <- apply_formats(x, formats))
+table(apply_formats(x, formats), x)
 
 }
 \seealso{
