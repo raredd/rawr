@@ -559,6 +559,10 @@ source_sas <- function(path, ...) {
 #' values which should be formatted
 #' @param droplevels logical; if \code{TRUE}, unused factor levels will be
 #' dropped; default is to keep unused levels
+#' @param format_value a character string identifying the format value which
+#' should be applied to \code{x}; note this is only needed if \code{formats}
+#' is a file path; a format value consists of possible unique levels of
+#' \code{x} and the respective labels
 #' 
 #' @return
 #' If a file path is passed to \code{parse_formats}, a list with format names
@@ -615,18 +619,22 @@ parse_formats_string <- function(x, invert) {
   ## capture unique format values
   vpat <- '[0-9.\\-\"\'A-Za-z]+'
   vals <- trimwsq(c(regcaptures2(x, sprintf('(%s)\\s*=', vpat))[[1L]]))
+  vals <- type.convert(vals, as.is = TRUE)
   
   ## capture corresponding format labels
   lpat <- sprintf('%s\\s*=\\s*(.*?)(?=[ ,.;]*%s\\s*=|[ ,.;]*$)', vpat, vpat)
   labs <- trimwsq(c(regcaptures2(x, lpat)[[1L]]))
+  labs <- type.convert(labs, as.is = TRUE)
   
   ## sort if all values are numeric and positive
-  ok <- !any(grepl('\\D', vals))
-  res <- setNames(labs, vals)[if (ok)
+  # ok <- !any(grepl('\\D', vals))
+  res <- setNames(labs, vals)[if (is.numeric(vals))
     order(as.numeric(vals)) else seq_along(vals)]
   
-  if (invert)
+  res <- if (invert)
     setNames(names(res), res) else res
+  
+  res[!duplicated(res)]
 }
 
 parse_formats_file <- function(x, invert) {
@@ -647,25 +655,29 @@ parse_formats_file <- function(x, invert) {
   dd <- dd[with(dd, is.na(n) | nzchar(d)), ]
   sp <- split(dd$d, dd$n)
   
-  lapply(sp, function(x) parse_formats_string(toString(x), invert))
+  lapply(sp, function(x)
+    parse_formats_string(toString(x), invert))
 }
 
 #' @rdname parse_formats
 #' @export
-apply_formats <- function(x, formats, invert = FALSE, droplevels = FALSE) {
+apply_formats <- function(x, formats, invert = FALSE, droplevels = FALSE,
+                          format_value = attr(x, 'format.sas')) {
   res <- if (is.character(formats) & length(formats) == 1L)
     parse_formats(formats, invert) else formats
+  if (is.list(res))
+    res <- res[[format_value]]
   res <- factor(x, names(res), res)
   
   if (droplevels)
     res <- droplevels(res)
   
-  ## check if formats were applied properly -- improve
+  ## check if formats were applied properly -- improve this
   # ok <- sum(diag(table(res, x))) == sum(table(x))
-  ok <- sum(is.na(res)) == sum(is.na(x))
+  ok <- identical(is.na(res), is.na(x))
   
   if (!ok)
-    warning('Number of non-missing vales does not match original vector.',
+    warning('Number of non-missing values does not match original vector.',
             call. = FALSE)
   
   res

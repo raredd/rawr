@@ -7,7 +7,8 @@
 \usage{
 parse_formats(formats, invert = FALSE)
 
-apply_formats(x, formats, invert = FALSE, droplevels = FALSE)
+apply_formats(x, formats, invert = FALSE, droplevels = FALSE,
+  format_value = attr(x, "format.sas"))
 }
 \arguments{
 \item{formats}{for \code{parse_formats} or \code{apply_formats}, a
@@ -22,6 +23,11 @@ values which should be formatted}
 
 \item{droplevels}{logical; if \code{TRUE}, unused factor levels will be
 dropped; default is to keep unused levels}
+
+\item{format_value}{a character string identifying the format value which
+should be applied to \code{x}; note this is only needed if \code{formats}
+is a file path; a format value consists of possible unique levels of
+\code{x} and the respective labels}
 }
 \value{
 If a file path is passed to \code{parse_formats}, a list with format names
