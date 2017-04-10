@@ -25,9 +25,9 @@ values which should be formatted}
 dropped; default is to keep unused levels}
 
 \item{format_value}{a character string identifying the format value which
-should be applied to \code{x}; note this is only needed if \code{formats}
-is a file path; a format value consists of possible unique levels of
-\code{x} and the respective labels}
+should be applied to \code{x}; note this is only required if \code{formats}
+is a file path; a format value consists of unique levels of \code{x} and
+the respective labels}
 }
 \value{
 If a file path is passed to \code{parse_formats}, a list with format names

@@ -560,9 +560,9 @@ source_sas <- function(path, ...) {
 #' @param droplevels logical; if \code{TRUE}, unused factor levels will be
 #' dropped; default is to keep unused levels
 #' @param format_value a character string identifying the format value which
-#' should be applied to \code{x}; note this is only needed if \code{formats}
-#' is a file path; a format value consists of possible unique levels of
-#' \code{x} and the respective labels
+#' should be applied to \code{x}; note this is only required if \code{formats}
+#' is a file path; a format value consists of unique levels of \code{x} and
+#' the respective labels
 #' 
 #' @return
 #' If a file path is passed to \code{parse_formats}, a list with format names
@@ -617,7 +617,7 @@ parse_formats_string <- function(x, invert) {
   x <- rm_nonascii(x)
   
   ## capture unique format values
-  vpat <- '[0-9.\\-\"\'A-Za-z]+'
+  vpat <- '[0-9._\\-\"\'A-Za-z]+'
   vals <- trimwsq(c(regcaptures2(x, sprintf('(%s)\\s*=', vpat))[[1L]]))
   vals <- type.convert(vals, as.is = TRUE)
   
@@ -639,24 +639,25 @@ parse_formats_string <- function(x, invert) {
 
 parse_formats_file <- function(x, invert) {
   x <- rm_nonascii(readLines(x))
-  x <- rm_sas_comments(paste0(x, collapse = '_$$$_'))
-  x <- strsplit(x, '_$$$_', fixed = TRUE)[[1L]]
+  x <- rm_sas_comments(paste(x, collapse = ' '))
+  x <- strsplit(x, ';', fixed = TRUE)[[1L]]
   
   ## extract format names and definitions
-  name <- gsub('(?i)value\\W+(\\w*)|.', '\\1', x, perl = TRUE)
-  name <- locf(name)
+  name <- gsub('(?i)value\\s*([a-z0-9_$]+)|.', '\\1', x, perl = TRUE)
+  name <- Filter(nzchar, name)
   
-  p <- '[\'\"].*[\'\"]|[\\w\\d-]+'
-  def <- gsub(sprintf('(?i)\\s*(%s)\\s*(=)\\s*(%s)|.', p, p),
-              '\\1\\2\\3', x, perl = TRUE)
+  ## ENHC: formats for ranges of numeric data, e.g.,
+  ##       value agefmt LOW-<20 = 'LT 20' 20-HIGH = 'GE 20' OTHER = 'MISS';
+  ##       src: https://onlinecourses.science.psu.edu/stat480/node/76
+  p <- '.*?([0-9-]+|[\"\'].*?[\"\'])\\s*=\\s*([\"\'].*?[\"\']|\\S*).*?'
+  defs <- regcaptures2(x, p)
+  idx  <- !!lengths(defs) & grepl('value', names(defs))
+  defs <- setNames(lapply(defs[idx], trimwsq), name)
   
-  ## separate and clean format values/labels
-  dd <- data.frame(n = name, d = def, stringsAsFactors = FALSE)
-  dd <- dd[with(dd, is.na(n) | nzchar(d)), ]
-  sp <- split(dd$d, dd$n)
-  
-  lapply(sp, function(x)
-    parse_formats_string(toString(x), invert))
+  lapply(defs, function(x)
+    parse_formats_string(
+      toString(apply(x, 1L, paste0, collapse = '=')), invert)
+  )
 }
 
 #' @rdname parse_formats
