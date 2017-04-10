@@ -1109,7 +1109,9 @@ locf <- function(x, fromLast = FALSE, na.strings = '') {
                 fromLast[-1L], na.strings)
   if (!(ok <- !is.null(nrow(x))) || is.matrix(x))
     x <- data.frame(x, stringsAsFactors = FALSE)
+  
   fromLast <- rep(fromLast, ncol(x))
+  
   if (length(na.strings))
     for (ii in seq_along(na.strings))
       try({
@@ -1129,8 +1131,9 @@ locf <- function(x, fromLast = FALSE, na.strings = '') {
       return(x[, ii][indx[, ii]][idx])
     }
   })
+  
   if (ok)
-    x else x[, 1]
+    x else x[, 1L]
 }
 
 #' Rolling functions
@@ -1330,7 +1333,7 @@ regcaptures <- function(x, m, use.names = TRUE) {
       stop(msg)
     cs <- data.frame(t(attr(m, 'capture.start')))
     cl <- data.frame(t(attr(m, 'capture.length')))
-    cn <- data.frame(attr(m, 'capture.names'))
+    cn <- data.frame(  attr(m, 'capture.names'))
   }
   
   Substring <- function(x, starts, lengths, names) {
