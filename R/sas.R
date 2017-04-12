@@ -561,8 +561,9 @@ source_sas <- function(path, ...) {
 #' dropped; default is to keep unused levels
 #' @param format_value a character string identifying the format value which
 #' should be applied to \code{x}; note this is only required if \code{formats}
-#' is a file path; a format value consists of unique levels of \code{x} and
-#' the respective labels
+#' is a file path and the default format attribute label is not stored in
+#' \code{attr(x, 'format.sas')} (a format value consists of unique levels of
+#' \code{x} and the respective labels)
 #' 
 #' @return
 #' If a file path is passed to \code{parse_formats}, a list with format names
@@ -602,18 +603,24 @@ source_sas <- function(path, ...) {
 #' 
 #' 
 #' x <- sample(0:2, 10, TRUE)
+#' apply_formats(x, setNames(letters[1:5], 0:4))
+#' 
 #' (fmt <- apply_formats(x, formats))
 #' table(apply_formats(x, formats), x)
 #' 
 #' @export
 
 parse_formats <- function(formats, invert = FALSE) {
+  stopifnot(
+    is.character(formats),
+    length(formats) == 1L
+  )
+  
   (if (file.exists(formats))
     parse_formats_file else parse_formats_string)(formats, invert)
 }
 
 parse_formats_string <- function(x, invert) {
-  stopifnot(length(x) == 1L)
   x <- rm_nonascii(x)
   
   ## capture unique format values
@@ -642,16 +649,20 @@ parse_formats_file <- function(x, invert) {
   x <- rm_sas_comments(paste(x, collapse = ' '))
   x <- strsplit(x, ';', fixed = TRUE)[[1L]]
   
-  ## extract format names and definitions
+  ## format value
+  ## alphanum or underscore, optionally starts with $ for strings
   name <- gsub('(?i)value\\s*([a-z0-9_$]+)|.', '\\1', x, perl = TRUE)
   name <- Filter(nzchar, name)
   
+  ## format definitions
   ## ENHC: formats for ranges of numeric data, e.g.,
   ##       value agefmt LOW-<20 = 'LT 20' 20-HIGH = 'GE 20' OTHER = 'MISS';
   ##       src: https://onlinecourses.science.psu.edu/stat480/node/76
-  p <- '.*?([0-9-]+|[\"\'].*?[\"\'])\\s*=\\s*([\"\'].*?[\"\']|\\S*).*?'
+  
+  ## integer or quoted string = quoted anything or unquoted non whitespace
+  p <- '.*?([0-9-]+|[\"\'].*?[\"\'])\\s*=\\s*([\"\'].*?[\"\']|\\S+).*?'
   defs <- regcaptures2(x, p)
-  idx  <- !!lengths(defs) & grepl('value', names(defs))
+  idx  <- !!sapply(defs, length) & grepl('value', names(defs))
   defs <- setNames(lapply(defs[idx], trimwsq), name)
   
   lapply(defs, function(x)
@@ -668,6 +679,9 @@ apply_formats <- function(x, formats, invert = FALSE, droplevels = FALSE,
     parse_formats(formats, invert) else formats
   if (is.list(res))
     res <- res[[format_value]]
+  
+  if (is.null(names(res)))
+    stop('Each format value should be a named vector', call. = FALSE)
   res <- factor(x, names(res), res)
   
   if (droplevels)

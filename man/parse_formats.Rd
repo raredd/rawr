@@ -26,8 +26,9 @@ dropped; default is to keep unused levels}
 
 \item{format_value}{a character string identifying the format value which
 should be applied to \code{x}; note this is only required if \code{formats}
-is a file path; a format value consists of unique levels of \code{x} and
-the respective labels}
+is a file path and the default format attribute label is not stored in
+\code{attr(x, 'format.sas')} (a format value consists of unique levels of
+\code{x} and the respective labels)}
 }
 \value{
 If a file path is passed to \code{parse_formats}, a list with format names
@@ -69,6 +70,8 @@ apply_formats('.C', parse_formats(formats), droplevels = TRUE)
 
 
 x <- sample(0:2, 10, TRUE)
+apply_formats(x, setNames(letters[1:5], 0:4))
+
 (fmt <- apply_formats(x, formats))
 table(apply_formats(x, formats), x)
 
