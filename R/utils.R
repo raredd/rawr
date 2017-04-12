@@ -19,7 +19,7 @@
 ###
 
 
-## is.list(data.frame()); islist(data.frame)
+## is.list(data.frame()); islist(data.frame())
 islist <- function(x) inherits(x, 'list')
 
 done <- function(type = c('notifier', 'beep')) {
@@ -193,15 +193,15 @@ NULL
 #' @param what what to get; \code{'all'} is default which returns all exported
 #' and non exported functions in \code{package}; see details for more
 #' 
-#' @seealso
-#' \code{\link{parse_yaml}}, \code{\link{parse_index}},
-#' \code{\link{parse_news}}, \code{\link{parse_namespace}}, \code{\link{ls}},
-#' \code{\link{search}}
-#' 
 #' @return
 #' \code{lss} (invisibly) returns a data frame of the printed output.
 #' \code{lsf} (invisibly) returns the contents of \code{file}. \code{lsp}
 #' returns a vector of character strings.
+#' 
+#' @seealso
+#' \code{\link{parse_yaml}}, \code{\link{parse_index}},
+#' \code{\link{parse_news}}, \code{\link{parse_namespace}}, \code{\link{ls}},
+#' \code{\link{search}}
 #' 
 #' @examples
 #' ## lss: use like ls
@@ -341,12 +341,12 @@ lsp <- function(package, what, pattern) {
 #' @param x a vector of character strings
 #' @param wh for \code{parse_namespace}, which types to parse and return
 #' 
+#' @return
+#' A named list for each section type.
+#' 
 #' @seealso
 #' \code{\link{parseNamespaceFile}}, \code{\link{lss}}, \code{\link{lsf}},
 #' \code{\link{lsp}}, \code{\link{parse_sci}}
-#' 
-#' @return
-#' A named list for each section type.
 #' 
 #' @examples
 #' parse_yaml(lsf(rawr, 'desc'))
@@ -1124,11 +1124,11 @@ locf <- function(x, fromLast = FALSE, na.strings = '') {
     if (fromLast[ii]) {
       idx <- rev(cumsum(rev(indx[, ii])))
       idx[idx == 0] <- NA
-      return(rev(x[, ii])[rev(indx[, ii])][idx])
+      rev(x[, ii])[rev(indx[, ii])][idx]
     } else {
       idx <- cumsum(indx[, ii])
       idx[idx == 0] <- NA
-      return(x[, ii][indx[, ii]][idx])
+      x[, ii][indx[, ii]][idx]
     }
   })
   
@@ -1386,7 +1386,9 @@ regcaptures2 <- function(x, pattern, use.names = TRUE)
 #' @return
 #' The reshaped data frame with added attributes to simplify reshaping back
 #' to the original form.
-#' @seealso \code{\link{reshape}}
+#' 
+#' @seealso
+#' \code{\link{reshape}}
 #' 
 #' @examples
 #' ## default of melt is no id variable so all are melted
@@ -1951,45 +1953,90 @@ droplevels2 <- function(x, min_level = 1, max_level = max(as.numeric(x))) {
   factor(x, levels = levels(x)[min_level:max_level], ordered = is.ordered(x))
 }
 
-#' Combine factor levels
+#' Combine values
 #' 
-#' Convenience function to combine multiple levels of a factor into a new or
-#' existing level(s).
+#' Convenience functions to combine multiple levels of a vector into a new or
+#' existing level(s). \code{combine_levels} and \code{combine_groups} are
+#' similar in use
 #' 
 #' @param x a vector
-#' @param levels a vector of unique values of \code{x} to combine; to combine
-#' values into multiple groups, use a list
+#' @param levels for \code{combine_levels}, a vector of unique values of
+#' \code{x} to combine; to combine values into multiple groups, use a list
+#' 
+#' for \code{combine_regex} (or \code{combine_labels(..., regex = TRUE)}),
+#' a vector of regular expressions; if a list is given, each list element
+#' will be collapsed with an "or" statement and treated as single expressions
 #' @param labels a vector of new labels; if \code{levels} is a vector,
 #' \code{labels} should be length 1; if \code{levels} is a list, \code{labels}
 #' (need not be a list but) should have one value for each list element of
 #' \code{levels}
+#' @param regex logical; if \code{TRUE}, \code{levels} is assumed to be
+#' regular expressions, and inputs are passed to \code{combine_regex}
+#' @param ... additional arguments passed to \code{combine_regex} or further
+#' to \code{\link{grep}}
+#' @param keep.original logical; for \code{combine_regex}, if \code{FALSE}
+#' (default), all values of \code{x} not matching any patterns in
+#' \code{levels} are returned as \code{labels[1L]}; if \code{TRUE}, values
+#' are returned unchanged
+#' 
+#' @return
+#' \code{combine_levels} will always return a factor. The levels will be
+#' in the order of \code{x} plus any new levels (i.e., \code{labels}).
+#' 
+#' \code{combine_regex} returns an integer vector if character \code{labels}
+#' are not given; otherwise, a character vector is returned.
 #' 
 #' @seealso
 #' \code{\link{recoder}}
 #' 
 #' @examples
-#' x <- mtcars$gear
-#' combine_levels(factor(x, ordered = TRUE), 3:4, 6)
-#' combine_levels(x, list(3:4, 5), c(3, 6))
+#' ## combine numeric, character, or factor
+#' x <- rep(1:3, each = 2)
+#' combine_levels(x, 1:2, 1)
+#' combine_levels(x, list(1:2, 3), c('a', 'b'))
+#' ## use a named list to get the same as above
+#' combine_levels(x, list(a = 1:2, b = 3))
 #' 
-#' ## new labels can be previously-used levels
-#' table(x, combine_levels(x, as.list(3:5), 5:3))
+#' combine_levels(LETTERS[x], list(x = 'C'))
+#' combine_levels(factor(x), 3, 4)
+#' combine_levels(factor(x), list(3, 5), c(4, 9))
 #' 
-#' combine_levels(iris$Species, c('setosa', 'virginica'), 'setosa')
-#' combine_levels(iris$Species, list(c('setosa', 'virginica'), 'versicolor'),
-#'                c('Setosa/Virginica','Versicolor'))
+#' 
+#' ## combine values by regex
+#' x <- letters[1:5]
+#' combine_regex(x, 'a')
+#' combine_regex(x, c('a', 'b'))
+#' combine_regex(x, c('a', 'b|c|e'))
+#' 
+#' ## character labels return a character vector
+#' combine_regex(x, 'a', c('a', 'b'))
+#' combine_regex(x, '[a-c]', c('Others', 'ABC'))
+#' combine_regex(x, '[a-c]', c('Others', 'ABC'), TRUE)
+#' 
+#' ## combine_levels(..., regex = TRUE) returns the same as above
+#' combine_levels(x, '[a-c]', c('Others', 'ABC'), regex = TRUE)
+#' combine_levels(x, '[a-c]', c('Others', 'ABC'), regex = TRUE,
+#'                keep.original = TRUE)
 #' 
 #' @export
 
-combine_levels <- function(x, levels, labels = NULL) {
+combine_levels <- function(x, levels, labels = NULL, regex = FALSE, ...) {
+  if (regex) {
+    levels <- unlist(sapply(levels, paste0, collapse = '|'))
+    labels <- unlist(labels %||% seq.int(length(levels) + 1L))
+    
+    return(combine_regex(x, levels, labels, ...))
+  }
+  
   levels <- if (islist(levels))
     levels else list(levels)
   
   ## create unique labels (hopefully) distinct from any of levels
-  labels  <- as.list(labels %||% names(levels))
-  labels  <- lapply(labels, as.character)
-  ulabels <- lapply(labels, function(x)
+  labels  <- lapply(as.list(labels %||% names(levels)), as.character)
+  set.seed(1)
+  ul <- lapply(labels, function(x)
     as.character(runif(length(x))))
+  labels <- unlist(labels)
   
   stopifnot(length(levels) == length(labels))
   
@@ -2001,15 +2048,41 @@ combine_levels <- function(x, levels, labels = NULL) {
   xf <- as.factor(x)
   xc <- as.character(xf)
   xl <- ol <- levels(xf)
+  
+  ## new levels, ie, original minus replaced plus new
+  nl <- c(setdiff(ol, unlist(levels)), labels)
+  nl <- as.character(sort(factor(nl, unique(c(ol, nl)))))
 
   for (ii in seq_along(levels)) {
-    xl[xl %in% unlist(levels[[ii]])] <- unlist(ulabels[[ii]])
-    xc[xc %in% levels[[ii]]]         <- ulabels[[ii]]
+    xl[xl %in% unlist(levels[[ii]])] <- unlist(ul[[ii]])
+    xc[xc %in% levels[[ii]]]         <- ul[[ii]]
   }
-  ## convert unique label back to desired
-  xc <- unlist(labels)[match(xc, unlist(ulabels))]
   
-  factor(xc, unique(labels, ol), ordered = is.ordered(x))
+  ## convert unique label back to desired
+  xc <- c(ol, labels)[match(xc, c(ol, unlist(ul)))]
+  xf <- factor(xc, nl, nl, NA, is.ordered(x), NA)
+  
+  # if (is.numeric(x))
+  #   type.convert(as.character(xf)) else xf
+  xf
+}
+
+#' @rdname combine_levels
+#' @export
+
+combine_regex <- function(x, levels, labels = seq.int(length(levels) + 1L),
+                          keep.original = FALSE, ...) {
+  stopifnot(
+    length(levels) == length(na.omit(unique(levels))),
+    keep.original || length(labels) == length(levels) + 1L
+  )
+  
+  res <- if (keep.original)
+    x else rep_len(labels[1L], length(x))
+  for (ii in seq_along(levels))
+    res[grep(pattern = levels[ii], x = x, ...)] <- labels[ii + 1L]
+  
+  res
 }
 
 #' Rowname tools

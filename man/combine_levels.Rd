@@ -2,36 +2,80 @@
 % Please edit documentation in R/utils.R
 \name{combine_levels}
 \alias{combine_levels}
-\title{Combine factor levels}
+\alias{combine_regex}
+\title{Combine values}
 \usage{
-combine_levels(x, levels, labels = NULL)
+combine_levels(x, levels, labels = NULL, regex = FALSE, ...)
+
+combine_regex(x, levels, labels = seq.int(length(levels) + 1L),
+  keep.original = FALSE, ...)
 }
 \arguments{
 \item{x}{a vector}
 
-\item{levels}{a vector of unique values of \code{x} to combine; to combine
-values into multiple groups, use a list}
+\item{levels}{for \code{combine_levels}, a vector of unique values of
+\code{x} to combine; to combine values into multiple groups, use a list
+
+for \code{combine_regex} (or \code{combine_labels(..., regex = TRUE)}),
+a vector of regular expressions; if a list is given, each list element
+will be collapsed with an "or" statement and treated as single expressions}
 
 \item{labels}{a vector of new labels; if \code{levels} is a vector,
 \code{labels} should be length 1; if \code{levels} is a list, \code{labels}
 (need not be a list but) should have one value for each list element of
 \code{levels}}
+
+\item{regex}{logical; if \code{TRUE}, \code{levels} is assumed to be
+regular expressions, and inputs are passed to \code{combine_regex}}
+
+\item{...}{additional arguments passed to \code{combine_regex} or further
+to \code{\link{grep}}}
+
+\item{keep.original}{logical; for \code{combine_regex}, if \code{FALSE}
+(default), all values of \code{x} not matching any patterns in
+\code{levels} are returned as \code{labels[1L]}; if \code{TRUE}, values
+are returned unchanged}
+}
+\value{
+\code{combine_levels} will always return a factor. The levels will be
+in the order of \code{x} plus any new levels (i.e., \code{labels}).
+
+\code{combine_regex} returns an integer vector if character \code{labels}
+are not given; otherwise, a character vector is returned.
 }
 \description{
-Convenience function to combine multiple levels of a factor into a new or
-existing level(s).
+Convenience functions to combine multiple levels of a vector into a new or
+existing level(s). \code{combine_levels} and \code{combine_groups} are
+similar in use
 }
 \examples{
-x <- mtcars$gear
-combine_levels(factor(x, ordered = TRUE), 3:4, 6)
-combine_levels(x, list(3:4, 5), c(3, 6))
+## combine numeric, character, or factor
+x <- rep(1:3, each = 2)
+combine_levels(x, 1:2, 1)
+combine_levels(x, list(1:2, 3), c('a', 'b'))
+## use a named list to get the same as above
+combine_levels(x, list(a = 1:2, b = 3))
 
-## new labels can be previously-used levels
-table(x, combine_levels(x, as.list(3:5), 5:3))
+combine_levels(LETTERS[x], list(x = 'C'))
+combine_levels(factor(x), 3, 4)
+combine_levels(factor(x), list(3, 5), c(4, 9))
 
-combine_levels(iris$Species, c('setosa', 'virginica'), 'setosa')
-combine_levels(iris$Species, list(c('setosa', 'virginica'), 'versicolor'),
-               c('Setosa/Virginica','Versicolor'))
+
+## combine values by regex
+x <- letters[1:5]
+combine_regex(x, 'a')
+combine_regex(x, c('a', 'b'))
+combine_regex(x, c('a', 'b|c|e'))
+
+## character labels return a character vector
+combine_regex(x, 'a', c('a', 'b'))
+combine_regex(x, '[a-c]', c('Others', 'ABC'))
+combine_regex(x, '[a-c]', c('Others', 'ABC'), TRUE)
+
+## combine_levels(..., regex = TRUE) returns the same as above
+combine_levels(x, '[a-c]', c('Others', 'ABC'), regex = TRUE)
+combine_levels(x, '[a-c]', c('Others', 'ABC'), regex = TRUE,
+               keep.original = TRUE)
 
 }
 \seealso{
