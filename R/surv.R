@@ -72,8 +72,9 @@
 #' @param strata.order order of strata in legend and at-risk table
 #' @param extra.margin increase left margin when strata labels in at-risk
 #' table are long
-#' @param median logical; if \code{TRUE}, median and confidence interval for
-#' each curve is added to at-risk table
+#' @param median logical or numeric; if \code{TRUE}, median and confidence
+#' interval for each curve is added to at-risk table at a calculated
+#' position; for more control, use a specific x-coordinate
 #' @param xaxs style of axis; see details or \code{\link{par}}
 #' @param xlim,ylim x- and y-axis limits
 #' @param xaxis.at,yaxis.at positions for x- and y-axis labels and ticks
@@ -115,6 +116,7 @@
 #' kmplot(km1)
 #' kmplot(km1, atrisk.col = c('grey50','tomato'), lr_test = TRUE)
 #' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
+#' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3700)
 #' kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5,
 #'        col.surv = 1:4, col.band = c(1,0,0,4))
 #' 
@@ -126,6 +128,7 @@
 #'                                         phantom() >= Male))
 #' 
 #' ## character vectors passed to strata.expr will be parsed
+#' ## but not those passed to strata.lab
 #' kmplot(km1, strata.expr = c('Sex[Female]', 'Sex[Male]'))
 #' kmplot(km1, strata.lab  = c('Sex[Female]', 'Sex[Male]'))
 #' 
@@ -153,9 +156,9 @@
 #'        extra.margin = 6,        # increase margin for long strata labels
 #'        strata.lab = c('Obs','Obs+','Lev','Lev+','Lev5fu','Lev5fu+'),
 #'        strata.order = c(5,6,3,1,4,2),     # order by survival estimates
-#'        median = TRUE,                 # add median and CI
-#'        oma = c(0,0,0,1),              # add extra line on right for median
-#'        font = 2, bty = 'l', tcl = .5) # bold table text and other options
+#'        median = TRUE,                     # add median and CI
+#'        oma = c(0,0,0,1),                  # extra space for median
+#'        font = 2, bty = 'l', tcl = .5)     # bold table text, other options
 #' title(main = 'Chemotherapy for stage B/C colon cancer',
 #'       font.main = 1, line = 2.5)
 #' dev.off()
@@ -303,8 +306,19 @@ kmplot <- function(s,
       call. = FALSE
     )
   }
-  col.surv <- tcol(col.surv)
-  col.band <- tcol(col.band)
+  
+  ## run thru tcol to convert integers and strings? idk but
+  ## running a string with alpha trans resets to no alpha/trans
+  ## so skip if already a hex color with alpha/trans
+  if (!any(grepl('(?i)#[a-z0-9]{8}', col.surv)))
+    col.surv <- tcol(col.surv)
+  if (!any(grepl('(?i)#[a-z0-9]{8}', col.band)))
+    col.band <- tcol(col.band)
+  
+  if (!identical(median, FALSE)) {
+    median.at <- median
+    median <- TRUE
+  }
   
   ## guess margins based on atrisk table options
   par(mar = c(4 + ng * atrisk,
@@ -408,7 +422,8 @@ kmplot <- function(s,
         tail(lapply(st, roundr, digits = 0L), 3L))
       )
       tt <- ifelse(is.na(st$median), '-', gsub('NA', '-', tt, fixed = TRUE))
-      at <- usr[2] + diff(usr[1:2]) / 8
+      at <- if (isTRUE(median.at))
+        usr[2] + diff(usr[1:2]) / 8 else median.at
       mtext(sprintf('Median (%s%% CI)', s$conf.int * 100), side = 1,
             at = at, adj = .5, line = 1.5, col = 1, las = 1)
       mtext(tt, side = 1, line = line.pos, las = 1,

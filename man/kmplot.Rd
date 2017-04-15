@@ -67,8 +67,9 @@ for at-risk table; note that \code{strata.expr} trumps \code{strata.lab}}
 \item{extra.margin}{increase left margin when strata labels in at-risk
 table are long}
 
-\item{median}{logical; if \code{TRUE}, median and confidence interval for
-each curve is added to at-risk table}
+\item{median}{logical or numeric; if \code{TRUE}, median and confidence
+interval for each curve is added to at-risk table at a calculated
+position; for more control, use a specific x-coordinate}
 
 \item{xaxs}{style of axis; see details or \code{\link{par}}}
 
@@ -145,6 +146,7 @@ km2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 kmplot(km1)
 kmplot(km1, atrisk.col = c('grey50','tomato'), lr_test = TRUE)
 kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
+kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3700)
 kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5,
        col.surv = 1:4, col.band = c(1,0,0,4))
 
@@ -156,6 +158,7 @@ kmplot(km1, strata.lab = c('\\u2640', '\\u2642'),
                                         phantom() >= Male))
 
 ## character vectors passed to strata.expr will be parsed
+## but not those passed to strata.lab
 kmplot(km1, strata.expr = c('Sex[Female]', 'Sex[Male]'))
 kmplot(km1, strata.lab  = c('Sex[Female]', 'Sex[Male]'))
 
@@ -183,9 +186,9 @@ kmplot(survfit(Surv(time, status) ~ rx + adhere, data = colon),
        extra.margin = 6,        # increase margin for long strata labels
        strata.lab = c('Obs','Obs+','Lev','Lev+','Lev5fu','Lev5fu+'),
        strata.order = c(5,6,3,1,4,2),     # order by survival estimates
-       median = TRUE,                 # add median and CI
-       oma = c(0,0,0,1),              # add extra line on right for median
-       font = 2, bty = 'l', tcl = .5) # bold table text and other options
+       median = TRUE,                     # add median and CI
+       oma = c(0,0,0,1),                  # extra space for median
+       font = 2, bty = 'l', tcl = .5)     # bold table text, other options
 title(main = 'Chemotherapy for stage B/C colon cancer',
       font.main = 1, line = 2.5)
 dev.off()
