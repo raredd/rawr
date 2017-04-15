@@ -16,33 +16,44 @@ will be plotted with corresponding number and name}
 }
 \value{
 If \code{...} is missing, a plot will be drawn. If an integer is given, the
-color name will be returned; if a color name string is given, the matching
-index will be returned. For the latter two options, no plot is drawn.
+color name will be returned; if a color name string is given, the index
+will be returned. For the latter two options, no plot is drawn by default
+but will be if \code{plot = TRUE}. If one or more strings are given and
+one contains a \code{"?"}, all color names matching the input will be
+returned and optionally plotted.
 }
 \description{
-\code{R} includes 657 named \code{\link{colors}}. This function shows these
-and their respective indices. Find a color by number in the plot or by the
-name of the color with \code{show_colors(n)} or find the indices with
-\code{show_colors('color name')}.
+\code{R} includes 657 named \code{\link{colors}}. This is a convenience
+function to locate specific ones quickly.
+
+Find a color by index in the plot created with \code{show_colors()} by
+first locating the desired color and summing the row and column indices
+corresponding to its position.
+
+Return a color name or index by giving the index or name, respectively,
+optionally, plotting one or more. Search for all colors with a pattern,
+such as \code{"red|orange"}, and return all matches, optionally plotting.
 }
 \examples{
 ## typical usage
 show_colors()
+show_colors(5, 6, 544)
+show_colors('blue4', 'dodgerblue2')
 
 
 ## search for color names or numbers
-show_colors(grep('red|yellow', colors()), plot = TRUE)
+show_colors(grep('red|orange', colors()), plot = TRUE)
 ## shorthand
-show_colors('?red', 'yellow', plot = TRUE)
+show_colors('?red', 'orange')
+show_colors('?red|orange', plot = TRUE)
 
 
+## this function is its own inverse
 show_colors(81)
 show_colors('darkgreen')
 
-
 x <- show_colors(sample(657, 10))
-stopifnot(identical(x, show_colors(show_colors(x))))
-
+identical(x, show_colors(show_colors(x)))
 
 ## these plots are identical
 show_colors(x, plot = TRUE)
@@ -50,5 +61,6 @@ show_colors(show_colors(x), plot = TRUE)
 
 }
 \seealso{
-\code{\link{show_pch}}, \code{\link{colors}}
+\code{\link{show_pch}}; \code{\link{colors}}; \code{\link{waffle}};
+\code{\link{tcol}}
 }

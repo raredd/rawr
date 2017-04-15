@@ -96,10 +96,17 @@ dodge.default <- function(x, y, dist, jit, ...) {
 
 #' Show colors
 #' 
-#' \code{R} includes 657 named \code{\link{colors}}. This function shows these
-#' and their respective indices. Find a color by number in the plot or by the
-#' name of the color with \code{show_colors(n)} or find the indices with
-#' \code{show_colors('color name')}.
+#' @description
+#' \code{R} includes 657 named \code{\link{colors}}. This is a convenience
+#' function to locate specific ones quickly.
+#' 
+#' Find a color by index in the plot created with \code{show_colors()} by
+#' first locating the desired color and summing the row and column indices
+#' corresponding to its position.
+#' 
+#' Return a color name or index by giving the index or name, respectively,
+#' optionally, plotting one or more. Search for all colors with a pattern,
+#' such as \code{"red|orange"}, and return all matches, optionally plotting.
 #' 
 #' @param ... integer(s) in \code{1:657} corresponding to the built-in color
 #' name index or color name string(s); if \code{?} is included as a string or
@@ -109,30 +116,36 @@ dodge.default <- function(x, y, dist, jit, ...) {
 #' 
 #' @return
 #' If \code{...} is missing, a plot will be drawn. If an integer is given, the
-#' color name will be returned; if a color name string is given, the matching
-#' index will be returned. For the latter two options, no plot is drawn.
+#' color name will be returned; if a color name string is given, the index
+#' will be returned. For the latter two options, no plot is drawn by default
+#' but will be if \code{plot = TRUE}. If one or more strings are given and
+#' one contains a \code{"?"}, all color names matching the input will be
+#' returned and optionally plotted.
 #' 
 #' @seealso
-#' \code{\link{show_pch}}, \code{\link{colors}}
+#' \code{\link{show_pch}}; \code{\link{colors}}; \code{\link{waffle}};
+#' \code{\link{tcol}}
 #' 
 #' @examples
 #' ## typical usage
 #' show_colors()
+#' show_colors(5, 6, 544)
+#' show_colors('blue4', 'dodgerblue2')
 #' 
 #' 
 #' ## search for color names or numbers
-#' show_colors(grep('red|yellow', colors()), plot = TRUE)
+#' show_colors(grep('red|orange', colors()), plot = TRUE)
 #' ## shorthand
-#' show_colors('?red', 'yellow', plot = TRUE)
+#' show_colors('?red', 'orange')
+#' show_colors('?red|orange', plot = TRUE)
 #' 
 #' 
+#' ## this function is its own inverse
 #' show_colors(81)
 #' show_colors('darkgreen')
 #' 
-#' 
 #' x <- show_colors(sample(657, 10))
-#' stopifnot(identical(x, show_colors(show_colors(x))))
-#' 
+#' identical(x, show_colors(show_colors(x)))
 #' 
 #' ## these plots are identical
 #' show_colors(x, plot = TRUE)
@@ -142,11 +155,14 @@ dodge.default <- function(x, y, dist, jit, ...) {
 
 show_colors <- function(..., plot = FALSE) {
   dots <- c(...)
+  
+  ## if ? is found, return all colors matching inputs
   if (any(grepl('\\?', dots))) {
     dots <- Filter(nzchar, gsub('\\?', '', tolower(dots)))
     dots <- grep(paste0(dots, collapse = '|'), colors())
-    plot <- TRUE
   }
+  
+  ## guess if color names or indices were given to determine return value
   cols <- if (is.numeric(dots)) {
     stopifnot(dots %inside% c(1, 657))
     colors(FALSE)[as.integer(dots)]
@@ -175,28 +191,25 @@ show_colors <- function(..., plot = FALSE) {
     return(cols)
   }
   
-  sx <- seq.int(x <- 22)
-  sy <- seq.int(y <- 30)
+  ## default plot of all colors with indices
+  par(mfrow = c(1,1), mar = c(2,3,4,3), cex = .7)
+  suppressWarnings({
+    cc <- matrix(colors(), 30L)
+    cc[duplicated(c(cc))] <- NA
+  })
   
-  par(mfrow = c(1,1), mar = c(1,1,3,2), cex = .7)
-  plot(c(-1, x), c(-1, y), type = 'n', ann = FALSE, axes = FALSE)
-  title('col = colors()[n]')
-  sapply(sx, function(i)
-    sapply(sy, function(j) {
-      k <- y * (i - 1) + j
-      co <- colors()[k]
-      rect(i - 1, j - 1, i, j, col = co, border = 'white', lwd = .5)
-    })
-  )
+  w <- waffle(cc, border = 0, xpad = 0, reset_par = FALSE)
+  title(main = 'col = colors()[n]', line = 2)
   
-  ## x-axis numbers: 0, 30, ..., 630
-  text(sx - .5, rep(-.5, x), y * (sx - 1))
-  text(sx - .5, rep(y + .5, x), y * (sx - 1))
+  ## left/right axes: 1, 2, ..., 30
+  text(unique(w$centers[, 'x']),  0, 0:21 * 30, xpd = NA, pos = 1)
+  text(unique(w$centers[, 'x']), 30, 0:21 * 30, xpd = NA, pos = 3)
   
-  ## y-axis numbers: 1, 2, ..., 30
-  text(rep(-.5, y), sy - .5, sy)
-  text(rep(x + .5, y), sy - .5, sy)
-  invisible(NULL)
+  ## top/bottom axes: 0, 30, ..., 630
+  axis(2, 1:30 - 0.5, 1:30, lwd = 0, las = 1)
+  axis(4, 1:30 - 0.5, 1:30, lwd = 0, las = 1)
+  
+  invisible(w)
 }
 
 #' Show plotting characters
