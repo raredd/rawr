@@ -69,3 +69,27 @@ test_that('Visual tests for kmplot and kmplot_by', {
   })
   
 })
+
+
+test_that('Visual tests for waffle', {
+  quote({
+    library('rawr')
+    
+    ## inversions keep text in correct place
+    f <- function(colors, invert) {
+      w <- waffle(matrix(colors, 4), invert = invert, reset_par = FALSE)
+      text(w$c[, 'x'], w$c[, 'y'], labels = colors)
+    }
+    
+    cc <- sample(colors(), 20)
+    f(cc, '')
+    f(cc, 'x')
+    f(cc, 'y')
+    f(cc, 'xy')
+    f(cc, 'yx')
+    
+  })
+  
+})
+
+
