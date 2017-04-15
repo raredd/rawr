@@ -901,28 +901,44 @@ dsplot.formula <- function(formula, data = NULL, ...,
 #' \code{mat} is a matrix of integers, the colors used will correspond to
 #' the current \code{\link{palette}}
 #' @param xpad,ypad amount of padding between \code{rect}s along axes
-#' @param ... additional graphical parameters passed to \code{\link{par}}
-#' @param reset_par logical; if \code{TRUE}, resets \code{\link{par}} settings
-#' to state before function call
+#' @param heights,widths the row heights and column widths, respectively,
+#' usually in \code{0,1}, and recycled as needed; note that \code{xpad} and
+#' \code{ypad} are ignored if \code{widths} or \code{heights}, respectively,
+#' are given
+#' @param invert character string indicating which axis the matrix should
+#' be inverted about; possible values are \code{"x"}, \code{"y"}, or
+#' \code{"xy"}
+#' @param ... additional graphical parameters passed to \code{\link{rect}}
+#' such as \code{border}, \code{density}, \code{lty}, etc
+#' @param reset_par logical; if \code{TRUE}, resets \code{\link{par}}
+#' settings to state before function call; setting \code{reset_par = FALSE}
+#' along with the return value is useful for adding to a \code{waffle} plot
 #' 
 #' @return
-#' A list of three matrices: \code{matrix}, the input matrix; \code{origin},
-#' coordinates of the bottom-left corner for each box; and \code{centers},
-#' the coordinates for the centers of each box adjusted for \code{xpad} and
-#' \code{ypad}.
+#' A list of three matrices:
+#' \item{\code{$matrix}}{the input matrix as plotted, including inversions}
+#' \item{\code{$origin}}{coordinates of the bottom-left corner for each box}
+#' \item{\code{$centers}}{the coordinates for the centers of each box
+#' adjusted for \code{xpad}, \code{ypad} or \code{heights}, \code{widths}}
 #' 
 #' @examples
-#' waffle(matrix(1:8, 2))
+#' op <- par(no.readonly = TRUE)
+#' waffle(matrix(1:9, 3))
+#' waffle(matrix(1:9, 3), invert = 'x')
+#' waffle(matrix(1:9, 3), heights = c(.25, .95, .5), border = NA)
+#' waffle(matrix(1:9, 3), widths = c(.25, .95, .5), density = 50)
+#' 
 #' 
 #' ## heatmap
 #' cols <- c(cor(mtcars))
 #' cols <- tcol(c('blue','red')[(cols > 0) + 1L], alpha = c(abs(cols)))
-#' waffle(matrix(cols, 11)[11:1, ], reset_par = FALSE, ypad = 0)
+#' waffle(matrix(cols, 11)[11:1, ], reset_par = FALSE, xpad = 0)
 #' axis(3, at = 1:11 - .5, labels = names(mtcars), cex.axis = .8, lwd = 0)
+#' 
 #' 
 #' ## adding to margins of another plot
 #' set.seed(1)
-#' n <- 100
+#' n <- 97
 #' ng <- 3
 #' cols <- c('beige','dodgerblue2','green','orange')
 #' x <- sample(cols, n * ng, replace = TRUE, prob = c(.05,.31,.32,.32))
@@ -930,32 +946,69 @@ dsplot.formula <- function(formula, data = NULL, ...,
 #' 
 #' par(fig = c(0,1,.2,.9), mar = c(0,5,0,1))
 #' plot(cumsum(rnorm(n)), type = 'l', ann = FALSE, xaxt = 'n')
+#' 
 #' par(fig = c(0,1,0,.2), mar = c(1,5,0,1), new = TRUE)
-#' waffle(matrix(x, ng))
+#' waffle(matrix(x, ng), heights = c(0.95, 0.5, 0.95), border = 'white')
+#' 
 #' par(fig = c(0,1,.9,1), mar = c(.5,5,.5,1), new = TRUE)
-#' waffle(matrix(x, ng)[1, , drop = FALSE], ypad = 0, reset_par = FALSE)
+#' waffle(matrix(x, ng)[1L, , drop = FALSE], heights = 0.5,
+#'        border = 'white', reset_par = FALSE)
 #' box()
+#' box('outer')
+#' 
 #' 
 #' ## waffle conveniently returns the centers of the rects
 #' ## be sure /not/ to reset pars on exit for proper alignment
-#' (w <- waffle(matrix(1:8, 2), reset_par = FALSE))
+#' par(op)
+#' (w <- waffle(matrix(1:8, 2), reset_par = FALSE, invert = 'xy'))
 #' text(w$c[, 'x'], w$c[, 'y'], labels = palette(), col = 'white')
+#' 
+#' \dontrun{
+#' ## this is similar to ?rawr::show_colors
+#' col <- colors()[1:25 ^ 2]
+#' (w <- waffle(matrix(col, 25), reset_par = FALSE, invert = 'xy',
+#'              xpad = 0, border = c(col)))
+#' text(w$c[, 'x'], w$c[, 'y'], labels = col, col = 'black', cex = .4)
+#' }
 #' 
 #' @export
 
-waffle <- function(mat, xpad = 0, ypad = .05, ..., reset_par = TRUE) {
+waffle <- function(mat, xpad = 0.05, ypad = xpad, heights, widths,
+                   invert = '', ..., reset_par = TRUE) {
   op <- par(no.readonly = TRUE)
   if (reset_par)
     on.exit(par(op))
+  
+  omat <- mat
+  mat  <- mat[rev(seq.int(nrow(mat))), , drop = FALSE]
+  o    <- cbind(c(row(mat)), c(col(mat))) - 1L
+  
+  if (grepl('x', invert)) {
+    mat <- mat[rev(seq.int(nrow(mat))), ]
+    o[, 1L] <- rev(o[, 1L])
+  }
+  if (grepl('y', invert)) {
+    mat <- mat[, rev(seq.int(ncol(mat)))]
+    o[, 2L] <- rev(o[, 2L])
+  }
+  
+  force(xpad); force(ypad)
+  if (!missing(heights))
+    ypad <- 1 - (1 - rev(heights)) / 2
+  if (!missing(widths))
+    xpad <- 1 - rep((1 - widths) / 2, each = ncol(mat))
+  
   plot.new()
-  par(list(...))
-  o <- cbind(c(row(mat)), c(col(mat))) - 1
-  plot.window(xlim = c(0, max(o[, 2]) + 1), ylim = c(0, max(o[, 1]) + 1),
+  plot.window(xlim = c(0, max(o[, 2L]) + 1), ylim = c(0, max(o[, 1L]) + 1),
               xaxs = 'i', yaxs = 'i')
-  rect(xl <- o[, 2], yb <- o[, 1], xr <- o[, 2] + (1 - xpad),
-       yt <- o[, 1] + (1 - ypad), col = c(mat), border = NA)
-  invisible(list(matrix = mat, origin = `colnames<-`(o[, 2:1], c('x','y')),
-                 centers = cbind(x = psum(xl, xr) / 2, y = psum(yb, yt) / 2)))
+  rect(xl <- o[, 2L] + xpad, yb <- o[, 1L] + ypad,
+       xr <- o[, 2L] + (1 - xpad), yt <- o[, 1L] + (1 - ypad),
+       col = c(omat), ...)
+  
+  invisible(
+    list(matrix = mat, origin = `colnames<-`(o[, 2:1], c('x', 'y')),
+         centers = cbind(x = psum(xl, xr) / 2, y = psum(yb, yt) / 2))
+  )
 }
 
 #' River plots
