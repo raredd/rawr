@@ -1,7 +1,13 @@
+rawr 0.8.8
+--------
+  * updates to internals of kmplot, waffle, show_colors; added tests
+  * ::: keeps complaining but idgaf
+
 rawr 0.8.7
 --------
   * better, easier sas parsers; combine parse_formats2 into parse_formats
   * add tests for format parsers
+  * add combine_regex, add option to combine_levels to wrap combine_regex
 
 rawr 0.8.6
 --------

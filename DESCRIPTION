@@ -1,7 +1,7 @@
 Package: rawr
 Type: Package
 Title: rawr miscellaneous
-Version: 0.8.7
+Version: 0.8.8
 Authors@R: person("Robert", "Redd", email = "raredd01@gmail.com",
   role = c("aut", "cre"))
 Author: Robert Redd
@@ -10,6 +10,7 @@ Description: Miscellaneous functions.
 Imports:
     graphics,
     methods,
+    survival,
     stats,
     utils
 Suggests:
@@ -26,7 +27,6 @@ Suggests:
     notifier,
     parallel,
     rstudioapi,
-    survival,
     testthat
 License: GPL-2
 LazyData: yes
