@@ -1468,12 +1468,12 @@ rm_null <- function(l, rm_list = TRUE) {
 #' cum_reset(x, c(5, 8), cummin)
 #' 
 #' x[x %% 4 == 0] <- 0
-#' cum_reset(x)
+#' cum_reset(x, FUN = cumsum)
 #' cum_reset(x, FUN = sum)
 #' 
 #' set.seed(1)
 #' data.frame(x = x <- rpois(15, 1),
-#'            y = cum_reset(x),
+#'            y = cum_reset(x, FUN = cumsum),
 #'            z = cum_reset(x, 0, function(x) ave(x, FUN = sum)))
 #' 
 #' 

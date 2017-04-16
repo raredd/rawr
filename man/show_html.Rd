@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils2.R
 \name{show_html}
 \alias{show_html}
-\title{html render}
+\title{Show HTML}
 \usage{
 show_html(..., use_viewer = !is.null(getOption("viewer")))
 }
@@ -16,7 +16,7 @@ show_html(..., use_viewer = !is.null(getOption("viewer")))
 The html code (invisibly) as a character string.
 }
 \description{
-Render html in rstudio viewer or default browser.
+Render html in rstudio viewer or browser.
 }
 \examples{
 \dontrun{

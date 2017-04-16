@@ -35,11 +35,13 @@ type-I error (\code{alpha}) using exact, Wilson, asymptotic methods, or
 two-stage methods.
 
 For exact, Wilson, and asymptotic methods, \code{r} and \code{n} can be
-any length (the other argument is recycled as needed). For the two-stage
-method, \code{r} and \code{n} must each be length 2 where \code{r =
-c(max # responses in 1st stage that can be observed without continuing,
-total number of responses observed)} and \code{n = c(# of cases entered
-in 1st stage, # of additional cases entered in 2nd stage)}.
+any length (the other argument is recycled as needed).
+
+For the two-stage method, \code{r} and \code{n} must each be length 2
+where \code{r = c(max # responses in 1st stage that can be observed
+without continuing, total number of responses observed)} and
+\code{n = c(# of cases entered in 1st stage, # of additional cases
+entered in 2nd stage)}.
 }
 \details{
 If \code{method = 'all'}, \code{r} and \code{n} should each be length 1.
