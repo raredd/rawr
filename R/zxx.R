@@ -1,10 +1,14 @@
 ### some random shit
 # ht, progress, recoder, ident, allequal, search_df, search_hist, fapply,
-# try_require, list2file, Restart, helpExtract, helpExtract_, Round, round_to,
-# updateR, read_clip, icols, fill_df, kinda_sort, rgene, install_temp,
-# nestedMerge, nestedmerge, path_extract, fname, file_name, file_ext, rm_ext,
-# mgrep, mgrepl, msub, mgsub, flatten, tree, rm_null, cum_reset, vgrep, vgrepl,
-# justify, factors, factors_, sample_each, pickcol, lunique, rm_nonascii
+# try_require, list2file, Restart, helpExtract, Round, round_to, updateR,
+# read_clip, icols, fill_df, kinda_sort, rgene, install_temp, nestedMerge,
+# nestedmerge, path_extract, fname, file_name, file_ext, rm_ext, mgrep,
+# mgrepl, msub, mgsub, flatten, tree, rm_null, cum_reset, cum_na, cumsum_na,
+# cumprod_na, cummax_na, cummin_na, vgrep, vgrepl, justify, factors,
+# sample_each, pickcol, lunique, rm_nonascii
+# 
+# unexported:
+# helpExtract_, mgrep_, msub_, fill_spaces_
 ###
 
 
@@ -77,9 +81,8 @@ progress <- function (value, max.value, textbar = FALSE) {
   if (!is.numeric(value))
     stop('\'value\' must be numeric')
   
-  oo <- options()
+  oo <- options(scipen = 10)
   on.exit(options(oo))
-  options(scipen = 10)
   
   percent <- if (missing(max.value)) {
     max.value <- 100
@@ -190,9 +193,8 @@ recoder <- function(object, pattern, replacement, ...) {
   # need to recode factor and numeric NAs simultaneously?
   
   m <- match.call()
-  op <- options()
+  op <- options(stringsAsFactors = FALSE)
   on.exit(options(op))
-  options(stringsAsFactors = FALSE)
   
   if (is.factor(object)) {
     lvl <- setdiff(replacement, levels(object))
@@ -554,7 +556,8 @@ list2file <- function(l, targetdir = getwd(), sep, ...) {
                                  ifelse(sep == ',','csv','dat')),
                   row.names = FALSE, quote = FALSE, ...))
   message(sprintf('NOTE: %s written to %s', iprint(names(l)), targetdir))
-  invisible()
+  
+  invisible(NULL)
 }
 
 #' Restart R session
@@ -730,8 +733,10 @@ helpExtract_ <- function(FUN, ...) {
     fetchRdDB(RdDB, basename(file))
   }
   
-  x <- capture.output(tools::Rd2txt(getHelpFile(utils::help(FUN, ...)),
-                                    options = list(sectionIndent = 0)))
+  x <- capture.output(
+    tools::Rd2txt(getHelpFile(utils::help(FUN, ...)),
+                  options = list(sectionIndent = 0))
+  )
   invisible(x)
 }
 
@@ -977,10 +982,12 @@ fill_df <- function(data, key, ids, fill, values) {
   dfk <- if (ok)
     seq.int(nrow(data)) else do.call('paste0', c(data[, ids, drop = FALSE]))
   mm <- match(dfk, nak)
+  
   for (col in fill) {
     nnr <- which(is.na(data[, col]))
     data[nnr, col] <- key[mm[nnr], col]
   }
+  
   # data[do.call('order', as.list(data[, c(nnk, nnf)])), ]
   if (!is.null(keep))
     cbind.data.frame(data, keep)[, nn, drop = FALSE] else
@@ -1433,26 +1440,32 @@ rm_null <- function(l, rm_list = TRUE) {
   lapply(x, function(x) if (is.list(x)) rm_null(x, rm_list) else x)
 }
 
-#' Cumulative reset
+#' Cumulative functions
 #' 
-#' Reset a cumulative function if a value is encountered.
+#' Reset a cumulative function when code{value} is encountered and versions
+#' of \pkg{b}ase \link[=cumsum]{cumulative functions} that handle \code{NA}s.
 #' 
 #' @param x a vector
 #' @param value a value of \code{x} which signals the end of a group and
 #' resets \code{FUN}
-#' @param FUN function to apply to each group
-#' 
-#' @seealso
-#' \code{\link{cummin}}, \code{\link{cummax}}, \code{\link{cumsum}},
-#' \code{\link{cumprod}}, \code{\link{ave}}
+#' @param FUN function to apply to each group, usually one of
+#' \code{\link{cumsum}}, \code{\link{cumprod}}, \code{\link{cummax}}, or
+#' \code{\link{cummin}} but can be any function that returns a vector the
+#' same length and type as the input (\emph{a la} \code{\link{ave}})
+#' @param useNA logical; if \code{TRUE}, indices with \code{NA} will be
+#' unchanged; if \code{FALSE}, the previous value is carried forward
 #' 
 #' @return
 #' A vector having the same length as \code{x} with \code{FUN} applied to
 #' each group defined by positions of \code{value}.
 #' 
+#' @seealso
+#' \code{\link{cumsum}}; \code{\link{ave}}; \code{locf}
+#' 
 #' @examples
 #' x <- 1:10
 #' cum_reset(x, 5, cummin)
+#' cum_reset(x, c(5, 8), cummin)
 #' 
 #' x[x %% 4 == 0] <- 0
 #' cum_reset(x)
@@ -1463,17 +1476,80 @@ rm_null <- function(l, rm_list = TRUE) {
 #'            y = cum_reset(x),
 #'            z = cum_reset(x, 0, function(x) ave(x, FUN = sum)))
 #' 
-#' ## x need not be numeric if FUN is appropriate for typeof(x)
+#' 
+#' ## x need not be numeric if FUN returns an appropriate type and length
 #' cum_reset(letters[1:10], c('d','g'), function(x)
 #'   letters[as.numeric(factor(x))])
 #' 
-#' @export
+#' 
+#' ## cum* functions to handle NA values
+#' x <- 1:10
+#' x[x %% 4 == 0] <- 0
+#' na <- ifelse(x == 0, NA, x)
+#' 
+#' cumsum(x)
+#' cum_na(x, cumsum)
+#' 
+#' cumsum(na)
+#' cum_na(na, cumsum)
+#' 
+#' ## shorthand
+#' cumsum_na(na)
+#' cumsum_na(na)
+#' 
+#' 
+#' ## like cum_reset, cum_na's FUN argument can be generalized if FUN
+#' ## returns the correct class and length of the input
+#' FUN <- function(x) vector(class(x), length(x))
+#' cum_na(na, FUN)
+#' 
+#' cumdiff <- function(x) Reduce(`-`, x, accumulate = TRUE)
+#' cumdiff(x)
+#' cumsum(c(x[1L], -x[-1L]))
+#' 
+#' cumdiff(na)
+#' cumsum(c(na[1L], -na[-1L]))
+#' cum_na(na, cumdiff)
+#' 
+#' @name cumfuns
+NULL
 
-cum_reset <- function(x, value = 0L, FUN = cumsum) {
-  idx <- c(0, head(cumsum(x %in% value), -1))
-  sp <- split(x, idx)
-  unname(unlist(lapply(sp, FUN)))
+#' @rdname cumfuns
+#' @export
+cum_reset <- function(x, value = 0L, FUN) {
+  FUN <- match.fun(FUN)
+  idx <- c(0, head(cumsum(x %in% value), -1L))
+  unname(unlist(lapply(split(x, idx), FUN)))
 }
+
+#' @rdname cumfuns
+#' @export
+cum_na <- function(x, FUN, useNA = TRUE) {
+  FUN <- match.fun(FUN)
+  x[!is.na(x)] <- FUN(x[!is.na(x)])
+  if (useNA)
+    x else locf(x)
+}
+
+#' @rdname cumfuns
+#' @export
+cumsum_na <- function(x, useNA = TRUE)
+  cum_na(x, cumsum, useNA)
+
+#' @rdname cumfuns
+#' @export
+cumprod_na <- function(x, useNA = TRUE)
+  cum_na(x, cumprod, useNA)
+
+#' @rdname cumfuns
+#' @export
+cummax_na <- function(x, useNA = TRUE)
+  cum_na(x, cummax, useNA)
+
+#' @rdname cumfuns
+#' @export
+cummin_na <- function(x, useNA = TRUE)
+  cum_na(x, cummin, useNA)
 
 #' \code{grep} for vectors
 #' 
@@ -1609,6 +1685,7 @@ factors <- function(...) {
     y <- seq_len(abs(x))
     y[x %% y == 0L]
   }
+  
   l <- lapply(list(...), factors_)
   Reduce(intersect, l)
 }
@@ -1700,7 +1777,7 @@ sample_each <- function(x, n = 1L) {
 #' @export
 
 pickcol <- function(data, ind = 1L, value = FALSE) {
-  zzz <- apply(data, 1, function(x) {
+  res <- apply(data, 1, function(x) {
     if (value) {
       x[x %in% ind] <- NA
       if  (length(x <- x[!is.na(x)]) > 1L)
@@ -1711,7 +1788,8 @@ pickcol <- function(data, ind = 1L, value = FALSE) {
         toString(names(x[idx])) else NA
     }
   })
-  unname(zzz)
+  
+  unname(res)
 }
 
 #' Number of unique values

@@ -1,12 +1,15 @@
 ### statistical functions
 # bincon, bintest, dlt_table, power_cv, simon2, moods_test, fakeglm, gcd,
-# install.bioc, lm.beta, cuzick.test, jt.test, hl_est, combn_fun
+# install.bioc, lm.beta, cuzick.test, jt.test, hl_est
 # 
-# desmon:
+# desmon (unexported):
 # bin1samp, simon, twocon
 # 
 # rpart_utils:
 # rpart_parent, rpart_subset, rpart_nodes
+# 
+# unexported:
+# combn_fun
 ###
 
 
