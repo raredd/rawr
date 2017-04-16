@@ -5,7 +5,7 @@
 \title{Response table}
 \usage{
 tabler_resp(x, r_or_better = 3L, conf = 0.95, digits = 0L, frac = TRUE,
-  show_conf = TRUE, pct.sign = TRUE, total = FALSE)
+  show_conf = TRUE, pct.sign = TRUE, total = FALSE, two_stage = FALSE)
 }
 \arguments{
 \item{x}{a factor variable of responses; responses should be ordered as
@@ -23,6 +23,12 @@ calculated for the aggregate; if \code{FALSE}; this is not included}
 \item{total}{logical or numeric; if \code{TRUE}, a column with the total,
 i.e., \code{length(x)} is added; if numeric, \code{length(x)} and,
 optionally, fracton and percent out of \code{total} is added}
+
+\item{two_stage}{\code{FALSE} (default, assumes exact binomial CIs are
+desired) or a vector of length 3 with the 1) maximum number responses in
+the first stage that can be observed without continuing; 2) the number
+entered in the first stage; and 3) the additional number entered in the
+second}
 }
 \description{
 Convenience function to calculate proportions and confidence invervals and
@@ -41,6 +47,19 @@ y <- `[<-`(x, 1:10, value = NA)
 tabler_resp(x, FALSE)
 tabler_resp(y, FALSE)
 
+
+## for two-stage designs
+two_stage <- c(r1 = 2, n1 = 10, n2 = 20)
+tabler_resp(x, two_stage = two_stage)
+
+## compare
+bincon(c(2, 4),  c(10, 20), method = 'two-stage') ## CRs
+bincon(c(2, 11), c(10, 20), method = 'two-stage') ## PRs
+## one-stage methods should not be used
+bincon(11, 30, method = 'exact') ## PRs
+
+ 
+## typical usage
 library('htmlTable')
 htmlTable(
   rbind(
