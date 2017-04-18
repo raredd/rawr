@@ -1013,8 +1013,20 @@ waffle <- function(mat, xpad = 0.05, ypad = xpad, heights, widths,
 
 #' River plots
 #' 
+#' @description
 #' Summarize a timeline for individuals over the course of a study.
 #' 
+#' \code{river} shows the trajectory of multiple subjects. Time on treatment
+#' is represented by a green line; progression as a red dot; censored or
+#' death as an "x" in blue or red, respectively; and responses colored with
+#' bands. Subjects continuing are shown with an arrow.
+#' 
+#' \code{river2} shows the trajectory for a single patient with additional
+#' toxicity information represented by another series of bands colored by
+#' grade. Optionally, the trajectory for a single patient from \code{river}
+#' may be shown rather than with an arrow; see examples.
+#' 
+#' @details
 #' \code{data}, \code{bar_data}, and \code{bar_data2} data frames need to have
 #' a minimum number of variables in a specific order, some of which should be
 #' \code{\link{Date}} formats.
@@ -1064,6 +1076,8 @@ waffle <- function(mat, xpad = 0.05, ypad = xpad, heights, widths,
 #' rather than relative to the first start date if \code{TRUE} (default)
 #' @param split logical; if \code{TRUE}, rows of \code{bar_data2} will be
 #' plotted individually
+#' @param col,col2 vectors of colors for responses (\code{river}) or toxicity
+#' grades \code{river2}, respectively
 #' 
 #' @examples
 #' ## to print a summary of the required formats
@@ -1086,7 +1100,7 @@ waffle <- function(mat, xpad = 0.05, ypad = xpad, heights, widths,
 #'                  resp = factor(c('MR','PR','PR','CR','PR','CR'),
 #'                                levels = c('PD','SD','MR','PR','CR')))
 #' 
-#' river(dd, bd, stagger = FALSE, rev = TRUE,
+#' river(dd, bd, stagger = FALSE, rev = TRUE, col = 2:6,
 #'       legend = list(x = 'bottom', title = 'Response', horiz = TRUE))
 #' 
 #' ## same data with single observations per id
@@ -1097,74 +1111,78 @@ waffle <- function(mat, xpad = 0.05, ypad = xpad, heights, widths,
 #' river(dd, bd1)
 #' 
 #' ## id and at parameters control the positions of the timelines
-#' river(dd, bd1, id = c(1,2,5,3,4), at = c(1:3, 5:6), legend = FALSE)
+#' river(dd, bd1, id = c(1,2,5,3,4), at = c(1:2, 4, 6:7), legend = FALSE)
 #' 
 #' 
 #' ## additional data for river2
-#' tt <- data.frame(id = rep(1:2, times = c(1, 5)),
+#' tt <- data.frame(id = rep(c(1, 3), times = c(1, 5)),
 #'                  dt_start = c(3,5,5,8,9,11),
 #'                  dt_end = c(NA,5,NA,10,10,NA),
 #'                  grade = c(1,4,3,4,1,2),
 #'                  desc = paste('tox', c(1,1:5)))
 #' 
-#' river2(dd, bd, tt, id = 2)
+#' river2(dd, bd, tt, id = 3)
 #' 
 #' ## multiple records per id (ie, worsening toxicities)
-#' tt2 <- data.frame(id = rep(1:2, times = c(1, 8)),
+#' tt2 <- data.frame(id = rep(c(1, 3), times = c(1, 8)),
 #'                   dt_start = c(3,5,5,7,15,8,9,11,14),
 #'                   dt_end = c(NA,5,7,15,NA,10,10,14,NA),
 #'                   grade = c(1,4,1,2,3,4,1,2,3),
 #'                   desc = paste('tox', c(1,1,2,2,2,3,4,5,5)))
 #'                   
-#' river2(dd, bd, tt2, id = 2)
+#' river2(dd, bd, tt2, id = 3)
 #' 
 #' 
 #' ## bar_data can also be given in river2 without additional information
-#' river2(bar_data = tt, id = 2)
-#' river2(bar_data = tt2, id = 2)
+#' river2(bar_data = tt,  id = 3)
+#' river2(bar_data = tt2, id = 3)
 #' 
 #' @export
 
 river <- function(data, bar_data, id, at, legend = 'topleft',
-                  xlim, ylim, rev = FALSE, stagger = TRUE) {
+                  xlim, ylim, rev = FALSE, stagger = TRUE, col) {
   ## error checks
   dd <- check_river_format(data)
   bd <- check_river_format(data, bar_data)
-  
   nn <- as.character(unique(dd$id))
+  
   if (missing(id))
     id <- nn
   if (missing(at))
     at <- seq_along(nn)
   if (rev)
     at <- rev(at)
+  
   stopifnot(length(at) == length(id))
   if (!all(id %in% nn))
-    stop('invalid id: ', id)
+    stop('Invalid ID: ', toString(id))
   
   dd <- merge(bd, dd, by = 'id', all = TRUE)
   
   ## colors for resp - PD:CR
-  cols <- c('red','transparent','yellow','orange',
-            'deepskyblue','dodgerblue3','blue4')
+  cols <- if (missing(col))
+    c('red', 'transparent', 'yellow', 'orange',
+      'deepskyblue', 'dodgerblue3', 'blue4')
+  else rep_len(col, nlevels(dd$assess))
   
   ## convert dates to days with origin at first id reg (ie, ref date == 0)
   dts <- grep('^dt_', names(dd))
-  mm <- setNames(dd[, dts], gsub('dt_', 'dd_', names(dd)[dts]))
+  mm  <- setNames(dd[, dts], gsub('dt_', 'dd_', names(dd)[dts]))
+  
   rx <- if (stagger)
     range(unlist(mm), na.rm = TRUE) else
       range(unlist(mm[dd$id %in% id, , drop = FALSE]), na.rm = TRUE)
   
   mm[] <- lapply(mm, as.numeric)
-  mm <- t(apply(mm, 1, function(x)
+  mm   <- t(apply(mm, 1, function(x)
     x - min(if (stagger) mm[, 'dd_reg'] else x['dd_reg'], na.rm = TRUE)))
   
   dd <- within(cbind(dd, mm), {
     end_day <- apply(mm, 1, max, na.rm = TRUE)
     end_day <- pmax(end_day, dd_reg)
-    alive <- is.na(status) | (grepl('(?i)[0v]', status) + 0L)
-    censor <- alive & !is.na(dt_offstudy)
-    assess <- as.factor(assess)
+    alive   <- is.na(status) | (grepl('(?i)[0v]', status) + 0L)
+    censor  <- alive & !is.na(dt_offstudy)
+    assess  <- as.factor(assess)
     col_assess <- cols[as.numeric(assess)]
     ## no red rects after progression date
     col_assess[col_assess == 'red' & dd_prog <= dd_assess_start] <- 'transparent'
@@ -1176,13 +1194,18 @@ river <- function(data, bar_data, id, at, legend = 'topleft',
               ## set min ylim to c(0,5) for case: id < 5
               if (!missing(ylim)) ylim else range(c(0, at, 5)))
   axis(1, tcl = .2, las = 1)
-  title(xlab = sprintf('Days from %sregistration', c('','first ')[stagger + 1L]),
+  title(xlab = sprintf('Days from %sregistration',
+                       c('', 'first ')[stagger + 1L]),
         line = 2.5)
   
-  if (legend[[1]] != FALSE)
-    do.call('legend', modifyList(list(
-      x = legend, fill = c('red', cols[-1]), legend = levels(dd$assess),
-      horiz = FALSE, cex = .8, bty = 'n'), val = as.list(legend)))
+  if (legend[[1L]] != FALSE)
+    do.call('legend',
+      modifyList(list(
+        x = legend, fill = cols, legend = levels(dd$assess),
+        horiz = FALSE, cex = .8, bty = 'n'),
+        val = as.list(legend)
+      )
+    )
   
   sp <- split(dd, dd$id, drop = FALSE)
   
@@ -1193,59 +1216,73 @@ river <- function(data, bar_data, id, at, legend = 'topleft',
     # with(dd[ii, ], {
     with(sp[[as.character(ii)]], {
       ## label ids in black to left of rect
-      text(dd_reg[1], jj, labels = id[1], pos = 2, xpd = NA)
+      text(dd_reg[1L], jj, labels = id[1L], pos = 2, xpd = NA)
       
       ## lines - time alive, on tx
-      do_seg_(jj, dd_reg, end_day, arrow = alive & !censor,
+      do_seg_(jj, dd_reg, end_day, arrow = alive[1L] & !censor[1L],
               single = TRUE, col = 1)
+      ## thicker line and arrow for continuing
       do_seg_(jj, dd_txstart, dd_txend %|% end_day, arrow = FALSE,
               single = TRUE, lty = 1, lwd = 4, col = 'green4')
       
       ## rects - assessments
       do_rect_(jj, dd_assess_start, dd_assess_end %|% end_day,
                col = tcol(col_assess, alpha = .5))
+      ## pipe at each assessment time
       points(dd_assess_start, rep(jj, length(dd_assess_start)),
              pch = '|', col = 1)
       
       ## points - prog (red circle), death, (red x), censor (blue x)
-      points(dd_prog[1], jj, pch = 16, col = 2, cex = 1.5)
-      points(end_day[1], jj, pch = c(4, NA)[alive[1] + 1L],
+      points(dd_prog[1L], jj, pch = 16, col = 2, cex = 1.5)
+      points(end_day[1L], jj, pch = c(4, NA)[alive[1L] + 1L],
              col = 2, lwd = 3, cex = 1.5)
-      points(end_day[1], jj, pch = c(NA, 4)[(alive[1] & censor[1]) + 1L],
+      points(end_day[1L], jj, pch = c(NA, 4)[(alive[1L] & censor[1L]) + 1L],
              col = 4, lwd = 3, cex = 1.5)
     })
   }
+  
   invisible(list(data = dd, bar_data = bd))
 }
 
 #' @rdname river
 #' @export
 river2 <- function(data, bar_data, bar_data2, id, legend = 'topleft',
-                   xlim, ylim, rev = FALSE, stagger = FALSE, split = FALSE) {
+                   xlim, ylim, rev = FALSE, stagger = FALSE,
+                   split = FALSE, col, col2) {
   ## error checks
   if (!missing(data)) {
     if (missing(bar_data2))
-      return(river(data = data, bar_data = bar_data, id = id, at = 1, rev = rev,
-                   legend = legend, xlim = xlim, ylim = ylim, stagger = stagger))
+      return(
+        river(data = data, bar_data = bar_data, id = id, at = 1, rev = rev,
+              legend = legend, xlim = xlim, ylim = ylim, stagger = stagger)
+      )
   } else {
     mmin <- function(x) min(x, na.rm = !all(is.na(x)))
     mmax <- function(x) max(x, na.rm = !all(is.na(x)))
+    
     bar_data2 <- if (missing(bar_data2)) bar_data else bar_data2
-    if (ncol(bar_data2) <= 3)
+    
+    if (ncol(bar_data2) <= 3L)
       ## use bar_data2 format--check_river_format()
       bar_data2 <- bar_data[, c(1,2,2,3,3)]
+    
     data <- data.frame(
-      id = bar_data[, 1], dt_reg = ave(bar_data[, 2], bar_data[, 1], FUN = mmin),
-      dt_txst = NA, dt_txend = NA, dt_prog = NA, dt_offtx = NA, dt_surv = NA,
-      surv = NA, dt_last = ave(unlist(bar_data[, 2:3]),
-                               unlist(bar_data[, c(1,1)]), FUN = mmax),
-      dt_off = NA)
-    data <- data[!duplicated(data$id), ]
+      id = bar_data[, 1L],
+      dt_reg = ave(bar_data[, 2L], bar_data[, 1L], FUN = mmin),
+      dt_txst  = NA, dt_txend = NA, dt_prog = NA,
+      dt_offtx = NA, dt_surv  = NA, surv    = NA,
+      dt_last = ave(unlist(bar_data[, 2:3]),
+                    unlist(bar_data[, c(1,1)]), FUN = mmax),
+      dt_off = NA
+    )
+    
+    data     <- data[!duplicated(data$id), ]
     bar_data <- data.frame(id = data$id, dt_assess = data$dt_reg, resp = NA)
   }
   
-  if (!any(c(data$id, bar_data$id, bar_data2$id) %in% id))
+  if (!any(c(data[, 1L], bar_data[, 1L], bar_data2[, 1L]) %in% id))
     stop('invalid id: ', id)
+  
   dd <- check_river_format(data)
   bd <- check_river_format(data, bar_data)
   td <- check_river_format(data, bar_data2)
@@ -1260,37 +1297,47 @@ river2 <- function(data, bar_data, bar_data2, id, legend = 'topleft',
   td <- td[do.call('order', as.list(td[, c('dt_start', 'desc')])), ]
   
   ## grade colors - 1:5
-  cols <- c('blue','green','orange','red','black')
-  nn <- if (split) seq.int(nrow(td)) else seq_along(unique(td$desc))
+  cols <- if (missing(col2))
+    c('green', 'blue', 'orange', 'red', 'black')
+  else rep_len(tcol(col2), lunique(td$grade))
+  nn <- if (split)
+    seq.int(nrow(td)) else seq_along(unique(td$desc))
   
   ## base plot of the id summary
-  rv <- river(data = data, bar_data = bar_data, id = id, at = 1,
-              legend = FALSE, rev = FALSE, stagger = stagger, xlim = xlim,
-              ylim = if (missing(ylim))
-                c(0, max(5, (if (split) max(nn) else length(nn)) + 1)) else ylim)
+  rv <- river(
+    data = data, bar_data = bar_data, id = id, at = 1, col = col,
+    legend = FALSE, rev = FALSE, stagger = stagger, xlim = xlim,
+    ylim = if (missing(ylim))
+      c(0, max(5, (if (split) max(nn) else length(nn)) + 1)) else ylim
+  )
   
   td <- within(td, {
-    dt_reg <- rv$data$dt_reg[id]
-    end_day <- rv$data$end_day[id]
-    ong <- is.na(dt_end)
-    grade <- as.factor(grade)
-    desc <- factor(desc, levels = unique(desc))
-    col_grade <- cols[as.numeric(td$grade)]
-    num <- ave(seq_along(desc), desc, FUN = seq_along)
+    dt_reg    <- rv$data$dt_reg[id]
+    end_day   <- rv$data$end_day[id]
+    ong       <- is.na(dt_end)
+    grade     <- as.factor(grade)
+    desc      <- factor(desc, levels = unique(desc))
+    col_grade <- cols[grade]
+    num       <- ave(seq_along(desc), desc, FUN = seq_along)
   })
   
-  if (legend[[1]] != FALSE)
-    do.call('legend', modifyList(list(
-      x = legend, fill = tcol(cols, alpha = .5), horiz = FALSE, cex = .8,
-      legend = levels(td$grade), bty = 'n'), val = as.list(legend)))
-  
+  if (nrow(td) && legend[[1L]] != FALSE)
+    do.call('legend',
+      modifyList(list(
+        x = legend, fill = cols, horiz = FALSE,
+        cex = .8, legend = levels(td$grade), bty = 'n'),
+        val = as.list(legend)
+      )
+    )
   
   ## convert dates to days, fix origin at first reg date (ie, ref date == 0)
   dts <- grep('^dt_', names(td))
-  mm <- setNames(lapply(td[, dts], function(x)
-    as.numeric(x) - unique(as.numeric(rv$data[if (stagger) 1 else
-      rv$data$id %in% id, 'dt_reg']))),
-    gsub('dt_', 'dd_', names(td)[dts]))
+  mm <- setNames(
+    lapply(td[, dts], function(x)
+      as.numeric(x) - unique(as.numeric(rv$data[if (stagger) 1 else
+        rv$data$id %in% id, 'dt_reg']))),
+    gsub('dt_', 'dd_', names(td)[dts])
+  )
   td <- cbind(td, do.call('cbind', mm))
   sp <- split(td, if (split) seq.int(nrow(td)) else td$desc)
   
@@ -1301,28 +1348,30 @@ river2 <- function(data, bar_data, bar_data2, id, legend = 'topleft',
   for (ii in nn) {
     with(sp[[ii]], {
       ## rect for indiv td
-      col <- tcol(col_grade, alpha = .5)
+      col  <- tcol(col_grade, alpha = .5)
       endx <- pmax(dd_end %|% dd_end2, dd_start, na.rm = TRUE)
       do_rect_(ii + 1, dd_start, endx, col = col, border = col)
+      
       ## td with end but no start date
       # if (no_start)
       if (FALSE)
-        segments(endx, 1 + ii + c(.15, -.15),
-                 endx - .15, 1 + ii + c(.15, -.15),
-                 col = col, lwd = 2)
+        segments(endx, 1 + ii + c(.15, -.15), endx - .15,
+                 1 + ii + c(.15, -.15), col = col, lwd = 2)
       
       ## add count of td to left in black if start date, color/italic if NA
       ## desc on right in color, italics if continuing; black otherwise
-      text(dd_start[1], ii + 1, labels = ii, pos = 2, xpd = NA, cex = .8,
-           col = if (no_start[1]) col else 1, font = if (no_start[1]) 3 else 1)
+      text(dd_start[1L], ii + 1L, labels = ii, pos = 2, xpd = NA,
+           cex = .8, col = if (no_start[1L]) col else 1,
+           font = if (no_start[1L]) 3 else 1)
       # text(tail(dd_end %|% end_day, 1), ii + 1, labels = tail(desc, 1),
       
-      text(max(dd_start, dd_end %|% dd_end2, na.rm = TRUE), ii + 1,
-           labels = tail(desc, 1),
-           pos = 4, xpd = NA, cex = .8, font = c(1,3)[tail(ong, 1) + 1L],
+      text(max(dd_start, dd_end %|% dd_end2, na.rm = TRUE), ii + 1L,
+           labels = tail(desc, 1), pos = 4, xpd = NA, cex = .8,
+           font = c(1, 3)[tail(ong, 1L) + 1L],
            col = c('black', tail(col, 1))[tail(ong, 1) + 1L])
     })
   }
+  
   invisible(list(data = rv$data, bar_data = bd, bar_data2 = td))
 }
 
@@ -1355,12 +1404,15 @@ check_river_format <- function(data, bar_data) {
   if (missing(data) && missing(bar_data)) {
     message('\'data\' should have the following format:\n', domain = NA)
     cat(fmt1, sep = '\n')
+    
     message('\n\'bar_data\' objects should have the following format:\n',
             domain = NA)
     cat(fmt2, sep = '\n')
+    
     message('\n\t\tOR\n')
     cat(fmt3, sep = '\n')
-    return(invisible())
+    
+    return(invisible(NULL))
   }
   
   to_date <- function(x) {
@@ -1370,6 +1422,7 @@ check_river_format <- function(data, bar_data) {
     x[, dts] <- lapply(x[, dts, drop = FALSE], to_date_)
     x
   }
+  
   do_error <- function(fmt, wh) {
     message(sprintf('%s should have the following format:\n', shQuote(wh)))
     cat(fmt, sep = '\n')
@@ -1378,9 +1431,11 @@ check_river_format <- function(data, bar_data) {
   }
   
   dd <- tryCatch({
-    dd <- setNames(data[, 1:10],
-                   c('id','dt_reg','dt_txstart','dt_txend','dt_prog','dt_offtx',
-                     'dt_status','status','dt_lastcontact','dt_offstudy'))
+    dd <- setNames(
+      data[, 1:10],
+      c('id', 'dt_reg', 'dt_txstart', 'dt_txend', 'dt_prog', 'dt_offtx',
+        'dt_status', 'status', 'dt_lastcontact', 'dt_offstudy')
+    )
     to_date(dd)
   }, error = function(e) do_error(fmt1, 'data'))
   
@@ -1390,23 +1445,24 @@ check_river_format <- function(data, bar_data) {
   dts <- grep('^dt_', names(bar_data))
   bd <- tryCatch({
     if (one <- length(dts) == 1L) {
-      bd <- setNames(bar_data[, 1:3], c('id','dt_assess_start','assess'))
+      bd <- setNames(bar_data[, 1:3], c('id', 'dt_assess_start', 'assess'))
       bd <- within(bd, {
         id <- factor(id, levels = unique(dd$id))
         dt_assess_end <- ave(dt_assess_start, id, FUN = function(x)
-          c(tail(x, -1), NA))
+          c(tail(x, -1L), NA))
       })[!is.na(bd$dt_assess_start), ]
       to_date(bd)
     } else {
       bd <- setNames(bar_data[, 1:5],
-                     c('id','dt_start','dt_end','grade','desc'))
+                     c('id', 'dt_start', 'dt_end', 'grade', 'desc'))
       bd <- within(bd, {
         id <- factor(id, levels = unique(dd$id))
       })
       to_date(bd)
     }
   }, error = function(e)
-    do_error(if (one) fmt2 else fmt3, paste0('bar_data', c('','2')[one + 1L])))
+    do_error(if (one) fmt2 else fmt3,
+             paste0('bar_data', c('', '2')[one + 1L])))
   
   invisible(bd)
 }
