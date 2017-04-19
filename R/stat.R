@@ -71,8 +71,14 @@
 #' extreme in the low response direction are those with
 #' \code{R/(N^dp) <= r/(n^dp)}.
 #' 
-#' @param r number of responses (successes)
-#' @param n number of observations (trials)
+#' @param r number of responses (successes); if \code{method = 'two-stage'},
+#' a vector of length two giving the max number of responses that can be
+#' observed in the first stage without continuing and the total number of
+#' responses observed
+#' @param n number of observations (trials); if \code{method = 'two-stage'},
+#' a vector of length two giving the number of cases entered during the first
+#' stage and the number of additional cases to be entered during the second
+#' stage
 #' @param alpha type-I error probability
 #' @param digits integer value specifying number of decimal places
 #' @param method character strings specifying which method to use; can be
@@ -101,16 +107,25 @@
 #' transformation, \emph{American Statistician}. \strong{55}:200-202, 2001.
 #' 
 #' @seealso
-#' \code{\link{binconr}}; \code{\link[Hmisc]{binconf}}; \code{desmon::binci};
-#' \code{desmon::twocon}
+#' \code{\link{binconr}}; \code{\link[Hmisc]{binconf}};
+#' \code{\link[desmon]{binci}}; \code{\link[desmon]{twocon}}
 #' 
 #' @examples
+#' bincon(0, 10)
 #' bincon(0:10, 10)
 #' bincon(5, 10, method = 'all')
 #' 
-#' ## ?desmon::twocon
+#' 
+#' ## two-stage confidence intervals
 #' bincon(c(3, 4), c(14, 18), method = 'two-stage', dp = 0)
 #' bincon(c(3, 4), c(14, 18), method = 'two-stage', dp = 1)
+#' 
+#' \dontrun{
+#' ## ?desmon::twocon
+#' ## equivalent to
+#' desmon::twocon(14, 18, 3, 4, dp = 0)
+#' desmon::twocon(14, 18, 3, 4, dp = 1)
+#' }
 #' 
 #' @export
 
@@ -168,25 +183,25 @@ bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
     res <- rbind(c(ll, ul), cl, c(asymp.lcl, asymp.ucl))
     res <- cbind(rep(r / n, 3), res)
     switch(method,
-           exact = res[1, ],
-           wilson = res[2, ],
-           asymptotic = res[3, ],
-           all = res, res)
+           exact      = res[1L, ],
+           wilson     = res[2L, ],
+           asymptotic = res[3L, ],
+           all        = res)
   }
   
   if ((lr != ln) & lr == 1L)
-    r <- rep(r, ln)
+    r <- rep_len(r, ln)
   if ((lr != ln) & ln == 1L)
-    n <- rep(n, lr)
+    n <- rep_len(n, lr)
   if ((lr > 1L | ln > 1L) & method == 'all') {
     method <- 'exact'
-    warning('Multiple confidence intervals should use one method. ',
-            'Using \'exact\' method', domain = NA)
+    warning('Multiple confidence intervals should use only one method, ',
+            'defaulting to \'exact\' method', domain = NA)
   }
   
   if (method == 'all' & lr == 1L & ln == 1L) {
     mat <- bc(r, n, alpha, method)
-    mat <- cbind(mat, mat[, 3] - mat[, 2])
+    mat <- cbind(mat, mat[, 3L] - mat[, 2L])
     dimnames(mat) <- list(c('Exact', 'Wilson', 'Asymptotic'),
                           c('PointEst', 'Lower', 'Upper','Width'))
     mat[, 2:4] <- round(mat[, 2:4], digits = digits)
@@ -197,7 +212,7 @@ bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
   mat <- matrix(ncol = 3L, nrow = lr)
   for (i in 1:lr)
     mat[i, ] <- bc(r[i], n[i], alpha = alpha, method = method)
-  mat <- `colnames<-`(cbind(mat, mat[, 3] - mat[, 2]),
+  mat <- `colnames<-`(cbind(mat, mat[, 3L] - mat[, 2L]),
                       c('PointEst', 'Lower', 'Upper', 'Width'))
   mat[, 2:4] <- round(mat[, 2:4], digits = digits)
   

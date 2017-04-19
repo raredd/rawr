@@ -8,9 +8,15 @@ bincon(r, n, alpha = 0.05, digits = getOption("digits"),
   method = c("exact", "wilson", "asymptotic", "all", "two-stage"), dp = 1)
 }
 \arguments{
-\item{r}{number of responses (successes)}
+\item{r}{number of responses (successes); if \code{method = 'two-stage'},
+a vector of length two giving the max number of responses that can be
+observed in the first stage without continuing and the total number of
+responses observed}
 
-\item{n}{number of observations (trials)}
+\item{n}{number of observations (trials); if \code{method = 'two-stage'},
+a vector of length two giving the number of cases entered during the first
+stage and the number of additional cases to be entered during the second
+stage}
 
 \item{alpha}{type-I error probability}
 
@@ -86,12 +92,21 @@ extreme in the low response direction are those with
 \code{R/(N^dp) <= r/(n^dp)}.
 }
 \examples{
+bincon(0, 10)
 bincon(0:10, 10)
 bincon(5, 10, method = 'all')
 
-## ?desmon::twocon
+
+## two-stage confidence intervals
 bincon(c(3, 4), c(14, 18), method = 'two-stage', dp = 0)
 bincon(c(3, 4), c(14, 18), method = 'two-stage', dp = 1)
+
+\dontrun{
+## ?desmon::twocon
+## equivalent to
+desmon::twocon(14, 18, 3, 4, dp = 0)
+desmon::twocon(14, 18, 3, 4, dp = 1)
+}
 
 }
 \references{
@@ -107,8 +122,8 @@ Newcombe, R.G. Logit confidence intervals and the inverse sinh
 transformation, \emph{American Statistician}. \strong{55}:200-202, 2001.
 }
 \seealso{
-\code{\link{binconr}}; \code{\link[Hmisc]{binconf}}; \code{desmon::binci};
-\code{desmon::twocon}
+\code{\link{binconr}}; \code{\link[Hmisc]{binconf}};
+\code{\link[desmon]{binci}}; \code{\link[desmon]{twocon}}
 }
 \author{
 Rollin Brant, Frank Harrell, and Brad Biggerstaff; modifications by Robert
