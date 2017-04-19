@@ -1324,7 +1324,7 @@ river2 <- function(data, bar_data, bar_data2, id, legend = 'topleft',
   if (nrow(td) && legend[[1L]] != FALSE)
     do.call('legend',
       modifyList(list(
-        x = legend, fill = cols, horiz = FALSE,
+        x = legend, fill = tcol(cols, alpha = 0.5), horiz = FALSE,
         cex = .8, legend = levels(td$grade), bty = 'n'),
         val = as.list(legend)
       )
