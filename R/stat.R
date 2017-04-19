@@ -126,9 +126,7 @@ bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
   ln <- length(n)
   
   if (method == 'two-stage') {
-    r <- sort(r)
-    n <- sort(n)
-    if (any(r < 0) | r[1] > n[1] | r[2] > sum(n))
+    if (any(r < 0) | r[1L] > n[1L] | r[2L] > sum(n))
       stop('Invalid response value')
     if (lr != 2L | ln != 2L)
       stop('\'r\' and \'n\' should be length 2')
