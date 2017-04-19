@@ -716,8 +716,11 @@ writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
   
   mat <- as.matrix(format(x, quote = quote, digits = digits, ...))
   mat[] <- trimws(mat)
-  `colnames<-`(mat[-(1:2), ],
-               gsub('$$$', '', Filter(nzchar, mat[1:2, ]), fixed = TRUE))
+  
+  `colnames<-`(
+    mat[-(1:2), , drop = FALSE],
+    gsub('$$$', '', Filter(nzchar, mat[1:2, ]), fixed = TRUE)
+  )
 }
 
 #' Tabler
@@ -993,8 +996,8 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
     ## pct based on n
     ptbl <- ttbl / matrix(rep(c(sum(n[seq.int(ln)]), n), each = nr), nr) * 100
     
-    ptbl <- tryCatch(apply(ptbl, 2, Round, 100),
-                     error = function(e) apply(ptbl, 2, round, 0))
+    ptbl <- tryCatch(apply(ptbl, 2L, Round, 100),
+                     error = function(e) apply(ptbl, 2L, round, 0))
     res <- matrix(sprintf('%s (%s%%)', ttbl, ptbl), nrow = nr, ncol = nc)
     res[] <- gsub('0 (NaN%)', '0 (0%)', res, fixed = TRUE)
     
@@ -1007,12 +1010,12 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
       res <- as.matrix(read.table(text = res, colClasses = 'character'))
       cn <- interleave(cn, rep_len('%', nc))
       if (!pct.total) {
-        cn <- cn[-2]
-        res <- res[, -2]
+        cn <- cn[-2L]
+        res <- res[, -2L]
       }
     } else {
       if (!pct.total)
-        res[, 1] <- rm_p(res[, 1])
+        res[, 1L] <- rm_p(res[, 1L])
     }
   }
   
@@ -1022,7 +1025,7 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
   
   ## column that separates labels from counts
   ftbl[is.na(ftbl)] <- ''
-  idx  <- which(colSums(apply(ftbl, 2, Negate(nzchar))) == nr)
+  idx  <- which(colSums(apply(ftbl, 2L, Negate(nzchar))) == nr)
   
   res  <- cbind(ftbl[, -(idx:ncol(ftbl)), drop = FALSE], `colnames<-`(res, cn))
   
@@ -1031,15 +1034,15 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
     o <- data.frame(res[, c(varname, 'Total')], stringsAsFactors = FALSE)
     o <- within(locf(o), Total <- as.numeric(Total))
     if (length(varname) == 1L)
-      ord(o[, 'Total']) else ord(-xtfrm(o[, 1]), o[, 'Total'])
+      ord(o[, 'Total']) else ord(-xtfrm(o[, 1L]), o[, 'Total'])
   } else seq.int(nrow(res))
   res <- res[o, ]
   
   ## remove rows with 0 total since not dropped in ftable
   if (drop)
     res <- res[!grepl('^0', res[, 'Total']), ]
-  if (length(varname) != 1)
-    res[, 1] <- ifelse(duplicated(res[, 1]), '', res[, 1])
+  if (length(varname) != 1L)
+    res[, 1L] <- ifelse(duplicated(res[, 1]), '', res[, 1])
   
   if (!isTRUE(zeros)) {
     if (identical(FALSE, zeros))
@@ -1047,7 +1050,7 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
     idx <- idx:ncol(res)
     res[, idx] <- `[<-`(res[, idx], gsub('^0.*', zeros, res[, idx]))
   }
-  `rownames<-`(res[, -1], res[, 1])
+  `rownames<-`(res[, -1L], res[, 1L])
 }
 
 #' @rdname tabler_by
@@ -1093,18 +1096,19 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
   # res <- t(t(res)[!duplicated(t(res)), ])
   res <- res[, !(duplicated(colnames(res)) & colnames(res) %in% varname)]
   if (drop) {
-    res <- res[, apply(res, 2, function(x)
-      !(all(grepl('^\\s*0', x)) | all(x %in% as.character(zeros))))]
-    # res <- res[!res[, ln] %in% c('0', as.character(zeros)), ]
+    res <- res[, apply(res, 2L, function(x)
+      !(all(grepl('^\\s*0', x)) | all(x %in% as.character(zeros)))),
+      drop = FALSE]
+    # res <- res[!res[, ln] %in% c('0', as.character(zeros)), , drop = FALSE]
     res <- res[!(grepl('^\\s*0', res[, ln]) |
-                 res[, ln] %in% as.character(zeros)), ]
+                 res[, ln] %in% as.character(zeros)), , drop = FALSE]
   }
   res <- res[if (!order)
     seq.int(nrow(res)) else {
       if (ln == 1L)
-        ord(as.numeric(rm_p(res[, 1]))) else
+        ord(as.numeric(rm_p(res[, 1L]))) else
           ord(-xtfrm(rownames(res)), as.numeric(rm_p(res[, ln])))
-    }, ]
+    }, , drop = FALSE]
   
   rownames(res)[duplicated(rownames(res))] <- ''
   res
