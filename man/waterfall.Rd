@@ -5,7 +5,7 @@
 \title{Waterall plot}
 \usage{
 waterfall(x, type = 1L, col = c("red", "blue"), ..., arrows = type == 2L,
-  panel.first = NULL, panel.last = NULL)
+  rev = FALSE, plot = TRUE, panel.first = NULL, panel.last = NULL)
 }
 \arguments{
 \item{x}{a numeric vector}
@@ -24,6 +24,10 @@ other methods, or to \code{\link{par}}}
 \item{arrows}{logical; if \code{TRUE}, arrows are drawn in the direction
 of each bar}
 
+\item{rev}{logical; if \code{TRUE}, the order along the x-axis is reversed}
+
+\item{plot}{logical; if \code{FALSE}, nothing is plotted}
+
 \item{panel.first}{an "expression" to be evaluated after the plot axes are
 set up but before any plotting takes place; this can be useful for drawing
 background grids or scatterplot smooths; note that this works by lazy
@@ -35,8 +39,8 @@ place but before the axes, title, and box are added; see the comments about
 \code{panel.first}}
 }
 \value{
-A numeric vector giving the coordinates of all the bar midpoints drawn; see
-\code{\link{barplot}}.
+A matrix giving the coordinates of \emph{all} the bar midpoints drawn (see
+\code{\link{barplot}}) and the \code{\link{order}} of \code{x}.
 }
 \description{
 Draw two types of waterfall plots.
@@ -53,6 +57,11 @@ waterfall(change, col = col)
 waterfall(change, col = as.character(cut(change, c(-Inf, -50, 50, Inf), col)))
 legend('top', names(col), fill = col, horiz = TRUE, bty = 'n', border = NA)
 title(xlab = 'Patient', ylab = '\% change', main = 'waterfall', line = 2)
+
+## use return value to add an existing plot
+wf <- waterfall(change, plot = FALSE)
+text(wf[, 1L], 0, labels = sprintf('\%0.1f', change[wf[, 2L]]),
+     pos = ifelse(change[wf[, 2L]] > 0, 1, 3), cex = 0.5)
 
 
 ## type 2

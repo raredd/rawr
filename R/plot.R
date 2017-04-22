@@ -1637,6 +1637,8 @@ plothc <- function(hc, labels = hc$labels, col = as.factor(labels),
 #' other methods, or to \code{\link{par}}
 #' @param arrows logical; if \code{TRUE}, arrows are drawn in the direction
 #' of each bar
+#' @param rev logical; if \code{TRUE}, the order along the x-axis is reversed
+#' @param plot logical; if \code{FALSE}, nothing is plotted
 #' @param panel.first an "expression" to be evaluated after the plot axes are
 #' set up but before any plotting takes place; this can be useful for drawing
 #' background grids or scatterplot smooths; note that this works by lazy
@@ -1647,8 +1649,8 @@ plothc <- function(hc, labels = hc$labels, col = as.factor(labels),
 #' \code{panel.first}
 #' 
 #' @return
-#' A numeric vector giving the coordinates of all the bar midpoints drawn; see
-#' \code{\link{barplot}}.
+#' A matrix giving the coordinates of \emph{all} the bar midpoints drawn (see
+#' \code{\link{barplot}}) and the \code{\link{order}} of \code{x}.
 #' 
 #' @examples
 #' set.seed(1)
@@ -1663,6 +1665,11 @@ plothc <- function(hc, labels = hc$labels, col = as.factor(labels),
 #' legend('top', names(col), fill = col, horiz = TRUE, bty = 'n', border = NA)
 #' title(xlab = 'Patient', ylab = '% change', main = 'waterfall', line = 2)
 #' 
+#' ## use return value to add an existing plot
+#' wf <- waterfall(change, plot = FALSE)
+#' text(wf[, 1L], 0, labels = sprintf('%0.1f', change[wf[, 2L]]),
+#'      pos = ifelse(change[wf[, 2L]] > 0, 1, 3), cex = 0.5)
+#' 
 #' 
 #' ## type 2
 #' waterfall(change, type = 2, col = col, panel.first = grid())
@@ -1672,15 +1679,19 @@ plothc <- function(hc, labels = hc$labels, col = as.factor(labels),
 #' @export
 
 waterfall <- function(x, type = 1L, col = c('red','blue'), ...,
-                      arrows = type == 2L,
+                      arrows = type == 2L, rev = FALSE, plot = TRUE,
                       panel.first = NULL, panel.last = NULL) {
   m  <- match.call(expand.dots = FALSE)$`...`
   # op <- par(no.readonly = TRUE)
   # on.exit(par(op))
   
-  o  <- order(x, na.last = NA)
-  rx <- range(x, na.rm = TRUE)
-  bp <- barplot(x[o], plot = FALSE)
+  o   <- order(if (rev) -x else x, na.last = NA)
+  bp  <- barplot(x[o], plot = FALSE)
+  rx  <- range(x, na.rm = TRUE)
+  res <- cbind(mp = c(bp), order = o)
+  
+  if (!plot)
+    return(res)
 
   type <- if (!type[1L] %in% 1:2) {
     warning('\'type\' should be 1 or 2 - defaulting to 1\n', call. = FALSE)
@@ -1712,5 +1723,5 @@ waterfall <- function(x, type = 1L, col = c('red','blue'), ...,
     arrows(bp, y0, bp, y1, lwd = 2, length = .1, xpd = NA, col = 0)
   panel.last
   
-  invisible(bp)
+  invisible(cbind(mp = c(bp), order = o))
 }
