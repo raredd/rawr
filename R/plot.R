@@ -1723,5 +1723,5 @@ waterfall <- function(x, type = 1L, col = c('red','blue'), ...,
     arrows(bp, y0, bp, y1, lwd = 2, length = .1, xpd = NA, col = 0)
   panel.last
   
-  invisible(cbind(mp = c(bp), order = o))
+  invisible(res)
 }
