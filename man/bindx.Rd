@@ -72,9 +72,10 @@ the latter specifically for \code{\link{rbind}}ing \emph{named} vectors
 objects and bind normally, filling with \code{NA}s where dimensions are
 not equal.
 
-\code{rbindfill} stacks named vectors into a matrix by initializing a
-matrix with all names and filling with \code{...} by row in the order
-given. Names will be a unique list of the vector names in the order given.
+\code{rbindfill} stacks \emph{named} vectors by initializing a matrix
+with all names and filling with \code{...} by row in the order given.
+The column names will be a vector of the unique names in the order they
+were given.
 
 \code{rbindfill2} row-binds data frames with zero or more common column
 names. \code{rbindfill2} starts with the first data frame given and

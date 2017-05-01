@@ -104,7 +104,9 @@
 #' for a binomial proportion (with discussion). \emph{Statistical Science}. 
 #' \strong{16}:101-133, 2001.
 #' @references Newcombe, R.G. Logit confidence intervals and the inverse sinh
-#' transformation, \emph{American Statistician}. \strong{55}:200-202, 2001.
+#' transformation, \emph{American Statistician}. \strong{55}:200-2, 2001.
+#' @references Atkinson E.N. and B.W. Brown. \emph{Biometrics}.
+#' \strong{41(3)}: 741-4, 1985.
 #' 
 #' @seealso
 #' \code{\link{binconr}}; \code{\link[Hmisc]{binconf}};

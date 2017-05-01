@@ -242,30 +242,30 @@ lss <- function(pos = 1L, pattern, by = NULL, all.names = FALSE,
                 decreasing = TRUE, n = 40L) {
   if (!length(ls(envir = as.environment(pos))))
     return(character(0))
+  
   napply <- function(names, fn)
     sapply(names, function(x) fn(get(x, pos = pos)))
   names <- ls(pos = pos, pattern = pattern, all.names = all.names)
   
-  oclass <- napply(names, function(x) as.character(class(x))[1])
-  omode <- napply(names, mode)
-  otype <- ifelse(is.na(oclass), omode, oclass)
-  oprettysize <- napply(names, function(x)
-    capture.output(print(object.size(x), units = 'auto')))
-  osize <- napply(names, object.size)
-  odim <- t(napply(names, function(x) as.numeric(dim(x))[1:2]))
-  vec <- is.na(odim)[ , 1] & (otype != 'function')
-  odim[vec, 1] <- napply(names, length)[vec]
+  cl <- napply(names, function(x) as.character(class(x))[1L])
+  mo <- napply(names, mode)
   
-  out <- setNames(data.frame(otype, osize, oprettysize, odim),
-                  c('type', 'size', 'sizef', 'nrow', 'ncol'))
-  mb <- sum(napply(names, function(x) object.size(x))) / (1024 * 1024)
-  if (mb > 1)
-    on.exit(message(sprintf('Total size: %s Mb', roundr(mb, 1))))
+  type  <- ifelse(is.na(mo), mo, cl)
+  size  <- napply(names, object.size)
+  sizef <- napply(names, utils:::format.object_size, units = 'auto')
+  dims  <- t(napply(names, function(x) as.numeric(dim(x))[1:2]))
+  idx   <- is.na(dims)[, 1L] & (type != 'function')
+  dims[idx, 1L] <- napply(names, length)[idx]
+  
+  res <- data.frame(type, size, sizef, nrow = dims[, 1L], ncol = dims[, 2L])
+  
+  if ((mb <- sum(napply(names, object.size)) / (1024 * 1024)) > 1)
+    on.exit(message(sprintf('Total size: %s Mb', roundr(mb, 1L))))
   
   if (!is.null(by))
-    out <- out[order(out[[by]], decreasing = decreasing), ]
+    res <- res[order(res[, by], decreasing = decreasing), ]
   
-  head(out, n)
+  head(res, n)
 }
 
 #' @rdname rawr_ls
@@ -273,17 +273,21 @@ lss <- function(pos = 1L, pattern, by = NULL, all.names = FALSE,
 lsf <- function(package, file = 'DESCRIPTION') {
   ## DESCRIPTION, INDEX, NEWS, NAMESPACE
   package <- as.character(substitute(package))
-  p <- do.call('lsp', list(package = package, what = 'path'))
+  
+  p  <- do.call('lsp', list(package = package, what = 'path'))
   lf <- list.files(p)
   ff <- lf[grepl(sprintf('(?i)^%s.*$', file), lf, perl = TRUE)]
+  
   if (!length(ff)) {
     message(sprintf('File \'%s\' not found', file))
-    return(invisible())
+    return(invisible(NULL))
   }
+  
   f <- readLines(con <- file(fp <- file.path(p, ff)))
   on.exit(close(con))
   message(sprintf('Showing file:\n%s\n', fp))
   cat(f, sep = '\n')
+  
   invisible(f)
 }
 
@@ -299,33 +303,40 @@ lsp <- function(package, what, pattern) {
   ## base package does not have NAMESPACE
   if (isBaseNamespace(ns)) {
     res <- ls(.BaseNamespaceEnv, all.names = TRUE)
-    return(res[grep(pattern, res, perl = TRUE, ignore.case = TRUE)])
+    res[grep(pattern, res, perl = TRUE, ignore.case = TRUE)]
   } else {
     ## for non base packages
     if (exists('.__NAMESPACE__.', envir = ns, inherits = FALSE)) {
       wh <- get('.__NAMESPACE__.', inherits = FALSE,
                 envir = asNamespace(package, base.OK = FALSE))
       what <- if (missing(what)) 'all'
-      else if ('?' %in% what) return(ls(wh)) 
-      else ls(wh)[pmatch(what[1], ls(wh))]
+      else if ('?' %in% what)
+        return(ls(wh)) 
+      else ls(wh)[pmatch(what[1L], ls(wh))]
+      
       if (!is.null(what) && !any(what %in% c('all', ls(wh))))
         stop('\'what\' should be one of ',
              paste0(shQuote(ls(wh)), collapse = ', '),
              ', or \'all\'', domain = NA)
-      res <- sapply(ls(wh), function(x) getNamespaceInfo(ns, x))
+      res <- sapply(ls(wh), getNamespaceInfo, ns = ns)
       res <- rapply(res, ls, classes = 'environment',
                     how = 'replace', all.names = TRUE)
+      
       if (is.null(what))
         return(res[grep(pattern, res, perl = TRUE, ignore.case = TRUE)])
+      
       if (what %in% 'all') {
         res <- ls(getNamespace(package), all.names = TRUE)
         return(res[grep(pattern, res, perl = TRUE, ignore.case = TRUE)])
       }
-      if (any(what %in% ls(wh))) {
+      
+      if (!any(what %in% ls(wh)))
+        message(sprintf('No NAMESPACE file found for package %s.', package))
+      else {
         res <- res[[what]]
-        return(res[grep(pattern, res, perl = TRUE, ignore.case = TRUE)])
+        res[grep(pattern, res, perl = TRUE, ignore.case = TRUE)]
       }
-    } else stop(sprintf('no NAMESPACE file found for package %s', package))
+    }
   }
 }
 
@@ -369,9 +380,10 @@ parse_yaml <- function(x) {
 parse_index <- function(x) {
   ## collapse descriptions >1 line
   x <- strsplit(gsub('\\$\\$\\s+', ' ', paste0(x, collapse = '$$')),
-                split = '\\$\\$')[[1]]
+                split = '\\$\\$')[[1L]]
   x <- strsplit(x, '\\s{2,}')
-  as.list(sapply(x, function(xx) `names<-`(xx[2], xx[1])))
+  
+  as.list(sapply(x, function(xx) setNames(xx[2L], xx[1L])))
 }
 
 #' @rdname rawr_parse
@@ -379,25 +391,32 @@ parse_index <- function(x) {
 parse_news <- function(x) {
   ## assume some separator
   x <- Filter(nzchar, gsub('[-=_]{2,}', '', x))
+  
   ## assume version updates state with letter, not -, *, etc
   nn <- x[idx <- grepl('^\\w+', x)]
   sp <- split(x, cumsum(idx))
-  setNames(lapply(sp, '[', -1), nn)
+  
+  setNames(lapply(sp, '[', -1L), nn)
 }
 
 #' @rdname rawr_parse
 #' @export
-parse_namespace <- function(x,
-    wh = c("import", "export", "exportPattern", "importClass",
-           "importMethod", "exportClass", "exportMethod",
-           "exportClassPattern", "useDynLib", "nativeRoutine", "S3method")) {
+parse_namespace <- function(
+  x, wh = c('import', 'export', 'exportPattern', 'importClass',
+            'importMethod', 'exportClass', 'exportMethod',
+            'exportClassPattern', 'useDynLib', 'nativeRoutine', 'S3method')
+  ) {
   ## remove comments and collapse
   x <- paste0(gsub('#.*$', '', x), collapse = '')
+  
   mm <- lapply(wh, function(xx)
     gregexpr(sprintf('(?i)%s\\((.*?)\\)', xx), x, perl = TRUE))
-  setNames(lapply(mm, function(xx)
-    gsub('^\\s+|\\s+$|\\s{2,}', '',
-         unlist(strsplit(unlist(regcaptures(x, xx)), ',')))), wh)
+  
+  setNames(
+    lapply(mm, function(xx)
+      gsub('^\\s+|\\s+$|\\s{2,}', '',
+           unlist(strsplit(unlist(regcaptures(x, xx)), ',')))),
+    wh)
 }
 
 #' Pairwise sum
@@ -457,19 +476,21 @@ psum <- function(..., na.rm = FALSE) {
 #' @export
 
 rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
-  zero_range <- function (x, tol = .Machine$double.eps * 100) {
-    if (length(x) == 1) return(TRUE)
-    if (length(x) != 2) stop('\'x\' must be length one or two')
-    if (any(is.na(x)))  return(NA)
-    if (x[1] == x[2])   return(TRUE)
+  zero_range <- function(x, tol = .Machine$double.eps * 100) {
+    if (length(x) == 1L)  return(TRUE)
+    if (length(x) != 2L)  stop('\'x\' must be length one or two')
+    if (any(is.na(x)))    return(NA)
+    if (x[1L] == x[2L])   return(TRUE)
     if (all(is.infinite(x))) return(FALSE)
     m <- min(abs(x))
     if (m == 0) return(FALSE)
-    abs((x[1] - x[2]) / m) < tol
+    abs((x[1L] - x[2L]) / m) < tol
   }
+  
   if (zero_range(from) || zero_range(to))
     return(rep(mean(to), length(x)))
-  (x - from[1]) / diff(from) * diff(to) + to[1]
+  
+  (x - from[1L]) / diff(from) * diff(to) + to[1L]
 }
 
 #' Clear workspace
@@ -505,9 +526,10 @@ clear <- function(...) cat('\014')
 #' objects and bind normally, filling with \code{NA}s where dimensions are
 #' not equal.
 #' 
-#' \code{rbindfill} stacks named vectors into a matrix by initializing a
-#' matrix with all names and filling with \code{...} by row in the order
-#' given. Names will be a unique list of the vector names in the order given.
+#' \code{rbindfill} stacks \emph{named} vectors by initializing a matrix
+#' with all names and filling with \code{...} by row in the order given.
+#' The column names will be a vector of the unique names in the order they
+#' were given.
 #' 
 #' \code{rbindfill2} row-binds data frames with zero or more common column
 #' names. \code{rbindfill2} starts with the first data frame given and
@@ -1030,10 +1052,15 @@ interleave <- function(..., which) {
 #' @export
 
 outer2 <- function(..., FUN) {
-  vf <- Vectorize(function(x, y) c(as.list(x), as.list(y)), SIMPLIFY = FALSE)
-  f <- function(l) Reduce(function(x, y) outer(x, y, vf), l)
+  vf <- Vectorize(function(x, y)
+    c(as.list(x), as.list(y)), SIMPLIFY = FALSE)
+  f <- function(l)
+    Reduce(function(x, y) outer(x, y, vf), l)
+  
   args <- f(list(...))
-  res <- apply(args, 1:length(dim(args)), function(x) do.call(FUN, x[[1]]))
+  res <- apply(args, 1:length(dim(args)), function(x)
+    do.call(FUN, x[[1L]]))
+  
   array(res, dim = dim(res), dimnames = list(...))
 }
 
@@ -1176,8 +1203,10 @@ roll_fun <- function(x, n = 5L, FUN = mean, ...,
       x[length(x) + 1L - tail(sequence(ii), n)]
     else x[tail(sequence(ii), n)]
   })
+  
   if (keep)
     l[1:n] <- lapply(1:n, function(x) l[[n]])
+  
   sapply(if (fromLast) rev(l) else l, FUN, ...)
 }
 
@@ -1228,9 +1257,7 @@ classMethods <- function(object, generic = NULL) {
     if (length(m)) {
       data.frame(m = as.vector(m), c = x, n = sub(sname, '', as.vector(m)),
                  attr(m, 'info'), stringsAsFactors = FALSE)
-    } else {
-      NULL
-    }
+    } else NULL
   })
   
   dd <- do.call('rbind', ml)
@@ -1245,9 +1272,13 @@ classMethods <- function(object, generic = NULL) {
 genericMethods <- function(object, generic) {
   generic <- if (is.character(generic))
     generic else deparse(substitute(generic))
-  f <- X <- function(x, object) UseMethod('X')
+  
+  f <- X <- function(x, object)
+    UseMethod('X')
+  
   for (m in methods(generic))
     assign(sub(generic, 'X', m), `body<-`(f, value = m))
+  
   X(object)
 }
 
@@ -1307,9 +1338,8 @@ genericMethods <- function(object, generic) {
 regcaptures <- function(x, m, use.names = TRUE) {
   if (length(x) != length(m))
     stop('\'x\' and \'m\' must have the same length')
-  oo <- options()
+  oo <- options(stringsAsFactors = FALSE)
   on.exit(options(oo))
-  options(stringsAsFactors = FALSE)
   
   ili <- is.list(m)
   useBytes <- if (ili)
@@ -1452,20 +1482,23 @@ cast <- function(data, idvar = list(1), timevar = list(2),
   idvar <- f(idvar)
   timevar <- f(timevar)
   v.names <- f(v.names)
+  
   ## use reshape defaults and set cast defaults
   # l <- c(as.list(formals(reshape)), list(...))
   l <- as.list(formals(reshape))
   l$direction <- 'wide'
-  l$idvar <- idvar
-  l$v.names <- v.names
-  l$data <- data
-  l$timevar <- timevar
-  l$times <- l$ids <- NULL
+  l$idvar     <- idvar
+  l$v.names   <- v.names
+  l$data      <- data
+  l$timevar   <- timevar
+  l$times     <- l$ids <- NULL
+  
   ## also allow any cast defaults to be overridden, ie, direction = 'long'
   ## but names must match exactly, ie, dir = 'long' will not work
   # l <- l[!duplicated(names(l), fromLast = TRUE)]
   l <- modifyList(l, list(...))
   res <- do.call('reshape', l)
+  
   `rownames<-`(res, NULL)
 }
 
@@ -1477,30 +1510,33 @@ melt <- function(data, varying = list(1:ncol(data)), ...) {
     varying <- if (is.numeric(varying))
       list(varying) else list(which(n %in% varying))
   vl <- length(varying) == 1L
+  
   ## use reshape defaults and set melt defaults
   # l <- c(as.list(formals(reshape)), list(...))
   l <- as.list(formals(reshape))
   l$direction <- 'long'
-  l$varying <- varying
-  l$times <- if (vl) n[varying[[1L]]] else seq_along(varying[[1L]])
-  l$data <- data
-  l$idvar <- '_id_'
-  l$timevar <- if (vl) 'variable' else 'time'
-  l$v.names <- if (vl) 'value' else paste0('value', 1:length(varying))
+  l$varying   <- varying
+  l$times     <- if (vl) n[varying[[1L]]] else seq_along(varying[[1L]])
+  l$data      <- data
+  l$idvar     <- '_id_'
+  l$timevar   <- if (vl) 'variable' else 'time'
+  l$v.names   <- if (vl) 'value' else paste0('value', 1:length(varying))
+  
   ## also allow any melt defaults to be overridden, ie, direction = 'wide'
   ## but names must match exactly, ie, dir = 'wide' will not work
   # l <- l[!duplicated(names(l), fromLast = TRUE)]
   l <- modifyList(l, list(...))
   res <- do.call('reshape', l)
   res$'_id_' <- NULL
+  
   `rownames<-`(res, NULL)
 }
 
 #' View data
 #' 
-#' Convenience functons to use the base \code{R} data viewer (\code{view}
+#' Convenience functons to use the base \code{R} data viewer (\code{View2}
 #' always invokes \code{\link[utils]{View}} instead of the rstudio viewer)
-#' or the default browser (\code{view2} which can open html and widgets in
+#' or the default browser (\code{view} which can open html or widgets in
 #' the browser or to view data frame- or matrix-like objects using
 #' \code{\link[DT]{datatable}}.
 #' 
@@ -1514,38 +1550,43 @@ melt <- function(data, varying = list(1:ncol(data)), ...) {
 #' default browser
 #' 
 #' @examples
-#' view2(mtcars)
-#' view2(htmlTable::htmlTable(mtcars))
+#' View2(mtcars)
+#' view(mtcars)
+#' view(htmlTable::htmlTable(mtcars))
 #' 
 #' \dontrun{
-#' view2(qtlcharts::iplot(1:5, 1:5))
+#' view(qtlcharts::iplot(1:5, 1:5))
 #' }
 #' 
 #' @name rawr_view
-#' @export
+NULL
 
 #' @rdname rawr_view
 #' @export
-view <- function(x, title, ...)
+View2 <- function(x, title, ...)
   utils::View(x, title)
 
 #' @rdname rawr_view
 #' @export
-view2 <- function(x, use_viewer = FALSE, ...) {
+view <- function(x, use_viewer = FALSE, ...) {
+  htmlFile <- tempfile(fileext = '.html')
+  
   if (is.data.frame(x) | is.matrix(x))
     x <- DT::datatable(x)
-  htmlFile <- tempfile(fileext = '.html')
+  
   if (inherits(x, 'htmlwidget'))
     htmlwidgets::saveWidget(x, htmlFile, selfcontained = TRUE) else
       writeLines(x, con = htmlFile)
+  
   if (use_viewer)
-    tryCatch(rstudioapi::viewer(htmlFile),
-             error = function(e) {
-               message('Viewer not available - opening in browser.\n',
-                       'In RStudio, try installing the \'rstudioapi\' package.',
-                       domain = NA)
-               browseURL(htmlFile)
-             }) else browseURL(htmlFile)
+    tryCatch(
+      rstudioapi::viewer(htmlFile),
+      error = function(e) {
+        message('Viewer not available - opening in browser.\n',
+                'In RStudio, try installing the \'rstudioapi\' package.',
+                domain = NA)
+        browseURL(htmlFile)
+      }) else browseURL(htmlFile)
 }
 
 #' Concatenate lists
@@ -1689,14 +1730,17 @@ rapply2 <- function(l, FUN, classes = 'any', ...,
                     check.nested = 'list' %in% classes) {
   stopifnot(islist(l))
   FUN <- match.fun(FUN)
+  
   is.nested <- if (check.nested)
     function(l) any(vapply(l, islist, NA)) else function(l) FALSE
+  
   for (ii in seq_along(l))
     l[[ii]] <- if (is.nested(l[[ii]]) ||
                    (islist(l[[ii]]) & ('list' %ni% classes)))
       Recall(l[[ii]], FUN, classes, ..., check.nested = check.nested) else
         if (any(classes == 'any') || inherits(l[[ii]], classes))
           FUN(l[[ii]], ...) else l[[ii]]
+  
   if ('list' %in% classes & !identical(FUN, unlist))
     FUN(l, ...) else l
 }
@@ -1737,14 +1781,18 @@ rapply2 <- function(l, FUN, classes = 'any', ...,
 
 sort_matrix <- function(m, margin = 1L, order) {
   stopifnot(sum(1:2 == margin) == 1L)
+  
   m <- if (margin == 1L)
     as.matrix(m) else t(as.matrix(m))
   if (missing(order))
     order <- sort(unique(c(m)), decreasing = TRUE)
+  
   stopifnot(length(order) != length(unique(m)))
-  dd <- data.frame(t(m))
+  
+  dd   <- data.frame(t(m))
   dd[] <- lapply(dd, factor, levels = order)
-  m <- m[, do.call('order', dd)]
+  m    <- m[, do.call('order', dd)]
+  
   if (margin == 1L)
     m else t(m)
 }
@@ -1790,25 +1838,28 @@ insert <- function(x, row, col, repl = NA) {
                    if (!missing(col)) col),
               repl)
     )
+  
   if (!missing(row)) {
-    n <- nrow(x)
+    n  <- nrow(x)
     rn <- rownames(x)
     idx_na <- insert_(seq.int(n), row, NA)
     idx <- locf(idx_na, fromLast = c(FALSE, TRUE))
-    x <- x[idx, ]
+    x   <- x[idx, ]
     if (!is.null(rn))
       rownames(x) <- rev(make.unique(rev(rn[idx])))
     x[which(is.na(idx_na)), ] <- repl
   }
+  
   if (!missing(col)) {
-    n <- ncol(x)
+    n  <- ncol(x)
     cn <- colnames(x)
     idx_na <- insert_(seq.int(n), col, NA)
     idx <- locf(idx_na, fromLast = c(FALSE, TRUE))
-    x <- x[, idx, drop = FALSE]
+    x   <- x[, idx, drop = FALSE]
     colnames(x) <- cn[idx]
     x[, which(is.na(idx_na))] <- repl
   }
+  
   x
 }
 
@@ -2114,6 +2165,7 @@ combine_regex <- function(x, levels, labels = seq.int(length(levels) + 1L),
 #' column_to_rownames(as.matrix(mtcars), 'mpg')
 #' 
 #' @name rawr_rownames
+NULL
 
 #' @rdname rawr_rownames
 #' @export

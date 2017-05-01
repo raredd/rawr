@@ -2,13 +2,13 @@
 % Please edit documentation in R/utils.R
 \name{rawr_view}
 \alias{rawr_view}
+\alias{View2}
 \alias{view}
-\alias{view2}
 \title{View data}
 \usage{
-view(x, title, ...)
+View2(x, title, ...)
 
-view2(x, use_viewer = FALSE, ...)
+view(x, use_viewer = FALSE, ...)
 }
 \arguments{
 \item{x}{an \code{R} object which can be coerced to a data frame with
@@ -24,18 +24,19 @@ prefixed by \code{Data:}}
 default browser}
 }
 \description{
-Convenience functons to use the base \code{R} data viewer (\code{view}
+Convenience functons to use the base \code{R} data viewer (\code{View2}
 always invokes \code{\link[utils]{View}} instead of the rstudio viewer)
-or the default browser (\code{view2} which can open html and widgets in
+or the default browser (\code{view} which can open html or widgets in
 the browser or to view data frame- or matrix-like objects using
 \code{\link[DT]{datatable}}.
 }
 \examples{
-view2(mtcars)
-view2(htmlTable::htmlTable(mtcars))
+View2(mtcars)
+view(mtcars)
+view(htmlTable::htmlTable(mtcars))
 
 \dontrun{
-view2(qtlcharts::iplot(1:5, 1:5))
+view(qtlcharts::iplot(1:5, 1:5))
 }
 
 }
