@@ -1284,18 +1284,23 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
 #' CR, PR, SD, PD, NE or similar
 #' @param r_or_better if an integer, the first \code{r_or_better} levels of
 #' \code{x} will be combined and proportions and confidence intervals will be
-#' calculated for the aggregate; if \code{FALSE}; this is not included
+#' calculated for the aggregate; if \code{FALSE}; only single unique values
+#' of \code{x} are estimated
 #' @param conf,frac,show_conf,pct.sign additional arguments passed to
 #' \code{\link{binconr}}
 #' @param digits number of digits past the decimal point to keep
 #' @param total logical or numeric; if \code{TRUE}, a column with the total,
 #' i.e., \code{length(x)} is added; if numeric, \code{length(x)} and,
-#' optionally, fracton and percent out of \code{total} is added
+#' optionally, fraction and percent out of \code{total} is added
 #' @param two_stage \code{FALSE} (default, assumes exact binomial CIs are
 #' desired) or a vector of length 3 with the 1) maximum number responses in
 #' the first stage that can be observed without continuing; 2) the number
 #' entered in the first stage; and 3) the additional number entered in the
 #' second
+#' 
+#' if more than three integers are given, the remaining should indicate the
+#' columns which should be calculated as two-stage CIs; usually this is only
+#' one value but multiple are accepted
 #' 
 #' @seealso
 #' \code{\link{bincon}}; \code{\link{binconr}}
@@ -1314,15 +1319,18 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
 #' tabler_resp(y, FALSE)
 #' 
 #' 
-#' ## for two-stage designs
+#' ## two-stage designs
+#' ## use two-stage CI in "PR" column
+#' tabler_resp(x)
+#' two_idx <- 1:2
 #' two_stage <- c(r1 = 2, n1 = 10, n2 = 20)
-#' tabler_resp(x, two_stage = two_stage)
+#' tabler_resp(x, two_stage = c(two_stage, two_idx))
 #' 
 #' ## compare
 #' bincon(c(2, 4),  c(10, 20), method = 'two-stage') ## CRs
 #' bincon(c(2, 11), c(10, 20), method = 'two-stage') ## PRs
 #' ## one-stage methods should not be used
-#' bincon(11, 30, method = 'exact') ## PRs
+#' bincon(c(4, 11), 30, method = 'exact')
 #'
 #'  
 #' ## typical usage
@@ -1332,9 +1340,11 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
 #'     tabler_resp(x),
 #'     tabler_resp(x, conf = 0.9),
 #'     tabler_resp(x, frac = FALSE, pct.sign = FALSE,
-#'                 show_conf = FALSE, digits = 1)
+#'                 show_conf = FALSE, digits = 1),
+#'     tabler_resp(x, two_stage = c(2, 10, 20, 1))
 #'   ),
-#'   caption = 'Table of responses with confidence intervals.',
+#'   caption = 'Table of responses with exact binomial and
+#'     two-stage<sup>&dagger;</sup>confidence intervals.',
 #'   css.cell = 'padding: 0 10 0px; white-space: nowrap;',
 #'   cgroup = c('Evaluation', 'Outcome (95% CI)'),
 #'   n.cgroup = c(nlevels(x), 3L)
@@ -1342,48 +1352,74 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
 #' 
 #' @export
 
-tabler_resp <- function(x, r_or_better = 3L, conf = 0.95, digits = 0L,
+tabler_resp <- function(x, r_or_better = levels(x)[3L],
+                        conf = 0.95, digits = 0L,
                         frac = TRUE, show_conf = TRUE, pct.sign = TRUE,
                         total = FALSE, two_stage = FALSE) {
-  r  <- names(table(x))
+  rs <- names(table(x))
   lx <- length(x)
-  if (!identical(two_stage, FALSE))
-    if (length(two_stage) != 3L &&
-        (two_stage[1L] < two_stage[2L] & two_stage[1L] < two_stage[3L]))
-      stop('For two-stage designs, \'two_stage\' should be a vector of ',
-           'length 3 giving:\n\t1) the max number of successes in the first ',
-           'stage that can be observed _without_ continuing; ',
-           '\n\t2) the number entered in the first stage; and ',
-           '\n\t3) additional entered in the second stage')
   
   if (is.character(r_or_better))
-    r_or_better <- if (length(wh <- which(r %in% r_or_better)))
+    r_or_better <- if (length(wh <- which(rs %in% r_or_better)))
       wh else {
         warning('Failed to guess \'r_or_better\'')
         3L
       }
   
-  out <- c(resp_(x, r, conf, digits, frac, show_conf, pct.sign, two_stage),
-           if (!is.numeric(r_or_better))
-             NULL
-           else r_or_better_(x, rev(r[seq.int(r_or_better)]), conf, digits,
-                             frac, show_conf, pct.sign, two_stage))
+  out <- c(
+    resp1(x, rs, conf, digits, frac, show_conf, pct.sign, two = FALSE),
+    if (!is.numeric(r_or_better))
+      NULL
+    else r_or_better1(x, rev(rs[seq.int(r_or_better)]), conf, digits,
+                      frac, show_conf, pct.sign, two = FALSE)
+  )
+  
+  if (!identical(two_stage, FALSE)) {
+    two_idx   <- tail(two_stage, -3L)
+    two_stage <- two_stage[1:3]
+    
+    if (two_stage[1L] > two_stage[2L] || two_stage[1L] > two_stage[3L])
+      stop('For two-stage designs, \'two_stage\' should be a vector of ',
+           'length 3 giving:\n\t1) the max number of successes in the first ',
+           'stage that can be observed _without_ continuing; ',
+           '\n\t2) the number entered in the first stage; and ',
+           '\n\t3) additional entered in the second stage')
+    
+    out2 <- c(
+      resp1(x, rs, conf, digits, frac, show_conf, pct.sign, two_stage),
+      if (!is.numeric(r_or_better))
+        NULL
+      else r_or_better1(x, rev(rs[seq.int(r_or_better)]), conf, digits,
+                        frac, show_conf, pct.sign, two_stage)
+    )
+    
+    out[two_idx] <- out2[two_idx]
+  } else two_idx <- NULL
   
   tot <- if (is.numeric(total))
     sprintf('%s/%s (%s%%)', lx, total, roundr(lx / total * 100, digits))
   else lx
   
-  tot <- c(Total = if (!pct.sign) gsub('%', '', tot, fixed = TRUE) else tot)
+  tot <- c(Total = if (!pct.sign)
+    gsub('%', '', tot, fixed = TRUE) else tot)
   
   if (!frac)
     tot <- gsub('/\\S+', '', tot)
   
-  c(if (total) tot else NULL, out)
+  out <- c(if (total)
+    tot else NULL, out)
+  
+  attr(out, 'two_stage') <- if (length(two_idx)) {
+    out[two_idx] <- paste0(out[two_idx], '<sup>&dagger;</sup>')
+    setNames(two_idx, names(out)[two_idx])
+  } else NULL
+  
+  out
 }
 
-resp_ <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
-  # rawr:::resp_(x, levels(x),    .9, 0L, TRUE, TRUE, TRUE, FALSE)
-  # rawr:::resp_(x, c('CR','PR'), .9, 0L, TRUE, TRUE, TRUE, FALSE)
+resp1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
+  # rawr:::resp1(x, levels(x),    .9, 0L, TRUE, TRUE, TRUE, FALSE)
+  # rawr:::resp1(x, c('CR','PR'), .9, 0L, TRUE, TRUE, TRUE, FALSE)
   FUN <- if ('CR' %ni% r || which(r %in% 'CR') == 1L)
     identity else rev
   tbl <- table(x)[FUN(r)]
@@ -1400,9 +1436,10 @@ resp_ <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
   setNames(out, FUN(r))
 }
 
-r_or_better_ <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
+r_or_better1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
   # rawr:::r_or_better_(x, c('CR','PR'), .9, 0L, TRUE, TRUE, TRUE, FALSE)
   x[x %ni% r] <- NA
+  
   out <- if (all(is.na(x)))
     rep('-', length(r)) else
       sapply(seq_along(r), function(X)
@@ -1412,6 +1449,7 @@ r_or_better_ <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
         else binconr(c(two[1L], sum(x %in% r[X:length(r)])), two[2:3], conf,
                      digits, TRUE, frac, show_conf, pct.sign, 'two-stage')
       )
+  
   setNames(out, paste(r, 'or better'))
 }
 

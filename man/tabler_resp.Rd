@@ -4,8 +4,9 @@
 \alias{tabler_resp}
 \title{Response table}
 \usage{
-tabler_resp(x, r_or_better = 3L, conf = 0.95, digits = 0L, frac = TRUE,
-  show_conf = TRUE, pct.sign = TRUE, total = FALSE, two_stage = FALSE)
+tabler_resp(x, r_or_better = levels(x)[3L], conf = 0.95, digits = 0L,
+  frac = TRUE, show_conf = TRUE, pct.sign = TRUE, total = FALSE,
+  two_stage = FALSE)
 }
 \arguments{
 \item{x}{a factor variable of responses; responses should be ordered as
@@ -13,7 +14,8 @@ CR, PR, SD, PD, NE or similar}
 
 \item{r_or_better}{if an integer, the first \code{r_or_better} levels of
 \code{x} will be combined and proportions and confidence intervals will be
-calculated for the aggregate; if \code{FALSE}; this is not included}
+calculated for the aggregate; if \code{FALSE}; only single unique values
+of \code{x} are estimated}
 
 \item{conf, frac, show_conf, pct.sign}{additional arguments passed to
 \code{\link{binconr}}}
@@ -22,13 +24,17 @@ calculated for the aggregate; if \code{FALSE}; this is not included}
 
 \item{total}{logical or numeric; if \code{TRUE}, a column with the total,
 i.e., \code{length(x)} is added; if numeric, \code{length(x)} and,
-optionally, fracton and percent out of \code{total} is added}
+optionally, fraction and percent out of \code{total} is added}
 
 \item{two_stage}{\code{FALSE} (default, assumes exact binomial CIs are
 desired) or a vector of length 3 with the 1) maximum number responses in
 the first stage that can be observed without continuing; 2) the number
 entered in the first stage; and 3) the additional number entered in the
-second}
+second
+
+if more than three integers are given, the remaining should indicate the
+columns which should be calculated as two-stage CIs; usually this is only
+one value but multiple are accepted}
 }
 \description{
 Convenience function to calculate proportions and confidence invervals and
@@ -48,15 +54,18 @@ tabler_resp(x, FALSE)
 tabler_resp(y, FALSE)
 
 
-## for two-stage designs
+## two-stage designs
+## use two-stage CI in "PR" column
+tabler_resp(x)
+two_idx <- 1:2
 two_stage <- c(r1 = 2, n1 = 10, n2 = 20)
-tabler_resp(x, two_stage = two_stage)
+tabler_resp(x, two_stage = c(two_stage, two_idx))
 
 ## compare
 bincon(c(2, 4),  c(10, 20), method = 'two-stage') ## CRs
 bincon(c(2, 11), c(10, 20), method = 'two-stage') ## PRs
 ## one-stage methods should not be used
-bincon(11, 30, method = 'exact') ## PRs
+bincon(c(4, 11), 30, method = 'exact')
 
  
 ## typical usage
@@ -66,9 +75,11 @@ htmlTable(
     tabler_resp(x),
     tabler_resp(x, conf = 0.9),
     tabler_resp(x, frac = FALSE, pct.sign = FALSE,
-                show_conf = FALSE, digits = 1)
+                show_conf = FALSE, digits = 1),
+    tabler_resp(x, two_stage = c(2, 10, 20, 1))
   ),
-  caption = 'Table of responses with confidence intervals.',
+  caption = 'Table of responses with exact binomial and
+    two-stage<sup>&dagger;</sup>confidence intervals.',
   css.cell = 'padding: 0 10 0px; white-space: nowrap;',
   cgroup = c('Evaluation', 'Outcome (95\% CI)'),
   n.cgroup = c(nlevels(x), 3L)
