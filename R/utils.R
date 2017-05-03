@@ -621,6 +621,7 @@ clear <- function(...) cat('\014')
 #' 
 #' l <- lapply(l, function(x) setNames(x, letters[x]))
 #' rbindlist(l, use.names = TRUE)
+#' rbindlist(unname(l), use.names = TRUE)
 #' 
 #' 
 #' ## unnest and stack a data frame or matrix
@@ -940,8 +941,9 @@ rbindlist <- function(..., use.rownames = FALSE, use.names = FALSE) {
   if (length(l) == 1L)
     return(..1)
   
-  nn <- if (is.null(names(l)))
-    seq_along(l) else make.unique(names(l))
+  # nn <- if (is.null(names(l)))
+  #   seq_along(l) else make.unique(names(l))
+  nn <- names(l) %||% seq_along(l)
   nn <- rep(nn, vapply(l, length, integer(1L)))
   res <- data.frame(idx = nn, value = unlist(l), stringsAsFactors = FALSE)
   

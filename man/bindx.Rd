@@ -137,6 +137,7 @@ rbindlist(l)
 
 l <- lapply(l, function(x) setNames(x, letters[x]))
 rbindlist(l, use.names = TRUE)
+rbindlist(unname(l), use.names = TRUE)
 
 
 ## unnest and stack a data frame or matrix
