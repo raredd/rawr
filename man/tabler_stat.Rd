@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils2.R
 \name{tabler_stat}
 \alias{tabler_stat}
-\title{Description statistics tabler}
+\title{Description statistics \code{tabler}}
 \usage{
 tabler_stat(data, varname, byvar, digits = 0L, FUN = NULL,
   color_pval = TRUE, color_missing = TRUE, dagger = TRUE, ...)
@@ -18,7 +18,7 @@ tabler_stat(data, varname, byvar, digits = 0L, FUN = NULL,
 \item{FUN}{a function performing the test of association between
 \code{varname} and \code{byvar}; \code{FALSE} will suppress the test but
 keep a column for p-values; \code{NA} will suppress the test and drop the
-column for p-values; see details}
+column for p-values; or a character string; see details}
 
 \item{color_pval}{logical; if \code{TRUE}, p-values will be colored
 by significance; see \code{\link{color_pval}}}
@@ -48,31 +48,45 @@ symbol (\code{"*"} by default or \code{dagger} if given)}
 and corresponding test name}
 }
 \description{
-Wrapper function to create table of description statistics with tests
-of association.
+Wrapper function to create table of description statistics with optional
+tests of association.
 }
 \details{
-If \code{FUN} is \code{FALSE}, no test will be performed. If \code{FUN}
-is a function, it must take two vector arguments: the row variable vector,
-\code{data$varname}, and the column variable vector, \code{data$byvar},
-and return a numeric p-value. Otherwise, \code{FUN} will be selected
-based on the input vectors:
+If \code{FUN} is \code{FALSE}, no test will be performed but a column for
+p-values will still be added; \code{FUN = NA} will prevent both the test
+from being performed and the column from being added to the output.
 
-For a continuous \code{varname}, \code{\link{wilcox.test}} or
-\code{\link{kruskal.test}} if \code{byvar} has two or more than two levels,
-respectively. If \code{varname} is not numeric (or has few unique values),
-\code{fisher.test} is used.
+For \code{FUN = NULL} (default), the correct test will be guessed based on
+the row and column data. The current options are \code{\link{fisher.test}},
+\code{\link{wilcox.test}}, and \code{\link{kruskal.test}}. If the row data
+is continuous, one of the latter two tests will be used based on the number
+of unique values in the column data.
+
+For special cases, the function is not always guessed correctly (e.g., if
+the row data contains few unique values, a Fisher test may be used where
+not appropriate). One of the default tests can be given explicitly with a
+character string, one of \code{"fisher"}, \code{"wilcoxon"},
+\code{"kruskal"}, \code{"chisq"}, or \code{"anova"} (can be abbreviated).
+
+If \code{FUN} is a function, it must take two vector arguments: the row
+variable vector, \code{data$varname}, and the column variable vector,
+\code{data$byvar}, in this order and return a numeric p-value only.
 }
 \examples{
-tabler_stat(mtcars, 'mpg', 'cyl')
+tabler_stat(mtcars, 'mpg', 'cyl') ## picks kruskal-wallis
 tabler_stat(mtcars, 'mpg', 'cyl', FUN = NA)
 tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE)
+tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'fisher')
+tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'anova')
 
+
+## use of a custom function - see ?rawr::cuzick.test
 tabler_stat(mtcars, 'mpg', 'cyl',
   FUN = function(x, y)
     cuzick.test(x ~ y, data.frame(x, y))$p.value)
 
 
+## typical usage
 mt <- within(mtcars, {
   mpg[1:5] <- carb[1:5] <- drat[1:20] <- NA
   carb <- factor(carb)
@@ -91,5 +105,5 @@ htmlTable::htmlTable(
 
 }
 \seealso{
-\code{\link{tabler}}, \code{\link{tabler_by}}
+\code{\link{tabler}}; \code{\link{tabler_by}}
 }

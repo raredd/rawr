@@ -4,7 +4,7 @@
 \alias{countr}
 \title{Count formatter}
 \usage{
-countr(top, n, lowcase = TRUE, frac = FALSE)
+countr(top, n, lowcase = TRUE, frac = FALSE, digits = 0L)
 }
 \arguments{
 \item{top}{named vector of counts (a summary or table) or a long vector of
@@ -17,17 +17,18 @@ character strings or factors}
 case if \code{FALSE}, and unchanged for any other value}
 
 \item{frac}{logical; if \code{TRUE}, the numbers are shown as fractions}
+
+\item{digits}{number of digits past the decimal point to keep}
 }
 \description{
-Formats and prints a \emph{named} vector of counts with percentages.
+Formats and prints a \emph{named} vector of counts with percents.
 }
 \examples{
 top <- setNames(3:1, c('Gold','Silver','Bronze'))
+
 countr(names(top))
 countr(names(top), lowcase = NA)
 countr(names(top), frac = TRUE)
-
-
-countr(top, 10)
+countr(top, n = 10, frac = TRUE)
 
 }

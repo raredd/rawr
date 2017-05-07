@@ -243,8 +243,8 @@ lss <- function(pos = 1L, pattern, by = NULL, all.names = FALSE,
   if (!length(ls(envir = as.environment(pos))))
     return(character(0))
   
-  napply <- function(names, fn)
-    sapply(names, function(x) fn(get(x, pos = pos)))
+  napply <- function(names, fn, ...)
+    sapply(names, function(x) fn(get(x, pos = pos), ...))
   names <- ls(pos = pos, pattern = pattern, all.names = all.names)
   
   cl <- napply(names, function(x) as.character(class(x))[1L])
@@ -1536,7 +1536,7 @@ melt <- function(data, varying = list(1:ncol(data)), ...) {
 
 #' View data
 #' 
-#' Convenience functons to use the base \code{R} data viewer (\code{View2}
+#' Convenience functions to use the base \code{R} data viewer (\code{View2}
 #' always invokes \code{\link[utils]{View}} instead of the rstudio viewer)
 #' or the default browser (\code{view} which can open html or widgets in
 #' the browser or to view data frame- or matrix-like objects using
@@ -1552,11 +1552,15 @@ melt <- function(data, varying = list(1:ncol(data)), ...) {
 #' default browser
 #' 
 #' @examples
+#' \dontrun{
+#' ## data frame-like objects
 #' View2(mtcars)
 #' view(mtcars)
+#' 
+#' ## html
 #' view(htmlTable::htmlTable(mtcars))
 #' 
-#' \dontrun{
+#' ## widgets
 #' view(qtlcharts::iplot(1:5, 1:5))
 #' }
 #' 
@@ -1589,6 +1593,8 @@ view <- function(x, use_viewer = FALSE, ...) {
                 domain = NA)
         browseURL(htmlFile)
       }) else browseURL(htmlFile)
+  
+  invisible(NULL)
 }
 
 #' Concatenate lists
@@ -2103,7 +2109,7 @@ combine_levels <- function(x, levels, labels = NULL, regex = FALSE, ...) {
   xl <- ol <- levels(xf)
   
   ## new levels, ie, original minus replaced plus new
-  nl <- c(setdiff(ol, unlist(levels)), labels)
+  nl <- c(setdiff(ol, c(unlist(levels), labels)), labels)
   nl <- as.character(sort(factor(nl, unique(c(ol, nl)))))
 
   for (ii in seq_along(levels)) {

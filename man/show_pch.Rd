@@ -20,5 +20,5 @@ show_pch()
 
 }
 \seealso{
-\code{\link{show_colors}}
+\code{\link{show_colors}}; \code{\link{pch}}
 }

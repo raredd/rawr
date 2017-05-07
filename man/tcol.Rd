@@ -30,7 +30,7 @@ and 255 (fully visible) to the color(s) given. \code{color} values are
 converted to RGB with transparency.
 }
 \examples{
-cols <- c('red','green','blue')
+cols <- c('red', 'green', 'blue')
 
 ## a normal plot
 plot(rnorm(100), col = tcol(cols), pch = 16, cex = 4)
@@ -42,7 +42,7 @@ plot(x, col = tcol(cols, alpha = .4), pch = 16, cex = 4)
 
 ## hexadecimal colors also work
 cols <- c('#FF0000','#00FF00','#0000FF')
-plot(rnorm(100), col = tcol(cols, c(50, 100, 255)), pch= 16, cex = 4)
+plot(rnorm(100), col = tcol(cols, c(50, 100, 255)), pch = 16, cex = 4)
 
 }
 \seealso{

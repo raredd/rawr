@@ -44,11 +44,12 @@ format for easy display.
 set.seed(1)
 r <- c('CR','PR','SD','PD','NE')
 x <- factor(sample(r, 30, replace = TRUE), r)
+
 tabler_resp(x, 3)
 tabler_resp(x, 'PR')
 tabler_resp(x, 'PR', total = 50)
 
-## NAs are removed
+## note NAs are removed
 y <- `[<-`(x, 1:10, value = NA)
 tabler_resp(x, FALSE)
 tabler_resp(y, FALSE)

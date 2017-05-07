@@ -61,16 +61,18 @@ dodge <- function(x, ...) UseMethod('dodge')
 #' @rdname dodge
 #' @export
 dodge.formula <- function(formula, data = NULL, ...) {
-  if (missing(formula) || (length(formula) !=  3))
+  if (missing(formula) || (length(formula) != 3L))
     stop("\'formula\' missing or incorrect")
+  
   m <- match.call(expand.dots = FALSE)
   if (is.matrix(eval(m$data, parent.frame())))
     m$data <- as.data.frame(data)
-  nmargs <- names(args)
-  m$... <- NULL
-  m[[1]] <- as.name('model.frame')
+  m$`...` <- NULL
+  m[[1L]] <- as.name('model.frame')
+  
   mf <- eval(m, parent.frame())
   response <- attr(attr(mf, 'terms'), 'response')
+  
   dodge(mf[, -response], mf[, response])
 }
 
@@ -78,20 +80,25 @@ dodge.formula <- function(formula, data = NULL, ...) {
 #' @export
 dodge.default <- function(x, y, dist, jit, ...) {
   if (is.data.frame(y)) {
-    x <- y[, 2]
-    y <- y[, 1]
+    x <- y[, 2L]
+    y <- y[, 1L]
   }
+  
   x <- if (!missing(x) && is.list(x))
     as.numeric(do.call('interaction', x)) else
-      rep_len(if (missing(x)) 1 else x, length(x))
+      rep_len(if (missing(x)) 1L else x, length(x))
+  
   if (missing(dist) || is.na(dist) || is.null(dist))
     dist <- diff(range(x)) / 100
   if (missing(jit) || is.na(jit) || is.null(jit))
     jit <- 0.1
+  
   ## call dodge on each group
-  cbind.data.frame(x_new = ave(seq_along(y), x, FUN = function(ii)
-    dodge_(y[ii], x[ii], dist, jit)$x),
-    y = y)
+  cbind.data.frame(
+    x_new = ave(seq_along(y), x, FUN = function(ii)
+      dodge_(y[ii], x[ii], dist, jit)$x),
+    y = y
+  )
 }
 
 #' Show colors
@@ -222,7 +229,7 @@ show_colors <- function(..., plot = FALSE) {
 #' @param ... ignored
 #' 
 #' @seealso
-#' \code{\link{show_colors}}
+#' \code{\link{show_colors}}; \code{\link{pch}}
 #' 
 #' @examples
 #' show_pch()
@@ -230,14 +237,16 @@ show_colors <- function(..., plot = FALSE) {
 #' @export
 
 show_pch <- function(...) {
-  op <- par(no.readonly = TRUE)
+  op <- par(xpd = NA, mar = c(1,1,1,2))
   on.exit(par(op))
-  par(xpd = TRUE, mfrow = c(1, 1), mai = c(.4,.4,.4,.4), oma = c(.2,0,0,.2))
+  
   x <- rep(1:5, 6)[1:26]
   y <- c(rep(5:1, each = 5)[1:25], 0)
+  
   plot(x, y, pch = 0:25, axes = FALSE, bg = 'gray', cex = 2, col = 'red')
   text(x = x, y = y, labels = 0:25, pos = 4, cex = 1.5, offset = 1)
   text(x = 4, y = 0, labels = 'plotting characters 0:25', cex = 1.5)
+  
   invisible(NULL)
 }
 
@@ -265,7 +274,7 @@ show_pch <- function(...) {
 #' \code{\link{as.hexmode}}, \code{\link{col2rgb}}, \code{\link{adjustcolor}}
 #' 
 #' @examples
-#' cols <- c('red','green','blue')
+#' cols <- c('red', 'green', 'blue')
 #' 
 #' ## a normal plot
 #' plot(rnorm(100), col = tcol(cols), pch = 16, cex = 4)
@@ -277,19 +286,23 @@ show_pch <- function(...) {
 #' 
 #' ## hexadecimal colors also work
 #' cols <- c('#FF0000','#00FF00','#0000FF')
-#' plot(rnorm(100), col = tcol(cols, c(50, 100, 255)), pch= 16, cex = 4)
+#' plot(rnorm(100), col = tcol(cols, c(50, 100, 255)), pch = 16, cex = 4)
 #' 
 #' @export
 
 tcol <- function(color, trans = 255, alpha) {
-  stopifnot(trans %inside% c(0,255) | is.na(trans))
+  stopifnot(trans %inside% c(0, 255) | is.na(trans))
+  
+  ## convert alpha to trans
   if (!missing(alpha)) {
     stopifnot(alpha %inside% 0:1 | is.na(alpha))
-    trans <- round(rescaler(alpha, to = c(0,255), from = 0:1))
+    trans <- round(rescaler(alpha, to = c(0, 255), from = 0:1))
   }
+  
+  ## get color and trans to conformable lengths
   if (length(color) != length(trans) & 
-      !any(c(length(color), length(trans)) == 1))
-    stop('Vector lengths are not comformable')
+      !any(c(length(color), length(trans)) == 1L))
+    stop('Vector lengths are not conformable')
   if (length(color) == 1L & length(trans) > 1L)
     color <- rep(color, length(trans))
   if (length(trans) == 1L & length(color) > 1L)
@@ -301,10 +314,17 @@ tcol <- function(color, trans = 255, alpha) {
   }
   
   res <- paste0('#', apply(apply(rbind(col2rgb(color)), 2, function(x)
-    format(as.hexmode(x), 2)), 2, paste, collapse = ''))
-  res <- unlist(Map(paste0, res, as.character(try(as.hexmode(trans)))))
+    format(as.hexmode(x), width = 2L)), 2L, paste, collapse = ''))
+  res <- Map(paste0, res, tryCatch(
+    as.character(as.hexmode(trans)),
+    error = function(e) '', warning = function(w) ''
+  ))
+  res <- unlist(res)
+  
+  ## return NAs and/or set color to transparent
   res[is.na(color) | is.na(trans)] <- NA
   res[color %in% 'transparent'] <- 'transparent'
+  
   unname(res)
 }
 
@@ -363,29 +383,36 @@ tcol <- function(color, trans = 255, alpha) {
 pretty_sci <- function(x, digits = 0, base = 10,
                        limit = base ** 3, simplify = TRUE) {
   l <- as.list(x)
-  limit <- if (limit < 0) -1 else oom(limit, base)
+  limit <- if (limit < 0)
+    -1 else oom(limit, base)
   om <- sapply(l, oom, base)
+  
   sapply(seq_along(l), function(y)
     if (abs(om[y]) > limit)
-      parse_sci(l[[y]], digits, base, simplify) else roundr(l[[y]], digits))
+      parse_sci(l[[y]], digits, base, simplify)
+    else roundr(l[[y]], digits))
 }
 
 #' @rdname pretty_sci
 #' @export
 oom <- function(x, base = 10) {
-  as.integer(ifelse(x == 0, 0, floor(log(abs(x), base))))
+  as.integer(ifelse(x == 0, 0L, floor(log(abs(x), base))))
 }
 
 #' @rdname pretty_sci
 #' @export
 parse_sci <- function(x, digits = 0, base = 10, simplify = TRUE) {
   stopifnot(is.numeric(x))
+  
   x <- to_sci_(x, digits, base)
   x <- strsplit(x, 'e[+]?[0]?')
+  
   xbg <- sapply(x, function(y) roundr(as.numeric(y[[1]]), digits))
   xsm <- sapply(x, '[[', 2)
   txt <- do.call('sprintf', list(fmt = '"%s"%%*%%%s^%s', xbg, base, xsm))
-  parse(text = if (simplify) gsub('\\"1\\"%\\*%\\s*', '', txt) else txt)
+  
+  parse(text = if (simplify)
+    gsub('\\"1\\"%\\*%\\s*', '', txt) else txt)
 }
 
 to_sci_ <- function(x, digits, base) {
@@ -453,32 +480,33 @@ arrows2 <- function(x0, y0, x1 = x0, y1 = y0, size = 1, width = 0.1 / cin,
   stopifnot(length(code) == 1L, code %in% 0:3)
   
   ## create coordinates of a polygon for a unit arrow head
-  cin <- size * par('cin')[2]
+  cin <- size * par('cin')[2L]
   uin <- 1 / xyinch()
-  x <- sqrt(seq(0, cin ** 2, length.out = 1000))
+  x <- sqrt(seq(0, cin ** 2, length.out = 1000L))
   delta <- 0.005 / 2.54
   wx2 <- width * x ** curve
+  
   ## polar, NA to "break" long polygon
   pol <- c2p(c(-x, -rev(x)), c(-wx2 - delta, rev(wx2) + delta))
   ## rawr:::c2p
   deg <- c(pol$theta, NA)
   rad <- c(pol$radius, NA)
   
-  segments(x0 + sadj[1], y0 + sadj[2], x1 + sadj[3], y1 + sadj[4],
+  segments(x0 + sadj[1L], y0 + sadj[2L], x1 + sadj[3L], y1 + sadj[4L],
            col = col, lty = lty, lwd = lwd, lend = 1, xpd = NA, ...)
   
   if (code == 0L)
     return(invisible())
   
   if (code %in% 2:3) {
-    theta <- atan2((y1 - y0) * uin[2], (x1 - x0) * uin[1])
-    lx <- length(x0)
+    theta <- atan2((y1 - y0) * uin[2L], (x1 - x0) * uin[1L])
+    lx  <- length(x0)
     Rep <- rep.int(length(deg), lx)
-    xx <- rep.int(x1, Rep)
-    yy <- rep.int(y1, Rep)
+    xx  <- rep.int(x1, Rep)
+    yy  <- rep.int(y1, Rep)
     theta <- rep.int(theta, Rep) + rep.int(deg, lx)
     rad <- rep.int(rad, lx)
-    polygon(xx + rad * cos(theta) / uin[1], yy + rad * sin(theta) / uin[2],
+    polygon(xx + rad * cos(theta) / uin[1L], yy + rad * sin(theta) / uin[2L],
             col = fill, xpd = NA, border = border)
   }
   
@@ -486,7 +514,8 @@ arrows2 <- function(x0, y0, x1 = x0, y1 = y0, size = 1, width = 0.1 / cin,
     arrows2(x1, y1, x0, y0, size, width, code = 2, curve, col = col,
             lty = 0, lwd = 0, fill = fill, border = border, ...)
   }
-  invisible()
+  
+  invisible(NULL)
 }
 
 #' Curved arrows
@@ -545,16 +574,17 @@ carrows <- function(p1, p2, arc, degree = FALSE, pad = 0.01 * 1:2,
                     border = NA) {
   
   code_ <- function(x) c(2,0,1)[match(x, -1:1)]
-  pad_  <- function(x, pad) ht(x, -length(x) * (1 - pad))
+  pad_  <- function(x, pad) rawr::ht(x, -length(x) * (1 - pad))
   
   ## try to guess code for arrows2
-  slope <- (p2[2] - p1[2]) / (p2[1] - p1[1])
+  slope <- (p2[2L] - p1[2L]) / (p2[1L] - p1[1L])
   slope[!is.finite(slope) | slope == 0] <- 1
-  code <- code_(sign(slope))
+  code  <- code_(sign(slope))
   
   ## calculate arc based on p1, p2
-  radius <- sqrt(sum((p1 - p2) ** 2)) / 2
+  radius  <- sqrt(sum((p1 - p2) ** 2)) / 2
   centers <- (p1 + p2) / 2
+  
   arc <- if (!missing(arc)) {
     if (degree | any(arc > 2 * pi))
       d2r(arc) else arc[1:2]
@@ -562,21 +592,22 @@ carrows <- function(p1, p2, arc, degree = FALSE, pad = 0.01 * 1:2,
     p2r(x[1], x[2], centers[1], centers[2]))
   
   ## convert polar to cart and plot lines/arrows
-  theta <- seq(arc[1], arc[2], length.out = 500) + if (flip) pi else 0
-  pad <- rep_len(pad, 2)
-  th <- pad_(theta, pad[1])
-  xx <- centers[1] + radius * cos(th)
-  yy <- centers[2] + radius * sin(th)
-  lines(pad_(xx, pad[2]), pad_(yy, pad[2]), col = col, lwd = lwd, lty = lty)
+  theta <- seq(arc[1L], arc[2L], length.out = 500L) + if (flip) pi else 0
+  pad <- rep_len(pad, 2L)
+  th <- pad_(theta, pad[1L])
+  xx <- centers[1L] + radius * cos(th)
+  yy <- centers[2L] + radius * sin(th)
+  lines(pad_(xx, pad[2L]), pad_(yy, pad[2L]), col = col, lwd = lwd, lty = lty)
   
-  xx <- ht(xx, 4)
-  yy <- ht(yy, 4)
-  arrows2(xx[1], yy[1], xx[2], yy[2], size = size, width = width,
-          curve = curve, code = dir[1] %||% code, col = col, lty = 0,
+  xx <- ht(xx, 4L)
+  yy <- ht(yy, 4L)
+  arrows2(xx[1L], yy[1L], xx[2L], yy[2L], size = size, width = width,
+          curve = curve, code = dir[1L] %||% code, col = col, lty = 0,
           lwd = 0, fill = fill, border = border)
-  arrows2(xx[4], yy[4], xx[3], yy[3], size = size, width = width,
-          curve = curve, code = dir[2] %||% code, col = col, lty = 0,
+  arrows2(xx[4L], yy[4L], xx[3L], yy[3L], size = size, width = width,
+          curve = curve, code = dir[2L] %||% code, col = col, lty = 0,
           lwd = 0, fill = fill, border = border)
+  
   invisible(list(arc = arc, centers = centers, radius = radius))
 }
 
@@ -616,9 +647,10 @@ carrows <- function(p1, p2, arc, degree = FALSE, pad = 0.01 * 1:2,
 
 laxis <- function(side = 1L, nticks = 5, labels = TRUE, digits = 0, base = 10,
                   limit = base ** 3, simplify = TRUE, ...) {
-  axp <- par(switch(side, 'xaxp','yaxp','xaxp','yaxp', stop('Invalid axis')))
-  yl <- c(-1, 1) + if (base == 10) log10(axp[-3]) else c(1, axp[2])
-  pp <- seq(yl[1], yl[2])
+  ap <- par(switch(side, 'xaxp', 'yaxp', 'xaxp', 'yaxp', stop('Invalid axis')))
+  yl <- c(-1, 1) + if (base == 10) log10(ap[-3L]) else c(1, ap[2L])
+  pp <- seq(yl[1L], yl[2L])
+  
   at0 <- at1 <- base ** pp
   at2 <- c(sapply(pp, function(x)
     seq(1, base, length.out = nticks) * base ** x))
@@ -626,9 +658,10 @@ laxis <- function(side = 1L, nticks = 5, labels = TRUE, digits = 0, base = 10,
     at1 <- log(at1, base)
     at2 <- log(at2, base)
   }
-  op <- par(no.readonly = TRUE)
+  
+  op <- par(..., no.readonly = TRUE)
   on.exit(par(op))
-  par(...)
+  
   axis(side, at1, if (labels)
     pretty_sci(at0, digits, base, limit, simplify) else FALSE)
   axis(side, at2, FALSE, tcl = par('tcl') * 0.5, lwd = 0, lwd.ticks = 1)

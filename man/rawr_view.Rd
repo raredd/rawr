@@ -24,18 +24,22 @@ prefixed by \code{Data:}}
 default browser}
 }
 \description{
-Convenience functons to use the base \code{R} data viewer (\code{View2}
+Convenience functions to use the base \code{R} data viewer (\code{View2}
 always invokes \code{\link[utils]{View}} instead of the rstudio viewer)
 or the default browser (\code{view} which can open html or widgets in
 the browser or to view data frame- or matrix-like objects using
 \code{\link[DT]{datatable}}.
 }
 \examples{
+\dontrun{
+## data frame-like objects
 View2(mtcars)
 view(mtcars)
+
+## html
 view(htmlTable::htmlTable(mtcars))
 
-\dontrun{
+## widgets
 view(qtlcharts::iplot(1:5, 1:5))
 }
 

@@ -1,4 +1,5 @@
 ### plot utils, helpers for plotting functions
+# unexported:
 # %|%, do_sub_, dodge_, jit_, grouping_, hmsf_, do_rect_, do_seg_, d2r, r2d,
 # p2c, c2p, p2r, p2d
 ###

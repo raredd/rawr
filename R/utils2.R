@@ -1,11 +1,11 @@
 ### formatting, knitr, html-related, misc utils
 # show_html, show_markdown, show_math, roundr, intr, pvalr, pvalr2, catlist,
 # binconr, num2char, iprint, writeftable, tabler, tabler_by, tabler_by2,
-# tabler_stat, tabler_resp, match_ctc, tox_worst, countr,
-# dmy, combine_table, inject_div, sparKDT, case, write_htmlTable
+# tabler_stat, tabler_resp, match_ctc, tox_worst, countr, dmy, combine_table,
+# inject_div, sparKDT, case, write_htmlTable
 # 
 # unexported:
-# resp_, r_or_better_, inject_, render_sparkDT
+# resp1, r_or_better1, inject_, render_sparkDT
 ###
 
 
@@ -136,8 +136,9 @@ show_html <- function(..., use_viewer = !is.null(getOption('viewer'))) {
 
 show_markdown <- function(..., use_viewer = !is.null(getOption('viewer')),
                           markArgs = list()) {
-  text <- list(text = c(...))
-  mdk <- do.call('markdownToHTML', c(text, markArgs))
+  txt <- list(text = c(...))
+  mdk <- do.call('markdownToHTML', c(txt, markArgs))
+  
   show_html(mdk, use_viewer = use_viewer)
 }
 
@@ -193,23 +194,27 @@ show_markdown <- function(..., use_viewer = !is.null(getOption('viewer')),
 show_math <- function(..., css, use_viewer = !is.null(getOption('viewer'))) {
   mj <- "
   <script>
-  (function () {
-  var script = document.createElement('script');
-  script.type = 'text/javascript';
-  script.src  = 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-  document.getElementsByTagName('head')[0].appendChild(script);
-  })();
+    (function () {
+      var script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src  = 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+      document.getElementsByTagName('head')[0].appendChild(script);
+    })();
   </script>
   "
+  
   check_expr <- function(x)
     ## use \[ expr \] instead of $$ expr $$
     sprintf('\\[ %s \\]',
             gsub('\\\\\\[|\\\\]', '', gsub('^\\$+|\\$+$', '', x)))
+  
   x <- paste(sapply(c(...), check_expr), collapse = '<br />')
+  
   if (!nzchar(x))
-    return(invisible())
+    return(invisible(NULL))
   if (missing(css))
     css <- ''
+  
   show_html(sprintf('<span class="math" style="font-size: 24px; %s;">\n', css),
             x, '\n</span>\n', mj, use_viewer = use_viewer)
 }
@@ -275,6 +280,7 @@ roundr.data.frame <- function(x, digits = 1L) {
   x[] <- lapply(x, function(ii)
     if (is.numeric(ii) || is.complex(ii))
       roundr.default(ii, digits = digits) else ii)
+  
   x
 }
 
@@ -284,6 +290,7 @@ roundr.matrix <- function(x, digits = 1L) {
   if (!is.numeric(x) || is.complex(x))
     stop(deparse(substitute(x)), ' is not numeric')
   else x[] <- roundr.default(x, digits)
+  
   x
 }
 
@@ -524,12 +531,12 @@ binconr <- function(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
   stopifnot(nrow(bc) == 1L)
   
   res <- roundr(bc * 100, digits)
-  zzz <- sprintf('%s%% CI: %s - %s%%', conf * 100, res[4], res[5])
+  zzz <- sprintf('%s%% CI: %s - %s%%', conf * 100, res[4L], res[5L])
   
   if (!show_conf)
     zzz <- gsub('.*% CI: ', '', zzz)
   if (est)
-    zzz <- sprintf('%s%% (%s)', res[3], zzz)
+    zzz <- sprintf('%s%% (%s)', res[3L], zzz)
   if (!pct.sign)
     zzz <- gsub('%(?= \\()|%(?=\\))', '', zzz, perl = TRUE)
   if (frac)
@@ -581,9 +588,8 @@ num2char <- function(x, informal = FALSE, cap = TRUE) {
   if (isTRUE(all.equal(x, 0)))
     return(ifelse(cap, 'Zero', 'zero'))
   
-  scipen <- getOption('scipen')
-  options(scipen = 999)
-  on.exit(options(scipen = scipen))
+  oo <- options(scipen = 999)
+  on.exit(options(oo))
   
   ## helpers
   num2char_ <- function(x) {
@@ -615,14 +621,17 @@ num2char <- function(x, informal = FALSE, cap = TRUE) {
   ## definitions
   ones <- setNames(
     c('','one','two','three','four','five','six','seven','eight','nine'),
-    0:9)
+    0:9
+  )
   teens <- setNames(
     c('ten','eleven','twelve',
       paste0(c('thir', 'four','fif','six','seven','eigh','nine'), 'teen')),
-    0:9)
+    0:9
+  )
   tens <- setNames(
     c('twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'),
-    2:9)
+    2:9
+  )
   suffixes <- c('thousand', 'million', 'billion', 'trillion')
   
   ## actual work
@@ -632,10 +641,13 @@ num2char <- function(x, informal = FALSE, cap = TRUE) {
     x <- paste('negative', x)
   if (!informal)
     x <- gsub(' and ', ' ', x)
+  
+  ## add hyphen between tens and ones
   x <- gsub(sprintf('(.*%s) (%s)$',
                     paste(tens, collapse = '|'),
                     paste(ones, collapse = '|')),
             '\\1-\\2', x)
+  
   if (cap)
     case(x) else x
 }
@@ -665,18 +677,24 @@ num2char <- function(x, informal = FALSE, cap = TRUE) {
 #' @export
 
 iprint <- function (..., wrap = '', sep = ', ', copula, digits = 2) {
-  # x <- substitute(...())
   x <- c(...)
-  if (!(len <- length(x))) return('')
+  if (!(len <- length(x)))
+    return('')
+  
   f <- function(x, wrap = '"') sprintf('%s%s%s', wrap, x, wrap)
+  
   if (missing(copula))
     copula <- ifelse(len == 2L, ' and ', ', and ')
   if (is.numeric(x))
     x <- roundr(x, digits = digits)
-  if (len == 1L) f(x, wrap) else
-    if (len == 2L) paste(f(x, wrap), collapse = copula) else
-      paste0(paste(f(head(x, -1L), wrap = wrap), collapse = sep),
-             copula, f(tail(x, 1L), wrap = wrap))
+  
+  if (len == 1L)
+    f(x, wrap)
+  else if (len == 2L)
+    paste(f(x, wrap), collapse = copula)
+  else
+    paste0(paste(f(head(x, -1L), wrap = wrap), collapse = sep),
+           copula, f(tail(x, 1L), wrap = wrap))
 }
 
 #' Write ftable
@@ -809,7 +827,7 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' \code{varname} and \code{byvar} should be factors, and the levels will
 #' appear in the output as they occur in \code{levels(x)}.
 #' 
-#' \code{n} is used to calculate the percentages. If missing, the output will
+#' \code{n} is used to calculate the percent. If missing, the output will
 #' only show counts in the table. If given, \code{length(n)} should be one or
 #' equal to the number of levels of \code{byvar}.
 #' 
@@ -819,7 +837,7 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #' 
 #' If more than one \code{n} is given, \code{tabler_by} assumes that the
 #' entire data set is given as \code{data} and will use the corresponding
-#' \code{n} for percentages.
+#' \code{n} for percents.
 #' 
 #' @param data a data frame; variables \code{varname} and \code{byvar} should
 #' be factors
@@ -918,7 +936,7 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #'                sorted by total.',
 #'     col.columns = rep(c('grey97','none','grey97'), times = c(1,4,4)),
 #'     col.rgroup = rep(rep(c('none', 'grey97'), each = 5), 10),
-#'     tfoot = paste0('<font size=1><sup>&dagger;</sup>Percentages represent ',
+#'     tfoot = paste0('<font size=1><sup>&dagger;</sup>Percents represent ',
 #'             'proportion of patients out of respective phase total.</font>'))
 #' 
 #' 
@@ -1114,21 +1132,30 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
   res
 }
 
-#' Description statistics tabler
+#' Description statistics \code{tabler}
 #' 
-#' Wrapper function to create table of description statistics with tests
-#' of association.
+#' Wrapper function to create table of description statistics with optional
+#' tests of association.
 #' 
-#' If \code{FUN} is \code{FALSE}, no test will be performed. If \code{FUN}
-#' is a function, it must take two vector arguments: the row variable vector,
-#' \code{data$varname}, and the column variable vector, \code{data$byvar},
-#' and return a numeric p-value. Otherwise, \code{FUN} will be selected
-#' based on the input vectors:
+#' If \code{FUN} is \code{FALSE}, no test will be performed but a column for
+#' p-values will still be added; \code{FUN = NA} will prevent both the test
+#' from being performed and the column from being added to the output.
 #' 
-#' For a continuous \code{varname}, \code{\link{wilcox.test}} or
-#' \code{\link{kruskal.test}} if \code{byvar} has two or more than two levels,
-#' respectively. If \code{varname} is not numeric (or has few unique values),
-#' \code{fisher.test} is used.
+#' For \code{FUN = NULL} (default), the correct test will be guessed based on
+#' the row and column data. The current options are \code{\link{fisher.test}},
+#' \code{\link{wilcox.test}}, and \code{\link{kruskal.test}}. If the row data
+#' is continuous, one of the latter two tests will be used based on the number
+#' of unique values in the column data.
+#' 
+#' For special cases, the function is not always guessed correctly (e.g., if
+#' the row data contains few unique values, a Fisher test may be used where
+#' not appropriate). One of the default tests can be given explicitly with a
+#' character string, one of \code{"fisher"}, \code{"wilcoxon"},
+#' \code{"kruskal"}, \code{"chisq"}, or \code{"anova"} (can be abbreviated).
+#' 
+#' If \code{FUN} is a function, it must take two vector arguments: the row
+#' variable vector, \code{data$varname}, and the column variable vector,
+#' \code{data$byvar}, in this order and return a numeric p-value only.
 #' 
 #' @param data a matrix or data frame with variables \code{varname} and
 #' \code{byvar}
@@ -1137,7 +1164,7 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' @param FUN a function performing the test of association between
 #' \code{varname} and \code{byvar}; \code{FALSE} will suppress the test but
 #' keep a column for p-values; \code{NA} will suppress the test and drop the
-#' column for p-values; see details
+#' column for p-values; or a character string; see details
 #' @param color_pval logical; if \code{TRUE}, p-values will be colored
 #' by significance; see \code{\link{color_pval}}
 #' @param color_missing logical; if \code{TRUE}, rows summarizing missing
@@ -1163,18 +1190,23 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' and corresponding test name}
 #' 
 #' @seealso
-#' \code{\link{tabler}}, \code{\link{tabler_by}}
+#' \code{\link{tabler}}; \code{\link{tabler_by}}
 #' 
 #' @examples
-#' tabler_stat(mtcars, 'mpg', 'cyl')
+#' tabler_stat(mtcars, 'mpg', 'cyl') ## picks kruskal-wallis
 #' tabler_stat(mtcars, 'mpg', 'cyl', FUN = NA)
 #' tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE)
+#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'fisher')
+#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'anova')
 #' 
+#' 
+#' ## use of a custom function - see ?rawr::cuzick.test
 #' tabler_stat(mtcars, 'mpg', 'cyl',
 #'   FUN = function(x, y)
 #'     cuzick.test(x ~ y, data.frame(x, y))$p.value)
 #' 
 #' 
+#' ## typical usage
 #' mt <- within(mtcars, {
 #'   mpg[1:5] <- carb[1:5] <- drat[1:20] <- NA
 #'   carb <- factor(carb)
@@ -1228,9 +1260,18 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
     structure(NULL, FUN = NULL)
   } else if (is.function(FUN))
     structure(FUN(x, y), FUN = gsub('\\(.*', '', deparse(FUN)[2L]))
+  else if (is.character(FUN))
+    switch(
+      match.arg(FUN, c('fisher', 'wilcoxon', 'kruskal', 'chisq', 'anova')),
+      fisher   = structure(Gmisc::getPvalFisher(x, y),  FUN = 'fisher.test'),
+      wilcoxon = structure(Gmisc::getPvalWilcox(x, y),  FUN = 'wilcox.test'),
+      kruskal  = structure(Gmisc::getPvalKruskal(x, y), FUN = 'kruskal.test'),
+      chisq    = structure(Gmisc::getPvalChiSq(x, y),   FUN = 'chisq.test'),
+      anova    = structure(Gmisc::getPvalAnova(x, y),   FUN = 'anova.test')
+    )
   else {
     if (is.null(FUN))
-      if (is.numeric(x) & length(unique(x)) / length(x) > 0.5) {
+      if (is.numeric(x) & length(unique(x)) / length(x) > 0.25) {
         if (n > 2L)
           structure(Gmisc::getPvalKruskal(x, y), FUN = 'kruskal.test')
         else structure(Gmisc::getPvalWilcox(x, y), FUN = 'wilcox.test')
@@ -1309,11 +1350,12 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
 #' set.seed(1)
 #' r <- c('CR','PR','SD','PD','NE')
 #' x <- factor(sample(r, 30, replace = TRUE), r)
+#' 
 #' tabler_resp(x, 3)
 #' tabler_resp(x, 'PR')
 #' tabler_resp(x, 'PR', total = 50)
 #' 
-#' ## NAs are removed
+#' ## note NAs are removed
 #' y <- `[<-`(x, 1:10, value = NA)
 #' tabler_resp(x, FALSE)
 #' tabler_resp(y, FALSE)
@@ -1366,7 +1408,7 @@ tabler_resp <- function(x, r_or_better = levels(x)[3L],
         3L
       }
   
-  out <- c(
+  res <- c(
     resp1(x, rs, conf, digits, frac, show_conf, pct.sign, two = FALSE),
     if (!is.numeric(r_or_better))
       NULL
@@ -1385,7 +1427,7 @@ tabler_resp <- function(x, r_or_better = levels(x)[3L],
            '\n\t2) the number entered in the first stage; and ',
            '\n\t3) additional entered in the second stage')
     
-    out2 <- c(
+    res2 <- c(
       resp1(x, rs, conf, digits, frac, show_conf, pct.sign, two_stage),
       if (!is.numeric(r_or_better))
         NULL
@@ -1393,7 +1435,7 @@ tabler_resp <- function(x, r_or_better = levels(x)[3L],
                         frac, show_conf, pct.sign, two_stage)
     )
     
-    out[two_idx] <- out2[two_idx]
+    res[two_idx] <- res2[two_idx]
   } else two_idx <- NULL
   
   tot <- if (is.numeric(total))
@@ -1406,15 +1448,15 @@ tabler_resp <- function(x, r_or_better = levels(x)[3L],
   if (!frac)
     tot <- gsub('/\\S+', '', tot)
   
-  out <- c(if (total)
-    tot else NULL, out)
+  res <- c(if (total)
+    tot else NULL, res)
   
-  attr(out, 'two_stage') <- if (length(two_idx)) {
-    out[two_idx] <- paste0(out[two_idx], '<sup>&dagger;</sup>')
-    setNames(two_idx, names(out)[two_idx])
+  attr(res, 'two_stage') <- if (length(two_idx)) {
+    res[two_idx] <- paste0(res[two_idx], '<sup>&dagger;</sup>')
+    setNames(two_idx, names(res)[two_idx])
   } else NULL
   
-  out
+  res
 }
 
 resp1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
@@ -1424,7 +1466,7 @@ resp1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
     identity else rev
   tbl <- table(x)[FUN(r)]
   
-  out <- if (all(is.na(x)))
+  res <- if (all(is.na(x)))
     rep('-', length(r))
   else sapply(tbl, function(X)
     if (identical(two, FALSE))
@@ -1433,14 +1475,15 @@ resp1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
     else binconr(c(two[1L], X), two[2:3], conf, digits, TRUE, frac,
                  show_conf, pct.sign, 'two-stage')
     )
-  setNames(out, FUN(r))
+  
+  setNames(res, FUN(r))
 }
 
 r_or_better1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
-  # rawr:::r_or_better_(x, c('CR','PR'), .9, 0L, TRUE, TRUE, TRUE, FALSE)
+  # rawr:::r_or_better1(x, c('CR','PR'), .9, 0L, TRUE, TRUE, TRUE, FALSE)
   x[x %ni% r] <- NA
   
-  out <- if (all(is.na(x)))
+  res <- if (all(is.na(x)))
     rep('-', length(r)) else
       sapply(seq_along(r), function(X)
         if (identical(two, FALSE))
@@ -1450,7 +1493,7 @@ r_or_better1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
                      digits, TRUE, frac, show_conf, pct.sign, 'two-stage')
       )
   
-  setNames(out, paste(r, 'or better'))
+  setNames(res, paste(r, 'or better'))
 }
 
 #' Match CTCAE codes
@@ -1482,15 +1525,18 @@ r_or_better1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
 
 match_ctc <- function(..., version = 4L) {
   x <- unlist(list(...))
+  
   ctc <- if (version %ni% 3:4)
     stop('\'version\' should be 3 or 4') else {
       if (version == 3L)
         rawr::ctcae_v3 else rawr::ctcae_v4
     }
+  
   ## guess if input is code or description
   idx <- if (any(grepl('([A-Za-z -])([0-9])', x)))
     match(gsub('\\s*|-', '', x, perl = TRUE), ctc[, 'tox_code']) else
       grep(paste(x, collapse = '|'), ctc[, 'tox_desc'], ignore.case = TRUE)
+  
   list(matches = `rownames<-`(ctc[idx, ], NULL),
        version = sprintf('CTCAE v%s', version))
 }
@@ -1544,20 +1590,23 @@ tox_worst <- function(data, id = 'id', desc = 'desc', grade = 'grade',
                       code, version = 4L) {
   if (!is.factor(data[, grade]))
     stop('\'grade\' should be a factor with proper order')
+  
   if (!missing(code)) {
     ctc <- match_ctc(data[, code], version = version)
     data$desc <- factor(ctc$matches$tox_desc)
     desc <- 'desc'
   }
+  
   data <- data[order(data[, id], data[, desc], -xtfrm(data[, grade])), ]
   idx <- which(duplicated(data[, c(id, desc)]))
+  
   list(tox_worst = if (length(idx)) data[-idx, ] else data,
        data = data, duplicates = idx)
 }
 
 #' Count formatter
 #' 
-#' Formats and prints a \emph{named} vector of counts with percentages.
+#' Formats and prints a \emph{named} vector of counts with percents.
 #' 
 #' @param top named vector of counts (a summary or table) or a long vector of
 #' character strings or factors
@@ -1566,25 +1615,27 @@ tox_worst <- function(data, id = 'id', desc = 'desc', grade = 'grade',
 #' @param lowcase logical; names will be lowercase if \code{TRUE}, upper
 #' case if \code{FALSE}, and unchanged for any other value
 #' @param frac logical; if \code{TRUE}, the numbers are shown as fractions
+#' @param digits number of digits past the decimal point to keep
 #' 
 #' @examples
 #' top <- setNames(3:1, c('Gold','Silver','Bronze'))
+#' 
 #' countr(names(top))
 #' countr(names(top), lowcase = NA)
 #' countr(names(top), frac = TRUE)
-#' 
-#' 
-#' countr(top, 10)
+#' countr(top, n = 10, frac = TRUE)
 #' 
 #' @export
 
-countr <- function(top, n, lowcase = TRUE, frac = FALSE) {
+countr <- function(top, n, lowcase = TRUE, frac = FALSE, digits = 0L) {
   if (inherits(top, 'table')) {
     ## if top is a table, get n
-    n <- if (missing(n)) sum(top) else n
+    n <- if (missing(n))
+      sum(top) else n
   } else {
     ## if top is a vector, get table
-    n <- if (missing(n)) length(top) else n
+    n <- if (missing(n))
+      length(top) else n
     top <- table(top)
   }
   
@@ -1594,7 +1645,8 @@ countr <- function(top, n, lowcase = TRUE, frac = FALSE) {
   iprint(sprintf('%s (n = %s%s, %s%%)', if (isTRUE(lowcase))
     tolower(names(top)) else if (identical(lowcase, FALSE))
       toupper(names(top)) else names(top),
-    top, if (frac) paste0('/', n) else '', round(as.numeric(top) / n * 100)))
+    top, if (frac)
+      paste0('/', n) else '', roundr(as.numeric(top) / n * 100, digits)))
 }
 
 #' Date parse
@@ -1639,11 +1691,14 @@ dmy <- function(d, m, y, origin = c(1, 1, 1900)) {
     suppressWarnings(a <- as.numeric(a))
     ifelse(is.na(a), b, a)
   }
-  d[is.na(d)] <- origin[1]
-  m[is.na(m)] <- origin[2]
-  y[is.na(y)] <- origin[3]
-  y <- ifelse(nchar(y) <= 2, f(y, 0) + origin[3], f(y, 0))
-  as.Date(sprintf('%04s-%02s-%02s', y, f(m, origin[2]), f(d, origin[1])))
+  
+  d[is.na(d)] <- origin[1L]
+  m[is.na(m)] <- origin[2L]
+  y[is.na(y)] <- origin[3L]
+  
+  y <- ifelse(nchar(y) <= 2, f(y, 0) + origin[3L], f(y, 0))
+  
+  as.Date(sprintf('%04s-%02s-%02s', y, f(m, origin[2L]), f(d, origin[1L])))
 }
 
 #' Combine html tables
@@ -1682,9 +1737,10 @@ combine_table <- function(l, tspanner, n.tspanner, ...) {
     sapply(l, function(x) nrow(x) %||% 1L) else n.tspanner
   tspanner <- if (missing(tspanner))
     names(l) %||% rep(' ', each = length(n.tspanner)) else tspanner
-  htmlTable::htmlTable(
+  ht <- htmlTable::htmlTable(
     do.call('rbind', l), tspanner = tspanner, n.tspanner = n.tspanner, ...
   )
+  structure(ht, class = 'htmlTable')
 }
 
 #' Inject div
@@ -1734,8 +1790,10 @@ combine_table <- function(l, tspanner, n.tspanner, ...) {
 inject_div <- function(x, where, style) {
   if (missing(style))
     return(x)
+  
   style <- inject_(x, where, style)
   where <- style != ''
+  
   x[where] <- sprintf('<div style=\'%s\'>%s</div>',
                       gsub(';*$', ';', style[where]), x[where])
   x
@@ -1745,8 +1803,10 @@ inject_ <- function(x, where, what) {
   where <- if (missing(where) & !missing(what) || !length(where))
     which(row(x) > 0L, arr.ind = TRUE) else
       matrix(where, ncol = 2L, byrow = !is.matrix(where))
+  
   what <- rep_len(what, nrow(where))
   mat  <- matrix('', nrow(x), ncol(x))
+  
   mat[where] <- what
   mat
 }
@@ -1995,15 +2055,17 @@ case <- function(x, case = c('first', 'upcase', 'downcase', 'camelcase',
 write_htmlTable <- function(x, file = '', attributes = TRUE) {
   if (attributes) {
     x <- gsub('gr[ea]y\\s*(?=;)', '#bebebe', x, perl = TRUE)
+    
     x <- paste(
       '<!DOCTYPE html>\n<html>\n<body>',
       x,
       '</body>\n</html>',
       sep = '\n'
     )
-    attr(x, 'html') <- TRUE
-    class(x) <- c('html', 'htmlTable', 'character')
+    
+    x <- structure(x, class = 'htmlTable', html = TRUE)
   }
+  
   if (!is.character(file))
     x else cat(x, file = file)
 }

@@ -60,7 +60,7 @@ but requires additional steps).
 \code{varname} and \code{byvar} should be factors, and the levels will
 appear in the output as they occur in \code{levels(x)}.
 
-\code{n} is used to calculate the percentages. If missing, the output will
+\code{n} is used to calculate the percent. If missing, the output will
 only show counts in the table. If given, \code{length(n)} should be one or
 equal to the number of levels of \code{byvar}.
 
@@ -70,7 +70,7 @@ data, it is only necessary to provide the total \code{n} for that group.
 
 If more than one \code{n} is given, \code{tabler_by} assumes that the
 entire data set is given as \code{data} and will use the corresponding
-\code{n} for percentages.
+\code{n} for percents.
 }
 \examples{
 mt <- within(mtcars, {
@@ -143,7 +143,7 @@ htmlTable(out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
                sorted by total.',
     col.columns = rep(c('grey97','none','grey97'), times = c(1,4,4)),
     col.rgroup = rep(rep(c('none', 'grey97'), each = 5), 10),
-    tfoot = paste0('<font size=1><sup>&dagger;</sup>Percentages represent ',
+    tfoot = paste0('<font size=1><sup>&dagger;</sup>Percents represent ',
             'proportion of patients out of respective phase total.</font>'))
 
 
