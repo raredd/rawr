@@ -1,6 +1,6 @@
 ### survival
 # kmplot, kmplot_by, local_coxph_test, surv_cp, surv_summary, surv_table,
-# survdiff_pairs, landmark
+# survdiff_pairs, landmark, surv_median
 #
 # unexported:
 # points.kmplot, kmplot_data_, lr_text, lr_pval
@@ -1533,4 +1533,46 @@ landmark <- function(s, times = NULL, lr_test = TRUE, adjust_start = FALSE,
       }) else NULL
   
   invisible(do.call('rbind', c(list(st), sd)))
+}
+
+#' Extract \code{survfit} summaries
+#' 
+#' Convenience function to get summary results from \code{summary(x)$table}
+#' where \code{x} is a \code{\link[survival]{survfit}} object.
+#' 
+#' @param x an object of class \code{\link[survival]{survfit}}
+#' @param what the data to return, either the index, character string(s), or
+#' \code{NULL} (returns the entire table)
+#' 
+#' @examples
+#' library('survival')
+#' sfit1 <- survfit(Surv(time, status) ~ 1, lung)
+#' sfit2 <- survfit(Surv(time, status) ~ sex, lung)
+#' 
+#' surv_median(sfit1)
+#' surv_median(sfit2)
+#' 
+#' surv_median(sfit1, NULL)
+#' surv_median(sfit1, 2:3)
+#' surv_median(sfit1, 'median|CL')
+#' surv_median(sfit1, c('events', 'median'))
+#' 
+#' @export
+
+surv_median <- function(x, what = 'median') {
+  stopifnot(inherits(x, 'survfit'))
+  
+  oo <- options(survfit.rmean = 'individual')
+  on.exit(options(oo))
+  
+  tbl <- summary(x)$table
+  if (is.null(what))
+    return(tbl)
+  
+  what <- if (is.character(what))
+    grep(paste0(what, collapse = '|'), names(tbl) %||% colnames(tbl))
+  else what
+  
+  if (length(dim(tbl)))
+    tbl[, what] else tbl[what]
 }
