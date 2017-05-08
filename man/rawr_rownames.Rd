@@ -23,7 +23,7 @@ is to add the new column first; optional for \code{column_to_rownames}
 \code{column} will be ignored if \code{where} is given}
 }
 \description{
-Convenience functions for working with rownames.
+Convenience functions for working with row names.
 
 \code{rownames_to_column} adds a column to an object using its
 \code{\link{rownames}}; \code{column_to_rownames} adds rownames to an
