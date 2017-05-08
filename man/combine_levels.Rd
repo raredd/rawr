@@ -7,8 +7,7 @@
 \usage{
 combine_levels(x, levels, labels = NULL, regex = FALSE, ...)
 
-combine_regex(x, levels, labels = seq.int(length(levels) + 1L),
-  keep.original = FALSE, ...)
+combine_regex(x, levels, labels, keep.original = FALSE, ...)
 }
 \arguments{
 \item{x}{a vector}
@@ -18,12 +17,20 @@ combine_regex(x, levels, labels = seq.int(length(levels) + 1L),
 
 for \code{combine_regex} (or \code{combine_labels(..., regex = TRUE)}),
 a vector of regular expressions; if a list is given, each list element
-will be collapsed with an "or" statement and treated as single expressions}
+will be collapsed with an "or" statement and treated as single expressions
 
-\item{labels}{a vector of new labels; if \code{levels} is a vector,
-\code{labels} should be length 1; if \code{levels} is a list, \code{labels}
-(need not be a list but) should have one value for each list element of
-\code{levels}}
+for values of \code{x} which match none of \code{levels} and if
+\code{keep.original = FALSE}, a \emph{named} \code{NULL} list element can
+group these values; otherwise, the smallest unused integer is used; see
+examples}
+
+\item{labels}{for \code{combine_levels}, a vector of new labels; if
+\code{levels} is a vector, \code{labels} should be length 1; if
+\code{levels} is a list, \code{labels} (need not be a list but) should
+have one value for each list element of \code{levels}
+
+for \code{combine_regex}, if \code{keep.original = FALSE}, one additional
+label should be given for values that do not match any of \code{levels}}
 
 \item{regex}{logical; if \code{TRUE}, \code{levels} is assumed to be
 regular expressions, and inputs are passed to \code{combine_regex}}
@@ -45,8 +52,9 @@ are not given; otherwise, a character vector is returned.
 }
 \description{
 Convenience functions to combine multiple levels of a vector into a new or
-existing level(s). \code{combine_levels} and \code{combine_groups} are
-similar in use
+existing level(s). \code{combine_levels} and \code{combine_regex} are
+similar in use, but the latter is more useful for unstructured text which
+can be grouped by regular expressions.
 }
 \examples{
 ## combine numeric, character, or factor
@@ -61,7 +69,7 @@ combine_levels(factor(x), 3, 4)
 combine_levels(factor(x), list(3, 5), c(4, 9))
 
 
-## combine values by regex
+## combine groups by regular expressions
 x <- letters[1:5]
 combine_regex(x, 'a')
 combine_regex(x, c('a', 'b'))
@@ -69,12 +77,18 @@ combine_regex(x, c('a', 'b|c|e'))
 
 ## character labels return a character vector
 combine_regex(x, 'a', c('a', 'b'))
-combine_regex(x, '[a-c]', c('Others', 'ABC'))
-combine_regex(x, '[a-c]', c('Others', 'ABC'), TRUE)
+combine_regex(x, '[a-c]', c('ABC', 'Others'))
+combine_regex(x, '[a-c]', c('ABC', 'Others'), keep.original = TRUE)
+
+## levels passed as a list
+combine_regex(x, list(ABC = c('a', 'b', 'c')))
+combine_regex(x, list(ABC = '[a-c]', Others = NULL))
+combine_regex(x, list(ABC = c('a', 'b', 'c'), Others = NULL))
+
 
 ## combine_levels(..., regex = TRUE) returns the same as above
-combine_levels(x, '[a-c]', c('Others', 'ABC'), regex = TRUE)
-combine_levels(x, '[a-c]', c('Others', 'ABC'), regex = TRUE,
+combine_levels(x, '[a-c]', c('ABC', 'Others'), regex = TRUE)
+combine_levels(x, '[a-c]', c('ABC', 'Others'), regex = TRUE,
                keep.original = TRUE)
 
 }

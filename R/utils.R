@@ -3,7 +3,7 @@
 # rbindfill2, rbindlist, interleave, outer2, merge2, locf, roll_fun,
 # classMethods, getMethods, regcaptures, cast, melt, view, view2, clist,
 # rapply2, sort_matrix, insert, insert_matrix, tryCatch2, rleid, droplevels2,
-# combine_levels, rownames_to_column, column_to_rownames
+# combine_levels, combine_regex, rownames_to_column, column_to_rownames
 # 
 # rawr_ops:
 # %ni%, %==%, %||%, %inside%, %:%
@@ -2015,8 +2015,9 @@ droplevels2 <- function(x, min_level = 1, max_level = max(as.numeric(x))) {
 #' Combine values
 #' 
 #' Convenience functions to combine multiple levels of a vector into a new or
-#' existing level(s). \code{combine_levels} and \code{combine_groups} are
-#' similar in use
+#' existing level(s). \code{combine_levels} and \code{combine_regex} are
+#' similar in use, but the latter is more useful for unstructured text which
+#' can be grouped by regular expressions.
 #' 
 #' @param x a vector
 #' @param levels for \code{combine_levels}, a vector of unique values of
@@ -2025,10 +2026,18 @@ droplevels2 <- function(x, min_level = 1, max_level = max(as.numeric(x))) {
 #' for \code{combine_regex} (or \code{combine_labels(..., regex = TRUE)}),
 #' a vector of regular expressions; if a list is given, each list element
 #' will be collapsed with an "or" statement and treated as single expressions
-#' @param labels a vector of new labels; if \code{levels} is a vector,
-#' \code{labels} should be length 1; if \code{levels} is a list, \code{labels}
-#' (need not be a list but) should have one value for each list element of
-#' \code{levels}
+#' 
+#' for values of \code{x} which match none of \code{levels} and if
+#' \code{keep.original = FALSE}, a \emph{named} \code{NULL} list element can
+#' group these values; otherwise, the smallest unused integer is used; see
+#' examples
+#' @param labels for \code{combine_levels}, a vector of new labels; if
+#' \code{levels} is a vector, \code{labels} should be length 1; if
+#' \code{levels} is a list, \code{labels} (need not be a list but) should
+#' have one value for each list element of \code{levels}
+#' 
+#' for \code{combine_regex}, if \code{keep.original = FALSE}, one additional
+#' label should be given for values that do not match any of \code{levels}
 #' @param regex logical; if \code{TRUE}, \code{levels} is assumed to be
 #' regular expressions, and inputs are passed to \code{combine_regex}
 #' @param ... additional arguments passed to \code{combine_regex} or further
@@ -2061,7 +2070,7 @@ droplevels2 <- function(x, min_level = 1, max_level = max(as.numeric(x))) {
 #' combine_levels(factor(x), list(3, 5), c(4, 9))
 #' 
 #' 
-#' ## combine values by regex
+#' ## combine groups by regular expressions
 #' x <- letters[1:5]
 #' combine_regex(x, 'a')
 #' combine_regex(x, c('a', 'b'))
@@ -2069,12 +2078,18 @@ droplevels2 <- function(x, min_level = 1, max_level = max(as.numeric(x))) {
 #' 
 #' ## character labels return a character vector
 #' combine_regex(x, 'a', c('a', 'b'))
-#' combine_regex(x, '[a-c]', c('Others', 'ABC'))
-#' combine_regex(x, '[a-c]', c('Others', 'ABC'), TRUE)
+#' combine_regex(x, '[a-c]', c('ABC', 'Others'))
+#' combine_regex(x, '[a-c]', c('ABC', 'Others'), keep.original = TRUE)
+#' 
+#' ## levels passed as a list
+#' combine_regex(x, list(ABC = c('a', 'b', 'c')))
+#' combine_regex(x, list(ABC = '[a-c]', Others = NULL))
+#' combine_regex(x, list(ABC = c('a', 'b', 'c'), Others = NULL))
+#' 
 #' 
 #' ## combine_levels(..., regex = TRUE) returns the same as above
-#' combine_levels(x, '[a-c]', c('Others', 'ABC'), regex = TRUE)
-#' combine_levels(x, '[a-c]', c('Others', 'ABC'), regex = TRUE,
+#' combine_levels(x, '[a-c]', c('ABC', 'Others'), regex = TRUE)
+#' combine_levels(x, '[a-c]', c('ABC', 'Others'), regex = TRUE,
 #'                keep.original = TRUE)
 #' 
 #' @export
@@ -2128,18 +2143,35 @@ combine_levels <- function(x, levels, labels = NULL, regex = FALSE, ...) {
 
 #' @rdname combine_levels
 #' @export
+combine_regex <- function(x, levels, labels, keep.original = FALSE, ...) {
+  if (inherits(levels, 'list')) {
+    stopifnot(
+      (ok <- sum(nul <- sapply(levels, is.null))) <= 1
+    )
+    levels <- c(lapply(levels[!nul], paste, collapse = '|'), levels[nul])
+    labels <- names(levels) %||% seq.int(length(levels))
+    
+    return(
+      Recall(x, unlist(levels), labels,
+             keep.original = keep.original, ...)
+    )
+  }
 
-combine_regex <- function(x, levels, labels = seq.int(length(levels) + 1L),
-                          keep.original = FALSE, ...) {
+  labels <- if (missing(labels))
+    seq.int(length(levels) + 1L)
+  else if (length(levels) == length(labels))
+    c(labels, length(labels) + 1L) else labels
+  
   stopifnot(
+    is.vector(levels), is.vector(labels),
     length(levels) == length(na.omit(unique(levels))),
-    keep.original || length(labels) == length(levels) + 1L
+    keep.original || length(labels) %in% (length(levels) + 0:1)
   )
   
   res <- if (keep.original)
-    x else rep_len(labels[1L], length(x))
+    x else rep_len(tail(labels, 1L), length(x))
   for (ii in seq_along(levels))
-    res[grep(pattern = levels[ii], x = x, ...)] <- labels[ii + 1L]
+    res[grep(pattern = levels[ii], x = x, ...)] <- labels[ii]
   
   res
 }
@@ -2147,7 +2179,7 @@ combine_regex <- function(x, levels, labels = seq.int(length(levels) + 1L),
 #' Rowname tools
 #' 
 #' @description
-#' Convenience functions for working with rownames.
+#' Convenience functions for working with row names.
 #' 
 #' \code{rownames_to_column} adds a column to an object using its
 #' \code{\link{rownames}}; \code{column_to_rownames} adds rownames to an
