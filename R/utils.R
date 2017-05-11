@@ -1691,7 +1691,7 @@ clist <- function (x, y, how = c('cbind', 'rbind', 'cbindx', 'rbindx')) {
 #' @param FUN the function to be applied to each \code{classes} element of
 #' \code{l}
 #' @param classes a character vector of \code{\link{class}} names or
-#' \code{"any"} to apply to every non-\code{\link{list}} element of \code{l}
+#' \code{"ANY"} to apply to every non-\code{\link{list}} element of \code{l}
 #' @param ... additional arguments passed to \code{FUN}
 #' @param check.nested logical; if \code{TRUE}, for nested lists,
 #' \code{rapply2} will continue to walk down the list rather than stop at
@@ -1734,7 +1734,7 @@ clist <- function (x, y, how = c('cbind', 'rbind', 'cbindx', 'rbindx')) {
 #' @export
 
 
-rapply2 <- function(l, FUN, classes = 'any', ...,
+rapply2 <- function(l, FUN, classes = 'ANY', ...,
                     check.nested = 'list' %in% classes) {
   stopifnot(islist(l))
   FUN <- match.fun(FUN)
@@ -1746,7 +1746,7 @@ rapply2 <- function(l, FUN, classes = 'any', ...,
     l[[ii]] <- if (is.nested(l[[ii]]) ||
                    (islist(l[[ii]]) & ('list' %ni% classes)))
       Recall(l[[ii]], FUN, classes, ..., check.nested = check.nested) else
-        if (any(classes == 'any') || inherits(l[[ii]], classes))
+        if (any(toupper(classes) == 'ANY') || inherits(l[[ii]], classes))
           FUN(l[[ii]], ...) else l[[ii]]
   
   if ('list' %in% classes & !identical(FUN, unlist))

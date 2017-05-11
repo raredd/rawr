@@ -4,7 +4,7 @@
 \alias{rapply2}
 \title{Recursively apply a function to a list}
 \usage{
-rapply2(l, FUN, classes = "any", ..., check.nested = "list" \%in\% classes)
+rapply2(l, FUN, classes = "ANY", ..., check.nested = "list" \%in\% classes)
 }
 \arguments{
 \item{l}{a list}
@@ -13,7 +13,7 @@ rapply2(l, FUN, classes = "any", ..., check.nested = "list" \%in\% classes)
 \code{l}}
 
 \item{classes}{a character vector of \code{\link{class}} names or
-\code{"any"} to apply to every non-\code{\link{list}} element of \code{l}}
+\code{"ANY"} to apply to every non-\code{\link{list}} element of \code{l}}
 
 \item{...}{additional arguments passed to \code{FUN}}
 
