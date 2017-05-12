@@ -200,7 +200,8 @@ NULL
 #' 
 #' @seealso
 #' \code{\link{parse_yaml}}, \code{\link{parse_index}},
-#' \code{\link{parse_news}}, \code{\link{parse_namespace}}, \code{\link{ls}},
+#' \code{\link{parse_news}}, \code{\link{parse_namespace}}; \code{\link{ls}},
+#' \code{lss} adapted from \url{http://stackoverflow.com/q/1358003/2994949};
 #' \code{\link{search}}
 #' 
 #' @examples
@@ -241,7 +242,7 @@ NULL
 lss <- function(pos = 1L, pattern, by = NULL, all.names = FALSE,
                 decreasing = TRUE, n = 40L) {
   if (!length(ls(envir = as.environment(pos))))
-    return(character(0))
+    return(character(0L))
   
   napply <- function(names, fn, ...)
     sapply(names, function(x) fn(get(x, pos = pos), ...))
@@ -252,7 +253,7 @@ lss <- function(pos = 1L, pattern, by = NULL, all.names = FALSE,
   
   type  <- ifelse(is.na(mo), mo, cl)
   size  <- napply(names, object.size)
-  sizef <- napply(names, utils:::format.object_size, units = 'auto')
+  sizef <- sapply(size, utils:::format.object_size, units = 'auto')
   dims  <- t(napply(names, function(x) as.numeric(dim(x))[1:2]))
   idx   <- is.na(dims)[, 1L] & (type != 'function')
   dims[idx, 1L] <- napply(names, length)[idx]

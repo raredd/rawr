@@ -113,6 +113,7 @@ lsp('rawr', 'lazydata')
 }
 \seealso{
 \code{\link{parse_yaml}}, \code{\link{parse_index}},
-\code{\link{parse_news}}, \code{\link{parse_namespace}}, \code{\link{ls}},
+\code{\link{parse_news}}, \code{\link{parse_namespace}}; \code{\link{ls}},
+\code{lss} adapted from \url{http://stackoverflow.com/q/1358003/2994949};
 \code{\link{search}}
 }
