@@ -129,11 +129,16 @@ rbindfill2(head(mtcars), head(cars))
 
 
 ## "stack" a list of vectors with differing lengths
+rbindlist(1:5)
+rbindlist(1:5, 1:5)
+
 l <- lapply(1:4, sequence)
 rbindlist(l)
+rbindlist(l[4L])
 
 names(l) <- LETTERS[1:4]
 rbindlist(l)
+rbindlist(l[4L])
 
 l <- lapply(l, function(x) setNames(x, letters[x]))
 rbindlist(l, use.names = TRUE)

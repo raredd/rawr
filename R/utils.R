@@ -614,11 +614,16 @@ clear <- function(...) cat('\014')
 #' 
 #' 
 #' ## "stack" a list of vectors with differing lengths
+#' rbindlist(1:5)
+#' rbindlist(1:5, 1:5)
+#' 
 #' l <- lapply(1:4, sequence)
 #' rbindlist(l)
+#' rbindlist(l[4L])
 #' 
 #' names(l) <- LETTERS[1:4]
 #' rbindlist(l)
+#' rbindlist(l[4L])
 #' 
 #' l <- lapply(l, function(x) setNames(x, letters[x]))
 #' rbindlist(l, use.names = TRUE)
@@ -939,8 +944,14 @@ rbindfill2 <- function(..., use.rownames = FALSE) {
 rbindlist <- function(..., use.rownames = FALSE, use.names = FALSE) {
   l <- if (is.list(..1))
     c(...) else list(...)
-  if (length(l) == 1L)
-    return(..1)
+  if (length(l) == 1L) {
+    # return(..1)
+    names(l) <- names(l) %||% 1
+    l <- c(l, list(extra = NA))
+    l <- Recall(l, use.rownames = use.rownames, use.names = use.names)
+    
+    return(head(l, -1L))
+  }
   
   # nn <- if (is.null(names(l)))
   #   seq_along(l) else make.unique(names(l))
