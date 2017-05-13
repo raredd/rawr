@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils2.R
 \name{tox_worst}
 \alias{tox_worst}
-\title{Find most severe toxicities}
+\title{Find highest grade toxicities}
 \usage{
 tox_worst(data, id = "id", desc = "desc", grade = "grade", code,
   version = 4L)

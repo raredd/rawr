@@ -1233,12 +1233,13 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
   else if (identical(color_missing, FALSE))
     NULL else color_missing
   
-  x <- data[, varname]
-  y <- data[, byvar]
+  x <- if (is.character(x <- data[, varname]))
+    as.factor(x) else x
+  y <- as.factor(data[, byvar])
   n <- length(unique(na.omit(y)))
   
   res <- Gmisc::getDescriptionStatsBy(
-    x, y, digits = digits, html = TRUE, add_total_col = TRUE,
+    x = x, by = y, digits = digits, html = TRUE, add_total_col = TRUE,
     show_all_values = TRUE, statistics = FALSE, useNA.digits = 0L, ...,
     continuous_fn = function(...) Gmisc::describeMedian(..., iqr = FALSE)
   )
@@ -1246,21 +1247,24 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
   ## recolor missing
   if (is.character(color_missing)) {
     wh <- rownames(res) %in% 'Missing'
-    rownames(res)[wh] <-  sprintf('<font color=%s><i>%s</i></font>',
-                                  color_missing, rownames(res)[wh])
+    rownames(res)[wh] <- sprintf('<font color=%s><i>%s</i></font>',
+                                 color_missing, rownames(res)[wh])
     res[wh, ] <- sprintf('<font color=%s><i>%s</i></font>',
                          color_missing, res[wh, ])
   }
   
+  ## no stat fn, no pvalue column
   if (identical(NA, FUN))
     return(structure(res, FUN = FALSE, p.value = NULL, fnames = NULL))
   
+  ## add pvalue column using stat fn
   pvn <- if (identical(FUN, FALSE)) {
     color_pval <- FALSE
     structure(NULL, FUN = NULL)
   } else if (is.function(FUN))
     structure(FUN(x, y), FUN = gsub('\\(.*', '', deparse(FUN)[2L]))
   else if (is.character(FUN))
+    ## one of these tests can be explicitly given with chr string
     switch(
       match.arg(FUN, c('fisher', 'wilcoxon', 'kruskal', 'chisq', 'anova')),
       fisher   = structure(Gmisc::getPvalFisher(x, y),  FUN = 'fisher.test'),
@@ -1270,8 +1274,11 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
       anova    = structure(Gmisc::getPvalAnova(x, y),   FUN = 'anova.test')
     )
   else {
+    ## guess stat fn based on x, by data
     if (is.null(FUN))
-      if (is.numeric(x) & length(unique(x)) / length(x) > 0.25) {
+      ## dbl/int with many (?) unique values uses rank-sum tests
+      ## otherwise assume contingency table
+      if (!is.factor(x) & lunique(x, TRUE) >= 10L) {
         if (n > 2L)
           structure(Gmisc::getPvalKruskal(x, y), FUN = 'kruskal.test')
         else structure(Gmisc::getPvalWilcox(x, y), FUN = 'wilcox.test')
@@ -1282,6 +1289,7 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
   fnames <- setNames(paste0(c('wilcox', 'kruskal', 'fisher'), '.test'),
                      c('&dagger;','&dagger;','&Dagger;'))
   
+  ## user input fns get * identifier
   if (!is.null(FUN) & !identical(FUN, FALSE)) {
     if (!is.character(dagger))
       dagger <- '*'
@@ -1394,10 +1402,9 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
 #' 
 #' @export
 
-tabler_resp <- function(x, r_or_better = levels(x)[3L],
-                        conf = 0.95, digits = 0L,
-                        frac = TRUE, show_conf = TRUE, pct.sign = TRUE,
-                        total = FALSE, two_stage = FALSE) {
+tabler_resp <- function(x, r_or_better = levels(x)[3L], conf = 0.95,
+                        digits = 0L, frac = TRUE, show_conf = TRUE,
+                        pct.sign = TRUE, total = FALSE, two_stage = FALSE) {
   rs <- names(table(x))
   lx <- length(x)
   
@@ -1541,7 +1548,7 @@ match_ctc <- function(..., version = 4L) {
        version = sprintf('CTCAE v%s', version))
 }
 
-#' Find most severe toxicities
+#' Find highest grade toxicities
 #' 
 #' Returns a subset of input data with worst toxicity grade per toxicity
 #' code per patient, ie, sorts and removes duplicates.
@@ -1733,14 +1740,17 @@ dmy <- function(d, m, y, origin = c(1, 1, 1900)) {
 combine_table <- function(l, tspanner, n.tspanner, ...) {
   l <- if (!islist(l))
     list(l) else l
+  
   n.tspanner <- if (missing(n.tspanner))
     sapply(l, function(x) nrow(x) %||% 1L) else n.tspanner
   tspanner <- if (missing(tspanner))
     names(l) %||% rep(' ', each = length(n.tspanner)) else tspanner
-  ht <- htmlTable::htmlTable(
-    do.call('rbind', l), tspanner = tspanner, n.tspanner = n.tspanner, ...
+  
+  structure(
+    htmlTable::htmlTable(
+      do.call('rbind', l), tspanner = tspanner, n.tspanner = n.tspanner, ...
+    ), class = 'htmlTable'
   )
-  structure(ht, class = 'htmlTable')
 }
 
 #' Inject div
