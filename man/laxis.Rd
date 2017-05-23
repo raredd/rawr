@@ -21,13 +21,17 @@ drawn on: 1=below, 2=left, 3=above, 4=right}
 
 \item{...}{additional graphical parameters passed to \code{\link{par}}}
 }
+\value{
+A list with elements \code{at.major} and \code{at.minor} giving the points
+at which tick marks were drawn for the major and minor axes, respectively.
+}
 \description{
 Draw minor ticks on a log scale axis.
 }
 \examples{
 x <- 1:10
 y <- function(base) base ** x
-par(mar = c(3,5,3,5), las = 1)
+op <- par(mar = c(3,5,3,5), las = 1)
 plot(x, log(y(2), 2), ann = FALSE, axes = FALSE)
 laxis(2, base = 2, limit = -1)
 
@@ -37,8 +41,10 @@ laxis(4, nticks = 10, tcl = .5, col.axis = 2)
 
 par(new = TRUE)
 plot(x, x, log = 'x', axes = FALSE, ann = FALSE, xpd = NA)
-laxis(1, nticks = 10, tcl = -1, col.axis = 1)
+laxis(1, nticks = 10, tcl = -1, col.axis = 1, lwd = 2)
 abline(v = x)
+
+par(op)
 
 }
 \seealso{

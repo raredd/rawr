@@ -496,7 +496,7 @@ arrows2 <- function(x0, y0, x1 = x0, y1 = y0, size = 1, width = 0.1 / cin,
            col = col, lty = lty, lwd = lwd, lend = 1, xpd = NA, ...)
   
   if (code == 0L)
-    return(invisible())
+    return(invisible(NULL))
   
   if (code %in% 2:3) {
     theta <- atan2((y1 - y0) * uin[2L], (x1 - x0) * uin[1L])
@@ -557,11 +557,12 @@ arrows2 <- function(x0, y0, x1 = x0, y1 = y0, size = 1, width = 0.1 / cin,
 #' plot.window(c(-2,2), c(-2,2))
 #' p <- matrix(c(rep(-1:1, 2), rep(-1:1, each = 2)), ncol = 2)
 #' points(p)
+#' 
 #' carrows(p1 <- p[2, ], p2 <- p[1, ], pad = .3)
-#' carrows(p1 <- p[4, ], p2 <- p[5, ], dir = c(0,1), col = 3)
+#' carrows(p1 <- p[4, ], p2 <- p[5, ], dir = c(0, 1), col = 3)
 #' carrows(p1 <- p[6, ], p2 <- p[3, ], lwd = 10, pad = c(.05, .1))
 #' carrows(p1 <- p[1, ], p2 <- p[6, ], flip = TRUE)
-#' carrows(p1 <- p[1, ], p2 <- p[5, ], dir = c(1,0))
+#' carrows(p1 <- p[1, ], p2 <- p[5, ], dir = c(1, 0))
 #' 
 #' @export
 
@@ -573,7 +574,7 @@ carrows <- function(p1, p2, arc, degree = FALSE, pad = 0.01 * 1:2,
                     size = 1, width = size / 2, curve = 1, fill = col,
                     border = NA) {
   
-  code_ <- function(x) c(2,0,1)[match(x, -1:1)]
+  code_ <- function(x) c(2L, 0L, 1L)[match(x, -1:1)]
   pad_  <- function(x, pad) rawr::ht(x, -length(x) * (1 - pad))
   
   ## try to guess code for arrows2
@@ -589,7 +590,7 @@ carrows <- function(p1, p2, arc, degree = FALSE, pad = 0.01 * 1:2,
     if (degree | any(arc > 2 * pi))
       d2r(arc) else arc[1:2]
   } else sapply(list(p1, p2), function(x)
-    p2r(x[1], x[2], centers[1], centers[2]))
+    p2r(x[1L], x[2L], centers[1L], centers[2L]))
   
   ## convert polar to cart and plot lines/arrows
   theta <- seq(arc[1L], arc[2L], length.out = 500L) + if (flip) pi else 0
@@ -624,13 +625,17 @@ carrows <- function(p1, p2, arc, degree = FALSE, pad = 0.01 * 1:2,
 #' \code{\link{pretty_sci}}
 #' @param ... additional graphical parameters passed to \code{\link{par}}
 #' 
+#' @return
+#' A list with elements \code{at.major} and \code{at.minor} giving the points
+#' at which tick marks were drawn for the major and minor axes, respectively.
+#' 
 #' @seealso
 #' \code{\link{pretty_sci}}; \code{\link[sfsmisc]{axTexpr}}; \code{\link{axis}}
 #' 
 #' @examples
 #' x <- 1:10
 #' y <- function(base) base ** x
-#' par(mar = c(3,5,3,5), las = 1)
+#' op <- par(mar = c(3,5,3,5), las = 1)
 #' plot(x, log(y(2), 2), ann = FALSE, axes = FALSE)
 #' laxis(2, base = 2, limit = -1)
 #' 
@@ -640,8 +645,10 @@ carrows <- function(p1, p2, arc, degree = FALSE, pad = 0.01 * 1:2,
 #' 
 #' par(new = TRUE)
 #' plot(x, x, log = 'x', axes = FALSE, ann = FALSE, xpd = NA)
-#' laxis(1, nticks = 10, tcl = -1, col.axis = 1)
+#' laxis(1, nticks = 10, tcl = -1, col.axis = 1, lwd = 2)
 #' abline(v = x)
+#' 
+#' par(op)
 #' 
 #' @export
 
@@ -662,7 +669,85 @@ laxis <- function(side = 1L, nticks = 5, labels = TRUE, digits = 0, base = 10,
   op <- par(..., no.readonly = TRUE)
   on.exit(par(op))
   
-  axis(side, at1, if (labels)
+  axis(side, at1, lwd = par('lwd'), if (labels)
     pretty_sci(at0, digits, base, limit, simplify) else FALSE)
-  axis(side, at2, FALSE, tcl = par('tcl') * 0.5, lwd = 0, lwd.ticks = 1)
+  axis(side, at2, FALSE, tcl = par('tcl') * 0.5, lwd = 0,
+       lwd.ticks = par('lwd'))
+  
+  invisible(list(at.major = at1, at.minor = at2))
+}
+
+#' Plotting coordinates
+#' 
+#' Return the user plot, figure, inner, and device \emph{{x,y}} coordinates
+#' for a vector of normalized (i.e., in \code{[0,1]}) coordinates. Or, if
+#' \code{line} and \code{side} are given, the x (or y) user coordinates.
+#' 
+#' @param x,y normalized x- and y-coordinates in \code{[0,1]}, recycled as
+#' needed
+#' @param to character string giving the coordinate system to convert to
+#' @param line,side the margin line starting at 0 counting outwards and side
+#' of the plot (1=below, 2=left, 3=above, 4=right); see \code{\link{mtext}}
+#' 
+#' @seealso
+#' \code{\link[=grconvertX]{convertXY}}; \code{\link{mtext}}
+#' 
+#' @examples
+#' op <- par(oma = 1:4, mar = 1:4, xpd = NA, pch = 16, xpd = NA)
+#' plot.new()
+#' box('plot', col = 1)
+#' box('figure', col = 2)
+#' box('outer', col = 3)
+#' # box('inner', col = 4)
+#' 
+#' xx <- c(1,2,1,2)
+#' yy <- c(1,1,2,2)
+#' 
+#' co <- coords()
+#' 
+#' points(co$plot$x[xx], co$plot$y[yy], cex = 5, col = 1)
+#' points(co$figure$x[xx], co$figure$y[yy], cex = 5, col = 2)
+#' points(co$device$x[xx], co$device$y[yy], cex = 5, col = 3)
+#' 
+#' 
+#' co <- coords(seq(0, 1, 0.1), 1)
+#' 
+#' points(co$plot$x, co$plot$y, cex = 2, col = 4)
+#' points(co$figure$x, co$figure$y, cex = 2, col = 5)
+#' points(co$device$x, co$device$y, cex = 2, col = 6)
+#' 
+#' 
+#' ## use line/side for x or y coordinates depending on side
+#' mtext('text', line = 1, side = 3, at = 0.5)
+#' text(0.5, coords(line = 1, side = 3), 'text', col = 2)
+#' 
+#' mtext('text', line = -1:4, side = 4, at = 0.5)
+#' text(coords(line = -1:4, side = 4), 0.5, 'text', col = 2, srt = 90)
+#' 
+#' par(op)
+#' 
+#' @export
+
+coords <- function(x = 0:1, y = x, to = 'user', line, side, layout = NULL) {
+  xy <- cbind(x, y)
+  x  <- xy[, 1L]
+  y  <- xy[, 2L]
+  
+  if (!missing(line) | !missing(side)) {
+    lh <- par('cin')[2L] * par('cex') * par('lheight')
+    
+    sapply(line, function(li) {
+      li <- li + 0.5
+      x  <- diff(grconvertX(x, 'in', 'user')) * lh * li
+      y  <- diff(grconvertY(y, 'in', 'user')) * lh * li
+      
+      (par('usr')[c(3, 1, 4, 2)] + c(-y, -x, y, x))[match(side, 1:4)]
+    })
+  } else
+    list(
+      plot   = list(x = grconvertX(x, 'npc', to), y = grconvertY(y, 'npc', to)),
+      figure = list(x = grconvertX(x, 'nfc', to), y = grconvertY(y, 'nfc', to)),
+      inner  = list(x = grconvertX(x, 'nic', to), y = grconvertY(y, 'nic', to)),
+      device = list(x = grconvertX(x, 'ndc', to), y = grconvertY(y, 'ndc', to))
+    )
 }
