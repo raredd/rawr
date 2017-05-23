@@ -1,6 +1,9 @@
 ### plot misc, extra, random
-# dodge, show_colors, show_pch, tcol, pretty_sci, oom, parse_sci, to_sci_,
-# arrows2, carrows, laxis
+# dodge, show_colors, show_pch, tcol, pretty_sci, oom, parse_sci, arrows2,
+# carrows, laxis, coords
+# 
+# unexported:
+# dodge.formula, dodge.default, to_sci_
 ###
 
 
@@ -728,7 +731,7 @@ laxis <- function(side = 1L, nticks = 5, labels = TRUE, digits = 0, base = 10,
 #' 
 #' @export
 
-coords <- function(x = 0:1, y = x, to = 'user', line, side, layout = NULL) {
+coords <- function(x = 0:1, y = x, to = 'user', line, side) {
   xy <- cbind(x, y)
   x  <- xy[, 1L]
   y  <- xy[, 2L]

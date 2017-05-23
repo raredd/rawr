@@ -4,7 +4,7 @@
 \alias{coords}
 \title{Plotting coordinates}
 \usage{
-coords(x = 0:1, y = x, to = "user", line, side, layout = NULL)
+coords(x = 0:1, y = x, to = "user", line, side)
 }
 \arguments{
 \item{x, y}{normalized x- and y-coordinates in \code{[0,1]}, recycled as
