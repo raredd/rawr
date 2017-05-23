@@ -51,11 +51,12 @@ plot.new()
 plot.window(c(-2,2), c(-2,2))
 p <- matrix(c(rep(-1:1, 2), rep(-1:1, each = 2)), ncol = 2)
 points(p)
+
 carrows(p1 <- p[2, ], p2 <- p[1, ], pad = .3)
-carrows(p1 <- p[4, ], p2 <- p[5, ], dir = c(0,1), col = 3)
+carrows(p1 <- p[4, ], p2 <- p[5, ], dir = c(0, 1), col = 3)
 carrows(p1 <- p[6, ], p2 <- p[3, ], lwd = 10, pad = c(.05, .1))
 carrows(p1 <- p[1, ], p2 <- p[6, ], flip = TRUE)
-carrows(p1 <- p[1, ], p2 <- p[5, ], dir = c(1,0))
+carrows(p1 <- p[1, ], p2 <- p[5, ], dir = c(1, 0))
 
 }
 \seealso{

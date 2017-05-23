@@ -267,7 +267,7 @@ roundr.default <- function(x, digits = 1L) {
   fmt <- paste0('%.', digits, 'f')
   res <- sprintf(fmt, x)
   
-  ## drop leading - if value is 0.00...
+  ## drop leading '-' if value is 0.00...
   zero <- sprintf(fmt, 0)
   res[res == paste0('-', zero)] <- zero
   
@@ -723,8 +723,7 @@ iprint <- function (..., wrap = '', sep = ', ', copula, digits = 2) {
 #' @export
 
 writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
-  if (!inherits(x, 'ftable'))
-    stop('x must be an ftable object')
+  stopifnot(inherits(x, 'ftable'))
   
   ## add row/col names if blank (ie, if vectors used in ftable)
   rn <- names(attr(x, 'row.vars'))
