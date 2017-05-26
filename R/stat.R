@@ -1,6 +1,6 @@
 ### statistical functions
-# bincon, bintest, dlt_table, power_cv, simon2, moods_test, fakeglm, gcd,
-# install.bioc, lm.beta, cuzick.test, jt.test, hl_est
+# bincon, bintest, dlt_table, pr_table, power_cv, simon2, moods_test, fakeglm,
+# gcd, install.bioc, lm.beta, cuzick.test, jt.test, hl_est
 # 
 # desmon (unexported):
 # bin1samp, simon, twocon
@@ -375,31 +375,90 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
          'signal = difference in null and alternative hypotheses'))
 }
 
-#' DLT table
+#' Probability tables
 #' 
-#' Creates a standard 3x3 dose-limiting toxicity table with probabilities of
-#' dose-escalation.
+#' @description
+#' \code{dlt_table} creates a standard 3+3 dose-limiting toxicity table with
+#' probabilities of dose-escalation for true but unknown probabilities of
+#' experiencing toxicity.
 #' 
-#' @param low,high lowest and highest true DLT rate, percent
-#' @param delta interval of DLT rate sequence; default is 10
+#' \code{pr_table} is a general single-stage (as opposed to \code{dlt_table})
+#' function for calculating the probabilities of \code{crit} or fewer (or
+#' greater if \code{greater = TRUE}) events for true but unknown probabilities
+#' of the event occurring.
+#' 
+#' @param probs a vector of probabilities
+#' @param digits number of digits past the decimal point to keep; if
+#' \code{NULL}, then no rounding is done
+#' @param n,crit the total sample size and critical number of events; note
+#' that this value will \emph{always} be included in the outcome regardless
+#' of the value of \code{greater}
+#' @param greater logical; the direction of \code{crit}: if \code{FALSE},
+#' the probabilities are calculated for \code{crit} \emph{or fewer} events;
+#' if \code{TRUE}, the probabilities are calculated for \code{crit} \emph{or
+#' greater} events
 #' 
 #' @examples
-#' dlt_table(10, 50)
-#' dlt_table(10, 50, 5)
+#' probs <- c(1, 5, 1:5 * 10) / 100
 #' 
-#' @export
+#' ## standard 3+3 escalation design for true but unknown
+#' ## probabilities of experiencing event
+#' dlt_table(probs)
+#' t(dlt_table(probs, 3))
+#' 
+#' 
+#' ## probabilities of crit or fewer events given true but unknown probs
+#' pr_table(probs, n = 15, crit = 3, greater = FALSE)
+#' 
+#' 
+#' ## probabilities of crit or more events given true but unknown probs
+#' pr_table(probs, n = 15, crit = 3, greater = TRUE)
+#' 
+#' ## compare
+#' 1 - pr_table(probs, n = 15, crit = 2, greater = FALSE)[2L, ]
+#' 
+#' @name pr_tables
+NULL
 
-dlt_table <- function(low, high, delta = 10) {
-  int <- seq(low, high, by = delta)
-  mat <- matrix(NA, nrow = length(int), ncol = 2)
+#' @rdname pr_tables
+#' @export
+dlt_table <- function(probs, digits = NULL) {
+  res <- sapply(probs, function(pr) {
+    dbinom(0L, 3L, pr) + dbinom(0L, 3L, pr) * dbinom(1L, 3L, pr)
+  })
   
-  for (ii in 1:length(int)) {
-    mat[ii, 1] <- round(int[ii])
-    mat[ii, 2] <- dbinom(0, 3, int[ii] / 100) + 
-      dbinom(1, 3, int[ii] / 100) * dbinom(0, 3, int[ii] / 100)
-  }
+  res <- rbind(
+    'Pr(DLT)' = probs,
+    'Pr(Escalation)' = res
+  )
   
-  `colnames<-`(mat, c('DLT rate (%)', 'Pr(Escalation)'))
+  if (is.null(digits))
+    res else roundr(res, digits)
+}
+
+#' @rdname pr_tables
+#' @export
+pr_table <- function(probs, n, crit, greater = FALSE, digits = NULL) {
+  n <- as.integer(n)
+  crit <- c(0L, sequence(max(as.integer(crit - greater))))
+  
+  res <- sapply(probs, function(pr) {
+    x <- sum(mapply(function(x) dbinom(x, n, pr), crit))
+    if (greater)
+      1 - x else x
+  })
+  
+  nn  <- c(
+    'Pr(Event)',
+    sprintf('Pr(%s%s)', c('<=', '>=')[greater + 1L], max(crit) + greater)
+  )
+  res <- structure(
+    rbind(probs, res),
+    dimnames = list(nn, NULL)
+  )
+  
+  if (is.null(digits))
+    res else roundr(res, digits)
 }
 
 #' Power calculations for one- and two-sample t-tests using ratio of means and
@@ -1597,6 +1656,7 @@ combn_fun <- function(x, FUN, n = 2L, ...) {
 #' }
 #' 
 #' @name rpart_utils
+NULL
 
 #' @rdname rpart_utils
 #' @export
