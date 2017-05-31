@@ -675,8 +675,11 @@ parse_formats_file <- function(x, invert) {
 #' @export
 apply_formats <- function(x, formats, invert = FALSE, droplevels = FALSE,
                           format_value = attr(x, 'format.sas')) {
-  res <- if (is.character(formats) & length(formats) == 1L)
+  ## file path or string of formats needs parsing
+  res <- if (file.exists(formats[1L]) |
+             (is.character(formats) & length(formats) == 1L))
     parse_formats(formats, invert) else formats
+  
   if (is.list(res))
     res <- res[[format_value]]
   
