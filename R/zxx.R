@@ -543,6 +543,7 @@ list2file <- function(l, targetdir = getwd(), sep, ...) {
     message(sprintf('creating directory:\n%s', targetdir))
     dir.create(targetdir)
   }
+  
   e <- new.env()
   list2env(l, envir = e)
   
@@ -551,10 +552,10 @@ list2file <- function(l, targetdir = getwd(), sep, ...) {
       save(x, file = sprintf('%s/%s.rda', targetdir, x), ...))
   } else
     sapply(names(l), function(x)
-      write.table(get(x, envir = e),
+      write.table(get(x, envir = e), sep = sep, ...,
                   file = sprintf('%s/%s.%s', targetdir, x,
-                                 ifelse(sep == ',','csv','dat')),
-                  row.names = FALSE, quote = FALSE, ...))
+                                 ifelse(sep == ',', 'csv', 'dat'))))
+  
   message(sprintf('NOTE: %s written to %s', iprint(names(l)), targetdir))
   
   invisible(NULL)
