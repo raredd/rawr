@@ -19,7 +19,8 @@ list names) will be stripped; if \code{TRUE} (default) and capture groups
 have names, these will be used; otherwise, match start positions will be
 used}
 
-\item{pattern}{a character string containing a regular expression}
+\item{pattern}{a character string containing a Perl-compatible regular
+expression}
 }
 \value{
 A list with a matrix of captures for each string in \code{x}. Note that the
@@ -28,6 +29,8 @@ column names of each matrix will be the starting positions of the captures.
 \description{
 Extract the captured substrings from match data obtained by
 \code{\link{regexpr}}, \code{\link{gregexpr}}, or \code{\link{regexec}}.
+\code{regcaptures2} is a convenience wrapper for \code{regcaptures}; see
+examples.
 }
 \examples{
 x <- c('larry:35,M', 'alison:22,F', 'dave:,M', 'lily:55,F', 'no data')
@@ -38,7 +41,7 @@ m <- regexpr(p1, x, perl = TRUE)
 regcaptures(x, m)
 do.call('rbind.data.frame', regcaptures(x, m, use.names = FALSE))
 
-## regcaptures2 is a convenience function for the two-step
+## regcaptures2 is a convenience function for the two step above
 regcaptures2(x, p1)
 
 ## both will use named captures (if perl = TRUE)
@@ -59,7 +62,7 @@ mapply(function(xx) substr(x, xx, xx + 1L), m[[1]])
 
 }
 \references{
-\url{https://gist.github.com/MrFlick/10413321}
+Adapted from \url{https://gist.github.com/MrFlick/10413321}
 }
 \seealso{
 \code{\link{regmatches}}; \code{\link{grep}}; \code{\link{regex}}

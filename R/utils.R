@@ -1,7 +1,7 @@
 ### utilities
-# psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill,
-# rbindfill2, rbindlist, interleave, outer2, merge2, locf, roll_fun,
-# classMethods, getMethods, regcaptures, cast, melt, view, view2, clist,
+# psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill, rbindfill2,
+# rbindlist, interleave, outer2, merge2, locf, roll_fun, classMethods,
+# getMethods, regcaptures, regcaptures2, cast, melt, view, view2, clist,
 # rapply2, sort_matrix, insert, insert_matrix, tryCatch2, rleid, droplevels2,
 # combine_levels, combine_regex, rownames_to_column, column_to_rownames
 # 
@@ -1300,14 +1300,17 @@ genericMethods <- function(object, generic) {
 #' 
 #' Extract the captured substrings from match data obtained by
 #' \code{\link{regexpr}}, \code{\link{gregexpr}}, or \code{\link{regexec}}.
+#' \code{regcaptures2} is a convenience wrapper for \code{regcaptures}; see
+#' examples.
 #' 
 #' @param x a character vector
 #' @param m an object with match data
-#' @param pattern a character string containing a regular expression
 #' @param use.names logical; if \code{FALSE}, all names (capture names and
 #' list names) will be stripped; if \code{TRUE} (default) and capture groups
 #' have names, these will be used; otherwise, match start positions will be
 #' used
+#' @param pattern a character string containing a Perl-compatible regular
+#' expression
 #' 
 #' @return
 #' A list with a matrix of captures for each string in \code{x}. Note that the
@@ -1317,7 +1320,7 @@ genericMethods <- function(object, generic) {
 #' \code{\link{regmatches}}; \code{\link{grep}}; \code{\link{regex}}
 #' 
 #' @references
-#' \url{https://gist.github.com/MrFlick/10413321}
+#' Adapted from \url{https://gist.github.com/MrFlick/10413321}
 #' 
 #' @examples
 #' x <- c('larry:35,M', 'alison:22,F', 'dave:,M', 'lily:55,F', 'no data')
@@ -1328,7 +1331,7 @@ genericMethods <- function(object, generic) {
 #' regcaptures(x, m)
 #' do.call('rbind.data.frame', regcaptures(x, m, use.names = FALSE))
 #' 
-#' ## regcaptures2 is a convenience function for the two-step
+#' ## regcaptures2 is a convenience function for the two step above
 #' regcaptures2(x, p1)
 #' 
 #' ## both will use named captures (if perl = TRUE)
@@ -1864,7 +1867,7 @@ insert <- function(x, row, col, repl = NA) {
     rn <- rownames(x)
     idx_na <- insert_(seq.int(n), row, NA)
     idx <- locf(idx_na, fromLast = c(FALSE, TRUE))
-    x   <- x[idx, ]
+    x   <- x[idx, , drop = FALSE]
     if (!is.null(rn))
       rownames(x) <- rev(make.unique(rev(rn[idx])))
     x[which(is.na(idx_na)), ] <- repl
