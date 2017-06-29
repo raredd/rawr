@@ -1443,10 +1443,16 @@ rm_null <- function(l, rm_list = TRUE) {
 
 #' Cumulative functions
 #' 
-#' Reset a cumulative function when code{value} is encountered and versions
-#' of \pkg{b}ase \link[=cumsum]{cumulative functions} that handle \code{NA}s.
+#' @description
+#' \code{cum_reset} will reset a cumulative function, \code{FUN}, when
+#' \code{value} is encountered.
 #' 
-#' @param x a vector
+#' \code{*_na} functions offer alternatives to the \pkg{base}
+#' \link[=cumsum]{cumulative functions} that can handle \code{NA}s.
+#' 
+#' \code{cum_mid} finds the mid-points between "stacked" numeric values.
+#' 
+#' @param x a vector (or numeric matrix for \code{cum_mid})
 #' @param value a value of \code{x} which signals the end of a group and
 #' resets \code{FUN}
 #' @param FUN function to apply to each group, usually one of
@@ -1512,6 +1518,12 @@ rm_null <- function(l, rm_list = TRUE) {
 #' cumsum(c(na[1L], -na[-1L]))
 #' cum_na(na, cumdiff)
 #' 
+#' 
+#' ## "stacked" numeric values, eg, from a barplot
+#' x <- matrix(runif(6), 3L)
+#' bp <- barplot(x)
+#' text(bp[col(x)], cum_mid(x), x)
+#' 
 #' @name cumfuns
 NULL
 
@@ -1551,6 +1563,17 @@ cummax_na <- function(x, useNA = TRUE)
 #' @export
 cummin_na <- function(x, useNA = TRUE)
   cum_na(x, cummin, useNA)
+
+#' @rdname cumfuns
+#' @export
+cum_mid <- function(x) {
+  mat <- as.matrix(x)
+  res <- rbind(0, mat[-nrow(mat), , drop = FALSE])
+  res <- mat / 2 + apply(res, 2L, cumsum)
+  
+  if (is.null(dim(x)))
+    drop(res) else res
+}
 
 #' \code{grep} for vectors
 #' 

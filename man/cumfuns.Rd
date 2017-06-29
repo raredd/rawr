@@ -8,6 +8,7 @@
 \alias{cumprod_na}
 \alias{cummax_na}
 \alias{cummin_na}
+\alias{cum_mid}
 \title{Cumulative functions}
 \usage{
 cum_reset(x, value = 0L, FUN)
@@ -21,9 +22,11 @@ cumprod_na(x, useNA = TRUE)
 cummax_na(x, useNA = TRUE)
 
 cummin_na(x, useNA = TRUE)
+
+cum_mid(x)
 }
 \arguments{
-\item{x}{a vector}
+\item{x}{a vector (or numeric matrix for \code{cum_mid})}
 
 \item{value}{a value of \code{x} which signals the end of a group and
 resets \code{FUN}}
@@ -41,8 +44,13 @@ A vector having the same length as \code{x} with \code{FUN} applied to
 each group defined by positions of \code{value}.
 }
 \description{
-Reset a cumulative function when code{value} is encountered and versions
-of \pkg{b}ase \link[=cumsum]{cumulative functions} that handle \code{NA}s.
+\code{cum_reset} will reset a cumulative function, \code{FUN}, when
+\code{value} is encountered.
+
+\code{*_na} functions offer alternatives to the \pkg{base}
+\link[=cumsum]{cumulative functions} that can handle \code{NA}s.
+
+\code{cum_mid} finds the mid-points between "stacked" numeric values.
 }
 \examples{
 x <- 1:10
@@ -92,6 +100,12 @@ cumsum(c(x[1L], -x[-1L]))
 cumdiff(na)
 cumsum(c(na[1L], -na[-1L]))
 cum_na(na, cumdiff)
+
+
+## "stacked" numeric values, eg, from a barplot
+x <- matrix(runif(6), 3L)
+bp <- barplot(x)
+text(bp[col(x)], cum_mid(x), x)
 
 }
 \seealso{
