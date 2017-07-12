@@ -332,9 +332,15 @@ kmplot <- function(s,
   
   ## as in survival:::plot.survfit, adjust x-axis to start at 0
   xaxs <- if (tolower(xaxs) == 's') {
-    xlim[2] <- xlim[2] * 1.04
+    xlim[2L] <- xlim[2L] * 1.04
     'i'
   } else 'r'
+  
+  ## if default *lim not used, get new *-axis positions
+  if (missing(xaxis.at) && !missing(xlim))
+    xaxis.at <- pretty(xlim)
+  if (missing(yaxis.at) && !missing(ylim))
+    yaxis.at <- pretty(ylim)
   
   ## reformat survival estimates
   dat <- kmplot_data_(s, strata.lab)
