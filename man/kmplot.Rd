@@ -10,12 +10,12 @@ kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
   atrisk.lab = "Number at risk", atrisk.lines = TRUE,
   atrisk.col = !atrisk.lines, strata.lab = NULL, strata.expr = NULL,
   strata.order = seq_along(s$n), extra.margin = 5, median = FALSE,
-  xaxs = "s", xlim = c(0, max(s$time)), ylim = c(0, 1),
-  xaxis.at = pretty(c(0, s$time)), xaxis.lab = xaxis.at,
-  yaxis.at = pretty(ylim), yaxis.lab = yaxis.at, xlab = "Time",
-  ylab = "Survival probability", main = "", cex.axis = par("cex.axis"),
-  legend = !atrisk && !is.null(s$strata), lr_test = FALSE, mar = NULL,
-  add = FALSE, panel.first = NULL, panel.last = NULL, ...)
+  median.digits = 0L, xaxs = "s", xlim = NULL, ylim = NULL,
+  xaxis.at = pretty(xlim), xaxis.lab = xaxis.at, yaxis.at = pretty(ylim),
+  yaxis.lab = yaxis.at, xlab = "Time", ylab = "Survival probability",
+  main = "", cex.axis = par("cex.axis"), legend = !atrisk &&
+  !is.null(s$strata), lr_test = FALSE, mar = NULL, add = FALSE,
+  panel.first = NULL, panel.last = NULL, ...)
 }
 \arguments{
 \item{s}{an object of class \code{\link{survfit}} or \code{survfit.cox}}
@@ -70,6 +70,9 @@ table are long}
 \item{median}{logical or numeric; if \code{TRUE}, median and confidence
 interval for each curve is added to at-risk table at a calculated
 position; for more control, use a specific x-coordinate}
+
+\item{median.digits}{number of digits past the decimal point to keep for
+median(s)}
 
 \item{xaxs}{style of axis; see details or \code{\link{par}}}
 
@@ -180,12 +183,13 @@ kmplot(survfit(Surv(time, status) ~ rx + adhere, data = colon),
        xaxis.at = c(0, .5, 1:9) * 365,    # change days to years
        xaxis.lab = c(0, .5, 1:9),         # label years
        yaxis.lab = pretty(0:1) * 100,     # change to percent
-       xlab = 'Time (years)', ylab = 'Percent survival',
+       xlab = 'Time (years)',
+       ylab = 'Percent survival',
        col.surv = c('blue','red','green','black','purple','orange'),
        col.ci   = c(0,0,0,0,'purple',0),  # CI only for one group
        extra.margin = 6,        # increase margin for long strata labels
        strata.lab = c('Obs','Obs+','Lev','Lev+','Lev5fu','Lev5fu+'),
-       strata.order = c(5,6,3,1,4,2),     # order by survival estimates
+       strata.order = c(5,6,3,1,4,2),     # order table by curve positions
        median = TRUE,                     # add median and CI
        oma = c(0,0,0,1),                  # extra space for median
        font = 2, bty = 'l', tcl = .5)     # bold table text, other options

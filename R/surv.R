@@ -75,6 +75,8 @@
 #' @param median logical or numeric; if \code{TRUE}, median and confidence
 #' interval for each curve is added to at-risk table at a calculated
 #' position; for more control, use a specific x-coordinate
+#' @param median.digits number of digits past the decimal point to keep for
+#' median(s)
 #' @param xaxs style of axis; see details or \code{\link{par}}
 #' @param xlim,ylim x- and y-axis limits
 #' @param xaxis.at,yaxis.at positions for x- and y-axis labels and ticks
@@ -150,12 +152,13 @@
 #'        xaxis.at = c(0, .5, 1:9) * 365,    # change days to years
 #'        xaxis.lab = c(0, .5, 1:9),         # label years
 #'        yaxis.lab = pretty(0:1) * 100,     # change to percent
-#'        xlab = 'Time (years)', ylab = 'Percent survival',
+#'        xlab = 'Time (years)',
+#'        ylab = 'Percent survival',
 #'        col.surv = c('blue','red','green','black','purple','orange'),
 #'        col.ci   = c(0,0,0,0,'purple',0),  # CI only for one group
 #'        extra.margin = 6,        # increase margin for long strata labels
 #'        strata.lab = c('Obs','Obs+','Lev','Lev+','Lev5fu','Lev5fu+'),
-#'        strata.order = c(5,6,3,1,4,2),     # order by survival estimates
+#'        strata.order = c(5,6,3,1,4,2),     # order table by curve positions
 #'        median = TRUE,                     # add median and CI
 #'        oma = c(0,0,0,1),                  # extra space for median
 #'        font = 2, bty = 'l', tcl = .5)     # bold table text, other options
@@ -182,11 +185,11 @@ kmplot <- function(s,
                    atrisk.lines = TRUE, atrisk.col = !atrisk.lines,
                    strata.lab = NULL,
                    strata.expr = NULL, strata.order = seq_along(s$n),
-                   extra.margin = 5, median = FALSE,
+                   extra.margin = 5, median = FALSE, median.digits = 0L,
                    
                    ## aesthetics
-                   xaxs = 's', xlim = c(0, max(s$time)), ylim = c(0, 1),
-                   xaxis.at = pretty(c(0, s$time)), xaxis.lab = xaxis.at,
+                   xaxs = 's', xlim = NULL, ylim = NULL,
+                   xaxis.at = pretty(xlim), xaxis.lab = xaxis.at,
                    yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
                    xlab = 'Time', ylab = 'Survival probability',
                    main = '', cex.axis = par('cex.axis'),
@@ -330,17 +333,22 @@ kmplot <- function(s,
   if (!is.null(mar))
     par(mar = mar)
   
+  if (is.null(xlim))
+    xlim <- c(0, max(s$time))
+  if (is.null(ylim))
+    ylim <- c(0, 1)
+  
+  ## if default *lim not used, get new *-axis positions
+  if (is.null(xaxis.at))
+    xaxis.at <- pretty(xlim)
+  if (is.null(yaxis.at))
+    yaxis.at <- pretty(ylim)
+  
   ## as in survival:::plot.survfit, adjust x-axis to start at 0
-  xaxs <- if (tolower(xaxs) == 's') {
+  xaxs <- if (tolower(xaxs)[1L] == 's') {
     xlim[2L] <- xlim[2L] * 1.04
     'i'
   } else 'r'
-  
-  ## if default *lim not used, get new *-axis positions
-  if (missing(xaxis.at) && !missing(xlim))
-    xaxis.at <- pretty(xlim)
-  if (missing(yaxis.at) && !missing(ylim))
-    yaxis.at <- pretty(ylim)
   
   ## reformat survival estimates
   dat <- kmplot_data_(s, strata.lab)
@@ -352,10 +360,10 @@ kmplot <- function(s,
        panel.first = panel.first,
        panel.last = {
          box(bty = par('bty'))
-         axis(1, xaxis.at, FALSE, lwd = 0, lwd.ticks = 1)
-         axis(1, xaxis.at, xaxis.lab, FALSE, -0.5, cex.axis = cex.axis)
-         axis(2, yaxis.at, yaxis.lab, las = 1, cex.axis = cex.axis)
-         title(xlab = xlab, line = 1.5, adj = .5, ...)
+         axis(1L, xaxis.at, FALSE, lwd = 0, lwd.ticks = 1)
+         axis(1L, xaxis.at, xaxis.lab, FALSE, -0.5, cex.axis = cex.axis)
+         axis(2L, yaxis.at, yaxis.lab, las = 1L, cex.axis = cex.axis)
+         title(xlab = xlab, line = 1.5, adj = 0.5, ...)
          title(ylab = ylab, main = main, ...)
        })
   
@@ -425,7 +433,7 @@ kmplot <- function(s,
         as.data.frame(st)[strata.order, ] else as.data.frame(t(st))
       tt <- do.call('sprintf', c(list(
         fmt = '%s (%s, %s)'),
-        tail(lapply(st, roundr, digits = 0L), 3L))
+        tail(lapply(st, roundr, digits = median.digits), 3L))
       )
       tt <- ifelse(is.na(st$median), '-', gsub('NA', '-', tt, fixed = TRUE))
       at <- if (isTRUE(median.at))
