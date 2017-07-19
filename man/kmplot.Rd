@@ -11,11 +11,11 @@ kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
   atrisk.col = !atrisk.lines, strata.lab = NULL, strata.expr = NULL,
   strata.order = seq_along(s$n), extra.margin = 5, median = FALSE,
   median.digits = 0L, xaxs = "s", xlim = NULL, ylim = NULL,
-  xaxis.at = pretty(xlim), xaxis.lab = xaxis.at, yaxis.at = pretty(ylim),
-  yaxis.lab = yaxis.at, xlab = "Time", ylab = "Survival probability",
-  main = "", cex.axis = par("cex.axis"), legend = !atrisk &&
-  !is.null(s$strata), lr_test = FALSE, mar = NULL, add = FALSE,
-  panel.first = NULL, panel.last = NULL, ...)
+  xaxis.at = pretty(xlim), xaxis.lab = xaxis.at, atrisk.at = xaxis.at,
+  yaxis.at = pretty(ylim), yaxis.lab = yaxis.at, xlab = "Time",
+  ylab = "Survival probability", main = "", cex.axis = par("cex.axis"),
+  legend = !atrisk && !is.null(s$strata), lr_test = FALSE, mar = NULL,
+  add = FALSE, panel.first = NULL, panel.last = NULL, ...)
 }
 \arguments{
 \item{s}{an object of class \code{\link{survfit}} or \code{survfit.cox}}
@@ -81,6 +81,9 @@ median(s)}
 \item{xaxis.at, yaxis.at}{positions for x- and y-axis labels and ticks}
 
 \item{xaxis.lab, yaxis.lab}{x- and y-axis tick labels}
+
+\item{atrisk.at}{x-coordinates to show at-risk table (default is
+\code{xaxis.at})}
 
 \item{xlab, ylab}{x- and y-axis labels}
 

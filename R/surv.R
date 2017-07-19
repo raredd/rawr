@@ -80,6 +80,8 @@
 #' @param xaxs style of axis; see details or \code{\link{par}}
 #' @param xlim,ylim x- and y-axis limits
 #' @param xaxis.at,yaxis.at positions for x- and y-axis labels and ticks
+#' @param atrisk.at x-coordinates to show at-risk table (default is
+#' \code{xaxis.at})
 #' @param xaxis.lab,yaxis.lab x- and y-axis tick labels
 #' @param xlab,ylab x- and y-axis labels
 #' @param main title of plot
@@ -190,6 +192,7 @@ kmplot <- function(s,
                    ## aesthetics
                    xaxs = 's', xlim = NULL, ylim = NULL,
                    xaxis.at = pretty(xlim), xaxis.lab = xaxis.at,
+                   atrisk.at = xaxis.at,
                    yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
                    xlab = 'Time', ylab = 'Survival probability',
                    main = '', cex.axis = par('cex.axis'),
@@ -284,13 +287,13 @@ kmplot <- function(s,
     strata.lab <- rep(FALSE, ng)
   if (is.null(strata.lab))
     strata.lab <- names(s$strata)
-  if (length(unique(strata.lab)) != ng && strata.lab[1] != FALSE) {
+  if (length(unique(strata.lab)) != ng && strata.lab[1L] != FALSE) {
     strata.lab <- strata.lab[seq.int(ng)]
     warning('length(unique(strata.lab)) != number of groups')
   }
   if (suppressWarnings(any(sort(strata.order) != seq.int(ng))))
     stop('sort(strata.order) must equal 1:', ng)
-  if (ng == 1L & (strata.lab[1] == 'strata.lab')) {
+  if (ng == 1L & (strata.lab[1L] == 'strata.lab')) {
     strata.lab <- 'Number at risk'
     atrisk.lab <- ifelse(is.null(atrisk.lab), strata.lab, atrisk.lab)
   }
@@ -402,17 +405,17 @@ kmplot <- function(s,
              col = col.surv[i], lty = lty.surv[i], lwd = lwd.surv[i])
     
     ## numbers at risk
-    ss <- summary(s, times = xaxis.at)
+    ss <- summary(s, times = atrisk.at)
     if (is.null(ss$strata))
       ss$strata <- rep_len(1L, length(ss$time))
     d1 <- data.frame(time = ss$time, n.risk = ss$n.risk, strata = c(ss$strata))
     d2 <- split(d1, d1$strata)
     
     ## right-justify numbers
-    ndigits <- lapply(d2, function(x) nchar(x[, 2]))
+    ndigits <- lapply(d2, function(x) nchar(x[, 2L]))
     max.len <- max(sapply(ndigits, length))
     L <- do.call('rbind', lapply(ndigits, `length<-`, max.len))
-    nd <- apply(L, 2, max, na.rm = TRUE)
+    nd <- apply(L, 2L, max, na.rm = TRUE)
     
     for (i in seq.int(ng)) {
       tmp <- d2[[i]]
@@ -423,7 +426,7 @@ kmplot <- function(s,
     }
     
     if (!(identical(atrisk.lab, FALSE) | is.null(atrisk.lab)))
-      mtext(atrisk.lab, side = 1, at = usr[1], # at = group.name.pos,
+      mtext(atrisk.lab, side = 1, at = usr[1L], # at = group.name.pos,
             line = 1.5, adj = 1, col = 1, las = 1, cex = cex.axis)
     
     ## median (ci) text on right of at-risk
@@ -437,7 +440,7 @@ kmplot <- function(s,
       )
       tt <- ifelse(is.na(st$median), '-', gsub('NA', '-', tt, fixed = TRUE))
       at <- if (isTRUE(median.at))
-        usr[2] + diff(usr[1:2]) / 8 else median.at
+        usr[2L] + diff(usr[1:2]) / 8 else median.at
       mtext(sprintf('Median (%s%% CI)', s$conf.int * 100), side = 1,
             at = at, adj = .5, line = 1.5, col = 1, las = 1)
       mtext(tt, side = 1, line = line.pos, las = 1,
@@ -453,14 +456,14 @@ kmplot <- function(s,
     bgc <- if (par('bg') == 'transparent')
       'white' else par('bg')
     if (!is.null(strata.expr)) {
-      legend(legend[1], if (length(legend) > 1L) legend[2] else NULL,
+      legend(legend[1L], if (length(legend) > 1L) legend[2L] else NULL,
              legend = strata.expr[rlp], col = col.surv[rlp],
              lty = lty.surv[rlp], lwd = lwd.surv[rlp], bty = 'o', xpd = NA,
              cex = cex.axis, bg = bgc, box.col = 'transparent', inset = .01)
     } else {
       if (identical(strata.lab, FALSE))
         strata.lab <- names(s$strata)
-      legend(legend[1], if (length(legend) > 1L) legend[2] else NULL,
+      legend(legend[1L], if (length(legend) > 1L) legend[2L] else NULL,
              legend = strata.lab[rlp], col = col.surv[rlp],
              lty = lty.surv[rlp], lwd = lwd.surv[rlp], bty = 'o', xpd = NA,
              cex = cex.axis, bg = bgc, box.col = 'transparent', inset = .01)
@@ -511,7 +514,7 @@ kmplot <- function(s,
       message('There is only one group',
               if (svar == '1') '' else paste(' for', svar),
               ' -- no lr test performed')
-    else mtext(txt, side = 3, at = par('usr')[2], adj = 1,
+    else mtext(txt, side = 3, at = par('usr')[2L], adj = 1,
                font = 3, cex = .8, line = .5)
   }
   
@@ -908,10 +911,10 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
       data <- deparse(strata$call$data)
       data <- get(data, where(gsub('[$[].*', '', data)))
     }
-    form   <- as.character(strata$call$formula)[-1]
+    form   <- as.character(strata$call$formula)[-1L]
     strata <- form[length(form)]
-    event  <- gsub('(\\S+)\\)|.', '\\1', form[1])
-    time   <- gsub('\\((\\w+)|.', '\\1', form[1])
+    event  <- gsub('(\\S+)\\)|.', '\\1', form[1L])
+    time   <- gsub('\\((\\w+)|.', '\\1', form[1L])
   }
   
   form  <- if (!missing(time))
@@ -1111,7 +1114,7 @@ kmplot_ticks <- function(s, data = eval(s$call$data), by_var, what,
     par(op)
     return(invisible(NULL))
   }
-  # segments(data[, time], y0 = rep(0, nrow(data)), y1 = par('usr')[3],
+  # segments(data[, time], y0 = rep(0, nrow(data)), y1 = par('usr')[3L],
   #          col = col[as.numeric(data[, strata])], lwd = 2, ...)
   points(data[, time], rep(0, nrow(data)),
          col = col[as.numeric(data[, strata])], ...)
@@ -1150,26 +1153,32 @@ kmplot_ticks <- function(s, data = eval(s$call$data), by_var, what,
 
 local_coxph_test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
   stopifnot(inherits(s, 'coxph'))
+  
   if (missing(pos))
     pos <- seq_along(coef(s))
+  
   n <- length(pos)
   if (!(n <- length(pos)) || !length(coef(s)))
     stop('Model has no coefficients')
+  
   if (is.null(C)) {
     C <- matrix(0, n, n)
     diag(C) <- 1
-  } else if (dim(C)[1] != n)
+  } else if (dim(C)[1L] != n)
       stop('C has improper dimensions\n')
+  
   if (is.null(d))
     d <- matrix(0, n, 1)
-  if (dim(d)[1] != dim(C)[1])
+  if (dim(d)[1L] != dim(C)[1L])
     stop('C and d do not have appropriate dimensions')
+  
   I. <- s$var[pos, pos]
-  est <- matrix(as.vector(s$coeff[pos]), dim(C)[2])
+  est <- matrix(as.vector(s$coeff[pos]), dim(C)[2L])
   chisq <- as.numeric(t(C %*% est - d) %*% solve(t(C) %*% I. %*% C ) %*%
                         (C %*% est - d))
-  df <- dim(C)[1]
+  df <- dim(C)[1L]
   p.value <- signif(1 - pchisq(chisq, df), digits)
+  
   list(est = est, chisq = chisq, df = df, p.value = p.value)
 }
 
@@ -1508,7 +1517,7 @@ landmark <- function(s, times = NULL, lr_test = TRUE, adjust_start = FALSE,
                      ..., add = FALSE) {
   form <- s$call$formula
   data <- eval(s$call$data)
-  tvar <- survival:::terms.inner(form)[1]
+  tvar <- survival:::terms.inner(form)[1L]
   
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
@@ -1540,7 +1549,7 @@ landmark <- function(s, times = NULL, lr_test = TRUE, adjust_start = FALSE,
                xaxis.lab = ifelse(adjust_start, ii, 0) + at,
                panel.first = {
                  abline(v = ii, col = if (adjust_start) 0 else 2)
-                 mtext(which(times %in% ii), at = par('usr')[1],
+                 mtext(which(times %in% ii), at = par('usr')[1L],
                        col = 2, cex = 1.5, font = 2, line = 1)
                })
         data.frame(n = sum(si$n), lr_pval(si, TRUE), row.names = ii)
