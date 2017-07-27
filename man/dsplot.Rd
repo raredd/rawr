@@ -30,6 +30,8 @@ grayscale is used as the default color}
 
 \item{col}{plotting color}
 
+\item{xlab, ylab}{x- and y-axis labels}
+
 \item{pch}{\strong{p}lotting \strong{ch}aracter}
 
 \item{cex}{numerical value giving the amount by which plotting text and

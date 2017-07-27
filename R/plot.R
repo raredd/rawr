@@ -736,6 +736,7 @@ tplot.formula <- function(formula, data = NULL, ...,
 #' \code{FALSE}, gridlines are drawn to distinguish boxes; if \code{TRUE},
 #' grayscale is used as the default color
 #' @param col plotting color
+#' @param xlab,ylab x- and y-axis labels
 #' @param pch \strong{p}lotting \strong{ch}aracter
 #' @param cex numerical value giving the amount by which plotting text and
 #' symbols should be magnified relative to the default; this starts as 1
@@ -926,16 +927,23 @@ dsplot.formula <- function(formula, data = NULL, ...,
 #' @param mat a matrix of integers or character strings of color names; if
 #' \code{mat} is a matrix of integers, the colors used will correspond to
 #' the current \code{\link{palette}}
-#' @param xpad,ypad amount of padding between \code{rect}s along axes
+#' @param xpad,ypad amount of padding between \code{rect}s along axes; note
+#' that if if \code{xpad}/\code{ypad} have the same length as the number of
+#' columns/rows, the padding will be applied to the column/row; otherwise,
+#' the vector is recycled and each \code{rect} uses its own padding
 #' @param heights,widths the row heights and column widths, respectively,
 #' usually in \code{0,1}, and recycled as needed; note that \code{xpad} and
 #' \code{ypad} are ignored if \code{widths} or \code{heights}, respectively,
-#' are given
-#' @param invert character string indicating which axis the matrix should
-#' be inverted about; possible values are \code{"x"}, \code{"y"}, or
+#' are given; the same recycling that is done for \code{xpad}/\code{ypad} is
+#' also repeated here (see the note in \code{xpad})
+#' @param colpad,rowpad amount of padding between columns and rows; note that
+#' changing these moves the \code{rect} center positions rather than
+#' affecting the heights and widths
+#' @param invert character string indicating about which axis the matrix
+#' should be inverted; possible values are \code{"x"}, \code{"y"}, or
 #' \code{"xy"}
 #' @param ... additional graphical parameters passed to \code{\link{rect}}
-#' such as \code{border}, \code{density}, \code{lty}, etc
+#' such as \code{border}, \code{density}, \code{lty}, etc.
 #' @param reset_par logical; if \code{TRUE}, resets \code{\link{par}}
 #' settings to state before function call; setting \code{reset_par = FALSE}
 #' along with the return value is useful for adding to a \code{waffle} plot
@@ -952,21 +960,31 @@ dsplot.formula <- function(formula, data = NULL, ...,
 #' waffle(matrix(1:9, 3))
 #' waffle(matrix(1:9, 3), invert = 'x')
 #' waffle(matrix(1:9, 3), heights = c(.25, .95, .5), border = NA)
-#' waffle(matrix(1:9, 3), widths = c(.25, .95, .5), density = 50)
+#' waffle(matrix(1:9, 3), xpad = 0, colsep = c(0, .1, 0))
 #' 
 #' 
 #' ## heatmap
+#' ## convert the numeric data to color strings
 #' cols <- c(cor(mtcars))
-#' cols <- tcol(c('blue','red')[(cols > 0) + 1L], alpha = c(abs(cols)))
-#' waffle(matrix(cols, 11)[11:1, ], reset_par = FALSE, xpad = 0)
-#' axis(3, at = 1:11 - .5, labels = names(mtcars), cex.axis = .8, lwd = 0)
+#' cols <- rawr::tcol(c('blue','red')[(cols > 0) + 1L], alpha = c(abs(cols)))
+#' 
+#' mat <- matrix(cols, 11)
+#' waffle(mat, reset_par = FALSE, xpad = 0, invert = 'x')
+#' axis(3, at = 1:11 - .5, labels = names(mtcars), lwd = 0)
+#' 
+#' 
+#' ## use colpad/rowpad to create sections
+#' w <- waffle(mat, reset_par = FALSE, xpad = 0, invert = 'x',
+#'             colpad = rep(c(0, 0.5, 1, 0), c(5, 1, 1, 4)),
+#'             rowpad = rep(c(0, 0.5, 0), c(5, 1, 5)))
+#' axis(3, unique(w$centers[, 'x']), names(mtcars), lwd = 0)
 #' 
 #' 
 #' ## adding to margins of another plot
 #' set.seed(1)
 #' n <- 97
 #' ng <- 3
-#' cols <- c('beige','dodgerblue2','green','orange')
+#' cols <- c('beige', 'dodgerblue2', 'green', 'orange')
 #' x <- sample(cols, n * ng, replace = TRUE, prob = c(.05,.31,.32,.32))
 #' x <- rawr::kinda_sort(x, n = 20)
 #' 
@@ -992,40 +1010,59 @@ dsplot.formula <- function(formula, data = NULL, ...,
 #' \dontrun{
 #' ## this is similar to ?rawr::show_colors
 #' col <- colors()[1:25 ^ 2]
-#' (w <- waffle(matrix(col, 25), reset_par = FALSE, invert = 'xy',
-#'              xpad = 0, border = c(col)))
+#' w <- waffle(matrix(col, 25), reset_par = FALSE, invert = 'xy',
+#'             xpad = 0, border = c(col))
 #' text(w$c[, 'x'], w$c[, 'y'], labels = col, col = 'black', cex = .4)
 #' }
 #' 
 #' @export
 
 waffle <- function(mat, xpad = 0.05, ypad = xpad, heights, widths,
+                   colpad = 0, rowpad = 0,
                    invert = '', ..., reset_par = TRUE) {
   op <- par(no.readonly = TRUE)
   if (reset_par)
     on.exit(par(op))
   
-  omat <- mat
+  omat <- mat <- as.matrix(mat)
   mat  <- mat[rev(seq.int(nrow(mat))), , drop = FALSE]
   o    <- cbind(c(row(mat)), c(col(mat))) - 1L
   
   if (grepl('x', invert)) {
-    mat <- mat[rev(seq.int(nrow(mat))), ]
+    mat <- mat[rev(seq.int(nrow(mat))), , drop = FALSE]
     o[, 1L] <- rev(o[, 1L])
   }
   if (grepl('y', invert)) {
-    mat <- mat[, rev(seq.int(ncol(mat)))]
+    mat <- mat[, rev(seq.int(ncol(mat))), drop = FALSE]
     o[, 2L] <- rev(o[, 2L])
   }
   
-  force(xpad); force(ypad)
-  if (!missing(heights))
+  ## xpad/ypad intended to be by column/row
+  if (length(mat) > length(xpad) & length(xpad) == ncol(mat))
+    xpad <- rep(xpad, each = nrow(mat))
+  if (length(mat) > length(ypad) & length(ypad) == nrow(mat))
+    ypad <- rep(ypad, each = ncol(mat))
+  
+  if (!missing(heights)) {
+    if (length(mat) > length(heights) & length(heights) == ncol(mat))
+      heights <- rep(heights, each = nrow(mat))
     ypad <- 1 - (1 - rev(heights)) / 2
-  if (!missing(widths))
+  }
+  if (!missing(widths)) {
+    if (length(mat) > length(widths) & length(widths) == ncol(mat))
+      widths <- rep(widths, each = nrow(mat))
     xpad <- 1 - rep((1 - widths) / 2, each = ncol(mat))
+  }
+  
+  ## add column/row sep values to origins
+  colpad <- c(0, cumsum(rep_len(colpad, ncol(mat) - 1L)))
+  rowpad <- c(0, cumsum(rep_len(rowpad, nrow(mat) - 1L)))
+  
+  o <- o + cbind(rev(rep(rowpad, ncol(mat))), rep(colpad, each = nrow(mat)))
   
   plot.new()
-  plot.window(xlim = c(0, max(o[, 2L]) + 1), ylim = c(0, max(o[, 1L]) + 1),
+  plot.window(xlim = c(0, max(o[, 2L]) + 1),
+              ylim = c(0, max(o[, 1L]) + 1),
               xaxs = 'i', yaxs = 'i')
   rect(xl <- o[, 2L] + xpad, yb <- o[, 1L] + ypad,
        xr <- o[, 2L] + (1 - xpad), yt <- o[, 1L] + (1 - ypad),

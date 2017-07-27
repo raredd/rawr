@@ -4,27 +4,35 @@
 \alias{waffle}
 \title{waffle chart}
 \usage{
-waffle(mat, xpad = 0.05, ypad = xpad, heights, widths, invert = "", ...,
-  reset_par = TRUE)
+waffle(mat, xpad = 0.05, ypad = xpad, heights, widths, colpad = 0,
+  rowpad = 0, invert = "", ..., reset_par = TRUE)
 }
 \arguments{
 \item{mat}{a matrix of integers or character strings of color names; if
 \code{mat} is a matrix of integers, the colors used will correspond to
 the current \code{\link{palette}}}
 
-\item{xpad, ypad}{amount of padding between \code{rect}s along axes}
+\item{xpad, ypad}{amount of padding between \code{rect}s along axes; note
+that if if \code{xpad}/\code{ypad} have the same length as the number of
+columns/rows, the padding will be applied to the column/row; otherwise,
+the vector is recycled and each \code{rect} uses its own padding}
 
 \item{heights, widths}{the row heights and column widths, respectively,
 usually in \code{0,1}, and recycled as needed; note that \code{xpad} and
 \code{ypad} are ignored if \code{widths} or \code{heights}, respectively,
-are given}
+are given; the same recycling that is done for \code{xpad}/\code{ypad} is
+also repeated here (see the note in \code{xpad})}
 
-\item{invert}{character string indicating which axis the matrix should
-be inverted about; possible values are \code{"x"}, \code{"y"}, or
+\item{colpad, rowpad}{amount of padding between columns and rows; note that
+changing these moves the \code{rect} center positions rather than
+affecting the heights and widths}
+
+\item{invert}{character string indicating about which axis the matrix
+should be inverted; possible values are \code{"x"}, \code{"y"}, or
 \code{"xy"}}
 
 \item{...}{additional graphical parameters passed to \code{\link{rect}}
-such as \code{border}, \code{density}, \code{lty}, etc}
+such as \code{border}, \code{density}, \code{lty}, etc.}
 
 \item{reset_par}{logical; if \code{TRUE}, resets \code{\link{par}}
 settings to state before function call; setting \code{reset_par = FALSE}
@@ -45,21 +53,31 @@ op <- par(no.readonly = TRUE)
 waffle(matrix(1:9, 3))
 waffle(matrix(1:9, 3), invert = 'x')
 waffle(matrix(1:9, 3), heights = c(.25, .95, .5), border = NA)
-waffle(matrix(1:9, 3), widths = c(.25, .95, .5), density = 50)
+waffle(matrix(1:9, 3), xpad = 0, colsep = c(0, .1, 0))
 
 
 ## heatmap
+## convert the numeric data to color strings
 cols <- c(cor(mtcars))
-cols <- tcol(c('blue','red')[(cols > 0) + 1L], alpha = c(abs(cols)))
-waffle(matrix(cols, 11)[11:1, ], reset_par = FALSE, xpad = 0)
-axis(3, at = 1:11 - .5, labels = names(mtcars), cex.axis = .8, lwd = 0)
+cols <- rawr::tcol(c('blue','red')[(cols > 0) + 1L], alpha = c(abs(cols)))
+
+mat <- matrix(cols, 11)
+waffle(mat, reset_par = FALSE, xpad = 0, invert = 'x')
+axis(3, at = 1:11 - .5, labels = names(mtcars), lwd = 0)
+
+
+## use colpad/rowpad to create sections
+w <- waffle(mat, reset_par = FALSE, xpad = 0, invert = 'x',
+            colpad = rep(c(0, 0.5, 1, 0), c(5, 1, 1, 4)),
+            rowpad = rep(c(0, 0.5, 0), c(5, 1, 5)))
+axis(3, unique(w$centers[, 'x']), names(mtcars), lwd = 0)
 
 
 ## adding to margins of another plot
 set.seed(1)
 n <- 97
 ng <- 3
-cols <- c('beige','dodgerblue2','green','orange')
+cols <- c('beige', 'dodgerblue2', 'green', 'orange')
 x <- sample(cols, n * ng, replace = TRUE, prob = c(.05,.31,.32,.32))
 x <- rawr::kinda_sort(x, n = 20)
 
@@ -85,8 +103,8 @@ text(w$c[, 'x'], w$c[, 'y'], labels = palette(), col = 'white')
 \dontrun{
 ## this is similar to ?rawr::show_colors
 col <- colors()[1:25 ^ 2]
-(w <- waffle(matrix(col, 25), reset_par = FALSE, invert = 'xy',
-             xpad = 0, border = c(col)))
+w <- waffle(matrix(col, 25), reset_par = FALSE, invert = 'xy',
+            xpad = 0, border = c(col))
 text(w$c[, 'x'], w$c[, 'y'], labels = col, col = 'black', cex = .4)
 }
 
