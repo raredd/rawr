@@ -410,12 +410,12 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
   }
   
   ## scales
-  if (missing(ylim)) {
+  if (is.null(ylim)) {
     r <- range(groups, na.rm = TRUE, finite = TRUE)
     pm <- diff(r) / 20
     ylim <- r + pm * c(-1, 1)
   }
-  if (missing(xlim))
+  if (is.null(xlim))
     xlim <- c(0.5, if (missing(at)) ng else max(at) + 0.5)
   
   type <- match.arg(type, c('d', 'db', 'bd', 'b'), several.ok = TRUE)
