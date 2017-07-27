@@ -8,8 +8,8 @@
 \usage{
 dsplot(x, ...)
 
-\method{dsplot}{default}(x, y, ..., bg.col = TRUE, col = 1, pch = 19,
-  cex = 0.8)
+\method{dsplot}{default}(x, y, ..., bg.col = TRUE, col = par("col"),
+  xlab = NULL, ylab = NULL, pch = par("pch"), cex = par("cex"))
 
 \method{dsplot}{formula}(formula, data = NULL, ..., subset,
   na.action = NULL)
@@ -63,8 +63,12 @@ set.seed(1)
 x <- round(rnorm(400, 100, 4))
 y <- round(rnorm(400, 200, 4))
 sex <- sample(c('Female', 'Male'), 400, replace = TRUE)
-dsplot(y ~ x, pch = 19, col = 1 + (sex \%in\% 'Female'), cex = .6, bty = 'l',
-       xlab = 'measurement 1', ylab = 'measurement 2', bg.col = 'tomato')
+
+dsplot(x, y, col = (sex \%in\% 'Female') + 1L, bg.col = FALSE)
+
+dsplot(y ~ x, pch = 19, col = (sex \%in\% 'Female') + 1L,
+       cex = .6, bty = 'l', bg.col = 'tomato',
+       xlab = 'measurement 1', ylab = 'measurement 2')
 legend('bottomright', pch = 19, col = 1:2, bty = 'n',
        legend = c('Male', 'Female'))
        

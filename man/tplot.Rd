@@ -8,16 +8,16 @@
 \usage{
 tplot(x, ...)
 
-\method{tplot}{default}(x, g, ..., type = "db", jit = 0.1, dist,
-  main = "", sub = "", xlab = "", ylab = "", names, xlim, ylim, col,
-  group.col = TRUE, boxcol = "grey90", bordercol = "black",
-  pch = par("pch"), group.pch = TRUE, cex = par("cex"),
-  group.cex = FALSE, median.line = FALSE, mean.line = FALSE,
-  median.pars = list(col = par("col")), mean.pars = median.pars,
-  boxplot.pars, show.n = TRUE, show.na = show.n, cex.n = cex,
-  test = FALSE, ann = par("ann"), axes = TRUE, frame.plot = axes,
-  add = FALSE, at, horizontal = FALSE, panel.first = NULL,
-  panel.last = NULL, reset_par = FALSE)
+\method{tplot}{default}(x, g, ..., type = "db", jit = 0.1, dist = NULL,
+  main = NULL, sub = NULL, xlab = NULL, ylab = NULL, xlim = NULL,
+  ylim = NULL, names, col, group.col = TRUE, boxcol = "grey90",
+  bordercol = par("fg"), pch = par("pch"), group.pch = TRUE,
+  cex = par("cex"), group.cex = FALSE, median.line = FALSE,
+  mean.line = FALSE, median.pars = list(col = par("col")),
+  mean.pars = median.pars, boxplot.pars, show.n = TRUE, show.na = show.n,
+  cex.n = cex, text.na = "missing", test = FALSE, ann = par("ann"),
+  axes = TRUE, frame.plot = axes, add = FALSE, at, horizontal = FALSE,
+  panel.first = NULL, panel.last = NULL, reset_par = FALSE)
 
 \method{tplot}{formula}(formula, data = NULL, ..., subset, na.action = NULL,
   panel.first = NULL, panel.last = NULL)
@@ -41,9 +41,9 @@ respectively}
 
 \item{xlab, ylab}{x- and y-axis labels}
 
-\item{names}{group labels}
-
 \item{xlim, ylim}{x- and y-axis limits}
+
+\item{names}{group labels}
 
 \item{col}{plotting color}
 
@@ -71,6 +71,8 @@ lines}
 \item{show.n, show.na}{logical; show total and missing in each group}
 
 \item{cex.n}{character expansion for \code{show.n} and \code{show.na}}
+
+\item{text.na}{label for missing values (default is "missing")}
 
 \item{test}{logical or function; if \code{TRUE}, a rank-sum p-value is
 added to the plot (\code{\link{wilcox.test}} or \code{\link{kruskal.test}}
@@ -194,8 +196,9 @@ dat <- data.frame(age = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
                                         replace = TRUE)))
 dat[1:5, 'age'] <- NA
 
-tplot(age ~ group, data = dat, las = 1, cex.n = .8, cex.axis = 1, bty = 'L',
+tplot(age ~ group, data = dat, las = 1, cex.axis = 1, bty = 'L',
       type = c('db', 'db', 'db', 'd'), names = LETTERS[1:4],
+      text.na = 'n/a', ## default is 'missing'
       group.pch = TRUE, pch = c(15, 17, 19, 8),
       group.col = FALSE, col = c('darkred', 'darkblue')[sex],
       boxcol = c('lightsteelblue1', 'lightyellow1', grey(.9)),

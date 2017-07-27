@@ -61,10 +61,10 @@
 
 jmplot <- function(x, y, z,
                    ## labels/aesthetics
-                   main = '', sub = '', xlab, ylab, names,
+                   main = '', sub = '', xlab = NULL, ylab = NULL, names,
                    
                    ## additional aesthetics
-                   xlim, ylim, axes = TRUE, frame.plot = axes,
+                   xlim = NULL, ylim = NULL, axes = TRUE, frame.plot = axes,
                    log = '', xratio = .8, yratio = xratio,
                    
                    ## n/missing for each group
@@ -93,46 +93,48 @@ jmplot <- function(x, y, z,
     eliminateTplot(plot.window, ...)
   localTitle <- function(..., col, bg, pch, cex, lty, lwd)
     eliminateTplot(title, ...)
+  
   ## calculate xlim, ylim
   lim <- function(z) {
     r <- range(z, na.rm = TRUE, finite = TRUE)
     # pm <- diff(r) / 20
-    # r + pm * c(-1,1)
+    # r <- r + pm * c(-1,1)
+    r
   }
   
-  z <- as.factor(z)
+  z  <- as.factor(z)
   xy <- xy.coords(x, y, deparse(substitute(x)), deparse(substitute(y)), log)
   
   ## defaults
   if (missing(names)) names <- levels(z)
-  if (missing(xlab))  xlab <- xy$xlab
-  if (missing(ylab))  ylab <- xy$ylab
-  if (missing(xlim))  xlim <- lim(xy$x)
-  if (missing(ylim))  ylim <- lim(xy$y)
+  if (is.null(xlab))   xlab <- xy$xlab
+  if (is.null(ylab))   ylab <- xy$ylab
+  if (is.null(xlim))   xlim <- lim(xy$x)
+  if (is.null(ylim))   ylim <- lim(xy$y)
   
   op <- par(no.readonly = TRUE)
   mar <- op$mar
   ## set the layout
-  layout(matrix(c(1,3,0,2), 2), widths = c(xratio, 1 - xratio),
+  layout(matrix(c(1,3,0,2), 2L), widths = c(xratio, 1 - xratio),
          heights = c(1 - yratio, yratio))
-  par(mar = c(0,0,0,0), oma = c(0,0, mar[3], mar[4]) + op$oma)
+  par(mar = c(0,0,0,0), oma = c(0, 0, mar[3L], mar[4L]) + op$oma)
   
   ## plot x distribution on top
-  par(mar = c(0, mar[2], 0, 0))
+  par(mar = c(0, mar[2L], 0, 0))
   X <- localTplot(x ~ z, ylim = xlim, horizontal = TRUE,
                   show.n = FALSE, show.na = FALSE, ...)
   if (axes) 
     localAxis(side = 2, at = 1:nlevels(z), labels = names, ...)
   
   ## plot y distribution on right
-  par(mar = c(mar[1], 0, 0, 0))
+  par(mar = c(mar[1L], 0, 0, 0))
   Y <- localTplot(y ~ z, ylim = ylim, horizontal = FALSE,
                   show.n = show.n, show.na = show.na, cex.n = cex.n, ...)
   if (axes) 
-    localAxis(side = 1, at = 1:nlevels(z), labels = names, ...)
+    localAxis(side = 1L, at = seq.int(nlevels(z)), labels = names, ...)
   
   ## plot xy points
-  par(mar = c(mar[1], mar[2], 0, 0))
+  par(mar = c(mar[1L], mar[2L], 0, 0))
   plot.new()
   localWindow(xlim, ylim, log, asp, ...)
   panel.first
@@ -141,8 +143,8 @@ jmplot <- function(x, y, z,
   
   ## plot options
   if (axes) {
-    localAxis(side = 1, ...)
-    localAxis(side = 2, ...)
+    localAxis(side = 1L, ...)
+    localAxis(side = 2L, ...)
   }
   if (frame.plot)
     localBox(...)
@@ -150,6 +152,7 @@ jmplot <- function(x, y, z,
     localTitle(sub = sub, xlab = xlab, ylab = ylab, ...)
     localTitle(main = main, outer = TRUE, ...)
   }
+  
   invisible(list(x = X, y = Y))
 }
 
@@ -175,8 +178,8 @@ jmplot <- function(x, y, z,
 #' @param type type of plot (dot, dot-box, box-dot, box)
 #' @param main,sub overall title and sub-title for the plot (below x-axis)
 #' @param xlab,ylab x- and y-axis labels
-#' @param names group labels
 #' @param xlim,ylim x- and y-axis limits
+#' @param names group labels
 #' @param axes logical; draw axes
 #' @param frame.plot logical; draw box around \code{x-y} plot
 #' @param at group positions on axis
@@ -200,6 +203,7 @@ jmplot <- function(x, y, z,
 #' lines
 #' @param show.n,show.na logical; show total and missing in each group
 #' @param cex.n character expansion for \code{show.n} and \code{show.na}
+#' @param text.na label for missing values (default is "missing")
 #' @param test logical or function; if \code{TRUE}, a rank-sum p-value is
 #' added to the plot (\code{\link{wilcox.test}} or \code{\link{kruskal.test}}
 #' based on the number of groups)
@@ -296,8 +300,9 @@ jmplot <- function(x, y, z,
 #'                                         replace = TRUE)))
 #' dat[1:5, 'age'] <- NA
 #' 
-#' tplot(age ~ group, data = dat, las = 1, cex.n = .8, cex.axis = 1, bty = 'L',
+#' tplot(age ~ group, data = dat, las = 1, cex.axis = 1, bty = 'L',
 #'       type = c('db', 'db', 'db', 'd'), names = LETTERS[1:4],
+#'       text.na = 'n/a', ## default is 'missing'
 #'       group.pch = TRUE, pch = c(15, 17, 19, 8),
 #'       group.col = FALSE, col = c('darkred', 'darkblue')[sex],
 #'       boxcol = c('lightsteelblue1', 'lightyellow1', grey(.9)),
@@ -311,13 +316,13 @@ tplot <- function(x, ...) UseMethod('tplot')
 
 #' @rdname tplot
 #' @export
-tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
+tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
                           
                           ## labels/aesthetics
-                          main = '', sub = '', xlab = '', ylab = '',
-                          names, xlim, ylim,
+                          main = NULL, sub = NULL, xlab = NULL, ylab = NULL,
+                          xlim = NULL, ylim = NULL, names,
                           col, group.col = TRUE, boxcol = 'grey90',
-                          bordercol = 'black',
+                          bordercol = par('fg'),
                           pch = par('pch'), group.pch = TRUE,
                           cex = par('cex'), group.cex = FALSE,
                           
@@ -328,6 +333,7 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
                           
                           ## n/missing for each group
                           show.n = TRUE, show.na = show.n, cex.n = cex,
+                          text.na = 'missing',
                           
                           ## extra stuff
                           test = FALSE,
@@ -356,18 +362,18 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
     plot.window(...)
   
   if (!missing(g)) {
-    if (missing(xlab))
+    if (is.null(xlab))
       xlab <- deparse(substitute(g))
     if (is.list(x))
       message('\'x\' is a list -- \'g\' will be ignored', domain = NA) else {
-        if (missing(ylab))
+        if (is.null(ylab))
           ylab <- deparse(substitute(x))
-        if (missing(xlab))
+        if (is.null(xlab))
           xlab <- deparse(substitute(g))
         x <- split(x, g)
       }
   } else {
-    if (missing(xlab))
+    if (is.null(xlab))
       xlab <- deparse(substitute(x))
   }
   
@@ -412,47 +418,47 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
   if (missing(xlim))
     xlim <- c(0.5, if (missing(at)) ng else max(at) + 0.5)
   
-  type <- match.arg(type, choices = c('d','db','bd','b'), several.ok = TRUE)
+  type <- match.arg(type, c('d', 'db', 'bd', 'b'), several.ok = TRUE)
   ## type of plot for each group
-  type <- rep(type, length.out = ng)
+  type <- rep_len(type, ng)
   
   ## default colors
   ## 50% gray for box/dots in back, otherwise default color
   defcols <- c(bordercol, par('col'))
   
   if (missing(col)) {
-    col <- defcols[2 - grepl('.d', type)]
+    col <- defcols[2L - grepl('.d', type)]
     group.col <- TRUE
   }
   if (missing(boxplot.pars))
     boxplot.pars <- NULL
   
-  boxcol <- rep(boxcol, length.out = ng)
-  boxborder <- rep(bordercol, length.out = ng)
+  boxcol <- rep_len(boxcol, ng)
+  boxborder <- rep_len(bordercol, ng)
   
   if (group.col) {
     ## colors by group
-    g.col <- rep(col, length.out = ng)
+    g.col <- rep_len(col, ng)
     col <- rep(g.col, lg)
   } else {
     ## colors by individual or global
-    col   <- rep(col, length.out = nv)
-    g.col <- rep(1, length.out = ng)
+    col   <- rep_len(col, nv)
+    g.col <- rep_len(1, ng)
   }
   pch <- if (group.pch) {
     ## plot characters by group
-    rep(rep(pch, length.out = ng), lg)
+    rep(rep_len(pch, ng), lg)
   } else {
     ## plot characters by individual or global
-    rep(pch, length.out = nv)
+    rep_len(pch, nv)
   }
   force(cex.n)
   cex <- if (group.cex) {
     ## plot characters by group
-    rep(rep(cex, length.out = ng), lg)
+    rep(rep_len(cex, ng), lg)
   } else {
     ## plot characters by individual or global
-    rep(cex, length.out = nv)
+    rep_len(cex, nv)
   }
   
   ## split colors and plot characters into groups
@@ -463,6 +469,7 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
   ## remove any NAs from the data and options
   nonas <- lapply(groups, function(x) !is.na(x))
   l2 <- sapply(groups, function(x) sum(is.na(x)))
+  
   if (all(l2 == 0L) && missing(show.na))
     show.na <- FALSE
   groups <- Map('[', groups, nonas)
@@ -611,7 +618,7 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist,
                    ifelse(rep_len(show.n, ng), 'n = ', ''),
                    ifelse(rep_len(show.n, ng), lg - l2, ''),
                    if (show.na)
-                     ifelse(l2 > 0L, 'missing = ', '') else '',
+                     ifelse(l2 > 0L, paste0(text.na, ' = '), '') else '',
                    if (show.na)
                      ifelse(l2 > 0L, l2, '') else ''
     )
@@ -699,6 +706,7 @@ tplot.formula <- function(formula, data = NULL, ...,
     args <- lapply(args, do_sub_, x, n, s)
     mf <- mf[s, ]
   }
+  
   do.call('tplot', c(list(split(mf[[response]], mf[-response])), args))
 }
 
@@ -746,8 +754,12 @@ tplot.formula <- function(formula, data = NULL, ...,
 #' x <- round(rnorm(400, 100, 4))
 #' y <- round(rnorm(400, 200, 4))
 #' sex <- sample(c('Female', 'Male'), 400, replace = TRUE)
-#' dsplot(y ~ x, pch = 19, col = 1 + (sex %in% 'Female'), cex = .6, bty = 'l',
-#'        xlab = 'measurement 1', ylab = 'measurement 2', bg.col = 'tomato')
+#' 
+#' dsplot(x, y, col = (sex %in% 'Female') + 1L, bg.col = FALSE)
+#' 
+#' dsplot(y ~ x, pch = 19, col = (sex %in% 'Female') + 1L,
+#'        cex = .6, bty = 'l', bg.col = 'tomato',
+#'        xlab = 'measurement 1', ylab = 'measurement 2')
 #' legend('bottomright', pch = 19, col = 1:2, bty = 'n',
 #'        legend = c('Male', 'Female'))
 #'        
@@ -757,12 +769,16 @@ dsplot <- function(x, ...) UseMethod('dsplot')
 
 #' @rdname dsplot
 #' @export
-dsplot.default <- function(x, y, ..., bg.col = TRUE, col = 1,
-                           pch = 19, cex = 0.8) {
+dsplot.default <- function(x, y, ..., bg.col = TRUE, col = par('col'),
+                           xlab = NULL, ylab = NULL,
+                           pch = par('pch'), cex = par('cex')) {
   # if (any(x != round(x), na.rm = TRUE) | any(y != round(y), na.rm = TRUE))
   #   stop('\'x\' must be integer values', '\n')
   
   ## helpers
+  localAxis   <- function(..., bg, bty, cex, log, lty, lwd, pos)
+    axis(...)
+  
   square.coordinates <- function(box.size) {
     x.c <- y.c <- 1
     for (i in 2:box.size)
@@ -771,16 +787,19 @@ dsplot.default <- function(x, y, ..., bg.col = TRUE, col = 1,
       y.c <- c(y.c, every.other.element.y(j))
     data.frame(x.c, y.c)
   }
+  
   ## vector 1,n,2,n,3,n, ...,  n, n for x
   ## vector n,1,n,2,n,3, ..., n-1,n for y
   every.other.element.x <- function(n) c(rbind(1:n, rep(n, n)))[-(2 * n)]
   every.other.element.y <- function(n) c(rbind(rep(n, n), 1:n))[-(2 * n)]
   
+  xy <- xy.coords(x, y, deparse(substitute(x)), deparse(substitute(y)))
   L <- length(x)
   cc <- complete.cases(x, y)
-  if (length(pch) < L) pch <- rep(pch, length.out = L)
-  if (length(col) < L) col <- rep(col, length.out = L)
-  if (length(cex) < L) cex <- rep(cex, length.out = L)
+  
+  pch <- rep_len(pch, L)
+  col <- rep_len(col, L)
+  cex <- rep_len(cex, L)
   
   x <- x[cc]
   y <- y[cc]
@@ -796,38 +815,41 @@ dsplot.default <- function(x, y, ..., bg.col = TRUE, col = 1,
   max.freq <- max(tab)
   box.size <- ceiling(sqrt(max.freq))
   
-  op <- par(no.readonly = TRUE)
-  on.exit(par(op))
-  plot(X, Y, las = 1, type = 'n', xaxs = 'i', yaxs = 'i', bty = 'n',
-       xaxt = 'n', yaxt = 'n', ...)
-  axis(1, at = pretty(x) + .5, labels = pretty(x), tick = FALSE, las = 1)
-  axis(2, at = pretty(y) + .5, labels = pretty(y), tick = FALSE, las = 1)
+  # op <- par(no.readonly = TRUE)
+  # on.exit(par(op))
   
-  if (bg.col == FALSE) {
-    for (i in y.levels)
-      segments(min(x), i, max(x), i, col = grey(.9))
-    for (i in x.levels)
-      segments(i, min(y), i, max(x), col = grey(.9))
+  plot(X, Y, type = 'n', xaxs = 'i', yaxs = 'i',
+       ann = FALSE, xaxt = 'n', yaxt = 'n', ...)
+  title(xlab = xlab %||% xy$xlab, ylab = ylab %||% xy$ylab)
+  
+  localAxis(1L, pretty(x) + .5, pretty(x), ...)
+  localAxis(2L, pretty(y) + .5, pretty(y), ...)
+  
+  if (identical(bg.col, FALSE)) {
+    abline(h = y.levels, col = grey(.9))
+    abline(v = x.levels, col = grey(.9))
   }
   
   sc <- square.coordinates(box.size)
   coord <- (1:box.size) / (box.size + 1)
-  off.set <- coord[1] / 4
+  off.set <- coord[1L] / 4
   alpha <- seq(0.2, 0.9, length = max.freq)
-  bg.col <- if (isTRUE(bg.col)) 'grey' else bg.col[1]
+  bg.col <- if (isTRUE(bg.col))
+    'grey' else bg.col[1L]
   
-  dat <- data.frame(id = 1:length(x), x, y)
+  dat <- data.frame(id = seq.int(length(x)), x, y)
   dat <- dat[order(dat$x, dat$y), ]
   within <- c(t(tab))
-  within <- within[within > 0]
+  within <- within[within > 0L]
   idx <- hm <- NULL
   
   for (i in within) {
     ## index within category
     idx <- c(idx, 1:i)
-    hm <- c(hm, rep(i, i))
+    hm  <- c(hm, rep(i, i))
   }
   dat$idx <- idx
+  
   ## local offset
   dat$ly <- (box.size - ceiling(sqrt(hm))) / (box.size + 1) / 2
   dat$lx <- dat$ly + ((ceiling(sqrt(hm - 1)) ** 2 == hm - 1) & (hm > 1)) /
@@ -836,7 +858,7 @@ dsplot.default <- function(x, y, ..., bg.col = TRUE, col = 1,
   dat$col <- col
   dat$pch <- pch
   
-  if (!bg.col == FALSE) {
+  if (!identical(bg.col, FALSE)) {
     for (i in x.levels) {
       for (j in y.levels) {
         n <- sum(x == i & y == j)
@@ -848,9 +870,11 @@ dsplot.default <- function(x, y, ..., bg.col = TRUE, col = 1,
       }
     }
   }
-  points(dat$x + coord[sc[dat$idx, 1]] + dat$lx,
-         dat$y + coord[sc[dat$idx, 2]] + dat$ly,
+  
+  points(dat$x + coord[sc[dat$idx, 1L]] + dat$lx,
+         dat$y + coord[sc[dat$idx, 2L]] + dat$ly,
          pch = dat$pch, col = dat$col, cex = cex)
+  
   invisible(table(factor(y, levels = rev(min(y):max(y))),
                   factor(x, levels = min(x):max(x))))
 }
@@ -859,8 +883,9 @@ dsplot.default <- function(x, y, ..., bg.col = TRUE, col = 1,
 #' @export
 dsplot.formula <- function(formula, data = NULL, ...,
                            subset, na.action = NULL) {
-  if (missing(formula) || (length(formula) != 3))
-    stop("\'formula\' missing or incorrect")
+  if (missing(formula) || (length(formula) != 3L))
+    stop('\'formula\' missing or incorrect')
+  
   enquote <- function(x) as.call(list(as.name('quote'), x))
   
   m <- match.call(expand.dots = FALSE)
@@ -870,7 +895,7 @@ dsplot.formula <- function(formula, data = NULL, ...,
   nmargs <- names(args)
   
   if ('main' %in% nmargs) args[['main']] <- enquote(args[['main']])
-  if ('sub' %in% nmargs)  args[['sub']] <- enquote(args[['sub']])
+  if ('sub' %in% nmargs)  args[['sub']]  <- enquote(args[['sub']])
   if ('xlab' %in% nmargs) args[['xlab']] <- enquote(args[['xlab']])
   if ('ylab' %in% nmargs) args[['ylab']] <- enquote(args[['ylab']])
   
@@ -878,7 +903,7 @@ dsplot.formula <- function(formula, data = NULL, ...,
   subset.expr <- m$subset
   m$... <- m$subset <- NULL
   
-  m[[1]] <- as.name('model.frame')
+  m[[1L]] <- as.name('model.frame')
   m <- as.call(c(as.list(m), list(na.action = NULL)))
   mf <- eval(m, parent.frame())
   n <- nrow(mf)
@@ -890,7 +915,8 @@ dsplot.formula <- function(formula, data = NULL, ...,
     ## rawr:::do_sub_
     mf <- mf[s, ]
   }
-  do.call('dsplot', c(list(mf[[response]], mf[[-response]]), args))
+  
+  do.call('dsplot', c(list(mf[[-response]], mf[[response]]), args))
 }
 
 #' waffle chart
