@@ -23,7 +23,7 @@ cummax_na(x, useNA = TRUE)
 
 cummin_na(x, useNA = TRUE)
 
-cum_mid(x)
+cum_mid(x, adj = 0.5)
 }
 \arguments{
 \item{x}{a vector (or numeric matrix for \code{cum_mid})}
@@ -38,6 +38,10 @@ same length and type as the input (\emph{a la} \code{\link{ave}})}
 
 \item{useNA}{logical; if \code{TRUE}, indices with \code{NA} will be
 unchanged; if \code{FALSE}, the previous value is carried forward}
+
+\item{adj}{for \code{cum_mid}, an adjustment parameter, usually in
+\code{[0, 1]}, giving the relative position between each value (default
+is centered, \code{adj = 0.5})}
 }
 \value{
 A vector having the same length as \code{x} with \code{FUN} applied to
@@ -103,9 +107,14 @@ cum_na(na, cumdiff)
 
 
 ## "stacked" numeric values, eg, from a barplot
-x <- matrix(runif(6), 3L)
-bp <- barplot(x)
-text(bp[col(x)], cum_mid(x), x)
+set.seed(1)
+x <- matrix(runif(12), ncol = 3L)
+bp <- barplot(x, names.arg = paste('adj = ', c(0, 1, 0.5)))
+
+for (ii in seq.int(ncol(x))) {
+  xii <- x[, ii, drop = FALSE]
+  text(bp[ii], cum_mid(xii, c(0, 1, 0.5)[ii]), xii, xpd = NA)
+}
 
 }
 \seealso{
