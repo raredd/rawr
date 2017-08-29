@@ -1282,7 +1282,7 @@ cuzick.test.default <- function(x, g, details = wilcox.test, ...) {
     x <- lapply(x, function(u) u <- u[complete.cases(u)])
     if (!all(sapply(x, is.numeric)))
       warning('some elements of \'x\' are not numeric and will be coerced')
-    l <- lengths(x)
+    l <- sapply(x, length)
     if (any(l == 0L))
       stop("all groups must contain data")
     g <- factor(rep.int(seq_len(length(x)), l))
@@ -1299,6 +1299,7 @@ cuzick.test.default <- function(x, g, details = wilcox.test, ...) {
     if (length(unique(g)) < 2L) 
       stop('all observations are in the same group')
   }
+  
   if (length(x) < 2L)
     stop('not enough observations')
   
@@ -1311,6 +1312,7 @@ cuzick.test.default <- function(x, g, details = wilcox.test, ...) {
   
   ux <- length(unique(x))
   ug <- length(unique(g))
+  
   if (!is.numeric(x))
     stop('\'x\' values must be numeric')
   if (ug < 3L)
@@ -1321,7 +1323,8 @@ cuzick.test.default <- function(x, g, details = wilcox.test, ...) {
   ## scores for each group
   ## if g is character or factor, use 1,2,...,k
   ## if g is numeric, dont assume equally-spaced, use sorted unique values
-  li <- if (fac) seq.int(ug) else as.character(sort(unique(g)))
+  li <- if (fac)
+    seq.int(ug) else as.character(sort(unique(g)))
   ni <- table(g)[li]
   N  <- sum(ni)
   
@@ -1339,7 +1342,7 @@ cuzick.test.default <- function(x, g, details = wilcox.test, ...) {
   ## tj: times each value of x appears; a: correction for se
   tj <- ave(x, x, FUN = length)
   a  <- sum(tj * (tj ** 2 - 1)) / (N * (N ** 2 - 1))
-  se_corrected <- sqrt(1 - a) * sqrt(vT)
+  se_corrected   <- sqrt(1 - a) * sqrt(vT)
   se_uncorrected <- sqrt(vT)
   
   ## corrected test statistic: (T - expected) / se
@@ -1349,7 +1352,7 @@ cuzick.test.default <- function(x, g, details = wilcox.test, ...) {
   estimate <- tapply(x, g, median)
   names(estimate) <- paste('median of', names(estimate))
   method <- sprintf('Wilcoxon rank sum test for trend in %s ordered groups', ug)
-  pval <- 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE))
+  pval   <- 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE))
   
   ## pairwise details
   pw <- if (!identical(details, FALSE)) {
@@ -1372,10 +1375,11 @@ cuzick.test.default <- function(x, g, details = wilcox.test, ...) {
       overall = tidy(kruskal.test(x, g)))
   } else NULL
   
-  structure(list(statistic = c(z = z), p.value = pval, estimate = estimate,
-                 method = method, data.name = dname,
-                 details = pw),
-            class = 'htest')
+  structure(
+    list(statistic = c(z = z), p.value = pval, estimate = estimate,
+         method = method, data.name = dname, details = pw),
+    class = 'htest'
+  )
 }
 
 #' @rdname cuzick.test
@@ -1384,17 +1388,21 @@ cuzick.test.formula <- function (formula, data, subset, na.action, ...) {
   ## adapted from stats:::kruskal.test.formula
   if (missing(formula) || (length(formula) != 3L))
     stop('\'formula\' missing or incorrect')
+  
   m <- match.call(expand.dots = FALSE)
   if (is.matrix(eval(m$data, parent.frame())))
     m$data <- as.data.frame(data)
   m[[1L]] <- quote(stats::model.frame)
   mf <- eval(m, parent.frame())
+  
   if (length(mf) > 2L)
     stop('\'formula\' should be of the form response ~ group')
+  
   dname <- paste(names(mf), collapse = ' by ')
   names(mf) <- NULL
   y <- do.call('cuzick.test', as.list(mf))
   y$data.name <- dname
+  
   y
 }
 
@@ -1502,13 +1510,16 @@ jt.test <- function(x, y = NULL) {
   sp <- c(row(x) * !!ns)
   sp <- split(rep(sp, ns), rep(c(col(x)), ns))
   PQ <- rowSums(vapply(seq_len(length(sp)), function(x)
-    get_PQ(sp[x], sp[-(1:x)]), integer(2)))
-  z <- (PQ[1] - PQ[2]) / sqrt(vS)
+    get_PQ(sp[x], sp[-(1:x)]), integer(2L)))
+  
+  z    <- (PQ[1L] - PQ[2L]) / sqrt(vS)
   pval <- 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE))
   
-  structure(list(statistic = c(z = z), p.value = pval,
-                 method = method, data.name = dname),
-            class = 'htest')
+  structure(
+    list(statistic = c(z = z), p.value = pval,
+         method = method, data.name = dname),
+    class = 'htest'
+  )
 }
 
 #' Hodges-Lehmann estimator
@@ -1569,7 +1580,7 @@ combn_fun <- function(x, FUN, n = 2L, ...) {
   FUN <- match.fun(FUN)
   n <- as.integer(n)
   x <- combn(x, n)
-  apply(x, 2, FUN, ...)
+  apply(x, 2L, FUN, ...)
 }
 
 #' \code{rpart} utilities
