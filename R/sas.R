@@ -159,7 +159,7 @@ r2sas <- function(code, saspath, force, out) {
     cat(code, '\n\n\n', sep = '\n')
     check <- readline('... will be run. Continue? (y/n): ')
     if (tolower(substr(check, 1, 1)) != 'y')
-      return(invisible())
+      return(invisible(NULL))
   }
   
   ## temporary .sas, .lst, .log files
@@ -172,7 +172,7 @@ r2sas <- function(code, saspath, force, out) {
     cat(code, sep = '\n', file = sasin, append = TRUE)
     sys_args <- paste(sasin, '-log', logpath, '-print', lstpath)
     status <- system2(saspath, sys_args)
-  } else return(invisible())
+    } else return(invisible(NULL))
   
   ## determine out-paths and spit error(s) for annoying warning in
   ## file.copy/file.remove if no output is generated from .sas program
@@ -202,7 +202,7 @@ r2sas <- function(code, saspath, force, out) {
                       shQuote(file.path(out, basename(logpath)))),
                 domain = NA)
   }
-  invisible()
+  invisible(NULL)
 }
 
 #' Call \code{SAS} macros
@@ -432,7 +432,7 @@ sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
   if (!length(dsn)) {
     message(sprintf('No sas data sets found in %s\n', shQuote(libpath)),
             domain = NA)
-    return(invisible())
+    return(invisible(NULL))
   }
   dsi <- `colnames<-`(round(file.info(list.files(
     libpath, full.names = TRUE, pattern = '\\.sas7bdat$'))['size'] / 1000),
@@ -475,7 +475,7 @@ sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
     cat('\n\n\n\n\n')
     check <- readline('Do you want to continue? (y/n): ')
     if (tolower(substr(check, 1, 1)) != 'y')
-      return(invisible())
+      return(invisible(NULL))
   }
   
   ## sas.get wrapper
@@ -503,7 +503,7 @@ sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
       mapply(f, x = zzz, file = file.path(wdir, paste0(names(zzz), '.csv')))
     }
     zzz
-  } else invisible()
+  } else invisible(NULL)
 }
 
 #' Source \code{SAS} code

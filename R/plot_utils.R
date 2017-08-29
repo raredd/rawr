@@ -48,7 +48,7 @@ do_rect_ <- function(n, x, y, single = FALSE, border = NA, col = NA,
       rect(x[ii], n - 1 * adj, y[ii], n + 1 * adj, border = border[ii],
            col = col[ii], ...)
   }
-  invisible()
+  invisible(NULL)
 }
 
 do_seg_ <- function(n, x, y, arrow, single = FALSE, ...) {
@@ -63,7 +63,7 @@ do_seg_ <- function(n, x, y, arrow, single = FALSE, ...) {
     arrows(x, n, pmax(y,1, na.rm = TRUE), n, lwd = 2,
            angle = 30, length = .15, ...)
   else segments(x, n, y, n, ...)
-  invisible()
+  invisible(NULL)
 }
 
 ## convert degrees to radians or vice versa

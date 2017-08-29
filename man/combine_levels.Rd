@@ -61,9 +61,12 @@ can be grouped by regular expressions.
 x <- rep(1:3, each = 2)
 combine_levels(x, 1:2, 1)
 combine_levels(x, list(1:2, 3), c('a', 'b'))
+
 ## use a named list to get the same as above
 combine_levels(x, list(a = 1:2, b = 3))
 
+
+## characters and factors
 combine_levels(LETTERS[x], list(x = 'C'))
 combine_levels(factor(x), 3, 4)
 combine_levels(factor(x), list(3, 5), c(4, 9))

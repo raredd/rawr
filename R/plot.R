@@ -601,7 +601,7 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
     
     mtext(pvalr(pv$p.value, show.p = TRUE), 3, line = 0.5, cex = 1.2,
           # at = if (ng %% 2 == 0) NA else par('usr')[2] * .95,
-          at = par('usr')[2], font = 3, adj = 1)
+          at = par('usr')[2], font = 3L, adj = 1)
   }
   
   panel.last
@@ -1256,7 +1256,7 @@ river <- function(data, bar_data, id, at, legend = 'topleft',
   plot.window(if (!missing(xlim)) xlim else c(0, diff(rx)),
               ## set min ylim to c(0,5) for case: id < 5
               if (!missing(ylim)) ylim else range(c(0, at, 5)))
-  axis(1, tcl = .2, las = 1)
+  axis(1, tcl = .2, las = 1L)
   title(xlab = sprintf('Days from %sregistration',
                        c('', 'first ')[stagger + 1L]),
         line = 2.5)
@@ -1424,13 +1424,13 @@ river2 <- function(data, bar_data, bar_data2, id, legend = 'topleft',
       ## add count of td to left in black if start date, color/italic if NA
       ## desc on right in color, italics if continuing; black otherwise
       text(dd_start[1L], ii + 1L, labels = ii, pos = 2, xpd = NA,
-           cex = .8, col = if (no_start[1L]) col else 1,
-           font = if (no_start[1L]) 3 else 1)
+           cex = .8, col = if (no_start[1L]) col else 1L,
+           font = if (no_start[1L]) 3L else 1L)
       # text(tail(dd_end %|% end_day, 1), ii + 1, labels = tail(desc, 1),
       
       text(max(dd_start, dd_end %|% dd_end2, na.rm = TRUE), ii + 1L,
            labels = tail(desc, 1), pos = 4, xpd = NA, cex = .8,
-           font = c(1, 3)[tail(ong, 1L) + 1L],
+           font = c(1L, 3L)[tail(ong, 1L) + 1L],
            col = c('black', tail(col, 1))[tail(ong, 1) + 1L])
     })
   }
@@ -1604,9 +1604,9 @@ dose_esc <- function(dose, col.dose, nstep = 3, dose.exp, col.exp,
   p <- par('usr')
   arrows2(c(0,0), c(0,0), c(0, max(xl)), c(max(yl), 0), lwd = 3,
           size = 0.5, width = 0.5)
-  axis(2, seq_along(ylab), ylab, las = 1, lwd = 0, mgp = c(0,0,0))
-  text(p[2], 0, pos = 1, xlab, xpd = NA, font = 2)
-  text(0, p[4], pos = 2, ylab, xpd = NA, font = 2)
+  axis(2, seq_along(ylab), ylab, las = 1L, lwd = 0, mgp = c(0,0,0))
+  text(p[2], 0, pos = 1, xlab, xpd = NA, font = 2L)
+  text(0, p[4], pos = 2, ylab, xpd = NA, font = 2L)
   
   points(x, y, pch = 16, col = col, cex = 3.5, xpd = NA)
   points(pls, y[pls_idx + 1L], pch = '+', cex = 1.5, xpd = NA)
@@ -1662,6 +1662,7 @@ dose_esc <- function(dose, col.dose, nstep = 3, dose.exp, col.exp,
 plothc <- function(hc, labels = hc$labels, col = as.factor(labels),
                    hang = 0.1, ...) {
   stopifnot(inherits(hc, 'hclust'))
+  
   o   <- hc$order
   ht  <- hc$height
   col <- rep_len(if (is.factor(col)) as.numeric(col) else col, length(o))
@@ -1763,17 +1764,19 @@ waterfall <- function(x, type = 1L, col = c('red','blue'), ...,
   
   col <- if (type == 2L)
     rep_len(col, 2L) else if (length(col) != length(x))
-      colorRampPalette(col)(1000)[(x - rx[1]) / diff(rx) * 999 + 1][o] else
+      colorRampPalette(col)(1000L)[(x - rx[1L]) / diff(rx) * 999 + 1][o] else
         col[o]
   
   plot.new()
-  plot.window(if (is.null(m$xlim)) range(bp) else eval(m$xlim),
-              if (is.null(m$ylim))
-                extendrange(if (type == 2L) cumsum(x) else x) else eval(m$ylim))
+  plot.window(
+    if (is.null(m$xlim)) range(bp) else eval(m$xlim),
+    if (is.null(m$ylim))
+      extendrange(if (type == 2L) cumsum(x) else x) else eval(m$ylim)
+  )
   panel.first
 
   if (type == 2L) {
-    dx <- diff(c(bp))[1] * .4
+    dx <- diff(c(bp))[1L] * .4
     rect(bp - dx, y0 <- cumsum(c(0, x[-length(x)])), bp + dx, y1 <- cumsum(x),
          col = col[(x > 0) + 1L], border = NA, xpd = NA)
   } else {
@@ -1783,7 +1786,7 @@ waterfall <- function(x, type = 1L, col = c('red','blue'), ...,
   }
   
   if (arrows)
-    arrows(bp, y0, bp, y1, lwd = 2, length = .1, xpd = NA, col = 0)
+    arrows(bp, y0, bp, y1, lwd = 2, length = .1, xpd = NA, col = 0L)
   panel.last
   
   invisible(res)

@@ -39,7 +39,10 @@
 show_html <- function(..., use_viewer = !is.null(getOption('viewer'))) {
   htmlFile <- tempfile(fileext = '.html')
   x <- c(...)
-  if (is.null(x)) return(invisible())
+  
+  if (is.null(x))
+    return(invisible(NULL))
+  
   writeLines(x, con = htmlFile)
   if (use_viewer)
     tryCatch(rstudioapi::viewer(htmlFile),
@@ -50,6 +53,7 @@ show_html <- function(..., use_viewer = !is.null(getOption('viewer'))) {
                browseURL(htmlFile)
              })
   else browseURL(htmlFile)
+  
   invisible(x)
 }
 

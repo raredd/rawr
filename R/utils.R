@@ -2077,9 +2077,12 @@ droplevels2 <- function(x, min_level = 1, max_level = max(as.numeric(x))) {
 #' x <- rep(1:3, each = 2)
 #' combine_levels(x, 1:2, 1)
 #' combine_levels(x, list(1:2, 3), c('a', 'b'))
+#' 
 #' ## use a named list to get the same as above
 #' combine_levels(x, list(a = 1:2, b = 3))
 #' 
+#' 
+#' ## characters and factors
 #' combine_levels(LETTERS[x], list(x = 'C'))
 #' combine_levels(factor(x), 3, 4)
 #' combine_levels(factor(x), list(3, 5), c(4, 9))
@@ -2226,9 +2229,12 @@ NULL
 #' @export
 rownames_to_column <- function(data, column = 'rownames', where = 1L) {
   column <- make.unique(c(colnames(data), column))[ncol(data) + 1L]
-  data <- insert(data, col = where, repl = rownames(data))
+  data   <- insert(data, col = where, repl = rownames(data))
+  
   colnames(data)[where] <- column
-  `rownames<-`(data, NULL)
+  rownames(data) <- NULL
+  
+  data
 }
 
 #' @rdname rawr_rownames
@@ -2236,6 +2242,13 @@ rownames_to_column <- function(data, column = 'rownames', where = 1L) {
 column_to_rownames <- function(data, column = 'rownames', where = 1L) {
   where <- if (missing(where))
     which(colnames(data) %in% column) else where
+  
+  stopifnot(
+    length(where) == 1L,
+    where %in% seq.int(ncol(data))
+  )
+  
   rownames(data) <- make.unique(as.character(data[, where]))
-  data[, -where]
+  
+  data[, -where, drop = FALSE]
 }

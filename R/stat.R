@@ -1082,11 +1082,13 @@ install.bioc <- function(pkgs, upgrade = FALSE) {
     biocLite(..., suppressAutoUpdate = TRUE, suppressUpdates = TRUE)
   if (upgrade) {
     biocLite(suppressAutoUpdate = TRUE, suppressUpdates = FALSE)
-    return(invisible())
+    return(invisible(NULL))
   }
+  
   if (missing(pkgs))
     f() else f(pkgs)
-  invisible()
+  
+  invisible(NULL)
 }
 
 #' Standardize regression coefficients

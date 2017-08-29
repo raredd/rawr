@@ -437,12 +437,12 @@ search_df <- function(pattern, data, col.name, var = 0,
 search_hist <- function (x, ...) {
   hist <- tryCatch(readLines('.Rhistory'),
                    warning = function(w) message('No history found'),
-                   finally = return(invisible()))
+                   finally = return(invisible(NULL)))
   lhist <- length(hist)
   if (is.numeric(x))
-    return(hist[lhist:(lhist - x + 1)])
-  if (is.character(x))
-    return(grep(x, readLines('.Rhistory'), value = TRUE, ...))
+    hist[lhist:(lhist - x + 1)]
+  else if (is.character(x))
+    grep(x, readLines('.Rhistory'), value = TRUE, ...)
 }
 
 #' Apply list of functions over list or vector
@@ -1100,7 +1100,8 @@ install_temp <- function(pkgs, lib, ...) {
   utils::install.packages(pkgs = pkgs, lib = lib, ...)
   for (ii in pkgs)
     require(ii, character.only = TRUE)
-  invisible()
+  
+  invisible(NULL)
 }
 
 #' Merge nested lists
@@ -1841,7 +1842,8 @@ pickcol <- function(data, ind = 1L, value = FALSE) {
 #' 
 #' @export
 
-lunique <- function(x, na.rm = FALSE) length(unique(if (na.rm) sort(x) else x))
+lunique <- function(x, na.rm = FALSE)
+  length(unique(if (na.rm) sort(x) else x))
 
 #' Remove non ASCII characters
 #' 
