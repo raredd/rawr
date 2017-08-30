@@ -30,8 +30,8 @@ ordered as \code{sort(unique(g))}; see \code{\link{factor}}}
 \item{details}{\code{FALSE} or a function to compute comparisons between
 pairs of groups; see details}
 
-\item{correct}{logical; if \code{TRUE} (default), a correction is applied
-to the standard error of the test statistic}
+\item{correct}{logical; if \code{TRUE}, a correction is applied to the
+standard error of the test statistic (default)}
 
 \item{formula}{a formula of the form \code{response ~ group} where
 \code{response} gives the data values and \code{group} a vector or factor
@@ -69,9 +69,9 @@ meaningful order. If \code{x} and \code{g} are given as vectors and
 however, if \code{g} is \emph{not} a factor, it will be coerced, and the
 levels will be the same as \code{levels(factor(g))}.
 
-For example, if \code{g} is \code{c("5mg", "10mg", "15mg")}, then the
-groups will be ordered as \code{"10mg" "15mg" "5mg"} which may not be
-desired.
+For example, if \code{g} is (a character string of) \code{c("5mg", "10mg",
+"15mg")}, then the groups will be ordered as \code{"10mg" "15mg" "5mg"}
+which may not be desired.
 
 Pairwise comparisons between each pair of groups is performed using the
 function given by \code{details} (default is \code{\link{wilcox.test}});
@@ -128,15 +128,18 @@ x <- sort(rnorm(20))
 g1 <- sample(paste0(c(5,10,15), 'mg'), 20, replace = TRUE)
 g2 <- factor(g1, levels = paste0(c(5,10,15), 'mg'))
 
+## wrong order
 p1 <- cuzick.test(x, g1)$p.value
-p2 <- cuzick.test(x, g2)$p.value
 tplot(x ~ g1, data.frame(x, g1), type = 'db',
       panel.first = title(sub = pvalr(p1, show.p = TRUE)))
+
+## correct order
+p2 <- cuzick.test(x, g2)$p.value
 tplot(x ~ g2, data.frame(x, g2), type = 'db',
       panel.first = title(sub = pvalr(p2, show.p = TRUE)))
 
 
-## groups need not be equally-spaced but will affect statistic/pvalue
+## groups need not be equally-spaced but will affect statistic/p-value
 set.seed(1)
 x <- sort(rnorm(20))
 g1 <- sample(1:3, 20, replace = TRUE)
