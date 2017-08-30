@@ -1287,8 +1287,7 @@ genericMethods <- function(object, generic) {
   generic <- if (is.character(generic))
     generic else deparse(substitute(generic))
   
-  f <- X <- function(x, object)
-    UseMethod('X')
+  f <- X <- function(x, object) UseMethod('X')
   
   for (m in methods(generic))
     assign(sub(generic, 'X', m), `body<-`(f, value = m))

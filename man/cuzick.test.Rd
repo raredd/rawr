@@ -145,12 +145,13 @@ x <- sort(rnorm(20))
 g1 <- sample(1:3, 20, replace = TRUE)
 g2 <- g1 + (g1 == 3)
 
-p1 <- cuzick.test(x, g1)$p.value
-p2 <- cuzick.test(x, g2)$p.value
-tplot(x ~ g1, dd <- data.frame(x, g1), type = 'db', at = sort(unique(g1)),
-      panel.first = title(sub = pvalr(p1, show.p = TRUE)))
-tplot(x ~ g2, dd <- data.frame(x, g2), type = 'db', at = sort(unique(g2)),
-      panel.first = title(sub = pvalr(p2, show.p = TRUE)))
+tplot(x, g1, at = sort(unique(g1)))
+mtext(pvalr(cuzick.test(x, g1)$p.value, show.p = TRUE),
+      at = par('usr')[2L], adj = 1)
+
+tplot(x, g2, at = sort(unique(g2)))
+mtext(pvalr(cuzick.test(x, g2)$p.value, show.p = TRUE),
+      at = par('usr')[2L], adj = 1)
 
 }
 \references{
