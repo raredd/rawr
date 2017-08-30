@@ -4,11 +4,12 @@
 \alias{cuzick.test}
 \alias{cuzick.test.default}
 \alias{cuzick.test.formula}
-\title{Wilcoxon rank sum test for trend of ordered groups}
+\title{Wilcoxon rank-sum test for trend of ordered groups}
 \usage{
 cuzick.test(x, ...)
 
-\method{cuzick.test}{default}(x, g, details = wilcox.test, ...)
+\method{cuzick.test}{default}(x, g, details = wilcox.test, correct = TRUE,
+  ...)
 
 \method{cuzick.test}{formula}(formula, data, subset, na.action, ...)
 }
@@ -29,6 +30,9 @@ ordered as \code{sort(unique(g))}; see \code{\link{factor}}}
 \item{details}{\code{FALSE} or a function to compute comparisons between
 pairs of groups; see details}
 
+\item{correct}{logical; if \code{TRUE} (default), a correction is applied
+to the standard error of the test statistic}
+
 \item{formula}{a formula of the form \code{response ~ group} where
 \code{response} gives the data values and \code{group} a vector or factor
 of the corresponding groups}
@@ -47,7 +51,7 @@ data contain \code{NA}s; defaults to \code{getOption("na.action")}}
 A list with class "\code{htest}" containing the following components:
 
 \item{statistic}{the value of the test statistic with a name describing it}
-\item{p.value}{the p-value for the test (two-sided, corrected for ties)}
+\item{p.value}{the p-value for the test (two-sided, (un)corrected for ties)}
 \item{estimate}{the medians by group}
 \item{method}{a character string describing the test used}
 \item{data.name}{a character string giving the names of the data}
@@ -55,7 +59,7 @@ A list with class "\code{htest}" containing the following components:
 (\code{\link{kruskal.test}}) comparisons}
 }
 \description{
-An implementation of Cuzick's extension of the Wilcoxon rank sum test to
+An implementation of Cuzick's extension of the Wilcoxon rank-sum test to
 assess trend in data with three or more \emph{ordinal} groups.
 }
 \details{
@@ -83,11 +87,13 @@ the \pkg{\link[coin]{coin}} package will work; see examples.
 ## classified into three groups according to the amount of visible light
 ## transmitted
 
-x <- list(c(1.4, 1.4, 1.4, 1.6, 2.3, 2.3),
+x <- list(c(1.4, 1.4, 1.4, 1.6, 2.3, 2.5),
           c(0.9, 1.0, 1.1, 1.1, 1.2, 1.2,
             1.5, 1.9, 2.2, 2.6, 2.6, 2.6,
             2.8, 2.8, 3.2, 3.5, 4.3, 5.1),
           c(0.8, 1.7, 1.7, 1.7, 3.4, 7.1, 8.9, 13.5))
+cuzick.test(x, correct = FALSE)
+
 
 ## equivalent ways to call cuzick.test
 cuzick.test(x)
@@ -107,11 +113,13 @@ cuzick.test(x, details = coin::wilcox_test)$details
 ## increasing metastatic potential; number of lung metastases found in each
 ## mouse after inoculation
 
-x <- c(0, 0, 1, 1, 2, 2, 4, 9, 0, 0, 5, 7, 8, 11, 13, 23,
-       25, 97, 2, 3, 6, 9, 10, 11, 11, 12, 21, 0, 3, 5, 6,
-       10, 19, 56, 100, 132, 2, 4, 6, 6, 6, 7, 18, 39, 60)
-g <- rep(1:5, c(8,10,9,9,9))
-cuzick.test(x, g)
+x <- list(c(0, 0, 1, 1, 2, 2, 4, 9),
+           c(0, 0, 5, 7, 8, 11, 13, 23, 25, 97),
+           c(2, 3, 6, 9, 10, 11, 11, 12, 21),
+           c(0, 3, 5, 6, 10, 19, 56, 100, 132),
+           c(2, 4, 6, 6, 6, 7, 18, 39, 60))
+g <- rep(1:5, sapply(x, length))
+cuzick.test(unlist(x), g)$p.value / 2 ## one-sided
 
 
 ## coercing character group vector g to factor may have undesired order

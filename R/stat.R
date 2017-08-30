@@ -235,7 +235,7 @@ twocon <- function(n1, n2, r1, r, conf = 0.95, dp = 1) {
   if (n1 < 1 | n2 < 1 | r1 < 0 | r1 > n1 | r < 0 | r > n2 + 
       n1 | conf <= 0 | conf >= 1) 
     stop("invalid arguments")
-  alpha <- (1 - conf)/2
+  alpha <- (1 - conf) / 2
   x1 <- 0:n1
   x2 <- 0:n2
   u1 <- c(outer(x1[-(1:(r1 + 1))], x2, "+"))
@@ -247,21 +247,19 @@ twocon <- function(n1, n2, r1, r, conf = 0.95, dp = 1) {
   }
   n <- n1 + n2
   mle <- if (r > r1) 
-    r/n
-  else r/n1
+    r/n else r/n1
   mm <- c((0:r1)/n1, (r1 + 1):n/n)
-  ff <- function(p, x1, x2, u1, n1, n2, r1, mm, dbin2, mle) sum(dbin2(p, 
-                                                                      x1, x2, u1, n1, n2, r1) * mm) - mle
+  ff <- function(p, x1, x2, u1, n1, n2, r1, mm, dbin2, mle)
+    sum(dbin2(p, x1, x2, u1, n1, n2, r1) * mm) - mle
   pm <- if (r <= 0) 
     0
   else if (r >= n) 
     1
-  else uniroot(ff, c(1e-08, 1 - 1e-08), x1 = x1, x2 = x2, u1 = u1, 
+  else uniroot(ff, c(1e-08, 1 - 1e-08), x1 = x1, x2 = x2, u1 = u1,
                n1 = n1, n2 = n2, r1 = r1, mm = mm, dbin2 = dbin2, mle = mle)$root
   if (r1 >= r) {
     ube <- r/n1
-  }
-  else {
+  } else {
     aa <- dhyper((r1 + 1):r, n1, n2, r)
     ube <- sum(((r1 + 1):r) * aa)/(n1 * sum(aa))
   }
@@ -270,8 +268,8 @@ twocon <- function(n1, n2, r1, r, conf = 0.95, dp = 1) {
   else c(0:r1, (n1/n)^dp * ((r1 + 1):n))
   s1 <- mm >= r
   s2 <- mm <= r
-  ff2 <- function(p, x1, x2, u1, n1, n2, r1, s, dbin2, alpha) sum(dbin2(p, 
-                                                                        x1, x2, u1, n1, n2, r1)[s]) - alpha
+  ff2 <- function(p, x1, x2, u1, n1, n2, r1, s, dbin2, alpha)
+    sum(dbin2(p, x1, x2, u1, n1, n2, r1)[s]) - alpha
   pl <- if (r <= 0) 
     0
   else uniroot(ff2, c(1e-08, 1 - 1e-08), x1 = x1, x2 = x2, 
@@ -1131,9 +1129,9 @@ lm.beta <- function (x, weights = 1) {
   b * sx / sy * weights
 }
 
-#' Wilcoxon rank sum test for trend of ordered groups
+#' Wilcoxon rank-sum test for trend of ordered groups
 #' 
-#' An implementation of Cuzick's extension of the Wilcoxon rank sum test to
+#' An implementation of Cuzick's extension of the Wilcoxon rank-sum test to
 #' assess trend in data with three or more \emph{ordinal} groups.
 #' 
 #' Data are assumed to be from independent groups with a natural or
@@ -1164,6 +1162,8 @@ lm.beta <- function (x, weights = 1) {
 #' ordered as \code{sort(unique(g))}; see \code{\link{factor}}
 #' @param details \code{FALSE} or a function to compute comparisons between
 #' pairs of groups; see details
+#' @param correct logical; if \code{TRUE} (default), a correction is applied
+#' to the standard error of the test statistic
 #' @param formula a formula of the form \code{response ~ group} where
 #' \code{response} gives the data values and \code{group} a vector or factor
 #' of the corresponding groups
@@ -1181,7 +1181,7 @@ lm.beta <- function (x, weights = 1) {
 #' A list with class "\code{htest}" containing the following components:
 #' 
 #' \item{statistic}{the value of the test statistic with a name describing it}
-#' \item{p.value}{the p-value for the test (two-sided, corrected for ties)}
+#' \item{p.value}{the p-value for the test (two-sided, (un)corrected for ties)}
 #' \item{estimate}{the medians by group}
 #' \item{method}{a character string describing the test used}
 #' \item{data.name}{a character string giving the names of the data}
@@ -1207,11 +1207,13 @@ lm.beta <- function (x, weights = 1) {
 #' ## classified into three groups according to the amount of visible light
 #' ## transmitted
 #' 
-#' x <- list(c(1.4, 1.4, 1.4, 1.6, 2.3, 2.3),
+#' x <- list(c(1.4, 1.4, 1.4, 1.6, 2.3, 2.5),
 #'           c(0.9, 1.0, 1.1, 1.1, 1.2, 1.2,
 #'             1.5, 1.9, 2.2, 2.6, 2.6, 2.6,
 #'             2.8, 2.8, 3.2, 3.5, 4.3, 5.1),
 #'           c(0.8, 1.7, 1.7, 1.7, 3.4, 7.1, 8.9, 13.5))
+#' cuzick.test(x, correct = FALSE)
+#' 
 #' 
 #' ## equivalent ways to call cuzick.test
 #' cuzick.test(x)
@@ -1231,11 +1233,13 @@ lm.beta <- function (x, weights = 1) {
 #' ## increasing metastatic potential; number of lung metastases found in each
 #' ## mouse after inoculation
 #' 
-#' x <- c(0, 0, 1, 1, 2, 2, 4, 9, 0, 0, 5, 7, 8, 11, 13, 23,
-#'        25, 97, 2, 3, 6, 9, 10, 11, 11, 12, 21, 0, 3, 5, 6,
-#'        10, 19, 56, 100, 132, 2, 4, 6, 6, 6, 7, 18, 39, 60)
-#' g <- rep(1:5, c(8,10,9,9,9))
-#' cuzick.test(x, g)
+#' x <- list(c(0, 0, 1, 1, 2, 2, 4, 9),
+#'            c(0, 0, 5, 7, 8, 11, 13, 23, 25, 97),
+#'            c(2, 3, 6, 9, 10, 11, 11, 12, 21),
+#'            c(0, 3, 5, 6, 10, 19, 56, 100, 132),
+#'            c(2, 4, 6, 6, 6, 7, 18, 39, 60))
+#' g <- rep(1:5, sapply(x, length))
+#' cuzick.test(unlist(x), g)$p.value / 2 ## one-sided
 #' 
 #' 
 #' ## coercing character group vector g to factor may have undesired order
@@ -1271,7 +1275,8 @@ cuzick.test <- function(x, ...) UseMethod('cuzick.test')
 
 #' @rdname cuzick.test
 #' @export
-cuzick.test.default <- function(x, g, details = wilcox.test, ...) {
+cuzick.test.default <- function(x, g, details = wilcox.test,
+                                correct = TRUE, ...) {
   ## checks adapted from stats:::kruskal.test.default
   if (is.list(x)) {
     if (length(x) < 2L)
@@ -1330,7 +1335,7 @@ cuzick.test.default <- function(x, g, details = wilcox.test, ...) {
   
   ## sum of ranks of x for ith group; sum of weighted sum of ith group scores
   li <- as.numeric(li)
-  Ri <- tapply(rank(x), g, sum)
+  Ri <- c(tapply(rank(x), g, sum))
   L  <- sum(li * ni)
   
   ## T statistic, expected value, variance
@@ -1340,19 +1345,21 @@ cuzick.test.default <- function(x, g, details = wilcox.test, ...) {
   
   ## correction for ties
   ## tj: times each value of x appears; a: correction for se
-  tj <- ave(x, x, FUN = length)
+  tj <- c(tapply(x, x, length))
   a  <- sum(tj * (tj ** 2 - 1)) / (N * (N ** 2 - 1))
-  se_corrected   <- sqrt(1 - a) * sqrt(vT)
-  se_uncorrected <- sqrt(vT)
+  a  <- c(1, sqrt(1 - a))[correct + 1L]
   
-  ## corrected test statistic: (T - expected) / se
-  correct <- TRUE
-  z <- (T - eT) / c(se_uncorrected, se_corrected)[correct + 1L]
+  ## (un)corrected test statistic: (T - expected) / se
+  z  <- (T - eT) / (a * sqrt(vT))
 
-  estimate <- tapply(x, g, median)
+  estimate <- c(tapply(x, g, median))
   names(estimate) <- paste('median of', names(estimate))
-  method <- sprintf('Wilcoxon rank sum test for trend in %s ordered groups', ug)
-  pval   <- 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE))
+  method <- sprintf(
+    paste('Wilcoxon rank-sum test for trend in %s ordered groups',
+          '(%scorrected for ties)'),
+    ug, c('un', '')[correct + 1L]
+  )
+  pval <- 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE))
   
   ## pairwise details
   pw <- if (!identical(details, FALSE)) {
