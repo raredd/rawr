@@ -705,12 +705,18 @@ kmplot_data_ <- function(s, strata.lab) {
   stopifnot(inherits(s, 'survfit'))
   gr <- c(s$strata)
   ng <- max(length(gr), 1L)
+  
+  ## if conf.type = 'none', upper/lower
+  if (is.null(s$lower))
+    s <- c(s, list(lower = s$surv))
+  if (is.null(s$upper))
+    s <- c(s, list(upper = s$surv))
+  
   with(s, {
     data.frame(
       time = time, n.risk = n.risk, n.event = n.event,
-      survival = surv, std.err = std.err, lower = lower,
-      upper = upper, group = rep(strata.lab, gr),
-      order = rep(seq.int(ng), gr)
+      survival = surv, lower = lower, upper = upper,
+      group = rep(strata.lab, gr), order = rep(seq.int(ng), gr)
     )
   })
 }
