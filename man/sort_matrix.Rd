@@ -4,17 +4,22 @@
 \alias{sort_matrix}
 \title{Sort matrix}
 \usage{
-sort_matrix(m, margin = 1L, order)
+sort_matrix(m, margin = 1L, order, na.last = TRUE, index.return = FALSE)
 }
 \arguments{
-\item{m}{a matrix}
+\item{m}{a matrix, usually an integer matrix}
 
-\item{margin}{margin to sort by; default is to sort based on row values
-(\code{margin = 1}) but values by column may be used (\code{margin = 2})}
+\item{margin}{margin to sort by; default is to sort on row values
+(\code{margin = 1}); sort on column values using \code{margin = 2}}
 
 \item{order}{vector specifying all unique values of \code{m} in the
 desired order; if missing, the order will be the sorted unique values
 of \code{m}}
+
+\item{na.last}{logical; if \code{TRUE}, missing values are put last; if
+\code{FALSE}, they are put first; see \code{\link{order}}}
+
+\item{index.return}{logical; if \code{TRUE}, ordering indices are returned}
 }
 \description{
 Sort a matrix (or an object that can be coerced) by values in rows or
@@ -22,15 +27,19 @@ columns.
 }
 \examples{
 set.seed(1)
-(m <- matrix(rpois(5 * 10, 1), 5))
+m <- matrix(rpois(5 * 10, 1), 5)
 
 ## sort columns by decreasing row values
 sort_matrix(m)
 
+## return ordering vector
+o <- sort_matrix(m, index.return = TRUE)
+identical(sort_matrix(m), m[, o])
+
 ## sort rows by decreasing column values
 sort_matrix(m, 2)
 
-## sort 0s first followed by 3, 1, 2
-sort_matrix(m, order = c(0,3,1,2))
+## sort 0s first followed by 4,3,2,1
+sort_matrix(m, order = c(0, 4:1))
 
 }
