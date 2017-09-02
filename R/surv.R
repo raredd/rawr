@@ -433,7 +433,7 @@ kmplot <- function(s,
     if (median) {
       st <- ss$table
       st <- if (length(s$n) != 1L)
-        as.data.frame(st)[strata.order, ] else as.data.frame(t(st))
+        as.data.frame(st) else as.data.frame(t(st))
       tt <- do.call('sprintf', c(list(
         fmt = '%s (%s, %s)'),
         tail(lapply(st, roundr, digits = median.digits), 3L))
@@ -706,7 +706,7 @@ kmplot_data_ <- function(s, strata.lab) {
   gr <- c(s$strata)
   ng <- max(length(gr), 1L)
   
-  ## if conf.type = 'none', upper/lower
+  ## if conf.type = 'none', upper/lower defined as s$surv for plotting
   if (is.null(s$lower))
     s <- c(s, list(lower = s$surv))
   if (is.null(s$upper))
