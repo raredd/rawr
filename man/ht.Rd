@@ -22,8 +22,16 @@ object.
 ht(letters, 6, '...')
 ht(letters, -6)
 
-ht(mtcars)
-ht(mtcars, sep = '...')
-ht(mtcars, -6, sep = '...')
+
+mt <- cbind(mtcars, n = seq.int(nrow(mtcars)))
+
+## ends
+ht(mt)
+ht(mt, sep = '...')
+
+## middle
+ht(as.matrix(mt), -6)
+ht(mt, -6)
+ht(mt, -6, sep = '...')
 
 }

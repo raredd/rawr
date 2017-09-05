@@ -26,21 +26,34 @@
 #' ht(letters, 6, '...')
 #' ht(letters, -6)
 #' 
-#' ht(mtcars)
-#' ht(mtcars, sep = '...')
-#' ht(mtcars, -6, sep = '...')
+#' 
+#' mt <- cbind(mtcars, n = seq.int(nrow(mtcars)))
+#' 
+#' ## ends
+#' ht(mt)
+#' ht(mt, sep = '...')
+#' 
+#' ## middle
+#' ht(as.matrix(mt), -6)
+#' ht(mt, -6)
+#' ht(mt, -6, sep = '...')
 #' 
 #' @export
 
 ht <- function(x, n = 6L, sep = NULL) {
   pn <- abs(n) / 2
   FUN <- if (is.null(dim(x)))
-    function(...) setNames(c(...), NULL) else rbind
+    function(...) setNames(c(...), NULL) else 'rbind'
+  FUN <- match.fun(FUN)
+  
   if (n < 0L) {
-    idx <- cut(seq.int(NROW(x)), breaks = 2, labels = 1:2)
-    x <- split(x, idx)
-    FUN('   ' = sep, tail(x[[1]], pn), head(x[[2]], pn), '    ' = sep)
-  } else  FUN(head(x, pn), '   ' = sep, tail(x, pn))
+    idx <- cut(seq.int(NROW(x)), breaks = 2L, labels = 1:2)
+    x <- list(
+      x[idx %in% '1', , drop = FALSE],
+      x[idx %in% '2', , drop = FALSE]
+    )
+    FUN(' ' = sep, tail(x[[1L]], pn), head(x[[2L]], pn), '  ' = sep)
+  } else FUN(head(x, pn), ' ' = sep, tail(x, pn))
 }
 
 #' Progress function
