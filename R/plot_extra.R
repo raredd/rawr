@@ -1,6 +1,6 @@
 ### plot misc, extra, random
 # dodge, show_colors, show_pch, tcol, pretty_sci, oom, parse_sci, arrows2,
-# carrows, laxis, coords
+# carrows, laxis, coords, col_scaler
 # 
 # unexported:
 # dodge.formula, dodge.default, to_sci_
@@ -265,8 +265,9 @@ show_pch <- function(...) {
 #' and 255 (fully visible) to the color(s) given. \code{color} values are
 #' converted to RGB with transparency.
 #' 
-#' @param color vector of color names (or hexadecimal) as character strings
-#' or integers corresponding to colors in the current \code{\link{palette}}
+#' @param colors a vector of color names as character strings (or hexadecimal
+#' strings) or integers corresponding to colors in the current
+#' \code{\link{palette}}
 #' @param trans alpha transparency defined as an integer in the range
 #' \code{[0, 255]} where \code{0} is fully transparent and \code{255} is fully
 #' visible; see details
@@ -293,42 +294,48 @@ show_pch <- function(...) {
 #' 
 #' @export
 
-tcol <- function(color, trans = 255, alpha) {
-  stopifnot(trans %inside% c(0, 255) | is.na(trans))
+tcol <- function(colors, trans = NULL, alpha = NULL) {
+  trans <- trans %||% 255L
+  stopifnot(
+    trans %inside% c(0L, 255L) | is.na(trans)
+  )
   
   ## convert alpha to trans
-  if (!missing(alpha)) {
-    stopifnot(alpha %inside% 0:1 | is.na(alpha))
-    trans <- round(rescaler(alpha, to = c(0, 255), from = 0:1))
+  if (!is.null(alpha)) {
+    stopifnot(
+      alpha %inside% c(0, 1) | is.na(alpha)
+    )
+    trans <- as.integer(rescaler(alpha, to = c(0, 255), from = c(0, 1)))
   }
   
   ## get color and trans to conformable lengths
-  if (length(color) != length(trans) & 
-      !any(c(length(color), length(trans)) == 1L))
+  if (length(colors) != length(trans) & 
+      !any(c(length(colors), length(trans)) == 1L))
     stop('Vector lengths are not conformable')
-  if (length(color) == 1L & length(trans) > 1L)
-    color <- rep(color, length(trans))
-  if (length(trans) == 1L & length(color) > 1L)
-    trans <- rep(trans, length(color))
+  if (length(colors) == 1L & length(trans) > 1L)
+    colors <- rep_len(colors, length(trans))
+  if (length(trans) == 1L & length(colors) > 1L)
+    trans <- rep_len(trans, length(colors))
   
-  if (length(nocol <- which(color == 0))) {
-    color[nocol] <- 1
+  ## if color == 0, returns NA
+  if (length(nocol <- which(colors == 0))) {
+    colors[nocol] <- 1
     trans[nocol] <- NA
   }
   
-  res <- paste0('#', apply(apply(rbind(col2rgb(color)), 2, function(x)
+  res <- paste0('#', apply(apply(rbind(col2rgb(colors)), 2L, function(x)
     format(as.hexmode(x), width = 2L)), 2L, paste, collapse = ''))
   res <- Map(paste0, res, tryCatch(
     as.character(as.hexmode(trans)),
     error = function(e) '', warning = function(w) ''
   ))
-  res <- unlist(res)
+  res <- unname(unlist(res))
   
   ## return NAs and/or set color to transparent
-  res[is.na(color) | is.na(trans)] <- NA
-  res[color %in% 'transparent'] <- 'transparent'
+  res[is.na(colors) | is.na(trans)] <- NA
+  res[colors %in% 'transparent'] <- 'transparent'
   
-  unname(res)
+  res
 }
 
 #' Print scientific numbers
@@ -576,7 +583,6 @@ carrows <- function(p1, p2, arc, degree = FALSE, pad = 0.01 * 1:2,
                     ## arrows2
                     size = 1, width = size / 2, curve = 1, fill = col,
                     border = NA) {
-  
   code_ <- function(x) c(2L, 0L, 1L)[match(x, -1:1)]
   pad_  <- function(x, pad) rawr::ht(x, -length(x) * (1 - pad))
   
@@ -753,4 +759,79 @@ coords <- function(x = 0:1, y = x, to = 'user', line, side) {
       inner  = list(x = grconvertX(x, 'nic', to), y = grconvertY(y, 'nic', to)),
       device = list(x = grconvertX(x, 'ndc', to), y = grconvertY(y, 'ndc', to))
     )
+}
+
+#' Color scaling
+#' 
+#' Color scaling and interpolation. For a numeric vector and a single color,
+#' gradations of transparency is applied corresponding to each numeric value.
+#' For two or more, color interpolation is applied.
+#' 
+#' @param x a numeric or integer vector
+#' @param colors a vector of color names as character strings (or
+#' hexadecimal strings) or integers corresponding to colors in the current
+#' \code{\link{palette}}; or a function taking an integer argument that
+#' returns a vector of colors (e.g., \code{\link{colorRampPalette}} or
+#' \code{\link{rainbow}})
+#' 
+#' if only one color is given, the scaled value of \code{x} will determine
+#' the amount of transparency (default is from 0, fully-transparent to 1-
+#' fully opaque)
+#' @param alpha transparency applied to interpolated colors (i.e., if
+#' \code{colors} is not a single color)
+#' @param to,from output and input range, respectively; see
+#' \code{\link{rescaler}}
+#' 
+#' @return
+#' A character vector having the same length as \code{x} of hexadecimal color
+#' values.
+#' 
+#' @examples
+#' set.seed(1)
+#' x <- sort(runif(50, 0, 2))
+#' p <- function(y, c) {
+#'   points(seq_along(c), rep_len(y, length(c)),
+#'          col = c, pch = 16, cex = 5, xpd = NA)
+#' }
+#' 
+#' plot.new()
+#' plot.window(c(0, 50), c(-3, 3))
+#' p( 4, col_scaler(x, 'red'))
+#' p( 3, col_scaler(x, c('red', 'blue')))
+#' p( 2, col_scaler(x, c('red', 'blue'), to = c(.4, .8)))
+#' p( 1, col_scaler(round(x), c('red', 'blue'), alpha = 0.5))
+#' p( 0, col_scaler(x, 1:10))
+#' p(-1, col_scaler(round(x), 1:3))
+#' p(-2, col_scaler(x, 'heat.colors'))
+#' p(-3, col_scaler(x, rainbow, alpha = 0.1))
+#' p(-4, col_scaler(x, colorRampPalette(c('tomato', 'white', 'blue4'))))
+#' 
+#' @export
+
+col_scaler <- function(x, colors, alpha = 1, to = c(0, 1),
+                       from = range(x, na.rm = TRUE)) {
+  pals <- c('rainbow', paste0(c('heat', 'terrain', 'topo', 'cm'), '.colors'))
+  colors <- if (is.numeric(colors))
+    rep_len(palette(), max(colors, na.rm = TRUE))[as.integer(colors)]
+  else if (inherits(colors, 'function'))
+    colors
+  else if (colors[1L] %in% pals)
+    get(colors, mode = 'function')
+  else as.character(colors)
+  
+  if (is.character(colors) & length(colors) == 1L)
+    return(tcol(colors, alpha = rescaler(x, to, from)))
+  
+  n  <- 5000L
+  to <- to * n
+  x  <- rescaler(x, to, from)
+  x  <- as.integer(x) + 1L
+  
+  colors <- if (inherits(colors, 'function'))
+    colors(n + 1L)[x]
+  else colorRampPalette(colors)(n + 1L)[x]
+  
+  if (!all(alpha == 1))
+    tcol(colors, alpha = rep_len(alpha, length(colors)))
+  else tolower(colors)
 }
