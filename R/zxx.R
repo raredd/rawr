@@ -48,10 +48,14 @@ ht <- function(x, n = 6L, sep = NULL) {
   
   if (n < 0L) {
     idx <- cut(seq.int(NROW(x)), breaks = 2L, labels = 1:2)
-    x <- list(
-      x[idx %in% '1', , drop = FALSE],
-      x[idx %in% '2', , drop = FALSE]
+    x <- if (is.null(dim(x)))
+      list(x[idx %in% '1'], x[idx %in% '2'])
+    else
+      list(
+        x[idx %in% '1', , drop = FALSE],
+        x[idx %in% '2', , drop = FALSE]
     )
+    
     FUN(' ' = sep, tail(x[[1L]], pn), head(x[[2L]], pn), '  ' = sep)
   } else FUN(head(x, pn), ' ' = sep, tail(x, pn))
 }
@@ -175,7 +179,7 @@ progress <- function (value, max.value, textbar = FALSE) {
 #' with the recoded variables.
 #' 
 #' @seealso
-#' \code{\link{fill_df}}, \code{\link[car]{recode}},
+#' \code{\link{fill_df}}; \code{\link[car]{recode}};
 #' \code{\link{combine_levels}}
 #' 
 #' @examples
@@ -329,10 +333,12 @@ ident <- function(..., num.eq = TRUE, single.NA = TRUE, attrib.as.set = TRUE,
                   ignore.bytecode = TRUE, ignore.environment = FALSE) {
   if (length(l <- list(...)) < 2L)
     stop('must provide at least two objects')
+  
   l <- sapply(1:(length(l) - 1L), function(x)
     identical(l[x], l[x + 1L], num.eq = num.eq, single.NA = single.NA,
               attrib.as.set = attrib.as.set, ignore.bytecode = ignore.bytecode,
               ignore.environment = ignore.environment))
+  
   all(l)
 }
 
@@ -360,7 +366,7 @@ ident <- function(..., num.eq = TRUE, single.NA = TRUE, attrib.as.set = TRUE,
 #' with the objects that failed.
 #' 
 #' @seealso
-#' \code{\link{all.equal}}, \code{\link{ident}}, \code{\link{identical}}
+#' \code{\link{all.equal}}; \code{\link{ident}}; \code{\link{identical}}
 #' 
 #' @examples
 #' allequal(pi, 355/113, 22/7)
@@ -375,19 +381,21 @@ allequal <- function(..., tolerance = .Machine$double.eps ^ 0.5, scale = NULL,
                      all.names = TRUE, check.names = TRUE) {
   dots <- substitute(...())
   l <- setNames(list(...), dots)
+  
   if (length(l <- list(...)) < 2L)
     stop('must provide at least two objects')
-  l <- lapply(1:(length(l) - 1), function(x)
-    # do.call('all.equal', c(list(target = l[[x]], current = l[[x + 1]]),
-    #                        moreArgs)))
+  
+  l <- lapply(1:(length(l) - 1L), function(x)
     do.call('all.equal', list(
-      target = l[[x]], current = l[[x + 1]],
+      target = l[[x]], current = l[[x + 1L]],
       tolerance = tolerance, check.attributes = check.attributes,
       scale = scale, use.names = use.names, all.names = all.names))
   )
   trues <- c(TRUE, sapply(l, isTRUE))
-  trues[1] <- trues[2]
-  if (all(trues)) TRUE else dots[!trues]
+  trues[1L] <- trues[2L]
+  
+  if (all(trues))
+    TRUE else dots[!trues]
 }
 
 #' Search function for data frames
@@ -453,7 +461,7 @@ search_hist <- function (x, ...) {
                    finally = return(invisible(NULL)))
   lhist <- length(hist)
   if (is.numeric(x))
-    hist[lhist:(lhist - x + 1)]
+    hist[lhist:(lhist - x + 1L)]
   else if (is.character(x))
     grep(x, readLines('.Rhistory'), value = TRUE, ...)
 }
@@ -492,7 +500,7 @@ search_hist <- function (x, ...) {
 #' @export
 
 fapply <- function(X, FUN, ...) {
-  fn <- as.character(match.call()$FUN)[-1]
+  fn <- as.character(match.call()$FUN)[-1L]
   out <- sapply(FUN, mapply, X, ...)
   setNames(as.data.frame(out), fn)
 }
@@ -509,11 +517,14 @@ try_require <- function(package) {
   package <- ifelse(!is.character(substitute(package)),
                     as.character(substitute(package)), package)
   available <- suppressMessages(
-    suppressWarnings(sapply(package, require, quietly = TRUE,
-                            character.only = TRUE, warn.conflicts = FALSE)))
+    suppressWarnings(
+      sapply(package, require, quietly = TRUE,
+             character.only = TRUE, warn.conflicts = FALSE)
+    ))
   missing <- package[!available]
+  
   if (length(missing) > 0L)
-    stop(paste(package, collapse = ', '), ' package not found.', call. = FALSE)
+    stop(paste(package, collapse = ', '), ' package not found.')
 }
 
 #' List to file
@@ -546,11 +557,11 @@ try_require <- function(package) {
 #' @export
 
 list2file <- function(l, targetdir = getwd(), sep, ...) {
-  if (!is.list(l))
+  if (!islist(l))
     stop('\'l\' must be a list')
   if (is.null(names(l)) || any(is.na(names(l))))
     stop('all elements of \'l\' must be named')
-  if (any(sapply(l, class) %ni% c('data.frame','matrix')))
+  if (any(sapply(l, class) %ni% c('data.frame', 'matrix')))
     stop('all elements of \'l\' should be class \'matrix\' or \'data.frame\'')
   if (!file.exists(targetdir)) {
     message(sprintf('creating directory:\n%s', targetdir))
@@ -560,14 +571,13 @@ list2file <- function(l, targetdir = getwd(), sep, ...) {
   e <- new.env()
   list2env(l, envir = e)
   
-  if (missing(sep)) {
+  if (missing(sep))
     sapply(names(l), function(x)
       save(x, file = sprintf('%s/%s.rda', targetdir, x), ...))
-  } else
-    sapply(names(l), function(x)
-      write.table(get(x, envir = e), sep = sep, ...,
-                  file = sprintf('%s/%s.%s', targetdir, x,
-                                 ifelse(sep == ',', 'csv', 'dat'))))
+  else sapply(names(l), function(x)
+    write.table(get(x, envir = e), sep = sep, ...,
+                file = sprintf('%s/%s.%s', targetdir, x,
+                               ifelse(sep == ',', 'csv', 'dat'))))
   
   message(sprintf('NOTE: %s written to %s', iprint(names(l)), targetdir))
   
@@ -751,6 +761,7 @@ helpExtract_ <- function(FUN, ...) {
     tools::Rd2txt(getHelpFile(utils::help(FUN, ...)),
                   options = list(sectionIndent = 0))
   )
+  
   invisible(x)
 }
 
@@ -776,9 +787,10 @@ helpExtract_ <- function(FUN, ...) {
 Round <- function(x, target) {
   r.x <- round(x)
   diff.x <- r.x - x
-  if ((s <- sum(r.x)) == target) {
+  
+  if ((s <- sum(r.x)) == target)
     return(r.x)
-  } else if (s > target) {
+  else if (s > target) {
     select <- seq_along(x)[diff.x != 0]
     wh <- which.max(diff.x[select])
     x[select[wh]] <- r.x[select[wh]] - 1
@@ -799,12 +811,14 @@ Round <- function(x, target) {
 #' @param to nearest fraction or integer
 #' 
 #' @examples
-#' round_to(mtcars$mpg, 5)
-#' round_to(mtcars$mpg, .5)
+#' x <- 1:20 / 10
+#' round_to(x, 1)
+#' round_to(x, 0.5)
 #' 
 #' @export
 
-round_to <- function(x, to = 1) round(x / to) * to
+round_to <- function(x, to = 1)
+  round(x / to) * to
 
 #' Update R
 #' 
@@ -816,29 +830,33 @@ round_to <- function(x, to = 1) round(x / to) * to
 #' @param update logical; if \code{TRUE}, checks for available packages
 #' updates, downloads, and installs
 #' 
-#' @seealso \code{\link{update.packages}}
+#' @seealso
+#' \code{\link{update.packages}}
 #' 
 #' @export
 
 updateR <- function(update = TRUE) {
   path <- file.path(R.home(), '..', '..')
-  v <- tail(sort(list.files(path, pattern = '^\\d{1}.\\d{1}$')), 2)
-  if (!grepl(v[2], .libPaths()))
-    stop("A more recent version of R was found on your system\n")
-  if (file.exists(v_last <- sub(v[2], v[1], .libPaths()))) {
+  
+  v <- tail(sort(list.files(path, pattern = '^\\d{1}.\\d{1}$')), 2L)
+  if (!grepl(v[2L], .libPaths()))
+    stop('A more recent version of R was found on your system\n')
+  
+  if (file.exists(v_last <- sub(v[2L], v[1L], .libPaths()))) {
     pkg <- list.files(.libPaths())
     pkg <- setdiff(list.files(v_last), pkg)
-    if (length(pkg) > 0) {
+    if (length(pkg) > 0L) {
       cat(sprintf("Copying %s package%s to %s\n", length(pkg),
-                  ifelse(length(pkg) > 1, 's', ''), .libPaths()))
+                  ifelse(length(pkg) > 1L, 's', ''), .libPaths()))
       file.copy(file.path(v_last, pkg), .libPaths(), recursive = TRUE)
-    } else cat("No packages to copy\n")
+    } else cat('No packages to copy\n')
   }
+  
   if (update) {
-    if ((up <- table(packageStatus()$inst$Status)['upgrade']) > 0) {
-      cat(sprintf("Updating %s package%s\n", up, ifelse(up > 1, 's', '')))
+    if ((up <- table(packageStatus()$inst$Status)['upgrade']) > 0L) {
+      cat(sprintf('Updating %s package%s\n', up, ifelse(up > 1L, 's', '')))
       update.packages(ask = FALSE)
-    } else cat("All packages are up-to-date\n")
+    } else cat('All packages are up-to-date\n')
   }
 }
 
@@ -851,7 +869,7 @@ updateR <- function(update = TRUE) {
 #' @param ... additional arguments passed to \code{\link{read.table}}
 #' 
 #' @seealso
-#' \code{\link[psych]{read.clipboard}}, \code{\link{read.table}},
+#' \code{\link[psych]{read.clipboard}}; \code{\link{read.table}};
 #' \code{\link{read.fwf}}
 #' 
 #' @export
@@ -968,12 +986,12 @@ fill_df <- function(data, key, ids, fill, values) {
   if (length(whk <- which(nn %ni% names(key)))) {
     whk <- nn[whk]
     keep <- data[, whk, drop = FALSE]
-    data[, whk] <- list(NULL)
+    data[, whk] <- NULL
   } else keep <- NULL
   
   ## error checks
   nd <- names(data)
-  nad <- vapply(data, anyNA, logical(1))
+  nad <- vapply(data, anyNA, logical(1L))
   if (all(!nad))
     return(data)
   
@@ -987,12 +1005,14 @@ fill_df <- function(data, key, ids, fill, values) {
     fill <- nd[which(nad)]
     message('\'fill\': ', paste(fill, collapse = ', '), domain = NA)
     fill
-  } else if (is.numeric(fill)) nd[fill] else fill
+  } else if (is.numeric(fill))
+    nd[fill] else fill
   
   ## match current data rows with rows in key and fill NAs
   ok <- all(nad)
   nak <- if (ok)
     seq.int(nrow(data)) else do.call('paste0', c(key[, ids, drop = FALSE]))
+  
   dfk <- if (ok)
     seq.int(nrow(data)) else do.call('paste0', c(data[, ids, drop = FALSE]))
   mm <- match(dfk, nak)
@@ -1004,8 +1024,8 @@ fill_df <- function(data, key, ids, fill, values) {
   
   # data[do.call('order', as.list(data[, c(nnk, nnf)])), ]
   if (!is.null(keep))
-    cbind.data.frame(data, keep)[, nn, drop = FALSE] else
-      data[, nn, drop = FALSE]
+    cbind.data.frame(data, keep)[, nn, drop = FALSE]
+  else data[, nn, drop = FALSE]
 }
 
 #' Kinda sort
@@ -1071,7 +1091,7 @@ kinda_sort <- function(x, n, decreasing = FALSE, indices) {
 #' 
 #' @export
 
-rgene <- function(n = 1, alpha = LETTERS[1:5], nalpha = 2:5,
+rgene <- function(n = 1L, alpha = LETTERS[1:5], nalpha = 2:5,
                   num = 0:9, nnum = 1:5, sep = '-', seed = NULL) {
   ## helpers
   p0 <- function(...) paste0(..., collapse = '')
@@ -1170,6 +1190,7 @@ nestedMerge <- function(x, y) {
     nn <- setdiff(names(y), names(x))
     x <- c(x, setNames(vector('list', length(nn)), nn))
   }
+  
   nestedmerge(x, y)
 }
 
@@ -1216,7 +1237,7 @@ nestedmerge <- function(x, y) {
 #' 
 #' @param path file path as character string
 #' 
-#' @seealso \code{\link[rawr]{regcaptures}}, \code{\link{basename}},
+#' @seealso \code{\link[rawr]{regcaptures}}; \code{\link{basename}};
 #' \code{\link{dirname}}
 #' 
 #' @examples
@@ -1240,8 +1261,10 @@ path_extract <- function(path) {
   mm <- file.path(m[, 'dirname'],
                   paste(m[, 'filename'], m[, 'extension'],
                         sep = ifelse(nzchar(m[, 'extension']), '.', '')))
+  
   if (gsub('\\./', '', mm) != p || !nzchar(m[, 'filename']))
     warning('Results could not be validated', domain = NA)
+  
   m
 }
 
@@ -1255,17 +1278,19 @@ fname <- function(path) {
 
 #' @rdname path_extract
 #' @export
-file_name <- function(path) path_extract(path)[, 'filename']
+file_name <- function(path)
+  path_extract(path)[, 'filename']
 
 #' @rdname path_extract
 #' @export
-file_ext <- function(path) path_extract(path)[, 'extension']
+file_ext <- function(path)
+  path_extract(path)[, 'extension']
 
 #' @rdname path_extract
 #' @export
 rm_ext <- function(path)
-  gsub('(^\\.[^ .]+$|[^:\\/]*?[.$]?)(?:\\.([^ :\\/.]*))?$', '\\1', path,
-       perl = TRUE)
+  gsub('(^\\.[^ .]+$|[^:\\/]*?[.$]?)(?:\\.([^ :\\/.]*))?$',
+       '\\1', path, perl = TRUE)
 
 #' Multiple pattern matching and replacement
 #' 
@@ -1315,6 +1340,7 @@ NULL
 mgrep_ <- function(parallel, FUN, vlist, ...) {
   pattern <- vlist$pattern
   x <- vlist$x
+  
   if (parallel) {
     ## if parallel = TRUE or long vector x (>1e4), run in parallel
     requireNamespace('parallel')
@@ -1332,39 +1358,41 @@ mgrep_ <- function(parallel, FUN, vlist, ...) {
 
 #' @rdname mgrep
 #' @export
-mgrepl <- function(pattern, x, ..., parallel = length(pattern) > 1e4) {
+mgrepl <- function(pattern, x, ..., parallel = length(pattern) > 1e4)
   mgrep_(parallel = parallel, FUN = base::grepl, ...,
          vlist = list(pattern = pattern, x = x))
-}
 
 #' @rdname mgrep
 #' @export
-mgrep <- function(pattern, x, ..., parallel = length(pattern) > 1e4) {
+mgrep <- function(pattern, x, ..., parallel = length(pattern) > 1e4)
   mgrep_(parallel = parallel, FUN = base::grep, ...,
          vlist = list(pattern = pattern, x = x))
-}
 
 msub_ <- function(pattern, replacement, x, ..., FUN) {
   dots <- match.call(expand.dots = FALSE)$...
+  FUN  <- match.fun(FUN)
+  
   if (!missing(replacement))
     pattern <- as.list(data.frame(
       t(cbind(I(pattern), I(rep_len(replacement, length(pattern)))))))
   if (!is.list(pattern))
     pattern <- list(pattern)
+  
   sub2 <- function(l, x)
-    do.call(FUN, c(list(x = x, pattern = l[1], replacement = l[2]), dots))
+    do.call(FUN, c(list(x = x, pattern = l[1L], replacement = l[2L]), dots))
+  
   Reduce('sub2', pattern, x, right = TRUE)
 }
 
 #' @rdname mgrep
 #' @export
 msub <- function(pattern, replacement, x, ...)
-  msub_(pattern = pattern, replacement = replacement, x = x, ..., FUN = 'sub')
+  msub_(pattern, replacement, x, ..., FUN = 'sub')
 
 #' @rdname mgrep
 #' @export
 mgsub <- function(pattern, replacement, x, ...)
-  msub_(pattern = pattern, replacement = replacement, x = x, ..., FUN = 'gsub')
+  msub_(pattern, replacement, x, ..., FUN = 'gsub')
 
 #' Flatten lists
 #' 
@@ -1384,9 +1412,12 @@ mgsub <- function(pattern, replacement, x, ...)
 
 flatten <- function(l) {
   while (any(vapply(l, islist, NA))) {
-    l <- lapply(l, function(x) if (islist(x)) x else list(x))
+    l <- lapply(l, function(x)
+      if (islist(x))
+        x else list(x))
     l <- unlist(l, recursive = FALSE)
   }
+  
   l
 }
 
@@ -1408,21 +1439,25 @@ flatten <- function(l) {
 #' 
 #' @export
 
-tree <- function(path = '.', full.names = FALSE, ndirs = 5, nfiles = 5) {
+tree <- function(path = '.', full.names = FALSE, ndirs = 5L, nfiles = 5L) {
   ## helper
   tree_ <- function(path = '.', full.names, n) {
     isdir <- file.info(path)$isdir
-    if (!isdir) {
-      out <- if (full.names)
+    n <- as.integer(n)
+    
+    res <- if (!isdir) {
+      if (full.names)
         path else basename(path)
     } else {
       files <- list.files(path, full.names = TRUE, include.dirs = TRUE)
       isdir <- file.info(files)$isdir
-      files <- files[isdir | cumsum(!isdir) <= nfiles]
-      out <- lapply(files, tree_, full.names, nfiles)
-      names(out) <- basename(files)
+      files <- files[isdir | cumsum(!isdir) <= n]
+      res <- lapply(files, tree_, full.names, n)
+      names(res) <- basename(files)
+      res
     }
-    out
+    
+    res
   }
   
   path <- normalizePath(path, mustWork = TRUE)
@@ -1449,10 +1484,14 @@ tree <- function(path = '.', full.names = FALSE, ndirs = 5, nfiles = 5) {
 
 rm_null <- function(l, rm_list = TRUE) {
   isnull <- if (rm_list)
-    function(x) is.null(x) | all(vapply(x, is.null, logical(1))) else
-      function(x) is.null(x)
+    function(x) is.null(x) | all(vapply(x, is.null, logical(1L)))
+  else function(x) is.null(x)
+  
   x <- Filter(Negate(isnull), l)
-  lapply(x, function(x) if (is.list(x)) rm_null(x, rm_list) else x)
+  
+  lapply(x, function(x)
+    if (is.list(x))
+      rm_null(x, rm_list) else x)
 }
 
 #' Cumulative functions
@@ -1553,7 +1592,7 @@ NULL
 #' @export
 cum_reset <- function(x, value = 0L, FUN) {
   FUN <- match.fun(FUN)
-  idx <- c(0, head(cumsum(x %in% value), -1L))
+  idx <- c(0L, head(cumsum(x %in% value), -1L))
   unname(unlist(lapply(split(x, idx), FUN)))
 }
 
@@ -1633,7 +1672,7 @@ cum_mid <- function(x, adj = 0.5) {
 
 vgrep <- function(pattern, x) {
   vgrep_ <- function(pp, xx, acc = if (length(pp))
-    seq_along(xx) else integer()) {
+    seq_along(xx) else integer(0L)) {
     if (!length(pp))
       return(acc)
     Recall(pp[-1L], xx, acc[which(pp[[1L]] %==% xx[acc])] + 1L)
@@ -1645,12 +1684,13 @@ vgrep <- function(pattern, x) {
 #' @export
 
 vgrepl <- function(pattern, x) {
-  m <- vgrep(pattern, x)
+  m  <- vgrep(pattern, x)
   lp <- length(pattern)
   pp <- rep(FALSE, length(x))
+  
   if (!length(m))
-    integer() else lapply(m, function(y) {
-      pp[y:(y + lp - 1)] <- TRUE
+    integer(0L) else lapply(m, function(y) {
+      pp[y:(y + lp - 1L)] <- TRUE
       pp
     })
 }
@@ -1688,7 +1728,8 @@ justify <- function(string, width = getOption('width') - 10L,
                     fill = c('random', 'right', 'left')) {
   fill <- match.arg(fill)
   string <- gsub('\n', '\n\n', string, fixed = TRUE)
-  strs <- strwrap(string, width = width)
+  strs   <- strwrap(string, width = width)
+  
   paste(fill_spaces_(strs, width, fill), collapse = '\n')
 }
 
@@ -1697,10 +1738,11 @@ fill_spaces_ <- function(lines, width, fill) {
   res <- lapply(head(tokens, -1L), function(x) {
     nspace <- max(length(x) - 1L, 1L)
     extra <- width - sum(nchar(x)) - nspace
-    reps <- extra %/% nspace
+    reps  <- extra %/% nspace
     extra <- extra %% nspace
     times <- rep.int(if (reps > 0) reps + 1L else 1L, nspace)
-    if (extra > 0) {
+    
+    if (extra > 0L) {
       if (fill == 'right')
         times[1:extra] <- times[1:extra] + 1L
       else if (fill == 'left')
@@ -1708,12 +1750,15 @@ fill_spaces_ <- function(lines, width, fill) {
           times[(nspace - extra + 1L):nspace] + 1L
       else times[inds] <- times[(inds <- sample(nspace, extra))] + 1L
     }
+    
     spaces <- c('', unlist(lapply(times, formatC, x = ' ', digits = NULL)))
     out <- paste(c(rbind(spaces, x)), collapse = '')
+    
     if (sum(c(nchar(x), length(x), extra)) < width / 2)
       gsub('\\s{1,}', ' ', out) else out
   })
-  c(res, paste(tail(tokens, 1L)[[1]], collapse = ' '))
+  
+  c(res, paste(tail(tokens, 1L)[[1L]], collapse = ' '))
 }
 
 #' Find factors
@@ -1724,7 +1769,7 @@ fill_spaces_ <- function(lines, width, fill) {
 #' 
 #' @examples
 #' factors(21)
-#' factors(3 * 2^20)
+#' factors(3 * 2 ^ 20)
 #' factors(64, 128, 58)
 #' 
 #' @export
@@ -1757,26 +1802,27 @@ factors <- function(...) {
 #' 
 #' @examples
 #' x <- mtcars$gear
-#' X <- factor(x, 5:3)
 #' 
 #' sample_each(x)
-#' 
 #' mtcars[sample_each(x), ]
 #' 
-#' ## compare numeric vs factor vectors
-#' mtcars[sample_each(x, c(3,4,5)), ]
-#' mtcars[sample_each(X, c(3,4,5)), ]
+#' ## compare numeric vs factor vectors (see description above)
+#' X <- factor(x, 5:3)
+#' mtcars[sample_each(x, 3:5), ]
+#' mtcars[sample_each(X, 3:5), ]
 #' 
 #' @export
 
 sample_each <- function(x, n = 1L) {
-  x <- setNames(x, x)
+  x  <- setNames(x, x)
   lx <- table(x)
   nT <- setNames(rep_len(n, length(lx)), names(lx))
   nF <- lx - nT
-  x <- as.character(x)
+  x  <- as.character(x)
+  
   idx <- ave(x, x, FUN = function(xx)
-    sample(rep(0:1, c(nF[xx[1]], nT[xx[1]]))))
+    sample(rep(0:1, c(nF[xx[1L]], nT[xx[1L]]))))
+  
   !!as.numeric(idx)
 }
 
@@ -1827,7 +1873,7 @@ sample_each <- function(x, n = 1L) {
 #' @export
 
 pickcol <- function(data, ind = 1L, value = FALSE) {
-  res <- apply(data, 1, function(x) {
+  res <- apply(data, 1L, function(x) {
     if (value) {
       x[x %in% ind] <- NA
       if  (length(x <- x[!is.na(x)]) > 1L)
@@ -1864,4 +1910,5 @@ lunique <- function(x, na.rm = FALSE)
 #' 
 #' @export
 
-rm_nonascii <- function(x) gsub('[^\x20-\x7E]', '', x)
+rm_nonascii <- function(x)
+  gsub('[^\x20-\x7E]', '', x)

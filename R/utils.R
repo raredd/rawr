@@ -20,7 +20,8 @@
 
 
 ## is.list(data.frame()); islist(data.frame())
-islist <- function(x) inherits(x, 'list')
+islist <- function(x)
+  inherits(x, 'list')
 
 done <- function(type = c('notifier', 'beep')) {
   type <- match.arg(type)
@@ -44,7 +45,8 @@ where <- function(x, env = parent.frame()) {
     env else Recall(x, parent.env(env))
 }
 
-dots <- function(...) eval(substitute(alist(...)))
+dots <- function(...)
+  eval(substitute(alist(...)))
 
 #' rawr operators
 #' 
@@ -458,8 +460,8 @@ psum <- function(..., na.rm = FALSE) {
 
 #' Rescale numeric vector
 #' 
-#' Rescale a numeric vector to have specified maximum and minimum; shamelessly
-#' stolen from hadley's \code{scales} package.
+#' Rescale a numeric vector to have specified maximum and minimum; modified
+#' from the \pkg{scales} package.
 #' 
 #' @param x numeric vector of values
 #' @param to output range (numeric vector of length two)
@@ -471,7 +473,7 @@ psum <- function(..., na.rm = FALSE) {
 #' 
 #' @examples
 #' rescaler(1:100)
-#' rescaler(runif(10))
+#' rescaler(runif(10), c(0.5, 1))
 #' rescaler(1)
 #' 
 #' @export

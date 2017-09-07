@@ -21,15 +21,14 @@ Sample each unique value of a vector.
 }
 \examples{
 x <- mtcars$gear
-X <- factor(x, 5:3)
 
 sample_each(x)
-
 mtcars[sample_each(x), ]
 
-## compare numeric vs factor vectors
-mtcars[sample_each(x, c(3,4,5)), ]
-mtcars[sample_each(X, c(3,4,5)), ]
+## compare numeric vs factor vectors (see description above)
+X <- factor(x, 5:3)
+mtcars[sample_each(x, 3:5), ]
+mtcars[sample_each(X, 3:5), ]
 
 }
 \seealso{

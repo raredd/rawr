@@ -4,7 +4,7 @@
 \alias{tree}
 \title{tree}
 \usage{
-tree(path = ".", full.names = FALSE, ndirs = 5, nfiles = 5)
+tree(path = ".", full.names = FALSE, ndirs = 5L, nfiles = 5L)
 }
 \arguments{
 \item{path}{file name path as character string}

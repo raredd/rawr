@@ -53,6 +53,6 @@ setNames(lapply(l, file_ext), l)
 
 }
 \seealso{
-\code{\link[rawr]{regcaptures}}, \code{\link{basename}},
+\code{\link[rawr]{regcaptures}}; \code{\link{basename}};
 \code{\link{dirname}}
 }

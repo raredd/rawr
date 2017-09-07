@@ -15,7 +15,8 @@ round_to(x, to = 1)
 Round numerics to nearest multiple of \code{to}.
 }
 \examples{
-round_to(mtcars$mpg, 5)
-round_to(mtcars$mpg, .5)
+x <- 1:20 / 10
+round_to(x, 1)
+round_to(x, 0.5)
 
 }

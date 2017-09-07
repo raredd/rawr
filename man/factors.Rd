@@ -14,7 +14,7 @@ Find common factors of two or more integers.
 }
 \examples{
 factors(21)
-factors(3 * 2^20)
+factors(3 * 2 ^ 20)
 factors(64, 128, 58)
 
 }
