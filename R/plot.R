@@ -1,5 +1,6 @@
 ### plot functions
-# jmplot, tplot, dsplot, waffle, river, river2, dose_esc, plothc, waterfall
+# jmplot, tplot, dsplot, waffle, river, river2, dose_esc, plothc, waterfall,
+# heatmap.3
 ###
 
 
@@ -1578,12 +1579,13 @@ dose_esc <- function(dose, col.dose, nstep = 3, dose.exp, col.exp,
     if (is.null(dose.exp))
       NULL else {
         warning('\'dose.exp\' given without \'exp.col\'', domain = NA)
-        rep(NA, length(dose.exp) + 1)
+        rep(NA, length(dose.exp) + 1L)
       }
   } else c(NA, col.exp)
   
   n <- sum(nlevel)
-  N <- n + if (!is.null(dose.exp)) length(dose.exp) else 0
+  N <- n + if (!is.null(dose.exp))
+    length(dose.exp) else 0
   y <- c(dose, dose.exp)
   x <- seq.int(N) + c(0, cumsum(diff(y) * 0.1))
   col <- c(col.dose, col.exp)
@@ -1592,34 +1594,35 @@ dose_esc <- function(dose, col.dose, nstep = 3, dose.exp, col.exp,
                     (cumsum(rep(nstep, length(y))) + 1)) * 0.1
   pls_idx <- which(!diff(y) > 0 & diff(x) > 1 | y[-length(y)] == 0L)
   pls_idx <- pls_idx[pls_idx <= n + 1]
-  x <- rawr::rescaler(x, c(1, max(x) - squish)) - 1 / squish
-  pls <- sapply(Map(`:`, pls_idx, pls_idx + 1L),
-                function(ii) mean(x[ii]))
+  x <- rescaler(x, c(1, max(x) - squish)) - 1 / squish
+  pls <- sapply(Map(`:`, pls_idx, pls_idx + 1L), function(ii)
+    mean(x[ii]))
   arr_idx <- which(diff(y) > 0) + 1L
-  arr <- roll_fun(x, 2, mean)[arr_idx[arr_idx <= n]]
+  arr <- roll_fun(x, 2L, mean)[arr_idx[arr_idx <= n]]
   
   plot.new()
   plot.window(xl <- xlim %||% c(0, max(x)),
               yl <- ylim %||% c(0, max(y) + 1))
   p <- par('usr')
-  arrows2(c(0,0), c(0,0), c(0, max(xl)), c(max(yl), 0), lwd = 3,
+  arrows2(c(0, 0), c(0, 0), c(0, max(xl)), c(max(yl), 0), lwd = 3,
           size = 0.5, width = 0.5)
-  axis(2, seq_along(ylab), ylab, las = 1L, lwd = 0, mgp = c(0,0,0))
-  text(p[2], 0, pos = 1, xlab, xpd = NA, font = 2L)
-  text(0, p[4], pos = 2, ylab, xpd = NA, font = 2L)
+  axis(2L, seq_along(ylab), ylab, las = 1L, lwd = 0, mgp = c(0, 0, 0))
+  text(p[2L], 0, pos = 1L, xlab, xpd = NA, font = 2L)
+  text(0, p[4L], pos = 2L, ylab, xpd = NA, font = 2L)
   
-  points(x, y, pch = 16, col = col, cex = 3.5, xpd = NA)
+  points(x, y, pch = 16L, col = col, cex = 3.5, xpd = NA)
   points(pls, y[pls_idx + 1L], pch = '+', cex = 1.5, xpd = NA)
   arrows2(arr, seq_along(arr) + 0.2, arr, seq_along(arr) + 0.8,
-          size = 0.5, width = 0.5, lwd = 4, curve = 1.2, sadj = c(0,0,0,-.1))
+          size = 0.5, width = 0.5, lwd = 4, curve = 1.2,
+          sadj = c(0, 0, 0, -.1))
   
   if (!is.null(dose.exp))
     if (diff(y[wh <- which(y == 0L) + c(-1, 1)]) < 0) {
-      carrows(c(x[wh[1]], y[wh[1]]), c(x[wh[1]] * 1.01, y[wh[2]]), col = 2,
-              size = .5, arc = pi / 3 * c(-1, 1), lwd = 4, width = 0.7,
-              dir = c(1,0), pad = c(.1, .3))
+      carrows(c(x[wh[1L]], y[wh[1L]]), c(x[wh[1L]] * 1.01, y[wh[2L]]),
+              col = 2L, size = .5, arc = pi / 3 * c(-1, 1), lwd = 4,
+              width = 0.7, dir = c(1, 0), pad = c(.1, .3))
     } else arrows2(mean(x[wh[1:2]]), max(dose.exp), mean(x[wh[1:2]]),
-                   size = 0.7, width = 1, lwd = 4, col = 3, curve = 1.3)
+                   size = 0.7, width = 1, lwd = 4, col = 3L, curve = 1.3)
   
   invisible(list(x, y, col, arr, pls))
 }
@@ -1683,6 +1686,7 @@ plothc <- function(hc, labels = hc$labels, col = as.factor(labels),
   plot(hc, labels = FALSE, hang = hang, ...)
   text(x, y, labels = labels[o], col = col[o],
        srt = 90, xpd = NA, adj = c(1, 0.5))
+  
   invisible(list(x = x[ox], y = y))
 }
 
@@ -1788,6 +1792,671 @@ waterfall <- function(x, type = 1L, col = c('red','blue'), ...,
   if (arrows)
     arrows(bp, y0, bp, y1, lwd = 2, length = .1, xpd = NA, col = 0L)
   panel.last
+  
+  invisible(res)
+}
+
+#' Enhanced heat map
+#' 
+#' @description
+#' A heat map is a false color image (basically \code{image(t(x))}) with a
+#' \code{\link{dendrogram}} added to the left side and to the top. Typically,
+#' reordering of the rows and columns according to some set of values (row or
+#' column means) within the restrictions imposed by the dendrogram is carried
+#' out.
+#' 
+#' Some improvements in this version over \code{\link{heatmap}} or
+#' \code{\link[gplots]{heatmap.2}} include better defaults; more control of
+#' the layout, spacing, and margins; built-in \code{1-correlation}
+#' distances; automatic color interpolation used in the heat map; optional
+#' multiple vertical and horizontal color bars; a smoother interpolation in
+#' the color key; and other improvements.
+#' 
+#' @param x a numeric matrix of the values to be plotted
+#' @param Rowv,Colv logical or a \code{\link{dendrogram}} controlling the
+#' order and dendrogram along the rows and columns, respectively; for other
+#' options, see \code{\link{heatmap}}
+#' @param distfun a function used to compute the distance (dissimilarity)
+#' between both rows and columns (default is \code{\link{dist}} with Euclidean
+#' distance); alternatively, any of the \code{method}s can be passed as a
+#' character string; \code{"spearman"} or \code{"pearson"} may also be used
+#' which will calculate the distance as \code{1 - cor(x)}
+#' @param hclustfun a function used to compute the hierarchical clustering
+#' when \code{Rowv} or \code{Colv} are \emph{not} dendrograms; default is
+#' \code{\link{hclust}}; should take as argument a result of \code{distfun}
+#' and return an object to which \code{\link{as.dendrogram}} can be applied
+#' @param symm logical; if \code{TRUE} and \code{x} is a square matrix,
+#' \code{x} is treated \strong{symm}etrically
+#' @param scale character indicating if \code{x} should be centered and
+#' scaled in either the row or column direction or neither; default is none
+#' @param na.rm logical; if \code{TRUE}, \code{NA}s are removed
+#' @param revC logical; if \code{TRUE}, the column order is reversed for
+#' plotting, e.g., for the symmetric case, the symmetry axis is as usual
+#' @param add.expr an \code{\link{expression}} evaluated after the call to
+#' \code{\link{image}}, useful for adding components to the plot
+#' @param breaks (optional) either a numeric vector indicating the splitting
+#' points for binning \code{x} into colors, or an integer number of break
+#' points to be used; for the latter, the break points will be spaced equally
+#' between \code{min(x)} and \code{max(x)}
+#' @param symbreaks logical; if \code{TRUE}, breaks are made symmetric about
+#' 0; default is \code{TRUE} if \code{x} contains negative values and
+#' \code{FALSE} otherwise
+#' @param cols a vector of character strings of two or more colors used for
+#' interpolation and passed to \code{\link{image}}; alternatively a function
+#' such as \code{\link{heat.colors}} taking an integer argument and returning
+#' a vector of colors
+#' @param colsep,rowsep,sepcolor,sepwidth (optional) vector of integers
+#' indicating which columns or rows should be separated from the preceding
+#' columns or rows by a narrow space of \code{sepcolor}; widths of space
+#' between is given by \code{sepwidth}
+#' @param cellnote (optional) a matrix having the same dimensions as \code{x}
+#' with text to be plotted in each cell
+#' @param notecex,notecol size and color for \code{cellnote}
+#' @param na.color color used for \code{NA} values; defaults to background
+#' color \code{par('bg')}
+#' @param trace character string indicating whether a solid "trace" line
+#' should be drawn across rows or down columns; the distance of the line from
+#' the center of each color-cell is proportional to the size of the
+#' measurement; one of \code{"row"}, \code{"column"}, \code{"both"}, or
+#' \code{"none"} (default)
+#' @param tracecol color for \code{trace} line
+#' @param hline,vline,linecol a vector of values within cells where a
+#' horizontal or vertical dotted line should be drawn; the color of the line
+#' is controlled by \code{linecol} (default is \code{tracecol})
+#' 
+#' horizontal lines are only plotted if \code{trace} is "row" or "both";
+#' vertical lines are only drawn if \code{trace} "column" or "both"; both
+#' \code{hline} and \code{vline} default to the median of the \code{breaks}
+#' @param margins numeric vector of length 2 controlling the margins for
+#' column and row names, respectively
+#' @param dmargins numeric vector of length 2 controlling the margins for
+#' column and row dendrograms, respectively; useful for "squishing"
+#' @param ColSideColors,RowSideColors (optional) character vector or matrix
+#' with color names for horizontal or vertical side bars useful for annotating
+#' columns and/or rows of \code{x}
+#' @param ColSideColorsSize,RowSideColorsSize numeric value controlling the
+#' sizes of the horizontal and vertical side bars, respectively
+#' @param side.height.fraction scaling factor for height and width of bars
+#' @param labRow,labCol row and column labels; defaults to row and column
+#' names of \code{x}
+#' @param cexRow,cexCol size for row and column labels
+#' @param key logical; if \code{TRUE}, a color key is drawn
+#' @param key.cex numeric value controlling the size of the color key
+#' @param key.title,key.sub main and sub titles for the color key
+#' @param density.info character string indicating whether to supermipose a
+#' "histogram" or a "density" plot on the color key; default is "none"
+#' @param denscol color for \code{density.info}; default is \code{tracecol}
+#' @param symkey logical; if \code{TRUE}, color key will be symmetric about
+#' 0; default is \code{TRUE} if \code{x} contains negative values and
+#' \code{FALSE} otherwise
+#' @param densadj numeric scaling value for tuning the kernel width when a
+#' density plot is drawn on the color key; see the \code{adjust} parameter
+#' in \code{\link{density}}; default is 0.25
+#' @param main,xlab,ylab main, x-, and y-axis labels
+#' @param lmat,lhei,lwid (optional) arguments for controlling \strong{l}ayout
+#' \strong{hei}ghts and \code{wid}ths, passed to \code{\link{layout}}
+#' @param reset_par logical; if \code{TRUE}, resets \code{\link{par}} settings
+#' to state before function call; setting \code{reset_par = FALSE} is useful
+#' for adding to a heatmap
+#' @param ... additional arguments passed to \code{\link{image}}
+#' 
+#' @seealso
+#' \code{\link{heatmap}}; \code{\link[gplots]{heatmap.2}}; \code{\link{image}};
+#' \code{\link{dendrogram}}; \code{\link{dist}}; \code{\link{hclust}}
+#' 
+#' @examples
+#' set.seed(1)
+#' x <- matrix(rnorm(1000), 50)
+#' 
+#' heatmap.3(x)
+#' heatmap.3(x, cols = 'heat.colors')
+#' heatmap.3(x, cols = c('blue4', 'grey95', 'tomato'))
+#' 
+#' heatmap.3(x, distfun = dist)        ## default ('euclidean')
+#' heatmap.3(x, distfun = 'euclidean') ## passed to dist
+#' heatmap.3(x, distfun = 'manhattan') ## same
+#' heatmap.3(x, distfun = 'spearman')  ## calculated 1 - cor
+#' heatmap.3(x, distfun = 'pearson')   ## same
+#' 
+#' 
+#' ## example from ?stats::heatmap
+#' x <- as.matrix(mtcars)
+#' rc <- rainbow(nrow(x), start = 0, end = .3)
+#' cc <- rainbow(ncol(x), start = 0, end = .3)
+#' 
+#' hm <- heatmap.3(
+#'   x, cols = cm.colors(256), scale = 'column',
+#'   RowSideColors = rc, ColSideColors = cc, margins = c(5, 10)
+#' )
+#' str(hm) ## the two re-ordering index vectors
+#' 
+#' 
+#' ## multiple variables for row and/or column colors
+#' rc <- cbind(gear = x[, 'gear'], am = x[, 'am'], vs = x[, 'vs'])
+#' rc[] <- palette()[rc + 2L]
+#' 
+#' cc <- rbind(var1 = nchar(colnames(x)), var2 = nchar(sort(colnames(x))))
+#' cc[] <- palette()[cc]
+#' 
+#' hm <- heatmap.3(
+#'   x, scale = 'column',
+#'   distfun = 'spearman', hclustfun = 'ward.D2',
+#'   RowSideColors = rc, ColSideColors = cc
+#' )
+#' 
+#' ## layout control
+#' hm$layout
+#' 
+#' heatmap.3(
+#'   ## same as above
+#'   x, scale = 'column',
+#'   distfun = 'spearman', hclustfun = 'ward.D2',
+#'   RowSideColors = rc, ColSideColors = cc,
+#'   
+#'   ## less "squish" of dendrograms
+#'   dmargins = c(2, 2),
+#'   
+#'   ## more room for heat map in layout
+#'   key = FALSE, margins = c(3, 8),
+#'   
+#'   ## fine control over layout heights and widths
+#'   lhei = c(7, 2, 30),
+#'   lwid = c(5, 1, 30)
+#' )
+#' 
+#' @export
+
+heatmap.3 <- function(x,
+                      
+                      ## dendrogram
+                      Rowv = TRUE, Colv = if (symm) 'Rowv' else TRUE,
+                      distfun = dist, hclustfun = hclust, symm = FALSE,
+                      
+                      ## data scaling
+                      scale = c('none', 'row', 'column'), na.rm = TRUE,
+                      
+                      ## image plot
+                      revC = identical(Colv, 'Rowv'), add.expr = NULL,
+                      
+                      ## mapping data to colors
+                      breaks = NULL,
+                      symbreaks = max(x < 0, na.rm = TRUE) || scale != 'none',
+                      cols = c('red', 'white', 'blue'),
+                      
+                      ## block separation
+                      colsep = NULL, rowsep = NULL,
+                      sepcolor = 'white', sepwidth = c(0.05, 0.05),
+                      
+                      ## cell labeling
+                      cellnote = NULL, notecex = 1,
+                      notecol = 'cyan', na.color = par('bg'),
+                      
+                      ## level trace
+                      trace = c('none', 'column', 'row', 'both'),
+                      tracecol = 'cyan',
+                      hline = median(breaks), vline = median(breaks),
+                      linecol = tracecol,
+                      
+                      ## row/column labeling
+                      margins = c(5, 5), dmargins = c(5, 5),
+                      ColSideColors = NULL, RowSideColors = NULL,
+                      ColSideColorsSize = 1, RowSideColorsSize = 1,
+                      side.height.fraction = 0.3,
+                      labRow = NULL, labCol = NULL,
+                      cexRow = 0.2 + 1 / log10(nr),
+                      cexCol = 0.2 + 1 / log10(nc),
+                      
+                      ## color key and density info
+                      key = TRUE, key.cex = 1.5,
+                      key.title = if (density.info %in% c('density', 'histogram'))
+                        NULL else 'Color Key', key.sub = NULL,
+                      density.info = c('none', 'histogram', 'density'),
+                      denscol = tracecol,
+                      symkey = max(x < 0, na.rm = TRUE) || symbreaks,
+                      densadj = 0.25,
+                      
+                      ## plot labels
+                      main = NULL, xlab = NULL, ylab = NULL,
+                      
+                      ## plot layout
+                      lmat = NULL, lhei = NULL, lwid = NULL,
+                      
+                      reset_par = TRUE, ...) {
+  invalid <- function (x) {
+    if (missing(x) || is.null(x) || length(x) == 0L)
+      return(TRUE)
+    if (is.list(x))
+      all(sapply(x, invalid))
+    else if (is.vector(x))
+      all(is.na(x))
+    else FALSE
+  }
+  scale01 <- function(x, low = min(x), high = max(x))
+    (x - low) / (high - low)
+  plot.null <- function() {
+    # op <- par(mar = c(0,0,0,0), oma = c(0,0,0,0), new = TRUE)
+    op <- par(mar = c(0,0,0,0))
+    on.exit(par(op))
+    plot.new()
+  }
+  
+  if (is.character(distfun)) {
+    dmethod <- match.arg(distfun, c('euclidean', 'maximum', 'manhattan',
+                                    'canberra',  'binary',  'minkowski',
+                                    'spearman',  'pearson'))
+    if (dmethod %in% c('spearman', 'pearson'))
+      distfun <- function(x)
+        # as.dist(1 - abs(cor(t(x), method = dmethod)))
+        as.dist(1 - cor(t(x), method = dmethod))
+    else {
+      distfun <- dist
+      formals(distfun)$method <- dmethod
+    }
+  }
+  
+  if (is.character(hclustfun)) {
+    hmethod   <- hclustfun
+    hclustfun <- hclust
+    formals(hclustfun)$method <- hmethod
+  }
+  
+  x <- as.matrix(x)
+  scale <- if (symm && missing(scale))
+    'none' else match.arg(scale)
+  trace <- match.arg(trace)
+  density.info <- match.arg(density.info)
+  
+  if (is.character(cols))
+    cols <- if (length(cols) == 1L)
+      get(cols, mode = 'function') else colorRampPalette(cols)
+  if (!missing(breaks) && (scale != 'none'))
+    warning('Using scale = \'row\' or scale = \'column\' when breaks are ',
+            'specified can produce unpredictable results - use only one')
+  
+  if (is.null(Rowv) || is.na(Rowv))
+    Rowv <- FALSE
+  if (is.null(Colv) || is.na(Colv))
+    Colv <- FALSE
+  else if (Colv == 'Rowv' && !isTRUE(Rowv))
+    Colv <- FALSE
+  if (length(di <- dim(x)) != 2L || !is.numeric(x))
+    stop('\'x\' must be a numeric matrix')
+  
+  nr <- di[1L]
+  nc <- di[2L]
+  if (nr <= 1L || nc <= 1L)
+    stop('\'x\' must have at least 2 rows and 2 columns')
+  if (!is.numeric(margins) || length(margins) != 2L)
+    stop('\'margins\' must be a numeric vector of length 2')
+  if (is.null(cellnote))
+    cellnote <- matrix('', nrow(x), ncol(x))
+  
+  if (inherits(Rowv, 'dendrogram')) {
+    ddr <- Rowv
+    rowInd <- order.dendrogram(ddr)
+  } else if (is.integer(Rowv)) {
+    hcr <- hclustfun(distfun(x))
+    ddr <- as.dendrogram(hcr)
+    ddr <- reorder(ddr, Rowv)
+    rowInd <- order.dendrogram(ddr)
+    if (nr != length(rowInd))
+      stop('Row dendrogram ordering gave index of wrong length')
+  } else if (isTRUE(Rowv)) {
+    Rowv <- rowMeans(x, na.rm = na.rm)
+    hcr <- hclustfun(distfun(x))
+    ddr <- as.dendrogram(hcr)
+    ddr <- reorder(ddr, Rowv)
+    Rowv <- TRUE
+    rowInd <- order.dendrogram(ddr)
+    if (nr != length(rowInd))
+      stop('Row dendrogram ordering gave index of wrong length')
+  } else rowInd <- rev(seq.int(nr))
+  
+  if (inherits(Colv, 'dendrogram')) {
+    ddc <- Colv
+    colInd <- order.dendrogram(ddc)
+  } else if (identical(Colv, 'Rowv')) {
+    if (nr != nc)
+      stop('Colv == Rowv but nrow(x) != ncol(x)')
+    if (exists('ddr')) {
+      ddc <- ddr
+      colInd <- order.dendrogram(ddc)
+    } else colInd <- rowInd
+  } else if (is.integer(Colv)) {
+    hcc <- hclustfun(distfun(if (symm) x else t(x)))
+    ddc <- as.dendrogram(hcc)
+    ddc <- reorder(ddc, Colv)
+    colInd <- order.dendrogram(ddc)
+    if (nc != length(colInd))
+      stop('Column dendrogram ordering gave index of wrong length')
+  } else if (isTRUE(Colv)) {
+    Colv <- colMeans(x, na.rm = na.rm)
+    hcc <- hclustfun(distfun(if (symm) x else t(x)))
+    ddc <- as.dendrogram(hcc)
+    ddc <- reorder(ddc, Colv)
+    Colv <- TRUE
+    colInd <- order.dendrogram(ddc)
+    if (nc != length(colInd))
+      stop('column dendrogram ordering gave index of wrong length')
+  } else colInd <- seq.int(nc)
+  
+  res <- list()
+  res$call   <- match.call()
+  res$rowInd <- rowInd
+  res$colInd <- colInd
+  x <- x[rowInd, colInd]
+  x.unscaled <- x
+  cellnote <- cellnote[rowInd, colInd]
+  
+  ## row/col labels
+  labRow <- if (is.null(labRow)) {
+    if (is.null(rownames(x)))
+      seq.int(nr)[rowInd] else rownames(x)
+  } else labRow[rowInd]
+  labCol <- if (is.null(labCol)) {
+    if (is.null(colnames(x)))
+      seq.int(nc)[colInd] else colnames(x)
+  } else labCol[colInd]
+  
+  ## scaling
+  if (scale == 'row') {
+    res$rowMeans <- rm <- rowMeans(x, na.rm = na.rm)
+    x <- sweep(x, 1L, rm)
+    res$rowSDs <- sx <- apply(x, 1L, sd, na.rm = na.rm)
+    x <- sweep(x, 1L, sx, '/')
+  } else if (scale == 'column') {
+    res$colMeans <- rm <- colMeans(x, na.rm = na.rm)
+    x <- sweep(x, 2L, rm)
+    res$colSDs <- sx <- apply(x, 2L, sd, na.rm = na.rm)
+    x <- sweep(x, 2L, sx, '/')
+  }
+  
+  ## breaks
+  if (is.null(breaks) || length(breaks) < 1L)
+    breaks <- if (missing(cols) || is.function(cols))
+      16L else length(cols) + 1L
+  if (length(breaks) == 1L) {
+    breaks <- if (!symbreaks)
+      seq(min(x, na.rm = na.rm), max(x, na.rm = na.rm), length.out = breaks)
+    else {
+      extreme <- max(abs(x), na.rm = TRUE)
+      seq(-extreme, extreme, length.out = breaks)
+    }
+  }
+  
+  nbr  <- length(breaks)
+  ncol <- length(breaks) - 1L
+  
+  if (inherits(cols, 'function'))
+    cols <- cols(ncol)
+  min.breaks <- min(breaks)
+  max.breaks <- max(breaks)
+  
+  x[x < min.breaks] <- min.breaks
+  x[x > max.breaks] <- max.breaks
+  
+  if (identical(RowSideColors, FALSE))
+    RowSideColors <- NULL
+  RowSideColors <- if (!is.null(RowSideColors) & !is.matrix(RowSideColors))
+    matrix(RowSideColors, ncol = nr)
+  else if (is.null(RowSideColors)) NULL else t(RowSideColors)
+  
+  if (identical(ColSideColors, FALSE))
+    ColSideColors <- NULL
+  ColSideColors <- if (!is.null(ColSideColors) & !is.matrix(ColSideColors))
+    matrix(ColSideColors, nrow = nc)
+  else if (is.null(ColSideColors)) NULL else t(ColSideColors)
+  
+  if (is.null(lhei))
+    lhei <- c(key.cex, side.height.fraction * ColSideColorsSize / 2, 4)
+  if (is.null(lwid))
+    lwid <- c(key.cex, side.height.fraction * RowSideColorsSize / 2, 4)
+  
+  cscm <- rscm <- TRUE
+  if (is.null(lmat)) {
+    lmat <- matrix(c(6,0,4, 0,0,2, 5,3,1), 3L)
+    
+    if (is.null(ColSideColors)) {
+      cscm <- FALSE
+      ColSideColors <- matrix(0, nc, 1L)
+      lhei[2L] <- 0.01
+    } else if (nrow(ColSideColors) != nc)
+      stop(sprintf('\'ColSideColors\' must be an n x %s matrix', nc))
+    
+    if (is.null(RowSideColors)) {
+      rscm <- FALSE
+      RowSideColors <- matrix(0, 1L, nr)
+      lwid[2L] <- 0.01
+    } else if (ncol(RowSideColors) != nr)
+        stop(sprintf('\'RowSideColors\' must be a %s x n matrix', nr))
+  }
+  
+  stopifnot(
+    length(lwid) == 3L,
+    length(lhei) == 3L,
+    dim(lmat) == c(3L, 3L)
+  )
+  
+  # op <- par(mar = c(0,0,0,0), no.readonly = TRUE)
+  op <- par(no.readonly = TRUE)
+  if (reset_par)
+    on.exit(par(op))
+  
+  layout(lmat, widths = lwid, heights = lhei, respect = FALSE)
+  
+  par(mar = c(margins[1L], 0, 0, margins[2L]))
+  x <- t(x)
+  cellnote <- t(cellnote)
+  if (revC) {
+    iy <- rev(seq.int(nr))
+    if (exists('ddr'))
+      ddr <- rev(ddr)
+    x <- x[, iy]
+    cellnote <- cellnote[, iy]
+  } else iy <- seq.int(nr)
+  
+  ## 1 - main image
+  image(seq.int(nc), seq.int(nr), x,
+        xlim = 0.5 + c(0, nc), ylim = 0.5 + c(0, nr),
+        axes = FALSE, xlab = '', ylab = '',
+        col = cols, breaks = breaks, ...)
+  res$carpet <- x
+  
+  if (exists('ddr'))
+    res$rowDendrogram <- ddr
+  if (exists('ddc'))
+    res$colDendrogram <- ddc
+  res$breaks <- breaks
+  res$cols   <- cols
+  
+  if (!invalid(na.color) & any(is.na(x))) {
+    mmat <- ifelse(is.na(x), 1, NA)
+    image(seq.int(nc), seq.int(nr),
+          mmat, axes = FALSE, xlab = '', ylab = '',
+          col = na.color, add = TRUE)
+  }
+  axis(1L, seq.int(nc), labels = labCol, las = 2L,
+       line = -0.5, tick = 0, cex.axis = cexCol)
+  if (!is.null(xlab))
+    mtext(side = 1L, xlab, line = margins[1L] - 1.25)
+  axis(4L, iy, labels = labRow, las = 2L,
+       line = -0.5, tick = 0, cex.axis = cexRow)
+  if (!is.null(ylab))
+    mtext(side = 4L, ylab, line = margins[2L] - 1.25)
+  
+  eval(substitute(add.expr))
+  
+  if (!is.null(colsep))
+    for (csep in colsep)
+      rect(csep + 0.5, rep(0, length(csep)),
+           csep + 0.5 + sepwidth[1], rep(ncol(x) + 1L, csep),
+           lty = 1L, lwd = 1, col = sepcolor, border = sepcolor)
+  if (!is.null(rowsep))
+    for (rsep in rowsep)
+      rect(0, (ncol(x) + 1L - rsep) - 0.5,
+           nrow(x) + 1L, (ncol(x) + 1L - rsep) - 0.5 - sepwidth[2L],
+           lty = 1L, lwd = 1, col = sepcolor, border = sepcolor)
+  
+  min.scale <- min(breaks)
+  max.scale <- max(breaks)
+  x.scaled  <- scale01(t(x), min.scale, max.scale)
+  
+  if (trace %in% c('both', 'column')) {
+    res$vline <- vline
+    vline.vals <- scale01(vline, min.scale, max.scale)
+    
+    for (i in colInd) {
+      if (!is.null(vline))
+        abline(v = i - 0.5 + vline.vals, col = linecol, lty = 2L)
+      xv <- rep(i, nrow(x.scaled)) + x.scaled[, i] - 0.5
+      xv <- c(xv[1L], xv)
+      yv <- seq.int(length(xv)) - 0.5
+      lines(xv, yv, lwd = 1, col = tracecol, type = 's')
+    }
+  }
+  
+  if (trace %in% c('both', 'row')) {
+    res$hline <- hline
+    hline.vals <- scale01(hline, min.scale, max.scale)
+    
+    for (i in rowInd) {
+      if (!is.null(hline))
+        abline(h = i + hline, col = linecol, lty = 2L)
+      yv <- rep(i, ncol(x.scaled)) + x.scaled[i, ] - 0.5
+      yv <- rev(c(yv[1L], yv))
+      xv <- rev(seq.int(length(yv))) - 0.5
+      lines(xv, yv, lwd = 1, col = tracecol, type = 's')
+    }
+  }
+  
+  if (!is.null(cellnote))
+    text(c(row(cellnote)), c(col(cellnote)), labels = c(cellnote),
+         col = notecol, cex = notecex)
+  
+  ## 2 - matrix of colors on left
+  if (!is.null(RowSideColors)) {
+    rsc <- t(RowSideColors[, rowInd, drop = FALSE])
+    rsc.colors <- matrix()
+    rsc.names <- names(table(rsc))
+    
+    rsc.i <- 1L
+    for (rsc.name in rsc.names) {
+      rsc.colors[rsc.i] <- rsc.name
+      rsc[rsc == rsc.name] <- rsc.i
+      rsc.i <- rsc.i + 1L
+    }
+    
+    rsc <- matrix(as.numeric(rsc), nrow(rsc))
+    if (rscm) {
+      par(mar = c(margins[1L], 0, 0, 0.5))
+      image(t(rsc), col = as.vector(rsc.colors), axes = FALSE)
+      
+      if (length(rownames(RowSideColors)))
+        axis(1L, 0:(ncol(rsc) - 1L) / max(1, (ncol(rsc) - 1L)),
+             rownames(RowSideColors), las = 2L, tick = FALSE)
+    } else plot.null()
+  }
+  
+  ## 3 - matrix of colors on top
+  if (!is.null(ColSideColors)) {
+    csc <- ColSideColors[colInd, , drop = FALSE]
+    csc.colors <- matrix()
+    csc.names <- names(table(csc))
+    
+    csc.i <- 1L
+    for (csc.name in csc.names) {
+      csc.colors[csc.i] <- csc.name
+      csc[csc == csc.name] <- csc.i
+      csc.i <- csc.i + 1L
+    }
+    
+    csc <- matrix(as.numeric(csc), nrow = nrow(csc))
+    if (cscm) {
+      par(mar = c(0.5, 0, 0, margins[2L]))
+      image(csc, col = as.vector(csc.colors), axes = FALSE)
+      
+      if (length(colnames(ColSideColors)))
+        axis(2L, 0:(ncol(csc) - 1L) / max(1, (ncol(csc) - 1L)),
+             colnames(ColSideColors), las = 2L, tick = FALSE)
+    } else plot.null()
+  }
+  
+  ## 4 - row dendrogram
+  if (Rowv) {
+    par(mar = c(margins[1L], dmargins[1L], 0, 0))
+    plot(ddr, horiz = TRUE, axes = FALSE, yaxs = 'i', leaflab = 'none')
+  } else plot.null()
+  
+  ## 5 - col dendrogram
+  if (Colv) {
+    par(mar = c(0, 0, (if (!is.null(main)) 1 else 0) +
+                  dmargins[2L], margins[2L]))
+    plot(ddc, axes = FALSE, xaxs = 'i', leaflab = 'none')
+  } else plot.null()
+  
+  if (!is.null(main))
+    title(main, cex.main = 1.5 * op[['cex.main']])
+  
+  ## 6 - color key
+  if (key) {
+    par(mar = c(5, 4, 2, 1), cex = 0.75)
+    tmpbreaks <- breaks
+    
+    if (symkey) {
+      max.raw <- max(abs(c(x, breaks)), na.rm = TRUE)
+      min.raw <- -max.raw
+      tmpbreaks[1L] <- -max(abs(x), na.rm = TRUE)
+      tmpbreaks[length(tmpbreaks)] <- max(abs(x), na.rm = TRUE)
+    } else {
+      min.raw <- min(x, na.rm = TRUE)
+      max.raw <- max(x, na.rm = TRUE)
+    }
+    
+    z <- seq(min.raw, max.raw, length.out = 1000L)
+    image(z = matrix(z, ncol = 1L), col = col_scaler(z, cols),
+          xaxt = 'n', yaxt = 'n')
+    
+    par(usr = c(0, 1, 0, 1))
+    lv <- pretty(breaks)
+    xv <- scale01(as.numeric(lv), min.raw, max.raw)
+    axis(1L, at = xv, labels = lv)
+    
+    if (scale == 'row')
+      mtext(side = 1L, key.sub %||% 'Row Z-Score', line = 2)
+    else if (scale == 'column')
+      mtext(side = 1L, key.sub %||% 'Column Z-Score', line = 2)
+    else mtext(side = 1L, key.sub %||% 'Value', line = 2)
+    
+    if (density.info == 'density') {
+      dens <- density(x, adjust = densadj, na.rm = TRUE)
+      omit <- dens$x < min(breaks) | dens$x > max(breaks)
+      dens$x <- dens$x[-omit]
+      dens$y <- dens$y[-omit]
+      dens$x <- scale01(dens$x, min.raw, max.raw)
+      
+      lines(dens$x, dens$y / max(dens$y) * 0.95, col = denscol, lwd = 1)
+      axis(2L, pretty(dens$y) / max(dens$y) * 0.95, pretty(dens$y))
+      title(key.title %||% 'Color Key\nand Density Plot')
+      mtext(side = 2L, 'Density', line = 2, cex = 0.5)
+      
+    } else if (density.info == 'histogram') {
+      h  <- hist(x, plot = FALSE, breaks = breaks)
+      hx <- scale01(breaks, min.raw, max.raw)
+      hy <- c(h$counts, h$counts[length(h$counts)])
+      
+      lines(hx, hy / max(hy) * 0.95, lwd = 1, type = 's', col = denscol)
+      axis(2L, pretty(hy) / max(hy) * 0.95, pretty(hy))
+      title(key.title %||% 'Color Key\nand Histogram')
+      mtext(side = 2L, 'Count', line = 2, cex = 0.5)
+    } else title(key.title %||% 'Color Key')
+    
+  } else plot.null()
+  
+  res$colorTable <- data.frame(
+    low  = res$breaks[-length(res$breaks)],
+    high = res$breaks[-1L], color = res$cols
+  )
+  res$layout <- list(lmat = lmat, lhei = lhei, lwid = lwid)
   
   invisible(res)
 }
