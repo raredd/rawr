@@ -1895,18 +1895,15 @@ waterfall <- function(x, type = 1L, col = c('red','blue'), ...,
 #' @param main,xlab,ylab main, x-, and y-axis labels
 #' @param lmat,lhei,lwid (optional) arguments for controlling \strong{l}ayout
 #' \strong{hei}ghts and \code{wid}ths, passed to \code{\link{layout}}
-#' @param reset_par logical; if \code{TRUE}, resets \code{\link{par}} settings
-#' to state before function call; setting \code{reset_par = FALSE} is useful
-#' for adding to a heatmap
-#' @param ... additional arguments passed to \code{\link{image}}
+#' @param ... additional arguments passed to \code{\link{image}} or further
+#' to \code{\link{plot}}
 #' 
 #' @seealso
 #' \code{\link{heatmap}}; \code{\link[gplots]{heatmap.2}}; \code{\link{image}};
 #' \code{\link{dendrogram}}; \code{\link{dist}}; \code{\link{hclust}}
 #' 
 #' @examples
-#' set.seed(1)
-#' x <- matrix(rnorm(1000), 50)
+#' x <- scale(as.matrix(mtcars))
 #' 
 #' heatmap.3(x)
 #' heatmap.3(x, cols = 'heat.colors')
@@ -1941,8 +1938,10 @@ waterfall <- function(x, type = 1L, col = c('red','blue'), ...,
 #' hm <- heatmap.3(
 #'   x, scale = 'column',
 #'   distfun = 'spearman', hclustfun = 'ward.D2',
-#'   RowSideColors = rc, ColSideColors = cc
+#'   RowSideColors = rc, ColSideColors = cc,
+#'   colsep = c(2, 6), rowsep = c(9, 14, 21), sepwidth = c(5, 2)
 #' )
+#' 
 #' 
 #' ## layout control
 #' hm$layout
@@ -1961,7 +1960,9 @@ waterfall <- function(x, type = 1L, col = c('red','blue'), ...,
 #'   
 #'   ## fine control over layout heights and widths
 #'   lhei = c(7, 2, 30),
-#'   lwid = c(5, 1, 30)
+#'   lwid = c(5, 1, 30),
+#'   
+#'   cellnote = x
 #' )
 #' 
 #' @export
@@ -1985,7 +1986,7 @@ heatmap.3 <- function(x,
                       
                       ## block separation
                       colsep = NULL, rowsep = NULL,
-                      sepcolor = 'white', sepwidth = c(0.05, 0.05),
+                      sepcolor = 'white', sepwidth = c(1, 1),
                       
                       ## cell labeling
                       cellnote = NULL, notecex = 1,
@@ -2021,7 +2022,7 @@ heatmap.3 <- function(x,
                       ## plot layout
                       lmat = NULL, lhei = NULL, lwid = NULL,
                       
-                      reset_par = TRUE, ...) {
+                      ...) {
   invalid <- function (x) {
     if (missing(x) || is.null(x) || length(x) == 0L)
       return(TRUE)
@@ -2079,17 +2080,17 @@ heatmap.3 <- function(x,
     Colv <- FALSE
   else if (Colv == 'Rowv' && !isTRUE(Rowv))
     Colv <- FALSE
-  if (length(di <- dim(x)) != 2L || !is.numeric(x))
+  if (length(dim(x)) != 2L || !is.numeric(x))
     stop('\'x\' must be a numeric matrix')
   
-  nr <- di[1L]
-  nc <- di[2L]
+  nr <- nrow(x)
+  nc <- ncol(x)
   if (nr <= 1L || nc <= 1L)
     stop('\'x\' must have at least 2 rows and 2 columns')
   if (!is.numeric(margins) || length(margins) != 2L)
     stop('\'margins\' must be a numeric vector of length 2')
   if (is.null(cellnote))
-    cellnote <- matrix('', nrow(x), ncol(x))
+    cellnote <- matrix(NA, nrow(x), ncol(x))
   
   if (inherits(Rowv, 'dendrogram')) {
     ddr <- Rowv
@@ -2148,7 +2149,7 @@ heatmap.3 <- function(x,
   x.unscaled <- x
   cellnote <- cellnote[rowInd, colInd]
   
-  ## row/col labels
+  ## row/column labels
   labRow <- if (is.null(labRow)) {
     if (is.null(rownames(x)))
       seq.int(nr)[rowInd] else rownames(x)
@@ -2214,21 +2215,22 @@ heatmap.3 <- function(x,
   
   cscm <- rscm <- TRUE
   if (is.null(lmat)) {
-    lmat <- matrix(c(6,0,4, 0,0,2, 5,3,1), 3L)
+    # lmat <- matrix(c(6,0,4, 0,0,2, 5,3,1), 3L)
+    lmat <- matrix(c(6,0,4, 0,0,1, 5,2,3), 3L)
     
     if (is.null(ColSideColors)) {
       cscm <- FALSE
-      ColSideColors <- matrix(0, nc, 1L)
+      ColSideColors <- matrix(0L, nc, 1L)
       lhei[2L] <- 0.01
     } else if (nrow(ColSideColors) != nc)
-      stop(sprintf('\'ColSideColors\' must be an n x %s matrix', nc))
+      stop(sprintf('\'ColSideColors\' must be a %s x %s matrix', nr, nc))
     
     if (is.null(RowSideColors)) {
       rscm <- FALSE
-      RowSideColors <- matrix(0, 1L, nr)
+      RowSideColors <- matrix(0L, 1L, nr)
       lwid[2L] <- 0.01
     } else if (ncol(RowSideColors) != nr)
-        stop(sprintf('\'RowSideColors\' must be a %s x n matrix', nr))
+      stop(sprintf('\'RowSideColors\' must be a %s x %s matrix', nr, nc))
   }
   
   stopifnot(
@@ -2240,14 +2242,43 @@ heatmap.3 <- function(x,
   dev.hold()
   on.exit(dev.flush())
   
-  # op <- par(mar = c(0,0,0,0), no.readonly = TRUE)
-  op <- par(no.readonly = TRUE)
-  if (reset_par)
-    on.exit(par(op), add = TRUE)
-  
   layout(lmat, widths = lwid, heights = lhei, respect = FALSE)
   
-  par(mar = c(margins[1L], 0, 0, margins[2L]))
+  ## 1 - matrix of colors on left
+  if (!is.null(RowSideColors)) {
+    rsc <- t(RowSideColors[, rowInd, drop = FALSE])
+    rsc[] <- rf <- factor(rsc)
+    class(rsc) <- 'integer'
+    
+    if (rscm) {
+      par(mar = c(margins[1L], 0, 0, 0.5))
+      image(t(rsc), col = levels(rf), axes = FALSE)
+      
+      if (length(rownames(RowSideColors)))
+        axis(1L, 0:(ncol(rsc) - 1L) / max(1, (ncol(rsc) - 1L)),
+             rownames(RowSideColors), las = 2L, tick = FALSE)
+    } else plot.null()
+  }
+  
+  
+  ## 2 - matrix of colors on top
+  if (!is.null(ColSideColors)) {
+    csc <- ColSideColors[colInd, , drop = FALSE]
+    csc[] <- cf <- factor(csc)
+    class(csc) <- 'integer'
+    
+    if (cscm) {
+      par(mar = c(0.5, 0, 0, margins[2L]))
+      image(csc, col = levels(cf), axes = FALSE)
+      
+      if (length(colnames(ColSideColors)))
+        axis(2L, 0:(ncol(csc) - 1L) / max(1, (ncol(csc) - 1L)),
+             colnames(ColSideColors), las = 2L, tick = FALSE)
+    } else plot.null()
+  }
+  
+  
+  ## 3 - main image, text, labels
   x <- t(x)
   cellnote <- t(cellnote)
   if (revC) {
@@ -2258,7 +2289,7 @@ heatmap.3 <- function(x,
     cellnote <- cellnote[, iy]
   } else iy <- seq.int(nr)
   
-  ## 1 - main image
+  par(mar = c(margins[1L], 0, 0, margins[2L]))
   image(seq.int(nc), seq.int(nr), x,
         xlim = 0.5 + c(0, nc), ylim = 0.5 + c(0, nr),
         axes = FALSE, xlab = '', ylab = '',
@@ -2278,6 +2309,16 @@ heatmap.3 <- function(x,
           mmat, axes = FALSE, xlab = '', ylab = '',
           col = na.color, add = TRUE)
   }
+  
+  ## rowsep and colsep on top of matrix and bars
+  sepwidth <- rep_len(sepwidth, 2L)
+  if (!is.null(colsep))
+    abline(v = colsep + 0.5,
+           col = sepcolor, lwd = sepwidth[1L], xpd = NA)
+  if (!is.null(rowsep))
+    abline(h = nr - rowsep + 0.5,
+           col = sepcolor, lwd = sepwidth[2L], xpd = NA)
+  
   axis(1L, seq.int(nc), labels = labCol, las = 2L,
        line = -0.5, tick = 0, cex.axis = cexCol)
   if (!is.null(xlab))
@@ -2289,100 +2330,42 @@ heatmap.3 <- function(x,
   
   eval(substitute(add.expr))
   
-  if (!is.null(colsep))
-    for (csep in colsep)
-      rect(csep + 0.5, rep(0, length(csep)),
-           csep + 0.5 + sepwidth[1], rep(ncol(x) + 1L, csep),
-           lty = 1L, lwd = 1, col = sepcolor, border = sepcolor)
-  if (!is.null(rowsep))
-    for (rsep in rowsep)
-      rect(0, (ncol(x) + 1L - rsep) - 0.5,
-           nrow(x) + 1L, (ncol(x) + 1L - rsep) - 0.5 - sepwidth[2L],
-           lty = 1L, lwd = 1, col = sepcolor, border = sepcolor)
-  
   min.scale <- min(breaks)
   max.scale <- max(breaks)
   x.scaled  <- scale01(t(x), min.scale, max.scale)
   
   if (trace %in% c('both', 'column')) {
-    res$vline <- vline
+    res$vline  <- vline
     vline.vals <- scale01(vline, min.scale, max.scale)
     
     for (i in colInd) {
       if (!is.null(vline))
         abline(v = i - 0.5 + vline.vals, col = linecol, lty = 2L)
-      xv <- rep(i, nrow(x.scaled)) + x.scaled[, i] - 0.5
+      xv <- rep_len(i, nrow(x.scaled)) + x.scaled[, i] - 0.5
       xv <- c(xv[1L], xv)
-      yv <- seq.int(length(xv)) - 0.5
+      yv <- seq_along(xv) - 0.5
       lines(xv, yv, lwd = 1, col = tracecol, type = 's')
     }
   }
   
   if (trace %in% c('both', 'row')) {
-    res$hline <- hline
+    res$hline  <- hline
     hline.vals <- scale01(hline, min.scale, max.scale)
     
     for (i in rowInd) {
       if (!is.null(hline))
         abline(h = i + hline, col = linecol, lty = 2L)
-      yv <- rep(i, ncol(x.scaled)) + x.scaled[i, ] - 0.5
+      yv <- rep_len(i, ncol(x.scaled)) + x.scaled[i, ] - 0.5
       yv <- rev(c(yv[1L], yv))
-      xv <- rev(seq.int(length(yv))) - 0.5
+      xv <- rev(seq_along(yv)) - 0.5
       lines(xv, yv, lwd = 1, col = tracecol, type = 's')
     }
   }
   
-  if (!is.null(cellnote))
+  if (!all(is.na(cellnote)))
     text(c(row(cellnote)), c(col(cellnote)), labels = c(cellnote),
          col = notecol, cex = notecex)
   
-  ## 2 - matrix of colors on left
-  if (!is.null(RowSideColors)) {
-    rsc <- t(RowSideColors[, rowInd, drop = FALSE])
-    rsc.colors <- matrix()
-    rsc.names <- names(table(rsc))
-    
-    rsc.i <- 1L
-    for (rsc.name in rsc.names) {
-      rsc.colors[rsc.i] <- rsc.name
-      rsc[rsc == rsc.name] <- rsc.i
-      rsc.i <- rsc.i + 1L
-    }
-    
-    rsc <- matrix(as.numeric(rsc), nrow(rsc))
-    if (rscm) {
-      par(mar = c(margins[1L], 0, 0, 0.5))
-      image(t(rsc), col = as.vector(rsc.colors), axes = FALSE)
-      
-      if (length(rownames(RowSideColors)))
-        axis(1L, 0:(ncol(rsc) - 1L) / max(1, (ncol(rsc) - 1L)),
-             rownames(RowSideColors), las = 2L, tick = FALSE)
-    } else plot.null()
-  }
-  
-  ## 3 - matrix of colors on top
-  if (!is.null(ColSideColors)) {
-    csc <- ColSideColors[colInd, , drop = FALSE]
-    csc.colors <- matrix()
-    csc.names <- names(table(csc))
-    
-    csc.i <- 1L
-    for (csc.name in csc.names) {
-      csc.colors[csc.i] <- csc.name
-      csc[csc == csc.name] <- csc.i
-      csc.i <- csc.i + 1L
-    }
-    
-    csc <- matrix(as.numeric(csc), nrow = nrow(csc))
-    if (cscm) {
-      par(mar = c(0.5, 0, 0, margins[2L]))
-      image(csc, col = as.vector(csc.colors), axes = FALSE)
-      
-      if (length(colnames(ColSideColors)))
-        axis(2L, 0:(ncol(csc) - 1L) / max(1, (ncol(csc) - 1L)),
-             colnames(ColSideColors), las = 2L, tick = FALSE)
-    } else plot.null()
-  }
   
   ## 4 - row dendrogram
   if (Rowv) {
@@ -2390,7 +2373,8 @@ heatmap.3 <- function(x,
     plot(ddr, horiz = TRUE, axes = FALSE, yaxs = 'i', leaflab = 'none')
   } else plot.null()
   
-  ## 5 - col dendrogram
+  
+  ## 5 - column dendrogram
   if (Colv) {
     par(mar = c(0, 0, (if (!is.null(main)) 1 else 0) +
                   dmargins[2L], margins[2L]))
@@ -2399,6 +2383,7 @@ heatmap.3 <- function(x,
   
   if (!is.null(main))
     title(main, cex.main = 1.5 * op[['cex.main']])
+  
   
   ## 6 - color key
   if (key) {
@@ -2459,6 +2444,10 @@ heatmap.3 <- function(x,
     low  = res$breaks[-length(res$breaks)],
     high = res$breaks[-1L], color = res$cols
   )
+  attr(lmat, 'key') <-
+    paste(1:6, c('row color', 'col color', 'matrix',
+                 'row dend', 'col dend', 'key'),
+          sep = ': ')
   res$layout <- list(lmat = lmat, lhei = lhei, lwid = lwid)
   
   invisible(res)

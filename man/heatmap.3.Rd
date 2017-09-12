@@ -9,7 +9,7 @@ heatmap.3(x, Rowv = TRUE, Colv = if (symm) "Rowv" else TRUE,
   "row", "column"), na.rm = TRUE, revC = identical(Colv, "Rowv"),
   add.expr = NULL, breaks = NULL, symbreaks = max(x < 0, na.rm = TRUE) ||
   scale != "none", cols = c("red", "white", "blue"), colsep = NULL,
-  rowsep = NULL, sepcolor = "white", sepwidth = c(0.05, 0.05),
+  rowsep = NULL, sepcolor = "white", sepwidth = c(1, 1),
   cellnote = NULL, notecex = 1, notecol = "cyan", na.color = par("bg"),
   trace = c("none", "column", "row", "both"), tracecol = "cyan",
   hline = median(breaks), vline = median(breaks), linecol = tracecol,
@@ -21,7 +21,7 @@ heatmap.3(x, Rowv = TRUE, Colv = if (symm) "Rowv" else TRUE,
   "Color Key", key.sub = NULL, density.info = c("none", "histogram",
   "density"), denscol = tracecol, symkey = max(x < 0, na.rm = TRUE) ||
   symbreaks, densadj = 0.25, main = NULL, xlab = NULL, ylab = NULL,
-  lmat = NULL, lhei = NULL, lwid = NULL, reset_par = TRUE, ...)
+  lmat = NULL, lhei = NULL, lwid = NULL, ...)
 }
 \arguments{
 \item{x}{a numeric matrix of the values to be plotted}
@@ -142,11 +142,8 @@ in \code{\link{density}}; default is 0.25}
 \item{lmat, lhei, lwid}{(optional) arguments for controlling \strong{l}ayout
 \strong{hei}ghts and \code{wid}ths, passed to \code{\link{layout}}}
 
-\item{reset_par}{logical; if \code{TRUE}, resets \code{\link{par}} settings
-to state before function call; setting \code{reset_par = FALSE} is useful
-for adding to a heatmap}
-
-\item{...}{additional arguments passed to \code{\link{image}}}
+\item{...}{additional arguments passed to \code{\link{image}} or further
+to \code{\link{plot}}}
 }
 \description{
 A heat map is a false color image (basically \code{image(t(x))}) with a
@@ -163,8 +160,7 @@ multi-layered vertical and horizontal color bars; a smoother interpolation
 in the color key; and other improvements.
 }
 \examples{
-set.seed(1)
-x <- matrix(rnorm(1000), 50)
+x <- scale(as.matrix(mtcars))
 
 heatmap.3(x)
 heatmap.3(x, cols = 'heat.colors')
@@ -199,8 +195,10 @@ cc[] <- palette()[cc]
 hm <- heatmap.3(
   x, scale = 'column',
   distfun = 'spearman', hclustfun = 'ward.D2',
-  RowSideColors = rc, ColSideColors = cc
+  RowSideColors = rc, ColSideColors = cc,
+  colsep = c(2, 6), rowsep = c(9, 14, 21), sepwidth = c(5, 2)
 )
+
 
 ## layout control
 hm$layout
@@ -219,7 +217,9 @@ heatmap.3(
   
   ## fine control over layout heights and widths
   lhei = c(7, 2, 30),
-  lwid = c(5, 1, 30)
+  lwid = c(5, 1, 30),
+  
+  cellnote = x
 )
 
 }
