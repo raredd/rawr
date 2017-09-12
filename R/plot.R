@@ -1809,8 +1809,8 @@ waterfall <- function(x, type = 1L, col = c('red','blue'), ...,
 #' \code{\link[gplots]{heatmap.2}} include better defaults; more control of
 #' the layout, spacing, and margins; built-in \code{1-correlation}
 #' distances; automatic color interpolation used in the heat map; optional
-#' multiple vertical and horizontal color bars; a smoother interpolation in
-#' the color key; and other improvements.
+#' multi-layered vertical and horizontal color bars; a smoother interpolation
+#' in the color key; and other improvements.
 #' 
 #' @param x a numeric matrix of the values to be plotted
 #' @param Rowv,Colv logical or a \code{\link{dendrogram}} controlling the
@@ -2237,10 +2237,13 @@ heatmap.3 <- function(x,
     dim(lmat) == c(3L, 3L)
   )
   
+  dev.hold()
+  on.exit(dev.flush())
+  
   # op <- par(mar = c(0,0,0,0), no.readonly = TRUE)
   op <- par(no.readonly = TRUE)
   if (reset_par)
-    on.exit(par(op))
+    on.exit(par(op), add = TRUE)
   
   layout(lmat, widths = lwid, heights = lhei, respect = FALSE)
   
@@ -2399,7 +2402,7 @@ heatmap.3 <- function(x,
   
   ## 6 - color key
   if (key) {
-    par(mar = c(5, 4, 2, 1), cex = 0.75)
+    par(mar = c(3, 2, 2, 1), cex = 0.75)
     tmpbreaks <- breaks
     
     if (symkey) {

@@ -159,8 +159,8 @@ Some improvements in this version over \code{\link{heatmap}} or
 \code{\link[gplots]{heatmap.2}} include better defaults; more control of
 the layout, spacing, and margins; built-in \code{1-correlation}
 distances; automatic color interpolation used in the heat map; optional
-multiple vertical and horizontal color bars; a smoother interpolation in
-the color key; and other improvements.
+multi-layered vertical and horizontal color bars; a smoother interpolation
+in the color key; and other improvements.
 }
 \examples{
 set.seed(1)
