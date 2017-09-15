@@ -1880,6 +1880,8 @@ waterfall <- function(x, type = 1L, col = c('red','blue'), ...,
 #' @param side.height.fraction scaling factor for height and width of bars
 #' @param labRow,labCol row and column labels; defaults to row and column
 #' names of \code{x}
+#' @param labRowCol,labColCol (optional) vectors of colors for row and column
+#' labels, recycled as needed
 #' @param cexRow,cexCol size for row and column labels
 #' @param key logical; if \code{TRUE}, a color key is drawn
 #' @param key.cex numeric value controlling the size of the color key
@@ -1940,6 +1942,7 @@ waterfall <- function(x, type = 1L, col = c('red','blue'), ...,
 #'   x, scale = 'column',
 #'   distfun = 'spearman', hclustfun = 'ward.D2',
 #'   RowSideColors = rc, ColSideColors = cc,
+#'   margins = c(5, 10), labRowCol = rc[, 3], labColCol = cc[1, ],
 #'   colsep = c(2, 6), rowsep = c(9, 14, 21), sepwidth = c(5, 2)
 #' )
 #' 
@@ -2005,6 +2008,7 @@ heatmap.3 <- function(x,
                       ColSideColorsSize = 1, RowSideColorsSize = 1,
                       side.height.fraction = 0.3,
                       labRow = NULL, labCol = NULL,
+                      labRowCol = NULL, labColCol = NULL,
                       cexRow = 0.2 + 1 / log10(nr),
                       cexCol = 0.2 + 1 / log10(nc),
                       
@@ -2038,7 +2042,7 @@ heatmap.3 <- function(x,
   plot.null <- function() {
     op <- par(mar = c(0,0,0,0))
     on.exit(par(op))
-    plot.new()
+    try(plot.new())
   }
   
   if (is.character(distfun)) {
@@ -2158,6 +2162,11 @@ heatmap.3 <- function(x,
     if (is.null(colnames(x)))
       seq.int(nc)[colInd] else colnames(x)
   } else labCol[colInd]
+  
+  labRowCol <- if (is.null(labRowCol))
+    1L else rep_len(drop(labRowCol), nr)[rowInd]
+  labColCol <- if (is.null(labColCol))
+    1L else rep_len(drop(labColCol), nc)[colInd]
   
   ## scaling
   if (scale == 'row') {
@@ -2310,6 +2319,7 @@ heatmap.3 <- function(x,
           col = na.color, add = TRUE)
   }
   
+  
   ## rowsep and colsep on top of matrix and bars
   sepwidth <- rep_len(sepwidth, 2L)
   if (!is.null(colsep))
@@ -2319,16 +2329,24 @@ heatmap.3 <- function(x,
     abline(h = nr - rowsep + 0.5, col = sepcolor,
            lwd = sepwidth[2L], xpd = NA)
   
-  axis(1L, seq.int(nc), labels = labCol, las = 2L,
-       line = -0.5, tick = 0, cex.axis = cexCol)
-  if (!is.null(xlab))
-    mtext(side = 1L, xlab, line = margins[1L] - 1.25)
-  axis(4L, iy, labels = labRow, las = 2L,
-       line = -0.5, tick = 0, cex.axis = cexRow)
-  if (!is.null(ylab))
-    mtext(side = 4L, ylab, line = margins[2L] - 1.25)
+  
+  ## labels
+  # axis(1L, seq.int(nc), labels = labCol, las = 2L,
+  #      line = -0.5, tick = 0, cex.axis = cexCol)
+  # axis(4L, iy, labels = labRow, las = 2L,
+  #      line = -0.5, tick = 0, cex.axis = cexRow)
+  
+  text(seq.int(nc), par('usr')[3L], labCol, col = labColCol,
+       las = 2L, cex = cexCol, pos = 1L, xpd = NA)
+  text(par('usr')[2L], iy, labRow, col = labRowCol,
+       las = 2L, cex = cexRow, pos = 4L, xpd = NA)
+  
+  mtext(side = 1L, xlab, line = margins[1L] - 1.25)
+  mtext(side = 4L, ylab, line = margins[2L] - 1.25)
+  
   
   eval(substitute(add.expr))
+  
   
   min.scale <- min(breaks)
   max.scale <- max(breaks)

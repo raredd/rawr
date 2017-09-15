@@ -15,13 +15,14 @@ heatmap.3(x, Rowv = TRUE, Colv = if (symm) "Rowv" else TRUE,
   hline = median(breaks), vline = median(breaks), linecol = tracecol,
   margins = c(5, 5), dmargins = c(5, 5), ColSideColors = NULL,
   RowSideColors = NULL, ColSideColorsSize = 1, RowSideColorsSize = 1,
-  side.height.fraction = 0.3, labRow = NULL, labCol = NULL, cexRow = 0.2
-  + 1/log10(nr), cexCol = 0.2 + 1/log10(nc), key = TRUE, key.cex = 1.5,
-  key.title = if (density.info \%in\% c("density", "histogram")) NULL else
-  "Color Key", key.sub = NULL, density.info = c("none", "histogram",
-  "density"), denscol = tracecol, symkey = max(x < 0, na.rm = TRUE) ||
-  symbreaks, densadj = 0.25, main = NULL, xlab = NULL, ylab = NULL,
-  lmat = NULL, lhei = NULL, lwid = NULL, ...)
+  side.height.fraction = 0.3, labRow = NULL, labCol = NULL,
+  labRowCol = NULL, labColCol = NULL, cexRow = 0.2 + 1/log10(nr),
+  cexCol = 0.2 + 1/log10(nc), key = TRUE, key.cex = 1.5, key.title = if
+  (density.info \%in\% c("density", "histogram")) NULL else "Color Key",
+  key.sub = NULL, density.info = c("none", "histogram", "density"),
+  denscol = tracecol, symkey = max(x < 0, na.rm = TRUE) || symbreaks,
+  densadj = 0.25, main = NULL, xlab = NULL, ylab = NULL, lmat = NULL,
+  lhei = NULL, lwid = NULL, ...)
 }
 \arguments{
 \item{x}{a numeric matrix of the values to be plotted}
@@ -117,6 +118,9 @@ sizes of the horizontal and vertical side bars, respectively}
 \item{labRow, labCol}{row and column labels; defaults to row and column
 names of \code{x}}
 
+\item{labRowCol, labColCol}{(optional) vectors of colors for row and column
+labels, recycled as needed}
+
 \item{cexRow, cexCol}{size for row and column labels}
 
 \item{key}{logical; if \code{TRUE}, a color key is drawn}
@@ -197,6 +201,7 @@ hm <- heatmap.3(
   x, scale = 'column',
   distfun = 'spearman', hclustfun = 'ward.D2',
   RowSideColors = rc, ColSideColors = cc,
+  margins = c(5, 10), labRowCol = rc[, 3], labColCol = cc[1, ],
   colsep = c(2, 6), rowsep = c(9, 14, 21), sepwidth = c(5, 2)
 )
 
