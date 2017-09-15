@@ -8,8 +8,8 @@ heatmap.3(x, Rowv = TRUE, Colv = if (symm) "Rowv" else TRUE,
   distfun = dist, hclustfun = hclust, symm = FALSE, scale = c("none",
   "row", "column"), na.rm = TRUE, revC = identical(Colv, "Rowv"),
   add.expr = NULL, breaks = NULL, symbreaks = max(x < 0, na.rm = TRUE) ||
-  scale != "none", cols = c("red", "white", "blue"), colsep = NULL,
-  rowsep = NULL, sepcolor = "white", sepwidth = c(1, 1),
+  scale != "none", cols = c("blue", "white", "red"), colsep = NULL,
+  rowsep = NULL, sepcolor = par("bg"), sepwidth = c(1, 1),
   cellnote = NULL, notecex = 1, notecol = "cyan", na.color = par("bg"),
   trace = c("none", "column", "row", "both"), tracecol = "cyan",
   hline = median(breaks), vline = median(breaks), linecol = tracecol,
@@ -47,7 +47,8 @@ and return an object to which \code{\link{as.dendrogram}} can be applied}
 \item{scale}{character indicating if \code{x} should be centered and
 scaled in either the row or column direction or neither; default is none}
 
-\item{na.rm}{logical; if \code{TRUE}, \code{NA}s are removed}
+\item{na.rm}{logical; if \code{TRUE}, \code{NA}s are removed before
+calculating dendrogram weights; see \code{\link{reorder.dendrogram}}}
 
 \item{revC}{logical; if \code{TRUE}, the column order is reversed for
 plotting, e.g., for the symmetric case, the symmetry axis is as usual}

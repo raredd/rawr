@@ -1829,7 +1829,8 @@ waterfall <- function(x, type = 1L, col = c('red','blue'), ...,
 #' \code{x} is treated \strong{symm}etrically
 #' @param scale character indicating if \code{x} should be centered and
 #' scaled in either the row or column direction or neither; default is none
-#' @param na.rm logical; if \code{TRUE}, \code{NA}s are removed
+#' @param na.rm logical; if \code{TRUE}, \code{NA}s are removed before
+#' calculating dendrogram weights; see \code{\link{reorder.dendrogram}}
 #' @param revC logical; if \code{TRUE}, the column order is reversed for
 #' plotting, e.g., for the symmetric case, the symmetry axis is as usual
 #' @param add.expr an \code{\link{expression}} evaluated after the call to
@@ -1982,11 +1983,11 @@ heatmap.3 <- function(x,
                       ## mapping data to colors
                       breaks = NULL,
                       symbreaks = max(x < 0, na.rm = TRUE) || scale != 'none',
-                      cols = c('red', 'white', 'blue'),
+                      cols = c('blue', 'white', 'red'),
                       
                       ## block separation
                       colsep = NULL, rowsep = NULL,
-                      sepcolor = 'white', sepwidth = c(1, 1),
+                      sepcolor = par('bg'), sepwidth = c(1, 1),
                       
                       ## cell labeling
                       cellnote = NULL, notecex = 1,
@@ -2035,7 +2036,6 @@ heatmap.3 <- function(x,
   scale01 <- function(x, low = min(x), high = max(x))
     (x - low) / (high - low)
   plot.null <- function() {
-    # op <- par(mar = c(0,0,0,0), oma = c(0,0,0,0), new = TRUE)
     op <- par(mar = c(0,0,0,0))
     on.exit(par(op))
     plot.new()
@@ -2078,7 +2078,7 @@ heatmap.3 <- function(x,
     Rowv <- FALSE
   if (is.null(Colv) || is.na(Colv))
     Colv <- FALSE
-  else if (Colv == 'Rowv' && !isTRUE(Rowv))
+  else if (identical(Colv, 'Rowv') && !isTRUE(Rowv))
     Colv <- FALSE
   if (length(dim(x)) != 2L || !is.numeric(x))
     stop('\'x\' must be a numeric matrix')
@@ -2313,11 +2313,11 @@ heatmap.3 <- function(x,
   ## rowsep and colsep on top of matrix and bars
   sepwidth <- rep_len(sepwidth, 2L)
   if (!is.null(colsep))
-    abline(v = colsep + 0.5,
-           col = sepcolor, lwd = sepwidth[1L], xpd = NA)
+    abline(v = colsep + 0.5, col = sepcolor,
+           lwd = sepwidth[1L], xpd = NA)
   if (!is.null(rowsep))
-    abline(h = nr - rowsep + 0.5,
-           col = sepcolor, lwd = sepwidth[2L], xpd = NA)
+    abline(h = nr - rowsep + 0.5, col = sepcolor,
+           lwd = sepwidth[2L], xpd = NA)
   
   axis(1L, seq.int(nc), labels = labCol, las = 2L,
        line = -0.5, tick = 0, cex.axis = cexCol)
