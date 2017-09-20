@@ -175,7 +175,7 @@
 kmplot <- function(s,
                    ## basic plot options
                    lty.surv = par('lty'), lwd.surv = par('lwd'),
-                   col.surv = seq_along(s$n), mark = 3,
+                   col.surv = seq_along(s$n), mark = 3L,
                    lwd.mark = lwd.surv,
                    
                    ## confidence options
@@ -273,7 +273,7 @@ kmplot <- function(s,
   ## group names and more error checks
   gr <- c(s$strata)
   if (isTRUE(strata.lab)) {
-    svar <- colnames(model.frame(form, sdat)[, -1, drop = FALSE])
+    svar <- colnames(model.frame(form, sdat)[, -1L, drop = FALSE])
     cl <- c(list(survival::strata),
             lapply(svar, as.symbol),
             shortlabel = TRUE)
@@ -389,10 +389,10 @@ kmplot <- function(s,
         if (is.character(strata.expr))
           strata.expr <- parse(text = strata.expr)
         sapply(seq.int(length(strata.expr)), function(x)
-          mtext(strata.expr[[x]], side = 1, line = line.pos[x], adj = 1,
-                at = group.name.pos, col = col.atrisk[x], las = 1,
+          mtext(strata.expr[[x]], side = 1L, line = line.pos[x], adj = 1,
+                at = group.name.pos, col = col.atrisk[x], las = 1L,
                 cex = cex.axis))
-      } else mtext(strata.lab, side = 1, line = line.pos, adj = 1, las = 1,
+      } else mtext(strata.lab, side = 1L, line = line.pos, adj = 1, las = 1L,
                    col = col.atrisk, at = group.name.pos, cex = cex.axis)
     }
     
@@ -400,7 +400,7 @@ kmplot <- function(s,
     if (atrisk.lines)
       for (i in seq.int(ng))
         ## mess with the 4 here to adjust the length of the atrisk.line
-        axis(1, c(group.name.pos + padding, 0 - 4 * padding), xpd = NA,
+        axis(1L, c(group.name.pos + padding, 0 - 4 * padding), xpd = NA,
              labels = FALSE, line = line.pos[i] + 0.6, lwd.ticks = 0,
              col = col.surv[i], lty = lty.surv[i], lwd = lwd.surv[i])
     
@@ -421,13 +421,13 @@ kmplot <- function(s,
       tmp <- d2[[i]]
       w.adj <- strwidth('0', cex = cex.axis, font = par('font')) /
         2 * nd[seq.int(nrow(tmp))]
-      mtext(tmp$n.risk, side = 1, at = tmp$time + w.adj, las = 1,
+      mtext(tmp$n.risk, side = 1L, at = tmp$time + w.adj, las = 1L,
             line = line.pos[i], cex = cex.axis, adj = 1, col = col.atrisk[i])
     }
     
     if (!(identical(atrisk.lab, FALSE) | is.null(atrisk.lab)))
-      mtext(atrisk.lab, side = 1, at = usr[1L], # at = group.name.pos,
-            line = 1.5, adj = 1, col = 1, las = 1, cex = cex.axis)
+      mtext(atrisk.lab, side = 1L, at = usr[1L], # at = group.name.pos,
+            line = 1.5, adj = 1, col = 1L, las = 1L, cex = cex.axis)
     
     ## median (ci) text on right of at-risk
     if (median) {
@@ -441,9 +441,9 @@ kmplot <- function(s,
       tt <- ifelse(is.na(st$median), '-', gsub('NA', '-', tt, fixed = TRUE))
       at <- if (isTRUE(median.at))
         usr[2L] + diff(usr[1:2]) / 8 else median.at
-      mtext(sprintf('Median (%s%% CI)', s$conf.int * 100), side = 1,
-            at = at, adj = .5, line = 1.5, col = 1, las = 1)
-      mtext(tt, side = 1, line = line.pos, las = 1,
+      mtext(sprintf('Median (%s%% CI)', s$conf.int * 100), side = 1L,
+            at = at, adj = .5, line = 1.5, col = 1L, las = 1L)
+      mtext(tt, side = 1L, line = line.pos, las = 1L,
             at = at, adj = .5, col = col.atrisk)
     }
   }
@@ -514,8 +514,8 @@ kmplot <- function(s,
       message('There is only one group',
               if (svar == '1') '' else paste(' for', svar),
               ' -- no lr test performed')
-    else mtext(txt, side = 3, at = par('usr')[2L], adj = 1,
-               font = 3, cex = .8, line = .5)
+    else mtext(txt, side = 3L, at = par('usr')[2L], adj = 1,
+               font = 3L, cex = .8, line = .5)
   }
   
   panel.last
@@ -1554,9 +1554,9 @@ landmark <- function(s, times = NULL, lr_test = TRUE, adjust_start = FALSE,
         kmplot(si, ..., add = TRUE, lr_test = lr_test, xaxis.at = at,
                xaxis.lab = ifelse(adjust_start, ii, 0) + at,
                panel.first = {
-                 abline(v = ii, col = if (adjust_start) 0 else 2)
+                 abline(v = ii, col = if (adjust_start) 0L else 2L)
                  mtext(which(times %in% ii), at = par('usr')[1L],
-                       col = 2, cex = 1.5, font = 2, line = 1)
+                       col = 2L, cex = 1.5, font = 2L, line = 1)
                })
         data.frame(n = sum(si$n), lr_pval(si, TRUE), row.names = ii)
       }) else NULL

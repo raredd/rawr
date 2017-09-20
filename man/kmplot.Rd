@@ -5,7 +5,7 @@
 \title{Survival curves}
 \usage{
 kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
-  col.surv = seq_along(s$n), mark = 3, lwd.mark = lwd.surv, lty.ci = 0,
+  col.surv = seq_along(s$n), mark = 3L, lwd.mark = lwd.surv, lty.ci = 0,
   lwd.ci = lwd.surv, col.ci = col.surv, col.band = FALSE, atrisk = TRUE,
   atrisk.lab = "Number at risk", atrisk.lines = TRUE,
   atrisk.col = !atrisk.lines, strata.lab = NULL, strata.expr = NULL,
