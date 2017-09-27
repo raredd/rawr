@@ -74,10 +74,10 @@ variable vector, \code{data$varname}, and the column variable vector,
 }
 \examples{
 tabler_stat(mtcars, 'mpg', 'cyl') ## picks kruskal-wallis
-tabler_stat(mtcars, 'mpg', 'cyl', FUN = NA)
-tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE)
-tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'fisher')
-tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'anova')
+tabler_stat(mtcars, 'mpg', 'cyl', FUN = NA) ## no test, no p-value column
+tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE) ## test but p-value column
+tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'fisher') ## force fisher test
+tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'anova')  ## force anova test
 
 
 ## use of a custom function - see ?rawr::cuzick.test
@@ -105,5 +105,5 @@ htmlTable::htmlTable(
 
 }
 \seealso{
-\code{\link{tabler}}; \code{\link{tabler_by}}
+\code{\link{tabler_stat2}}; \code{\link{tabler}}; \code{\link{tabler_by}}
 }
