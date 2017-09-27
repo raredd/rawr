@@ -1,11 +1,12 @@
 ### formatting, knitr, html-related, misc utils
 # show_html, show_markdown, show_math, roundr, intr, pvalr, pvalr2, catlist,
 # binconr, num2char, iprint, writeftable, tabler, tabler_by, tabler_by2,
-# tabler_stat, tabler_resp, match_ctc, tox_worst, countr, dmy, combine_table,
-# inject_div, sparKDT, case, write_htmlTable
+# tabler_stat, tabler_stat2, tabler_resp, match_ctc, tox_worst, countr, dmy,
+# combine_table, inject_div, sparKDT, case, write_htmlTable
 # 
 # unexported:
-# resp1, r_or_better1, inject_, render_sparkDT
+# resp1, r_or_better1, inject_, render_sparkDT, tabler_stat_list,
+# tabler_stat_html, guess_digits, get_tabler_stat_n
 ###
 
 
@@ -1193,14 +1194,14 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' and corresponding test name}
 #' 
 #' @seealso
-#' \code{\link{tabler}}; \code{\link{tabler_by}}
+#' \code{\link{tabler_stat2}}; \code{\link{tabler}}; \code{\link{tabler_by}}
 #' 
 #' @examples
 #' tabler_stat(mtcars, 'mpg', 'cyl') ## picks kruskal-wallis
-#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = NA)
-#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE)
-#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'fisher')
-#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'anova')
+#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = NA) ## no test, no p-value column
+#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE) ## test but p-value column
+#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'fisher') ## force fisher test
+#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'anova')  ## force anova test
 #' 
 #' 
 #' ## use of a custom function - see ?rawr::cuzick.test
@@ -1325,6 +1326,177 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
     cbind(res, m), FUN = fname, p.value = pvn, fnames = fnames,
     tfoot = toString(sprintf('<sup>%s</sup>%s', names(fnames), fnames))
   )
+}
+
+#' \code{tabler_stat} wrappers
+#' 
+#' Helper functions for using \code{tabler_stat}.
+#' 
+#' @param data a matrix or data frame with variables \code{varname} and
+#' \code{byvar}
+#' @param varname one or more variables in \code{data} to calculate
+#' statistics by \code{byvar}
+#' @param byvar the column or stratification variable
+#' @param varname_label,byvar_label optional labels for \code{varname} and
+#' \code{byvar}
+#' @param digits \code{NULL} or a vector of digits past the decimal point to
+#' keep for each \code{varname}; if \code{NULL}, these will be guessed using
+#' \code{rawr:::guess_digits}
+#' @param FUN \code{NULL} or a list of functions performing the test of
+#' association between each \code{varname} and \code{byvar}; see
+#' \code{\link{tabler_stat}}
+#' @param color_pval,color_missing,dagger \code{NULL} or vectors, recycled as
+#' needed for each \code{varname}; see \code{\link{tabler_stat}}
+#' @param statArgs a named list of additional arguments passed to
+#' \code{\link[Gmisc]{getDescriptionStatsBy}}
+#' @param align,rgroup,cgroup,tfoot optional arguments passed to
+#' \code{\link[htmlTable]{htmlTable}}
+#' @param htmlArgs a named list of additional arguments passed to
+#' \code{\link[htmlTable]{htmlTable}}
+#' 
+#' @seealso
+#' \code{\link{tabler_stat}}
+#' 
+#' @examples
+#' sapply(mtcars, rawr:::guess_digits)
+#' 
+#' rawr:::get_tabler_stat_n(mtcars$gear)
+#' 
+#' ## typical usage
+#' mt <- within(mtcars, {
+#'   cyl  <- factor(cyl)
+#'   gear <- factor(gear)
+#'   vs2  <- factor(vs, 1:0)
+#' })
+#' 
+#' tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs')
+#' 
+#' tabler_stat2(
+#'  mt, c('mpg', 'cyl', 'wt'), 'vs',
+#'  cgroup = c('', 'V/S engine', ''),
+#'  rgroup = c('Miles/gallon', 'No. cylinders', 'Weight (1000 lbs)')
+#' )
+#' 
+#' tabler_stat2(
+#'   mt, c('mpg', 'cyl', 'wt'), 'vs',
+#'   byvar_label = 'V/S engine',
+#'   varname_label = c('MPG', 'Cylinders', 'Weight')
+#' )
+#' 
+#' @export
+
+tabler_stat2 <- function(data, varname, byvar, varname_label = varname,
+                         byvar_label = byvar, digits = NULL, FUN = NULL,
+                         color_pval = TRUE, color_missing = TRUE,
+                         dagger = TRUE, statArgs = NULL,
+                         align = NULL, rgroup = NULL, cgroup = NULL,
+                         tfoot = NULL, htmlArgs = NULL) {
+  l <- tabler_stat_list(data, varname, byvar, varname_label, byvar_label,
+                        digits, FUN, color_pval, color_missing, dagger,
+                        statArgs)
+  tabler_stat_html(l, align, rgroup, cgroup, tfoot, htmlArgs)
+}
+
+tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
+                             byvar_label = byvar, digits = NULL, FUN = NULL,
+                             color_pval = TRUE, color_missing = TRUE,
+                             dagger = TRUE, statArgs = NULL) {
+  nv <- length(varname)
+  byvar <- byvar[1L]
+  
+  data <- data[, c(varname, byvar)]
+  data[, byvar] <- as.factor(data[, byvar])
+  .data <- data
+  digits <- if (is.null(digits))
+    sapply(data[, -ncol(data)], guess_digits) else rep_len(digits, nv)
+  
+  data <- rep_len(list(data), nv)
+  FUN  <- rep_len(list(FUN), nv)
+  pval <- any(!is.na(FUN))
+  
+  l <- do.call('Map', c(list(
+    f = rawr::tabler_stat, data, varname, byvar, digits, FUN,
+    color_pval, color_missing, dagger), statArgs)
+  )
+  names(l) <- varname_label
+  
+  tbl <- lapply(l, function(x)
+    x[!(duplicated(x, fromLast = TRUE) &
+          duplicated(rownames(x), fromLast = TRUE)), , drop = FALSE]
+  )
+  
+  res <- do.call('rbind', tbl)
+  
+  rgroup   <- names(tbl)
+  n.rgroup <- unname(sapply(rgroup, function(x) nrow(tbl[[x]]) %||% 1L))
+  cgroup   <- c('', byvar_label, '')
+  n.cgroup <- c(1L, nlevels(.data[, byvar]), 1L)
+  
+  if (!pval) {
+    cgroup   <- head(cgroup, -1L)
+    n.cgroup <- head(n.cgroup, -1L)
+  }
+  
+  structure(
+    class = 'htmlStat',
+    list(
+      output_data = res, rgroup = rgroup, n.rgroup = n.rgroup,
+      cgroup = cgroup, n.cgroup = n.cgroup, pval = pval,
+      data = .data, byvar = byvar, l = l
+    )
+  )
+}
+
+tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
+                             tfoot = NULL, htmlArgs = NULL) {
+  stopifnot(
+    inherits(l, 'htmlStat')
+  )
+  
+  cn <- c(get_tabler_stat_n(l$data[, l$byvar]), '<i>p-value</i>')
+  colnames(l$output_data) <- if (l$pval) cn else head(cn, -1L)
+  
+  res <- gsub('%', '', l$output_data, fixed = TRUE)
+  res <- gsub('0 \\(0%\\)|^0$|NA \\( NA -  NA\\)', '-', res)
+  
+  ht <- do.call(
+    htmlTable::htmlTable,
+    c(list(
+      x = res, align = align %||% strrep('c', ncol(res)),
+      rgroup = rgroup %||% l$rgroup, n.rgroup = l$n.rgroup,
+      cgroup = cgroup %||% l$cgroup, n.cgroup = l$n.cgroup,
+      css.cell = 'padding: 0px 5px 0px; white-space: nowrap;',
+      tfoot = tfoot %||%
+        sprintf('<font size=1>%s</font>', attr(l$l[[1L]], 'tfoot'))),
+      htmlArgs)
+  )
+  
+  structure(ht, class = 'htmlTable')
+}
+
+guess_digits <- function(x, default = 0L) {
+  if (!is.numeric(x))
+    return(default)
+  
+  co <- capture.output(cat(x))
+  co <- strsplit(co, ' ')[[1L]]
+  
+  digits <- max(nchar(sub('.*?(?:\\.|$)', '', co)))
+  
+  if (digits)
+    digits else default
+}
+
+get_tabler_stat_n <- function(x, pct = TRUE) {
+  fmt <- if (pct)
+    '%s<br /><font weight=normal; size=1>n = %s (%s)</font>' else
+      '%s<br /><font weight=normal; size=1>n = %s</font>'
+  x <- as.factor(x)
+  l <- levels(x)
+  t <- table(x)
+  p <- roundr(prop.table(t) * 100, 0)
+  o <- Vectorize('sprintf')(c('Total', l), c(sum(t), t), c('%', p), fmt = fmt)
+  drop(o)
 }
 
 #' Response table
