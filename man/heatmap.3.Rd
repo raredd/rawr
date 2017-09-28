@@ -116,7 +116,7 @@ sizes of the horizontal and vertical side bars, respectively}
 \item{side.height.fraction}{scaling factor for height and width of bars}
 
 \item{labRow, labCol}{row and column labels; defaults to row and column
-names of \code{x}}
+names of \code{x}; \code{FALSE} suppresses labels}
 
 \item{labRowCol, labColCol}{(optional) vectors of colors for row and column
 labels, recycled as needed}

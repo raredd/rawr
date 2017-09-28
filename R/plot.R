@@ -1879,7 +1879,7 @@ waterfall <- function(x, type = 1L, col = c('red','blue'), ...,
 #' sizes of the horizontal and vertical side bars, respectively
 #' @param side.height.fraction scaling factor for height and width of bars
 #' @param labRow,labCol row and column labels; defaults to row and column
-#' names of \code{x}
+#' names of \code{x}; \code{FALSE} suppresses labels
 #' @param labRowCol,labColCol (optional) vectors of colors for row and column
 #' labels, recycled as needed
 #' @param cexRow,cexCol size for row and column labels
@@ -2154,6 +2154,8 @@ heatmap.3 <- function(x,
   cellnote <- cellnote[rowInd, colInd]
   
   ## row/column labels
+  label_rn <- !identical(labRow, FALSE)
+  label_cn <- !identical(labCol, FALSE)
   labRow <- if (is.null(labRow)) {
     if (is.null(rownames(x)))
       seq.int(nr)[rowInd] else rownames(x)
@@ -2331,15 +2333,12 @@ heatmap.3 <- function(x,
   
   
   ## labels
-  # axis(1L, seq.int(nc), labels = labCol, las = 2L,
-  #      line = -0.5, tick = 0, cex.axis = cexCol)
-  # axis(4L, iy, labels = labRow, las = 2L,
-  #      line = -0.5, tick = 0, cex.axis = cexRow)
-  
-  text(seq.int(nc), par('usr')[3L], labCol, col = labColCol,
-       las = 2L, cex = cexCol, pos = 1L, xpd = NA)
-  text(par('usr')[2L], iy, labRow, col = labRowCol,
-       las = 2L, cex = cexRow, pos = 4L, xpd = NA)
+  if (label_cn)
+    text(seq.int(nc), par('usr')[3L], labCol, col = labColCol,
+         las = 2L, cex = cexCol, pos = 1L, xpd = NA)
+  if (label_rn)
+    text(par('usr')[2L], iy, labRow, col = labRowCol,
+         las = 2L, cex = cexRow, pos = 4L, xpd = NA)
   
   mtext(side = 1L, xlab, line = margins[1L] - 1.25)
   mtext(side = 4L, ylab, line = margins[2L] - 1.25)
