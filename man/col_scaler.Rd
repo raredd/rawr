@@ -4,8 +4,8 @@
 \alias{col_scaler}
 \title{Color scaling}
 \usage{
-col_scaler(x, colors, alpha = 1, to = c(0, 1), from = range(x, na.rm =
-  TRUE))
+col_scaler(x, colors, alpha = 1, alpha.min = min(0.1, x[x >= 0], na.rm =
+  TRUE), to = c(0, 1), from = range(x, na.rm = TRUE))
 }
 \arguments{
 \item{x}{a numeric or integer vector}
@@ -23,6 +23,10 @@ fully opaque)}
 \item{alpha}{transparency applied to interpolated colors (i.e., if
 \code{colors} is not a single color)}
 
+\item{alpha.min}{if a single color name is given, sets the lower bound of
+alpha; a value greater than 0 ensures that the color is visible even for
+the smallest value of \code{x} after rescaling}
+
 \item{to, from}{output and input range, respectively; see
 \code{\link{rescaler}}}
 }
@@ -36,6 +40,11 @@ gradations of transparency is applied corresponding to each numeric value.
 For two or more, color interpolation is applied.
 }
 \examples{
+## basic usage
+col_scaler(mtcars$mpg, 'red')
+col_scaler(mtcars$vs, c('red', 'black'))
+
+
 set.seed(1)
 x <- sort(runif(50, 0, 2))
 p <- function(y, c) {

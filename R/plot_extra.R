@@ -779,6 +779,9 @@ coords <- function(x = 0:1, y = x, to = 'user', line, side) {
 #' fully opaque)
 #' @param alpha transparency applied to interpolated colors (i.e., if
 #' \code{colors} is not a single color)
+#' @param alpha.min if a single color name is given, sets the lower bound of
+#' alpha; a value greater than 0 ensures that the color is visible even for
+#' the smallest value of \code{x} after rescaling
 #' @param to,from output and input range, respectively; see
 #' \code{\link{rescaler}}
 #' 
@@ -787,6 +790,11 @@ coords <- function(x = 0:1, y = x, to = 'user', line, side) {
 #' values.
 #' 
 #' @examples
+#' ## basic usage
+#' col_scaler(mtcars$mpg, 'red')
+#' col_scaler(mtcars$vs, c('red', 'black'))
+#' 
+#' 
 #' set.seed(1)
 #' x <- sort(runif(50, 0, 2))
 #' p <- function(y, c) {
@@ -808,8 +816,9 @@ coords <- function(x = 0:1, y = x, to = 'user', line, side) {
 #' 
 #' @export
 
-col_scaler <- function(x, colors, alpha = 1, to = c(0, 1),
-                       from = range(x, na.rm = TRUE)) {
+col_scaler <- function(x, colors, alpha = 1,
+                       alpha.min = min(0.1, x[x >= 0], na.rm = TRUE),
+                       to = c(0, 1), from = range(x, na.rm = TRUE)) {
   pals <- c('rainbow', paste0(c('heat', 'terrain', 'topo', 'cm'), '.colors'))
   colors <- if (is.numeric(colors))
     rep_len(palette(), max(colors, na.rm = TRUE))[as.integer(colors)]
@@ -819,10 +828,15 @@ col_scaler <- function(x, colors, alpha = 1, to = c(0, 1),
     get(colors, mode = 'function')
   else as.character(colors)
   
-  if (is.character(colors) & length(colors) == 1L)
-    return(tcol(colors, alpha = rescaler(x, to, from)))
+  x <- if (is.factor(x) || is.character(x) || is.integer(x))
+    as.integer(as.factor(x)) else as.numeric(x)
   
-  n  <- 5000L
+  ## add alpha
+  if (is.character(colors) & length(colors) == 1L)
+    return(tcol(colors, alpha = rescaler(x, c(alpha.min, to[2L]), from)))
+  
+  ## use interpolation
+  n  <- 10000L
   to <- to * n
   x  <- rescaler(x, to, from)
   x  <- as.integer(x) + 1L
