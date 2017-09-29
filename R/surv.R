@@ -195,7 +195,7 @@ kmplot <- function(s,
                    atrisk.at = xaxis.at,
                    yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
                    xlab = 'Time', ylab = 'Survival probability',
-                   main = '', cex.axis = par('cex.axis'),
+                   main = NULL, cex.axis = par('cex.axis'),
                    legend = !atrisk && !is.null(s$strata),
                    
                    ## other options
@@ -251,7 +251,7 @@ kmplot <- function(s,
     if (is.null(col.band) || is.na(col.band))
       col.band <- FALSE
   
-  col.surv <- if (missing(col.surv) || is.null(col.surv)) {
+  col.surv <- if (is.null(col.surv)) {
     if (isTRUE(col.band) || all(!col.band))
       seq_along(s$n)
     else rep_len(col.band, length.out = ng)
@@ -896,10 +896,11 @@ lr_pval <- function(s, details = FALSE) {
 #'   
 #' @export
 
-kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
-                      lr_test = TRUE, main, ylab, sub, strata_lab, fig_lab,
-                      col.surv = NULL, map.col = FALSE, time, add = FALSE,
-                      plot = TRUE, ...) {
+kmplot_by <- function(strata = '1', event, data, by = NULL, single = TRUE,
+                      lr_test = TRUE, main = NULL, ylab = NULL, sub = NULL,
+                      strata_lab = NULL, fig_lab = NULL,
+                      col.surv = NULL, map.col = FALSE, time = NULL,
+                      add = FALSE, plot = TRUE, ...) {
   op <- par(no.readonly = TRUE)
   if (is.logical(lr_test)) {
     rho <- 0
@@ -923,7 +924,7 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
     time   <- gsub('\\((\\w+)|.', '\\1', form[1L])
   }
   
-  form  <- if (!missing(time))
+  form  <- if (!is.null(time))
     sprintf('Surv(%s, %s) ~ %s', time, event, strata) else
       sprintf('Surv(%s_time, %s_ind) ~ %s', event, event, strata)
   form  <- as.formula(form)
@@ -932,7 +933,7 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
   if (plot & (!add | !single))
     on.exit(par(op))
     
-  if (!missing(by)) {
+  if (!is.null(by)) {
     data[, by] <- as.factor(data[, by])
     if (single) {
       add <- FALSE
@@ -944,25 +945,24 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
     }
     sp <- split(data, droplevels(data[, by]))
     ## list names will be main title(s)
-    names(sp) <- rep_len(if (missing(main))
-      paste(by, names(sp), sep = '=') else main, length(sp))
+    names(sp) <- rep_len(main %||% paste(by, names(sp), sep = '='),
+                         length(sp))
   } else {
     if (missing(add)) {
       add <- FALSE
-      par(mfrow = c(1L,1L))
+      par(mfrow = c(1L, 1L))
     }
     map.col <- FALSE
     sp <- list(data)
   }
   
   ## define these before passing to loop
-  mlabs <- missing(strata_lab)
-  msub  <- missing(sub)
-  fig   <- if (length(sp) > 1L & missing(fig_lab))
-    LETTERS[seq_along(sp)] else if (missing(fig_lab)) '' else fig_lab
+  mlabs <- is.null(strata_lab)
+  msub  <- is.null(sub)
+  fig   <- if (length(sp) > 1L & is.null(fig_lab))
+    LETTERS[seq_along(sp)] else if (is.null(fig_lab)) '' else fig_lab
   fig   <- rep_len(fig, length(sp))
-  ylab  <- if (missing(ylab))
-    sprintf('%s probability', toupper(event)) else ylab
+  ylab  <- ylab %||% sprintf('%s probability', toupper(event))
   
   ## possible names for strata labels/title
   dots <- lapply(dots(...), function(x)
@@ -976,11 +976,11 @@ kmplot_by <- function(strata = '1', event, data, by, single = TRUE,
   if (!is.null(names(strata_names)))
     names(sp) <- strata_names
   
-  if (!missing(by) & is.null(names(col.surv))) {
+  if (!is.null(by) & is.null(names(col.surv))) {
     sl <- survfit(form, data)
     col.surv <- setNames(
       col.surv %||% seq_along(sl$n),
-      if (by == strata || missing(strata_lab) || identical(strata_lab, FALSE))
+      if (by == strata || is.null(strata_lab) || identical(strata_lab, FALSE))
         NULL else strata_names %||% names(sl$strata)
     )
     if (length(sp) != length(col.surv))

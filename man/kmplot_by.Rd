@@ -4,9 +4,10 @@
 \alias{kmplot_by}
 \title{kmplot_by}
 \usage{
-kmplot_by(strata = "1", event, data, by, single = TRUE, lr_test = TRUE,
-  main, ylab, sub, strata_lab, fig_lab, col.surv = NULL, map.col = FALSE,
-  time, add = FALSE, plot = TRUE, ...)
+kmplot_by(strata = "1", event, data, by = NULL, single = TRUE,
+  lr_test = TRUE, main = NULL, ylab = NULL, sub = NULL,
+  strata_lab = NULL, fig_lab = NULL, col.surv = NULL, map.col = FALSE,
+  time = NULL, add = FALSE, plot = TRUE, ...)
 }
 \arguments{
 \item{strata}{character string of the strata variable}
