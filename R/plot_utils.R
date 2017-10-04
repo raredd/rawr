@@ -18,12 +18,14 @@ dodge_ <- function(x, at, dist, jit) {
   data.frame(x = at + (offset - mean(offset)), y = gr$vs)
 }
 
-jit_ <- function(g.si, hm.sf) hm.sf - (g.si + 1) / 2
+jit_ <- function(g.si, hmsf)
+  hmsf - (g.si + 1) / 2
 
 grouping_ <- function(v, dif) {
   ## turn values in each group into their plotting points
   # grouping_(rep(1:2, 4), .1)
-  hmsf_ <- function(x) ave(x, x, FUN = seq_along)
+  hmsf_ <- function(x)
+    ave(x, x, FUN = seq_along)
   vs <- sort(v)
   together <- c(FALSE, diff(vs) <=  dif)
   g.id <- cumsum(!together)
@@ -31,7 +33,7 @@ grouping_ <- function(v, dif) {
   vg <- cbind(vs = vs, g.id = g.id, g.si = g.si)[rank(v), ]
   if (length(v) == 1L)
     vg <- as.data.frame(t(vg))
-  data.frame(vg, hmsf = hmsf_(vg[, 2]))
+  data.frame(vg, hmsf = hmsf_(vg[, 2L]))
 }
 
 do_rect_ <- function(n, x, y, single = FALSE, border = NA, col = NA,

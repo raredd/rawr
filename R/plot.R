@@ -366,13 +366,14 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
     if (is.null(xlab))
       xlab <- deparse(substitute(g))
     if (is.list(x))
-      message('\'x\' is a list -- \'g\' will be ignored', domain = NA) else {
+      message('\'x\' is a list -- \'g\' will be ignored', domain = NA)
+    else {
         if (is.null(ylab))
           ylab <- deparse(substitute(x))
         if (is.null(xlab))
           xlab <- deparse(substitute(g))
         x <- split(x, g)
-      }
+    }
   } else {
     if (is.null(xlab))
       xlab <- deparse(substitute(x))
@@ -381,12 +382,16 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
   args <- list(x, ...)
   namedargs <- if (!is.null(attributes(args)$names))
     attributes(args)$names !=  '' else logical(length(args))
-  groups <- if (is.list(x)) x else args[!namedargs]
+  groups <- if (is.list(x))
+    x else args[!namedargs]
   pars   <- args[namedargs]
+  
   if ((n <- length(groups)) == 0L)
     stop('invalid first argument')
+  
   if (length(class(groups)))
     groups <- unclass(groups)
+  
   if (!missing(names))
     attr(groups, 'names') <- names else {
       if (is.null(attr(groups, 'names')))
@@ -406,7 +411,7 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
   if (missing(at))
     at <- seq.int(ng)
   if (length(at) !=  ng) {
-    warning("\'at\' must have same length as the number of groups", domain = NA)
+    warning('\'at\' must have same length as the number of groups')
     at <- seq.int(ng)
   }
   
@@ -440,11 +445,11 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
   if (group.col) {
     ## colors by group
     g.col <- rep_len(col, ng)
-    col <- rep(g.col, lg)
+    col   <- rep(g.col, lg)
   } else {
     ## colors by individual or global
     col   <- rep_len(col, nv)
-    g.col <- rep_len(1, ng)
+    g.col <- rep_len(1L, ng)
   }
   pch <- if (group.pch) {
     ## plot characters by group
@@ -498,6 +503,7 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
       do.call('localWindow', c(list(ylim, xlim), pars))
     else do.call('localWindow', c(list(xlim, ylim), pars))
   }
+  
   if (show.n && horizontal)
     par(oma = par('oma') + c(0,0,0,2))
   panel.first
@@ -505,81 +511,119 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
   out <- list()
   Lme <- 0.2 * c(-1, 1)
   
-  for (i in 1:ng) {
+  for (i in seq.int(ng)) {
     to.plot <- groups[[i]]
     nn <- names(groups)
     gs <- to.plot$g.si
-    hms <- to.plot$hmsf
-    x <- rep(at[i], nrow(to.plot)) + jit_(gs, hms) * jit
+    hm <- to.plot$hmsf
+    x <- rep(at[i], nrow(to.plot)) + jit_(gs, hm) * jit
     y <- to.plot$vs
     
     ## dots behind
     if (type[i] == 'bd') {
-      bp <- do.call('boxplot',
-                    c(list(x = y, at = at[i], plot = FALSE, add = FALSE,
-                           axes = FALSE, col = boxcol[i],
-                           border = boxborder[i], outline = FALSE,
-                           horizontal = horizontal), boxplot.pars))
-      notoplot <- (y <= bp$stats[5, ]) & (y >= bp$stats[1, ])
+      bp <- do.call(
+        'boxplot',
+        c(list(x = y, at = at[i], plot = FALSE, add = FALSE,
+               axes = FALSE, col = boxcol[i], border = boxborder[i],
+               outline = FALSE, horizontal = horizontal),
+          boxplot.pars)
+      )
+      notoplot <- (y <= bp$stats[5L, ]) & (y >= bp$stats[1L, ])
       if (sum(notoplot) > 0)
         col[[i]][notoplot] <- '#bfbfbf'
-      if (horizontal) {
-        do.call('localPoints', c(list(x = y, y = x, pch = pch[[i]],
-                                      col = col[[i]], cex = cex[[i]]),
-                                 pars))
-      } else do.call('localPoints', c(list(x = x, y = y, pch = pch[[i]],
-                                           col = col[[i]], cex = cex[[i]]),
-                                      pars))
+      if (horizontal)
+        do.call(
+          'localPoints',
+          c(list(x = y, y = x, pch = pch[[i]],
+                 col = col[[i]], cex = cex[[i]]),
+            pars)
+        )
+      else
+        do.call(
+          'localPoints',
+          c(list(x = x, y = y, pch = pch[[i]],
+                 col = col[[i]], cex = cex[[i]]),
+            pars)
+        )
     }
     ## box in front
     if (type[i] %in% c('bd', 'b')) {
-      bp <- do.call('boxplot',
-                    c(list(x = y, at = at[i], add = TRUE, axes = FALSE,
-                           col = boxcol[i], border = boxborder[i],
-                           outline = FALSE, horizontal = horizontal),
-                      boxplot.pars))
-      toplot <- (y > bp$stats[5, ]) | (y < bp$stats[1, ])
+      bp <- do.call(
+        'boxplot',
+        c(list(x = y, at = at[i], add = TRUE, axes = FALSE,
+               col = boxcol[i], border = boxborder[i],
+               outline = FALSE, horizontal = horizontal),
+          boxplot.pars)
+      )
+      
+      toplot <- (y > bp$stats[5L, ]) | (y < bp$stats[1L, ])
+      
       if (sum(toplot) > 0)
         if (col[[i]][toplot][1] == '#bfbfbf')
-          col[[i]][toplot] <- 1
+          col[[i]][toplot] <- 1L
       if (horizontal) {
-        do.call('localPoints',
-                c(list(x = y[toplot], y = x[toplot], pch = pch[[i]][toplot],
-                       col = col[[i]][toplot], cex = cex[[i]][toplot]),
-                  pars))
+        do.call(
+          'localPoints',
+          c(list(x = y[toplot], y = x[toplot], pch = pch[[i]][toplot],
+                 col = col[[i]][toplot], cex = cex[[i]][toplot]),
+            pars)
+        )
       } else
-        do.call('localPoints',
-                c(list(x = x[toplot], y = y[toplot], pch = pch[[i]][toplot],
-                       col = col[[i]][toplot], cex = cex[[i]][toplot]), pars))
+        do.call(
+          'localPoints',
+          c(list(x = x[toplot], y = y[toplot], pch = pch[[i]][toplot],
+                 col = col[[i]][toplot], cex = cex[[i]][toplot]), pars)
+        )
     }
     ## box behind
     if (type[i] == 'db')
-      bp <- do.call('boxplot',
-                    c(list(x = y, at = at[i], add = TRUE, axes = FALSE,
-                           col = boxcol[i], border = boxborder[i],
-                           outline = FALSE, horizontal = horizontal),
-                      boxplot.pars))
+      bp <- do.call(
+        'boxplot',
+        c(list(x = y, at = at[i], add = TRUE, axes = FALSE,
+               col = boxcol[i], border = boxborder[i],
+               outline = FALSE, horizontal = horizontal),
+          boxplot.pars)
+      )
     ## dots in front
     if (type[i] %in% c('db', 'd')) {
       if (horizontal)
-        do.call('localPoints', c(list(x = y, y = x, pch = pch[[i]],
-                                      col = col[[i]], cex = cex[[i]]), pars))
+        do.call(
+          'localPoints',
+          c(list(x = y, y = x, pch = pch[[i]],
+                 col = col[[i]], cex = cex[[i]]), pars)
+        )
       else
-        do.call('localPoints', c(list(x = x, y = y, pch = pch[[i]],
-                                      col = col[[i]], cex = cex[[i]]), pars))
+        do.call(
+          'localPoints',
+          c(list(x = x, y = y, pch = pch[[i]],
+                 col = col[[i]], cex = cex[[i]]), pars)
+        )
     }
     
     ## mean and median lines
     if (mean.line[i]) {
       if (horizontal)
-        do.call('lines', c(list(rep(mean(y), 2), at[i] + Lme), mean.pars))
-      else do.call('lines', c(list(at[i] + Lme, rep(mean(y), 2)), mean.pars))
+        do.call(
+          'lines',
+          c(list(rep(mean(y), 2L), at[i] + Lme), mean.pars)
+        )
+      else
+        do.call(
+          'lines',
+          c(list(at[i] + Lme, rep(mean(y), 2)), mean.pars)
+        )
     }
     if (median.line[i]) {
       if (horizontal)
-        do.call('lines', c(list(rep(median(y), 2), at[i] + Lme), median.pars))
+        do.call(
+          'lines',
+          c(list(rep_len(median(y), 2L), at[i] + Lme), median.pars)
+        )
       else
-        do.call('lines', c(list(at[i] + Lme, rep(median(y), 2)), median.pars))
+        do.call(
+          'lines',
+          c(list(at[i] + Lme, rep_len(median(y), 2L)), median.pars)
+        )
     }
   }
   
@@ -600,17 +644,22 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
       }
     )
     
-    mtext(pvalr(pv$p.value, show.p = TRUE), 3, line = 0.5, cex = 1.2,
+    mtext(pvalr(pv$p.value, show.p = TRUE), side = 3L, line = 0.5,
           # at = if (ng %% 2 == 0) NA else par('usr')[2] * .95,
-          at = par('usr')[2], font = 3L, adj = 1)
+          cex = 1.2, at = par('usr')[2], font = 3L, adj = 1)
   }
   
   panel.last
   
   if (axes) {
-    do.call('localAxis',
-            c(list(side = 1 + horizontal, at = at, labels = names), pars))
-    do.call('localAxis', c(list(side = 2 - horizontal), pars))
+    do.call(
+      'localAxis',
+      c(list(side = 1 + horizontal, at = at, labels = names), pars)
+    )
+    do.call(
+      'localAxis',
+      c(list(side = 2L - horizontal), pars)
+    )
   }
   
   ## frame and text, optional sample sizes
@@ -624,30 +673,39 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
                      ifelse(l2 > 0L, l2, '') else ''
     )
     if (horizontal)
-      do.call('localText', c(list(
-        x = (diff(ylim) * .08 * sign(ylim) + ylim)[2L], y = at,
-        labels = txt, xaxt = 's', yaxt = 's', xpd = NA
-      ), pars))
+      do.call(
+        'localText',
+        c(list(x = (diff(ylim) * .08 * sign(ylim) + ylim)[2L], y = at,
+               labels = txt, xaxt = 's', yaxt = 's', xpd = NA), pars)
+      )
     else
-      do.call('localText', c(list(
-        x = at, y = par('usr')[4L], labels = txt,
-        xaxt = 's', yaxt = 's', xpd = NA, pos = 3
-      ), pars))
-      # do.call('localMtext', c(list(
-      #   text = txt, side = 3 + horizontal, at = at, xaxt = 's', yaxt = 's'),
-      #   pars))
+      do.call(
+        'localText',
+        c(list(x = at, y = par('usr')[4L], labels = txt,
+               xaxt = 's', yaxt = 's', xpd = NA, pos = 3), pars)
+      )
+      # do.call(
+      #   'localMtext',
+      #   c(list(text = txt, side = 3 + horizontal, at = at,
+      #          xaxt = 's', yaxt = 's'), pars)
+      # )
   }
   
   if (frame.plot)
     do.call('localBox', pars)
   if (ann) {
     if (horizontal)
-      do.call('localTitle', c(list(main = main, sub = sub,
-                                   xlab = ylab, ylab = xlab), pars))
+      do.call(
+        'localTitle',
+        c(list(main = main, sub = sub, xlab = ylab, ylab = xlab), pars)
+      )
     else
-      do.call('localTitle', c(list(main = main, sub = sub,
-                                   xlab = xlab, ylab = ylab), pars))
+      do.call(
+        'localTitle',
+        c(list(main = main, sub = sub, xlab = xlab, ylab = ylab), pars)
+      )
   }
+  
   invisible(zzz)
 }
 

@@ -10,7 +10,7 @@ dodge(x, ...)
 
 \method{dodge}{formula}(formula, data = NULL, ...)
 
-\method{dodge}{default}(x, y, dist, jit, ...)
+\method{dodge}{default}(x, y, dist = NULL, jit = NULL)
 }
 \arguments{
 \item{x}{grouping variables or, equivalently, positions along x-axis}
@@ -28,7 +28,8 @@ according to the grouping variable, \code{group}}
 \item{y}{a numeric vector of data, y-values}
 
 \item{jit, dist}{jittering parameters; \code{jit} describes the spread of
-close points, and \code{dist} defines a range to consider points "close"}
+close points, and \code{dist} defines a range to consider points "close";
+both may be specified for each group and recycled as needed}
 }
 \description{
 Dodge and center overlapping points by group. Spreads scattered points
@@ -66,5 +67,5 @@ points(dodge(mpg ~ vs + gear, data = mtcars), col = 2, pch = 19)
 
 }
 \seealso{
-\code{\link{jitter}}, \code{\link{tplot}}
+\code{\link{jitter}}; \code{\link{tplot}}; \code{\link{dodge2}}
 }
