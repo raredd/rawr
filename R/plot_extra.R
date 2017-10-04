@@ -23,11 +23,12 @@
 #' @param x grouping variables or, equivalently, positions along x-axis
 #' @param y a numeric vector of data, y-values
 #' @param jit,dist jittering parameters; \code{jit} describes the spread of
-#' close points, and \code{dist} defines a range to consider points "close"
+#' close points, and \code{dist} defines a range to consider points "close";
+#' both may be specified for each group and recycled as needed
 #' @param ... additional arguments passed to other methods
 #' 
 #' @seealso
-#' \code{\link{jitter}}, \code{\link{tplot}}
+#' \code{\link{jitter}}; \code{\link{tplot}}; \code{\link{dodge2}}
 #' 
 #' @examples
 #' ## these are equivalent ways to call dodge:
@@ -76,12 +77,12 @@ dodge.formula <- function(formula, data = NULL, ...) {
   mf <- eval(m, parent.frame())
   response <- attr(attr(mf, 'terms'), 'response')
   
-  dodge(mf[, -response], mf[, response])
+  dodge(mf[, -response], mf[, response], ...)
 }
 
 #' @rdname dodge
 #' @export
-dodge.default <- function(x, y, dist, jit, ...) {
+dodge.default <- function(x, y, dist = NULL, jit = NULL) {
   if (is.data.frame(y)) {
     x <- y[, 2L]
     y <- y[, 1L]
@@ -91,16 +92,133 @@ dodge.default <- function(x, y, dist, jit, ...) {
     as.numeric(do.call('interaction', x)) else
       rep_len(if (missing(x)) 1L else x, length(x))
   
-  if (missing(dist) || is.na(dist) || is.null(dist))
-    dist <- diff(range(x)) / 100
-  if (missing(jit) || is.na(jit) || is.null(jit))
+  ng <- length(unique(x))
+  
+  if (is.null(dist) || is.na(dist))
+    dist <- diff(range(x, na.rm = TRUE)) / 100
+  dist <- rep_len(dist, ng)[x]
+  
+  if (is.null(jit) || is.na(jit))
     jit <- 0.1
+  jit <- rep_len(jit, ng)[x]
   
   ## call dodge on each group
-  cbind.data.frame(
-    x_new = ave(seq_along(y), x, FUN = function(ii)
-      dodge_(y[ii], x[ii], dist, jit)$x),
+  list(
+    x = ave(seq_along(y), x, FUN = function(ii)
+      dodge_(y[ii], x[ii], unique(dist[ii]), unique(jit[ii]))$x),
     y = y
+  )
+}
+
+#' Point dodge
+#' 
+#' Dodge and center overlapping points by group. Spreads scattered points
+#' similar to \code{jitter} but symmetrically. Although the default method
+#' can be used, it is recommended to use the formula method for ease of use
+#' and to set useful defaults for \code{jit} and \code{dist}.
+#' 
+#' @param formula a \code{\link{formula}}, such as \code{y ~ group}, where
+#' \code{y} is a numeric vector of data values to be split into groups
+#' according to the grouping variable, \code{group}
+#' @param data optional matrix or data frame containing the variables in
+#' \code{formula}; by default, the variables are taken from
+#' \code{environment(formula)}
+#' @param x grouping variables or, equivalently, positions along x-axis
+#' @param y a numeric vector of data, y-values
+#' @param jit,dist jittering parameters; \code{jit} describes the spread of
+#' close points, and \code{dist} defines a range to consider points "close";
+#' both may be specified for each group and recycled as needed
+#' @param ... additional arguments passed to other methods
+#' 
+#' @seealso
+#' \code{\link{jitter}}; \code{\link{tplot}}; \code{\link{dodge}}
+#' 
+#' @examples
+#' ## these are equivalent ways to call dodge2:
+#' dodge2(mpg ~ gear + vs, mtcars)
+#' with(mtcars, dodge2(list(gear, vs), mpg))
+#' dodge2(mtcars[, c('gear', 'vs')], mtcars$mpg)
+#' 
+#' 
+#' ## compare to overlapping points and jittering
+#' op <- par(no.readonly = TRUE)
+#' sp <- split(mtcars$mpg, do.call(interaction, mtcars[, c('gear','vs')]))
+#' plot.new()
+#' par(mar = c(0,0,0,0), cex = 2)
+#' plot.window(c(.5,6.5),c(10,35))
+#' box()
+#' for (ii in seq_along(sp))
+#'   points(rep(ii, length(sp[[ii]])), sp[[ii]])
+#' for (ii in seq_along(sp))
+#'   points(jitter(rep(ii, length(sp[[ii]]))), sp[[ii]], col = 4, pch = 1)
+#' points(dodge2(mpg ~ gear + vs, mtcars), col = 2, pch = 4)
+#' legend('topleft', pch = c(1,1,4), col = c(1,4,2), cex = .8,
+#'        legend = c('overlapping','random jitter','dodging'))
+#' par(op)
+#' 
+#' 
+#' ## practical use
+#' boxplot(mpg ~ vs + gear, data = mtcars)
+#' points(dodge2(mpg ~ vs + gear, data = mtcars), col = 2, pch = 19)
+#'
+#' @export
+
+dodge2 <- function(x, ...) UseMethod('dodge2')
+
+#' @rdname dodge2
+#' @export
+dodge2.formula <- function(formula, data = NULL, ...) {
+  if (missing(formula) || (length(formula) != 3L))
+    stop("\'formula\' missing or incorrect")
+  
+  m <- match.call(expand.dots = FALSE)
+  if (is.matrix(eval(m$data, parent.frame())))
+    m$data <- as.data.frame(data)
+  m$`...` <- NULL
+  m[[1L]] <- as.name('model.frame')
+  
+  mf <- eval(m, parent.frame())
+  response <- attr(attr(mf, 'terms'), 'response')
+  
+  dodge2(mf[, -response], mf[, response], ...)
+}
+
+#' @rdname dodge2
+#' @export
+dodge2.default <- function(x, y, jit = NULL, dist = NULL) {
+  if (is.data.frame(y)) {
+    x <- y[, 2L]
+    y <- y[, 1L]
+  }
+  
+  x <- if (!missing(x) && is.list(x))
+    as.numeric(do.call('interaction', x)) else
+      rep_len(if (missing(x)) 1L else x, length(x))
+  
+  sp <- split(y, x)
+  at <- seq_along(sp)
+  ng <- length(at)
+  
+  if (is.null(dist))
+    dist <- diff(range(y, na.rm = TRUE)) / 100
+  dist <- rep_len(dist, ng)
+  
+  if (is.null(jit))
+    jit <- 1 / max(lengths(sp))
+  jit <- rep_len(jit, ng)
+  
+  # gr <- lapply(sp, grouping_, dif = dist)
+  gr <- Map(grouping_, sp, dist)
+  gr <- lapply(seq_along(gr), function(ii) {
+    gi <- gr[[ii]]
+    aa <- at[ii]
+    gi$x <- rep(aa, nrow(gi)) + jit_(gi$g.si, gi$hmsf) * jit[ii]
+    gi
+  })
+  
+  list(
+    x = unlist(lapply(gr, '[[', 'x')),
+    y = unlist(sp)
   )
 }
 

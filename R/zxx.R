@@ -1,11 +1,11 @@
 ### some random shit
 # ht, progress, recoder, ident, allequal, search_df, search_hist, fapply,
 # try_require, list2file, Restart, helpExtract, Round, round_to, updateR,
-# read_clip, icols, fill_df, kinda_sort, rgene, install_temp, nestedMerge,
-# nestedmerge, path_extract, fname, file_name, file_ext, rm_ext, mgrep,
-# mgrepl, msub, mgsub, flatten, tree, rm_null, cum_reset, cum_na, cumsum_na,
-# cumprod_na, cummax_na, cummin_na, vgrep, vgrepl, justify, factors,
-# sample_each, pickcol, lunique, rm_nonascii
+# read_clip, icols, fill_df, kinda_sort, rt, rgene, install_temp,
+# nestedMerge, nestedmerge, path_extract, fname, file_name, file_ext, rm_ext,
+# mgrep, mgrepl, msub, mgsub, flatten, tree, rm_null, cum_reset, cum_na,
+# cumsum_na, cumprod_na, cummax_na, cummin_na, vgrep, vgrepl, justify,
+# factors, sample_each, pickcol, lunique, rm_nonascii
 # 
 # unexported:
 # helpExtract_, mgrep_, msub_, fill_spaces_
@@ -1034,7 +1034,7 @@ fill_df <- function(data, key, ids, fill, values) {
 #' \code{n} elements will be randomly selected, and their positions will
 #' remain unchanged as all other elements are sorted.
 #' 
-#' @param x a vector
+#' @param x a numeric, complex, character, or logical vector
 #' @param n number of elements of x to remove from sorting (the default is
 #' approximately 10\% of \code{x}), ignored if \code{indices} is given
 #' @param decreasing logical; if \code{FALSE} (default), \code{x} is sorted
@@ -1044,6 +1044,9 @@ fill_df <- function(data, key, ids, fill, values) {
 #' 
 #' @return
 #' \code{x} sorted approximately \code{(length(x) - n)/length(x)*100} percent.
+#' 
+#' @seealso
+#' \code{\link{sym_sort}}
 #' 
 #' @examples
 #' set.seed(1)
@@ -1070,6 +1073,42 @@ kinda_sort <- function(x, n, decreasing = FALSE, indices) {
   x[rl] <- sort(x, decreasing = decreasing)
   x[!rl] <- y
   x
+}
+
+#' Symmetrical sort
+#' 
+#' Sort a vector symmetrically, i.e., the two most extreme values are put
+#' at opposite ends, followed by the next two, etc.
+#' 
+#' @param x a numeric, complex, character, or logical vector
+#' @param rev logical; if \code{TRUE}, vectors are sorted in reverse
+#' 
+#' @seealso
+#' \code{\link{kinda_sort}}
+#' 
+#' @examples
+#' sym_sort(letters)
+#' sym_sort(letters, rev = TRUE)
+#' 
+#' plot(sym_sort(runif(50)))
+#' plot(sym_sort(rnorm(99), rev = TRUE))
+#' 
+#' @export
+
+sym_sort <- function(x, rev = FALSE) {
+  rev <- if (rev)
+    0:1 else 1:0
+  s <- sort(x)
+  f <- rep_len(1:2, length(s))
+  
+  sp <- split(s, f)
+  sp <- Vectorize(sort, SIMPLIFY = FALSE)(sp, decreasing = !!rev)
+  nn <- unlist(sapply(sp, names))
+  
+  sp <- unlist(c(sp))
+  names(sp) <- nn
+  
+  sp
 }
 
 #' Generate random gene names
