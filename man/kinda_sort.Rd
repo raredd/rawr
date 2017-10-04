@@ -7,7 +7,7 @@
 kinda_sort(x, n, decreasing = FALSE, indices)
 }
 \arguments{
-\item{x}{a vector}
+\item{x}{a numeric, complex, character, or logical vector}
 
 \item{n}{number of elements of x to remove from sorting (the default is
 approximately 10\% of \code{x}), ignored if \code{indices} is given}
@@ -37,4 +37,7 @@ kinda_sort(x)
 kinda_sort(x, indices = 2:5)
 # [1]  1  4  5  7  2  3  6  8  9 10
 
+}
+\seealso{
+\code{\link{sym_sort}}
 }
