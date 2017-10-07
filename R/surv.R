@@ -338,6 +338,7 @@ kmplot <- function(s,
   
   if (is.null(xlim))
     xlim <- c(0, max(s$time))
+  oxlim <- xlim
   if (is.null(ylim))
     ylim <- c(0, 1)
   
@@ -372,6 +373,10 @@ kmplot <- function(s,
   
   ## at-risk table below surv plot
   if (atrisk) {
+    usr <- par('usr')
+    
+    atrisk.at <- atrisk.at[atrisk.at <= usr[2L]]
+    
     ## set colors for lines of text
     col.atrisk <- if (isTRUE(atrisk.col))
       col.surv else if (!identical(atrisk.col, FALSE) &&
@@ -379,7 +384,6 @@ kmplot <- function(s,
         atrisk.col else rep_len(1L, ng)
     
     ## labels for each row in at-risk table
-    usr <- par('usr')
     group.name.pos <- diff(usr[1:2]) / -8
     padding  <- abs(group.name.pos / 8)
     line.pos <- seq.int(ng)[order(strata.order)] + 2L
@@ -398,11 +402,11 @@ kmplot <- function(s,
     
     ## draw matching lines for n at risk  
     if (atrisk.lines)
-      for (i in seq.int(ng))
+      for (ii in seq.int(ng))
         ## mess with the 4 here to adjust the length of the atrisk.line
         axis(1L, c(group.name.pos + padding, 0 - 4 * padding), xpd = NA,
-             labels = FALSE, line = line.pos[i] + 0.6, lwd.ticks = 0,
-             col = col.surv[i], lty = lty.surv[i], lwd = lwd.surv[i])
+             labels = FALSE, line = line.pos[ii] + 0.6, lwd.ticks = 0,
+             col = col.surv[ii], lty = lty.surv[ii], lwd = lwd.surv[ii])
     
     ## numbers at risk
     ss <- summary(s, times = atrisk.at)
@@ -417,12 +421,13 @@ kmplot <- function(s,
     L <- do.call('rbind', lapply(ndigits, `length<-`, max.len))
     nd <- apply(L, 2L, max, na.rm = TRUE)
     
-    for (i in seq.int(ng)) {
-      tmp <- d2[[i]]
+    for (ii in seq.int(ng)) {
+      tmp <- d2[[ii]]
       w.adj <- strwidth('0', cex = cex.axis, font = par('font')) /
         2 * nd[seq.int(nrow(tmp))]
       mtext(tmp$n.risk, side = 1L, at = tmp$time + w.adj, las = 1L,
-            line = line.pos[i], cex = cex.axis, adj = 1, col = col.atrisk[i])
+            line = line.pos[ii], cex = cex.axis, adj = 1,
+            col = col.atrisk[ii])
     }
     
     if (!(identical(atrisk.lab, FALSE) | is.null(atrisk.lab)))
@@ -471,8 +476,12 @@ kmplot <- function(s,
   }
   
   ## survival and confidence lines
-  for (i in seq.int(ng)) {
-    tmp <- dat.list[[i]]
+  u0 <- u1 <- par('usr')
+  u1[2L] <- oxlim[2L]
+  do.call('clip', as.list(u1))
+
+  for (ii in seq.int(ng)) {
+    tmp <- dat.list[[ii]]
     if (nrow(tmp) < 2L) {
       if (any(!is.na(col.band)))
         message('Note: strata level with one observation - no CI plotted.')
@@ -484,27 +493,33 @@ kmplot <- function(s,
       naL <- which(is.na(L))
       L[naL] <- L[naL - 1L]
       U[naL] <- U[naL - 1L]
-      lines(x, L, type = 's', col = col.ci[i], lty = lty.ci[i], lwd = lwd.ci[i])
-      lines(x, U, type = 's', col = col.ci[i], lty = lty.ci[i], lwd = lwd.ci[i])
+      
+      lines(x, L, type = 's', col = col.ci[ii],
+            lty = lty.ci[ii], lwd = lwd.ci[ii])
+      lines(x, U, type = 's', col = col.ci[ii],
+            lty = lty.ci[ii], lwd = lwd.ci[ii])
       
       ## confidence bands
       if (any(!is.na(col.band))) {
-        col.band[i] <- tcol(col.band[i], alpha = .5)
-        polygon(c(x, rev(x)), c(U, rev(L)), border = NA, col = col.band[i])
+        col.band[ii] <- tcol(col.band[ii], alpha = .5)
+        polygon(c(x, rev(x)), c(U, rev(L)),
+                border = NA, col = col.band[ii])
       }
     }
     
     ## survival curves
-    lines(s[i], conf.int = FALSE, col = col.surv[i], lty = lty.surv[i],
-          lwd = lwd.surv, mark.time = FALSE, xpd = FALSE)
+    lines(s[ii], conf.int = FALSE, col = col.surv[ii],
+          lty = lty.surv[ii], lwd = lwd.surv, mark.time = FALSE)
     ## uncomment when bug in survival v2.39-5 fixed
-    # points(s[i], lwd = lwd.surv, pch = mark, col = col.surv[i], xpd = FALSE)
+    # points(s[ii], lwd = lwd.surv, pch = mark, col = col.surv[ii])
     ## actually use this for more features
-    if (!mark[i] == FALSE)
-      points.kmplot(s[i], col = col.surv[i], pch = mark[i],
-                    censor = TRUE, event = FALSE, bump = mark[i] == 'bump',
-                    plot = TRUE, lwd = lwd.mark[i], xpd = FALSE)
+    if (!mark[ii] == FALSE)
+      points.kmplot(s[ii], col = col.surv[ii], pch = mark[ii],
+                    censor = TRUE, event = FALSE, bump = mark[ii] == 'bump',
+                    plot = TRUE, lwd = lwd.mark[ii])
   }
+  
+  do.call('clip', as.list(u0))
   
   ## add survdiff text in upper right corner
   if (lr_test) {
@@ -538,15 +553,15 @@ points.kmplot <- function(x, xscale, xmax, fun,
                           censor = TRUE, event = FALSE,
                           bump = FALSE, plot = TRUE, ...) {
   conf.int <- FALSE
-  if (inherits(x, "survfitms")) {
+  if (inherits(x, 'survfitms')) {
     x$surv <- 1 - x$pstate
     if (is.matrix(x$surv)) {
       dimnames(x$surv) <- list(NULL, x$states)
-      if (ncol(x$surv) > 1 && any(x$states == "")) {
-        x$surv <- x$surv[, x$states != ""]
+      if (ncol(x$surv) > 1 && any(x$states == '')) {
+        x$surv <- x$surv[, x$states != '']
         if (is.matrix(x$p0)) 
-          x$p0 <- x$p0[, x$states != ""]
-        else x$p0 <- x$p0[x$states != ""]
+          x$p0 <- x$p0[, x$states != '']
+        else x$p0 <- x$p0[x$states != '']
       }
     }
     if (!is.null(x$lower)) {
@@ -554,7 +569,7 @@ points.kmplot <- function(x, xscale, xmax, fun,
       x$upper <- 1 - x$upper
     }
     if (missing(fun)) 
-      fun <- "event"
+      fun <- 'event'
   }
   
   firstx <- firsty <- NA # part of the common args, but irrelevant for points
@@ -582,25 +597,25 @@ points.kmplot <- function(x, xscale, xmax, fun,
     ## prune back the survival curves
     ## I need to replace x's over the limit with xmax, and y's over the
     ## limit with either the prior y value  or firsty
-    keepx  <- keepy <- NULL  ## lines to keep
+    keepx  <- keepy <- NULL ## lines to keep
     tempn  <- table(stemp)
     offset <- cumsum(c(0, tempn))
-    for (i in 1:nstrat) {
-      ttime <- stime[stemp == i]
+    for (ii in seq.int(nstrat)) {
+      ttime <- stime[stemp == ii]
       if (all(ttime <= xmax)) {
-        keepx <- c(keepx, 1:tempn[i] + offset[i])
-        keepy <- c(keepy, 1:tempn[i] + offset[i])
+        keepx <- c(keepx, seq.int(tempn)[ii] + offset[ii])
+        keepy <- c(keepy, seq.int(tempn)[ii] + offset[ii])
       } else {
-        bad <- min((1:tempn[i])[ttime > xmax])
-        if (bad == 1)  {  ## lost them all
+        bad <- min((seq.int(tempn)[ii])[ttime > xmax])
+        if (bad == 1)  { ## lost them all
           if (!is.na(firstx)) { ## and we are plotting lines
-            keepy <- c(keepy, 1 + offset[i])
-            ssurv[1 + offset[i], ] <- firsty[i, ]
+            keepy <- c(keepy, 1 + offset[ii])
+            ssurv[1 + offset[ii], ] <- firsty[ii, ]
           }
-        } else  keepy <- c(keepy, c(1:(bad - 1), bad - 1) + offset[i])
-        keepx <- c(keepx, (1:bad) + offset[i])
-        stime[bad + offset[i]] <- xmax
-        x$n.event[bad + offset[i]] <- 1   ## don't plot a tick mark
+        } else  keepy <- c(keepy, c(seq.int(bad - 1), bad - 1) + offset[ii])
+        keepx <- c(keepx, (seq.int(bad)) + offset[ii])
+        stime[bad + offset[ii]] <- xmax
+        x$n.event[bad + offset[ii]] <- 1 ## don't plot a tick mark
       }
     }
     
@@ -654,14 +669,16 @@ points.kmplot <- function(x, xscale, xmax, fun,
       st <- stime[x$n.event == 0]
       ss <- ssurv[x$n.event == 0]
       if (bump)
-        segments(st, ss, st, ss + diff(par('usr')[3:4]) / 100, col = col, ...)
+        segments(st, ss, st, ss + diff(par('usr')[3:4]) / 100,
+                 col = col, ...)
       else points(st, ss, col = col, pch = pch, ...)
     }
     if (event) {
       st <- stime[x$n.event > 0]
       ss <- ssurv[x$n.event > 0]
       if (bump)
-        segments(st, ss, st, ss + diff(par('usr')[3:4]) / 100, col = col, ...)
+        segments(st, ss, st, ss + diff(par('usr')[3:4]) / 100,
+                 col = col, ...)
       else points(st, ss, col = col, pch = pch, ...)
     }
   } else {
@@ -669,22 +686,24 @@ points.kmplot <- function(x, xscale, xmax, fun,
     col <- rep(col, length = ncurve)
     if (!missing(pch))
       pch2 <- rep(pch, length = ncurve)
-    for (j in 1:ncol(ssurv)) {
-      for (i in unique(stemp)) {
+    for (jj in seq.int(ncol(ssurv))) {
+      for (ii in unique(stemp)) {
         if (censor) {
-          who <- which(stemp == i & x$n.event == 0)
+          who <- which(stemp == ii & x$n.event == 0)
           st <- stime[who]
-          ss <- ssurv[who, j]
+          ss <- ssurv[who, jj]
           if (bump)
-            segments(st, ss, st, ss + diff(par('usr')[3:4]) / 100, col = col, ...)
+            segments(st, ss, st, ss + diff(par('usr')[3:4]) / 100,
+                     col = col, ...)
           else points(st, ss, col = col[c2], pch = pch2[c2], ...)
         }
         if (event) {
-          who <- which(stemp == i & x$n.event > 0)
+          who <- which(stemp == ii & x$n.event > 0)
           st <- stime[who]
-          ss <- ssurv[who, j]
+          ss <- ssurv[who, jj]
           if (bump)
-            segments(st, ss, st, ss + diff(par('usr')[3:4]) / 100, col = col, ...)
+            segments(st, ss, st, ss + diff(par('usr')[3:4]) / 100,
+                     col = col, ...)
           else points(st, ss, col = col[c2], pch = pch2[c2], ...)
         }
         c2 <- c2 + 1L
@@ -750,7 +769,7 @@ lr_text <- function(formula, data, rho = 0, ...) {
   df <- sum(1 * (colSums(if (is.matrix(sd$obs))
     sd$exp else t(sd$exp)) > 0)) - 1
   p.value <- 1 - pchisq(sd$chisq, df)
-  txt <- sprintf('%s (%s df), %s', roundr(sd$chisq, 1),
+  txt <- sprintf('%s (%s df), %s', roundr(sd$chisq, 1L),
                  df, pvalr(p.value, show.p = TRUE))
   bquote(paste(chi^2, ' = ', .(txt)))
 }
@@ -1023,7 +1042,7 @@ kmplot_by <- function(strata = '1', event, data, by = NULL, single = TRUE,
       ns <- names(s$strata)
       ns <- if (mlabs || isTRUE(strata_lab)) ns else
         if (identical(strata_lab, FALSE)) {
-          svar <- colnames(model.frame(form, s$.data)[, -1, drop = FALSE])
+          svar <- colnames(model.frame(form, s$.data)[, -1L, drop = FALSE])
           cl <- c(list(survival::strata),
                   lapply(svar, as.symbol),
                   shortlabel = TRUE)
