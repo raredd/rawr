@@ -13,7 +13,7 @@ kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
   median.digits = 0L, xaxs = "s", xlim = NULL, ylim = NULL,
   xaxis.at = pretty(xlim), xaxis.lab = xaxis.at, atrisk.at = xaxis.at,
   yaxis.at = pretty(ylim), yaxis.lab = yaxis.at, xlab = "Time",
-  ylab = "Survival probability", main = NULL, cex.axis = par("cex.axis"),
+  ylab = "Probability", main = NULL, cex.axis = par("cex.axis"),
   legend = !atrisk && !is.null(s$strata), lr_test = FALSE, mar = NULL,
   add = FALSE, panel.first = NULL, panel.last = NULL, ...)
 }

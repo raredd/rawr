@@ -194,7 +194,7 @@ kmplot <- function(s,
                    xaxis.at = pretty(xlim), xaxis.lab = xaxis.at,
                    atrisk.at = xaxis.at,
                    yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
-                   xlab = 'Time', ylab = 'Survival probability',
+                   xlab = 'Time', ylab = 'Probability',
                    main = NULL, cex.axis = par('cex.axis'),
                    legend = !atrisk && !is.null(s$strata),
                    
@@ -204,9 +204,6 @@ kmplot <- function(s,
   if (!inherits(s, 'survfit'))
     stop('\'s\' must be a \'survfit\' object')
   
-  op <- par(no.readonly = TRUE)
-  if (!add)
-    on.exit(par(op))
   if (is.logical(lr_test)) {
     rho <- 0
   } else if (is.numeric(lr_test)) {
@@ -254,7 +251,7 @@ kmplot <- function(s,
   col.surv <- if (is.null(col.surv)) {
     if (isTRUE(col.band) || all(!col.band))
       seq_along(s$n)
-    else rep_len(col.band, length.out = ng)
+    else rep_len(col.band, ng)
   } else rep(col.surv, length.out = ng)
   ## must use rep instead of rep_len for names
   
@@ -326,6 +323,10 @@ kmplot <- function(s,
     median <- TRUE
   }
   
+  op <- par(no.readonly = TRUE)
+  if (!add)
+    on.exit(par(op))
+
   ## guess margins based on atrisk table options
   par(mar = c(4 + ng * atrisk,
               4 + pmax(4, extra.margin) - 3 * !atrisk,
@@ -1480,27 +1481,33 @@ surv_table <- function(s, digits = 3, times = pretty(s$time),
 #' @export
 
 survdiff_pairs <- function(s, ..., method = p.adjust.methods, digits = 3L) {
-  method <- match.arg(method)
-  stopifnot(inherits(s, c('survdiff', 'survfit')),
-            length(rhs <- all.vars(s$call$formula)[-(1:2)]) == 1L)
-  data <- eval(s$call$data, envir = parent.frame())
-  unq  <- as.character(sort(unique(data[, rhs])))
-  
   pwchisq <- function(i, j) {
     data <- data[data[, rhs] %in% c(unq[i], unq[j]), ]
     survdiff(as.formula(s$call$formula), data = data, ...)$chisq
   }
+
+  stopifnot(
+    inherits(s, c('survdiff', 'survfit')),
+    length(rhs <- all.vars(s$call$formula)[-(1:2)]) == 1L
+  )
+  method <- match.arg(method)
+  data   <- eval(s$call$data, envir = parent.frame())
+  unq    <- as.character(sort(unique(data[, rhs])))
   
   nn <- outer(as.character(unq), as.character(unq), Vectorize(function(x, y)
     nrow(data[data[, rhs] %in% c(x, y), ])))
   nn[upper.tri(nn, FALSE)] <- NA
-  
+
   chisq <- rbind(NA, cbind(pairwise.table(pwchisq, unq, 'none'), NA))
   dimnames(chisq) <- dimnames(nn) <- list(unq, unq)
   
-  p.value <- apply(chisq, 1:2, function(x) pchisq(x, 1, lower.tail = FALSE))
-  p.value[upper.tri(p.value, FALSE)] <-
-    p.adjust(na.omit(c(t(p.value))), method = method)
+  p.value <- apply(chisq, 1:2, function(x)
+    pchisq(x, 1L, lower.tail = FALSE))
+
+  tpv <- t(p.value)
+  tpv[lower.tri(p.value)] <-
+    p.adjust(p.value[lower.tri(p.value)], method = method)
+  p.value <- t(tpv)
   
   lapply(list(n = nn, chi.sq  = chisq, p.value = p.value), round, digits)
 }
