@@ -478,7 +478,7 @@ kmplot <- function(s,
   
   ## survival and confidence lines
   u0 <- u1 <- par('usr')
-  u1[2L] <- oxlim[2L]
+  u1[2L] <- oxlim[2L] * 1.01
   do.call('clip', as.list(u1))
 
   for (ii in seq.int(ng)) {
@@ -1509,7 +1509,7 @@ survdiff_pairs <- function(s, ..., method = p.adjust.methods, digits = 3L) {
     p.adjust(p.value[lower.tri(p.value)], method = method)
   p.value <- t(tpv)
   
-  lapply(list(n = nn, chi.sq  = chisq, p.value = p.value), round, digits)
+  lapply(list(n = nn, chi.sq = chisq, p.value = p.value), round, digits)
 }
 
 ## landmark

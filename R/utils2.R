@@ -1353,6 +1353,8 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
 #' \code{\link[htmlTable]{htmlTable}}
 #' @param htmlArgs a named list of additional arguments passed to
 #' \code{\link[htmlTable]{htmlTable}}
+#' @param zeros a character string used in place of zero cells (non-character
+#' value keeps cells as-is)
 #' 
 #' @seealso
 #' \code{\link{tabler_stat}}
@@ -1380,7 +1382,8 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
 #' tabler_stat2(
 #'   mt, c('mpg', 'cyl', 'wt'), 'vs',
 #'   byvar_label = 'V/S engine',
-#'   varname_label = c('MPG', 'Cylinders', 'Weight')
+#'   varname_label = c('MPG', 'Cylinders', 'Weight'),
+#'   zeros = NULL
 #' )
 #' 
 #' @export
@@ -1390,11 +1393,13 @@ tabler_stat2 <- function(data, varname, byvar, varname_label = varname,
                          color_pval = TRUE, color_missing = TRUE,
                          dagger = TRUE, statArgs = NULL,
                          align = NULL, rgroup = NULL, cgroup = NULL,
-                         tfoot = NULL, htmlArgs = NULL) {
-  l <- tabler_stat_list(data, varname, byvar, varname_label, byvar_label,
-                        digits, FUN, color_pval, color_missing, dagger,
-                        statArgs)
-  tabler_stat_html(l, align, rgroup, cgroup, tfoot, htmlArgs)
+                         tfoot = NULL, htmlArgs = NULL, zeros = '-') {
+  l <- tabler_stat_list(
+    data, varname, byvar, varname_label, byvar_label,
+    digits, FUN, color_pval, color_missing, dagger, statArgs
+  )
+  
+  tabler_stat_html(l, align, rgroup, cgroup, tfoot, htmlArgs, zeros)
 }
 
 tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
@@ -1448,7 +1453,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
 }
 
 tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
-                             tfoot = NULL, htmlArgs = NULL) {
+                             tfoot = NULL, htmlArgs = NULL, zeros = NULL) {
   stopifnot(
     inherits(l, 'htmlStat')
   )
@@ -1457,7 +1462,10 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
   colnames(l$output_data) <- if (l$pval) cn else head(cn, -1L)
   
   res <- gsub('%', '', l$output_data, fixed = TRUE)
-  res <- gsub('0 \\(0%\\)|^0$|NA \\( NA -  NA\\)', '-', res)
+  p <- c('\\s*0\\s*\\(\\s*0\\s*\\)\\s*', '^\\s*0\\s*$',
+         '\\s*NA\\s*\\(\\s*NA\\s*-\\s*NA\\s*\\)\\s*')
+  if (is.character(zeros))
+    res <- gsub(paste(p, collapse = '|'), zeros, res)
   
   ht <- do.call(
     htmlTable::htmlTable,

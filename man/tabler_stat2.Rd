@@ -7,7 +7,8 @@
 tabler_stat2(data, varname, byvar, varname_label = varname,
   byvar_label = byvar, digits = NULL, FUN = NULL, color_pval = TRUE,
   color_missing = TRUE, dagger = TRUE, statArgs = NULL, align = NULL,
-  rgroup = NULL, cgroup = NULL, tfoot = NULL, htmlArgs = NULL)
+  rgroup = NULL, cgroup = NULL, tfoot = NULL, htmlArgs = NULL,
+  zeros = "-")
 }
 \arguments{
 \item{data}{a matrix or data frame with variables \code{varname} and
@@ -40,6 +41,9 @@ needed for each \code{varname}; see \code{\link{tabler_stat}}}
 
 \item{htmlArgs}{a named list of additional arguments passed to
 \code{\link[htmlTable]{htmlTable}}}
+
+\item{zeros}{a character string used in place of zero cells (non-character
+value keeps cells as-is)}
 }
 \description{
 Helper functions for using \code{tabler_stat}.
@@ -67,7 +71,8 @@ tabler_stat2(
 tabler_stat2(
   mt, c('mpg', 'cyl', 'wt'), 'vs',
   byvar_label = 'V/S engine',
-  varname_label = c('MPG', 'Cylinders', 'Weight')
+  varname_label = c('MPG', 'Cylinders', 'Weight'),
+  zeros = NULL
 )
 
 }
