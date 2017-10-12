@@ -944,10 +944,20 @@ kmplot_by <- function(strata = '1', event, data, by = NULL, single = TRUE,
     time   <- gsub('\\((\\w+)|.', '\\1', form[1L])
   }
   
-  form  <- if (!is.null(time))
-    sprintf('Surv(%s, %s) ~ %s', time, event, strata) else
-      sprintf('Surv(%s_time, %s_ind) ~ %s', event, event, strata)
+  form  <- if (!is.null(time)) {
+    ev <- event
+    sprintf('Surv(%s, %s) ~ %s', time, event, strata)
+  } else {
+    ev <- paste0(event, '_ind')
+    sprintf('Surv(%s_time, %s_ind) ~ %s', event, event, strata)
+  }
   form  <- as.formula(form)
+  
+  if (is.factor(data[, ev])) {
+    warning(sprintf('factor (%s) used for event - coercing to integer',
+                    shQuote(event)), call. = FALSE)
+    data[, ev] <- as.integer(data[, ev])
+  }
   
   # par(oma = c(0,0,1,0))
   if (plot & (!add | !single))
