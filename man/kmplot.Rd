@@ -9,13 +9,14 @@ kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
   lwd.ci = lwd.surv, col.ci = col.surv, col.band = FALSE, atrisk = TRUE,
   atrisk.lab = "Number at risk", atrisk.lines = TRUE,
   atrisk.col = !atrisk.lines, strata.lab = NULL, strata.expr = NULL,
-  strata.order = seq_along(s$n), extra.margin = 5, median = FALSE,
-  median.digits = 0L, xaxs = "s", xlim = NULL, ylim = NULL,
-  xaxis.at = pretty(xlim), xaxis.lab = xaxis.at, atrisk.at = xaxis.at,
-  yaxis.at = pretty(ylim), yaxis.lab = yaxis.at, xlab = "Time",
-  ylab = "Probability", main = NULL, cex.axis = par("cex.axis"),
-  legend = !atrisk && !is.null(s$strata), lr_test = FALSE, mar = NULL,
-  add = FALSE, panel.first = NULL, panel.last = NULL, ...)
+  strata.order = seq_along(s$n), extra.margin = 5, mar = NULL,
+  median = FALSE, median.digits = 0L, xaxs = "s", xlim = NULL,
+  ylim = NULL, xaxis.at = pretty(xlim), xaxis.lab = xaxis.at,
+  atrisk.at = xaxis.at, yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
+  xlab = "Time", ylab = "Probability", main = NULL,
+  cex.axis = par("cex.axis"), legend = !atrisk && !is.null(s$strata),
+  lr_test = FALSE, add = FALSE, panel.first = NULL, panel.last = NULL,
+  ...)
 }
 \arguments{
 \item{s}{an object of class \code{\link{survfit}} or \code{survfit.cox}}
@@ -65,7 +66,9 @@ for at-risk table; note that \code{strata.expr} trumps \code{strata.lab}}
 \item{strata.order}{order of strata in legend and at-risk table}
 
 \item{extra.margin}{increase left margin when strata labels in at-risk
-table are long}
+table are long (note that this will be overridden by \code{mar})}
+
+\item{mar}{margins; see \code{mar} section in \code{\link{par}}}
 
 \item{median}{logical or numeric; if \code{TRUE}, median and confidence
 interval for each curve is added to at-risk table at a calculated
@@ -99,8 +102,6 @@ median(s)}
 performed and the results added to the top-right corner of the plot; if
 numeric, the value is passed as \code{rho} controlling the type of test
 performed; see \code{\link{survdiff}}}
-
-\item{mar}{margins; see \code{mar} section in \code{\link{par}}}
 
 \item{add}{logical; if \code{TRUE}, \code{par} is not refreshed; allows for
 multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}}

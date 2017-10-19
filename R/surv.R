@@ -71,7 +71,8 @@
 #' for at-risk table; note that \code{strata.expr} trumps \code{strata.lab}
 #' @param strata.order order of strata in legend and at-risk table
 #' @param extra.margin increase left margin when strata labels in at-risk
-#' table are long
+#' table are long (note that this will be overridden by \code{mar})
+#' @param mar margins; see \code{mar} section in \code{\link{par}}
 #' @param median logical or numeric; if \code{TRUE}, median and confidence
 #' interval for each curve is added to at-risk table at a calculated
 #' position; for more control, use a specific x-coordinate
@@ -93,7 +94,6 @@
 #' performed and the results added to the top-right corner of the plot; if
 #' numeric, the value is passed as \code{rho} controlling the type of test
 #' performed; see \code{\link{survdiff}}
-#' @param mar margins; see \code{mar} section in \code{\link{par}}
 #' @param add logical; if \code{TRUE}, \code{par} is not refreshed; allows for
 #' multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}
 #' @param panel.first an expression to be evaluated after the plot axes are
@@ -187,7 +187,8 @@ kmplot <- function(s,
                    atrisk.lines = TRUE, atrisk.col = !atrisk.lines,
                    strata.lab = NULL,
                    strata.expr = NULL, strata.order = seq_along(s$n),
-                   extra.margin = 5, median = FALSE, median.digits = 0L,
+                   extra.margin = 5, mar = NULL,
+                   median = FALSE, median.digits = 0L,
                    
                    ## aesthetics
                    xaxs = 's', xlim = NULL, ylim = NULL,
@@ -199,7 +200,7 @@ kmplot <- function(s,
                    legend = !atrisk && !is.null(s$strata),
                    
                    ## other options
-                   lr_test = FALSE, mar = NULL, add = FALSE,
+                   lr_test = FALSE, add = FALSE,
                    panel.first = NULL, panel.last = NULL, ...) {
   if (!inherits(s, 'survfit'))
     stop('\'s\' must be a \'survfit\' object')
