@@ -27,20 +27,18 @@ performed and the results added to the top-right corner of the plot; if
 numeric, the value is passed as \code{rho} controlling the type of test
 performed; see \code{\link{survdiff}}}
 
-\item{main}{title of plot}
-
 \item{ylab}{y-axis label}
 
 \item{sub}{sub-title displayed in upper left corner; should be a character
 vector with length equal to the number of panels (i.e., the number of
-levels of \code{by} or length one if \code{by} was not given)}
+unique values of \code{by} or length one if \code{by} was not given)}
 
 \item{strata_lab}{at-risk table strata labels; should be a character vector
 with length equal to the number of strata; \code{TRUE} (or equivalently
 missing) is the default, and \code{FALSE} trims the labels; see examples}
 
 \item{fig_lab}{figure panel labels; should be a character vector with
-length equal to the number of panels (i.e., the number of levels of
+length equal to the number of panels (i.e., the number of unique values of
 \code{by} or length one if \code{by} was not given)}
 
 \item{col.surv}{color for individual survival curves or for all curves in
@@ -62,6 +60,8 @@ adding to existing plots}
 
 \item{...}{additional arguments passed to \code{\link{kmplot}} or
 graphical parameters subsequently passed to \code{\link{par}}}
+
+\item{main(s)}{title of plot(s)}
 }
 \value{
 Invisibly returns a list of \code{\link{survfit}} object(s) used to generate

@@ -103,7 +103,7 @@ performed and the results added to the top-right corner of the plot; if
 numeric, the value is passed as \code{rho} controlling the type of test
 performed; see \code{\link{survdiff}}}
 
-\item{add}{logical; if \code{TRUE}, \code{par} is not refreshed; allows for
+\item{add}{logical; if \code{TRUE}, \code{par}s are not reset; allows for
 multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}}
 
 \item{panel.first}{an expression to be evaluated after the plot axes are

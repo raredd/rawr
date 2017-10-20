@@ -94,7 +94,7 @@
 #' performed and the results added to the top-right corner of the plot; if
 #' numeric, the value is passed as \code{rho} controlling the type of test
 #' performed; see \code{\link{survdiff}}
-#' @param add logical; if \code{TRUE}, \code{par} is not refreshed; allows for
+#' @param add logical; if \code{TRUE}, \code{par}s are not reset; allows for
 #' multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}
 #' @param panel.first an expression to be evaluated after the plot axes are
 #' set up but before any plotting takes place
@@ -207,11 +207,9 @@ kmplot <- function(s,
   
   if (is.logical(lr_test)) {
     rho <- 0
-  } else if (is.numeric(lr_test)) {
-    rho <- lr_test
-    lr_test <- TRUE
   } else {
-    rho <- 0
+    rho <- if (is.numeric(lr_test))
+      lr_test else 0
     lr_test <- TRUE
   }
   
@@ -822,16 +820,16 @@ lr_pval <- function(s, details = FALSE) {
 #' performed and the results added to the top-right corner of the plot; if
 #' numeric, the value is passed as \code{rho} controlling the type of test
 #' performed; see \code{\link{survdiff}}
-#' @param main title of plot
+#' @param main(s) title of plot(s)
 #' @param ylab y-axis label
 #' @param sub sub-title displayed in upper left corner; should be a character
 #' vector with length equal to the number of panels (i.e., the number of
-#' levels of \code{by} or length one if \code{by} was not given)
+#' unique values of \code{by} or length one if \code{by} was not given)
 #' @param strata_lab at-risk table strata labels; should be a character vector
 #' with length equal to the number of strata; \code{TRUE} (or equivalently
 #' missing) is the default, and \code{FALSE} trims the labels; see examples
 #' @param fig_lab figure panel labels; should be a character vector with
-#' length equal to the number of panels (i.e., the number of levels of
+#' length equal to the number of panels (i.e., the number of unique values of
 #' \code{by} or length one if \code{by} was not given)
 #' @param col.surv color for individual survival curves or for all curves in
 #' a plot if \code{by} is given and \code{map.col = TRUE}; if \code{col.surv}
