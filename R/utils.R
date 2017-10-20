@@ -3,7 +3,8 @@
 # rbindlist, interleave, outer2, merge2, locf, roll_fun, classMethods,
 # getMethods, regcaptures, regcaptures2, cast, melt, view, view2, clist,
 # rapply2, sort_matrix, insert, insert_matrix, tryCatch2, rleid, droplevels2,
-# combine_levels, combine_regex, rownames_to_column, column_to_rownames
+# combine_levels, combine_regex, rownames_to_column, column_to_rownames,
+# split_nth
 # 
 # rawr_ops:
 # %ni%, %==%, %||%, %inside%, %:%
@@ -2271,4 +2272,47 @@ column_to_rownames <- function(data, column = 'rownames', where = 1L) {
   rownames(data) <- make.unique(as.character(data[, where]))
   
   data[, -where, drop = FALSE]
+}
+
+#' Split at nth pattern
+#' 
+#' Split a string at the \code{n}th occurrence(s) of a \code{pattern}.
+#' 
+#' @param text,pattern the text and pattern character strings
+#' @param n integer value(s) for splitting at the \code{n}th occurrence of
+#' \code{pattern}; \code{NULL} will split at each \code{pattern}
+#' @param keep_split logical; if \code{TRUE}, \code{text} will be split at
+#' the boundaries of \code{pattern}
+#' @param repl a string used internally for place-keeping during splitting;
+#' to avoid unexpected results, make sure this string does not occur in
+#' \code{text}
+#' @param ... additional arguments passed to \code{\link{gregexpr}}
+#' 
+#' @examples
+#' s <- 'this  is a  test string to use   for testing   purposes'
+#' split_nth(s, '\\s+')
+#' split_nth(s, '\\s+', 3)
+#' split_nth(s, '\\s+', c(3, 5))
+#' split_nth(s, '\\s+', c(3, 5), keep_split = TRUE)
+#' split_nth(s, '\\s{2,}', keep_split = TRUE)
+#' split_nth(s, '\\s{2,}', 2:4)
+#' 
+#' @export
+
+split_nth <- function(text, pattern, n = NULL, keep_split = FALSE,
+                      repl = '$$$', ...) {
+  stopifnot(
+    is.character(text),
+    is.character(pattern),
+    length(text) == 1L
+  )
+  m <- gregexpr(pattern, text, ...)
+  l <- length(attr(m[[1L]], 'match.length'))
+  n <- if (is.null(n))
+    seq.int(l) else n[n < l]
+  
+  regmatches(text, m)[[1L]][n] <- if (keep_split)
+    paste0(repl, regmatches(text, m)[[1L]][n], repl) else repl
+  
+  strsplit(text, repl, fixed = TRUE)[[1L]]
 }
