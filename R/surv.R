@@ -820,7 +820,7 @@ lr_pval <- function(s, details = FALSE) {
 #' performed and the results added to the top-right corner of the plot; if
 #' numeric, the value is passed as \code{rho} controlling the type of test
 #' performed; see \code{\link{survdiff}}
-#' @param main(s) title of plot(s)
+#' @param main title of plot(s)
 #' @param ylab y-axis label
 #' @param sub sub-title displayed in upper left corner; should be a character
 #' vector with length equal to the number of panels (i.e., the number of

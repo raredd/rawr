@@ -2308,8 +2308,12 @@ heatmap.3 <- function(x,
     dim(lmat) == c(3L, 3L)
   )
   
+  op <- par(no.readonly = TRUE)
+  on.exit({
+    par(op)
+    dev.flush()
+  })
   dev.hold()
-  on.exit(dev.flush())
   
   layout(lmat, widths = lwid, heights = lhei, respect = FALSE)
   

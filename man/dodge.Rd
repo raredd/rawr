@@ -10,12 +10,12 @@ dodge(x, ...)
 
 \method{dodge}{formula}(formula, data = NULL, ...)
 
-\method{dodge}{default}(x, y, dist = NULL, jit = NULL)
+\method{dodge}{default}(x, y, dist = NULL, jit = NULL, ...)
 }
 \arguments{
 \item{x}{grouping variables or, equivalently, positions along x-axis}
 
-\item{...}{additional arguments passed to other methods}
+\item{...}{additional arguments passed to or from other methods}
 
 \item{formula}{a \code{\link{formula}}, such as \code{y ~ group}, where
 \code{y} is a numeric vector of data values to be split into groups

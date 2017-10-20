@@ -27,6 +27,8 @@ performed and the results added to the top-right corner of the plot; if
 numeric, the value is passed as \code{rho} controlling the type of test
 performed; see \code{\link{survdiff}}}
 
+\item{main}{title of plot(s)}
+
 \item{ylab}{y-axis label}
 
 \item{sub}{sub-title displayed in upper left corner; should be a character
@@ -60,8 +62,6 @@ adding to existing plots}
 
 \item{...}{additional arguments passed to \code{\link{kmplot}} or
 graphical parameters subsequently passed to \code{\link{par}}}
-
-\item{main(s)}{title of plot(s)}
 }
 \value{
 Invisibly returns a list of \code{\link{survfit}} object(s) used to generate

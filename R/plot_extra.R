@@ -25,7 +25,7 @@
 #' @param jit,dist jittering parameters; \code{jit} describes the spread of
 #' close points, and \code{dist} defines a range to consider points "close";
 #' both may be specified for each group and recycled as needed
-#' @param ... additional arguments passed to other methods
+#' @param ... additional arguments passed to or from other methods
 #' 
 #' @seealso
 #' \code{\link{jitter}}; \code{\link{tplot}}; \code{\link{dodge2}}
@@ -82,7 +82,7 @@ dodge.formula <- function(formula, data = NULL, ...) {
 
 #' @rdname dodge
 #' @export
-dodge.default <- function(x, y, dist = NULL, jit = NULL) {
+dodge.default <- function(x, y, dist = NULL, jit = NULL, ...) {
   if (is.data.frame(y)) {
     x <- y[, 2L]
     y <- y[, 1L]
@@ -128,7 +128,7 @@ dodge.default <- function(x, y, dist = NULL, jit = NULL) {
 #' @param jit,dist jittering parameters; \code{jit} describes the spread of
 #' close points, and \code{dist} defines a range to consider points "close";
 #' both may be specified for each group and recycled as needed
-#' @param ... additional arguments passed to other methods
+#' @param ... additional arguments passed to or from other methods
 #' 
 #' @seealso
 #' \code{\link{jitter}}; \code{\link{tplot}}; \code{\link{dodge}}
@@ -185,7 +185,7 @@ dodge2.formula <- function(formula, data = NULL, ...) {
 
 #' @rdname dodge2
 #' @export
-dodge2.default <- function(x, y, jit = NULL, dist = NULL) {
+dodge2.default <- function(x, y, jit = NULL, dist = NULL, ...) {
   if (is.data.frame(y)) {
     x <- y[, 2L]
     y <- y[, 1L]
