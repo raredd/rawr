@@ -15,8 +15,8 @@ kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
   atrisk.at = xaxis.at, yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
   xlab = "Time", ylab = "Probability", main = NULL,
   cex.axis = par("cex.axis"), legend = !atrisk && !is.null(s$strata),
-  lr_test = FALSE, add = FALSE, panel.first = NULL, panel.last = NULL,
-  ...)
+  lr_test = FALSE, tt_test = FALSE, test_details = TRUE, add = FALSE,
+  panel.first = NULL, panel.last = NULL, ...)
 }
 \arguments{
 \item{s}{an object of class \code{\link{survfit}} or \code{survfit.cox}}
@@ -102,6 +102,14 @@ median(s)}
 performed and the results added to the top-right corner of the plot; if
 numeric, the value is passed as \code{rho} controlling the type of test
 performed; see \code{\link{survdiff}}}
+
+\item{tt_test}{logical; if \code{TRUE}, Tarone's trend test will be
+performed and the resultls added to the top-right corner of the plot; note
+that this will override \code{lr_test}}
+
+\item{test_details}{logical; if \code{TRUE} (default), all test details
+(test statistic, degrees of freedom, p-value) are shown; if \code{FALSE},
+only the p-value is shown}
 
 \item{add}{logical; if \code{TRUE}, \code{par}s are not reset; allows for
 multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}}

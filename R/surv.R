@@ -94,6 +94,12 @@
 #' performed and the results added to the top-right corner of the plot; if
 #' numeric, the value is passed as \code{rho} controlling the type of test
 #' performed; see \code{\link{survdiff}}
+#' @param tt_test logical; if \code{TRUE}, Tarone's trend test will be
+#' performed and the resultls added to the top-right corner of the plot; note
+#' that this will override \code{lr_test}
+#' @param test_details logical; if \code{TRUE} (default), all test details
+#' (test statistic, degrees of freedom, p-value) are shown; if \code{FALSE},
+#' only the p-value is shown
 #' @param add logical; if \code{TRUE}, \code{par}s are not reset; allows for
 #' multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}
 #' @param panel.first an expression to be evaluated after the plot axes are
@@ -200,10 +206,13 @@ kmplot <- function(s,
                    legend = !atrisk && !is.null(s$strata),
                    
                    ## other options
-                   lr_test = FALSE, add = FALSE,
-                   panel.first = NULL, panel.last = NULL, ...) {
+                   lr_test = FALSE, tt_test = FALSE, test_details = TRUE,
+                   add = FALSE, panel.first = NULL, panel.last = NULL, ...) {
   if (!inherits(s, 'survfit'))
     stop('\'s\' must be a \'survfit\' object')
+  
+  if (length(form <- s$call$formula) == 1L)
+    s$call$formula <- as.formula(eval(form, parent.frame(1L)))
   
   if (is.logical(lr_test)) {
     rho <- 0
@@ -212,6 +221,8 @@ kmplot <- function(s,
       lr_test else 0
     lr_test <- TRUE
   }
+  if (tt_test)
+    lr_test <- FALSE
   
   svar <- as.character(form <- s$call$formula)
   svar <- svar[-(1:2)]
@@ -521,16 +532,19 @@ kmplot <- function(s,
   
   do.call('clip', as.list(u0))
   
-  ## add survdiff text in upper right corner
-  if (lr_test) {
-    txt <- tryCatch(lr_text(as.formula(form), sdat, rho),
+  ## add test text in upper right corner
+  if (lr_test | tt_test) {
+    FUN <- if (tt_test)
+      function(f, d, r, ...) tt_text(f, d, ...)
+    else lr_text
+    txt <- tryCatch(FUN(as.formula(form), sdat, rho, details = test_details),
                     error = function(e) 'n/a')
     if (identical(txt, FALSE))
       message('There is only one group',
               if (svar == '1') '' else paste(' for', svar),
-              ' -- no lr test performed')
-    else mtext(txt, side = 3L, at = par('usr')[2L], adj = 1,
-               font = 3L, cex = .8, line = .5)
+              ' -- no test performed')
+    else mtext(txt, side = 3L, at = par('usr')[2L],
+               adj = 1, cex = .8, line = .5)
   }
   
   panel.last
@@ -740,55 +754,164 @@ kmplot_data_ <- function(s, strata.lab) {
   })
 }
 
-#' Format results from \code{survdiff} for plotting
+#' Survival curve tests
 #' 
-#' @param formula,data,rho,... passed to \code{\link{survdiff}}
-#' @seealso \code{\link{lr_pval}}
+#' @description
+#' Internal functions for \code{\link{survdiff}} and \code{\link{survfit}}
+#' objects.
+#' 
+#' \code{lr_pval} and \code{tt_pval} take objects or formulas and compute
+#' log-rank and Tarone's trend test, respectively. \code{lr_text} and
+#' \code{tt_text} format the test results for plotting.
+#' 
+#' @param formula,data,rho,... passed to \code{\link{survdiff}} or
+#' \code{\link{coxph}}
+#' @param object a \code{\link{survfit}}, \code{\link{survdiff}}, or
+#' \code{\link{coxph}} object; alternatively a \code{\link[=Surv]{survival
+#' formula}} (\code{data} must be given)
+#' @param details logical; \code{TRUE} returns statistic, degrees of freedom,
+#' and p-value where \code{FALSE} returns only a pvalue
+#' 
+#' @references
+#' Tarone, Robert E. Tests for Trend in Life Table Analysis. \emph{Biometrika}
+#' \strong{62} vol. 62 (Dec 1975), 679-82.
+#' 
+#' \url{https://stat.ethz.ch/pipermail/r-help/2008-April/160209.html}
+#' 
+#' @seealso
+#' \code{\link{survdiff_pairs}}
+#' 
+#' @examples
+#' \dontrun{
+#' library('survival')
+#' data('larynx', package = 'KMsurv')
+#' 
+#' form <- Surv(time, delta) ~ stage
+#' sf <- survfit(form, larynx)
+#' sd <- survdiff(form, larynx)
+#' 
+#' kmplot(sf, lr_test = TRUE)
+#' 
+#' rawr:::lr_pval(sf)
+#' rawr:::lr_pval(sd, TRUE)
+#' rawr:::lr_text(Surv(time, delta) ~ stage, larynx)
+#' 
+#' 
+#' rawr:::tt_pval(sf)
+#' rawr:::tt_pval(sd, TRUE)
+#' rawr:::tt_text(Surv(time, delta) ~ stage, larynx)
+#' 
+#' ## compare
+#' chi <- coxph(Surv(time, delta) ~ stage, larynx)$score
+#' pchisq(chi, 1, lower.tail = FALSE)
+#' }
+#' 
+#' @name surv_test
 
-lr_text <- function(formula, data, rho = 0, ...) {
-  # lr_text(Surv(time, status) ~ 1, lung) ## error
-  # lr_text(Surv(time, status == 1) ~ sex, lung[lung$time < 50, ]) ## warning
-  # lr_text(Surv(time, status) ~ sex, lung)
+#' @rdname surv_test
+lr_pval <- function(object, details = FALSE, data = NULL, ...) {
+  object <- if (inherits(object, 'survfit')) {
+    if (length(form <- object$call$formula) == 1L)
+      object$call$formula <- eval(object$call$formula, parent.frame(1L))
+    survdiff(as.formula(object$call$formula),
+             eval(data %||% object$.data %||% object$call$data))
+  } else if (inherits(object, 'formula'))
+    survdiff(object, data, ...)
+  else object
   
+  stopifnot(
+    inherits(object, 'survdiff')
+  )
+  
+  chi <- object$chisq
+  df  <- length(object$n) - 1L
+  pv  <- pchisq(chi, df, lower.tail = FALSE)
+  
+  if (details)
+    list(chisq = chi, df = df, p.value = pv)
+  else pv
+}
+
+#' @rdname surv_test
+lr_text <- function(formula, data, rho = 0, ..., details = TRUE) {
   capture.output(
     ## Warning message: In pchisq(x$chisq, df) : NaNs produced
     ## this warning is only produced during print.survdiff
-    sd <- tryCatch(print(survdiff(formula, data, rho = rho, ...)),
-                   warning = function(w) '',
-                   error = function(e) {
-                     if (any(grepl('(?i)[1no]+ group', e)))
-                       TRUE else e
-                   })
+    sd <- tryCatch(
+      print(survdiff(formula, data, rho = rho, ...)),
+      warning = function(w) '',
+      error   = function(e) {
+        if (any(grepl('(?i)[1no]+ group', e)))
+          TRUE else e
+      })
   )
+  
   if (isTRUE(sd))
     return(FALSE)
   if (identical(sd, ''))
     return(sd)
   if (!inherits(sd, 'survdiff'))
     stop(sd)
+  
   df <- sum(1 * (colSums(if (is.matrix(sd$obs))
     sd$exp else t(sd$exp)) > 0)) - 1
-  p.value <- 1 - pchisq(sd$chisq, df)
+  pv <- pchisq(sd$chisq, df, lower.tail = FALSE)
+  
   txt <- sprintf('%s (%s df), %s', roundr(sd$chisq, 1L),
-                 df, pvalr(p.value, show.p = TRUE))
-  bquote(paste(chi^2, ' = ', .(txt)))
+                 df, pvalr(pv, show.p = TRUE))
+  
+  if (details)
+    bquote(paste(chi^2, ' = ', .(txt)))
+  else pvalr(pv, show.p = TRUE)
 }
 
-#' Extract values from \code{survdiff} call
-#' 
-#' @param s a \code{\link{survfit}} or \code{\link{survdiff}} object
-#' @param details logical; \code{TRUE} returns statistic, degrees of freedom,
-#' and p-value where \code{FALSE} returns only a pvalue
-#' @seealso \code{\link{lr_text}}
-
-lr_pval <- function(s, details = FALSE) {
-  # lr_pval(sdif); lr_pval(sfit, TRUE)
-  if (inherits(s, 'survfit'))
-    s <- survdiff(as.formula(s$call$formula), eval(s$.data %||% s$call$data))
-  stopifnot(inherits(s, 'survdiff'))
-  pv <- pchisq(chi <- s$chisq, df <- length(s$n) - 1L, lower.tail = FALSE)
+#' @rdname surv_test
+tt_pval <- function(object, details = FALSE, data = NULL, ...) {
+  object <- if (inherits(object, c('survdiff', 'survfit'))) {
+    if (length(form <- object$call$formula) == 1L)
+      object$call$formula <- eval(object$call$formula, parent.frame(1L))
+    coxph(as.formula(object$call$formula),
+          eval(data %||% object$.data %||% object$call$data))
+  } else if (inherits(object, 'formula'))
+    coxph(formula, data, ...)
+  else object
+  
+  stopifnot(
+    inherits(object, 'coxph')
+  )
+  
+  chi <- object$score
+  df <- 1L
+  pv <- pchisq(chi, df, lower.tail = FALSE)
+  
   if (details)
-    list(chisq = chi, df = df, p.value = pv) else pv
+    list(chisq = chi, df = df, p.value = pv)
+  else pv
+}
+
+#' @rdname surv_test
+tt_text <- function(formula, data, ..., details = TRUE) {
+  cph <- tryCatch(
+    coxph(formula, data, ...),
+    warning = function(w) '',
+    error   = function(e) e
+  )
+  
+  if (isTRUE(cph))
+    return(FALSE)
+  if (identical(cph, ''))
+    return(cph)
+  if (!inherits(cph, 'coxph'))
+    stop(cph)
+  
+  chi <- cph$score
+  pv  <- pchisq(chi, 1L, lower.tail = FALSE)
+  txt <- sprintf('%s (1 df), %s', roundr(chi, 1L),
+                 pvalr(pv, show.p = TRUE))
+  
+  if (details)
+    bquote(paste(chi^2, ' = ', .(txt)))
+  else pvalr(pv, show.p = TRUE)
 }
 
 #' kmplot_by
