@@ -58,6 +58,12 @@
 #' bands will be plotted; also note that this is not a true confidence band;
 #' see details
 #' @param atrisk logical; if \code{TRUE} (default), draws at-risk table
+#' @param wh.atrisk a character string giving the type of at-risk table to
+#' show; one of \code{"atrisk"} (number at-risk), \code{"events"} (cumulative
+#' number of events), \code{"atrisk-events"} (both), or \code{"survival"}
+#' (survival estimate)
+#' @param atrisk.digits when survival estimates are shown in at-risk table
+#' (see \code{wh.atrisk}), number of digits past the decimal to show
 #' @param atrisk.lab heading for at-risk table
 #' @param atrisk.lines logical; draw lines next to strata in at-risk table
 #' @param atrisk.col logical or a vector with colors for at-risk table text;
@@ -130,6 +136,10 @@
 #' kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5,
 #'        col.surv = 1:4, col.band = c(1,0,0,4))
 #' 
+#' ## at-risk and p-value options
+#' kmplot(km2, tt_test = TRUE, test_details = FALSE)
+#' kmplot(km1, wh.atrisk = 'survival', atrisk.digits = 3L)
+#' kmplot(km1, wh.atrisk = 'atrisk-events')
 #' 
 #' ## expressions in at-risk table (strata.expr takes precedence)
 #' kmplot(km1, strata.lab = c('\u2640', '\u2642'))
@@ -190,6 +200,8 @@ kmplot <- function(s,
                    
                    ## at-risk table options
                    atrisk = TRUE, atrisk.lab = 'Number at risk',
+                   wh.atrisk = c('atrisk', 'events', 'atrisk-events', 'survival'),
+                   atrisk.digits = 2L,
                    atrisk.lines = TRUE, atrisk.col = !atrisk.lines,
                    strata.lab = NULL,
                    strata.expr = NULL, strata.order = seq_along(s$n),
@@ -419,12 +431,32 @@ kmplot <- function(s,
              labels = FALSE, line = line.pos[ii] + 0.6, lwd.ticks = 0,
              col = col.surv[ii], lty = lty.surv[ii], lwd = lwd.surv[ii])
     
-    ## numbers at risk
+    ## at-risk table
+    wh.atrisk <- switch(
+      match.arg(wh.atrisk),
+      atrisk = 'n.risk',
+      events = 'events',
+      'atrisk-events' = 'atrisk-events',
+      survival = 'survival'
+    )
+    
     ss <- summary(s, times = atrisk.at)
     if (is.null(ss$strata))
       ss$strata <- rep_len(1L, length(ss$time))
-    d1 <- data.frame(time = ss$time, n.risk = ss$n.risk, strata = c(ss$strata))
+    d1 <- data.frame(
+      time = ss$time, n.risk = ss$n.risk, n.event = ss$n.event,
+      strata = c(ss$strata), surv = ss$surv
+    )
+    
     d2 <- split(d1, d1$strata)
+    d2 <- lapply(d2, function(x) {
+      within(x, {
+        atrisk <- n.risk
+        events <- cumsum(n.event)
+        'atrisk-events' <- sprintf('%s (%s)', atrisk, events)
+        survival <- roundr(surv, atrisk.digits)
+      })
+    })
     
     ## right-justify numbers
     ndigits <- lapply(d2, function(x) nchar(x[, 2L]))
@@ -436,9 +468,12 @@ kmplot <- function(s,
       tmp <- d2[[ii]]
       w.adj <- strwidth('0', cex = cex.axis, font = par('font')) /
         2 * nd[seq.int(nrow(tmp))]
-      mtext(tmp$n.risk, side = 1L, at = tmp$time + w.adj, las = 1L,
-            line = line.pos[ii], cex = cex.axis, adj = 1,
-            col = col.atrisk[ii])
+      mtext(tmp[, wh.atrisk], side = 1L, col = col.atrisk[ii],
+            las = 1L, line = line.pos[ii], cex = cex.axis,
+            ## center atrisk-events
+            # at = tmp$time + w.adj, adj = 1,
+            at = tmp$time + w.adj * wh.atrisk %ni% 'atrisk-events',
+            adj = 1 - 0.5 * wh.atrisk %in% 'atrisk-events')
     }
     
     if (!(identical(atrisk.lab, FALSE) | is.null(atrisk.lab)))
@@ -873,7 +908,7 @@ tt_pval <- function(object, details = FALSE, data = NULL, ...) {
     coxph(as.formula(object$call$formula),
           eval(data %||% object$.data %||% object$call$data))
   } else if (inherits(object, 'formula'))
-    coxph(formula, data, ...)
+    coxph(object, data, ...)
   else object
   
   stopifnot(
@@ -881,11 +916,10 @@ tt_pval <- function(object, details = FALSE, data = NULL, ...) {
   )
   
   chi <- object$score
-  df <- 1L
-  pv <- pchisq(chi, df, lower.tail = FALSE)
+  pv <- pchisq(chi, 1L, lower.tail = FALSE)
   
   if (details)
-    list(chisq = chi, df = df, p.value = pv)
+    list(chisq = chi, df = 1L, p.value = pv)
   else pv
 }
 

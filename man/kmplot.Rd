@@ -7,7 +7,8 @@
 kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
   col.surv = seq_along(s$n), mark = 3L, lwd.mark = lwd.surv, lty.ci = 0,
   lwd.ci = lwd.surv, col.ci = col.surv, col.band = FALSE, atrisk = TRUE,
-  atrisk.lab = "Number at risk", atrisk.lines = TRUE,
+  atrisk.lab = "Number at risk", wh.atrisk = c("atrisk", "events",
+  "atrisk-events", "survival"), atrisk.digits = 2L, atrisk.lines = TRUE,
   atrisk.col = !atrisk.lines, strata.lab = NULL, strata.expr = NULL,
   strata.order = seq_along(s$n), extra.margin = 5, mar = NULL,
   median = FALSE, median.digits = 0L, xaxs = "s", xlim = NULL,
@@ -48,6 +49,14 @@ see details}
 \item{atrisk}{logical; if \code{TRUE} (default), draws at-risk table}
 
 \item{atrisk.lab}{heading for at-risk table}
+
+\item{wh.atrisk}{a character string giving the type of at-risk table to
+show; one of \code{"atrisk"} (number at-risk), \code{"events"} (cumulative
+number of events), \code{"atrisk-events"} (both), or \code{"survival"}
+(survival estimate)}
+
+\item{atrisk.digits}{when survival estimates are shown in at-risk table
+(see \code{wh.atrisk}), number of digits past the decimal to show}
 
 \item{atrisk.lines}{logical; draw lines next to strata in at-risk table}
 
@@ -165,6 +174,10 @@ kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3700)
 kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5,
        col.surv = 1:4, col.band = c(1,0,0,4))
 
+## at-risk and p-value options
+kmplot(km2, tt_test = TRUE, test_details = FALSE)
+kmplot(km1, wh.atrisk = 'survival', atrisk.digits = 3L)
+kmplot(km1, wh.atrisk = 'atrisk-events')
 
 ## expressions in at-risk table (strata.expr takes precedence)
 kmplot(km1, strata.lab = c('\\u2640', '\\u2642'))
