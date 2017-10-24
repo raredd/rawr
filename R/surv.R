@@ -199,7 +199,7 @@ kmplot <- function(s,
                    col.ci = col.surv, col.band = FALSE,
                    
                    ## at-risk table options
-                   atrisk = TRUE, atrisk.lab = 'Number at risk',
+                   atrisk = TRUE, atrisk.lab = NULL,
                    wh.atrisk = c('atrisk', 'events', 'atrisk-events', 'survival'),
                    atrisk.digits = 2L,
                    atrisk.lines = TRUE, atrisk.col = !atrisk.lines,
@@ -432,8 +432,9 @@ kmplot <- function(s,
              col = col.surv[ii], lty = lty.surv[ii], lwd = lwd.surv[ii])
     
     ## at-risk table
-    wh.atrisk <- switch(
-      match.arg(wh.atrisk),
+    wh.atrisk <- match.arg(wh.atrisk)
+    wh <- switch(
+      wh.atrisk,
       atrisk = 'n.risk',
       events = 'events',
       'atrisk-events' = 'atrisk-events',
@@ -450,12 +451,11 @@ kmplot <- function(s,
     
     d2 <- split(d1, d1$strata)
     d2 <- lapply(d2, function(x) {
-      within(x, {
-        atrisk <- n.risk
-        events <- cumsum(n.event)
-        'atrisk-events' <- sprintf('%s (%s)', atrisk, events)
-        survival <- roundr(surv, atrisk.digits)
-      })
+      x$atrisk <- x$n.risk
+      x$events <- cumsum(x$n.event)
+      x[, 'atrisk-events'] <- sprintf('%s (%s)', x$atrisk, x$events)
+      x$survival <- roundr(x$surv, atrisk.digits)
+      x
     })
     
     ## right-justify numbers
@@ -468,7 +468,7 @@ kmplot <- function(s,
       tmp <- d2[[ii]]
       w.adj <- strwidth('0', cex = cex.axis, font = par('font')) /
         2 * nd[seq.int(nrow(tmp))]
-      mtext(tmp[, wh.atrisk], side = 1L, col = col.atrisk[ii],
+      mtext(tmp[, wh], side = 1L, col = col.atrisk[ii],
             las = 1L, line = line.pos[ii], cex = cex.axis,
             ## center atrisk-events
             # at = tmp$time + w.adj, adj = 1,
@@ -476,7 +476,16 @@ kmplot <- function(s,
             adj = 1 - 0.5 * wh.atrisk %in% 'atrisk-events')
     }
     
-    if (!(identical(atrisk.lab, FALSE) | is.null(atrisk.lab)))
+    if (is.null(atrisk.lab))
+      atrisk.lab <- switch(
+        wh.atrisk,
+        atrisk = 'Number at risk',
+        events = 'Cumulative events',
+        'atrisk-events' = 'At risk (Events)',
+        survival = 'Probability'
+      )
+    
+    if (!(identical(atrisk.lab, FALSE)))
       mtext(atrisk.lab, side = 1L, at = usr[1L], # at = group.name.pos,
             line = 1.5, adj = 1, col = 1L, las = 1L, cex = cex.axis)
     
