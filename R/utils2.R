@@ -1262,32 +1262,41 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
     return(structure(res, FUN = FALSE, p.value = NULL, fnames = NULL))
   
   ## add pvalue column using stat fn
-  pvn <- if (identical(FUN, FALSE)) {
-    color_pval <- FALSE
-    structure(NULL, FUN = NULL)
-  } else if (is.function(FUN))
-    structure(FUN(x, y), FUN = gsub('\\(.*', '', deparse(FUN)[2L]))
-  else if (is.character(FUN))
-    ## one of these tests can be explicitly given with chr string
-    switch(
-      match.arg(FUN, c('fisher', 'wilcoxon', 'kruskal', 'chisq', 'anova')),
-      fisher   = structure(Gmisc::getPvalFisher(x, y),  FUN = 'fisher.test'),
-      wilcoxon = structure(Gmisc::getPvalWilcox(x, y),  FUN = 'wilcox.test'),
-      kruskal  = structure(Gmisc::getPvalKruskal(x, y), FUN = 'kruskal.test'),
-      chisq    = structure(Gmisc::getPvalChiSq(x, y),   FUN = 'chisq.test'),
-      anova    = structure(Gmisc::getPvalAnova(x, y),   FUN = 'anova.test')
-    )
-  else {
-    ## guess stat fn based on x, by data
-    if (is.null(FUN))
-      ## dbl/int with many (?) unique values uses rank-sum tests
-      ## otherwise assume contingency table
-      if (!is.factor(x) & lunique(x, TRUE) >= 10L) {
-        if (n > 2L)
-          structure(Gmisc::getPvalKruskal(x, y), FUN = 'kruskal.test')
-        else structure(Gmisc::getPvalWilcox(x, y), FUN = 'wilcox.test')
-      } else structure(Gmisc::getPvalFisher(x, y), FUN = 'fisher.test')
-  }
+  pvn <- tryCatch(
+    if (identical(FUN, FALSE)) {
+      color_pval <- FALSE
+      structure(NULL, FUN = NULL)
+    } else if (is.function(FUN))
+      structure(FUN(x, y), FUN = gsub('\\(.*', '', deparse(FUN)[2L]))
+    else if (is.character(FUN))
+      ## one of these tests can be explicitly given with chr string
+      switch(
+        match.arg(FUN, c('fisher', 'wilcoxon', 'kruskal', 'chisq', 'anova')),
+        fisher   = structure(Gmisc::getPvalFisher(x, y),  FUN = 'fisher.test'),
+        wilcoxon = structure(Gmisc::getPvalWilcox(x, y),  FUN = 'wilcox.test'),
+        kruskal  = structure(Gmisc::getPvalKruskal(x, y), FUN = 'kruskal.test'),
+        chisq    = structure(Gmisc::getPvalChiSq(x, y),   FUN = 'chisq.test'),
+        anova    = structure(Gmisc::getPvalAnova(x, y),   FUN = 'anova.test')
+      )
+    else {
+      ## guess stat fn based on x, by data
+      if (is.null(FUN))
+        ## dbl/int with many (?) unique values uses rank-sum tests
+        ## otherwise assume contingency table
+        if (!is.factor(x) & lunique(x, TRUE) >= 10L) {
+          if (n > 2L)
+            structure(Gmisc::getPvalKruskal(x, y), FUN = 'kruskal.test')
+          else structure(Gmisc::getPvalWilcox(x, y), FUN = 'wilcox.test')
+        } else structure(Gmisc::getPvalFisher(x, y), FUN = 'fisher.test')
+    },
+    error = function(e) {
+      message(sprintf(
+        '\nAn error occurred for %s\n\t%s\nSkipping test for %s\n',
+        shQuote(varname), e$message, shQuote(varname))
+      )
+      NULL
+    }
+  )
   
   fname  <- attr(pvn, 'FUN')
   fnames <- setNames(paste0(c('wilcox', 'kruskal', 'fisher'), '.test'),
