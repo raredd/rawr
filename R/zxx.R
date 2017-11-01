@@ -1,7 +1,7 @@
 ### some random shit
-# ht, progress, recoder, ident, allequal, search_df, search_hist, fapply,
-# try_require, list2file, Restart, helpExtract, Round, round_to, updateR,
-# read_clip, icols, fill_df, kinda_sort, rt, rgene, install_temp,
+# ht, progress, recoder, identical2, all_equal2, search_df, search_hist,
+# fapply, try_require, list2file, Restart, helpExtract, Round, round_to,
+# updateR, read_clip, icols, fill_df, kinda_sort, rt, rgene, install_temp,
 # nestedMerge, nestedmerge, path_extract, fname, file_name, file_ext, rm_ext,
 # mgrep, mgrepl, msub, mgsub, flatten, tree, rm_null, cum_reset, cum_na,
 # cumsum_na, cumprod_na, cummax_na, cummin_na, vgrep, vgrepl, justify,
@@ -306,36 +306,37 @@ recoder <- function(object, pattern, replacement, ...) {
 #' \code{\link{identical}}; \code{\link{all.equal}} for descriptions of how
 #' two objects differ; \code{\link{Comparison}} for operators that generate
 #' elementwise comparisons; \code{\link{isTRUE}} is a simple wrapper based
-#' on \code{identical}.
+#' on \code{identical}; \code{\link{all_equal2}}
 #' 
 #' @examples
-#' ident(1, 1.)
-#' ident(1, 1., 1L)
+#' identical2(1, 1.)
+#' identical2(1, 1., 1L)
 #' 
-#' # for unusual R objects:
-#' ident(.GlobalEnv, environment(), globalenv(), as.environment(1))
+#' ## for unusual R objects:
+#' identical2(.GlobalEnv, environment(), globalenv(), as.environment(1))
 #' 
-#' ident(0., 0, -0.) ## not differentiated
-#' ident(0., 0, -0., num.eq = FALSE)
+#' identical2(0., 0, -0.) ## not differentiated
+#' identical2(0., 0, -0., num.eq = FALSE)
 #' 
-#' ident(NaN, -NaN)
-#' ident(NaN, -NaN, single.NA = FALSE) ## differ on bit-level
+#' identical2(NaN, -NaN)
+#' identical2(NaN, -NaN, single.NA = FALSE) ## differ on bit-level
 #' 
 #' ## for functions
 #' f <- function(x) x
 #' g <- compiler::cmpfun(f)
-#' ident(f, g)
-#' ident(f, g, ignore.bytecode = FALSE)
+#' identical2(f, g)
+#' identical2(f, g, ignore.bytecode = FALSE)
 #' 
 #' @export
 
-ident <- function(..., num.eq = TRUE, single.NA = TRUE, attrib.as.set = TRUE,
-                  ignore.bytecode = TRUE, ignore.environment = FALSE) {
+identical2 <- function(..., num.eq = TRUE, single.NA = TRUE,
+                       attrib.as.set = TRUE, ignore.bytecode = TRUE,
+                       ignore.environment = FALSE) {
   if (length(l <- list(...)) < 2L)
     stop('must provide at least two objects')
   
-  l <- sapply(1:(length(l) - 1L), function(x)
-    identical(l[x], l[x + 1L], num.eq = num.eq, single.NA = single.NA,
+  l <- sapply(1:(length(l) - 1L), function(ii)
+    identical(l[ii], l[ii + 1L], num.eq = num.eq, single.NA = single.NA,
               attrib.as.set = attrib.as.set, ignore.bytecode = ignore.bytecode,
               ignore.environment = ignore.environment))
   
@@ -366,19 +367,20 @@ ident <- function(..., num.eq = TRUE, single.NA = TRUE, attrib.as.set = TRUE,
 #' with the objects that failed.
 #' 
 #' @seealso
-#' \code{\link{all.equal}}; \code{\link{ident}}; \code{\link{identical}}
+#' \code{\link{all.equal}}; \code{\link{identical2}}; \code{\link{identical}}
 #' 
 #' @examples
-#' allequal(pi, 355/113, 22/7)
-#' allequal(pi, 355/113, 22/7, tolerance = 0.01)
+#' all_equal2(pi, 355/113, 22/7)
+#' all_equal2(pi, 355/113, 22/7, tolerance = 0.01)
 #' 
-#' allequal(cars[1], cars[, 1, drop = FALSE], cars[, -2, drop = TRUE])
+#' all_equal2(cars[1], cars[, 1, drop = FALSE], cars[, -2, drop = TRUE])
 #' 
-#' @export
+#' @export all_equal2
 
-allequal <- function(..., tolerance = .Machine$double.eps ^ 0.5, scale = NULL,
-                     check.attributes = TRUE, use.names = TRUE,
-                     all.names = TRUE, check.names = TRUE) {
+all_equal2 <- function(..., tolerance = .Machine$double.eps ^ 0.5,
+                       scale = NULL, check.attributes = TRUE,
+                       use.names = TRUE, all.names = TRUE,
+                       check.names = TRUE) {
   dots <- substitute(...())
   l <- setNames(list(...), dots)
   
