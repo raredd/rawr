@@ -2153,11 +2153,6 @@ combine_levels <- function(x, levels, labels = NULL, regex = FALSE, ...) {
   
   stopifnot(length(levels) == length(labels))
   
-  ## less code but requires rawr::recoder
-  # for (ii in seq_along(levels))
-  #   x <- recoder(x, levels[[ii]], labels[[ii]])
-  # x
-  
   xf <- as.factor(x)
   xc <- as.character(xf)
   xl <- ol <- levels(xf)
@@ -2177,6 +2172,11 @@ combine_levels <- function(x, levels, labels = NULL, regex = FALSE, ...) {
   
   # if (is.numeric(x))
   #   type.convert(as.character(xf)) else xf
+  
+  ## add order arg?
+  # if (!is.null(order))
+  #   factor(xf, order) else xf
+  
   xf
 }
 
@@ -2199,10 +2199,12 @@ combine_regex <- function(x, levels, labels, keep.original = FALSE, ...) {
   labels <- if (missing(labels))
     seq.int(length(levels) + 1L)
   else if (length(levels) == length(labels))
-    c(labels, length(labels) + 1L) else labels
+    c(labels, length(labels) + 1L)
+  else labels
   
   stopifnot(
-    is.vector(levels), is.vector(labels),
+    is.vector(levels),
+    is.vector(labels),
     length(levels) == length(na.omit(unique(levels))),
     keep.original || length(labels) %in% (length(levels) + 0:1)
   )

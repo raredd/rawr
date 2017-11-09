@@ -2,7 +2,7 @@
 # show_html, show_markdown, show_math, roundr, intr, pvalr, pvalr2, catlist,
 # binconr, num2char, iprint, writeftable, tabler, tabler_by, tabler_by2,
 # tabler_stat, tabler_stat2, tabler_resp, match_ctc, tox_worst, countr, dmy,
-# combine_table, inject_div, sparKDT, case, write_htmlTable
+# combine_table, inject_div, sparKDT, case, write_htmlTable, html_align
 # 
 # unexported:
 # resp1, r_or_better1, inject_, render_sparkDT, tabler_stat_list,
@@ -2270,4 +2270,90 @@ write_htmlTable <- function(x, file = '', attributes = TRUE) {
   
   if (!is.character(file))
     x else cat(x, file = file)
+}
+
+#' Align html
+#' 
+#' Align text in columns of an \code{\link[htmlTable]{htmlTable}} at a
+#' specific location (similar to \code{align} or \code{eqnarray} environments
+#' in latex).
+#' 
+#' @param x an object of class \code{\link[htmlTable]{htmlTable}}
+#' @param sep a character string used as the center of alignment
+#' @param where a character string or regular expression (see examples)
+#' defining where strings should be aligned; the easiest method is to
+#' use \code{"&&"} at the desired alignment point
+#' @param min_width minimum width of the span tag; too narrow will not
+#' align strings but too wide adds whitespace
+#' 
+#' @examples
+#' library('htmlTable')
+#' tmp <- within(cars, {
+#'   align2 <- sprintf('%s&&(%s)', speed, dist)
+#'   align1 <- sprintf('%s (%s)', speed, dist)
+#'   raw    <- sprintf('%s - (%s)', speed, dist)
+#' })
+#' 
+#' ht <- htmlTable(
+#'   rawr::ht(tmp), n.cgroup = 2:3, cgroup = c('raw', 'align'),
+#'   caption = 'caption', rnames = FALSE
+#' )
+#' 
+#' ## default
+#' structure(ht, class = 'htmlTable')
+#' 
+#' ## align at '&&'
+#' structure(html_align(ht), class = 'htmlTable')
+#' structure(html_align(ht, ' --- '), class = 'htmlTable')
+#' 
+#' ## align at '&&' or ' '
+#' ## the regex should capture the left text in group 1, use non-capture
+#' ## for separating text, andn capture the right text in group 2
+#' structure(
+#'   html_align(ht, '&nbsp;', '(\\d+)(?: |&&)([()0-9]+)'),
+#'   class = 'htmlTable'
+#' )
+#' 
+#' @export
+
+html_align <- function(x, sep = '&nbsp;', where = '&&', min_width = '35px') {
+  stopifnot(
+    inherits(x, 'htmlTable')
+  )
+  ok <- identical(where, '&&')
+  
+  css <- sprintf(
+    '
+    .charalign {
+      text-align: center;
+      /* font-size: 5pt; */
+    }
+    .charalign span {
+      /* font-size: 11pt; */
+      min-width: %s;
+      display: inline-block;
+      text-align: left;
+    }
+    .charalign span:first-child {
+      text-align: right;
+    }', min_width)
+  
+  co <- capture.output(print(x, useViewer = FALSE))
+  at <- grepl(where, co, perl = TRUE)
+  
+  pat  <- if (ok)
+    sprintf('(?<=>)(.*?)%s(.*?)(?=<)', where)
+  else where
+  repl <- sprintf(
+    '<div class="charalign"><span>\\1</span>%s<span>\\2</span></div>',
+    sep
+  )
+  co[at] <- gsub(pat, repl, co[at], perl = TRUE)
+  
+  
+  res <- paste0(co, collapse = '\n')
+  res <- paste0(res, '\n<style>', css, '\n</style>', collapse = '\n')
+  attributes(res) <- attributes(x)
+  
+  res
 }
