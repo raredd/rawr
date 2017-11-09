@@ -392,12 +392,16 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
   if (length(class(groups)))
     groups <- unclass(groups)
   
-  if (!missing(names))
-    attr(groups, 'names') <- names else {
-      if (is.null(attr(groups, 'names')))
-        attr(groups, 'names') <- 1:n
+  if (!missing(names)) {
+    if (isTRUE(names) | is.null(names))
       names <- attr(groups, 'names')
-    }
+    if (!identical(names, FALSE))
+      attr(groups, 'names') <- names
+  } else {
+    if (is.null(attr(groups, 'names')))
+      attr(groups, 'names') <- seq.int(n)
+    names <- attr(groups, 'names')
+  }
   zzz <- do.call('boxplot', list(x = x, plot = FALSE, names = names))
   
   ## number and size of groups
