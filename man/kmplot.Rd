@@ -16,8 +16,9 @@ kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
   atrisk.at = xaxis.at, yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
   xlab = "Time", ylab = "Probability", main = NULL,
   cex.axis = par("cex.axis"), legend = !atrisk && !is.null(s$strata),
-  lr_test = FALSE, tt_test = FALSE, test_details = TRUE, add = FALSE,
-  panel.first = NULL, panel.last = NULL, ...)
+  legend.args = list(), lr_test = FALSE, tt_test = FALSE,
+  test_details = TRUE, add = FALSE, panel.first = NULL,
+  panel.last = NULL, ...)
 }
 \arguments{
 \item{s}{an object of class \code{\link{survfit}} or \code{survfit.cox}}
@@ -106,6 +107,9 @@ median(s)}
 \item{legend}{logical, a vector of x/y coordinates, or a keyword (see
 \code{\link{legend}}); if \code{TRUE}, the default position is
 \code{"bottomleft"}}
+
+\item{legend.args}{an optional \emph{named} list of \code{\link{legend}}
+arguments controlling the \code{legend}}
 
 \item{lr_test}{logical or numeric; if \code{TRUE}, a log-rank test will be
 performed and the results added to the top-right corner of the plot; if

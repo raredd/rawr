@@ -96,6 +96,8 @@
 #' @param legend logical, a vector of x/y coordinates, or a keyword (see
 #' \code{\link{legend}}); if \code{TRUE}, the default position is
 #' \code{"bottomleft"}
+#' @param legend.args an optional \emph{named} list of \code{\link{legend}}
+#' arguments controlling the \code{legend}
 #' @param lr_test logical or numeric; if \code{TRUE}, a log-rank test will be
 #' performed and the results added to the top-right corner of the plot; if
 #' numeric, the value is passed as \code{rho} controlling the type of test
@@ -216,6 +218,7 @@ kmplot <- function(s,
                    xlab = 'Time', ylab = 'Probability',
                    main = NULL, cex.axis = par('cex.axis'),
                    legend = !atrisk && !is.null(s$strata),
+                   legend.args = list(),
                    
                    ## other options
                    lr_test = FALSE, tt_test = FALSE, test_details = TRUE,
@@ -509,25 +512,22 @@ kmplot <- function(s,
   }
   
   ## legend
-  rlp <- strata.order
   if (!identical(legend, FALSE)) {
-    if (isTRUE(legend))
-      legend <- 'bottomleft'
-    bgc <- if (par('bg') == 'transparent')
-      'white' else par('bg')
-    if (!is.null(strata.expr)) {
-      legend(legend[1L], if (length(legend) > 1L) legend[2L] else NULL,
-             legend = strata.expr[rlp], col = col.surv[rlp],
-             lty = lty.surv[rlp], lwd = lwd.surv[rlp], bty = 'o', xpd = NA,
-             cex = cex.axis, bg = bgc, box.col = 'transparent', inset = .01)
-    } else {
-      if (identical(strata.lab, FALSE))
-        strata.lab <- names(s$strata)
-      legend(legend[1L], if (length(legend) > 1L) legend[2L] else NULL,
-             legend = strata.lab[rlp], col = col.surv[rlp],
-             lty = lty.surv[rlp], lwd = lwd.surv[rlp], bty = 'o', xpd = NA,
-             cex = cex.axis, bg = bgc, box.col = 'transparent', inset = .01)
-    }
+    ## defaults passed to legend
+    largs <- list(
+      x = if (isTRUE(legend)) 'bottomleft' else legend[1L],
+      y = if (length(legend) > 1L) legend[2L] else NULL,
+      legend = if (!is.null(strata.expr))
+        strata.expr[strata.order] else
+          (if (identical(strata.lab, FALSE))
+            names(s$strata) else strata.lab)[strata.order],
+      col = col.surv[strata.order], bty = 'n',
+      lty = lty.surv[strata.order], lwd = lwd.surv[strata.order]
+    )
+    
+    if (!islist(legend.args))
+      legend.args <- list()
+    do.call('legend', modifyList(largs, legend.args))
   }
   
   ## survival and confidence lines
