@@ -142,7 +142,7 @@ show_html <- function(..., use_viewer = !is.null(getOption('viewer'))) {
 show_markdown <- function(..., use_viewer = !is.null(getOption('viewer')),
                           markArgs = list()) {
   txt <- list(text = c(...))
-  mdk <- do.call('markdownToHTML', c(txt, markArgs))
+  mdk <- do.call(markdown::markdownToHTML, c(txt, markArgs))
   
   show_html(mdk, use_viewer = use_viewer)
 }
@@ -1303,7 +1303,8 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
                      c('&dagger;','&dagger;','&Dagger;'))
   
   ## user input fns get * identifier
-  if (!is.null(FUN) & !identical(FUN, FALSE)) {
+  if (!is.null(FUN) && !identical(FUN, FALSE) &&
+      is.na(pmatch(FUN, c('fisher', 'wilcox', 'kruskal')))) {
     if (!is.character(dagger))
       dagger <- '*'
     fnames <- c(fnames, setNames(fname, dagger))
@@ -1815,18 +1816,27 @@ tox_worst <- function(data, id = 'id', desc = 'desc', grade = 'grade',
 #' case if \code{FALSE}, and unchanged for any other value
 #' @param frac logical; if \code{TRUE}, the numbers are shown as fractions
 #' @param digits number of digits past the decimal point to keep
+#' @param which optional integer or character vector to select or re-order
+#' the output; note that this does not change the counts or percentages
 #' 
 #' @examples
 #' top <- setNames(3:1, c('Gold','Silver','Bronze'))
 #' 
 #' countr(names(top))
+#' countr(names(top), which = 1)
+#' countr(names(top), which = c(3, 1))
+#' countr(names(top), which = 'Silver')
+#' 
 #' countr(names(top), lowcase = NA)
 #' countr(names(top), frac = TRUE)
+#' 
 #' countr(top, n = 10, frac = TRUE)
+#' countr(top, n = 10, frac = TRUE, which = 2)
 #' 
 #' @export
 
-countr <- function(top, n, lowcase = TRUE, frac = FALSE, digits = 0L) {
+countr <- function(top, n, lowcase = TRUE, frac = FALSE, digits = 0L,
+                   which = seq_along(top)) {
   if (inherits(top, 'table')) {
     ## if top is a table, get n
     n <- if (missing(n))
@@ -1841,11 +1851,15 @@ countr <- function(top, n, lowcase = TRUE, frac = FALSE, digits = 0L) {
   if (is.na(lowcase) || !is.logical(lowcase))
     lowcase <- NULL
   
-  iprint(sprintf('%s (n = %s%s, %s%%)', if (isTRUE(lowcase))
-    tolower(names(top)) else if (identical(lowcase, FALSE))
-      toupper(names(top)) else names(top),
-    top, if (frac)
-      paste0('/', n) else '', roundr(as.numeric(top) / n * 100, digits)))
+  top <- top[which]
+  
+  iprint(
+    sprintf('%s (n = %s%s, %s%%)', if (isTRUE(lowcase))
+      tolower(names(top)) else if (identical(lowcase, FALSE))
+        toupper(names(top)) else names(top),
+      top, if (frac)
+        paste0('/', n) else '', roundr(as.numeric(top) / n * 100, digits))
+  )
 }
 
 #' Date parse
