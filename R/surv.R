@@ -1,6 +1,6 @@
 ### survival
 # kmplot, kmplot_by, local_coxph_test, surv_cp, surv_summary, surv_table,
-# survdiff_pairs, landmark, surv_median
+# survdiff_pairs, landmark, surv_extract, surv_median, surv_prob
 #
 # unexported:
 # points.kmplot, kmplot_data_, lr_text, lr_pval
@@ -1767,29 +1767,59 @@ landmark <- function(s, times = NULL, lr_test = TRUE, adjust_start = FALSE,
 
 #' Extract \code{survfit} summaries
 #' 
-#' Convenience function to get summary results from \code{summary(x)$table}
+#' @description
+#' Convenience functions to print results from \code{summary(x)$table}
 #' where \code{x} is a \code{\link[survival]{survfit}} object.
+#' 
+#' \code{surv_median} and \code{surv_prob} extract median(s) and survival
+#' estimate(s) with optional confidence intervals, respectively.
+#' \code{surv_extract} is a generic extractor.
 #' 
 #' @param x an object of class \code{\link[survival]{survfit}}
 #' @param what the data to return, either the index, character string(s), or
 #' \code{NULL} (returns the entire table)
+#' @param ci logical; if \code{TRUE}, the confidence interval is printed
+#' @param digits number of digits past the decimal point to keep
+#' @param which optional integer or character vector to select or re-order
+#' the output; for \code{surv_median}, \code{which = NULL} and returns
+#' results for all strata; for \code{surv_prob}, probabilities are returned
+#' for one strata so \code{which} should be length 1
+#' @param print logical; if \code{TRUE}, output is prepared for in-line
+#' printing
+#' @param times vector of times passed to \code{\link{surv_table}}
 #' 
 #' @examples
 #' library('survival')
 #' sfit1 <- survfit(Surv(time, status) ~ 1, lung)
-#' sfit2 <- survfit(Surv(time, status) ~ sex, lung)
+#' sfit2 <- survfit(Surv(time, status) ~ sex, lung, conf.int = 0.9)
+#' 
+#' surv_extract(sfit1, NULL)
+#' surv_extract(sfit1, 2:3)
+#' surv_extract(sfit2, 'median|CL')
+#' surv_extract(sfit1, c('events', 'median'))
+#' 
 #' 
 #' surv_median(sfit1)
 #' surv_median(sfit2)
+#' surv_median(sfit2, print = FALSE)
 #' 
-#' surv_median(sfit1, NULL)
-#' surv_median(sfit1, 2:3)
-#' surv_median(sfit1, 'median|CL')
-#' surv_median(sfit1, c('events', 'median'))
+#' surv_median(sfit1, ci = TRUE)
+#' surv_median(sfit2, ci = TRUE)
+#' surv_median(sfit2, ci = TRUE, print = FALSE)
+#' 
+#' 
+#' times <- 365.242 * c(0.5, 1, 2)
+#' surv_prob(sfit1, times)
+#' ## compare
+#' summary(sfit1, times)
+#' 
+#' surv_prob(sfit2, times, which = 'sex=2', digits = 3)
+#' ## compare
+#' summary(sfit2, times)
 #' 
 #' @export
 
-surv_median <- function(x, what = 'median') {
+surv_extract <- function(x, what = 'median') {
   stopifnot(inherits(x, 'survfit'))
   
   oo <- options(survfit.rmean = 'individual')
@@ -1805,4 +1835,57 @@ surv_median <- function(x, what = 'median') {
   
   if (length(dim(tbl)))
     tbl[, what] else tbl[what]
+}
+
+#' @rdname surv_extract
+#' @export
+surv_median <- function(x, ci = FALSE, digits = 0L,
+                        which = NULL, print = TRUE) {
+  nst <- pmax(1L, length(x$strata))
+  which <- if (is.null(which))
+    seq.int(nst) else which
+  
+  if (!ci) {
+    res <- surv_extract(x, 'median')[which]
+    return(
+      if (print)
+        iprint(res, digits = digits) else res
+    )
+  }
+  
+  res <- surv_extract(x, 'median|.CL')
+  res <- roundr(res, digits)
+  
+  f <- function(.x) {
+    sprintf('%s (%s%% CI: %s - %s)',
+            .x[1L], x$conf.int * 100, .x[2L], .x[3L])
+  }
+  
+  res <- if (is.null(dim(res)))
+    f(res) else apply(res, 1L, f)
+  
+  if (print)
+    iprint(res) else res
+}
+
+#' @rdname surv_extract
+#' @export
+surv_prob <- function(x, times = pretty(x$time), ci = TRUE,
+                      digits = 2L, which = 1L, print = TRUE) {
+  stopifnot(
+    length(which) == 1L
+  )
+  
+  res <- surv_table(x, digits, times, FALSE)
+  if (islist(res))
+    res <- res[[which]]
+  res <- res[, grep('Surv', colnames(res))]
+  res <- if (!ci)
+    gsub(' .*', '', res) else gsub(', ', ' - ', res)
+  
+  res <- gsub('(?<=\\()', sprintf('%s%% CI: ', x$conf.int * 100),
+              res, perl = TRUE)
+  
+  if (print)
+    iprint(res) else res
 }
