@@ -71,7 +71,7 @@ bincon(c(4, 11), 30, method = 'exact')
  
 ## typical usage
 library('htmlTable')
-htmlTable(
+ht <- htmlTable(
   rbind(
     tabler_resp(x),
     tabler_resp(x, conf = 0.9),
@@ -85,6 +85,7 @@ htmlTable(
   cgroup = c('Evaluation', 'Outcome (95\% CI)'),
   n.cgroup = c(nlevels(x), 3L)
 )
+structure(ht, class = 'htmlTable')
 
 }
 \seealso{

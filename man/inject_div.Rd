@@ -21,24 +21,27 @@ Inject an html division tag with style attribute.
 }
 \examples{
 library('htmlTable')
-htmlTable(
+ht <- htmlTable(
   inject_div(head(cars), c(2,2), style = 'border: dashed 1px;')
 )
+structure(ht, class = 'htmlTable')
 
 ## if where is missing, style is recycled over all cells
-htmlTable(
+ht <- htmlTable(
   inject_div(mtcars,
              style = c('color: red;', 'color: blue', 'border: dashed 1px;')
   )
 )
+structure(ht, class = 'htmlTable')
 
-htmlTable(
+ht <- htmlTable(
   inject_div(head(cars),
              rbind(c(2,2), c(2,1), c(5,2)),
              'background-color: yellow;')
 )
+structure(ht, class = 'htmlTable')
 
-htmlTable(
+ht <- htmlTable(
   inject_div(head(cars),
              c(2,2,2,1,5,2),
              c('background-color: red; color: white;',
@@ -46,6 +49,7 @@ htmlTable(
                'font-weight: 900; color: blue;')
   )
 )
+structure(ht, class = 'htmlTable')
 
 }
 \seealso{

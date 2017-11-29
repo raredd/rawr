@@ -1220,12 +1220,13 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' tbl <- lapply(names(mt)[-10L], function(x)
 #'   tabler_stat(mt, x, 'gear', percentage_sign = FALSE))
 #' 
-#' htmlTable::htmlTable(
+#' ht <- htmlTable::htmlTable(
 #'   do.call('rbind', tbl),
 #'   cgroup = c('', 'Gear', ''), n.cgroup = c(1, 3, 1),
 #'   rgroup = names(mt)[-10L], n.rgroup = sapply(tbl, nrow),
 #'   tfoot = attr(tbl[[1L]], 'tfoot')
 #' )
+#' structure(ht, class = 'htmlTable')
 #' 
 #' @export
 
@@ -1578,7 +1579,7 @@ get_tabler_stat_n <- function(x, pct = TRUE) {
 #'  
 #' ## typical usage
 #' library('htmlTable')
-#' htmlTable(
+#' ht <- htmlTable(
 #'   rbind(
 #'     tabler_resp(x),
 #'     tabler_resp(x, conf = 0.9),
@@ -1592,6 +1593,7 @@ get_tabler_stat_n <- function(x, pct = TRUE) {
 #'   cgroup = c('Evaluation', 'Outcome (95% CI)'),
 #'   n.cgroup = c(nlevels(x), 3L)
 #' )
+#' structure(ht, class = 'htmlTable')
 #' 
 #' @export
 
@@ -1975,24 +1977,27 @@ combine_table <- function(l, tspanner, n.tspanner, ...) {
 #' 
 #' @examples 
 #' library('htmlTable')
-#' htmlTable(
+#' ht <- htmlTable(
 #'   inject_div(head(cars), c(2,2), style = 'border: dashed 1px;')
 #' )
+#' structure(ht, class = 'htmlTable')
 #' 
 #' ## if where is missing, style is recycled over all cells
-#' htmlTable(
+#' ht <- htmlTable(
 #'   inject_div(mtcars,
 #'              style = c('color: red;', 'color: blue', 'border: dashed 1px;')
 #'   )
 #' )
+#' structure(ht, class = 'htmlTable')
 #' 
-#' htmlTable(
+#' ht <- htmlTable(
 #'   inject_div(head(cars),
 #'              rbind(c(2,2), c(2,1), c(5,2)),
 #'              'background-color: yellow;')
 #' )
+#' structure(ht, class = 'htmlTable')
 #' 
-#' htmlTable(
+#' ht <- htmlTable(
 #'   inject_div(head(cars),
 #'              c(2,2,2,1,5,2),
 #'              c('background-color: red; color: white;',
@@ -2000,6 +2005,7 @@ combine_table <- function(l, tspanner, n.tspanner, ...) {
 #'                'font-weight: 900; color: blue;')
 #'   )
 #' )
+#' structure(ht, class = 'htmlTable')
 #' 
 #' @export
 

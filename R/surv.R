@@ -878,11 +878,18 @@ lr_pval <- function(object, details = FALSE, data = NULL, ...) {
 
 #' @rdname surv_test
 lr_text <- function(formula, data, rho = 0, ..., details = TRUE) {
+  object <- if (inherits(formula, 'survdiff'))
+    formula
+  else if (inherits(formula, 'survfit'))
+    survdiff(as.formula(formula$call$formula),
+             if (!missing(data)) data else eval(formula$call$data), ...)
+  else survdiff(formula, data, rho = rho, ...)
+  
   capture.output(
     ## Warning message: In pchisq(x$chisq, df) : NaNs produced
     ## this warning is only produced during print.survdiff
     sd <- tryCatch(
-      print(survdiff(formula, data, rho = rho, ...)),
+      print(object),
       warning = function(w) '',
       error   = function(e) {
         if (any(grepl('(?i)[1no]+ group', e)))
@@ -934,8 +941,16 @@ tt_pval <- function(object, details = FALSE, data = NULL, ...) {
 
 #' @rdname surv_test
 tt_text <- function(formula, data, ..., details = TRUE) {
+  object <- if (inherits(formula, 'coxph'))
+    formula
+  else if (inherits(formula, 'survfit'))
+    coxph(as.formula(formula$call$formula),
+          if (!missing(data)) data else eval(formula$call$data), ...)
+  else formula
+  
   cph <- tryCatch(
-    coxph(formula, data, ...),
+    if (inherits(object, 'coxph'))
+      object else coxph(formula, data, ...),
     warning = function(w) '',
     error   = function(e) e
   )
@@ -1569,7 +1584,8 @@ surv_summary <- function(s, digits = 3L, ...) {
 #' library('htmlTable')
 #' s <- `colnames<-`(surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4],
 #'                   c('Time','No. at risk','No. of events','Surv (95% CI)'))
-#' htmlTable(s, caption = 'Table: Overall survival.')
+#' ht <- htmlTable(s, caption = 'Table: Overall survival.')
+#' structure(ht, class = 'htmlTable')
 #' 
 #' @export
 

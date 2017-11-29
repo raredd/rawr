@@ -96,12 +96,13 @@ mt <- within(mtcars, {
 tbl <- lapply(names(mt)[-10L], function(x)
   tabler_stat(mt, x, 'gear', percentage_sign = FALSE))
 
-htmlTable::htmlTable(
+ht <- htmlTable::htmlTable(
   do.call('rbind', tbl),
   cgroup = c('', 'Gear', ''), n.cgroup = c(1, 3, 1),
   rgroup = names(mt)[-10L], n.rgroup = sapply(tbl, nrow),
   tfoot = attr(tbl[[1L]], 'tfoot')
 )
+structure(ht, class = 'htmlTable')
 
 }
 \seealso{
