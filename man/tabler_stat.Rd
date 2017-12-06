@@ -5,7 +5,8 @@
 \title{Description statistics \code{tabler}}
 \usage{
 tabler_stat(data, varname, byvar, digits = 0L, FUN = NULL,
-  color_pval = TRUE, color_missing = TRUE, dagger = TRUE, ...)
+  color_pval = TRUE, color_missing = TRUE, dagger = TRUE,
+  continuous_fn = function(...) Gmisc::describeMedian(..., iqr = FALSE), ...)
 }
 \arguments{
 \item{data}{a matrix or data frame with variables \code{varname} and
@@ -30,6 +31,9 @@ custom color}
 \item{dagger}{logical or a character string giving the character to
 associate with \code{FUN}; if \code{FALSE}, none are used; if \code{TRUE},
 the defaults are used (\code{"*"} is used if \code{FUN} is given)}
+
+\item{continuous_fn}{a function to describe continuous variables (default
+is to show median and range); see \code{\link[Gmisc]{getDescriptionStatsBy}}}
 
 \item{...}{additional arguments passed to
 \code{\link[Gmisc]{getDescriptionStatsBy}}}
@@ -65,7 +69,7 @@ of unique values in the column data.
 For special cases, the function is not always guessed correctly (e.g., if
 the row data contains few unique values, a Fisher test may be used where
 not appropriate). One of the default tests can be given explicitly with a
-character string, one of \code{"fisher"}, \code{"wilcoxon"},
+character string, one of \code{"fisher"}, \code{"wilcoxon"}, \code{"ttest"},
 \code{"kruskal"}, \code{"chisq"}, or \code{"anova"} (can be abbreviated).
 
 If \code{FUN} is a function, it must take two vector arguments: the row
@@ -82,6 +86,7 @@ tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'anova')  ## force anova test
 
 ## use of a custom function - see ?rawr::cuzick.test
 tabler_stat(mtcars, 'mpg', 'cyl',
+  continuous_fn = Gmisc::describeMean,
   FUN = function(x, y)
     cuzick.test(x ~ y, data.frame(x, y))$p.value)
 
@@ -94,7 +99,8 @@ mt <- within(mtcars, {
 })
 
 tbl <- lapply(names(mt)[-10L], function(x)
-  tabler_stat(mt, x, 'gear', percentage_sign = FALSE))
+  tabler_stat(mt, x, 'gear', percentage_sign = FALSE,
+              continuous_fn = Gmisc::describeMean))
 
 ht <- htmlTable::htmlTable(
   do.call('rbind', tbl),

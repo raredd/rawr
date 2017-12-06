@@ -6,7 +6,7 @@
 # 
 # unexported:
 # resp1, r_or_better1, inject_, render_sparkDT, tabler_stat_list,
-# tabler_stat_html, guess_digits, get_tabler_stat_n
+# tabler_stat_html, guess_digits, get_tabler_stat_n, getPvalttest
 ###
 
 
@@ -1154,7 +1154,7 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' For special cases, the function is not always guessed correctly (e.g., if
 #' the row data contains few unique values, a Fisher test may be used where
 #' not appropriate). One of the default tests can be given explicitly with a
-#' character string, one of \code{"fisher"}, \code{"wilcoxon"},
+#' character string, one of \code{"fisher"}, \code{"wilcoxon"}, \code{"ttest"},
 #' \code{"kruskal"}, \code{"chisq"}, or \code{"anova"} (can be abbreviated).
 #' 
 #' If \code{FUN} is a function, it must take two vector arguments: the row
@@ -1177,6 +1177,8 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' @param dagger logical or a character string giving the character to
 #' associate with \code{FUN}; if \code{FALSE}, none are used; if \code{TRUE},
 #' the defaults are used (\code{"*"} is used if \code{FUN} is given)
+#' @param continuous_fn a function to describe continuous variables (default
+#' is to show median and range); see \code{\link[Gmisc]{getDescriptionStatsBy}}
 #' @param ... additional arguments passed to
 #' \code{\link[Gmisc]{getDescriptionStatsBy}}
 #' 
@@ -1206,6 +1208,7 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' 
 #' ## use of a custom function - see ?rawr::cuzick.test
 #' tabler_stat(mtcars, 'mpg', 'cyl',
+#'   continuous_fn = Gmisc::describeMean,
 #'   FUN = function(x, y)
 #'     cuzick.test(x ~ y, data.frame(x, y))$p.value)
 #' 
@@ -1218,7 +1221,8 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' })
 #' 
 #' tbl <- lapply(names(mt)[-10L], function(x)
-#'   tabler_stat(mt, x, 'gear', percentage_sign = FALSE))
+#'   tabler_stat(mt, x, 'gear', percentage_sign = FALSE,
+#'               continuous_fn = Gmisc::describeMean))
 #' 
 #' ht <- htmlTable::htmlTable(
 #'   do.call('rbind', tbl),
@@ -1231,8 +1235,10 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' @export
 
 tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
-                        color_pval = TRUE, color_missing = TRUE,
-                        dagger = TRUE, ...) {
+                        color_pval = TRUE, color_missing = TRUE, dagger = TRUE,
+                        continuous_fn = function(...)
+                          Gmisc::describeMedian(..., iqr = FALSE), ...) {
+  fun <- deparse(substitute(FUN))
   color_missing <- if (isTRUE(color_missing))
     'lightgrey'
   else if (identical(color_missing, FALSE))
@@ -1243,10 +1249,13 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
   y <- as.factor(data[, byvar])
   n <- length(unique(na.omit(y)))
   
+  ## Hmisc::label should be drown
+  # attr(x, 'label') <- 'x'
+  
   res <- Gmisc::getDescriptionStatsBy(
     x = x, by = y, digits = digits, html = TRUE, add_total_col = TRUE,
-    show_all_values = TRUE, statistics = FALSE, useNA.digits = 0L, ...,
-    continuous_fn = function(...) Gmisc::describeMedian(..., iqr = FALSE)
+    show_all_values = TRUE, statistics = FALSE, useNA.digits = 0L,
+    continuous_fn = continuous_fn
   )
   
   ## recolor missing
@@ -1272,12 +1281,20 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
     else if (is.character(FUN))
       ## one of these tests can be explicitly given with chr string
       switch(
-        match.arg(FUN, c('fisher', 'wilcoxon', 'kruskal', 'chisq', 'anova')),
-        fisher   = structure(Gmisc::getPvalFisher(x, y),  FUN = 'fisher.test'),
-        wilcoxon = structure(Gmisc::getPvalWilcox(x, y),  FUN = 'wilcox.test'),
-        kruskal  = structure(Gmisc::getPvalKruskal(x, y), FUN = 'kruskal.test'),
-        chisq    = structure(Gmisc::getPvalChiSq(x, y),   FUN = 'chisq.test'),
-        anova    = structure(Gmisc::getPvalAnova(x, y),   FUN = 'anova.test')
+        match.arg(FUN, c('fisher', 'wilcoxon', 'kruskal',
+                         'chisq', 'anova', 'ttest')),
+        fisher   = structure(Gmisc::getPvalFisher(x, y),
+                             FUN = 'fisher.test'),
+        wilcoxon = structure(Gmisc::getPvalWilcox(x, y),
+                             FUN = 'wilcox.test'),
+        kruskal  = structure(Gmisc::getPvalKruskal(x, y),
+                             FUN = 'kruskal.test'),
+        chisq    = structure(Gmisc::getPvalChiSq(x, y),
+                             FUN = 'Chi-squared test'),
+        anova    = structure(Gmisc::getPvalAnova(x, y),
+                             FUN = 'One-way ANOVA'),
+        ttest    = structure(rawr:::getPvalttest(x, y),
+                             FUN = 'Unpaired t-test')
       )
     else {
       ## guess stat fn based on x, by data
@@ -1299,13 +1316,20 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
     }
   )
   
-  fname  <- attr(pvn, 'FUN')
-  fnames <- setNames(paste0(c('wilcox', 'kruskal', 'fisher'), '.test'),
-                     c('&dagger;','&dagger;','&Dagger;'))
+  fname  <- attr(pvn, 'FUN') %||% fun
+  fnames <- setNames(
+    paste0(c('wilcox', 'kruskal', 'fisher'), '.test'),
+    c('&dagger;', '&dagger;', '&Dagger;')
+  )
   
   ## user input fns get * identifier
   if (!is.null(FUN) && !identical(FUN, FALSE) &&
-      is.na(pmatch(FUN, c('fisher', 'wilcox', 'kruskal')))) {
+      is.na(pmatch(
+        tryCatch(as.character(FUN),
+                 error = function(e)
+                   paste0(deparse(FUN), collapse = '')
+        ),
+        c('fisher', 'wilcox', 'kruskal')))) {
     if (!is.character(dagger))
       dagger <- '*'
     fnames <- c(fnames, setNames(fname, dagger))
@@ -1337,6 +1361,10 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
     cbind(res, m), FUN = fname, p.value = pvn, fnames = fnames,
     tfoot = toString(sprintf('<sup>%s</sup>%s', names(fnames), fnames))
   )
+}
+
+getPvalttest <- function(x, by) {
+  t.test(x ~ by, alternative = 'two.sided')$p.value
 }
 
 #' \code{tabler_stat} wrappers
