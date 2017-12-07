@@ -4,12 +4,16 @@
 \alias{moods_test}
 \title{Mood's median test}
 \usage{
-moods_test(X, ...)
+moods_test(X, ..., exact = TRUE)
 }
 \arguments{
 \item{X}{a list of two or more numeric vectors}
 
-\item{...}{additional parameters passed to \code{\link{fisher.test}}}
+\item{...}{additional parameters passed to \code{\link{fisher.test}} or
+\code{\link{chisq.test}}}
+
+\item{exact}{logical; if \code{TRUE} (default), uses Fisher's exact test
+and Pearson's chi-squared test otherwise}
 }
 \description{
 A nonparametric test used to test the equality of medians from two or more
@@ -28,13 +32,15 @@ medians.
 set.seed(1)
 X <- list(rnorm(10), rnorm(10, 1), rnorm(20, 2))
 moods_test(X)
+moods_test(X[1:2], exact = FALSE, correct = TRUE)
 
-plot(density(X[[1]]), xlim = range(unlist(X)), ylim = c(0, .5))
+plot(density(X[[1]]), xlim = range(unlist(X)), ylim = c(0, .5), main = '')
 for (x in 2:3)
   lines(density(X[[x]]), col = x)
 
 }
 \seealso{
-\code{\link{mood.test}}; \code{\link{kruskal.test}};
+\code{\link{mood.test}}; \code{\link{fisher.test}};
+\code{\link{chisq.test}}; \code{\link{kruskal.test}};
 \code{\link{wilcox.test}}
 }

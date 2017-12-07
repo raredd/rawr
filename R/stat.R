@@ -900,31 +900,41 @@ bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20) {
 #' medians.
 #' 
 #' @param X a list of two or more numeric vectors
-#' @param ... additional parameters passed to \code{\link{fisher.test}}
+#' @param exact logical; if \code{TRUE} (default), uses Fisher's exact test
+#' and Pearson's chi-squared test otherwise
+#' @param ... additional parameters passed to \code{\link{fisher.test}} or
+#' \code{\link{chisq.test}}
 #' 
 #' @seealso
-#' \code{\link{mood.test}}; \code{\link{kruskal.test}};
+#' \code{\link{mood.test}}; \code{\link{fisher.test}};
+#' \code{\link{chisq.test}}; \code{\link{kruskal.test}};
 #' \code{\link{wilcox.test}}
 #' 
 #' @examples
 #' set.seed(1)
 #' X <- list(rnorm(10), rnorm(10, 1), rnorm(20, 2))
 #' moods_test(X)
+#' moods_test(X[1:2], exact = FALSE, correct = TRUE)
 #' 
-#' plot(density(X[[1]]), xlim = range(unlist(X)), ylim = c(0, .5))
+#' plot(density(X[[1]]), xlim = range(unlist(X)), ylim = c(0, .5), main = '')
 #' for (x in 2:3)
 #'   lines(density(X[[x]]), col = x)
 #' 
 #' @export
 
-moods_test <- function(X, ...) {
+moods_test <- function(X, ..., exact = TRUE) {
   x <- unlist(X)
   g <- rep(ng <- seq_len(length(X)), times = sapply(X, length))
   m <- median(x)
-  zzz <- fisher.test(x < m, g, ...)
-  zzz$method <- sprintf('Mood\'s median test of %s groups', length(ng))
-  zzz$data <- table(x < m, g, dnn = c('< median', 'group'))
-  zzz
+  
+  FUN <- if (exact)
+    fisher.test else chisq.test
+  res <- FUN(x < m, g, ...)
+  res$method <- sprintf('Mood\'s median test of %s groups (%s)',
+                        length(ng), res$method)
+  res$data <- table(x < m, g, dnn = c(sprintf('< median (%s)', m), 'group'))
+  
+  res
 }
 
 #' Fake GLM
@@ -970,24 +980,29 @@ moods_test <- function(X, ...) {
 
 fakeglm <- function(formula, ..., family, data = NULL) {
   dots <- list(...)
-  out <- list()
+  res  <- list()
   
   ## stats:::.MFclass
   .MFclass <- function (x) {
-    if (is.logical(x)) return('logical')
-    if (is.ordered(x)) return('ordered')
-    if (is.factor(x)) return('factor')
-    if (is.character(x)) return('character')
-    if (is.matrix(x) && is.numeric(x))
-      return(paste('nmatrix', ncol(x), sep = '.'))
-    if (is.numeric(x)) return('numeric')
-    return('other')
+    if (is.logical(x))
+      'logical'
+    else if (is.ordered(x))
+      'ordered'
+    else if (is.factor(x))
+      'factor'
+    else if (is.character(x))
+      'character'
+    else if (is.matrix(x) && is.numeric(x))
+      paste('nmatrix', ncol(x), sep = '.')
+    else if (is.numeric(x))
+      'numeric'
+    else 'other'
   }
   
   tt <- terms(formula, data = data)
   if (!is.null(data)) {
     mf <- model.frame(tt, data)
-    vn <- sapply(attr(tt, 'variables')[-1], deparse)
+    vn <- sapply(attr(tt, 'variables')[-1L], deparse)
     if ((yvar <- attr(tt, 'response')) > 0)
       vn <- vn[-yvar]
     xlvl <- lapply(data[vn], function(x)
@@ -996,12 +1011,12 @@ fakeglm <- function(formula, ..., family, data = NULL) {
       else if (is.character(x))
         levels(as.factor(x))
       else NULL)
-    attr(out, 'xlevels') <- xlvl[!vapply(xlvl, is.null, NA)]
+    attr(res, 'xlevels') <- xlvl[!vapply(xlvl, is.null, NA)]
     attr(tt, 'dataClasses') <- sapply(data[vn], .MFclass)
   }
-  out$terms <- tt
-  coef <- numeric(0)
-  stopifnot(length(dots) > 1, !is.null(names(dots)))
+  res$terms <- tt
+  coef <- numeric(0L)
+  stopifnot(length(dots) > 1L, !is.null(names(dots)))
   
   for (ii in seq_along(dots)) {
     if ((n <- names(dots)[ii]) != '') {
@@ -1009,7 +1024,7 @@ fakeglm <- function(formula, ..., family, data = NULL) {
       if (!is.null(names(v))) {
         coef[paste0(n, names(v))] <- v
       } else {
-        stopifnot(length(v) == 1)
+        stopifnot(length(v) == 1L)
         coef[n] <- v
       }
     } else {
@@ -1017,32 +1032,31 @@ fakeglm <- function(formula, ..., family, data = NULL) {
     }
   }
   
-  out$coefficients <- coef
-  out$rank <- length(coef)
+  res$coefficients <- coef
+  res$rank <- length(coef)
   if (!missing(family)) {
-    out$family <- if (class(family) == 'family') {
+    res$family <- if (inherits(family, 'family'))
       family
-    } else if (class(family) == 'function') {
+    else if (class(family) == 'function')
       family()
-    } else if (class(family) == 'character') {
+    else if (is.character(family))
       get(family)()
-    } else {
-      stop(paste('Invalid family class:', class(family)))
-    }
-    out$qr <- list(pivot = seq_len(out$rank))
-    out$deviance <- 1
-    out$null.deviance <- 1
-    out$aic <- 1
-    class(out) <- c('glm','lm')
+    else stop('Invalid family class: ', class(family))
+    
+    res$qr <- list(pivot = seq_len(res$rank))
+    res$deviance <- 1
+    res$null.deviance <- 1
+    res$aic <- 1
+    class(res) <- c('glm', 'lm')
   } else {
-    class(out) <- 'lm'
-    out$fitted.values <- predict(out, newdata = data)
-    out$residuals <- out$mf[attr(tt, 'response')] - out$fitted.values
-    out$df.residual <- nrow(data) - out$rank
-    out$model <- data
+    class(res) <- 'lm'
+    res$fitted.values <- predict(res, newdata = data)
+    res$residuals <- res$mf[attr(tt, 'response')] - res$fitted.values
+    res$df.residual <- nrow(data) - res$rank
+    res$model <- data
     ## qr doesn't work
   }
-  out
+  res
 }
 
 #' GCD
@@ -1057,7 +1071,9 @@ fakeglm <- function(formula, ..., family, data = NULL) {
 #' 
 #' @export
 
-gcd <- function(x, y) ifelse(r <- x %% y, Recall(y, r), y)
+gcd <- function(x, y) {
+  ifelse(r <- x %% y, Recall(y, r), y)
+}
 
 #' Install bioconductor
 #' 
@@ -1121,11 +1137,16 @@ install.bioc <- function(pkgs, upgrade = FALSE) {
 #' @export
 
 lm.beta <- function (x, weights = 1) {
-  stopifnot(inherits(x, 'lm'))
-  b  <- coef(x)[-1]
+  stopifnot(
+    inherits(x, 'lm')
+  )
+  
+  b  <- coef(x)[-1L]
   mf <- x$model
-  sx <- vapply(mf[, -1, drop = FALSE], sd, double(1))
-  sy <- vapply(mf[,  1, drop = FALSE], sd, double(1))
+  
+  sx <- vapply(mf[, -1L, drop = FALSE], sd, double(1L))
+  sy <- vapply(mf[,  1L, drop = FALSE], sd, double(1L))
+  
   b * sx / sy * weights
 }
 
@@ -1698,7 +1719,7 @@ rpart_subset <- function(tree, node = 1L) {
   
   if (length(nn <- node[node %ni% nodes]))
     stop('Node ', toString(nn), ' not found\n\nPossibilities are ',
-         iprint(nodes, digits = 0), '.\n')
+         iprint(nodes, digits = 0L), '.\n')
   
   f <- function(n) {
     idx <- unique(unlist(idx[sapply(idx, function(x)
@@ -1717,6 +1738,7 @@ rpart_subset <- function(tree, node = 1L) {
 rpart_nodes <- function(tree, node_labels = FALSE, droplevels = TRUE) {
   if (identical(node_labels, FALSE))
     return(rownames(tree$frame)[tree$where])
+  
   labels <- if (!isTRUE(node_labels)) {
     if (length(node_labels) == length(table(tree$where)) ||
         length(node_labels) == nrow(tree$frame))
@@ -1728,6 +1750,7 @@ rpart_nodes <- function(tree, node_labels = FALSE, droplevels = TRUE) {
   
   nl <- factor(labels[if (length(labels) == nrow(tree$frame))
     tree$where else as.integer(factor(tree$where))], labels)
+  
   if (droplevels)
     droplevels(nl) else nl
 }
