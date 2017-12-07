@@ -402,7 +402,7 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
       attr(groups, 'names') <- seq.int(n)
     names <- attr(groups, 'names')
   }
-  zzz <- do.call('boxplot', list(x = x, plot = FALSE, names = names))
+  res <- do.call('boxplot', list(x = x, plot = FALSE, names = names))
   
   ## number and size of groups
   ng <- length(groups)
@@ -512,7 +512,7 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
     par(oma = par('oma') + c(0,0,0,2))
   panel.first
   
-  out <- list()
+  res <- list()
   Lme <- 0.2 * c(-1, 1)
   
   for (i in seq.int(ng)) {
@@ -710,7 +710,7 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
       )
   }
   
-  invisible(zzz)
+  invisible(res)
 }
 
 #' @rdname tplot

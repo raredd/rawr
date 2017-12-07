@@ -503,8 +503,8 @@ search_hist <- function (x, ...) {
 
 fapply <- function(X, FUN, ...) {
   fn <- as.character(match.call()$FUN)[-1L]
-  out <- sapply(FUN, mapply, X, ...)
-  setNames(as.data.frame(out), fn)
+  res <- sapply(FUN, mapply, X, ...)
+  setNames(as.data.frame(res), fn)
 }
 
 #' Quietly try to require a package
@@ -691,26 +691,26 @@ helpExtract <- function(FUN, show.sections = FALSE, section = 'Usage',
   
   X <- rep_len(0L, length(x))
   X[B] <- 1L
-  out <- split(x, cumsum(X))
+  res <- split(x, cumsum(X))
   
-  out <- out[which(sapply(out, function(x)
+  res <- res[which(sapply(res, function(x)
     any(Vectorize(grepl)(section, x[1L], ignore.case = TRUE))))]
-  # out <- unlist(sapply(out, '[', -(1:2)))
-  out <- if (length(section) > 1L)
-    unname(unlist(out)) else out[[1L]][-(1:2)]
+  # res <- unlist(sapply(res, '[', -(1:2)))
+  res <- if (length(section) > 1L)
+    unname(unlist(res)) else res[[1L]][-(1:2)]
   
   while (TRUE) {
-    out <- out[-length(out)]
-    if (nzchar(out[length(out)]))
+    res <- res[-length(res)]
+    if (nzchar(res[length(res)]))
       break
   }
   
   switch(type,
-         text = out,
-         md_code = c('```r', out, '```'),
-         sw_code = c('<<>>=', out, '@'),
-         md_text = paste('    ', out, collapse = '\n'),
-         sw_text = c('\\begin{verbatim}', out, '\\end{verbatim}')
+         text = res,
+         md_code = c('```r', res, '```'),
+         sw_code = c('<<>>=', res, '@'),
+         md_text = paste('    ', res, collapse = '\n'),
+         sw_text = c('\\begin{verbatim}', res, '\\end{verbatim}')
   )
 }
 
@@ -1241,21 +1241,21 @@ nestedmerge <- function(x, y) {
   if (missing(y))
     return(x)
   if (islist(x) & islist(y)) {
-    out <- list()
+    res <- list()
     if (!is.null(names(x))) {
       for (nn in names(x)) {
-        out <- if (nn %in% names(y) && !is.null(y[[nn]]))
-          append(out, c(Recall(x[[nn]], y[[nn]]))) else
-            append(out, list(x[[nn]]))
-        names(out)[length(out)] <- nn
+        res <- if (nn %in% names(y) && !is.null(y[[nn]]))
+          append(res, c(Recall(x[[nn]], y[[nn]]))) else
+            append(res, list(x[[nn]]))
+        names(res)[length(res)] <- nn
       }
     } else {
       for (ii in seq_along(x))
-        out <- if (ii <= length(y) && !is.null(y[[ii]]))
-          append(out, Recall(x[[ii]], y[[ii]])) else
-            append(out, list(x[[ii]]))
+        res <- if (ii <= length(y) && !is.null(y[[ii]]))
+          append(res, Recall(x[[ii]], y[[ii]])) else
+            append(res, list(x[[ii]]))
     }
-    out
+    res
   } else list(c(x, y))
 }
 
@@ -1781,7 +1781,7 @@ fill_spaces_ <- function(lines, width, fill) {
     extra <- width - sum(nchar(x)) - nspace
     reps  <- extra %/% nspace
     extra <- extra %% nspace
-    times <- rep.int(if (reps > 0) reps + 1L else 1L, nspace)
+    times <- rep.int(if (reps > 0L) reps + 1L else 1L, nspace)
     
     if (extra > 0L) {
       if (fill == 'right')
@@ -1793,10 +1793,10 @@ fill_spaces_ <- function(lines, width, fill) {
     }
     
     spaces <- c('', unlist(lapply(times, formatC, x = ' ', digits = NULL)))
-    out <- paste(c(rbind(spaces, x)), collapse = '')
+    res <- paste(c(rbind(spaces, x)), collapse = '')
     
     if (sum(c(nchar(x), length(x), extra)) < width / 2)
-      gsub('\\s{1,}', ' ', out) else out
+      gsub('\\s{1,}', ' ', res) else res
   })
   
   c(res, paste(tail(tokens, 1L)[[1L]], collapse = ' '))

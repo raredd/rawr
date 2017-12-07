@@ -909,11 +909,11 @@ rbindfill <- function(...) {
   un <- unique(unlist(nn))
   ll <- sapply(l, length)
   
-  out <- vector('list', length(ll))
+  res <- vector('list', length(ll))
   for (ii in seq_along(ll))
-    out[[ii]] <- unname(l[[ii]])[match(un, nn[[ii]])]
+    res[[ii]] <- unname(l[[ii]])[match(un, nn[[ii]])]
   
-  `colnames<-`(do.call('rbind', out), un)
+  `colnames<-`(do.call('rbind', res), un)
 }
 
 #' @rdname bindx
@@ -929,7 +929,7 @@ rbindfill2 <- function(..., use.rownames = FALSE) {
     return(do.call('rbindx', l))
   }
   
-  out <- lapply(l, function(x) {
+  res <- lapply(l, function(x) {
     if (!all(wh <- un %in% names(x))) {
       mat <- matrix(NA, nrow = nrow(x), ncol = sum(!wh),
                     dimnames = list(NULL, un[!wh]))
@@ -937,7 +937,7 @@ rbindfill2 <- function(..., use.rownames = FALSE) {
       res[, un]
     } else x[, un]
   })
-  res <- do.call('rbind', out)
+  res <- do.call('rbind', res)
   if (use.rownames)
     res else `rownames<-`(res, NULL)
 }

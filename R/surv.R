@@ -716,11 +716,11 @@ points.kmplot <- function(x, xscale, xmax, fun,
     firsty <- tfun(firsty)
   }
   
-  out <- cbind(stime = stime,
+  res <- cbind(stime = stime,
                ssurv = if (ncol(ssurv) == 1L) c(ssurv) else ssurv,
                n.event = x$n.event)
   if (!plot)
-    return(out)
+    return(res)
   
   if (ncurve == 1L || length(col) == 1L) {
     if (censor) {
@@ -768,7 +768,7 @@ points.kmplot <- function(x, xscale, xmax, fun,
       }
     }
   }
-  invisible(out)
+  invisible(res)
 }
 
 #' Create data frame to plot survival data

@@ -533,19 +533,22 @@ binconr <- function(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
     }
   
   bc <- bincon(r, n, alpha = 1 - conf, method = method)
-  stopifnot(nrow(bc) == 1L)
+  stopifnot(
+    nrow(bc) == 1L
+  )
   
-  res <- roundr(bc * 100, digits)
-  zzz <- sprintf('%s%% CI: %s - %s%%', conf * 100, res[4L], res[5L])
+  tmp <- roundr(bc * 100, digits)
+  res <- sprintf('%s%% CI: %s - %s%%', conf * 100, tmp[4L], tmp[5L])
   
   if (!show_conf)
-    zzz <- gsub('.*% CI: ', '', zzz)
+    res <- gsub('.*% CI: ', '', res)
   if (est)
-    zzz <- sprintf('%s%% (%s)', res[3L], zzz)
+    res <- sprintf('%s%% (%s)', tmp[3L], res)
   if (!pct.sign)
-    zzz <- gsub('%(?= \\()|%(?=\\))', '', zzz, perl = TRUE)
+    res <- gsub('%(?= \\()|%(?=\\))', '', res, perl = TRUE)
   if (frac)
-    sprintf('%s/%s, %s', tail(r, 1L), sum(n), zzz) else zzz
+    sprintf('%s/%s, %s', tail(r, 1L), sum(n), res)
+  else res
 }
 
 #' Numeric to character string

@@ -480,7 +480,7 @@ sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
   
   ## sas.get wrapper
   if (force || !interactive() || tolower(substr(check, 1, 1)) == 'y') {
-    zzz <- setNames(lapply(dsn, function(x)
+    res <- setNames(lapply(dsn, function(x)
       tryCatch(
         Hmisc::sas.get(libraryName = libpath, member = x, sasprog = saspath,
                        log.file = file.path(libpath, log.file),
@@ -493,16 +493,16 @@ sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
     
     ## print dims for user
     cat('\nread summary:\n\n')
-    dims <- sapply(zzz, dim)
+    dims <- sapply(res, dim)
     print(`rownames<-`(dims, c('rows','columns')))
     message(sprintf('Log file created: \'%s\'\n', file.path(libpath, log.file)),
             domain = NA)
     if (write) {
       dir.create(wdir)
       f <- function(x, file) write.csv(x, file, row.names = FALSE)
-      mapply(f, x = zzz, file = file.path(wdir, paste0(names(zzz), '.csv')))
+      mapply(f, x = res, file = file.path(wdir, paste0(names(res), '.csv')))
     }
-    zzz
+    res
   } else invisible(NULL)
 }
 
