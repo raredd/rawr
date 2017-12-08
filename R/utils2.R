@@ -1296,7 +1296,7 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
                              FUN = 'Chi-squared test'),
         anova    = structure(Gmisc::getPvalAnova(x, y),
                              FUN = 'One-way ANOVA'),
-        ttest    = structure(rawr:::getPvalttest(x, y),
+        ttest    = structure(       getPvalttest(x, y),
                              FUN = 'Unpaired t-test')
       )
     else {

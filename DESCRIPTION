@@ -19,6 +19,7 @@ Suggests:
     coin,
     desmon,
     DT,
+    Gmisc,
     Hmisc,
     htmlTable,
     htmlwidgets,
