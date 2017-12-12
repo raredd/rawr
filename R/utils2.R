@@ -1252,14 +1252,13 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
   y <- as.factor(data[, byvar])
   n <- length(unique(na.omit(y)))
   
-  ## Hmisc::label should be drown
-  # attr(x, 'label') <- 'x'
-  
   res <- Gmisc::getDescriptionStatsBy(
     x = x, by = y, digits = digits, html = TRUE, add_total_col = TRUE,
     show_all_values = TRUE, statistics = FALSE, useNA.digits = 0L,
     continuous_fn = continuous_fn
   )
+
+  class(res) <- 'matrix'
   
   ## recolor missing
   if (is.character(color_missing)) {
