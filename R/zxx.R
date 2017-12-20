@@ -1080,10 +1080,13 @@ kinda_sort <- function(x, n, decreasing = FALSE, indices) {
 #' Symmetrical sort
 #' 
 #' Sort a vector symmetrically, i.e., the two most extreme values are put
-#' at opposite ends, followed by the next two, etc.
+#' at opposite ends and repeated until the median value(s) is(are) put in
+#' the middle of the sorted vector.
 #' 
 #' @param x a numeric, complex, character, or logical vector
 #' @param rev logical; if \code{TRUE}, vectors are sorted in reverse
+#' @param index.return logical; if \code{TRUE}, the ordering index vector
+#' is returned
 #' 
 #' @seealso
 #' \code{\link{kinda_sort}}
@@ -1092,16 +1095,23 @@ kinda_sort <- function(x, n, decreasing = FALSE, indices) {
 #' sym_sort(letters)
 #' sym_sort(letters, rev = TRUE)
 #' 
-#' plot(sym_sort(runif(50)))
-#' plot(sym_sort(rnorm(99), rev = TRUE))
+#' x <- runif(50)
+#' plot(sym_sort(x))
+#' plot(x[sym_sort(x, index.return = TRUE)])
+#' 
+#' plot(sym_sort(x, rev = TRUE))
+#' plot(-sym_sort(-x, rev = TRUE))
 #' 
 #' @export
 
-sym_sort <- function(x, rev = FALSE) {
+sym_sort <- function(x, rev = FALSE, index.return = FALSE) {
   if (length(x) <= 1L)
     return(x)
+  if (index.return)
+    names(x) <- seq_along(x)
   rev <- if (rev)
     0:1 else 1:0
+  
   s <- sort(x)
   f <- rep_len(1:2, length(s))
   
@@ -1109,11 +1119,14 @@ sym_sort <- function(x, rev = FALSE) {
   sp <- Vectorize(sort, SIMPLIFY = FALSE)(sp, decreasing = !!rev)
   nn <- unlist(sapply(sp, names))
   
-  sp <- unlist(c(sp))
-  names(sp) <- nn
+  res <- unlist(c(sp))
+  names(res) <- nn
   
-  sp
+  if (index.return)
+    as.integer(nn)
+  else res
 }
+
 
 #' Generate random gene names
 #' 

@@ -4,23 +4,31 @@
 \alias{sym_sort}
 \title{Symmetrical sort}
 \usage{
-sym_sort(x, rev = FALSE)
+sym_sort(x, rev = FALSE, index.return = FALSE)
 }
 \arguments{
 \item{x}{a numeric, complex, character, or logical vector}
 
 \item{rev}{logical; if \code{TRUE}, vectors are sorted in reverse}
+
+\item{index.return}{logical; if \code{TRUE}, the ordering index vector
+is returned}
 }
 \description{
 Sort a vector symmetrically, i.e., the two most extreme values are put
-at opposite ends, followed by the next two, etc.
+at opposite ends and repeated until the median value(s) is(are) put in
+the middle of the sorted vector.
 }
 \examples{
 sym_sort(letters)
 sym_sort(letters, rev = TRUE)
 
-plot(sym_sort(runif(50)))
-plot(sym_sort(rnorm(99), rev = TRUE))
+x <- runif(50)
+plot(sym_sort(x))
+plot(x[sym_sort(x, index.return = TRUE)])
+
+plot(sym_sort(x, rev = TRUE))
+plot(-sym_sort(-x, rev = TRUE))
 
 }
 \seealso{
