@@ -1,11 +1,11 @@
 ### some random shit
 # ht, progress, recoder, identical2, all_equal2, search_df, search_hist,
 # fapply, try_require, list2file, Restart, helpExtract, Round, round_to,
-# updateR, read_clip, icols, fill_df, kinda_sort, rt, rgene, install_temp,
-# nestedMerge, nestedmerge, path_extract, fname, file_name, file_ext, rm_ext,
-# mgrep, mgrepl, msub, mgsub, flatten, tree, rm_null, cum_reset, cum_na,
-# cumsum_na, cumprod_na, cummax_na, cummin_na, vgrep, vgrepl, justify,
-# factors, sample_each, pickcol, lunique, rm_nonascii
+# updateR, read_clip, icols, fill_df, kinda_sort, sym_sort, rt, rgene,
+# install_temp, nestedMerge, nestedmerge, path_extract, fname, file_name,
+# file_ext, rm_ext, mgrep, mgrepl, msub, mgsub, flatten, tree, rm_null,
+# cum_reset, cum_na, cumsum_na, cumprod_na, cummax_na, cummin_na, vgrep,
+# vgrepl, justify, factors, sample_each, pickcol, lunique, rm_nonascii
 # 
 # unexported:
 # helpExtract_, mgrep_, msub_, fill_spaces_
@@ -1098,6 +1098,8 @@ kinda_sort <- function(x, n, decreasing = FALSE, indices) {
 #' @export
 
 sym_sort <- function(x, rev = FALSE) {
+  if (length(x) <= 1L)
+    return(x)
   rev <- if (rev)
     0:1 else 1:0
   s <- sort(x)

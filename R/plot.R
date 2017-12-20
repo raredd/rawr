@@ -2113,7 +2113,6 @@ heatmap.3 <- function(x,
                                     'spearman',  'pearson'))
     if (dmethod %in% c('spearman', 'pearson'))
       distfun <- function(x)
-        # as.dist(1 - abs(cor(t(x), method = dmethod)))
         as.dist(1 - cor(t(x), method = dmethod))
     else {
       distfun <- dist
