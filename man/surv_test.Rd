@@ -6,6 +6,8 @@
 \alias{lr_text}
 \alias{tt_pval}
 \alias{tt_text}
+\alias{hr_pval}
+\alias{hr_text}
 \title{Survival curve tests}
 \usage{
 lr_pval(object, details = FALSE, data = NULL, ...)
@@ -15,6 +17,10 @@ lr_text(formula, data, rho = 0, ..., details = TRUE)
 tt_pval(object, details = FALSE, data = NULL, ...)
 
 tt_text(formula, data, ..., details = TRUE)
+
+hr_pval(object, details = FALSE, data = NULL, ...)
+
+hr_text(formula, data, ..., details = TRUE)
 }
 \arguments{
 \item{object}{a \code{\link{survfit}}, \code{\link{survdiff}}, or
