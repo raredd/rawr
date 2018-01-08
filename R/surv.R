@@ -108,6 +108,11 @@
 #' @param test_details logical; if \code{TRUE} (default), all test details
 #' (test statistic, degrees of freedom, p-value) are shown; if \code{FALSE},
 #' only the p-value is shown
+#' @param hr_text logical; if \code{TRUE}, a \code{\link{coxph}} model is fit,
+#' and a summary of the hazard ratios, confidence intervals, and Wald p-values
+#' is shown
+#' @param hr.args an optional \emph{named} list of \code{\link{legend}}
+#' arguments controlling the \code{hr_text} legend
 #' @param add logical; if \code{TRUE}, \code{par}s are not reset; allows for
 #' multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}
 #' @param panel.first an expression to be evaluated after the plot axes are
@@ -137,6 +142,14 @@
 #' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3700)
 #' kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5,
 #'        col.surv = 1:4, col.band = c(1,0,0,4))
+#' 
+#' 
+#' ## for hazard ratios, use factors to fit the proper cox model
+#' kmplot(survfit(Surv(time, status) ~ factor(sex), data = colon),
+#'        hr_text = TRUE)
+#' kmplot(survfit(Surv(time, status) ~ interaction(sex, rx), data = colon),
+#'        hr_text = TRUE, atrisk = FALSE, legend = FALSE)
+#' 
 #' 
 #' ## at-risk and p-value options
 #' kmplot(km2, tt_test = TRUE, test_details = FALSE)
@@ -222,6 +235,7 @@ kmplot <- function(s,
                    
                    ## other options
                    lr_test = FALSE, tt_test = FALSE, test_details = TRUE,
+                   hr_text = FALSE, hr.args = list(),
                    add = FALSE, panel.first = NULL, panel.last = NULL, ...) {
   if (!inherits(s, 'survfit'))
     stop('\'s\' must be a \'survfit\' object')
@@ -530,6 +544,24 @@ kmplot <- function(s,
     do.call('legend', modifyList(largs, legend.args))
   }
   
+  ## hazard ratios
+  if (!identical(hr_text, FALSE)) {
+    txt <- tryCatch(
+      hr_text(as.formula(form), sdat),
+      error = function(e) ''
+    )
+    
+    largs <- list(
+      x = 'bottomleft', y = NULL, bty = 'n',
+      legend = txt[strata.order], col = col.surv[strata.order],
+      lty = lty.surv[strata.order], lwd = lwd.surv[strata.order]
+    )
+    
+    if (!islist(hr.args))
+      legend.args <- list()
+    do.call('legend', modifyList(largs, hr.args))
+  }
+  
   ## survival and confidence lines
   u0 <- u1 <- par('usr')
   u1[2L] <- oxlim[2L] * 1.01
@@ -581,8 +613,10 @@ kmplot <- function(s,
     FUN <- if (tt_test)
       function(f, d, r, ...) tt_text(f, d, ...)
     else lr_text
-    txt <- tryCatch(FUN(as.formula(form), sdat, rho, details = test_details),
-                    error = function(e) 'n/a')
+    txt <- tryCatch(
+      FUN(as.formula(form), sdat, rho, details = test_details),
+      error = function(e) 'n/a'
+    )
     if (identical(txt, FALSE))
       message('There is only one group',
               if (svar == '1') '' else paste(' for', svar),
@@ -970,6 +1004,66 @@ tt_text <- function(formula, data, ..., details = TRUE) {
   if (details)
     bquote(paste(chi^2, ' = ', .(txt)))
   else pvalr(pv, show.p = TRUE)
+}
+
+#' @rdname surv_test
+hr_pval <- function(object, details = FALSE, data = NULL, ...) {
+  object <- if (inherits(object, c('survdiff', 'survfit'))) {
+    if (length(form <- object$call$formula) == 1L)
+      object$call$formula <- eval(object$call$formula, parent.frame(1L))
+    coxph(as.formula(object$call$formula),
+          eval(data %||% object$.data %||% object$call$data))
+  } else if (inherits(object, 'formula'))
+    coxph(object, data, ...)
+  else object
+  
+  stopifnot(
+    inherits(object, 'coxph')
+  )
+  
+  obj <- summary(object)
+  obj <- cbind(obj$conf.int[, -2L, drop = FALSE],
+               p.value = obj$coefficients[, 'Pr(>|z|)'])
+  
+  if (details)
+    obj
+  else obj[, 'p.value']
+}
+
+#' @rdname surv_test
+hr_text <- function(formula, data, ..., details = TRUE) {
+  object <- if (inherits(formula, 'coxph'))
+    formula
+  else if (inherits(formula, 'survfit'))
+    coxph(as.formula(formula$call$formula),
+          if (!missing(data)) data else eval(formula$call$data), ...)
+  else formula
+  
+  cph <- tryCatch(
+    if (inherits(object, 'coxph'))
+      object else coxph(formula, data, ...),
+    warning = function(w) '',
+    error   = function(e) e
+  )
+  
+  if (isTRUE(cph))
+    return(FALSE)
+  if (identical(cph, ''))
+    return(cph)
+  if (!inherits(cph, 'coxph'))
+    stop(cph)
+  
+  obj <- hr_pval(cph, details = TRUE)
+  
+  txt <- apply(obj, 1L, function(x)
+    sprintf('HR %.2f [%.2f, %.2f], %s', x[1L], x[2L], x[3L],
+            pvalr(x[4L], show.p = TRUE)))
+  txt <- paste(cph$xlevels[[attr(terms(cph), 'term.labels')]],
+               c('Reference', txt), sep = ': ')
+  
+  if (is.null(cph$xlevels))
+    c(NA, gsub('^.*: ', '', txt)[-1L])
+  else txt
 }
 
 #' kmplot_by

@@ -17,8 +17,8 @@ kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
   xlab = "Time", ylab = "Probability", main = NULL,
   cex.axis = par("cex.axis"), legend = !atrisk && !is.null(s$strata),
   legend.args = list(), lr_test = FALSE, tt_test = FALSE,
-  test_details = TRUE, add = FALSE, panel.first = NULL,
-  panel.last = NULL, ...)
+  test_details = TRUE, hr_text = FALSE, hr.args = list(), add = FALSE,
+  panel.first = NULL, panel.last = NULL, ...)
 }
 \arguments{
 \item{s}{an object of class \code{\link{survfit}} or \code{survfit.cox}}
@@ -124,6 +124,13 @@ that this will override \code{lr_test}}
 (test statistic, degrees of freedom, p-value) are shown; if \code{FALSE},
 only the p-value is shown}
 
+\item{hr_text}{logical; if \code{TRUE}, a \code{\link{coxph}} model is fit,
+and a summary of the hazard ratios, confidence intervals, and Wald p-values
+is shown}
+
+\item{hr.args}{an optional \emph{named} list of \code{\link{legend}}
+arguments controlling the \code{hr_text} legend}
+
 \item{add}{logical; if \code{TRUE}, \code{par}s are not reset; allows for
 multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}}
 
@@ -177,6 +184,14 @@ kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
 kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3700)
 kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5,
        col.surv = 1:4, col.band = c(1,0,0,4))
+
+
+## for hazard ratios, use factors to fit the proper cox model
+kmplot(survfit(Surv(time, status) ~ factor(sex), data = colon),
+       hr_text = TRUE)
+kmplot(survfit(Surv(time, status) ~ interaction(sex, rx), data = colon),
+       hr_text = TRUE, atrisk = FALSE, legend = FALSE)
+
 
 ## at-risk and p-value options
 kmplot(km2, tt_test = TRUE, test_details = FALSE)
