@@ -188,7 +188,7 @@ kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5,
 
 ## for hazard ratios, use factors to fit the proper cox model
 kmplot(survfit(Surv(time, status) ~ factor(sex), data = colon),
-       hr_text = TRUE)
+       hr_text = TRUE, strata.lab = TRUE)
 kmplot(survfit(Surv(time, status) ~ interaction(sex, rx), data = colon),
        hr_text = TRUE, atrisk = FALSE, legend = FALSE)
 
@@ -205,8 +205,8 @@ kmplot(km1, strata.lab = c('\\u2640', '\\u2642'),
                                         phantom() >= Male))
 
 ## character vectors passed to strata.expr will be parsed
-## but not those passed to strata.lab
 kmplot(km1, strata.expr = c('Sex[Female]', 'Sex[Male]'))
+## but not those passed to strata.lab
 kmplot(km1, strata.lab  = c('Sex[Female]', 'Sex[Male]'))
 
 
