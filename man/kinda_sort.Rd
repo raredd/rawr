@@ -22,9 +22,12 @@ should \emph{not} be sorted}
 \code{x} sorted approximately \code{(length(x) - n)/length(x)*100} percent.
 }
 \description{
-\code{\link{sort}} a vector but not very well. For a vector, \code{x},
-\code{n} elements will be randomly selected, and their positions will
-remain unchanged as all other elements are sorted.
+\code{\link{sort}} a vector but not very well.
+
+For a vector, \code{x}, \code{n} elements will be randomly selected, and
+their positions will remain unchanged as all other elements are sorted.
+Alternatively, a vector of \code{indices} of \code{x} can be given and
+will remain unsorted.
 }
 \examples{
 set.seed(1)

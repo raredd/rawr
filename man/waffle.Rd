@@ -53,13 +53,13 @@ op <- par(no.readonly = TRUE)
 waffle(matrix(1:9, 3))
 waffle(matrix(1:9, 3), invert = 'x')
 waffle(matrix(1:9, 3), heights = c(.25, .95, .5), border = NA)
-waffle(matrix(1:9, 3), xpad = 0, colsep = c(0, .1, 0))
+waffle(matrix(1:9, 3), xpad = 0, colpad = c(0, .1, 0))
 
 
 ## heatmap
 ## convert the numeric data to color strings
 cols <- c(cor(mtcars))
-cols <- rawr::tcol(c('blue','red')[(cols > 0) + 1L], alpha = c(abs(cols)))
+cols <- rawr::tcol(c('blue', 'red')[(cols > 0) + 1L], alpha = c(abs(cols)))
 
 mat <- matrix(cols, 11)
 waffle(mat, reset_par = FALSE, xpad = 0, invert = 'x')
@@ -75,7 +75,7 @@ axis(3, unique(w$centers[, 'x']), names(mtcars), lwd = 0)
 
 ## adding to margins of another plot
 set.seed(1)
-n <- 97
+n  <- 97
 ng <- 3
 cols <- c('beige', 'dodgerblue2', 'green', 'orange')
 x <- sample(cols, n * ng, replace = TRUE, prob = c(.05,.31,.32,.32))
@@ -95,7 +95,7 @@ box('outer')
 
 
 ## waffle conveniently returns the centers of the rects
-## be sure /not/ to reset pars on exit for proper alignment
+## be sure _not_ to reset pars for proper alignment
 par(op)
 (w <- waffle(matrix(1:8, 2), reset_par = FALSE, invert = 'xy'))
 text(w$c[, 'x'], w$c[, 'y'], labels = palette(), col = 'white')
