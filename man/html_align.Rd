@@ -24,14 +24,13 @@ specific location (similar to \code{align} or \code{eqnarray} environments
 in latex).
 }
 \examples{
-library('htmlTable')
 tmp <- within(cars, {
   align2 <- sprintf('\%s&&(\%s)', speed, dist)
   align1 <- sprintf('\%s (\%s)', speed, dist)
   raw    <- sprintf('\%s - (\%s)', speed, dist)
 })
 
-ht <- htmlTable(
+ht <- htmlTable::htmlTable(
   rawr::ht(tmp), n.cgroup = 2:3, cgroup = c('raw', 'align'),
   caption = 'caption', rnames = FALSE
 )

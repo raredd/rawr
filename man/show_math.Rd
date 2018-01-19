@@ -14,6 +14,9 @@ show_math(..., css, use_viewer = !is.null(getOption("viewer")))
 \item{use_viewer}{logical; if \code{TRUE}, attempts to use
 \code{rstudioapi::viewer} or opens in default browser on error}
 }
+\value{
+The html code (invisibly) as a character string.
+}
 \description{
 Displays math equations in \code{rstudioapi::viewer} or browser using the
 \href{http://www.mathjax.org}{MathJax} javascript engine.

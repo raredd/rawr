@@ -1675,10 +1675,9 @@ surv_summary <- function(s, digits = 3L, ...) {
 #'                 conf.type = 'log-log', conf.int = 0.9)
 #' surv_table(fit1)
 #' 
-#' library('htmlTable')
 #' s <- `colnames<-`(surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4],
 #'                   c('Time','No. at risk','No. of events','Surv (95% CI)'))
-#' ht <- htmlTable(s, caption = 'Table: Overall survival.')
+#' ht <- htmlTable::htmlTable(s, caption = 'Table: Overall survival.')
 #' structure(ht, class = 'htmlTable')
 #' 
 #' @export

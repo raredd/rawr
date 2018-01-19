@@ -70,8 +70,7 @@ bincon(c(4, 11), 30, method = 'exact')
 
  
 ## typical usage
-library('htmlTable')
-ht <- htmlTable(
+ht <- htmlTable::htmlTable(
   rbind(
     tabler_resp(x),
     tabler_resp(x, conf = 0.9),

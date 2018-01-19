@@ -20,7 +20,6 @@ Wrapper to easily combine a list of data frames or matrices into html
 tables using the \pkg{htmlTable} package.
 }
 \examples{
-library('htmlTable')
 sp <- lapply(split(mtcars, rep(1:3, c(1,11,20))), as.matrix)
 
 ## basic table

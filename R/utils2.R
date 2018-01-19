@@ -68,6 +68,9 @@ show_html <- function(..., use_viewer = !is.null(getOption('viewer'))) {
 #' @param markArgs a list of addition arguments passed to
 #' \code{\link[markdown]{markdownToHTML}}
 #' 
+#' @return
+#' The html code (invisibly) as a character string.
+#' 
 #' @seealso
 #' \code{\link{show_html}}, \code{\link{show_math}}
 #' 
@@ -156,6 +159,9 @@ show_markdown <- function(..., use_viewer = !is.null(getOption('viewer')),
 #' @param css optional css formatting
 #' @param use_viewer logical; if \code{TRUE}, attempts to use
 #' \code{rstudioapi::viewer} or opens in default browser on error
+#' 
+#' @return
+#' The html code (invisibly) as a character string.
 #' 
 #' @seealso
 #' \code{\link{show_html}}, \code{\link{show_markdown}},
@@ -484,7 +490,7 @@ color_pval <- function(pvals, breaks = c(0, .01, .05, .1, .5, 1),
 #' @export
 
 catlist <- function(l)
-  paste(paste(names(l), l, sep = ' = ', collapse = ', '), sep = '')
+  paste0(paste(names(l), l, sep = ' = ', collapse = ', '))
 
 #' \code{bincon} formatter
 #' 
@@ -529,7 +535,7 @@ binconr <- function(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
   method <- if (lr == 2L & ln == 2L)
     'two-stage' else {
       stopifnot(lr == 1L, ln == 1L)
-      match.arg(method, c('exact', 'wilson', 'asymptotic'), FALSE)
+      match.arg(method, c('exact', 'wilson', 'asymptotic'))
     }
   
   bc <- bincon(r, n, alpha = 1 - conf, method = method)
@@ -547,8 +553,9 @@ binconr <- function(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
   if (!pct.sign)
     res <- gsub('%(?= \\()|%(?=\\))', '', res, perl = TRUE)
   if (frac)
-    sprintf('%s/%s, %s', tail(r, 1L), sum(n), res)
-  else res
+    res <- sprintf('%s/%s, %s', tail(r, 1L), sum(n), res)
+  
+  structure(res, method = method)
 }
 
 #' Numeric to character string
@@ -676,11 +683,11 @@ num2char <- function(x, informal = FALSE, cap = TRUE) {
 #' \code{\link[pander]{p}}; \code{\link{roundr}}; \code{\link{countr}}
 #' 
 #' @examples
-#' iprint('fee','fi','fo','fum')
+#' iprint('fee', 'fi', 'fo', 'fum')
 #' iprint(rnorm(2))
 #' iprint(-0.000, 0.100)
-#' iprint(LETTERS[1:5], copula = ", and the letter ")
-#' iprint("Thelma", "Louise", copula = " & ")
+#' iprint(LETTERS[1:5], copula = ', and the letter ')
+#' iprint('Thelma', 'Louise', copula = ' & ')
 #' 
 #' @export
 
@@ -937,15 +944,16 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #'             sprintf('Phase I<br /><font size=1>n = %s</font>', n[1]),
 #'             sprintf('Phase II<br /><font size=1>n = %s</font>', n[2]))
 #' 
-#' library('htmlTable')
-#' htmlTable(out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
-#'     caption = 'Table 1: Toxicities<sup>&dagger;</sup> by phase and grade,
-#'                sorted by total.',
-#'     col.columns = rep(c('grey97','none','grey97'), times = c(1,4,4)),
-#'     col.rgroup = rep(rep(c('none', 'grey97'), each = 5), 10),
-#'     tfoot = paste0('<font size=1><sup>&dagger;</sup>Percents represent ',
-#'             'proportion of patients out of respective phase total.</font>'))
-#' 
+#' ht <- htmlTable::htmlTable(
+#'   out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
+#'   caption = 'Table 1: Toxicities<sup>&dagger;</sup> by phase and grade,
+#'             sorted by total.',
+#'   col.columns = rep(c('grey97','none','grey97'), times = c(1,4,4)),
+#'   col.rgroup = rep(rep(c('none', 'grey97'), each = 5), 10),
+#'   tfoot = paste0('<font size=1><sup>&dagger;</sup>Percents represent ',
+#'            'proportion of patients out of respective phase total.</font>')
+#' )
+#' structure(ht, clas = 'htmlTable')
 #' 
 #' ## same as above but add level of stratification, sort by total within group
 #' out2 <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'grade', order = TRUE,
@@ -965,9 +973,12 @@ tabler.survfit <- function(x, ...) surv_table(x, ...)
 #'             sprintf('Phase II<br /><font size=1>n = %s</font>', n[2])
 #' )
 #'             
-#' htmlTable(out2, align = 'lccccccccc', cgroup = cgroup, n.cgroup = c(1,1,4,4),
-#'     caption = 'Table 1: Toxicities<sup>&dagger;</sup> by category, phase,
-#'                grade.')
+#' ht <- htmlTable::htmlTable(
+#'   out2, align = 'lc', cgroup = cgroup, n.cgroup = c(1,1,4,4),
+#'   caption = 'Table 1: Toxicities<sup>&dagger;</sup> by category, phase,
+#'   grade.'
+#' )
+#' structure(ht, clas = 'htmlTable')
 #'             
 #' @export
 
@@ -1608,8 +1619,7 @@ get_tabler_stat_n <- function(x, pct = TRUE) {
 #'
 #'  
 #' ## typical usage
-#' library('htmlTable')
-#' ht <- htmlTable(
+#' ht <- htmlTable::htmlTable(
 #'   rbind(
 #'     tabler_resp(x),
 #'     tabler_resp(x, conf = 0.9),
@@ -1958,7 +1968,6 @@ dmy <- function(d, m, y, origin = c(1, 1, 1900)) {
 #' @param ... additional arguments passed to \code{\link[htmlTable]{htmlTable}}
 #' 
 #' @examples
-#' library('htmlTable')
 #' sp <- lapply(split(mtcars, rep(1:3, c(1,11,20))), as.matrix)
 #' 
 #' ## basic table
@@ -2006,28 +2015,27 @@ combine_table <- function(l, tspanner, n.tspanner, ...) {
 #' \code{\link[htmlTable]{htmlTable}}
 #' 
 #' @examples 
-#' library('htmlTable')
-#' ht <- htmlTable(
+#' ht <- htmlTable::htmlTable(
 #'   inject_div(head(cars), c(2,2), style = 'border: dashed 1px;')
 #' )
 #' structure(ht, class = 'htmlTable')
 #' 
 #' ## if where is missing, style is recycled over all cells
-#' ht <- htmlTable(
+#' ht <- htmlTable::htmlTable(
 #'   inject_div(mtcars,
 #'              style = c('color: red;', 'color: blue', 'border: dashed 1px;')
 #'   )
 #' )
 #' structure(ht, class = 'htmlTable')
 #' 
-#' ht <- htmlTable(
+#' ht <- htmlTable::htmlTable(
 #'   inject_div(head(cars),
 #'              rbind(c(2,2), c(2,1), c(5,2)),
 #'              'background-color: yellow;')
 #' )
 #' structure(ht, class = 'htmlTable')
 #' 
-#' ht <- htmlTable(
+#' ht <- htmlTable::htmlTable(
 #'   inject_div(head(cars),
 #'              c(2,2,2,1,5,2),
 #'              c('background-color: red; color: white;',
@@ -2296,8 +2304,7 @@ case <- function(x, case = c('first', 'upcase', 'downcase', 'camelcase',
 #' default border color names are replaced with hexadecimal values
 #' 
 #' @examples
-#' library('htmlTable')
-#' x <- htmlTable(head(cars))
+#' x <- htmlTable::htmlTable(head(cars))
 #' 
 #' write_htmlTable(x)
 #' write_htmlTable(x, attributes = FALSE)
@@ -2337,14 +2344,13 @@ write_htmlTable <- function(x, file = '', attributes = TRUE) {
 #' align strings but too wide adds whitespace
 #' 
 #' @examples
-#' library('htmlTable')
 #' tmp <- within(cars, {
 #'   align2 <- sprintf('%s&&(%s)', speed, dist)
 #'   align1 <- sprintf('%s (%s)', speed, dist)
 #'   raw    <- sprintf('%s - (%s)', speed, dist)
 #' })
 #' 
-#' ht <- htmlTable(
+#' ht <- htmlTable::htmlTable(
 #'   rawr::ht(tmp), n.cgroup = 2:3, cgroup = c('raw', 'align'),
 #'   caption = 'caption', rnames = FALSE
 #' )

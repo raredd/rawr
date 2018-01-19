@@ -21,8 +21,7 @@ Write an \code{\link[htmlTable]{htmlTable}} object to a file with optional
 html attributes.
 }
 \examples{
-library('htmlTable')
-x <- htmlTable(head(cars))
+x <- htmlTable::htmlTable(head(cars))
 
 write_htmlTable(x)
 write_htmlTable(x, attributes = FALSE)

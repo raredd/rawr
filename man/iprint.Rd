@@ -23,11 +23,11 @@ character vectors}
 Modified \code{\link[pander]{p}} function from the \pkg{pander} package.
 }
 \examples{
-iprint('fee','fi','fo','fum')
+iprint('fee', 'fi', 'fo', 'fum')
 iprint(rnorm(2))
 iprint(-0.000, 0.100)
-iprint(LETTERS[1:5], copula = ", and the letter ")
-iprint("Thelma", "Louise", copula = " & ")
+iprint(LETTERS[1:5], copula = ', and the letter ')
+iprint('Thelma', 'Louise', copula = ' & ')
 
 }
 \seealso{

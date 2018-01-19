@@ -16,6 +16,9 @@ show_markdown(..., use_viewer = !is.null(getOption("viewer")),
 \item{markArgs}{a list of addition arguments passed to
 \code{\link[markdown]{markdownToHTML}}}
 }
+\value{
+The html code (invisibly) as a character string.
+}
 \description{
 Render markdown to html in rstudio viewer or default browser.
 }

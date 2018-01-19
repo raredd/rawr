@@ -137,15 +137,16 @@ cgroup <- c('',
             sprintf('Phase I<br /><font size=1>n = \%s</font>', n[1]),
             sprintf('Phase II<br /><font size=1>n = \%s</font>', n[2]))
 
-library('htmlTable')
-htmlTable(out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
-    caption = 'Table 1: Toxicities<sup>&dagger;</sup> by phase and grade,
-               sorted by total.',
-    col.columns = rep(c('grey97','none','grey97'), times = c(1,4,4)),
-    col.rgroup = rep(rep(c('none', 'grey97'), each = 5), 10),
-    tfoot = paste0('<font size=1><sup>&dagger;</sup>Percents represent ',
-            'proportion of patients out of respective phase total.</font>'))
-
+ht <- htmlTable::htmlTable(
+  out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
+  caption = 'Table 1: Toxicities<sup>&dagger;</sup> by phase and grade,
+            sorted by total.',
+  col.columns = rep(c('grey97','none','grey97'), times = c(1,4,4)),
+  col.rgroup = rep(rep(c('none', 'grey97'), each = 5), 10),
+  tfoot = paste0('<font size=1><sup>&dagger;</sup>Percents represent ',
+           'proportion of patients out of respective phase total.</font>')
+)
+structure(ht, clas = 'htmlTable')
 
 ## same as above but add level of stratification, sort by total within group
 out2 <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'grade', order = TRUE,
@@ -165,9 +166,12 @@ cgroup <- c('', '',
             sprintf('Phase II<br /><font size=1>n = \%s</font>', n[2])
 )
             
-htmlTable(out2, align = 'lccccccccc', cgroup = cgroup, n.cgroup = c(1,1,4,4),
-    caption = 'Table 1: Toxicities<sup>&dagger;</sup> by category, phase,
-               grade.')
+ht <- htmlTable::htmlTable(
+  out2, align = 'lc', cgroup = cgroup, n.cgroup = c(1,1,4,4),
+  caption = 'Table 1: Toxicities<sup>&dagger;</sup> by category, phase,
+  grade.'
+)
+structure(ht, clas = 'htmlTable')
             
 }
 \seealso{
