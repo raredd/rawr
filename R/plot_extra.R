@@ -1,9 +1,13 @@
 ### plot misc, extra, random
-# dodge, show_colors, show_pch, tcol, pretty_sci, oom, parse_sci, arrows2,
-# carrows, laxis, coords, col_scaler
+# dodge, dodge.default, dodge.formula, dodge2, dodge2.default, dodge2.formula,
+# show_colors, show_pch, tcol, pretty_sci, oom, parse_sci, arrows2, carrows,
+# laxis, coords, col_scaler
+# 
+# S3 methods:
+# dodge, dodge2
 # 
 # unexported:
-# dodge.formula, dodge.default, to_sci_
+# to_sci_
 ###
 
 
@@ -60,24 +64,8 @@
 #'
 #' @export
 
-dodge <- function(x, ...) UseMethod('dodge')
-
-#' @rdname dodge
-#' @export
-dodge.formula <- function(formula, data = NULL, ...) {
-  if (missing(formula) || (length(formula) != 3L))
-    stop("\'formula\' missing or incorrect")
-  
-  m <- match.call(expand.dots = FALSE)
-  if (is.matrix(eval(m$data, parent.frame())))
-    m$data <- as.data.frame(data)
-  m$`...` <- NULL
-  m[[1L]] <- as.name('model.frame')
-  
-  mf <- eval(m, parent.frame())
-  response <- attr(attr(mf, 'terms'), 'response')
-  
-  dodge(mf[, -response], mf[, response], ...)
+dodge <- function(x, ...) {
+  UseMethod('dodge')
 }
 
 #' @rdname dodge
@@ -108,6 +96,24 @@ dodge.default <- function(x, y, dist = NULL, jit = NULL, ...) {
       dodge_(y[ii], x[ii], unique(dist[ii]), unique(jit[ii]))$x),
     y = y
   )
+}
+
+#' @rdname dodge
+#' @export
+dodge.formula <- function(formula, data = NULL, ...) {
+  if (missing(formula) || (length(formula) != 3L))
+    stop('\'formula\' missing or incorrect')
+  
+  m <- match.call(expand.dots = FALSE)
+  if (is.matrix(eval(m$data, parent.frame())))
+    m$data <- as.data.frame(data)
+  m$`...` <- NULL
+  m[[1L]] <- as.name('model.frame')
+  
+  mf <- eval(m, parent.frame(1L))
+  response <- attr(attr(mf, 'terms'), 'response')
+  
+  dodge(mf[, -response], mf[, response], ...)
 }
 
 #' Point dodge
@@ -163,24 +169,8 @@ dodge.default <- function(x, y, dist = NULL, jit = NULL, ...) {
 #'
 #' @export
 
-dodge2 <- function(x, ...) UseMethod('dodge2')
-
-#' @rdname dodge2
-#' @export
-dodge2.formula <- function(formula, data = NULL, ...) {
-  if (missing(formula) || (length(formula) != 3L))
-    stop("\'formula\' missing or incorrect")
-  
-  m <- match.call(expand.dots = FALSE)
-  if (is.matrix(eval(m$data, parent.frame())))
-    m$data <- as.data.frame(data)
-  m$`...` <- NULL
-  m[[1L]] <- as.name('model.frame')
-  
-  mf <- eval(m, parent.frame())
-  response <- attr(attr(mf, 'terms'), 'response')
-  
-  dodge2(mf[, -response], mf[, response], ...)
+dodge2 <- function(x, ...) {
+  UseMethod('dodge2')
 }
 
 #' @rdname dodge2
@@ -220,6 +210,24 @@ dodge2.default <- function(x, y, jit = NULL, dist = NULL, ...) {
     x = unlist(lapply(gr, '[[', 'x')),
     y = unlist(sp)
   )
+}
+
+#' @rdname dodge2
+#' @export
+dodge2.formula <- function(formula, data = NULL, ...) {
+  if (missing(formula) || (length(formula) != 3L))
+    stop('\'formula\' missing or incorrect')
+  
+  m <- match.call(expand.dots = FALSE)
+  if (is.matrix(eval(m$data, parent.frame())))
+    m$data <- as.data.frame(data)
+  m$`...` <- NULL
+  m[[1L]] <- as.name('model.frame')
+  
+  mf <- eval(m, parent.frame())
+  response <- attr(attr(mf, 'terms'), 'response')
+  
+  dodge2(mf[, -response], mf[, response], ...)
 }
 
 #' Show colors
@@ -605,7 +613,10 @@ arrows2 <- function(x0, y0, x1 = x0, y1 = y0, size = 1, width = 0.1 / cin,
                     curve = 1, code = 2, col = par('fg'), lty = par('lty'),
                     lwd = par('lwd'), fill = col, border = fill,
                     sadj = c(0,0,0,0), ...) {
-  stopifnot(length(code) == 1L, code %in% 0:3)
+  stopifnot(
+    length(code) == 1L,
+    code %in% 0:3
+  )
   
   ## create coordinates of a polygon for a unit arrow head
   cin <- size * par('cin')[2L]

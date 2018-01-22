@@ -1,9 +1,12 @@
 ### survival
-# kmplot, kmplot_by, local_coxph_test, surv_cp, surv_summary, surv_table,
-# survdiff_pairs, landmark, surv_extract, surv_median, surv_prob
+# kmplot, kmplot_by, kmplot_ticks, local_coxph_test, surv_cp, surv_summary,
+# surv_table, survdiff_pairs, landmark, surv_extract, surv_median, surv_prob
 #
 # unexported:
-# points.kmplot, kmplot_data_, lr_text, lr_pval
+# points.kmplot, kmplot_data_
+# 
+# surv_test (unexported):
+# lr_text, lr_pval, tt_text, tt_pval, hr_text, hr_pval
 ###
 
 
@@ -127,8 +130,8 @@
 #' 
 #' @seealso
 #' \code{\link{kmplot_by}}; \code{survival:::plot.survfit};
-#' \code{\link[plotr]{ggsurv}}; \code{\link{kmplot_data_}}; \code{\link{lr_text}};
-#' \code{\link{lr_pval}}; \code{\link{points.kmplot}}
+#' \code{\link[plotr]{ggsurv}}; \code{\link{kmplot_data_}};
+#' \code{\link{lr_text}}; \code{\link{lr_pval}}; \code{\link{points.kmplot}}
 #' 
 #' @examples
 #' library('survival')
@@ -1360,6 +1363,7 @@ kmplot_by <- function(strata = '1', event, data, by = NULL, single = TRUE,
     s0
   })
   names(l) <- names(sp) %||% strata
+  
   invisible(l)
 }
 
@@ -1580,9 +1584,8 @@ surv_cp <- function(data, time.var, status.var,
 surv_summary <- function(s, digits = 3L, ...) {
   if (!inherits(s, 'survfit'))
     stop('\'s\' must be a \'survfit\' object')
-  oo <- options()
+  oo <- options(digits = digits)
   on.exit(options(oo))
-  options(digits = digits)
   
   x <- summary(s, ...)
   if (!is.null(cl <- x$call)) {
@@ -1593,34 +1596,37 @@ surv_summary <- function(s, digits = 3L, ...) {
   if (length(omit))
     cat(naprint(omit), '\n')
   if (x$type == 'right' || is.null(x$n.enter)) {
-    mat <- cbind(x$time, x$n.risk, x$n.event, x$surv)
+    mat    <- cbind(x$time, x$n.risk, x$n.event, x$surv)
     cnames <- c('time', 'n.risk', 'n.event')
   } else if (x$type == 'counting') {
-    mat <- cbind(x$time, x$n.risk, x$n.event, x$n.enter, x$n.censor, x$surv)
+    mat    <- cbind(x$time, x$n.risk, x$n.event, x$n.enter, x$n.censor, x$surv)
     cnames <- c(time, 'n.risk', 'n.event', 'entered', 'censored')
   }
+  
   ncurve <- if (is.matrix(x$surv))
     ncol(x$surv) else 1L
   if (ncurve == 1L) {
     cnames <- c(cnames, 'survival')
     if (!is.null(x$std.err)) {
       if (is.null(x$lower)) {
-        mat <- cbind(mat, x$std.err)
+        mat    <- cbind(mat, x$std.err)
         cnames <- c(cnames, 'std.err')
       } else {
-        mat <- cbind(mat, x$std.err, x$lower, x$upper)
+        mat    <- cbind(mat, x$std.err, x$lower, x$upper)
         cnames <- c(cnames, 'std.err',
                     paste0('lower ', x$conf.int * 100, '% CI'),
                     paste0('upper ', x$conf.int * 100, '% CI'))
       }
     }
   } else cnames <- c(cnames, paste0('survival', seq.int(ncurve)))
+  
   if (!is.null(x$start.time)) {
-    mat.keep <- mat[, 1] >= x$start.time
+    mat.keep <- mat[, 1L] >= x$start.time
     mat <- mat[mat.keep, , drop = FALSE]
     if (is.null(dim(mat)))
-      stop(paste('No information available using start.time =', x$start.time))
+      stop('No information available using start.time = ', x$start.time)
   }
+  
   if (!is.matrix(mat))
     mat <- matrix(mat, nrow = 1L)
   if (!is.null(mat)) {
@@ -1633,9 +1639,9 @@ surv_summary <- function(s, digits = 3L, ...) {
       if (!is.null(x$start.time))
         strata <- strata[mat.keep]
       invisible(setNames(lapply(levels(strata), function(i) {
-        who <- (strata == i)
+        who <- strata == i
         cat('\n               ', i, '\n')
-        if (sum(who) == 1)
+        if (sum(who) == 1L)
           prmatrix(mat[who, , drop = FALSE])
         else prmatrix(mat[who, , drop = FALSE], rowlab = rep('', sum(who)))
       }), levels(strata)))
@@ -1690,12 +1696,16 @@ surv_table <- function(s, digits = 3, times = pretty(s$time),
       idx else seq_along(idx) == length(idx)])
     times <- c(times[times <= maxtime], maxtime)
   }
+  
   capture.output(
     summ <- surv_summary(s, digits = digits, times = unique(times), ...)
   )
+  
   f <- function(x, d = digits, vars = vars) {
-    vars = colnames(x)
-    g <- function(wh, x = x, cn = vars) cn[grepl(wh, cn)]
+    vars <- colnames(x)
+    g <- function(wh, x = x, cn = vars)
+      cn[grepl(wh, cn)]
+    
     tmpvar <- g('survival|std.err|lower|upper')
     x[, tmpvar] <- roundr(x[, tmpvar], digits = d)
     surv <- sprintf('%s (%s, %s)',
@@ -1705,6 +1715,7 @@ surv_table <- function(s, digits = 3, times = pretty(s$time),
     `colnames<-`(cbind(x[, c(setdiff(vars, tmpvar), 'std.err'),
                          drop = FALSE], surv), cn)
   }
+  
   if (is.list(summ))
     Map('f', summ) else f(summ)
 }
@@ -1745,7 +1756,9 @@ surv_table <- function(s, digits = 3, times = pretty(s$time),
 #' sdif <- survdiff(Surv(time, status) ~ sex, data = lung)
 #' sfit <- survfit(Surv(time, status) ~ sex, data = lung)
 #' 
-#' stopifnot(identical(survdiff_pairs(sdif), survdiff_pairs(sfit)))
+#' stopifnot(
+#'   identical(survdiff_pairs(sdif), survdiff_pairs(sfit))
+#' )
 #'
 #'  
 #' ## numeric and integer variables will be treated as factor-like
@@ -1795,8 +1808,6 @@ survdiff_pairs <- function(s, ..., method = p.adjust.methods, digits = 3L) {
   
   lapply(list(n = nn, chi.sq = chisq, p.value = p.value), round, digits)
 }
-
-## landmark
 
 #' Landmark
 #' 
@@ -1929,7 +1940,9 @@ landmark <- function(s, times = NULL, lr_test = TRUE, adjust_start = FALSE,
 #' @export
 
 surv_extract <- function(x, what = 'median') {
-  stopifnot(inherits(x, 'survfit'))
+  stopifnot(
+    inherits(x, 'survfit')
+  )
   
   oo <- options(survfit.rmean = 'individual')
   on.exit(options(oo))

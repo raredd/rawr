@@ -1,9 +1,13 @@
 ### statistical functions
 # bincon, bintest, dlt_table, pr_table, power_cv, simon2, moods_test, fakeglm,
-# gcd, install.bioc, lm.beta, cuzick.test, jt.test, hl_est
+# gcd, install.bioc, lm.beta, cuzick.test, cuzick.test.default,
+# cuzick.test.formula, jt.test, hl_est
+# 
+# S3 methods:
+# cuzick.test
 # 
 # desmon (unexported):
-# bin1samp, simon, twocon
+# twocon, simon, bin1samp
 # 
 # rpart_utils:
 # rpart_parent, rpart_subset, rpart_nodes
@@ -280,6 +284,7 @@ twocon <- function(n1, n2, r1, r, conf = 0.95, dp = 1) {
   else uniroot(ff2, c(1e-08, 1 - 1e-08), x1 = x1, x2 = x2, 
                u1 = u1, n1 = n1, n2 = n2, r1 = r1, s = s2, dbin2 = dbin2, 
                alpha = alpha)$root
+  
   c(lower = pl, upper = pu, bcmle = pm, mle = mle, unbiased = ube)
 }
 
@@ -333,12 +338,19 @@ twocon <- function(n1, n2, r1, r, conf = 0.95, dp = 1) {
 bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
                      r = n.max, alpha = .1, beta = .1) {
   
-  stopifnot(alpha %inside% c(0,1), beta %inside% c(0,1))
+  stopifnot(
+    alpha %inside% c(0, 1),
+    beta %inside% c(0, 1)
+  )
   if (r < 1)
     stop('Number of responders must be >1')
   
-  mat <- expand.grid(seq(p0low, p0high, by = .01), seq(p1low, p1high, .01),
-                     1:n.max, 1:r)
+  mat <- expand.grid(
+    seq(p0low, p0high, by = .01),
+    seq(p1low, p1high, .01),
+    1:n.max,
+    1:r
+  )
   
   ## require > r responders out of n and remove where p1 <= p0 or r >= n
   mat <- `colnames<-`(as.matrix(within(mat, r2 <- mat[, 4] + 1)),
@@ -365,12 +377,14 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
   mat <- unique(as.data.frame(mat[, c(1:3,5,7,9:10)]))
   mat <- mat[order(mat$n), ]
   
-  list(designs = `rownames<-`(as.matrix(mat), NULL),
-       call = match.call(),
-       description = c(
-         'n = overall sample size',
-         'r2 = minimum number of responders required to reject p0',
-         'signal = difference in null and alternative hypotheses'))
+  list(
+    designs = `rownames<-`(as.matrix(mat), NULL),
+    call = match.call(),
+    description = c(
+      'n = overall sample size',
+      'r2 = minimum number of responders required to reject p0',
+      'signal = difference in null and alternative hypotheses')
+  )
 }
 
 #' Probability tables
@@ -621,10 +635,13 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
                          two.sample = "Two-sample",
                          paired = "Paired"),
                   't test power calculation')
-  structure(list(n = n, f = f, cv = cv, sig.level = sig.level, power = power,
-                 alternative = alternative, distributon = dist, note = NOTE,
-                 method = METHOD),
-            class = 'power.htest')
+  
+  structure(
+    list(n = n, f = f, cv = cv, sig.level = sig.level, power = power,
+         alternative = alternative, distributon = dist, note = NOTE,
+         method = METHOD),
+    class = 'power.htest'
+  )
 }
 
 #' Simon two-stage designs
@@ -696,10 +713,13 @@ simon2 <- function(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,
                          '[[', 1),
                   sapply(seq_len(nrow(args)), function(x) catlist(args[x, ])))
   
-  list(designs = tmp, call = match.call(),
-       description = c('n1, n2 = cases 1st stage and additional # in 2nd',
-                       paste('r1, r2 = max # responses 1st stage and total to',
-                             'declare trt inactive')))
+  list(
+    designs = tmp,
+    call = match.call(),
+    description = c('n1, n2 = cases 1st stage and additional # in 2nd',
+                    paste('r1, r2 = max # responses 1st stage and total to',
+                          'declare trt inactive'))
+  )
 }
 
 simon <- function(p0, pa, n1max = 0, ntmax = 1e5,
@@ -733,16 +753,16 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5,
   ## optimal one-sample design
   u1 <- bin1samp(p0, pa, alpha, beta)
   ## include even if n > n1max
-  z <- matrix(c(u1[1:2], 0, u1[2], 1, u1[5:6], u1[1]), nrow = 1)
-  if (n1min < u1[1]) {
+  z <- matrix(c(u1[1:2], 0, u1[2L], 1, u1[5:6], u1[1L]), nrow = 1L)
+  if (n1min < u1[1L]) {
     if (n1max > 0)
-      n1max <- min(n1max, u1[1] - 1)
-    else n1max <- u1[1] - 1
+      n1max <- min(n1max, u1[1L] - 1)
+    else n1max <- u1[1L] - 1
   } else
-    if (n1min == u1[1]) {
+    if (n1min == u1[1L]) {
       if (n1max > 0)
-        n1max <- min(n1max, u1[1])
-      else n1max <- u1[1]
+        n1max <- min(n1max, u1[1L])
+      else n1max <- u1[1L]
     } else
       stop('no valid designs')
   n1max <- min(n1max,ntmax)
@@ -752,22 +772,22 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5,
   ## determine min total sample size
   ## (use randomized decision rule on boundary for single sample)
   b <- 0
-  n <- u1[1]
+  n <- u1[1L]
   while (b <= beta) {
-    n <- n-1
-    u <- c(1, 1 - pbinom(0:(u1[2] + 1), n, p0))
+    n <- n - 1
+    u <- c(1, 1 - pbinom(0:(u1[2L] + 1), n, p0))
     index <- min((1:(u1[2] + 3))[u <= alpha])
     pi <- (alpha - u[index]) / (u[index - 1] - u[index])
-    if (index > 2) {
+    if (index > 2L) {
       u <- 1 - pbinom((index - 3):(index - 2), n, pa)
     } else
       u <- c(1, 1 - pbinom(0, n, pa))
-    b <- 1 - u[2] - pi * (u[1] - u[2])
+    b <- 1 - u[2L] - pi * (u[1L] - u[2L])
   }
   
   if (n > ntmax)
     stop('no valid designs')
-  e0 <- u1[1]
+  e0 <- u1[1L]
   
   ## cases 1st stage
   for (i in n1min:n1max) {
@@ -782,26 +802,26 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5,
     
     for (r1 in y1) {
       ## additional cases at 2nd stage
-      j <- n-i
+      j <- n - i
       if (j > 0) {
-        q <- 0
-        pi0 <- 1-sum(w1[1:(r1 + 1)])
+        q <- 0L
+        pi0 <- 1 - sum(w1[1:(r1 + 1L)])
         
-        while (q == 0) {
+        while (q == 0L) {
           x2 <- 0:j
           w3 <- dbinom(x2, j, p0)
           w4 <- dbinom(x2, j, pa)
           ## b0, ba = marginal dist of # responses H0, Ha
-          u3 <- c(outer(x1[-(1:(r1 + 1))], x2, '+'))
-          u4 <- c(outer(w1[-(1:(r1 + 1))], w3))
-          b0 <- cumsum(c(w1[1:(r1 + 1)], tapply(u4, u3, sum)))
+          u3 <- c(outer(x1[-(1:(r1 + 1L))], x2, '+'))
+          u4 <- c(outer(w1[-(1:(r1 + 1L))], w3))
+          b0 <- cumsum(c(w1[1:(r1 + 1L)], tapply(u4, u3, sum)))
           sub <- b0 < 1 - alpha
           r2 <- sum(sub)
-          u4 <- c(outer(w2[-(1:(r1 + 1))], w4))
-          ba <- cumsum(c(w2[1:(r1 + 1)], tapply(u4, u3, sum)))
+          u4 <- c(outer(w2[-(1:(r1 + 1L))], w4))
+          ba <- cumsum(c(w2[1:(r1 + 1L)], tapply(u4, u3, sum)))
           e1 <- i + pi0 * j
-          if (ba[r2 + 1] <= beta) {
-            q <- 1
+          if (ba[r2 + 1L] <= beta) {
+            q <- 1L
             if (minimax) {
               if (i + j < ntmax) {
                 ntmax <- i + j
@@ -813,16 +833,16 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5,
             } else {
               e0 <- min(e0, e1)
             }
-            z <- rbind(z, c(i, r1, j, r2, b0[r1 + 1],
-                            1 - b0[r2 + 1], ba[r2 + 1], e1))
+            z <- rbind(z, c(i, r1, j, r2, b0[r1 + 1L],
+                            1 - b0[r2 + 1], ba[r2 + 1L], e1))
           } else {
-            j <- j + 1
+            j <- j + 1L
             if (minimax) {
               if (i + j > ntmax)
-                q <- 1 
+                q <- 1L
             } else {
               if (e1 > e0 + del | i + j > ntmax)
-                q <- 1
+                q <- 1L
             }
           }
         }
@@ -832,18 +852,19 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5,
   
   dimnames(z) <- list(NULL, c('n1', 'r1', 'n2', 'r2', 'Pstop1.H0',
                               'size', 'type2', 'E.tot.n.H0'))
-  z <- z[z[ , 1] + z[ , 3] <= ntmax, ,drop = FALSE]
-  z <- z[z[ , 8] <= e0 + del, , drop = FALSE]
+  z <- z[z[, 1L] + z[, 3L] <= ntmax, , drop = FALSE]
+  z <- z[z[, 8L] <= e0 + del, , drop = FALSE]
   
-  list(designs = z[order(z[ , 8]), , drop = FALSE],
-       call = match.call(),
-       description = c(
-         'n1, n2 = cases 1st stage and additional # in 2nd',
-         'r1, r2 = max # responses 1st stage and total to declare trt inactive')
+  list(
+    designs = z[order(z[, 8L]), , drop = FALSE],
+    call = match.call(),
+    description = c(
+      'n1, n2 = cases 1st stage and additional # in 2nd',
+      'r1, r2 = max # responses 1st stage and total to declare trt inactive')
   )
 }
 
-bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20) {
+bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20L) {
   ## desmon::bin1samp
   # 
   # p0	   Null hypothesis response probability
@@ -856,34 +877,36 @@ bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20) {
     stop('p0 should not be equal to pa')
   b <- 1
   x <- round(p0 * n.min)
-  n <- n.min - 1
+  n <- n.min - 1L
   if (pa > p0) {
     while (b > beta) {
-      n <- n + 1
+      n <- n + 1L
       l <- x:n
       s <- 1 - pbinom(l, n, p0)
       sub <- s <= alpha
-      x <- l[sub][1]
-      size <- s[sub][1]
+      x <- l[sub][1L]
+      size <- s[sub][1L]
       b <- pbinom(x, n, pa)
     }
   } else
     if (pa < p0) {
       
       while (b > beta) {
-        n <- n + 1
+        n <- n + 1L
         l <- x:0
         s <- pbinom(l, n, p0)
         sub <- s <= alpha
-        x <- l[sub][1]
-        size <- s[sub][1]
+        x <- l[sub][1L]
+        size <- s[sub][1L]
         b <- 1 - pbinom(x, n, pa)
-        x <- x + 1
+        x <- x + 1L
       }
     }
-  u <- c(n = n, r = x, p0 = p0, pa = pa, size = size, type2 = b)
-  class(u) <- 'bin1samp'
-  u
+  
+  structure(
+    c(n = n, r = x, p0 = p0, pa = pa, size = size, type2 = b),
+    class = 'bin1samp'
+  )
 }
 
 #' Mood's median test
@@ -1056,6 +1079,7 @@ fakeglm <- function(formula, ..., family, data = NULL) {
     res$model <- data
     ## qr doesn't work
   }
+  
   res
 }
 
@@ -1296,7 +1320,9 @@ lm.beta <- function (x, weights = 1) {
 #' 
 #' @export
 
-cuzick.test <- function(x, ...) UseMethod('cuzick.test')
+cuzick.test <- function(x, ...) {
+  UseMethod('cuzick.test')
+}
 
 #' @rdname cuzick.test
 #' @export
@@ -1605,13 +1631,15 @@ hl_est <- function(x, na.rm = FALSE) {
   if (na.rm)
     x <- x[!is.na(x)]
   pmeans <- combn_fun(x, mean.default, 2L)
+  
   median(c(pmeans, x))
 }
 
 combn_fun <- function(x, FUN, n = 2L, ...) {
   FUN <- match.fun(FUN)
-  n <- as.integer(n)
-  x <- combn(x, n)
+  n   <- as.integer(n)
+  x   <- combn(x, n)
+  
   apply(x, 2L, FUN, ...)
 }
 

@@ -3,17 +3,17 @@
 \name{roundr}
 \alias{roundr}
 \alias{roundr.default}
-\alias{roundr.data.frame}
 \alias{roundr.matrix}
+\alias{roundr.data.frame}
 \title{roundr}
 \usage{
 roundr(x, digits = 1L)
 
 \method{roundr}{default}(x, digits = 1L)
 
-\method{roundr}{data.frame}(x, digits = 1L)
-
 \method{roundr}{matrix}(x, digits = 1L)
+
+\method{roundr}{data.frame}(x, digits = 1L)
 }
 \arguments{
 \item{x}{numeric vector, matrix, or data frame}

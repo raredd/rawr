@@ -40,7 +40,9 @@ library('survival')
 sdif <- survdiff(Surv(time, status) ~ sex, data = lung)
 sfit <- survfit(Surv(time, status) ~ sex, data = lung)
 
-stopifnot(identical(survdiff_pairs(sdif), survdiff_pairs(sfit)))
+stopifnot(
+  identical(survdiff_pairs(sdif), survdiff_pairs(sfit))
+)
 
  
 ## numeric and integer variables will be treated as factor-like

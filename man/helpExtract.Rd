@@ -2,7 +2,7 @@
 % Please edit documentation in R/zxx.R
 \name{helpExtract}
 \alias{helpExtract}
-\title{Extract R help files}
+\title{Extract \code{R} help files}
 \usage{
 helpExtract(FUN, show.sections = FALSE, section = "Usage",
   type = c("text", "md_code", "md_text", "sw_code", "sw_text"), ...)

@@ -1,11 +1,12 @@
 ### some random shit
 # ht, progress, recoder, identical2, all_equal2, search_df, search_hist,
 # fapply, try_require, list2file, Restart, helpExtract, Round, round_to,
-# updateR, read_clip, icols, fill_df, kinda_sort, sym_sort, rt, rgene,
-# install_temp, nestedMerge, nestedmerge, path_extract, fname, file_name,
-# file_ext, rm_ext, mgrep, mgrepl, msub, mgsub, flatten, tree, rm_null,
-# cum_reset, cum_na, cumsum_na, cumprod_na, cummax_na, cummin_na, vgrep,
-# vgrepl, justify, factors, sample_each, pickcol, lunique, rm_nonascii
+# updateR, read_clip, read_clip.csv, read_clip.tab, read_clip.fwf, icols,
+# fill_df, kinda_sort, sym_sort, rgene, install_temp, nestedMerge, nestedmerge,
+# path_extract, fname, file_name, file_ext, rm_ext, mgrepl, mgrep, msub, mgsub,
+# flatten, tree, rm_null, cum_reset, cum_na, cumsum_na, cumprod_na, cummax_na,
+# cummin_na, cum_mid, vgrep, vgrepl, justify, factors, sample_each, pickcol,
+# lunique, rm_nonascii
 # 
 # unexported:
 # helpExtract_, mgrep_, msub_, fill_spaces_
@@ -586,7 +587,7 @@ list2file <- function(l, targetdir = getwd(), sep, ...) {
   invisible(NULL)
 }
 
-#' Restart R session
+#' Restart \code{R} session
 #' 
 #' Ends current and restarts a clean \code{R} session.
 #' 
@@ -600,8 +601,9 @@ list2file <- function(l, targetdir = getwd(), sep, ...) {
 #' 
 #' @export
 
-Restart <- function(afterRestartCommand = '')
+Restart <- function(afterRestartCommand = '') {
   (getOption('restart'))(afterRestartCommand)
+}
 
 # Reload <- function(...) {
 #   ## clean (rstudio) r session packages:
@@ -609,14 +611,16 @@ Restart <- function(afterRestartCommand = '')
 #             "package:grDevices", "package:utils", "package:datasets",
 #             "package:methods", "Autoloads", "package:base")
 #   to_unload <- setdiff(search(), pkgs)
+#   
 #   for (pkg in to_unload)
 #     try(detach(pkg, unload = TRUE, character.only = TRUE), silent = TRUE)
 #   rm(list = ls(envir = .GlobalEnv), envir = .GlobalEnv)
 #   cat('\014')
+#   
 #   invisible(NULL)
 # }
 
-#' Extract R help files
+#' Extract \code{R} help files
 #' 
 #' Extracts specified portions of R help files (from \emph{loaded} libraries)
 #' for use in Sweave or R-markdown documents.
@@ -819,10 +823,11 @@ Round <- function(x, target) {
 #' 
 #' @export
 
-round_to <- function(x, to = 1)
+round_to <- function(x, to = 1) {
   round(x / to) * to
+}
 
-#' Update R
+#' Update \code{R}
 #' 
 #' Copies and updates \code{R} libraries from most recent installed version
 #' into the current \code{\link{.libPaths}} directory. This assumes that the
@@ -885,13 +890,15 @@ read_clip <- function(header = TRUE, ...) {
 #' @rdname read_clip
 #' @param sep separator as a character string
 #' @export
-read_clip.csv <- function(header = TRUE, sep = ',', ...)
+read_clip.csv <- function(header = TRUE, sep = ',', ...) {
   read_clip(header = header, sep = sep, ...)
+}
 
 #' @rdname read_clip
 #' @export
-read_clip.tab <- function(header = TRUE, sep = '\t', ...)
+read_clip.tab <- function(header = TRUE, sep = '\t', ...) {
   read_clip(header = header, sep = sep, ...)
+}
 
 #' @rdname read_clip
 #' @param widths a vector of widths of the fixed-width fields or a list of
@@ -1069,15 +1076,17 @@ fill_df <- function(data, key, ids, fill, values) {
 
 kinda_sort <- function(x, n, decreasing = FALSE, indices) {
   lx <- length(x)
-  n <- if (missing(n))
+  n  <- if (missing(n))
     ceiling(0.1 * lx) else if (n > lx) lx else n
   wh <- if (!missing(indices))
     indices else sample(seq.int(lx), size = n)
   y <- x[wh]
   x[wh] <- NA
+  
   rl <- with(rle(!is.na(x)), rep(values, lengths))
   x[rl] <- sort(x, decreasing = decreasing)
   x[!rl] <- y
+  
   x
 }
 
@@ -1332,25 +1341,29 @@ path_extract <- function(path) {
 #' @export
 fname <- function(path) {
   xx <- basename(path)
-  pattern <- '(^\\.[^ .]+$|[^:\\/]*?[.$]?)(?:\\.([^ :\\/.]*))?$'
-  `colnames<-`(regcaptures2(xx, pattern)[[1]], c('filename','extension'))
+  pp <- '(^\\.[^ .]+$|[^:\\/]*?[.$]?)(?:\\.([^ :\\/.]*))?$'
+  
+  `colnames<-`(regcaptures2(xx, pp)[[1L]], c('filename', 'extension'))
 }
 
 #' @rdname path_extract
 #' @export
-file_name <- function(path)
+file_name <- function(path) {
   path_extract(path)[, 'filename']
+}
 
 #' @rdname path_extract
 #' @export
-file_ext <- function(path)
+file_ext <- function(path) {
   path_extract(path)[, 'extension']
+}
 
 #' @rdname path_extract
 #' @export
-rm_ext <- function(path)
+rm_ext <- function(path) {
   gsub('(^\\.[^ .]+$|[^:\\/]*?[.$]?)(?:\\.([^ :\\/.]*))?$',
        '\\1', path, perl = TRUE)
+}
 
 #' Multiple pattern matching and replacement
 #' 
@@ -1418,15 +1431,17 @@ mgrep_ <- function(parallel, FUN, vlist, ...) {
 
 #' @rdname mgrep
 #' @export
-mgrepl <- function(pattern, x, ..., parallel = length(pattern) > 1e4)
+mgrepl <- function(pattern, x, ..., parallel = length(pattern) > 1e4) {
   mgrep_(parallel = parallel, FUN = base::grepl, ...,
          vlist = list(pattern = pattern, x = x))
+}
 
 #' @rdname mgrep
 #' @export
-mgrep <- function(pattern, x, ..., parallel = length(pattern) > 1e4)
+mgrep <- function(pattern, x, ..., parallel = length(pattern) > 1e4) {
   mgrep_(parallel = parallel, FUN = base::grep, ...,
          vlist = list(pattern = pattern, x = x))
+}
 
 msub_ <- function(pattern, replacement, x, ..., FUN) {
   dots <- match.call(expand.dots = FALSE)$...
@@ -1446,13 +1461,15 @@ msub_ <- function(pattern, replacement, x, ..., FUN) {
 
 #' @rdname mgrep
 #' @export
-msub <- function(pattern, replacement, x, ...)
+msub <- function(pattern, replacement, x, ...) {
   msub_(pattern, replacement, x, ..., FUN = 'sub')
+}
 
 #' @rdname mgrep
 #' @export
-mgsub <- function(pattern, replacement, x, ...)
+mgsub <- function(pattern, replacement, x, ...) {
   msub_(pattern, replacement, x, ..., FUN = 'gsub')
+}
 
 #' Flatten lists
 #' 
@@ -1667,23 +1684,27 @@ cum_na <- function(x, FUN, useNA = TRUE) {
 
 #' @rdname cumfuns
 #' @export
-cumsum_na <- function(x, useNA = TRUE)
+cumsum_na <- function(x, useNA = TRUE) {
   cum_na(x, cumsum, useNA)
+}
 
 #' @rdname cumfuns
 #' @export
-cumprod_na <- function(x, useNA = TRUE)
+cumprod_na <- function(x, useNA = TRUE) {
   cum_na(x, cumprod, useNA)
+}
 
 #' @rdname cumfuns
 #' @export
-cummax_na <- function(x, useNA = TRUE)
+cummax_na <- function(x, useNA = TRUE) {
   cum_na(x, cummax, useNA)
+}
 
 #' @rdname cumfuns
 #' @export
-cummin_na <- function(x, useNA = TRUE)
+cummin_na <- function(x, useNA = TRUE) {
   cum_na(x, cummin, useNA)
+}
 
 #' @rdname cumfuns
 #' @export
@@ -1961,8 +1982,9 @@ pickcol <- function(data, ind = 1L, value = FALSE) {
 #' 
 #' @export
 
-lunique <- function(x, na.rm = FALSE)
+lunique <- function(x, na.rm = FALSE) {
   length(unique(if (na.rm) sort(x) else x))
+}
 
 #' Remove non ASCII characters
 #' 
@@ -1970,5 +1992,6 @@ lunique <- function(x, na.rm = FALSE)
 #' 
 #' @export
 
-rm_nonascii <- function(x)
+rm_nonascii <- function(x) {
   gsub('[^\x20-\x7E]', '', x)
+}

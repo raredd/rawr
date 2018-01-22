@@ -1,6 +1,10 @@
 ### plot functions
-# jmplot, tplot, dsplot, waffle, river, river2, dose_esc, plothc, waterfall,
-# heatmap.3
+# jmplot, tplot, tplot.default, tplot.formula, dsplot, dsplot.default,
+# dsplot.formula, waffle, river, river2, check_river_format, dose_esc,
+# plothc, waterfall, heatmap.3
+# 
+# S3 methods:
+# tplot, dsplot
 ###
 
 
@@ -313,7 +317,9 @@ jmplot <- function(x, y, z,
 #'
 #' @export
 
-tplot <- function(x, ...) UseMethod('tplot')
+tplot <- function(x, ...) {
+  UseMethod('tplot')
+}
 
 #' @rdname tplot
 #' @export
@@ -829,7 +835,9 @@ tplot.formula <- function(formula, data = NULL, ...,
 #'        
 #' @export
 
-dsplot <- function(x, ...) UseMethod('dsplot')
+dsplot <- function(x, ...) {
+  UseMethod('dsplot')
+}
 
 #' @rdname dsplot
 #' @export
@@ -1569,7 +1577,7 @@ check_river_format <- function(data, bar_data) {
     return(invisible(dd))
   
   dts <- grep('^dt_', names(bar_data))
-  bd <- tryCatch({
+  bd  <- tryCatch({
     if (one <- length(dts) == 1L) {
       bd <- setNames(bar_data[, 1:3], c('id', 'dt_assess_start', 'assess'))
       bd <- within(bd, {
@@ -1630,9 +1638,9 @@ check_river_format <- function(data, bar_data) {
 #'          
 #' @export
 
-dose_esc <- function(dose, col.dose, nstep = 3, dose.exp, col.exp,
+dose_esc <- function(dose, col.dose, nstep = 3L, dose.exp, col.exp,
                      xlab = 'Time', ylab = 'Dose', xlim = NULL, ylim = NULL,
-                     squish = length(dose) %/% 3) {
+                     squish = length(dose) %/% 3L) {
   nlevel <- table(dose)
   xlab <- if (missing(xlab)) 'Time' else xlab
   ylab <- if (missing(ylab)) paste('Dose', seq_along(nlevel)) else ylab

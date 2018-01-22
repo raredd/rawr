@@ -2,7 +2,7 @@
 % Please edit documentation in R/zxx.R
 \name{updateR}
 \alias{updateR}
-\title{Update R}
+\title{Update \code{R}}
 \usage{
 updateR(update = TRUE)
 }

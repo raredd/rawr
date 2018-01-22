@@ -1,12 +1,17 @@
 ### formatting, knitr, html-related, misc utils
-# show_html, show_markdown, show_math, roundr, intr, pvalr, pvalr2, catlist,
-# binconr, num2char, iprint, writeftable, tabler, tabler_by, tabler_by2,
-# tabler_stat, tabler_stat2, tabler_resp, match_ctc, tox_worst, countr, dmy,
-# combine_table, inject_div, sparKDT, case, write_htmlTable, html_align
+# show_html, show_markdown, show_math, roundr, roundr.default, roundr.matrix,
+# roundr.data.frame, intr, pvalr, pvalr2, color_pval, catlist, binconr,
+# num2char, iprint, writeftable, tabler, tabler.default, tabler.lm, tabler.glm,
+# tabler.survfit, tabler_by, tabler_by2, tabler_stat, tabler_stat2, tabler_resp,
+# match_ctc, tox_worst, countr, dmy, combine_table, inject_div, sparKDT, case,
+# write_htmlTable, html_align
+# 
+# S3 methods:
+# roundr, tabler
 # 
 # unexported:
-# resp1, r_or_better1, inject_, render_sparkDT, tabler_stat_list,
-# tabler_stat_html, guess_digits, get_tabler_stat_n, getPvalttest
+# getPvalttest, tabler_stat_list, tabler_stat_html, guess_digits,
+# get_tabler_stat_n, resp1, r_or_better1, inject_, render_sparkDT,
 ###
 
 
@@ -267,7 +272,9 @@ show_math <- function(..., css, use_viewer = !is.null(getOption('viewer'))) {
 #' 
 #' @export
 
-roundr <- function(x, digits = 1L) UseMethod('roundr')
+roundr <- function(x, digits = 1L) {
+  UseMethod('roundr')
+}
 
 #' @rdname roundr
 #' @export
@@ -287,20 +294,20 @@ roundr.default <- function(x, digits = 1L) {
 
 #' @rdname roundr
 #' @export
-roundr.data.frame <- function(x, digits = 1L) {
-  x[] <- lapply(x, function(ii)
-    if (is.numeric(ii) || is.complex(ii))
-      roundr.default(ii, digits = digits) else ii)
+roundr.matrix <- function(x, digits = 1L) {
+  if (!is.numeric(x) || is.complex(x))
+    stop(deparse(substitute(x)), ' is not numeric')
+  else x[] <- roundr.default(x, digits)
   
   x
 }
 
 #' @rdname roundr
 #' @export
-roundr.matrix <- function(x, digits = 1L) {
-  if (!is.numeric(x) || is.complex(x))
-    stop(deparse(substitute(x)), ' is not numeric')
-  else x[] <- roundr.default(x, digits)
+roundr.data.frame <- function(x, digits = 1L) {
+  x[] <- lapply(x, function(ii)
+    if (is.numeric(ii) || is.complex(ii))
+      roundr.default(ii, digits = digits) else ii)
   
   x
 }
@@ -489,8 +496,9 @@ color_pval <- function(pvals, breaks = c(0, .01, .05, .1, .5, 1),
 #' 
 #' @export
 
-catlist <- function(l)
+catlist <- function(l) {
   paste0(paste(names(l), l, sep = ' = ', collapse = ', '))
+}
 
 #' \code{bincon} formatter
 #' 
@@ -783,11 +791,15 @@ writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
 #' 
 #' @export
 
-tabler <- function(x, ...) UseMethod('tabler')
+tabler <- function(x, ...) {
+  UseMethod('tabler')
+}
 
 #' @rdname tabler
 #' @export
-tabler.default <- function(x, ...) summary(x, ...)
+tabler.default <- function(x, ...) {
+  summary(x, ...)
+}
 
 #' @rdname tabler
 #' @export
@@ -795,6 +807,7 @@ tabler.lm <- function(x, digits = 3L, ...) {
   res <- data.frame(summary(x, ...)$coefficients, check.names = FALSE)
   res[, ncol(res)] <- pvalr(res[, ncol(res)], ...)
   res[, -ncol(res)] <- lapply(res[, -ncol(res)], round, digits = digits)
+  
   res
 }
 
@@ -825,7 +838,9 @@ tabler.glm <- function(x, digits = 3L, level = 0.95, type = '', ...) {
 
 #' @rdname tabler
 #' @export
-tabler.survfit <- function(x, ...) surv_table(x, ...)
+tabler.survfit <- function(x, ...) {
+  surv_table(x, ...)
+}
 
 #' tabler_by
 #' 
@@ -1086,6 +1101,7 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
     idx <- idx:ncol(res)
     res[, idx] <- `[<-`(res[, idx], gsub('^0.*', zeros, res[, idx]))
   }
+  
   `rownames<-`(res[, -1L], res[, 1L])
 }
 
@@ -1145,8 +1161,8 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
         ord(as.numeric(rm_p(res[, 1L]))) else
           ord(-xtfrm(rownames(res)), as.numeric(rm_p(res[, ln])))
     }, , drop = FALSE]
-  
   rownames(res)[duplicated(rownames(res))] <- ''
+  
   res
 }
 
@@ -1556,6 +1572,7 @@ get_tabler_stat_n <- function(x, pct = TRUE) {
   t <- table(x)
   p <- roundr(prop.table(t) * 100, 0)
   o <- Vectorize('sprintf')(c('Total', l), c(sum(t), t), c('%', p), fmt = fmt)
+  
   drop(o)
 }
 
@@ -2199,13 +2216,15 @@ render_sparkDT <- function(data, variables, type, range, options, ...) {
     "$('.spark%s:not(:has(canvas))').sparkline('html', { %s }); \n",
     variables[ii], type[[ii]])
   )
-  js <- sprintf("function (oSettings, json) {\n %s }\n", paste(js, collapse = '\n'))
+  js <- sprintf("function (oSettings, json) {\n %s }\n",
+                paste(js, collapse = '\n'))
   
   oo <- list(columnDefs = columnDefs, fnDrawCallback = DT::JS(js))
   dt <- do.call(DT::datatable, c(
     list(data = data, options = modifyList(options, oo)), dots)
   )
   dt$dependencies <- c(dt$dependencies, htmlwidgets::getDependency('sparkline'))
+  
   dt
 }
 

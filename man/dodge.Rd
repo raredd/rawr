@@ -2,20 +2,26 @@
 % Please edit documentation in R/plot_extra.R
 \name{dodge}
 \alias{dodge}
-\alias{dodge.formula}
 \alias{dodge.default}
+\alias{dodge.formula}
 \title{Point dodge}
 \usage{
 dodge(x, ...)
 
-\method{dodge}{formula}(formula, data = NULL, ...)
-
 \method{dodge}{default}(x, y, dist = NULL, jit = NULL, ...)
+
+\method{dodge}{formula}(formula, data = NULL, ...)
 }
 \arguments{
 \item{x}{grouping variables or, equivalently, positions along x-axis}
 
 \item{...}{additional arguments passed to or from other methods}
+
+\item{y}{a numeric vector of data, y-values}
+
+\item{jit, dist}{jittering parameters; \code{jit} describes the spread of
+close points, and \code{dist} defines a range to consider points "close";
+both may be specified for each group and recycled as needed}
 
 \item{formula}{a \code{\link{formula}}, such as \code{y ~ group}, where
 \code{y} is a numeric vector of data values to be split into groups
@@ -24,12 +30,6 @@ according to the grouping variable, \code{group}}
 \item{data}{optional matrix or data frame containing the variables in
 \code{formula}; by default, the variables are taken from
 \code{environment(formula)}}
-
-\item{y}{a numeric vector of data, y-values}
-
-\item{jit, dist}{jittering parameters; \code{jit} describes the spread of
-close points, and \code{dist} defines a range to consider points "close";
-both may be specified for each group and recycled as needed}
 }
 \description{
 Dodge and center overlapping points by group. Spreads scattered points

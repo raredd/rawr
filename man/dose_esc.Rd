@@ -4,8 +4,8 @@
 \alias{dose_esc}
 \title{Plot dose escalation}
 \usage{
-dose_esc(dose, col.dose, nstep = 3, dose.exp, col.exp, xlab = "Time",
-  ylab = "Dose", xlim = NULL, ylim = NULL, squish = length(dose)\%/\%3)
+dose_esc(dose, col.dose, nstep = 3L, dose.exp, col.exp, xlab = "Time",
+  ylab = "Dose", xlim = NULL, ylim = NULL, squish = length(dose)\%/\%3L)
 }
 \arguments{
 \item{dose, col.dose}{vector of dose levels for each observation; colors

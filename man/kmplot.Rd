@@ -249,6 +249,6 @@ system2(getOption('pdfviewer'), tf)
 }
 \seealso{
 \code{\link{kmplot_by}}; \code{survival:::plot.survfit};
-\code{\link[plotr]{ggsurv}}; \code{\link{kmplot_data_}}; \code{\link{lr_text}};
-\code{\link{lr_pval}}; \code{\link{points.kmplot}}
+\code{\link[plotr]{ggsurv}}; \code{\link{kmplot_data_}};
+\code{\link{lr_text}}; \code{\link{lr_pval}}; \code{\link{points.kmplot}}
 }

@@ -1,13 +1,16 @@
 ### plot utils, helpers for plotting functions
 # unexported:
-# %|%, do_sub_, dodge_, jit_, grouping_, hmsf_, do_rect_, do_seg_, d2r, r2d,
+# %|%, do_sub_, dodge_, jit_, grouping_, do_rect_, do_seg_, d2r, r2d,
 # p2c, c2p, p2r, p2d
 ###
 
 
 '%|%' <- Vectorize(function(x, y) if (is.na(x)) y else x)
 
-do_sub_ <- function(x, n, s) if (length(x) == n) x[s] else x
+do_sub_ <- function(x, n, s) {
+  if (length(x) == n)
+    x[s] else x
+}
 
 dodge_ <- function(x, at, dist, jit) {
   ## add jitter to points in a single group and return adjusted values
@@ -18,8 +21,9 @@ dodge_ <- function(x, at, dist, jit) {
   data.frame(x = at + (offset - mean(offset)), y = gr$vs)
 }
 
-jit_ <- function(g.si, hmsf)
+jit_ <- function(g.si, hmsf) {
   hmsf - (g.si + 1) / 2
+}
 
 grouping_ <- function(v, dif) {
   ## turn values in each group into their plotting points
@@ -69,8 +73,12 @@ do_seg_ <- function(n, x, y, arrow, single = FALSE, ...) {
 }
 
 ## convert degrees to radians or vice versa
-d2r <- function(degrees = 1) degrees * (pi / 180)
-r2d <- function(radians = 1) radians * (180 / pi)
+d2r <- function(degrees = 1) {
+  degrees * (pi / 180)
+}
+r2d <- function(radians = 1) {
+  radians * (180 / pi)
+}
 
 ## convert polar to cartesian or vice versa
 p2c <- function(radius, theta, degree = FALSE) {
@@ -96,4 +104,3 @@ p2d <- function(x, y, cx = 0, cy = 0) {
   # p2d(0,1)
   r2d(atan2(y - cy, x - cx))
 }
-

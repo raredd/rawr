@@ -1,17 +1,19 @@
 ## sas-related functions
 # sas_path, r2sas, rmacro, get_margs, sas_mget, source_sas, parse_formats,
-# parse_formats2, apply_formats, sas_catalog, move_formats
+# apply_formats, sas_catalog, move_formats
 # 
 # unexported:
-# rm_sas_comments, trimwsq
+# rm_sas_comments, trimwsq, parse_formats_string, parse_formats_file
 ##
 
 
-rm_sas_comments <- function(x)
+rm_sas_comments <- function(x) {
   gsub('\\*[^;]+;|\\/\\*.*?\\*\\/', '', x)
+}
 
-trimwsq <- function(x)
+trimwsq <- function(x) {
   trimws(gsub('^[\"\' ]+|[\"\' ]+$', '', trimws(x)))
+}
 
 #' Get \code{SAS} path
 #' 
@@ -202,6 +204,7 @@ r2sas <- function(code, saspath, force, out) {
                       shQuote(file.path(out, basename(logpath)))),
                 domain = NA)
   }
+  
   invisible(NULL)
 }
 
@@ -362,6 +365,7 @@ get_margs <- function(path, name, text) {
                  shQuote(path)),
          domain = NA)
   margs <- setNames(gsub(',', ', ', args), mnames)
+  
   as.list(margs)[name]
 }
 
@@ -538,6 +542,7 @@ sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
 source_sas <- function(path, ...) {
   sas <- readLines(con <- file(path), warn = FALSE)
   close(con)
+  
   r2sas(code = paste(sas, sep = '\n'), ...)
 }
 

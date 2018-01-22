@@ -1,10 +1,10 @@
 ### utilities
 # psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill, rbindfill2,
-# rbindlist, interleave, outer2, merge2, locf, roll_fun, classMethods,
-# getMethods, regcaptures, regcaptures2, cast, melt, view, view2, clist,
-# rapply2, sort_matrix, insert, insert_matrix, tryCatch2, rleid, droplevels2,
-# combine_levels, combine_regex, rownames_to_column, column_to_rownames,
-# split_nth
+# rbindlist, rbindlist2, interleave, outer2, merge2, locf, roll_fun,
+# classMethods, getMethods, regcaptures, regcaptures2, cast, melt, View2, view,
+# clist, rapply2, sort_matrix, insert, insert_matrix, tryCatch2, rleid,
+# droplevels2, combine_levels, combine_regex, rownames_to_column,
+# column_to_rownames, split_nth
 # 
 # rawr_ops:
 # %ni%, %==%, %||%, %inside%, %:%
@@ -16,38 +16,47 @@
 # parse_yaml, parse_index, parse_news, parse_namespace
 # 
 # unexported:
-# islist, done, where, dots
+# islist, done, where, dots, insert_
 ###
 
 
 ## is.list(data.frame()); islist(data.frame())
-islist <- function(x)
+islist <- function(x) {
   inherits(x, 'list')
+}
 
 done <- function(type = c('notifier', 'beep')) {
   type <- match.arg(type)
   switch(type,
     notifier = notifier::notify(
-      sprintf('R task is complete - %s', format(Sys.time(), '%I:%M')),
+      sprintf('R task is complete - %s', format(Sys.time(), '%I:%M %p')),
       if (nzchar(Sys.getenv('RSTUDIO')))
         'RStudio' else 'R'
     ),
-    beep = while (TRUE) {beepr::beep(3); Sys.sleep(3)}
+    beep = while (TRUE) {
+      beepr::beep(3)
+      Sys.sleep(3)
+    }
   )
 }
 
 ## recursively find env where x is defined
 where <- function(x, env = parent.frame()) {
-  stopifnot(is.character(x), length(x) == 1L)
+  stopifnot(
+    is.character(x),
+    length(x) == 1L
+  )
   if (identical(env, emptyenv())) {
     stop(x, ' not found', call. = FALSE)
   }
+  
   if (exists(x, env, inherits = FALSE))
     env else Recall(x, parent.env(env))
 }
 
-dots <- function(...)
+dots <- function(...) {
   eval(substitute(alist(...)))
+}
 
 #' rawr operators
 #' 
@@ -454,8 +463,10 @@ parse_namespace <- function(
 psum <- function(..., na.rm = FALSE) {
   dat <- do.call('cbind', list(...))
   res <- rowSums(dat, na.rm = na.rm)
-  idx_na <- !rowSums(!is.na(dat))
-  res[idx_na] <- NA
+  
+  idx <- !rowSums(!is.na(dat))
+  res[idx] <- NA
+  
   res
 }
 
@@ -505,8 +516,9 @@ rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
 #' 
 #' @export
 
-clc <- function(all.names = FALSE)
+clc <- function(all.names = FALSE) {
   rm(list = ls(.GlobalEnv, all.names = all.names), envir = .GlobalEnv)
+}
 
 #' Clear console
 #' 
@@ -516,7 +528,9 @@ clc <- function(all.names = FALSE)
 #' 
 #' @export
 
-clear <- function(...) cat('\014')
+clear <- function(...) {
+  cat('\014')
+}
 
 #' Bind objects
 #' 
@@ -655,10 +669,12 @@ NULL
 bind_all <- function(..., which) {
   if (missing(which))
     stop('specify combining method: \'rbind\' or \'cbind\'')
+  
   l <- list(...)
   if (any(sapply(l, function(x) !is.null(dim(x)))))
     warning('bind_all is intended for vectors: use cbindx or rbindx instead.')
   l <- lapply(l, `length<-`, max(sapply(l, length)))
+  
   do.call(which, l)
 }
 
@@ -667,15 +683,18 @@ bind_all <- function(..., which) {
 cbindx <- function (..., deparse.level = 1L) {
   na <- nargs() - (!missing(deparse.level))    
   deparse.level <- as.integer(deparse.level)
-  stopifnot(0 <= deparse.level, deparse.level <= 2)
+  stopifnot(
+    0L <= deparse.level,
+    deparse.level <= 2L
+  )
   argl <- list(...)   
-  while (na > 0 && is.null(argl[[na]])) {
+  while (na > 0L && is.null(argl[[na]])) {
     argl <- argl[-na]
-    na <- na - 1
+    na <- na - 1L
   }
-  if (na == 0)
+  if (na == 0L)
     return(NULL)
-  if (na == 1) {
+  if (na == 1L) {
     if (isS4(..1))
       return(cbind2(..1))
     else return(matrix(...))  ##.Internal(cbind(deparse.level, ...)))
@@ -685,14 +704,14 @@ cbindx <- function (..., deparse.level = 1L) {
     symarg <- as.list(sys.call()[-1L])[1L:na]
     Nms <- function(i) {
       if (is.null(r <- names(symarg[i])) || r == '') {
-        if (is.symbol(r <- symarg[[i]]) || deparse.level == 2)
+        if (is.symbol(r <- symarg[[i]]) || deparse.level == 2L)
           deparse(r)
       } else r
     }
   }
   ## deactivated, otherwise no fill in with two arguments
   if (na == 0) {
-    r <- argl[[2]]
+    r <- argl[[2L]]
     fix.na <- FALSE
   } else {
     nrs <- unname(lapply(argl, nrow))
@@ -710,7 +729,7 @@ cbindx <- function (..., deparse.level = 1L) {
       if (!is.null(nmi <- names(argl)))
         iV <- iV & (nmi == '')
       ii <- if (fix.na)
-        2:(na - 1) else 2:na
+        2:(na - 1L) else 2:na
       if (any(iV[ii])) {
         for (i in ii[iV[ii]])
           if (!is.null(nmi <- Nms(i)))
@@ -719,7 +738,7 @@ cbindx <- function (..., deparse.level = 1L) {
     }
     
     ## filling with NA's to maximum occuring nrows
-    nRow <- as.numeric(sapply(argl, function(x) NROW(x)))
+    nRow <- as.integer(sapply(argl, function(x) NROW(x)))
     maxRow <- max(nRow, na.rm = TRUE)
     argl <- lapply(argl, function(x)
       if (is.null(nrow(x))) {
@@ -728,9 +747,9 @@ cbindx <- function (..., deparse.level = 1L) {
     r <- do.call('cbind', c(argl[-1L], list(deparse.level = deparse.level)))
   }
   d2 <- dim(r)
-  r <- cbind2(argl[[1]], r)
+  r <- cbind2(argl[[1L]], r)
   r <- rm_na_dimnames(r)
-  if (deparse.level == 0)
+  if (deparse.level == 0L)
     return(r)
   ism1 <- !is.null(d1 <- dim(..1)) && length(d1) == 2L
   ism2 <- !is.null(d2) && length(d2) == 2L && !fix.na
@@ -742,20 +761,21 @@ cbindx <- function (..., deparse.level = 1L) {
       d[2L]
     else as.integer(length(x) > 0L)
   }
-  nn1 <- !is.null(N1 <- if ((l1 <- Ncol(..1)) && !ism1) Nms(1))
-  nn2 <- !is.null(N2 <- if (na == 2 && Ncol(..2) && !ism2) Nms(2))
+  nn1 <- !is.null(N1 <- if ((l1 <- Ncol(..1)) && !ism1) Nms(1L))
+  nn2 <- !is.null(N2 <- if (na == 2L && Ncol(..2) && !ism2) Nms(2L))
   if (nn1 || nn2 || fix.na) {
     if (is.null(colnames(r)))
       colnames(r) <- rep.int('', ncol(r))
     setN <- function(i, nams) colnames(r)[i] <<- if (is.null(nams)) ''
     else nams
     if (nn1)
-      setN(1, N1)
+      setN(1L, N1)
     if (nn2)
-      setN(1 + l1, N2)
+      setN(1L + l1, N2)
     if (fix.na)
       setN(ncol(r), Nna)
   }
+  
   r
 }
 
@@ -764,18 +784,21 @@ cbindx <- function (..., deparse.level = 1L) {
 rbindx <- function (..., deparse.level = 1L) {
   na <- nargs() - (!missing(deparse.level))
   deparse.level <- as.integer(deparse.level)
-  stopifnot(0 <= deparse.level, deparse.level <= 2)
+  stopifnot(
+    0L <= deparse.level,
+    deparse.level <= 2L
+  )
   argl <- list(...)
-  while (na > 0 && is.null(argl[[na]])) {
+  while (na > 0L && is.null(argl[[na]])) {
     argl <- argl[-na]
-    na <- na - 1
+    na <- na - 1L
   }
-  if (na == 0)
+  if (na == 0L)
     return(NULL)
-  if (na == 1) {
+  if (na == 1L) {
     if (isS4(..1))
       return(rbind2(..1))
-    else return(matrix(..., nrow = 1)) ##.Internal(rbind(deparse.level, ...)))
+    else return(matrix(..., nrow = 1L)) ##.Internal(rbind(deparse.level, ...)))
   }
   
   if (deparse.level) {
@@ -788,13 +811,13 @@ rbindx <- function (..., deparse.level = 1L) {
     }
   }
   ## deactivated, otherwise no fill in with two arguments
-  if (na == 0) {
-    r <- argl[[2]]
+  if (na == 0L) {
+    r <- argl[[2L]]
     fix.na <- FALSE
   } else {
     nrs <- unname(lapply(argl, ncol))
     iV <- sapply(nrs, is.null)
-    fix.na <- identical(nrs[(na - 1):na], list(NULL, NULL))
+    fix.na <- identical(nrs[(na - 1L):na], list(NULL, NULL))
     ## deactivated, otherwise data will be recycled
     #if (fix.na) {
     #    nr <- max(if (all(iV)) sapply(argl, length) else unlist(nrs[!iV]))
@@ -807,7 +830,7 @@ rbindx <- function (..., deparse.level = 1L) {
       if (!is.null(nmi <- names(argl)))
         iV <- iV & (nmi == '')
       ii <- if (fix.na)
-        2:(na - 1) else 2:na
+        2:(na - 1L) else 2:na
       if (any(iV[ii])) {
         for (i in ii[iV[ii]])
           if (!is.null(nmi <- Nms(i)))
@@ -816,7 +839,7 @@ rbindx <- function (..., deparse.level = 1L) {
     }
     
     ## filling with NAs to maximum occuring ncols
-    nCol <- as.numeric(sapply(argl, function(x)
+    nCol <- as.integer(sapply(argl, function(x)
       if (is.null(ncol(x)))
         length(x) else ncol(x)))
     maxCol <- max(nCol, na.rm = TRUE)
@@ -828,26 +851,26 @@ rbindx <- function (..., deparse.level = 1L) {
     ## create a common name vector from the
     ## column names of all 'argl' items
     namesVEC <- rep(NA, maxCol)
-    for (i in 1:length(argl)) {
+    for (i in seq_along(argl)) {
       CN <- colnames(argl[[i]])
       m <- !(CN %in% namesVEC)
       namesVEC[m] <- CN[m]
     }
     
     ## make all column names from common 'namesVEC'
-    for (j in 1:length(argl)) {
+    for (j in seq_along(argl)) {
       if (!is.null(ncol(argl[[j]]))) colnames(argl[[j]]) <- namesVEC
     }
     r <- do.call('rbind', c(argl[-1L], list(deparse.level = deparse.level)))
-  }  
+  }
   d2 <- dim(r)
   
   ## make all column names from common 'namesVEC'
-  colnames(r) <- colnames(argl[[1]])
-  r <- rbind2(argl[[1]], r)
+  colnames(r) <- colnames(argl[[1L]])
+  r <- rbind2(argl[[1L]], r)
   r <- rm_na_dimnames(r)
   
-  if (deparse.level == 0)
+  if (deparse.level == 0L)
     return(r)
   ism1 <- !is.null(d1 <- dim(..1)) && length(d1) == 2L
   ism2 <- !is.null(d2) && length(d2) == 2L && !fix.na
@@ -858,20 +881,21 @@ rbindx <- function (..., deparse.level = 1L) {
     if (length(d) == 2L)
       d[1L] else as.integer(length(x) > 0L)
   }
-  nn1 <- !is.null(N1 <- if ((l1 <- Nrow(..1)) && !ism1) Nms(1))
-  nn2 <- !is.null(N2 <- if (na == 2 && Nrow(..2) && !ism2) Nms(2))
+  nn1 <- !is.null(N1 <- if ((l1 <- Nrow(..1)) && !ism1) Nms(1L))
+  nn2 <- !is.null(N2 <- if (na == 2 && Nrow(..2) && !ism2) Nms(2L))
   if (nn1 || nn2 || fix.na) {
     if (is.null(rownames(r)))
       rownames(r) <- rep.int('', nrow(r))
     setN <- function(i, nams) rownames(r)[i] <<- if (is.null(nams)) ''
     else nams
     if (nn1)
-      setN(1, N1)
+      setN(1L, N1)
     if (nn2)
-      setN(1 + l1, N2)
+      setN(1L + l1, N2)
     if (fix.na)
       setN(nrow(r), Nna)
   }
+  
   r
 }
 
@@ -883,15 +907,18 @@ rm_na_dimnames <- function(x, which = c('row', 'col'), rm_null = TRUE) {
       rownames(x) <- NULL
     else rownames(x)[na] <- ''
   }
+  
   nn <- colnames(x)
   if (!is.null(nn) && 'col' %in% which) {
     if (all(na <- is.na(nn)))
       colnames(x) <- NULL
     else colnames(x)[na] <- ''
   }
+  
   if (rm_null)
     if (all(sapply(dimnames(x), is.null)))
       dimnames(x) <- NULL
+  
   x
 }
 
@@ -938,6 +965,7 @@ rbindfill2 <- function(..., use.rownames = FALSE) {
     } else x[, un]
   })
   res <- do.call('rbind', res)
+  
   if (use.rownames)
     res else `rownames<-`(res, NULL)
 }
@@ -1104,8 +1132,9 @@ outer2 <- function(..., FUN) {
 #' 
 #' @export
 
-merge2 <- function(l, ...)
+merge2 <- function(l, ...) {
   Reduce(function(x, y) merge(x, y, ...), l)
+}
 
 #' Last observation carried forward
 #' 
@@ -1280,10 +1309,12 @@ classMethods <- function(object, generic = NULL) {
   dd <- do.call('rbind', ml)
   dd <- dd[!duplicated(dd$n), ]
   
-  structure(dd$m, byclass = FALSE, class = 'MethodsFunction',
-            info = data.frame(visible = dd$visible, from = dd$from,
-                              generic = dd$generic, isS4 = dd$isS4,
-                              row.names = dd$m))
+  structure(
+    dd$m, byclass = FALSE, class = 'MethodsFunction',
+    info = data.frame(visible = dd$visible, from = dd$from,
+                      generic = dd$generic, isS4 = dd$isS4,
+                      row.names = dd$m)
+  )
 }
 
 genericMethods <- function(object, generic) {
@@ -1403,8 +1434,9 @@ regcaptures <- function(x, m, use.names = TRUE) {
 #' @rdname regcaptures
 #' @export
 
-regcaptures2 <- function(x, pattern, use.names = TRUE)
+regcaptures2 <- function(x, pattern, use.names = TRUE) {
   regcaptures(x, gregexpr(pattern, x, perl = TRUE), use.names)
+}
 
 #' Reshape data
 #' 
@@ -1586,8 +1618,9 @@ NULL
 
 #' @rdname rawr_view
 #' @export
-View2 <- function(x, title, ...)
+View2 <- function(x, title, ...) {
   utils::View(x, title)
+}
 
 #' @rdname rawr_view
 #' @export
@@ -1770,13 +1803,6 @@ rapply2 <- function(l, FUN, classes = 'ANY', ...,
     FUN(l, ...) else l
 }
 
-# depth <- function(this, thisdepth = 0L) {
-#   # http://stackoverflow.com/questions/13432863/determine-level-of-nesting-in-r
-#   if (!islist(this))
-#     return(thisdepth)
-#   lapply(this, depth, thisdepth + 1L)
-# }
-
 #' Sort matrix
 #' 
 #' Sort a matrix (or an object that can be coerced) by values in rows or
@@ -1920,6 +1946,7 @@ insert_matrix <- function(x, rowsep, colsep, rowrep = NA, colrep = rowrep) {
     x <- insert(x, rowsep, repl = rowrep)
   if (!missing(colsep))
     x <- insert(x, col = colsep, repl = colrep)
+  
   x
 }
 
@@ -2021,8 +2048,9 @@ tryCatch2 <- function(expr, ..., simplify = TRUE) {
 #' 
 #' @export
 
-rleid <- function(x)
+rleid <- function(x) {
   cumsum(c(1L, x[-length(x)] != x[-1L]))
+}
 
 #' Drop factor levels
 #' 
@@ -2043,8 +2071,11 @@ rleid <- function(x)
 #' 
 #' @export
 
-droplevels2 <- function(x, min_level = 1, max_level = max(as.numeric(x))) {
+droplevels2 <- function(x, min_level = 1L, max_level = max(as.numeric(x))) {
   stopifnot(is.factor(x))
+  min_level <- as.integer(min_level)
+  max_level <- as.integer(max_level)
+  
   factor(x, levels = levels(x)[min_level:max_level], ordered = is.ordered(x))
 }
 

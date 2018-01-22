@@ -2,7 +2,7 @@
 % Please edit documentation in R/zxx.R
 \name{Restart}
 \alias{Restart}
-\title{Restart R session}
+\title{Restart \code{R} session}
 \usage{
 Restart(afterRestartCommand = "")
 }
