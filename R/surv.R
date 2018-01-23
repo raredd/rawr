@@ -3,7 +3,7 @@
 # surv_table, survdiff_pairs, landmark, surv_extract, surv_median, surv_prob
 #
 # unexported:
-# points.kmplot, kmplot_data_
+# points.kmplot, kmplot_data_, terms.inner
 # 
 # surv_test (unexported):
 # lr_text, lr_pval, tt_text, tt_pval, hr_text, hr_pval
@@ -1408,7 +1408,7 @@ kmplot_ticks <- function(s, data = eval(s$call$data), by_var, what,
       data <- deparse(s$call$data)
       data <- get(data, where(gsub('[$[].*', '', data)))
     }
-    terms <- c(survival:::terms.inner(s$call$formula),
+    terms <- c(terms.inner(s$call$formula),
                tail(as.character(s$call$formula), 1L))
     if (missing(time))
       time <- terms[1L]
@@ -1434,6 +1434,25 @@ kmplot_ticks <- function(s, data = eval(s$call$data), by_var, what,
          col = col[as.numeric(data[, strata])], ...)
   
   invisible(data)
+}
+
+terms.inner <- function(x) {
+  # survival:::terms.inner
+  if (inherits(x, 'formula')) {
+    if (length(x) == 3L)
+      c(terms.inner(x[[2L]]), terms.inner(x[[3L]]))
+    else terms.inner(x[[2L]])
+  } else if (class(x) == 'call' &&
+             (x[[1L]] != as.name('$') &&
+              x[[1L]] != as.name('['))) {
+    if (x[[1L]] == '+' || x[[1]] == '*' || x[[1]] == '-') {
+      if (length(x) == 3L)
+        c(terms.inner(x[[2L]]), terms.inner(x[[3L]]))
+      else terms.inner(x[[2L]])
+    } else if (x[[1L]] == as.name('Surv'))
+      unlist(lapply(x[-1L], terms.inner))
+    else terms.inner(x[[2L]])
+  } else (deparse(x))
 }
 
 #' Compute local p-value from coxph
@@ -1844,7 +1863,7 @@ landmark <- function(s, times = NULL, lr_test = TRUE, adjust_start = FALSE,
                      ..., add = FALSE) {
   form <- s$call$formula
   data <- eval(s$call$data)
-  tvar <- survival:::terms.inner(form)[1L]
+  tvar <- terms.inner(form)[1L]
   
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
