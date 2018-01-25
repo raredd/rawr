@@ -1115,7 +1115,8 @@ gcd <- function(x, y) {
 #' @export
 
 install.bioc <- function(pkgs, upgrade = FALSE) {
-  source('http://bioconductor.org/biocLite.R')
+  source(system.file('scripts', 'biocLite.R', package = 'rawr'))
+  
   f <- function(...)
     biocLite(..., suppressAutoUpdate = TRUE, suppressUpdates = TRUE)
   if (upgrade) {
