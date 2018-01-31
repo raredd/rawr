@@ -1619,7 +1619,7 @@ NULL
 
 #' @rdname rawr_view
 #' @export
-View2 <- function(x, title, ...) {
+View2 <- function(x, title) {
   utils::View(x, title)
 }
 
@@ -1629,7 +1629,7 @@ view <- function(x, use_viewer = FALSE, ...) {
   htmlFile <- tempfile(fileext = '.html')
   
   if (is.data.frame(x) | is.matrix(x))
-    x <- DT::datatable(x)
+    x <- DT::datatable(x, filter = 'top', ...)
   
   if (inherits(x, 'htmlwidget'))
     htmlwidgets::saveWidget(x, htmlFile, selfcontained = TRUE) else

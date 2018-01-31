@@ -6,7 +6,7 @@
 \alias{view}
 \title{View data}
 \usage{
-View2(x, title, ...)
+View2(x, title)
 
 view(x, use_viewer = FALSE, ...)
 }
@@ -17,11 +17,11 @@ non-zero numbers of rows and columns or an \code{htmlwidget} object}
 \item{title}{title for viewer window, defaults to name of \code{x}
 prefixed by \code{Data:}}
 
-\item{...}{additional arguments passed to \code{\link[DT]{datatable}}}
-
 \item{use_viewer}{logical; if \code{TRUE}, opens in the
 \code{\link[rstudioapi]{viewer}} if available; otherwise, opens in the
 default browser}
+
+\item{...}{additional arguments passed to \code{\link[DT]{datatable}}}
 }
 \description{
 Convenience functions to use the base \code{R} data viewer (\code{View2}
