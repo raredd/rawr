@@ -97,12 +97,13 @@ colon2 <- within(colon[duplicated(colon$id), ], {
   sex1 <- 'Male'
 })
 
-## these are equivalent (with minor differences in aesthetics)
-kmplot_by(event = 'pfs', data = colon2)
-kmplot_by('sex1', 'pfs', colon2)
-
 kmplot_by('rx', 'pfs', data = colon2, col.surv = 1:3,
   strata_lab = FALSE, col.band = NA)
+
+
+## these are equivalent (with minor differences in aesthetics)
+kmplot_by(time = 'pfs_time', event = 'pfs_ind', data = colon2)
+kmplot_by('1', 'pfs', colon2)
 
 
 ## return value is a list of survfit objects
@@ -118,27 +119,33 @@ kmplot_by('rx + sex', 'pfs', colon2, strata_lab = FALSE, lty.surv = 1:6)
 kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3,
   strata_lab = c('Observation','Trt','Trt + 5-FU'))
   
-## if "by" is given, use map.col  to map colors to plots
+## if "by" is given, use map.col to map colors to plots
 kmplot_by('rx', 'pfs', colon2, by = 'rx', map.col = TRUE, single = FALSE)
 kmplot_by('sex', 'pfs', colon2, by = 'rx', map.col = TRUE, single = FALSE)
 
-## to keep colors mapped to the same strata across plots, use named vector
+## to ensure colors are mapped to the same strata across plots (eg, if
+## all sub plots do not have the same groups), use a _named_ vector
 kmplot_by('rx', 'pfs', colon2, by = 'rx', xlim = c(0, 3000),
           col.surv = c(Lev = 'brown', Obs = 'blue', 'Lev+5FU' = 'purple'))
+
 
 ## if single = FALSE, uses n2mfrow function to set par('mfrow')
 kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3, single = FALSE,
   strata_lab = c('Observation','Trt','Trt + 5-FU'),
   main = levels(factor(colon2$sex)))
-  
+
+
 ## if par('mfrow') is anything other than c(1,1), uses current setting
 par(mfrow = c(2,2))
 kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3, single = FALSE,
-  strata_lab = c('Observation','Trt','Trt + 5-FU'))
+  strata_lab = c('Observation','Trt','Trt + 5-FU'), add = TRUE)
+kmplot_by('1', 'pfs', colon2, by = 'sex', col.surv = 1:3, single = FALSE,
+  strata_lab = FALSE)
+
 
 ## use add = TRUE to add to a figure region without using the by argument
 par(mfrow = c(1,2))
-mar <- c(8,6,3,2)
+mar <- c(8,6,3,2)  ## to align axes
 kmplot_by( 'rx', 'pfs', colon2, strata_lab = FALSE, add = TRUE, mar = mar)
 kmplot_by('sex', 'pfs', colon2, strata_lab = FALSE, add = TRUE, mar = mar)
   
