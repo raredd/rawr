@@ -1,7 +1,7 @@
 ### statistical functions
 # bincon, bintest, dlt_table, pr_table, power_cv, simon2, moods_test, fakeglm,
 # gcd, install.bioc, lm.beta, cuzick.test, cuzick.test.default,
-# cuzick.test.formula, jt.test, hl_est
+# cuzick.test.formula, jt.test, hl_est, rcor
 # 
 # S3 methods:
 # cuzick.test
@@ -13,7 +13,7 @@
 # rpart_parent, rpart_subset, rpart_nodes
 # 
 # unexported:
-# combn_fun
+# combn_fun, rcor1, rcorn
 ###
 
 
@@ -1782,4 +1782,77 @@ rpart_nodes <- function(tree, node_labels = FALSE, droplevels = TRUE) {
   
   if (droplevels)
     droplevels(nl) else nl
+}
+
+#' Correlate variables
+#' 
+#' Generate a (random) vector with a desired correlation to one or more other
+#' variables.
+#' 
+#' @param y a numeric vector or matrix used to set correlation(s)
+#' @param x a vector to be correlated with \code{y}; if not given, a random,
+#' normally distributed vector is used
+#' @param rho the desired correlation(s); should be equal in length to the
+#' number of columns of \code{y}, recycled as needed (or length 1 if \code{y}
+#' is a vector)
+#' 
+#' @seealso
+#' \url{https://stats.stackexchange.com/questions/15011/generate-a-random-variable-with-a-defined-correlation-to-an-existing-variables}
+#' 
+#' @examples
+#' set.seed(1)
+#' y <- matrix(rnorm(150), 50)
+#' x <- rnorm(50)
+#' 
+#' cor(y[, 1], rcor(y[, 1]))
+#' cor(y[, 1], rcor(y[, 1], x, rho = 0.8))
+#' 
+#' cor(y, rcor(y))
+#' cor(y, rcor(y, rho = c(.75, -.5, .25)))
+#' 
+#' pairs(
+#'   cbind(rcor(y, x, rho = c(.75, -.5, .25)), y),
+#'   upper.panel = function(x, y, ...) {
+#'     points(x, y)
+#'     abline(lm(y ~ x))
+#'     mtext(parse(text = sprintf('rho==%.2f', cor(x, y))), cex = 2, col = 2)
+#'   }
+#' )
+#' 
+#' @export
+
+rcor <- function(y, x = NULL, rho = 0.5) {
+  x <- if (is.null(x))
+    rnorm(NROW(y)) else rep_len(x, NROW(y))
+  
+  if (is.null(dim(y)))
+    rcor1(y, x, rho[1L])
+  else rcorn(y, x, rep_len(rho, ncol(y)))
+}
+
+rcor1 <- function(y, x, rho) {
+  re <- residuals(lm(x ~ y))
+  rho * sd(re) * y + re * sd(y) * sqrt(1 - rho ^ 2)
+}
+
+rcorn <- function(y, x, rho) {
+  y  <- as.matrix(y)
+  sy <- scale(y)
+  nr <- nrow(y)
+  
+  re  <- residuals(lm(x ~ y))
+  rho <- rep_len(rho, ncol(y))
+  
+  ## get the coefficient sigma of re so that the cor of y with the
+  ## linear combination yd %*% rho + sigma * re is the desired vector
+  yd <- with(svd(sy), (nr - 1L) * u %*% diag(ifelse(d > 0, 1 / d, 0)) %*% t(v))
+  sigma2 <- c((1 - rho %*% cov(yd) %*% rho) / var(re))
+  
+  ## linear combination
+  if (sigma2 >= 0)
+    c(yd %*% rho + sqrt(sigma2) * re)
+  else {
+    warning('Joint correlations not possible', call. = FALSE)
+    rep(0, nr)
+  }
 }
