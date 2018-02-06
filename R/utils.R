@@ -2065,17 +2065,26 @@ rleid <- function(x) {
 #' \code{\link{droplevels}}
 #' 
 #' @examples
-#' x <- factor(c('b','d'), levels = letters[1:5])
+#' x <- factor(c('b', 'd'), levels = letters[1:5])
 #' droplevels(x)
+#' 
 #' droplevels2(x)
 #' droplevels2(x, min_level = 2, max_level = 5)
 #' 
+#' droplevels2(factor(c(1, NA)))
+#' 
 #' @export
 
-droplevels2 <- function(x, min_level = 1L, max_level = max(as.numeric(x))) {
-  stopifnot(is.factor(x))
+droplevels2 <- function(x, min_level = 1L,
+                        max_level = max(as.integer(x), na.rm = TRUE)) {
   min_level <- as.integer(min_level)
   max_level <- as.integer(max_level)
+  
+  stopifnot(
+    is.factor(x),
+    min_level >= 1L,
+    max_level <= nlevels(x)
+  )
   
   factor(x, levels = levels(x)[min_level:max_level], ordered = is.ordered(x))
 }
