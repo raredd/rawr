@@ -61,6 +61,8 @@ mt <- within(mtcars, {
 })
 
 tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs')
+tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs',
+  FUN = list('kruskal', 'fisher', FALSE))
 
 tabler_stat2(
  mt, c('mpg', 'cyl', 'wt'), 'vs',

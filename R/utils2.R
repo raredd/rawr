@@ -1373,7 +1373,7 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
                           names(fnames)[1:3])
   
   ## only return one of wilcox/kruskal based on byvar
-  fnames <- fnames[-((n == 2L) + 1L)]
+  fnames <- fnames[pmatch(c(substr(fname, 1L, 3L), 'fish'), tolower(fnames))]
   
   pvc <- if (is.null(pvn))
     pvn else {
@@ -1440,6 +1440,8 @@ getPvalttest <- function(x, by) {
 #' })
 #' 
 #' tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs')
+#' tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs',
+#'   FUN = list('kruskal', 'fisher', FALSE))
 #' 
 #' tabler_stat2(
 #'  mt, c('mpg', 'cyl', 'wt'), 'vs',
@@ -1462,6 +1464,20 @@ tabler_stat2 <- function(data, varname, byvar, varname_label = varname,
                          dagger = TRUE, statArgs = NULL,
                          align = NULL, rgroup = NULL, cgroup = NULL,
                          tfoot = NULL, htmlArgs = NULL, zeros = '-') {
+  data <- as.data.frame(data)
+  nv   <- length(varname)
+  
+  if (is.character(FUN))
+    FUN <- as.list(FUN)
+  
+  stopifnot(
+    all(c(varname, byvar) %in% names(data)),
+    length(byvar) == 1L,
+    byvar %in% names(data),
+    nv == length(varname_label),
+    is.null(FUN) || nv == length(FUN)
+  )
+  
   l <- tabler_stat_list(
     data, varname, byvar, varname_label, byvar_label,
     digits, FUN, color_pval, color_missing, dagger, statArgs
@@ -1484,7 +1500,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
     sapply(data[, -ncol(data)], guess_digits) else rep_len(digits, nv)
   
   data <- rep_len(list(data), nv)
-  FUN  <- rep_len(list(FUN), nv)
+  FUN  <- rep_len(if (islist(FUN)) FUN else list(FUN), nv)
   pval <- any(!is.na(FUN))
   
   l <- do.call('Map', c(list(
