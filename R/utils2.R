@@ -1373,7 +1373,10 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
                           names(fnames)[1:3])
   
   ## only return one of wilcox/kruskal based on byvar
-  fnames <- fnames[pmatch(c(substr(fname, 1L, 3L), 'fish'), tolower(fnames))]
+  idx <- pmatch(c(substr(fname, 1L, 3L), 'fish'), tolower(fnames))
+  if (anyNA(idx))
+    idx <- c((n > 2L) + 1L, na.omit(idx))
+  fnames <- fnames[idx]
   
   pvc <- if (is.null(pvn))
     pvn else {
@@ -1497,7 +1500,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
   data[, byvar] <- as.factor(data[, byvar])
   .data <- data
   digits <- if (is.null(digits))
-    sapply(data[, -ncol(data)], guess_digits) else rep_len(digits, nv)
+    sapply(data[, -ncol(data), drop = FALSE], guess_digits) else rep_len(digits, nv)
   
   data <- rep_len(list(data), nv)
   FUN  <- rep_len(if (islist(FUN)) FUN else list(FUN), nv)
