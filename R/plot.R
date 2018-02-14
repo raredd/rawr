@@ -88,15 +88,15 @@ jmplot <- function(x, y, z,
                              border.col, axes, frame.plot, add, horizontal) {
     func(...)
   }
-  localPlot <- function(xy, ..., lwd)
+  localPlot   <- function(xy, ...,                         lwd)
     eliminateTplot(plot.xy, xy, 'p', ...)
-  localAxis <- function(..., col, bg, pch, cex, lty, lwd)
+  localAxis   <- function(    ..., col, bg, pch, cex, lty, lwd)
     eliminateTplot(axis, ...)
-  localBox <- function(..., col, bg, pch, cex, lty, lwd)
+  localBox    <- function(    ..., col, bg, pch, cex, lty, lwd)
     eliminateTplot(box, ...)
-  localWindow <- function(..., col, bg, pch, cex, lty, lwd)
+  localWindow <- function(    ..., col, bg, pch, cex, lty, lwd)
     eliminateTplot(plot.window, ...)
-  localTitle <- function(..., col, bg, pch, cex, lty, lwd)
+  localTitle  <- function(    ..., col, bg, pch, cex, lty, lwd)
     eliminateTplot(title, ...)
   
   ## calculate xlim, ylim
@@ -353,19 +353,19 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
     on.exit(par(op))
   
   ## helpers
-  localAxis   <- function(..., bg, cex, log, lty, lwd, pos)
+  localAxis   <- function(..., bg, cex, log, lty, lwd,       pos      )
     axis(...)
   localBox    <- function(..., bg, cex, log, lty, lwd, tick, pos, padj)
     box(...)
   localMtext  <- function(..., bg, cex, log, lty, lwd, tick, pos, padj)
     mtext(..., cex = cex.n)
-  localText   <- function(..., bg, cex, log, lty, lwd, tick, padj)
+  localText   <- function(..., bg, cex, log, lty, lwd, tick,      padj)
     text(..., cex = cex.n)
-  localPoints <- function(..., log, tick, pos, padj)
+  localPoints <- function(...,          log,           tick, pos, padj)
     points(...)
   localTitle  <- function(..., bg, cex, log, lty, lwd, tick, pos, padj)
     title(...)
-  localWindow <- function(..., bg, cex, lty, lwd, tick, pos, padj)
+  localWindow <- function(..., bg, cex,      lty, lwd, tick, pos, padj)
     plot.window(...)
   
   if (!missing(g)) {
@@ -427,12 +427,20 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
   
   ## scales
   if (is.null(ylim)) {
-    r <- range(groups, na.rm = TRUE, finite = TRUE)
-    pm <- diff(r) / 20
-    ylim <- r + pm * c(-1, 1)
+    # r <- range(groups, na.rm = TRUE, finite = TRUE)
+    # pm <- diff(r) / 20
+    # ylim <- r + pm * c(-1, 1)
+    ylim <- range(res$stats[is.finite(res$stats)],
+                  if (is.null(args$outline) || isTRUE(args$outline))
+                    res$out[is.finite(res$out)],
+                  if (is.null(args$outline) || isTRUE(args$notch))
+                    res$conf[is.finite(res$conf)])
   }
-  if (is.null(xlim))
-    xlim <- c(0.5, if (missing(at)) ng else max(at) + 0.5)
+  if (is.null(xlim)) {
+    # xlim <- c(0.5, if (missing(at)) ng else max(at) + 0.5)
+    xlim <- range(at, finite = TRUE) + c(-0.5, 0.5)
+  }
+  
   
   type <- match.arg(type, c('d', 'db', 'bd', 'b'), several.ok = TRUE)
   ## type of plot for each group
