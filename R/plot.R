@@ -323,7 +323,8 @@ tplot <- function(x, ...) {
 
 #' @rdname tplot
 #' @export
-tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
+tplot.default <- function(x, g, ..., type = 'db',
+                          jit = 0.1, dist = NULL,
                           
                           ## labels/aesthetics
                           main = NULL, sub = NULL, xlab = NULL, ylab = NULL,
@@ -335,8 +336,8 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
                           
                           ## additional aesthetics
                           median.line = FALSE, mean.line = FALSE,
-                          median.pars = list(col = par('col')),
-                          mean.pars = median.pars, boxplot.pars,
+                          median.pars = list(), mean.pars = list(),
+                          boxplot.pars = list(),
                           
                           ## n/missing for each group
                           show.n = TRUE, show.na = show.n, cex.n = cex,
@@ -347,7 +348,7 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
                           ann = par('ann'), axes = TRUE, frame.plot = axes,
                           add = FALSE, at, horizontal = FALSE,
                           panel.first = NULL, panel.last = NULL,
-                          reset_par = FALSE) {
+                          reset_par = TRUE) {
   op <- par(no.readonly = TRUE)
   if (reset_par)
     on.exit(par(op))
@@ -454,8 +455,6 @@ tplot.default <- function(x, g, ..., type = 'db', jit = 0.1, dist = NULL,
     col <- defcols[2L - grepl('.d', type)]
     group.col <- TRUE
   }
-  if (missing(boxplot.pars))
-    boxplot.pars <- NULL
   
   boxcol <- rep_len(boxcol, ng)
   boxborder <- rep_len(bordercol, ng)

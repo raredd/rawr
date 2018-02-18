@@ -13,11 +13,11 @@ tplot(x, ...)
   ylim = NULL, names, col, group.col = TRUE, boxcol = "grey90",
   bordercol = par("fg"), pch = par("pch"), group.pch = TRUE,
   cex = par("cex"), group.cex = FALSE, median.line = FALSE,
-  mean.line = FALSE, median.pars = list(col = par("col")),
-  mean.pars = median.pars, boxplot.pars, show.n = TRUE, show.na = show.n,
-  cex.n = cex, text.na = "missing", test = FALSE, ann = par("ann"),
-  axes = TRUE, frame.plot = axes, add = FALSE, at, horizontal = FALSE,
-  panel.first = NULL, panel.last = NULL, reset_par = FALSE)
+  mean.line = FALSE, median.pars = list(), mean.pars = list(),
+  boxplot.pars = list(), show.n = TRUE, show.na = show.n, cex.n = cex,
+  text.na = "missing", test = FALSE, ann = par("ann"), axes = TRUE,
+  frame.plot = axes, add = FALSE, at, horizontal = FALSE,
+  panel.first = NULL, panel.last = NULL, reset_par = TRUE)
 
 \method{tplot}{formula}(formula, data = NULL, ..., subset, na.action = NULL,
   panel.first = NULL, panel.last = NULL)
