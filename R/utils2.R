@@ -1406,13 +1406,18 @@ getPvalttest <- function(x, by) {
 #' @param data a matrix or data frame with variables \code{varname} and
 #' \code{byvar}
 #' @param varname one or more variables in \code{data} to calculate
-#' statistics by \code{byvar}
-#' @param byvar the column or stratification variable
-#' @param varname_label,byvar_label optional labels for \code{varname} and
-#' \code{byvar}
+#' statistics by \code{byvar}; the rows variable(s) of the table
+#' @param byvar a stratification variable; the column variable of the table
+#' @param varname_label,byvar_label optional labels for each \code{varname}
+#' and \code{byvar}
 #' @param digits \code{NULL} or a vector of digits past the decimal point to
 #' keep for each \code{varname}; if \code{NULL}, these will be guessed using
-#' \code{rawr:::guess_digits}
+#' \code{rawr:::guess_digits}; if length 1, all will be rounded to
+#' \code{digits}
+#' 
+#' alternatively, to set \code{digits} for a single \code{varname} manually,
+#' a \emph{named} vector of \code{digits} corresponding to one or more
+#' \code{varname} variables can be used; see examples
 #' @param FUN \code{NULL} or a list of functions performing the test of
 #' association between each \code{varname} and \code{byvar}; see
 #' \code{\link{tabler_stat}}
@@ -1428,7 +1433,11 @@ getPvalttest <- function(x, by) {
 #' value keeps cells as-is)
 #' 
 #' @seealso
-#' \code{\link{tabler_stat}}
+#' \code{\link{tabler_stat}}; \code{rawr:::get_tabler_stat_n}
+#' 
+#' \code{rawr:::guess_digits}; \code{rawr:::name_or_index}
+#' 
+#' \code{rawr:::tabler_stat_list}; \code{rawr:::tabler_stat_html}
 #' 
 #' @examples
 #' sapply(mtcars, rawr:::guess_digits)
@@ -1456,7 +1465,9 @@ getPvalttest <- function(x, by) {
 #'   mt, c('mpg', 'cyl', 'wt'), 'vs',
 #'   byvar_label = 'V/S engine',
 #'   varname_label = c('MPG', 'Cylinders', 'Weight'),
-#'   zeros = NULL
+#'   zeros = NULL,
+#'   digits = c(wt = 2)
+#'   # digits = c('3' = 2) ## equivalently
 #' )
 #' 
 #' @export
@@ -1499,15 +1510,22 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
   data <- data[, c(varname, byvar)]
   data[, byvar] <- as.factor(data[, byvar])
   .data <- data
+  
+  dig <- sapply(data[, -ncol(data), drop = FALSE], guess_digits)
   digits <- if (is.null(digits))
-    sapply(data[, -ncol(data), drop = FALSE], guess_digits) else rep_len(digits, nv)
+    dig
+  else {
+    if (length(digits) == 1L & is.null(names(digits)))
+      rep_len(digits, nv)
+    else replace(dig, name_or_index(names(digits), varname), digits)
+  }
   
   data <- rep_len(list(data), nv)
   FUN  <- rep_len(if (islist(FUN)) FUN else list(FUN), nv)
   pval <- any(!is.na(FUN))
   
   l <- do.call('Map', c(list(
-    f = rawr::tabler_stat, data, varname, byvar, digits, FUN,
+    f = tabler_stat, data, varname, byvar, digits, FUN,
     color_pval, color_missing, dagger), statArgs)
   )
   names(l) <- varname_label

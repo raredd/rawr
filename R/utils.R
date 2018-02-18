@@ -16,12 +16,12 @@
 # parse_yaml, parse_index, parse_news, parse_namespace
 # 
 # unexported:
-# islist, done, where, dots, insert_
+# islist, done, where, dots, name_or_index, insert_
 ###
 
 
-## is.list(data.frame()); islist(data.frame())
 islist <- function(x) {
+  ## is.list(data.frame()); rawr:::islist(data.frame())
   inherits(x, 'list')
 }
 
@@ -40,8 +40,8 @@ done <- function(type = c('notifier', 'beep')) {
   )
 }
 
-## recursively find env where x is defined
 where <- function(x, env = parent.frame()) {
+  ## recursively find env where x is defined
   stopifnot(
     is.character(x),
     length(x) == 1L
@@ -55,7 +55,26 @@ where <- function(x, env = parent.frame()) {
 }
 
 dots <- function(...) {
+  ## rawr:::dots(mean, 1, x = y, rnorm(5))
   eval(substitute(alist(...)))
+}
+
+
+name_or_index <- function(x, y = NULL) {
+  ## rawr:::name_or_index(c('1', '3', 'e'))
+  ## rawr:::name_or_index(c('a', 'c', 'e'), letters)
+  ## table is given priority over integer, eg, idx = 27 instead of 4
+  ## rawr:::name_or_index(c('a', '4', 'e'), c(letters, '4'))
+  suppressWarnings(
+    ix <- as.integer(x)
+  )
+  
+  if (is.null(y))
+    return(ix)
+  
+  iy <- match(x, y)
+  
+  replace(iy, is.na(iy), ix[is.na(iy)])
 }
 
 #' rawr operators
