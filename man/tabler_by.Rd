@@ -74,9 +74,9 @@ entire data set is given as \code{data} and will use the corresponding
 }
 \examples{
 mt <- within(mtcars, {
-  am <- factor(am)
+  am   <- factor(am)
   gear <- factor(gear)
-  vs <- factor(vs, levels = 0:2)
+  vs   <- factor(vs, levels = 0:2)
   carb <- factor(carb)
 })
 

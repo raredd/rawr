@@ -27,7 +27,7 @@ structure(ht, class = 'htmlTable')
 
 ## if where is missing, style is recycled over all cells
 ht <- htmlTable::htmlTable(
-  inject_div(mtcars,
+  inject_div(head(mtcars),
              style = c('color: red;', 'color: blue', 'border: dashed 1px;')
   )
 )

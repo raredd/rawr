@@ -713,7 +713,7 @@ carrows <- function(p1, p2, arc, degree = FALSE, pad = 0.01 * 1:2,
                     size = 1, width = size / 2, curve = 1, fill = col,
                     border = NA) {
   code_ <- function(x) c(2L, 0L, 1L)[match(x, -1:1)]
-  pad_  <- function(x, pad) rawr::ht(x, -length(x) * (1 - pad))
+  pad_  <- function(x, pad) ht(x, -length(x) * (1 - pad))
   
   ## try to guess code for arrows2
   slope <- (p2[2L] - p1[2L]) / (p2[1L] - p1[1L])

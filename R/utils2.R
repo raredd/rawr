@@ -231,8 +231,10 @@ show_math <- function(..., css, use_viewer = !is.null(getOption('viewer'))) {
   if (missing(css))
     css <- ''
   
-  show_html(sprintf('<span class="math" style="font-size: 24px; %s;">\n', css),
-            x, '\n</span>\n', mj, use_viewer = use_viewer)
+  show_html(
+    sprintf('<span class="math" style="font-size: 24px; %s;">\n', css),
+    x, '\n</span>\n', mj, use_viewer = use_viewer
+  )
 }
 
 #' roundr
@@ -469,7 +471,7 @@ color_pval <- function(pvals, breaks = c(0, .01, .05, .1, .5, 1),
   } else pvals
   
   if (format_pval)
-    pvals <- rawr::pvalr(pvn, sig.limit, digits, TRUE, show.p)
+    pvals <- pvalr(pvn, sig.limit, digits, TRUE, show.p)
   
   pvc <- cols[findInterval(pvn, breaks)]
   
@@ -896,9 +898,9 @@ tabler.survfit <- function(x, ...) {
 #' 
 #' @examples
 #' mt <- within(mtcars, {
-#'   am <- factor(am)
+#'   am   <- factor(am)
 #'   gear <- factor(gear)
-#'   vs <- factor(vs, levels = 0:2)
+#'   vs   <- factor(vs, levels = 0:2)
 #'   carb <- factor(carb)
 #' })
 #' 
@@ -1823,18 +1825,21 @@ match_ctc <- function(..., version = 4L) {
   x <- unlist(list(...))
   
   ctc <- if (version %ni% 3:4)
-    stop('\'version\' should be 3 or 4') else {
-      if (version == 3L)
-        rawr::ctcae_v3 else rawr::ctcae_v4
-    }
+    stop('\'version\' should be 3 or 4')
+  else {
+    if (version == 3L)
+      rawr::ctcae_v3 else rawr::ctcae_v4
+  }
   
   ## guess if input is code or description
   idx <- if (any(grepl('([A-Za-z -])([0-9])', x)))
-    match(gsub('\\s*|-', '', x, perl = TRUE), ctc[, 'tox_code']) else
-      grep(paste(x, collapse = '|'), ctc[, 'tox_desc'], ignore.case = TRUE)
+    match(gsub('\\s*|-', '', x, perl = TRUE), ctc[, 'tox_code'])
+  else grep(paste(x, collapse = '|'), ctc[, 'tox_desc'], ignore.case = TRUE)
   
-  list(matches = `rownames<-`(ctc[idx, ], NULL),
-       version = sprintf('CTCAE v%s', version))
+  list(
+    matches = `rownames<-`(ctc[idx, ], NULL),
+    version = sprintf('CTCAE v%s', version)
+  )
 }
 
 #' Find highest grade toxicities
@@ -1896,8 +1901,12 @@ tox_worst <- function(data, id = 'id', desc = 'desc', grade = 'grade',
   data <- data[order(data[, id], data[, desc], -xtfrm(data[, grade])), ]
   idx <- which(duplicated(data[, c(id, desc)]))
   
-  list(tox_worst = if (length(idx)) data[-idx, ] else data,
-       data = data, duplicates = idx)
+  list(
+    tox_worst  = if (length(idx))
+      data[-idx, ] else data,
+    data       = data,
+    duplicates = idx
+  )
 }
 
 #' Count formatter
@@ -1950,11 +1959,17 @@ countr <- function(top, n, lowcase = TRUE, frac = FALSE, digits = 0L,
   top <- top[which]
   
   iprint(
-    sprintf('%s (n = %s%s, %s%%)', if (isTRUE(lowcase))
-      tolower(names(top)) else if (identical(lowcase, FALSE))
+    sprintf(
+      '%s (n = %s%s, %s%%)',
+      if (isTRUE(lowcase))
+        tolower(names(top))
+      else if (identical(lowcase, FALSE))
         toupper(names(top)) else names(top),
-      top, if (frac)
-        paste0('/', n) else '', roundr(as.numeric(top) / n * 100, digits))
+      top,
+      if (frac)
+        paste0('/', n) else '',
+      roundr(as.numeric(top) / n * 100, digits)
+    )
   )
 }
 
@@ -2044,14 +2059,14 @@ combine_table <- function(l, tspanner, n.tspanner, ...) {
   
   n.tspanner <- if (missing(n.tspanner))
     sapply(l, function(x) nrow(x) %||% 1L) else n.tspanner
-  tspanner <- if (missing(tspanner))
+  tspanner   <- if (missing(tspanner))
     names(l) %||% rep(' ', each = length(n.tspanner)) else tspanner
   
-  structure(
-    htmlTable::htmlTable(
-      do.call('rbind', l), tspanner = tspanner, n.tspanner = n.tspanner, ...
-    ), class = 'htmlTable'
+  ht <- htmlTable::htmlTable(
+    do.call('rbind', l), tspanner = tspanner, n.tspanner = n.tspanner, ...
   )
+  
+  structure(ht, class = 'htmlTable')
 }
 
 #' Inject div
@@ -2076,7 +2091,7 @@ combine_table <- function(l, tspanner, n.tspanner, ...) {
 #' 
 #' ## if where is missing, style is recycled over all cells
 #' ht <- htmlTable::htmlTable(
-#'   inject_div(mtcars,
+#'   inject_div(head(mtcars),
 #'              style = c('color: red;', 'color: blue', 'border: dashed 1px;')
 #'   )
 #' )
@@ -2115,8 +2130,8 @@ inject_div <- function(x, where, style) {
 
 inject_ <- function(x, where, what) {
   where <- if (missing(where) & !missing(what) || !length(where))
-    which(row(x) > 0L, arr.ind = TRUE) else
-      matrix(where, ncol = 2L, byrow = !is.matrix(where))
+    which(row(x) > 0L, arr.ind = TRUE)
+  else matrix(where, ncol = 2L, byrow = !is.matrix(where))
   
   what <- rep_len(what, nrow(where))
   mat  <- matrix('', nrow(x), ncol(x))
@@ -2197,17 +2212,21 @@ sparkDT <- function(data, spark, type = c('line', 'bar', 'box1', 'box2'),
   srange <- lapply(spark, function(x) range(unlist(x), na.rm = TRUE))
   
   spark_range <- if (missing(spark_range))
-    srange else if (!is.list(spark_range))
-      setNames(list(spark_range)[rep_len(1L, length(spark))], names(spark))
+    srange
+  else if (!is.list(spark_range))
+    setNames(list(spark_range)[rep_len(1L, length(spark))], names(spark))
   else if (length(names(spark_range)))
-    modifyList(srange, spark_range) else setNames(spark_range, names(spark))
+    modifyList(srange, spark_range)
+  else setNames(spark_range, names(spark))
   
   spark_range <- spark_range[names(spark)]
   
   type <- match.arg(type, several.ok = TRUE)
   type <- rep_len(type, length(spark))
   
-  stopifnot(all(names(spark) %in% names(data)))
+  stopifnot(
+    all(names(spark) %in% names(data))
+  )
   
   spark <- rapply(spark, paste, collapse = ', ', how = 'list')
   data[, names(spark)] <- lapply(spark, unlist)
@@ -2226,10 +2245,12 @@ render_sparkDT <- function(data, variables, type, range, options, ...) {
   
   ## each column definition and type need a distinct class with variable name
   columnDefs <- lapply(idx, function(ii)
-    list(targets = targets[ii],
-         render = DT::JS(
-           sprintf("function(data, type, full){ return '<span class=spark%s>' + data + '</span>' }", variables[ii])
-         )
+    list(
+      targets = targets[ii],
+      render = DT::JS(
+        sprintf("function(data, type, full){ return '<span class=spark%s>' + data + '</span>' }",
+                variables[ii])
+      )
     )
   )
   
@@ -2240,9 +2261,9 @@ render_sparkDT <- function(data, variables, type, range, options, ...) {
     
     r <- range[[ii]]
     line_range <- sprintf("%s , chartRangeMin: %s , chartRangeMax: %s",
-                          line, r[1], r[2])
+                          line, r[1L], r[2L])
     box_range  <- sprintf("%s , chartRangeMin: %s , chartRangeMax: %s",
-                          box, r[1], r[2])
+                          box, r[1L], r[2L])
     
     types <- list(bar = bar, line = line_range, box1 = box_range, box2 = box)
     
@@ -2260,7 +2281,8 @@ render_sparkDT <- function(data, variables, type, range, options, ...) {
   dt <- do.call(DT::datatable, c(
     list(data = data, options = modifyList(options, oo)), dots)
   )
-  dt$dependencies <- c(dt$dependencies, htmlwidgets::getDependency('sparkline'))
+  dt$dependencies <- c(dt$dependencies,
+                       htmlwidgets::getDependency('sparkline'))
   
   dt
 }
@@ -2315,8 +2337,7 @@ case <- function(x, case = c('first', 'upcase', 'downcase', 'camelcase',
   alternating <- function(x, seq) {
     x <- strsplit(x, '')
     x <- lapply(x, function(y) {
-      substring(y, seq, seq) <-
-        toupper(substring(y, seq, seq))
+      substring(y, seq, seq) <- toupper(substring(y, seq, seq))
       paste(y, collapse = '')
     })
     unlist(x)
@@ -2330,14 +2351,14 @@ case <- function(x, case = c('first', 'upcase', 'downcase', 'camelcase',
   }
   
   case <- switch(case,
-    first = '(^.)',
-    upcase = '(\\b.)',
-    downcase = '(?<=[a-z])(.)',
+    first     = '(^.)',
+    upcase    = '(\\b.)',
+    downcase  = '(?<=[a-z])(.)',
     camelcase = 'camelcase',
-    upper = {x <- toupper(x); TRUE},
-    lower = {x <- tolower(x); TRUE},
-    lowup = {x <- alternating(x, 0:1); TRUE},
-    uplow = {x <- alternating(x, 1:0); TRUE}
+    upper     = {x <- toupper(x); TRUE},
+    lower     = {x <- tolower(x); TRUE},
+    lowup     = {x <- alternating(x, 0:1); TRUE},
+    uplow     = {x <- alternating(x, 1:0); TRUE}
   )
   
   if (isTRUE(case))
