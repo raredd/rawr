@@ -419,30 +419,6 @@ tplot.default <- function(x, g, ..., type = 'db',
   ## .x used when test = TRUE
   .x <- x
   
-  if (missing(at))
-    at <- seq.int(ng)
-  if (length(at) !=  ng) {
-    warning('\'at\' must have same length as the number of groups')
-    at <- seq.int(ng)
-  }
-  
-  ## scales
-  if (is.null(ylim)) {
-    # r <- range(groups, na.rm = TRUE, finite = TRUE)
-    # pm <- diff(r) / 20
-    # ylim <- r + pm * c(-1, 1)
-    ylim <- range(res$stats[is.finite(res$stats)],
-                  if (is.null(args$outline) || isTRUE(args$outline))
-                    res$out[is.finite(res$out)],
-                  if (is.null(args$outline) || isTRUE(args$notch))
-                    res$conf[is.finite(res$conf)])
-  }
-  if (is.null(xlim)) {
-    # xlim <- c(0.5, if (missing(at)) ng else max(at) + 0.5)
-    xlim <- range(at, finite = TRUE) + c(-0.5, 0.5)
-  }
-  
-  
   type <- match.arg(type, c('d', 'db', 'bd', 'b'), several.ok = TRUE)
   ## type of plot for each group
   type <- rep_len(type, ng)
@@ -501,8 +477,26 @@ tplot.default <- function(x, g, ..., type = 'db',
   cex <- Map('[', cex, nonas)
   
   ## mean and median line for each group
-  mean.line   <- rep(mean.line, length.out = ng)
-  median.line <- rep(median.line, length.out = ng)
+  mean.line   <- rep_len(mean.line, ng)
+  median.line <- rep_len(median.line, ng)
+  
+  if (missing(at))
+    at <- seq.int(ng)
+  if (length(at) !=  ng) {
+    warning('\'at\' must have same length as the number of groups')
+    at <- seq.int(ng)
+  }
+  
+  ## scales
+  if (is.null(ylim))
+    ylim <- range(res$stats[is.finite(res$stats)],
+                  if (is.null(args$outline) || isTRUE(args$outline))
+                    res$out[is.finite(res$out)],
+                  if (isTRUE(args$notch))
+                    res$conf[is.finite(res$conf)])
+    
+  if (is.null(xlim))
+    xlim <- range(at, finite = TRUE) + c(-0.5, 0.5)
   
   ## defaults for dist and jit for groups
   if (missing(dist) || is.na(dist) || is.null(dist))
@@ -762,11 +756,11 @@ tplot.formula <- function(formula, data = NULL, ...,
   
   ## reorder if necessary
   if ('col' %in% names(args) && !group.col)
-    args$col <- unlist(split(rep(args$col, length.out = n), mf[-response]))
+    args$col <- unlist(split(rep_len(args$col, n), mf[-response]))
   if ('pch' %in% names(args) && !group.pch)
-    args$pch <- unlist(split(rep(args$pch, length.out = n), mf[-response]))
+    args$pch <- unlist(split(rep_len(args$pch, n), mf[-response]))
   if ('cex' %in% names(args) && !group.cex)
-    args$cex <- unlist(split(rep(args$cex, length.out = n), mf[-response]))
+    args$cex <- unlist(split(rep_len(args$cex, n), mf[-response]))
   
   if (!missing(subset)) {
     s <- eval(subset.expr, data, parent.frame())
