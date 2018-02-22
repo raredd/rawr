@@ -189,10 +189,12 @@ jmplot <- function(x, y, z,
 #' @param frame.plot logical; draw box around \code{x-y} plot
 #' @param at group positions on axis
 #' @param horizontal logical; flip axes
-#' @param jit,dist x-axis jitter parameters for overlapping points (use
-#' \code{0} for  overlap and higher values for more distance between points);
-#' \code{dist} and \code{jit} define the interval width and spreading factors,
-#' respectively
+#' @param jit,dist jitter parameters for overlapping points (use \code{0} for
+#' overlapping points and larger values for more distance between points);
+#' both can be length 1 (recycled as needed) or equal to the number of groups
+#' 
+#' \code{dist} and \code{jit} define the \code{x}-interval width and spreading
+#' factors, respectively
 #' @param boxplot.pars additional list of graphical parameters for box plots
 #' @param col plotting color
 #' @param group.col logical; if \code{TRUE}, color by group; otherwise by order
@@ -298,11 +300,12 @@ jmplot <- function(x, y, z,
 #' 
 #' ## example with missing data
 #' set.seed(1)
-#' dat <- data.frame(age = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
-#'                   sex = factor(sample(c('Female', 'Male'), 80, replace = TRUE)),
-#'                   group = paste0('Group ',
-#'                                  sample(1:4, 40, prob = c(2, 5, 4, 1),
-#'                                         replace = TRUE)))
+#' dat <- data.frame(
+#'   age   = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
+#'   sex   = factor(sample(c('Female', 'Male'), 80, replace = TRUE)),
+#'   group = paste0('Group ', sample(1:4, 80, prob = c(2, 5, 4, 1),
+#'                                   replace = TRUE))
+#' )
 #' dat[1:5, 'age'] <- NA
 #' 
 #' tplot(age ~ group, data = dat, las = 1, cex.axis = 1, bty = 'L',
@@ -324,7 +327,7 @@ tplot <- function(x, ...) {
 #' @rdname tplot
 #' @export
 tplot.default <- function(x, g, ..., type = 'db',
-                          jit = 0.1, dist = NULL,
+                          jit = NULL, dist = NULL,
                           
                           ## labels/aesthetics
                           main = NULL, sub = NULL, xlab = NULL, ylab = NULL,
@@ -467,7 +470,7 @@ tplot.default <- function(x, g, ..., type = 'db',
   
   ## remove any NAs from the data and options
   nonas <- lapply(groups, function(x) !is.na(x))
-  l2 <- sapply(groups, function(x) sum(is.na(x)))
+  l2    <- sapply(groups, function(x) sum(is.na(x)))
   
   if (all(l2 == 0L) && missing(show.na))
     show.na <- FALSE
@@ -499,11 +502,14 @@ tplot.default <- function(x, g, ..., type = 'db',
     xlim <- range(at, finite = TRUE) + c(-0.5, 0.5)
   
   ## defaults for dist and jit for groups
-  if (missing(dist) || is.na(dist) || is.null(dist))
-    dist <- diff(range(ylim)) / 100
-  if (missing(jit) || is.na(jit) || is.null(jit))
-    jit <- 0.025 * ng
-  groups <- lapply(groups, grouping_, dif = dist)
+  dist <- rep_len(if (is.null(dist) || is.na(dist))
+    diff(range(ylim)) / 100 else dist, ng)
+  jit  <- rep_len(if (is.null(jit) || is.na(jit))
+    # 0.025 * ng else jit, ng)
+    min(1 / lg) else jit, ng)
+  
+  groups <- lapply(seq_along(groups), function(ii)
+    grouping_(groups[[ii]], dist[ii]))
   ## rawr:::grouping_; rawr:::jit_
   
   ## set up new plot unless adding to existing one
@@ -527,7 +533,7 @@ tplot.default <- function(x, g, ..., type = 'db',
     nn <- names(groups)
     gs <- to.plot$g.si
     hm <- to.plot$hmsf
-    x <- rep(at[i], nrow(to.plot)) + jit_(gs, hm) * jit
+    x <- rep(at[i], nrow(to.plot)) + jit_(gs, hm) * jit[i]
     y <- to.plot$vs
     
     ## dots behind

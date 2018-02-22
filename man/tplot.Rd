@@ -8,7 +8,7 @@
 \usage{
 tplot(x, ...)
 
-\method{tplot}{default}(x, g, ..., type = "db", jit = 0.1, dist = NULL,
+\method{tplot}{default}(x, g, ..., type = "db", jit = NULL, dist = NULL,
   main = NULL, sub = NULL, xlab = NULL, ylab = NULL, xlim = NULL,
   ylim = NULL, names, col, group.col = TRUE, boxcol = "grey90",
   bordercol = par("fg"), pch = par("pch"), group.pch = TRUE,
@@ -32,10 +32,12 @@ elements of \code{x}, ignored with a warning if \code{x} is a list}
 
 \item{type}{type of plot (dot, dot-box, box-dot, box)}
 
-\item{jit, dist}{x-axis jitter parameters for overlapping points (use
-\code{0} for  overlap and higher values for more distance between points);
-\code{dist} and \code{jit} define the interval width and spreading factors,
-respectively}
+\item{jit, dist}{jitter parameters for overlapping points (use \code{0} for
+overlapping points and larger values for more distance between points);
+both can be length 1 (recycled as needed) or equal to the number of groups
+
+\code{dist} and \code{jit} define the \code{x}-interval width and spreading
+factors, respectively}
 
 \item{main, sub}{overall title and sub-title for the plot (below x-axis)}
 
@@ -189,11 +191,12 @@ tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd', show.na = FALSE,
 
 ## example with missing data
 set.seed(1)
-dat <- data.frame(age = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
-                  sex = factor(sample(c('Female', 'Male'), 80, replace = TRUE)),
-                  group = paste0('Group ',
-                                 sample(1:4, 40, prob = c(2, 5, 4, 1),
-                                        replace = TRUE)))
+dat <- data.frame(
+  age   = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
+  sex   = factor(sample(c('Female', 'Male'), 80, replace = TRUE)),
+  group = paste0('Group ', sample(1:4, 80, prob = c(2, 5, 4, 1),
+                                  replace = TRUE))
+)
 dat[1:5, 'age'] <- NA
 
 tplot(age ~ group, data = dat, las = 1, cex.axis = 1, bty = 'L',
