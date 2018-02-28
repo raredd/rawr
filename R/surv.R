@@ -111,6 +111,7 @@
 #' @param test_details logical; if \code{TRUE} (default), all test details
 #' (test statistic, degrees of freedom, p-value) are shown; if \code{FALSE},
 #' only the p-value is shown
+#' @param test.args an optional \emph{named} list of 
 #' @param hr_text logical; if \code{TRUE}, a \code{\link{coxph}} model is fit,
 #' and a summary of the hazard ratios, confidence intervals, and Wald p-values
 #' is shown
@@ -140,7 +141,8 @@
 #' 
 #' ## basic usage
 #' kmplot(km1)
-#' kmplot(km1, atrisk.col = c('grey50','tomato'), lr_test = TRUE)
+#' kmplot(km1, atrisk.col = c('grey50','tomato'), lr_test = TRUE,
+#'        test.args = list(col = 'red', cex = 1.5, line = 0))
 #' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
 #' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3700)
 #' kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5,
@@ -238,6 +240,7 @@ kmplot <- function(s,
                    
                    ## other options
                    lr_test = FALSE, tt_test = FALSE, test_details = TRUE,
+                   test.args = list(),
                    hr_text = FALSE, hr.args = list(),
                    add = FALSE, panel.first = NULL, panel.last = NULL, ...) {
   if (!inherits(s, 'survfit'))
@@ -561,7 +564,7 @@ kmplot <- function(s,
     )
     
     if (!islist(hr.args))
-      legend.args <- list()
+      hr.args <- list()
     do.call('legend', modifyList(largs, hr.args))
   }
   
@@ -620,12 +623,20 @@ kmplot <- function(s,
       FUN(as.formula(form), sdat, rho, details = test_details),
       error = function(e) 'n/a'
     )
-    if (identical(txt, FALSE))
+    if (identical(txt, FALSE)) {
       message('There is only one group',
               if (svar == '1') '' else paste(' for', svar),
               ' -- no test performed')
-    else mtext(txt, side = 3L, at = par('usr')[2L],
-               adj = 1, cex = .8, line = .5)
+    } else {
+      largs <- alist(
+        text = txt, side = 3L, at = par('usr')[2L],
+        adj = 1, cex = 0.8, line = 0.5
+      )
+      
+      if (!islist(test.args))
+        test.args <- list()
+      do.call('mtext', modifyList(largs, test.args))
+    }
   }
   
   panel.last
@@ -1816,7 +1827,7 @@ survdiff_pairs <- function(s, ..., method = p.adjust.methods, digits = 3L) {
     length(rhs <- all.vars(s$call$formula)[-(1:2)]) == 1L
   )
   method <- match.arg(method)
-  data   <- eval(s$call$data, envir = parent.frame())
+  data   <- eval(s$call$data, envir = parent.frame(1L))
   unq    <- as.character(sort(unique(data[, rhs])))
   
   nn <- outer(as.character(unq), as.character(unq), Vectorize(function(x, y)
