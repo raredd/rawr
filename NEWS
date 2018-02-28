@@ -1,3 +1,15 @@
+rawr 0.8.9
+--------
+  * add coords, pr_table, surv_median, heatmap.3, col_scaler, tabler_stat2,
+    dodge2, sym_sort, surv_extract, surv_median, surv_prob, kw.test
+  * cuzick.test - fix typos, correction
+  * kmplot - add Tarone trend test, p-value options, hazard ratios
+  * sort_matrix - add na.last, index.return args; handle NAs
+  * redefine allequal/ident functions
+  * tplot - remove reset par arg
+  * add mc pvalue methods for kw.test, cuzick.test; moved stat calculation
+    to standalone function for convenience/mc-pvalue
+
 rawr 0.8.8
 --------
   * updates to internals of kmplot, waffle, show_colors; added tests
