@@ -25,7 +25,7 @@ An implementation of Jonckheere's trend test for \emph{ordered} independent
 samples.
 }
 \examples{
-(tbl <- table(mtcars$gear, mtcars$cyl))
+tbl <- table(mtcars$gear, mtcars$cyl)
 jt.test(tbl)
 cor.test(mtcars$gear, mtcars$cyl, method = 'kendall')
 # clinfun::jonckheere.test(mtcars$gear, mtcars$cyl)

@@ -1,10 +1,11 @@
 ### statistical functions
 # bincon, bintest, dlt_table, pr_table, power_cv, simon2, moods_test, fakeglm,
 # gcd, install.bioc, lm.beta, cuzick.test, cuzick.test.default,
-# cuzick.test.formula, jt.test, hl_est, rcor
+# cuzick.test.formula, jt.test, hl_est, rcor, kw.test, kw.test.default,
+# kw.test.formula
 # 
 # S3 methods:
-# cuzick.test
+# cuzick.test, kw.test
 # 
 # desmon (unexported):
 # twocon, simon, bin1samp
@@ -13,7 +14,7 @@
 # rpart_parent, rpart_subset, rpart_nodes
 # 
 # unexported:
-# combn_fun, rcor1, rcorn
+# jt.test.stat, combn_fun, rcor1, rcorn, kw.test.pvalue
 ###
 
 
@@ -238,11 +239,11 @@ twocon <- function(n1, n2, r1, r, conf = 0.95, dp = 1) {
   
   if (n1 < 1 | n2 < 1 | r1 < 0 | r1 > n1 | r < 0 | r > n2 + 
       n1 | conf <= 0 | conf >= 1) 
-    stop("invalid arguments")
+    stop('invalid arguments')
   alpha <- (1 - conf) / 2
   x1 <- 0:n1
   x2 <- 0:n2
-  u1 <- c(outer(x1[-(1:(r1 + 1))], x2, "+"))
+  u1 <- c(outer(x1[-(1:(r1 + 1))], x2, `+`))
   dbin2 <- function(p1, x1, x2, u1, n1, n2, r1) {
     w1 <- dbinom(x1, n1, p1)
     w3 <- dbinom(x2, n2, p1)
@@ -523,9 +524,9 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
     stop('exactly one of n, f, cv, power, sig.level must be NULL')
   if (!is.null(sig.level) && !is.numeric(sig.level) || 
       any(0 > sig.level | sig.level > 1))
-    stop("'sig.level' must be numeric in [0, 1]")
+    stop('\'sig.level\' must be numeric in [0, 1]')
   if (!is.null(power) && !is.numeric(power) || any(0 > power | power > 1))
-    stop("'power' must be numeric in [0, 1]")
+    stop('\'power\' must be numeric in [0, 1]')
   if (f < 1) {
     warning('ratio of means must be such that mu1/mu0 > 1: 1/f used')
     f <- 1 / f
@@ -535,39 +536,39 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
   alternative <- match.arg(alternative)
   dist <- match.arg(distribution)
   if (dist == 'log.normal' && !(sig.level %in% c(0.01, 0.05)))
-    stop('cannot use desired significance level:
-         use 5% or 10% type-I error probability')
-  tsample <- switch(type,
-                    one.sample = 1, two.sample = 2, paired = 1)
-  ttside <- switch(alternative,
-                   less = 1, two.sided = 2, greater = 3)
-  tside <- switch(alternative,
-                  less = 1, two.sided = 2, greater = 1)
+    stop('cannot use desired significance level: ',
+         'use 5% or 10% type-I error probability')
+  
+  tsample <- switch(type, one.sample = 1, two.sample = 2, paired = 1)
+  ttside  <- switch(alternative, less = 1, two.sided = 2, greater = 3)
+  tside   <- switch(alternative, less = 1, two.sided = 2, greater = 1)
   
   ## assuming underlying t distribution
   if (ttside == 1) { # one-sided, less
     p.body <- quote({
       df <- (n - 1) * tsample
-      qt <- qt(p = sig.level/tside, df = df, lower.tail = TRUE)
-      pt(q = -(-qt + (sqrt(n)*(f-1))/(cv*(f**2+1)**.5)), df = df,
+      qt <- qt(sig.level/tside, df, lower.tail = TRUE)
+      pt(-(-qt + (sqrt(n) * (f - 1)) / (cv * (f ^ 2 + 1) ^ 0.5)), df,
          lower.tail = TRUE)
     })
   }
+  
   if (ttside == 2) { # two-sided
     p.body <- quote({
       df <- (n - 1) * tsample
       qt <- qt(sig.level/tside, df, lower.tail = FALSE)
-      pt(q = -qt + (sqrt(n)*(f-1))/(cv*(f**2+1)**.5), df = df,
-         lower.tail = TRUE)/2 + 
-        pt(q = -(-qt + (sqrt(n)*(f-1))/(cv*(f**2+1)**.5)), df = df,
-           lower.tail = FALSE)/2
+      pt(-qt + (sqrt(n) * (f - 1)) / (cv * (f ^ 2 + 1) ^ 0.5), df,
+         lower.tail = TRUE)/2 +
+        pt(-(-qt + (sqrt(n) * (f - 1)) / (cv * (f ^ 2 + 1) ^ 0.5)), df,
+           lower.tail = FALSE) / 2
     })
   }
+  
   if (ttside == 3) { # one-sided, greater
     p.body <- quote({
       df <- (n - 1) * tsample
-      qt <- qt(sig.level/tside, df = df, lower.tail = FALSE)
-      pt(q = -(-qt + (sqrt(n)*(f-1))/(cv*(f**2+1)**.5)), df = df,
+      qt <- qt(sig.level/tside, df, lower.tail = FALSE)
+      pt(-(-qt + (sqrt(n) * (f - 1)) / (cv * (f ^ 2 + 1) ^ 0.5)), df,
          lower.tail = FALSE)
     })
   }
@@ -575,66 +576,77 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
   ## assuming underlying normal distribution
   if (dist == 'normal') {
     p.body <- quote({
-      qt <- qnorm(p = sig.level/tside, lower.tail = FALSE)
-      pnorm(q = -qt + (sqrt(n)*(f-1))/(cv*(f**2+1)**.5), lower.tail = TRUE)
+      qt <- qnorm(sig.level / tside, lower.tail = FALSE)
+      pnorm(-qt + (sqrt(n) * (f - 1)) / (cv * (f ^ 2 + 1) ^ 0.5),
+            lower.tail = TRUE)
     })
   }
   
   ## assuming underlying lognormal distribution with unknown variance
   if (dist == 'log.normal') {
-    mat <- matrix(c(.005, -2.57583, -2.203837, .6699734, -.0524065, -.0059258,
-                    .010, -2.32635, -1.821394, .5380802, .0181774, -.0584748,
-                    .025, -1.95996, -1.145521, .2370261, .0392020, -.0670915,
-                    .050, -1.64485, -.8455414, .1745865, .0774911, -.0865455),
-                  ncol = 6,byrow = TRUE)
-    dimnames(mat)[[2]] <- c('alpha','z','a','b','c','d')
-    alpha <- which(mat[,1] %in% sig.level)
+    mat <- matrix(
+      c(.005, -2.57583, -2.203837, .6699734, -.0524065, -.0059258,
+        .010, -2.32635, -1.821394, .5380802, .0181774, -.0584748,
+        .025, -1.95996, -1.145521, .2370261, .0392020, -.0670915,
+        .050, -1.64485, -.8455414, .1745865, .0774911, -.0865455),
+      ncol = 6L, byrow = TRUE,
+      dimnames = list(NULL, c('alpha', 'z', 'a', 'b', 'c', 'd'))
+    )
+    
+    alpha <- which(mat[, 1L] %in% sig.level)
     
     p.body <- quote({
-      delta <- ifelse(cv < .5,sqrt(n/2)*log(f)/cv,sqrt(n/2)*log(f)/
-                        (sqrt(log(cv**2+1))))
-      v <- 2*n-2
-      pnorm(q = mat[alpha-ifelse(tside==2,1,0),'z'] + 
-              delta*(1+mat[alpha,'a']/v+mat[alpha,'b']/(v-1)+
-                       delta*(mat[alpha,'c']/v+mat[alpha,'d']/(v-1))))
+      delta <- ifelse(cv < 0.5, sqrt(n / 2) * log(f) / cv,
+                      sqrt(n / 2) * log(f) / sqrt(log(cv ^ 2 + 1)))
+      v <- 2 * n - 2
+      pnorm(mat[alpha - +(tside == 2), 'z'] + delta *
+              (1 + mat[alpha, 'a'] / v + mat[alpha, 'b'] / (v - 1) +
+                 delta * (mat[alpha, 'c'] / v + mat[alpha, 'd'] / (v - 1))))
     })
   }
   
   ## calculate missing parameter
-  if (is.null(power)) power <- eval(p.body)
+  if (is.null(power))
+    power <- eval(p.body)
+  
   else if (is.null(n))
-    n <- ifelse(dist=='log.normal',ceiling(uniroot(function(n)
-      eval(p.body) - power, c(2, 1e+07))$root),uniroot(function(n)
+    n <- ifelse(dist == 'log.normal', ceiling(uniroot(function(n)
+      eval(p.body) - power, c(2, 1e+07))$root), uniroot(function(n)
         eval(p.body) - power, c(2, 1e+07))$root)
+  
   else if (is.null(cv)) {
     cv <- if (ttside == 2)
-      uniroot(function(cv) eval(p.body) - power, f * c(1e-07, 10))$root else
-        if (ttside == 1)
-          uniroot(function(cv) eval(p.body) - power, f * c(-10, 5))$root else
-            if (ttside == 3)
-              uniroot(function(cv) eval(p.body) - power, f * c(-5, 10))$root
+      uniroot(function(cv) eval(p.body) - power, f * c(1e-07, 10))$root
+    else if (ttside == 1)
+      uniroot(function(cv) eval(p.body) - power, f * c(-10, 5))$root
+    else if (ttside == 3)
+      uniroot(function(cv) eval(p.body) - power, f * c(-5, 10))$root
   } else if (is.null(f)) {
     f <- if (ttside == 2)
-      uniroot(function(f) eval(p.body) - power, cv * c(1e-07, 10))$root else
-        if (ttside == 1)
-          uniroot(function(f) eval(p.body) - power, cv * c(-10, 5))$root else
-            if (ttside == 3)
-              uniroot(function(f) eval(p.body) - power, cv * c(-5, 10))$root
-  } else if (is.null(sig.level)) {
+      uniroot(function(f) eval(p.body) - power, cv * c(1e-07, 10))$root
+    else if (ttside == 1)
+      uniroot(function(f) eval(p.body) - power, cv * c(-10, 5))$root
+    else if (ttside == 3)
+      uniroot(function(f) eval(p.body) - power, cv * c(-5, 10))$root
+  } else if (is.null(sig.level))
     sig.level <- uniroot(function(sig.level) eval(p.body) - power,
                          c(1e-10, 1 - 1e-10))$root
-  }  else stop("internal error")
   
-  NOTE <- switch(type,
-                 paired = paste('n is number of *pairs*, cv is coefficient of',
-                                'variation of *differences* within pairs'),
-                 two.sample = 'n is number in *each* group',
-                 one.sample = NULL)
-  METHOD <- paste(switch(type,
-                         one.sample = "One-sample",
-                         two.sample = "Two-sample",
-                         paired = "Paired"),
-                  't test power calculation')
+  else
+    stop('internal error - solve for null value')
+  
+  NOTE <- switch(
+    type,
+    paired = paste('n is number of *pairs*, cv is coefficient of',
+                   'variation of *differences* within pairs'),
+    two.sample = 'n is number in *each* group',
+    one.sample = NULL
+  )
+  METHOD <- paste(
+    switch(type, one.sample = 'One-sample', two.sample = 'Two-sample',
+           paired = 'Paired'),
+    't test power calculation'
+  )
   
   structure(
     list(n = n, f = f, cv = cv, sig.level = sig.level, power = power,
@@ -707,14 +719,15 @@ simon2 <- function(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,
                    del = 1, minimax = FALSE) {
   args <- expand.grid(p0 = p0, pa = pa)
   
-  tmp <- setNames(lapply(Map(simon, p0 = args[['p0']], pa = args[['pa']],
-                             n1max = n1max, alpha = alpha, beta = beta,
-                             del = del, minimax = minimax),
-                         '[[', 1),
-                  sapply(seq_len(nrow(args)), function(x) catlist(args[x, ])))
+  sim <- Map('simon', p0 = args[['p0']], pa = args[['pa']],
+             n1max = n1max, alpha = alpha, beta = beta,
+             del = del, minimax = minimax)
+  sim <- lapply(sim, '[[', 1)
+  sim <- setNames(sim, sapply(seq_len(nrow(args)), function(x)
+    catlist(args[x, ])))
   
   list(
-    designs = tmp,
+    designs = sim,
     call = match.call(),
     description = c('n1, n2 = cases 1st stage and additional # in 2nd',
                     paste('r1, r2 = max # responses 1st stage and total to',
@@ -746,12 +759,15 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5,
       beta <= 0 | p0 <= 0 | p0 >= pa |
       pa >= 1 | n1max > ntmax)
     stop('invalid arguments')
+  
   ## determine min sample size first stage
   n1min <- max(ceiling(log(beta) / log(1 - pa)), 2)
   if (n1min > ntmax)
     stop('no valid designs')
+  
   ## optimal one-sample design
   u1 <- bin1samp(p0, pa, alpha, beta)
+  
   ## include even if n > n1max
   z <- matrix(c(u1[1:2], 0, u1[2L], 1, u1[5:6], u1[1L]), nrow = 1L)
   if (n1min < u1[1L]) {
@@ -765,9 +781,9 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5,
       else n1max <- u1[1L]
     } else
       stop('no valid designs')
-  n1max <- min(n1max,ntmax)
+  n1max <- min(n1max, ntmax)
   
-  n1max <- min(n1max,ntmax)
+  n1max <- min(n1max, ntmax)
   
   ## determine min total sample size
   ## (use randomized decision rule on boundary for single sample)
@@ -953,6 +969,7 @@ moods_test <- function(X, ..., exact = TRUE) {
   FUN <- if (exact)
     fisher.test else chisq.test
   res <- FUN(x < m, g, ...)
+  
   res$method <- sprintf('Mood\'s median test of %s groups (%s)',
                         length(ng), res$method)
   res$data <- table(x < m, g, dnn = c(sprintf('< median (%s)', m), 'group'))
@@ -1091,7 +1108,7 @@ fakeglm <- function(formula, ..., family, data = NULL) {
 #' 
 #' @examples
 #' gcd(99, 2048)
-#' gcd(2 ** (1:12), 2048)
+#' gcd(2 ^ (1:12), 2048)
 #' 
 #' @export
 
@@ -1154,7 +1171,7 @@ install.bioc <- function(pkgs, upgrade = FALSE) {
 #' (cc <- with(mtcars, cor(mpg, wt)))
 #' lm.beta(lm(mpg ~ wt, data = mtcars))
 #' 
-#' cc ** 2
+#' cc ^ 2
 #' summary(lm(mpg ~ wt, data = mtcars))$r.squared
 #' 
 #' lm.beta(lm(mpg ~ wt + disp + factor(vs), data = mtcars), weights = 2)
@@ -1202,6 +1219,8 @@ lm.beta <- function (x, weights = 1) {
 #' non-numeric elements of a list will be coerced with a warning; if \code{x}
 #' is a list, the list elements are assumed to be groups ordered as
 #' \code{x[[1]], x[[2]], ..., x[[n]]}
+#' @param ... additional arguments passed to the function given by
+#' \code{details}
 #' @param g a vector or factor object giving the group for the corresponding
 #' elements of \code{x}, ignored with a warning if \code{x} is a list; if
 #' \code{g} is \emph{not} a factor, it will be coerced, and groups will be
@@ -1216,12 +1235,10 @@ lm.beta <- function (x, weights = 1) {
 #' @param data an optional matrix or data frame (or similar: see
 #' \code{\link{model.frame}}) containing the variables in \code{formula}; by
 #' default the variables are taken from \code{environment(formula)}
-#' @param subset an optional vector specifying a subset of observations to be
-#' used
-#' @param na.action a function which indicates what should happen when the
-#' data contain \code{NA}s; defaults to \code{getOption("na.action")}
-#' @param ... additional arguments passed to the function given by
-#' \code{details}
+#' @param simulate.p.value logical; if \code{TRUE}, p-value is computed using
+#' by Monte Carlo simulation
+#' @param B an integer specifying the number of replicates used in the Monte
+#' Carlo test
 #' 
 #' @return
 #' A list with class "\code{htest}" containing the following components:
@@ -1233,6 +1250,8 @@ lm.beta <- function (x, weights = 1) {
 #' \item{data.name}{a character string giving the names of the data}
 #' \item{details}{a list of pairwise (\code{details}) and overall
 #' (\code{\link{kruskal.test}}) comparisons}
+#' \item{\code{cont.int}}{optionally, (if \code{simulate.p.value = TRUE})
+#' the 99\% confidence interval of the Monte Carlo p-value}
 #' 
 #' @references
 #' Altman, D. G. 1991. \emph{Practical Statistics for Medical Research}.
@@ -1327,21 +1346,21 @@ cuzick.test <- function(x, ...) {
 
 #' @rdname cuzick.test
 #' @export
-cuzick.test.default <- function(x, g, details = wilcox.test,
-                                correct = TRUE, ...) {
+cuzick.test.default <- function(x, g, details = wilcox.test, correct = TRUE,
+                                ..., simulate.p.value = FALSE, B = 2000L) {
   ## checks adapted from stats:::kruskal.test.default
   if (is.list(x)) {
     if (length(x) < 2L)
       stop('\'x\' must be a list with at least 2 elements')
     if (!missing(g))
-      warning('\'x\' is a list, so ignoring argument \'g\'')
+      warning('\'x\' is a list - ignoring \'g\'')
     dname <- deparse(substitute(x))
     x <- lapply(x, function(u) u <- u[complete.cases(u)])
     if (!all(sapply(x, is.numeric)))
       warning('some elements of \'x\' are not numeric and will be coerced')
     l <- sapply(x, length)
     if (any(l == 0L))
-      stop("all groups must contain data")
+      stop('all groups must contain data')
     g <- factor(rep.int(seq_len(length(x)), l))
     x <- unlist(x)
   } else {
@@ -1357,15 +1376,101 @@ cuzick.test.default <- function(x, g, details = wilcox.test,
       stop('all observations are in the same group')
   }
   
-  if (length(x) < 2L)
-    stop('not enough observations')
-  
-  if (is.factor(g) || is.character(g)) {
-    fac <- TRUE
+  fac <- if (is.factor(g) || is.character(g)) {
     g <- as.factor(g)
     if (nlevels(g) != nlevels(g <- droplevels(g)))
       warning('unused factor level(s) dropped')
-  } else fac <- FALSE
+    TRUE
+  } else FALSE
+  
+  ug <- length(unique(g))
+  li <- if (fac)
+    seq.int(ug) else as.character(sort(unique(g)))
+  ni <- table(g)[li]
+  
+  estimate <- c(tapply(x, g, median))
+  names(estimate) <- paste('median of', names(estimate))
+  method <- sprintf(
+    paste('Wilcoxon rank-sum test for trend in %s ordered groups',
+          '(%scorrected for ties)'),
+    ug, c('un', '')[correct + 1L]
+  )
+  z <- cuzick.test.stat(x, g, correct)
+  pval <- 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE))
+  
+  res <- list(
+    statistic = c(z = z), p.value = pval, estimate = estimate,
+    method = method, data.name = dname, details = NULL
+  )
+  
+  if (simulate.p.value) {
+    p <- cuzick.test.pvalue(x, g, correct, B, TRUE)
+    res$p.value <- unname(p[1L])
+    res$method <- sprintf('%s with simulated p-value (based on %s replicates)',
+                          method, B)
+    res$conf.int <- structure(p[2:3], conf.level = attr(p, 'conf.level'))
+  }
+  
+  ## pairwise details
+  if (!identical(details, FALSE)) {
+    l2df <- function(l)
+      data.frame(unlist(l), factor(rep(seq_along(l), lengths(l))))
+    tidy <- function(l)
+      data.frame(Filter(length, unclass(l)), stringsAsFactors = FALSE)
+    
+    sp  <- split(x, g)
+    idx <- as.list(data.frame(combn(length(sp), 2)))
+    ids <- apply(combn(names(ni), 2L), 2L, paste, collapse = ' vs ')
+    sp  <- lapply(idx, function(x) setNames(l2df(sp[x]), c('x', 'g')))
+    names(sp) <- ids
+    
+    pw <- lapply(sp, function(X) suppressWarnings(details(x ~ g, X, ...)))
+    PW <- tryCatch(lapply(pw, tidy), error = function(e) NULL)
+    
+    pw <- list(pairs = if (is.null(PW)) pw else
+      `rownames<-`(cbind(pairs = ids, do.call('rbind', PW)), NULL),
+      overall = tidy(kruskal.test(x ~ g)))
+    
+    res$details <- pw
+  }
+  
+  structure(res, class = 'htest')
+}
+
+#' @rdname cuzick.test
+#' @export
+cuzick.test.formula <- function (formula, data, ...) {
+  ## adapted from stats:::kruskal.test.formula
+  if (missing(formula) || (length(formula) != 3L))
+    stop('\'formula\' missing or incorrect')
+  
+  m <- match.call(expand.dots = FALSE)
+  if (is.matrix(eval(m$data, parent.frame(1L))))
+    m$data <- as.data.frame(data)
+  m[[1L]] <- quote(stats::model.frame)
+  mf <- eval(m, parent.frame(1L))
+  
+  if (length(mf) > 2L)
+    stop('\'formula\' should be of the form response ~ group')
+  
+  dname <- paste(names(mf), collapse = ' by ')
+  names(mf) <- NULL
+  y <- do.call('cuzick.test', as.list(mf))
+  y$data.name <- dname
+  
+  y
+}
+
+cuzick.test.stat <- function(x, g, correct) {
+  if (length(x) < 2L)
+    stop('not enough observations')
+  
+  fac <- if (is.factor(g) || is.character(g)) {
+    g <- as.factor(g)
+    if (nlevels(g) != nlevels(g <- droplevels(g)))
+      warning('unused factor level(s) dropped')
+    TRUE
+  } else FALSE
   
   ux <- length(unique(x))
   ug <- length(unique(g))
@@ -1393,76 +1498,57 @@ cuzick.test.default <- function(x, g, details = wilcox.test,
   ## T statistic, expected value, variance
   T  <- sum(li * Ri)
   eT <- (N + 1) * L / 2
-  vT <- (N + 1) / 12 * (N * sum(li ** 2 * ni) - L ** 2)
+  vT <- (N + 1) / 12 * (N * sum(li ^ 2 * ni) - L ^ 2)
   
   ## correction for ties
   ## tj: times each value of x appears; a: correction for se
   tj <- c(tapply(x, x, length))
-  a  <- sum(tj * (tj ** 2 - 1)) / (N * (N ** 2 - 1))
+  a  <- sum(tj * (tj ^ 2 - 1)) / (N * (N ^ 2 - 1))
   a  <- c(1, sqrt(1 - a))[correct + 1L]
   
   ## (un)corrected test statistic: (T - expected) / se
-  z  <- (T - eT) / (a * sqrt(vT))
-
-  estimate <- c(tapply(x, g, median))
-  names(estimate) <- paste('median of', names(estimate))
-  method <- sprintf(
-    paste('Wilcoxon rank-sum test for trend in %s ordered groups',
-          '(%scorrected for ties)'),
-    ug, c('un', '')[correct + 1L]
-  )
-  pval <- 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE))
-  
-  ## pairwise details
-  pw <- if (!identical(details, FALSE)) {
-    l2df <- function(l)
-      data.frame(unlist(l), factor(rep(seq_along(l), lengths(l))))
-    tidy <- function(l)
-      data.frame(Filter(length, unclass(l)), stringsAsFactors = FALSE)
-    
-    sp  <- split(x, g)
-    idx <- as.list(data.frame(combn(length(sp), 2)))
-    ids <- apply(combn(names(ni), 2), 2, paste, collapse = ' vs ')
-    sp  <- lapply(idx, function(x) setNames(l2df(sp[x]), c('x', 'g')))
-    names(sp) <- ids
-    
-    pw <- lapply(sp, function(X) suppressWarnings(details(x ~ g, X, ...)))
-    PW <- tryCatch(lapply(pw, tidy), error = function(e) NULL)
-    
-    list(pairs = if (is.null(PW)) pw else
-      `rownames<-`(cbind(pairs = ids, do.call('rbind', PW)), NULL),
-      overall = tidy(kruskal.test(x ~ g)))
-  } else NULL
-  
-  structure(
-    list(statistic = c(z = z), p.value = pval, estimate = estimate,
-         method = method, data.name = dname, details = pw),
-    class = 'htest'
-  )
+  (T - eT) / (a * sqrt(vT))
 }
 
-#' @rdname cuzick.test
-#' @export
-cuzick.test.formula <- function (formula, data, subset, na.action, ...) {
-  ## adapted from stats:::kruskal.test.formula
-  if (missing(formula) || (length(formula) != 3L))
-    stop('\'formula\' missing or incorrect')
+cuzick.test.pvalue <- function(x, g, correct, B = 2000L,
+                               ci = FALSE, alpha = 0.99) {
+  stopifnot(
+    is.logical(correct),
+    alpha %inside% 0:1
+  )
   
-  m <- match.call(expand.dots = FALSE)
-  if (is.matrix(eval(m$data, parent.frame())))
-    m$data <- as.data.frame(data)
-  m[[1L]] <- quote(stats::model.frame)
-  mf <- eval(m, parent.frame())
+  B <- as.integer(B)
+  f <- function() {
+    g <- sample(g)
+    cuzick.test.stat(x, g, correct)
+  }
   
-  if (length(mf) > 2L)
-    stop('\'formula\' should be of the form response ~ group')
+  Z <- cuzick.test.stat(x, g, correct)
+  r <- unname(replicate(B, f()))
+  z <- r >= Z
+  p <- mean(z, na.rm = TRUE)
   
-  dname <- paste(names(mf), collapse = ' by ')
-  names(mf) <- NULL
-  y <- do.call('cuzick.test', as.list(mf))
-  y$data.name <- dname
+  if (!ci)
+    return(p)
   
-  y
+  s2 <- sqrt(1 / (B - 1) * sum((z - p) ^ 2))
+  
+  ci <- p + c(-1, 1) * 2.576 * s2 / sqrt(B)
+  if (ci[1L] < 0)
+    ci[1L] <- 0
+  if (ci[2L] > 1)
+    ci[1L] <- 1
+  
+  ci <- if (p == 0)
+    c(0, 1 - (1 - alpha) ^ (1 / B))
+  else if (p == 1)
+    c((1 - alpha) ^ (1 / B), 1)
+  else ci
+  
+  structure(
+    setNames(c(p, ci), c('p.value', 'LCI', 'UCI')),
+    conf.level = alpha
+  )
 }
 
 #' Jonckheere-Terpstra test
@@ -1494,7 +1580,7 @@ cuzick.test.formula <- function (formula, data, subset, na.action, ...) {
 #' \code{\link[stats]{cor.test}}; \code{clinfin::jonckheere.test}
 #' 
 #' @examples
-#' (tbl <- table(mtcars$gear, mtcars$cyl))
+#' tbl <- table(mtcars$gear, mtcars$cyl)
 #' jt.test(tbl)
 #' cor.test(mtcars$gear, mtcars$cyl, method = 'kendall')
 #' # clinfun::jonckheere.test(mtcars$gear, mtcars$cyl)
@@ -1510,8 +1596,9 @@ cuzick.test.formula <- function (formula, data, subset, na.action, ...) {
 
 jt.test <- function(x, y = NULL) {
   ## checks adapted from stats::fisher.test
-  dname <- deparse(substitute(x))
+  dname  <- deparse(substitute(x))
   method <- 'Jonckheere-Terpstra Test'
+  
   if (is.data.frame(x))
     x <- as.matrix(x)
   if (is.matrix(x)) {
@@ -1543,6 +1630,17 @@ jt.test <- function(x, y = NULL) {
     x <- table(x, y)
   }
   
+  z    <- jt.test.stat(x, y)
+  pval <- 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE))
+  res  <- list(
+    statistic = c(z = z), p.value = pval,
+    method = method, data.name = dname
+  )
+  
+  structure(res, class = 'htest')
+}
+
+jt.test.stat <- function(x, y) {
   get_PQ <- function(x, y) {
     ## calculates P,Q scores larger,smaller than current score
     x <- unlist(x)
@@ -1558,11 +1656,11 @@ jt.test <- function(x, y = NULL) {
   #   warning('Cannot compute exact p-value with ties')
   
   ## variance
-  vS <- (2 * (n ** 3 - sum(ti ** 3) - sum(ui ** 3)) +
-             3 * (n ** 2 - sum(ti ** 2) - sum(ui ** 2)) + 5 * n) / 18 +
-    (sum(ti ** 3) - 3 * sum(ti ** 2) + 2 * n) *
-    (sum(ui ** 3) - 3 * sum(ui ** 2) + 2 * n) / (9 * n * (n - 1) * (n - 2)) +
-    (sum(ti ** 2) - n) * (sum(ui ** 2) - n) / (2 * n * (n - 1))
+  vS <- (2 * (n ^ 3 - sum(ti ^ 3) - sum(ui ^ 3)) +
+           3 * (n ^ 2 - sum(ti ^ 2) - sum(ui ^ 2)) + 5 * n) / 18 +
+    (sum(ti ^ 3) - 3 * sum(ti ^ 2) + 2 * n) *
+    (sum(ui ^ 3) - 3 * sum(ui ^ 2) + 2 * n) / (9 * n * (n - 1) * (n - 2)) +
+    (sum(ti ^ 2) - n) * (sum(ui ^ 2) - n) / (2 * n * (n - 1))
   
   ## statistic
   ns <- c(x)
@@ -1571,14 +1669,7 @@ jt.test <- function(x, y = NULL) {
   PQ <- rowSums(vapply(seq_len(length(sp)), function(x)
     get_PQ(sp[x], sp[-(1:x)]), integer(2L)))
   
-  z    <- (PQ[1L] - PQ[2L]) / sqrt(vS)
-  pval <- 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE))
-  
-  structure(
-    list(statistic = c(z = z), p.value = pval,
-         method = method, data.name = dname),
-    class = 'htest'
-  )
+  (PQ[1L] - PQ[2L]) / sqrt(vS)
 }
 
 #' Hodges-Lehmann estimator
@@ -1855,4 +1946,215 @@ rcorn <- function(y, x, rho) {
     warning('Joint correlations not possible', call. = FALSE)
     rep(0, nr)
   }
+}
+
+#' Kruskal-Wallis test for count data
+#' 
+#' Performs a Kruskal-Wallis test for an \code{r x c} contingency table in
+#' which the rows (r > 1) are un-ordered but the columns (c > 2) are ordered.
+#' 
+#' @param x a factor-like vector giving the (unordered) variable (equivalently
+#' the row variable of a contingency table); if \code{x} is also ordered,
+#' consider using \code{\link{jt.test}}
+#' 
+#' alternatively, \code{x} can be an \code{r x c} table or matrix with at
+#' least two rows (unordered) and three columns (ordered); \code{x} may also
+#' be a list of the row variable split by the ordered column variable in
+#' which case the list is assumed to be ordered, i.e., \code{x[[1]]} <
+#' \code{x[[2]]} < ...
+#' @param ... further arguments to be passed to or from methods
+#' @param g a factor-like vector giving the \emph{ordered} group for each
+#' corresponding element of \code{x}, ignored with a warning if \code{x} is a
+#' list or table; if \code{g} is not a factor, it will be coerced, and groups
+#' will be ordered as sort(unique(g)); see \code{\link{factor}}
+#' @param simulate.p.value logical; if \code{TRUE}, p-value is computed using
+#' by Monte Carlo simulation
+#' @param B an integer specifying the number of replicates used in the Monte
+#' Carlo test
+#' @param formula a formula of the form \code{row ~ column} where \code{row}
+#' gives the (unordered) row variable and \code{column} gives the
+#' \emph{ordered} column variable
+#' @param data an optional matrix or data frame (or similar: see
+#' \code{\link{model.frame}}) containing the variables in \code{formula}; by
+#' default the variables are taken from \code{environment(formula)}
+#' 
+#' @return
+#' A list with class "\code{htest}" containing the following components:
+#' 
+#' \item{\code{statistic}}{the Kruskal-Wallis test statistic}
+#' \item{\code{parameter}}{the degrees of freedom of the approximate chi-
+#' squared distribution of the test statistic}
+#' \item{\code{p.value}}{the pvalue of the test}
+#' \item{\code{method}}{a character string "\code{Kruskal-Wallis test for
+#' count data}" and, optionally, the number of Monte Carlo replications, if
+#' applicable}
+#' \item{\code{data.name}}{a character string giving the names of the data}
+#' \item{\code{cont.int}}{optionally, (if \code{simulate.p.value = TRUE})
+#' the 99\% confidence interval of the Monte Carlo p-value}
+#' 
+#' @seealso
+#' \code{\link{kruskal.test}}; \code{\link{jt.test}} for doubly-ordered
+#' tables; \code{\link{cuzick.test}}
+#' 
+#' @examples
+#' ## example from Exact Test (Mehta), figure 11.1
+#' dat <- data.frame(
+#'   regimen  = rep(c('CTMX', 'CCNU', 'MTX', 'CTX+CCNU', 'CTX+CCNU+MTX'),
+#'                  times = c(2, 2, 3, 4, 6)),
+#'   response = c('NR', 'NR', 'NR', 'PR', 'NR', 'NR', 'NR',
+#'                'NR', 'NR', 'PR', 'PR', 'NR', 'PR', 'CR', 'CR', 'CR', 'CR')
+#' )
+#' dat$response2 <- factor(dat$response, c('NR', 'PR', 'CR'))
+#' 
+#' kw.test(dat$regimen, dat$response)   ## incorrect
+#' kw.test(dat$regimen, dat$response2)  ## correct
+#' 
+#' ## the following are equivalent to the above
+#' kw.test(dat$regimen ~ dat$response2)
+#' kw.test(regimen ~ response2, dat)
+#' kw.test(split(dat$regimen, dat$response2))
+#' kw.test(table(dat$regimen, dat$response2))
+#' 
+#' ## compare (note formula is reversed)
+#' kruskal.test(response2 ~ regimen, dat)
+#' 
+#' \dontrun{
+#' ## simulate p-value with 10k replicates
+#' set.seed(1)
+#' kw.test(regimen ~ response2, dat, simulate.p.value = TRUE, B = 10000)
+#' }
+#' 
+#' @export
+
+kw.test <- function(x, ...) {
+  UseMethod('kw.test')
+}
+
+#' @rdname kw.test
+#' @export
+kw.test.default <- function(x, g, ..., simulate.p.value = FALSE, B = 2000L) {
+  dname <- deparse(substitute(x))
+  if (is.list(x)) {
+    if (length(x) < 3L)
+      stop('\'x\' must be a list with at least 3 elements')
+    if (!missing(g))
+      warning('\'x\' is a list - ignoring \'g\'')
+    g <- as.factor(rep(seq_along(x), lengths(x)))
+    x <- as.factor(unlist(x))
+  } else if (inherits(x, 'table') || is.matrix(x)) {
+    if (nrow(x) < 2L | ncol(x) < 3L)
+      stop('\'x\' must have at least 2 rows and 3 (ordered) columns')
+    if (!is.numeric(x) || any(x < 0) || anyNA(x))
+      stop('all entries of \'x\' must be nonnegative and finite')
+    if (!missing(g))
+      warning('\'x\' is a matrix - ignoring \'g\'')
+    x <- data.frame(as.table(x))
+    g <- rep(x$Var2, times = x$Freq)
+    x <- rep(x$Var1, times = x$Freq)
+  } else {
+    dname <- paste(deparse(substitute(x)), 'and', deparse(substitute(g)))
+    g <- as.factor(g)
+    x <- as.factor(x)
+  }
+  
+  ok <- complete.cases(x, g)
+  x <- x[ok]
+  g <- g[ok]
+  
+  stopifnot(
+    length(unique(g)) >= 3L
+  )
+  
+  if (any(table(x, g) < 5L) & !simulate.p.value)
+    warning(
+      'Chi-squared approximation may be incorrect - ',
+      'cells with < 5 observations\n',
+      '\tConsider using simulate.p.value = TRUE for Monte Carle p-value'
+    )
+  
+  method <- 'Kruskal-Wallis test for count data'
+  res <- kruskal.test(g ~ x)
+  
+  if (simulate.p.value) {
+    p <- kw.test.pvalue(x, g, TRUE, B, TRUE)
+    res$p.value <- unname(p[1L])
+    method <- sprintf('%s with simulated p-value (based on %s replicates)',
+                      method, B)
+    res$conf.int <- structure(p[2:3], conf.level = attr(p, 'conf.level'))
+  }
+  
+  res$data.name <- dname
+  res$method <- method
+  
+  res
+}
+
+#' @rdname kw.test
+#' @export
+kw.test.formula <- function (formula, data, ...) {
+  ## adapted from stats:::kruskal.test.formula
+  if (missing(formula) || (length(formula) != 3L))
+    stop('\'formula\' missing or incorrect')
+  
+  m <- match.call(expand.dots = FALSE)
+  if (is.matrix(eval(m$data, parent.frame(1L))))
+    m$data <- as.data.frame(data)
+  m$... <- NULL
+  m[[1L]] <- quote(stats::model.frame)
+  mf <- eval(m, parent.frame(1L))
+  
+  if (length(mf) > 2L)
+    stop('\'formula\' should be of the form response ~ ordered group')
+  
+  dname <- paste(names(mf), collapse = ' by ')
+  names(mf) <- NULL
+  y <- do.call('kw.test', list(x = mf[, 1L], g = mf[, 2L], ...))
+  y$data.name <- dname
+  
+  y
+}
+
+kw.test.pvalue <- function(x, g, ordered = FALSE, B = 2000L,
+                           ci = FALSE, alpha = 0.99) {
+  stopifnot(
+    is.logical(ordered),
+    alpha %inside% 0:1
+  )
+  
+  B <- as.integer(B)
+  f <- function() {
+    g <- sample(g)
+    k <- if (ordered)
+      kruskal.test(g ~ x) else kruskal.test(x ~ g)
+    k$statistic
+  }
+  
+  Z <- if (ordered)
+    kruskal.test(g ~ x)$statistic
+  else kruskal.test(x ~ g)$statistic
+  r <- unname(replicate(B, f()))
+  z <- r >= Z
+  p <- mean(z, na.rm = TRUE)
+  
+  if (!ci)
+    return(p)
+  
+  s2 <- sqrt(1 / (B - 1) * sum((z - p) ^ 2))
+  
+  ci <- p + c(-1, 1) * 2.576 * s2 / sqrt(B)
+  if (ci[1L] < 0)
+    ci[1L] <- 0
+  if (ci[2L] > 1)
+    ci[1L] <- 1
+  
+  ci <- if (p == 0)
+    c(0, 1 - (1 - alpha) ^ (1 / B))
+  else if (p == 1)
+    c((1 - alpha) ^ (1 / B), 1)
+  else ci
+  
+  structure(
+    setNames(c(p, ci), c('p.value', 'LCI', 'UCI')),
+    conf.level = alpha
+  )
 }

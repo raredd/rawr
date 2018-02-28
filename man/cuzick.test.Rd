@@ -9,9 +9,9 @@
 cuzick.test(x, ...)
 
 \method{cuzick.test}{default}(x, g, details = wilcox.test, correct = TRUE,
-  ...)
+  ..., simulate.p.value = FALSE, B = 2000L)
 
-\method{cuzick.test}{formula}(formula, data, subset, na.action, ...)
+\method{cuzick.test}{formula}(formula, data, ...)
 }
 \arguments{
 \item{x}{a numeric vector of data values or a list of numeric data vectors;
@@ -33,6 +33,12 @@ pairs of groups; see details}
 \item{correct}{logical; if \code{TRUE}, a correction is applied to the
 standard error of the test statistic (default)}
 
+\item{simulate.p.value}{logical; if \code{TRUE}, p-value is computed using
+by Monte Carlo simulation}
+
+\item{B}{an integer specifying the number of replicates used in the Monte
+Carlo test}
+
 \item{formula}{a formula of the form \code{response ~ group} where
 \code{response} gives the data values and \code{group} a vector or factor
 of the corresponding groups}
@@ -40,12 +46,6 @@ of the corresponding groups}
 \item{data}{an optional matrix or data frame (or similar: see
 \code{\link{model.frame}}) containing the variables in \code{formula}; by
 default the variables are taken from \code{environment(formula)}}
-
-\item{subset}{an optional vector specifying a subset of observations to be
-used}
-
-\item{na.action}{a function which indicates what should happen when the
-data contain \code{NA}s; defaults to \code{getOption("na.action")}}
 }
 \value{
 A list with class "\code{htest}" containing the following components:
@@ -57,6 +57,8 @@ A list with class "\code{htest}" containing the following components:
 \item{data.name}{a character string giving the names of the data}
 \item{details}{a list of pairwise (\code{details}) and overall
 (\code{\link{kruskal.test}}) comparisons}
+\item{\code{cont.int}}{optionally, (if \code{simulate.p.value = TRUE})
+the 99\% confidence interval of the Monte Carlo p-value}
 }
 \description{
 An implementation of Cuzick's extension of the Wilcoxon rank-sum test to
