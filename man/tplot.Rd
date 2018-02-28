@@ -17,7 +17,7 @@ tplot(x, ...)
   boxplot.pars = list(), show.n = TRUE, show.na = show.n, cex.n = cex,
   text.na = "missing", test = FALSE, ann = par("ann"), axes = TRUE,
   frame.plot = axes, add = FALSE, at, horizontal = FALSE,
-  panel.first = NULL, panel.last = NULL, reset_par = TRUE)
+  panel.first = NULL, panel.last = NULL)
 
 \method{tplot}{formula}(formula, data = NULL, ..., subset, na.action = NULL,
   panel.first = NULL, panel.last = NULL)
@@ -106,9 +106,6 @@ since it may be evaluated too early; see also \code{\link{plot.default}}}
 \item{panel.last}{an expression to be evaluated after plotting has taken
 place but before the axes, title, and box are added; see the comments about
 \code{panel.first}}
-
-\item{reset_par}{logical; if \code{TRUE}, resets \code{\link{par}} settings
-to state before function call}
 
 \item{formula}{a \code{\link{formula}}, such as \code{y ~ grp}, where y is
 a numeric vector of data values to be split into groups according to the

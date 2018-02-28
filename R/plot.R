@@ -229,8 +229,6 @@ jmplot <- function(x, y, z,
 #' @param panel.last an expression to be evaluated after plotting has taken
 #' place but before the axes, title, and box are added; see the comments about
 #' \code{panel.first}
-#' @param reset_par logical; if \code{TRUE}, resets \code{\link{par}} settings
-#' to state before function call
 #'
 #' @return
 #' A list with the following components (see \code{\link{boxplot}}:
@@ -350,12 +348,7 @@ tplot.default <- function(x, g, ..., type = 'db',
                           test = FALSE,
                           ann = par('ann'), axes = TRUE, frame.plot = axes,
                           add = FALSE, at, horizontal = FALSE,
-                          panel.first = NULL, panel.last = NULL,
-                          reset_par = TRUE) {
-  op <- par(no.readonly = TRUE)
-  if (reset_par)
-    on.exit(par(op))
-  
+                          panel.first = NULL, panel.last = NULL) {
   ## helpers
   localAxis   <- function(..., bg, cex, log, lty, lwd,       pos      )
     axis(...)
@@ -513,7 +506,6 @@ tplot.default <- function(x, g, ..., type = 'db',
   ## rawr:::grouping_; rawr:::jit_
   
   ## set up new plot unless adding to existing one
-  op <- par(no.readonly = TRUE)
   if (!add) {
     plot.new()
     if (horizontal)
@@ -728,10 +720,10 @@ tplot.formula <- function(formula, data = NULL, ...,
     stop("\'formula\' missing or incorrect")
   
   m <- match.call(expand.dots = FALSE)
-  if (is.matrix(eval(m$data, parent.frame())))
+  if (is.matrix(eval(m$data, parent.frame(1L))))
     m$data <- as.data.frame(data)
   
-  args <- lapply(m$..., eval, data, parent.frame())
+  args <- lapply(m$..., eval, data, parent.frame(1L))
   nmargs <- names(args)
   
   form <- as.character(formula)
@@ -751,7 +743,7 @@ tplot.formula <- function(formula, data = NULL, ...,
   subset.expr <- m$subset
   
   m[[1L]] <- as.name('model.frame')
-  mf <- eval(m, parent.frame())
+  mf <- eval(m, parent.frame(1L))
   n <- nrow(mf)
   response <- attr(attr(mf, 'terms'), 'response')
   
@@ -769,7 +761,7 @@ tplot.formula <- function(formula, data = NULL, ...,
     args$cex <- unlist(split(rep_len(args$cex, n), mf[-response]))
   
   if (!missing(subset)) {
-    s <- eval(subset.expr, data, parent.frame())
+    s <- eval(subset.expr, data, parent.frame(1L))
     ## rawr:::do_sub_
     args <- lapply(args, do_sub_, x, n, s)
     mf <- mf[s, ]
@@ -886,8 +878,6 @@ dsplot.default <- function(x, y, ..., bg.col = TRUE, col = par('col'),
   max.freq <- max(tab)
   box.size <- ceiling(sqrt(max.freq))
   
-  # op <- par(no.readonly = TRUE)
-  # on.exit(par(op))
   
   plot(X, Y, type = 'n', xaxs = 'i', yaxs = 'i',
        ann = FALSE, xaxt = 'n', yaxt = 'n', ...)
@@ -923,7 +913,7 @@ dsplot.default <- function(x, y, ..., bg.col = TRUE, col = par('col'),
   
   ## local offset
   dat$ly <- (box.size - ceiling(sqrt(hm))) / (box.size + 1) / 2
-  dat$lx <- dat$ly + ((ceiling(sqrt(hm - 1)) ** 2 == hm - 1) & (hm > 1)) /
+  dat$lx <- dat$ly + ((ceiling(sqrt(hm - 1)) ^ 2 == hm - 1) & (hm > 1)) /
     (box.size + 1) / 2
   dat <- dat[order(dat$id), ]
   dat$col <- col
@@ -960,9 +950,9 @@ dsplot.formula <- function(formula, data = NULL, ...,
   enquote <- function(x) as.call(list(as.name('quote'), x))
   
   m <- match.call(expand.dots = FALSE)
-  if (is.matrix(eval(m$data, parent.frame())))
+  if (is.matrix(eval(m$data, parent.frame(1L))))
     m$data <- as.data.frame(data)
-  args <- lapply(m$..., eval, data, parent.frame())
+  args <- lapply(m$..., eval, data, parent.frame(1L))
   nmargs <- names(args)
   
   if ('main' %in% nmargs) args[['main']] <- enquote(args[['main']])
@@ -976,12 +966,12 @@ dsplot.formula <- function(formula, data = NULL, ...,
   
   m[[1L]] <- as.name('model.frame')
   m <- as.call(c(as.list(m), list(na.action = NULL)))
-  mf <- eval(m, parent.frame())
+  mf <- eval(m, parent.frame(1L))
   n <- nrow(mf)
   response <- attr(attr(mf, 'terms'), 'response')
   
   if (!missing(subset)) {
-    s <- eval(subset.expr, data, parent.frame())
+    s <- eval(subset.expr, data, parent.frame(1L))
     args <- lapply(args, do_sub_, x, n, s)
     ## rawr:::do_sub_
     mf <- mf[s, ]
