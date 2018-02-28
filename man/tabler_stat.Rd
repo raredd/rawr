@@ -79,16 +79,18 @@ variable vector, \code{data$varname}, and the column variable vector,
 \examples{
 tabler_stat(mtcars, 'mpg', 'cyl') ## picks kruskal-wallis
 tabler_stat(mtcars, 'mpg', 'cyl', FUN = NA) ## no test, no p-value column
-tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE) ## test but p-value column
+tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE) ## test and p-value column
 tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'fisher') ## force fisher test
 tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'anova')  ## force anova test
-
 
 ## use of a custom function - see ?rawr::cuzick.test
 tabler_stat(mtcars, 'mpg', 'cyl',
   continuous_fn = Gmisc::describeMean,
   FUN = function(x, y)
     cuzick.test(x ~ y, data.frame(x, y))$p.value)
+
+## "cuzick" is also an option for FUN
+tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'cuzick')
 
 
 ## typical usage

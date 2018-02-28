@@ -10,8 +10,9 @@
 # roundr, tabler
 # 
 # unexported:
-# getPvalttest, tabler_stat_list, tabler_stat_html, guess_digits,
-# get_tabler_stat_n, resp1, r_or_better1, inject_, render_sparkDT,
+# getPvalCuzick, getPvalJTtest, getPvalKruskal, getPvalKWtest, getPvalTtest,
+# get_stat_pval, guess_test, tabler_stat_list, tabler_stat_html, guess_digits,
+# get_tabler_stat_n, resp1, r_or_better1, inject_, render_sparkDT
 ###
 
 
@@ -463,12 +464,13 @@ color_pval <- function(pvals, breaks = c(0, .01, .05, .1, .5, 1),
                        cols = colorRampPalette(2:1)(length(breaks)),
                        sig.limit = 0.001, digits = 3L, show.p = FALSE,
                        format_pval = TRUE) {
-  stopifnot(length(breaks) == length(cols))
+  if (!is.numeric(pvals))
+    return(pvals)
+  pvn <- pvals
   
-  pvn <- if (!is.numeric(pvals)) {
-    warning('p-values are not numeric')
-    as.numeric(gsub('[^0-9.]', '', pvals))
-  } else pvals
+  stopifnot(
+    length(breaks) == length(cols)
+  )
   
   if (format_pval)
     pvals <- pvalr(pvn, sig.limit, digits, TRUE, show.p)
@@ -1233,16 +1235,18 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' @examples
 #' tabler_stat(mtcars, 'mpg', 'cyl') ## picks kruskal-wallis
 #' tabler_stat(mtcars, 'mpg', 'cyl', FUN = NA) ## no test, no p-value column
-#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE) ## test but p-value column
+#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE) ## test and p-value column
 #' tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'fisher') ## force fisher test
 #' tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'anova')  ## force anova test
-#' 
 #' 
 #' ## use of a custom function - see ?rawr::cuzick.test
 #' tabler_stat(mtcars, 'mpg', 'cyl',
 #'   continuous_fn = Gmisc::describeMean,
 #'   FUN = function(x, y)
 #'     cuzick.test(x ~ y, data.frame(x, y))$p.value)
+#' 
+#' ## "cuzick" is also an option for FUN
+#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'cuzick')
 #' 
 #' 
 #' ## typical usage
@@ -1304,40 +1308,7 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
   
   ## add pvalue column using stat fn
   pvn <- tryCatch(
-    if (identical(FUN, FALSE)) {
-      color_pval <- FALSE
-      structure(NULL, FUN = NULL)
-    } else if (is.function(FUN))
-      structure(FUN(x, y), FUN = gsub('\\(.*', '', deparse(FUN)[2L]))
-    else if (is.character(FUN))
-      ## one of these tests can be explicitly given with chr string
-      switch(
-        match.arg(FUN, c('fisher', 'wilcoxon', 'kruskal',
-                         'chisq', 'anova', 'ttest')),
-        fisher   = structure(Gmisc::getPvalFisher(x, y),
-                             FUN = 'fisher.test'),
-        wilcoxon = structure(Gmisc::getPvalWilcox(x, y),
-                             FUN = 'wilcox.test'),
-        kruskal  = structure(Gmisc::getPvalKruskal(x, y),
-                             FUN = 'kruskal.test'),
-        chisq    = structure(Gmisc::getPvalChiSq(x, y),
-                             FUN = 'Chi-squared test'),
-        anova    = structure(Gmisc::getPvalAnova(x, y),
-                             FUN = 'One-way ANOVA'),
-        ttest    = structure(       getPvalttest(x, y),
-                             FUN = 'Unpaired t-test')
-      )
-    else {
-      ## guess stat fn based on x, by data
-      if (is.null(FUN))
-        ## dbl/int with many (?) unique values uses rank-sum tests
-        ## otherwise assume contingency table
-        if (!is.factor(x) & lunique(x, TRUE) >= 10L) {
-          if (n > 2L)
-            structure(Gmisc::getPvalKruskal(x, y), FUN = 'kruskal.test')
-          else structure(Gmisc::getPvalWilcox(x, y), FUN = 'wilcox.test')
-        } else structure(Gmisc::getPvalFisher(x, y), FUN = 'fisher.test')
-    },
+    get_stat_pval(x, y, FUN),
     error = function(e) {
       message(sprintf(
         '\nAn error occurred for %s\n\t%s\nSkipping test for %s\n',
@@ -1375,10 +1346,10 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
                           names(fnames)[1:3])
   
   ## only return one of wilcox/kruskal based on byvar
-  idx <- pmatch(c(substr(fname, 1L, 3L), 'fish'), tolower(fnames))
+  idx <- pmatch(c(substr(tolower(fname), 1L, 3L), 'fish'), tolower(fnames))
   if (anyNA(idx))
     idx <- c((n > 2L) + 1L, na.omit(idx))
-  fnames <- fnames[idx]
+  fnames <- fnames[sort(idx)]
   
   pvc <- if (is.null(pvn))
     pvn else {
@@ -1397,8 +1368,110 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
   )
 }
 
-getPvalttest <- function(x, by) {
+getPvalCuzick <- function(x, by) {
+  cuzick.test(x ~ by)$p.value
+}
+
+getPvalJTtest <- function(x, by) {
+  jt.test(x, by)$p.value
+}
+
+getPvalKruskal <- function(x, by) {
+  ## Gmisc:::getPvalKruskal fails if by is a char
+  kruskal.test(x ~ as.factor(by))$p.value
+}
+
+getPvalKWtest <- function(x, by) {
+  kw.test(x, by)$p.value
+}
+
+getPvalTtest <- function(x, by) {
   t.test(x ~ by, alternative = 'two.sided')$p.value
+}
+
+get_stat_pval <- function(x, y, FUN, n_unique_x = 10L) {
+  if (identical(FUN, FALSE))
+    return(structure(NULL, FUN = NULL))
+  
+  if (is.function(FUN))
+    return(structure(FUN(x, y), FUN = gsub('\\(.*', '', deparse(FUN)[2L])))
+  
+  if (is.numeric(FUN))
+    return(structure(FUN, FUN = NULL))
+  
+  sFUN <- tryCatch(
+    match.arg(FUN, c('fisher', 'wilcoxon', 'kruskal', 'chisq',
+                     'anova', 'ttest', 'cuzick', 'jt', 'kw')),
+    error = function(e) {
+      if (grepl('one of', e$message))
+        TRUE else stop(e$message)
+    }
+  )
+  
+  if (isTRUE(sFUN))
+    return(structure(FUN, FUN = NULL))
+  
+  if (is.character(FUN))
+    return(
+      switch(
+        sFUN,
+        fisher   = structure(
+          Gmisc::getPvalFisher(x, y), FUN = 'fisher.test'),
+        wilcoxon = structure(
+          Gmisc::getPvalWilcox(x, y), FUN = 'wilcox.test'),
+        kruskal  = structure(
+          getPvalKruskal(x, y), FUN = 'kruskal.test'),
+        chisq    = structure(
+          Gmisc::getPvalChiSq(x, y), FUN = 'Chi-squared test'),
+        anova    = structure(
+          Gmisc::getPvalAnova(x, y), FUN = 'One-way ANOVA'),
+        ttest    = structure(
+          getPvalTtest(x, y), FUN = 'Unpaired t-test'),
+        cuzick   = structure(
+          getPvalCuzick(x, y), FUN = 'Cuzick\'s trend test'),
+        jt       = structure(
+          getPvalJTtest(x, y), FUN = 'Jonckheere-Terpstra test'),
+        kw       = structure(
+          getPvalKWtest(x, y), FUN = 'Kruskal-Wallis trend test')
+      )
+    )
+  
+  if (is.null(FUN)) {
+    fn <- guess_test(x, y, n_unique_x)
+    return(structure(fn, FUN = attr(fn, 'FUN')))
+  }
+  
+  structure(NULL, FUN = NA)
+}
+
+guess_test <- function(x, y, n_unique_x = 10L) {
+  ## guess stat fn based on x by data
+  ## x with >= n_unique_x unique values is assumed continuous
+  ## dbl/int with many (?) unique values uses rank-sum tests
+  ## otherwise assume contingency table
+  ox <- is.ordered(x)
+  oy <- is.ordered(y)
+  ny <- lunique(y, na.rm = TRUE)
+  nx <- lunique(x, na.rm = TRUE)
+  
+  if (!is.character(x) && !is.factor(x) && nx >= n_unique_x) {
+    if (ny > 2L) {
+      if (oy)
+        structure(getPvalCuzick(x, y), FUN = 'Cuzick\'s trend test')
+      else structure(getPvalKruskal(x, y),  FUN = 'kruskal.test')
+    } else {
+      structure(Gmisc::getPvalWilcox(x, y), FUN = 'wilcox.test')
+    }
+  } else {
+    if (ox & oy & nx > 2L & ny > 2L)
+      structure(getPvalJTtest(x, y), FUN = 'Jonckheere-Terpstra test')
+    else if (oy & ny > 2L)
+      structure(getPvalKWtest(x, y), FUN = 'Kruskal-Wallis trend test')
+    else if (ox & nx > 2L)
+      structure(getPvalKWtest(y, x), FUN = 'Kruskal-Wallis trend test')
+    else
+      structure(Gmisc::getPvalFisher(x, y), FUN = 'fisher.test')
+  }
 }
 
 #' \code{tabler_stat} wrappers
@@ -1483,9 +1556,6 @@ tabler_stat2 <- function(data, varname, byvar, varname_label = varname,
   data <- as.data.frame(data)
   nv   <- length(varname)
   
-  if (is.character(FUN))
-    FUN <- as.list(FUN)
-  
   stopifnot(
     all(c(varname, byvar) %in% names(data)),
     length(byvar) == 1L,
@@ -1522,8 +1592,18 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
     else replace(dig, name_or_index(names(digits), varname), digits)
   }
   
+  fun <- setNames(vector('list', nv), varname)
+  FUN <- if (is.null(FUN))
+    fun
+  else if (is.null(names(FUN)) & length(FUN) == nv)
+    FUN
+  else {
+    if (length(FUN) == 1L & is.null(names(FUN)))
+      rep_len(list(FUN), nv)
+    else replace(fun, name_or_index(names(FUN), varname), FUN)
+  }
+  
   data <- rep_len(list(data), nv)
-  FUN  <- rep_len(if (islist(FUN)) FUN else list(FUN), nv)
   pval <- any(!is.na(FUN))
   
   l <- do.call('Map', c(list(
@@ -1574,6 +1654,15 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
   if (is.character(zeros))
     res <- gsub(paste(p, collapse = '|'), zeros, res)
   
+  ## text/daggers used in footnotes
+  tf <- strsplit(sapply(l$l, attr, 'tfoot'), ', (?=<sup>)', perl =  TRUE)
+  dg <- lapply(l$l, function(x)
+    gsub('<sup>([^<]+)</sup>|.', '\\1', x[1L, ncol(x)]))
+  tf <- Map(function(x, y)
+    if (nchar(x) == 0L)
+      NULL else grep(x, y, value = TRUE), dg, tf)
+  tf <- toString(unique(unlist(tf)))
+  
   ht <- do.call(
     htmlTable::htmlTable,
     c(list(
@@ -1581,8 +1670,7 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
       rgroup = rgroup %||% l$rgroup, n.rgroup = l$n.rgroup,
       cgroup = cgroup %||% l$cgroup, n.cgroup = l$n.cgroup,
       css.cell = 'padding: 0px 5px 0px; white-space: nowrap;',
-      tfoot = tfoot %||%
-        sprintf('<font size=1>%s</font>', attr(l$l[[1L]], 'tfoot'))),
+      tfoot = tfoot %||% sprintf('<font size=1>%s</font>', tf)),
       htmlArgs)
   )
   
