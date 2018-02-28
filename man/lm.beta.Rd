@@ -26,7 +26,7 @@ each coefficient.
 (cc <- with(mtcars, cor(mpg, wt)))
 lm.beta(lm(mpg ~ wt, data = mtcars))
 
-cc ** 2
+cc ^ 2
 summary(lm(mpg ~ wt, data = mtcars))$r.squared
 
 lm.beta(lm(mpg ~ wt + disp + factor(vs), data = mtcars), weights = 2)

@@ -40,7 +40,7 @@ done <- function(type = c('notifier', 'beep')) {
   )
 }
 
-where <- function(x, env = parent.frame()) {
+where <- function(x, env = parent.frame(1L)) {
   ## recursively find env where x is defined
   stopifnot(
     is.character(x),

@@ -105,7 +105,7 @@ dodge.formula <- function(formula, data = NULL, ...) {
     stop('\'formula\' missing or incorrect')
   
   m <- match.call(expand.dots = FALSE)
-  if (is.matrix(eval(m$data, parent.frame())))
+  if (is.matrix(eval(m$data, parent.frame(1L))))
     m$data <- as.data.frame(data)
   m$`...` <- NULL
   m[[1L]] <- as.name('model.frame')
@@ -219,12 +219,12 @@ dodge2.formula <- function(formula, data = NULL, ...) {
     stop('\'formula\' missing or incorrect')
   
   m <- match.call(expand.dots = FALSE)
-  if (is.matrix(eval(m$data, parent.frame())))
+  if (is.matrix(eval(m$data, parent.frame(1L))))
     m$data <- as.data.frame(data)
   m$`...` <- NULL
   m[[1L]] <- as.name('model.frame')
   
-  mf <- eval(m, parent.frame())
+  mf <- eval(m, parent.frame(1L))
   response <- attr(attr(mf, 'terms'), 'response')
   
   dodge2(mf[, -response], mf[, response], ...)
@@ -491,33 +491,33 @@ tcol <- function(colors, trans = NULL, alpha = NULL) {
 #' depending on the value of \code{limit}.
 #' 
 #' @examples
-#' x <- 10 ** (1:5) / 10
+#' x <- 10 ^ (1:5) / 10
 #' oom(x)
 #' oom(1 / x)
 #' 
 #' parse_sci(x)
 #' parse_sci(x, simplify = FALSE)
 #' parse_sci(x, base = 100)
-#' parse_sci(1.1 * 2 ** (1:5), 1, 2)
+#' parse_sci(1.1 * 2 ^ (1:5), 1, 2)
 #' 
 #' par(xpd = NA, mar = c(6,4,4,2) + .1)
 #' plot(1:5, type = 'n', axes = FALSE, ann = FALSE)
 #' axis(2, at = 1:5, labels = pretty_sci(x, simplify = FALSE), las = 1)
 #' 
-#' text(1:5, 0, pretty_sci(1 / x ** 10))
+#' text(1:5, 0, pretty_sci(1 / x ^ 10))
 #' text(1:5, 1, pretty_sci(1 / x, digits = 3))
 #' text(1:5, 2, pretty_sci(1 / x, digits = 2, limit = 1e2))
 #' text(1:5, 3, x)
 #' text(1:5, 4, pretty_sci(x, limit = 1e2))
 #' text(1:5, 5, pretty_sci(x, digits = 1))
-#' text(1:5, 6, pretty_sci(x ** 10))
+#' text(1:5, 6, pretty_sci(x ^ 10))
 #' 
 #' text(1:5, -1, pretty_sci(1 / x, limit = -1, simplify = FALSE))
 #' 
 #' @export
 
 pretty_sci <- function(x, digits = 0, base = 10,
-                       limit = base ** 3, simplify = TRUE) {
+                       limit = base ^ 3, simplify = TRUE) {
   l <- as.list(x)
   limit <- if (limit < 0)
     -1 else oom(limit, base)
@@ -553,10 +553,10 @@ parse_sci <- function(x, digits = 0, base = 10, simplify = TRUE) {
 
 to_sci_ <- function(x, digits, base) {
   ## generalized format(x, scientific = TRUE)'er
-  # base <- 2; digits = 1; x <- 1.1 * base ** (1:5)
+  # base <- 2; digits = 1; x <- 1.1 * base ^ (1:5)
   # rawr:::to_sci_(x, 1, base)
   stopifnot(is.numeric(x))
-  xbg <- roundr(x / base ** oom(x, base), digits)
+  xbg <- roundr(x / base ^ oom(x, base), digits)
   xsm <- formatC(oom(x, base), width = 2, flag = 0)
   sprintf('%se+%s', xbg, xsm)
 }
@@ -621,9 +621,9 @@ arrows2 <- function(x0, y0, x1 = x0, y1 = y0, size = 1, width = 0.1 / cin,
   ## create coordinates of a polygon for a unit arrow head
   cin <- size * par('cin')[2L]
   uin <- 1 / xyinch()
-  x <- sqrt(seq(0, cin ** 2, length.out = 1000L))
+  x <- sqrt(seq(0, cin ^ 2, length.out = 1000L))
   delta <- 0.005 / 2.54
-  wx2 <- width * x ** curve
+  wx2 <- width * x ^ curve
   
   ## polar, NA to "break" long polygon
   pol <- c2p(c(-x, -rev(x)), c(-wx2 - delta, rev(wx2) + delta))
@@ -721,7 +721,7 @@ carrows <- function(p1, p2, arc, degree = FALSE, pad = 0.01 * 1:2,
   code  <- code_(sign(slope))
   
   ## calculate arc based on p1, p2
-  radius  <- sqrt(sum((p1 - p2) ** 2)) / 2
+  radius  <- sqrt(sum((p1 - p2) ^ 2)) / 2
   centers <- (p1 + p2) / 2
   
   arc <- if (!missing(arc)) {
@@ -772,7 +772,7 @@ carrows <- function(p1, p2, arc, degree = FALSE, pad = 0.01 * 1:2,
 #' 
 #' @examples
 #' x <- 1:10
-#' y <- function(base) base ** x
+#' y <- function(base) base ^ x
 #' op <- par(mar = c(3,5,3,5), las = 1)
 #' plot(x, log(y(2), 2), ann = FALSE, axes = FALSE)
 #' laxis(2, base = 2, limit = -1)
@@ -791,14 +791,14 @@ carrows <- function(p1, p2, arc, degree = FALSE, pad = 0.01 * 1:2,
 #' @export
 
 laxis <- function(side = 1L, nticks = 5, labels = TRUE, digits = 0, base = 10,
-                  limit = base ** 3, simplify = TRUE, ...) {
+                  limit = base ^ 3, simplify = TRUE, ...) {
   ap <- par(switch(side, 'xaxp', 'yaxp', 'xaxp', 'yaxp', stop('Invalid axis')))
   yl <- c(-1, 1) + if (base == 10) log10(ap[-3L]) else c(1, ap[2L])
   pp <- seq(yl[1L], yl[2L])
   
-  at0 <- at1 <- base ** pp
+  at0 <- at1 <- base ^ pp
   at2 <- c(sapply(pp, function(x)
-    seq(1, base, length.out = nticks) * base ** x))
+    seq(1, base, length.out = nticks) * base ^ x))
   if (base != 10) {
     at1 <- log(at1, base)
     at2 <- log(at2, base)

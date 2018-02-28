@@ -14,6 +14,6 @@ Find greatest common divisor of two integers.
 }
 \examples{
 gcd(99, 2048)
-gcd(2 ** (1:12), 2048)
+gcd(2 ^ (1:12), 2048)
 
 }

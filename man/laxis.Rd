@@ -30,7 +30,7 @@ Draw minor ticks on a log scale axis.
 }
 \examples{
 x <- 1:10
-y <- function(base) base ** x
+y <- function(base) base ^ x
 op <- par(mar = c(3,5,3,5), las = 1)
 plot(x, log(y(2), 2), ann = FALSE, axes = FALSE)
 laxis(2, base = 2, limit = -1)
