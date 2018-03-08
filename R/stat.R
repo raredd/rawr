@@ -14,7 +14,8 @@
 # rpart_parent, rpart_subset, rpart_nodes
 # 
 # unexported:
-# jt.test.stat, combn_fun, rcor1, rcorn, kw.test.pvalue
+# cuzick.test.stat, cuzick.test.pvalue, jt.test.stat, combn_fun, rcor1, rcorn,
+# kw.test.pvalue
 ###
 
 
@@ -2069,7 +2070,7 @@ kw.test.default <- function(x, g, ..., simulate.p.value = FALSE, B = 2000L) {
     warning(
       'Chi-squared approximation may be incorrect - ',
       'cells with < 5 observations\n',
-      '\tConsider using simulate.p.value = TRUE for Monte Carle p-value'
+      '\tConsider using simulate.p.value = TRUE for Monte Carlo p-value'
     )
   
   method <- 'Kruskal-Wallis test for count data'
