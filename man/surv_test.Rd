@@ -12,15 +12,15 @@
 \usage{
 lr_pval(object, details = FALSE, data = NULL, ...)
 
-lr_text(formula, data, rho = 0, ..., details = TRUE)
+lr_text(formula, data, rho = 0, ..., details = TRUE, pFUN = NULL)
 
 tt_pval(object, details = FALSE, data = NULL, ...)
 
-tt_text(formula, data, ..., details = TRUE)
+tt_text(formula, data, ..., details = TRUE, pFUN = NULL)
 
 hr_pval(object, details = FALSE, data = NULL, ...)
 
-hr_text(formula, data, ..., details = TRUE)
+hr_text(formula, data, ..., details = TRUE, pFUN = NULL)
 }
 \arguments{
 \item{object}{a \code{\link{survfit}}, \code{\link{survdiff}}, or
@@ -32,6 +32,11 @@ and p-value where \code{FALSE} returns only a pvalue}
 
 \item{formula, data, rho, ...}{passed to \code{\link{survdiff}} or
 \code{\link{coxph}}}
+
+\item{pFUN}{logical; if \code{TRUE}, p-values are formatted with
+\code{\link{pvalr}}; if \code{FALSE}, no formatting is performed;
+alternatively, a function can be passed which should take a numeric value
+and return a character string (or a value to be coerced) for printing}
 }
 \description{
 Internal functions for \code{\link{survdiff}} and \code{\link{survfit}}

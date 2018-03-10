@@ -18,8 +18,8 @@ kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
   cex.axis = par("cex.axis"), legend = !atrisk && !is.null(s$strata),
   legend.args = list(), lr_test = FALSE, tt_test = FALSE,
   test_details = TRUE, test.args = list(), hr_text = FALSE,
-  hr.args = list(), add = FALSE, panel.first = NULL, panel.last = NULL,
-  ...)
+  hr.args = list(), format_pval = TRUE, add = FALSE, panel.first = NULL,
+  panel.last = NULL, ...)
 }
 \arguments{
 \item{s}{an object of class \code{\link{survfit}} or \code{survfit.cox}}
@@ -134,6 +134,11 @@ is shown}
 \item{hr.args}{an optional \emph{named} list of \code{\link{legend}}
 arguments controlling the \code{hr_text} legend}
 
+\item{format_pval}{logical; if \code{TRUE}, p-values are formatted with
+\code{\link{pvalr}}; if \code{FALSE}, no formatting is performed;
+alternatively, a function can be passed which should take a numeric value
+and return a character string (or a value to be coerced) for printing}
+
 \item{add}{logical; if \code{TRUE}, \code{par}s are not reset; allows for
 multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}}
 
@@ -195,10 +200,14 @@ kmplot(survfit(Surv(time, status) ~ factor(sex), data = colon),
        hr_text = TRUE, strata.lab = TRUE)
 kmplot(survfit(Surv(time, status) ~ interaction(sex, rx), data = colon),
        hr_text = TRUE, atrisk = FALSE, legend = FALSE)
+kmplot(survfit(Surv(time, status) ~ interaction(sex, rx), data = colon),
+       hr_text = TRUE, atrisk = FALSE, legend = FALSE,
+       format_pval = function(x) format(x, digits = 2, scipen = 0))
 
 
 ## at-risk and p-value options
 kmplot(km2, tt_test = TRUE, test_details = FALSE)
+kmplot(km2, tt_test = TRUE, format_pval = format.pval)
 kmplot(km1, wh.atrisk = 'survival', atrisk.digits = 3L)
 kmplot(km1, wh.atrisk = 'atrisk-events')
 

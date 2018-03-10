@@ -117,6 +117,10 @@
 #' is shown
 #' @param hr.args an optional \emph{named} list of \code{\link{legend}}
 #' arguments controlling the \code{hr_text} legend
+#' @param format_pval logical; if \code{TRUE}, p-values are formatted with
+#' \code{\link{pvalr}}; if \code{FALSE}, no formatting is performed;
+#' alternatively, a function can be passed which should take a numeric value
+#' and return a character string (or a value to be coerced) for printing
 #' @param add logical; if \code{TRUE}, \code{par}s are not reset; allows for
 #' multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}
 #' @param panel.first an expression to be evaluated after the plot axes are
@@ -154,10 +158,14 @@
 #'        hr_text = TRUE, strata.lab = TRUE)
 #' kmplot(survfit(Surv(time, status) ~ interaction(sex, rx), data = colon),
 #'        hr_text = TRUE, atrisk = FALSE, legend = FALSE)
+#' kmplot(survfit(Surv(time, status) ~ interaction(sex, rx), data = colon),
+#'        hr_text = TRUE, atrisk = FALSE, legend = FALSE,
+#'        format_pval = function(x) format(x, digits = 2, scipen = 0))
 #' 
 #' 
 #' ## at-risk and p-value options
 #' kmplot(km2, tt_test = TRUE, test_details = FALSE)
+#' kmplot(km2, tt_test = TRUE, format_pval = format.pval)
 #' kmplot(km1, wh.atrisk = 'survival', atrisk.digits = 3L)
 #' kmplot(km1, wh.atrisk = 'atrisk-events')
 #' 
@@ -238,10 +246,13 @@ kmplot <- function(s,
                    legend = !atrisk && !is.null(s$strata),
                    legend.args = list(),
                    
-                   ## other options
+                   ## test/hazard ratio options
                    lr_test = FALSE, tt_test = FALSE, test_details = TRUE,
                    test.args = list(),
                    hr_text = FALSE, hr.args = list(),
+                   format_pval = TRUE,
+                   
+                   ## other options
                    add = FALSE, panel.first = NULL, panel.last = NULL, ...) {
   if (!inherits(s, 'survfit'))
     stop('\'s\' must be a \'survfit\' object')
@@ -405,17 +416,18 @@ kmplot <- function(s,
   dat.list <- split(dat, dat$order)
   
   ## base plot
-  plot(0, type = 'n', xlim = xlim, ylim = ylim,
-       ann = FALSE, axes = FALSE, xaxs = xaxs,
-       panel.first = panel.first,
-       panel.last = {
-         box(bty = par('bty'))
-         axis(1L, xaxis.at, FALSE, lwd = 0, lwd.ticks = 1)
-         axis(1L, xaxis.at, xaxis.lab, FALSE, -0.5, cex.axis = cex.axis)
-         axis(2L, yaxis.at, yaxis.lab, las = 1L, cex.axis = cex.axis)
-         title(xlab = xlab, line = 1.5, adj = 0.5, ...)
-         title(ylab = ylab, main = main, ...)
-       })
+  plot(
+    0, type = 'n', xlim = xlim, ylim = ylim, ann = FALSE,
+    axes = FALSE, xaxs = xaxs, panel.first = panel.first,
+    panel.last = {
+      box(bty = par('bty'))
+      axis(1L, xaxis.at, FALSE, lwd = 0, lwd.ticks = 1)
+      axis(1L, xaxis.at, xaxis.lab, FALSE, -0.5, cex.axis = cex.axis)
+      axis(2L, yaxis.at, yaxis.lab, las = 1L, cex.axis = cex.axis)
+      title(xlab = xlab, line = 1.5, adj = 0.5, ...)
+      title(ylab = ylab, main = main, ...)
+    }
+  )
   
   ## at-risk table below surv plot
   if (atrisk) {
@@ -553,9 +565,17 @@ kmplot <- function(s,
   ## hazard ratios
   if (!identical(hr_text, FALSE)) {
     txt <- tryCatch(
-      hr_text(as.formula(form), sdat),
+      hr_text(as.formula(form), sdat, pFUN = format_pval),
       error = function(e) ''
     )
+    
+    if (length(nchar(na.omit(txt))) != ng)
+      warning(
+        'Number of strata levels does not equal number of HR estimates:\n',
+        '\tRHS of formula should be one factor with all combinations of\n',
+        '\tthe strata levels (eg, see ?interaction)',
+        call. = FALSE
+      )
     
     largs <- list(
       x = 'bottomleft', y = NULL, bty = 'n',
@@ -620,7 +640,8 @@ kmplot <- function(s,
       function(f, d, r, ...) tt_text(f, d, ...)
     else lr_text
     txt <- tryCatch(
-      FUN(as.formula(form), sdat, rho, details = test_details),
+      FUN(as.formula(form), sdat, rho, details = test_details,
+          pFUN = format_pval),
       error = function(e) 'n/a'
     )
     if (identical(txt, FALSE)) {
@@ -863,6 +884,10 @@ kmplot_data_ <- function(s, strata.lab) {
 #' formula}} (\code{data} must be given)
 #' @param details logical; \code{TRUE} returns statistic, degrees of freedom,
 #' and p-value where \code{FALSE} returns only a pvalue
+#' @param pFUN logical; if \code{TRUE}, p-values are formatted with
+#' \code{\link{pvalr}}; if \code{FALSE}, no formatting is performed;
+#' alternatively, a function can be passed which should take a numeric value
+#' and return a character string (or a value to be coerced) for printing
 #' 
 #' @references
 #' Tarone, Robert E. Tests for Trend in Life Table Analysis. \emph{Biometrika}
@@ -925,7 +950,16 @@ lr_pval <- function(object, details = FALSE, data = NULL, ...) {
 }
 
 #' @rdname surv_test
-lr_text <- function(formula, data, rho = 0, ..., details = TRUE) {
+lr_text <- function(formula, data, rho = 0, ..., details = TRUE, pFUN = NULL) {
+  pFUN <- if (is.null(pFUN) || isTRUE(pFUN))
+    function(x) pvalr(x, show.p = TRUE)
+  else if (identical(pFUN, FALSE))
+    identity
+  else {
+    stopifnot(is.function(pFUN))
+    pFUN
+  }
+  
   object <- if (inherits(formula, 'survdiff'))
     formula
   else if (inherits(formula, 'survfit'))
@@ -956,12 +990,11 @@ lr_text <- function(formula, data, rho = 0, ..., details = TRUE) {
     sd$exp else t(sd$exp)) > 0)) - 1
   pv <- pchisq(sd$chisq, df, lower.tail = FALSE)
   
-  txt <- sprintf('%s (%s df), %s', roundr(sd$chisq, 1L),
-                 df, pvalr(pv, show.p = TRUE))
+  txt <- sprintf('%s (%s df), %s', roundr(sd$chisq, 1L), df, pFUN(pv))
   
   if (details)
     bquote(paste(chi^2, ' = ', .(txt)))
-  else pvalr(pv, show.p = TRUE)
+  else pFUN(pv)
 }
 
 #' @rdname surv_test
@@ -988,7 +1021,16 @@ tt_pval <- function(object, details = FALSE, data = NULL, ...) {
 }
 
 #' @rdname surv_test
-tt_text <- function(formula, data, ..., details = TRUE) {
+tt_text <- function(formula, data, ..., details = TRUE, pFUN = NULL) {
+  pFUN <- if (is.null(pFUN) || isTRUE(pFUN))
+    function(x) pvalr(x, show.p = TRUE)
+  else if (identical(pFUN, FALSE))
+    identity
+  else {
+    stopifnot(is.function(pFUN))
+    pFUN
+  }
+  
   object <- if (inherits(formula, 'coxph'))
     formula
   else if (inherits(formula, 'survfit'))
@@ -1012,12 +1054,11 @@ tt_text <- function(formula, data, ..., details = TRUE) {
   
   chi <- cph$score
   pv  <- pchisq(chi, 1L, lower.tail = FALSE)
-  txt <- sprintf('%s (1 df), %s', roundr(chi, 1L),
-                 pvalr(pv, show.p = TRUE))
+  txt <- sprintf('%s (1 df), %s', roundr(chi, 1L), pFUN(pv))
   
   if (details)
     bquote(paste(chi^2, ' = ', .(txt)))
-  else pvalr(pv, show.p = TRUE)
+  else pFUN(pv)
 }
 
 #' @rdname surv_test
@@ -1045,7 +1086,16 @@ hr_pval <- function(object, details = FALSE, data = NULL, ...) {
 }
 
 #' @rdname surv_test
-hr_text <- function(formula, data, ..., details = TRUE) {
+hr_text <- function(formula, data, ..., details = TRUE, pFUN = NULL) {
+  pFUN <- if (is.null(pFUN) || isTRUE(pFUN))
+    function(x) pvalr(x, show.p = TRUE)
+  else if (identical(pFUN, FALSE))
+    identity
+  else {
+    stopifnot(is.function(pFUN))
+    pFUN
+  }
+  
   object <- if (inherits(formula, 'coxph'))
     formula
   else if (inherits(formula, 'survfit'))
@@ -1070,8 +1120,7 @@ hr_text <- function(formula, data, ..., details = TRUE) {
   obj <- hr_pval(cph, details = TRUE)
   
   txt <- apply(obj, 1L, function(x)
-    sprintf('HR %.2f [%.2f, %.2f], %s', x[1L], x[2L], x[3L],
-            pvalr(x[4L], show.p = TRUE)))
+    sprintf('HR %.2f [%.2f, %.2f], %s', x[1L], x[2L], x[3L], pFUN(x[4L])))
   txt <- paste(cph$xlevels[[attr(terms(cph), 'term.labels')]],
                c('Reference', txt), sep = ': ')
   
