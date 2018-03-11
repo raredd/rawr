@@ -11,7 +11,7 @@
 # 
 # unexported:
 # getPvalCuzick, getPvalJTtest, getPvalKruskal, getPvalKWtest, getPvalTtest,
-# get_stat_pval, guess_test, tabler_stat_list, tabler_stat_html, guess_digits,
+# getPval_, guess_test, tabler_stat_list, tabler_stat_html, guess_digits,
 # get_tabler_stat_n, resp1, r_or_better1, inject_, render_sparkDT
 ###
 
@@ -403,7 +403,11 @@ intr <- function(..., fun = median, conf = NULL,
 
 pvalr <- function(pvals, sig.limit = 0.001, digits = 3L,
                   html = FALSE, show.p = FALSE) {
-  stopifnot(sig.limit > 0, sig.limit < 1)
+  stopifnot(
+    sig.limit > 0,
+    sig.limit < 1
+  )
+  
   show.p <- show.p + 1L
   html   <- html + 1L
   
@@ -411,14 +415,14 @@ pvalr <- function(pvals, sig.limit = 0.001, digits = 3L,
     if (is.na(x) | !nzchar(x))
       return(NA)
     if (x >= 0.99)
-      return(paste0(c('','p ')[show.p], c('> ','&gt; ')[html], '0.99'))
+      return(paste0(c('', 'p ')[show.p], c('> ', '&gt; ')[html], '0.99'))
     if (x >= 0.9)
-      return(paste0(c('','p ')[show.p], c('> ','&gt; ')[html], '0.9'))
+      return(paste0(c('', 'p ')[show.p], c('> ', '&gt; ')[html], '0.9'))
     if (x < sig.limit) {
       paste0(c('', 'p ')[show.p], c('< ', '&lt; ')[html], format(sig.limit))
     } else {
       nd <- c(digits, 2L, 1L)[findInterval(x, c(-Inf, .1, .5, Inf))]
-      paste0(c('','p = ')[show.p], roundr(x, nd))
+      paste0(c('', 'p = ')[show.p], roundr(x, nd))
     }
   }, sig.limit)
 }
@@ -450,12 +454,14 @@ pvalr2 <- function(pvals, html = FALSE, show.p = FALSE) {
 #' 
 #' @param breaks,cols a numeric vector defining breaks in \code{(0,1)} (passed
 #' to \code{\link{findInterval}}) and the corresponding colors
-#' @param format_pval logical; if \code{TRUE} (default), p-values will first
-#' be passed to \code{pvalr} to be formatted
+#' @param format_pval logical; if \code{TRUE}, p-values will be formatted
+#' using \code{\link{pvalr}}; alternatively, a function may by used which will
+#' be applied to each p-value
 #' 
 #' @examples
 #' pvals <- c(0.00001, 0.03, .06, .11, .49, .51, .89, .9, 1)
 #' show_html(color_pval(pvals))
+#' show_html(color_pval(pvals, format_pval = format.pval))
 #' show_html(iprint(color_pval(pvals, show.p = TRUE)))
 #' 
 #' @export
@@ -472,8 +478,11 @@ color_pval <- function(pvals, breaks = c(0, .01, .05, .1, .5, 1),
     length(breaks) == length(cols)
   )
   
-  if (format_pval)
-    pvals <- pvalr(pvn, sig.limit, digits, TRUE, show.p)
+  pvals <- if (isTRUE(format_pval))
+    pvalr(pvn, sig.limit, digits, TRUE, show.p)
+  else if (identical(format_pval, FALSE))
+    pvals
+  else format_pval(pvals)
   
   pvc <- cols[findInterval(pvn, breaks)]
   
@@ -1189,7 +1198,8 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' the row data contains few unique values, a Fisher test may be used where
 #' not appropriate). One of the default tests can be given explicitly with a
 #' character string, one of \code{"fisher"}, \code{"wilcoxon"}, \code{"ttest"},
-#' \code{"kruskal"}, \code{"chisq"}, or \code{"anova"} (can be abbreviated).
+#' \code{"kruskal"}, \code{"chisq"}, \code{"anova"}, \code{"cuzick"},
+#' \code{"jt"}, or \code{"kw"} (can be abbreviated).
 #' 
 #' If \code{FUN} is a function, it must take two vector arguments: the row
 #' variable vector, \code{data$varname}, and the column variable vector,
@@ -1203,6 +1213,9 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' \code{varname} and \code{byvar}; \code{FALSE} will suppress the test but
 #' keep a column for p-values; \code{NA} will suppress the test and drop the
 #' column for p-values; or a character string; see details
+#' @param format_pval logical; if \code{TRUE}, p-values will be formatted
+#' using \code{\link{pvalr}}; alternatively, a function may by used which will
+#' be applied to each p-value
 #' @param color_pval logical; if \code{TRUE}, p-values will be colored
 #' by significance; see \code{\link{color_pval}}
 #' @param color_missing logical; if \code{TRUE}, rows summarizing missing
@@ -1232,10 +1245,14 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' @seealso
 #' \code{\link{tabler_stat2}}; \code{\link{tabler}}; \code{\link{tabler_by}}
 #' 
+#' \code{\link{fisher.test}}; \code{\link{wilcox.test}}; \code{\link{t.test}};
+#' \code{\link{kruskal.test}}; \code{\link{chisq.test}}; \code{\link{anova}};
+#' \code{\link{cuzick.test}}; \code{\link{jt.test}}; \code{\link{kw.test}}
+#' 
 #' @examples
 #' tabler_stat(mtcars, 'mpg', 'cyl') ## picks kruskal-wallis
-#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = NA) ## no test, no p-value column
-#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE) ## test and p-value column
+#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = NA)    ## no test, no p-value column
+#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE) ## no test, p-value column
 #' tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'fisher') ## force fisher test
 #' tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'anova')  ## force anova test
 #' 
@@ -1268,13 +1285,23 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' )
 #' structure(ht, class = 'htmlTable')
 #' 
+#' 
+#' ## use the tabler_stat2 wrapper for convenience
+#' tabler_stat2(mt, names(mt)[-10L], 'gear')
+#' tabler_stat2(mt, names(mt)[-10L], 'gear', FUN = c(cyl = 'jt'))
+#' mt$gear <- factor(mt$gear, ordered = TRUE)
+#' tabler_stat2(mt, names(mt)[-10L], 'gear',
+#'   format_pval = function(x) format.pval(x, digits = 3))
+#' 
 #' @export
 
 tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
-                        color_pval = TRUE, color_missing = TRUE, dagger = TRUE,
+                        format_pval = TRUE, color_pval = TRUE,
+                        color_missing = TRUE, dagger = TRUE,
                         continuous_fn = function(...)
                           Gmisc::describeMedian(..., iqr = FALSE), ...) {
   fun <- deparse(substitute(FUN))
+  nof <- identical(FUN, FALSE)
   color_missing <- if (isTRUE(color_missing))
     'lightgrey'
   else if (identical(color_missing, FALSE))
@@ -1285,12 +1312,24 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
   y <- as.factor(data[, byvar])
   n <- length(unique(na.omit(y)))
   
+  oy <- is.ordered(y)
+  if (oy & nlevels(y) < 3L) {
+    warning(sprintf('%s is ordered has < 3 unique values', shQuote(byvar)))
+    y <- factor(y, ordered = FALSE)
+    oy <- FALSE
+  }
+  ox <- is.ordered(x)
+  if (ox & nlevels(x) < 3L) {
+    warning(sprintf('%s is ordered has < 3 unique values', shQuote(varname)))
+    x <- factor(x, ordered = FALSE)
+    ox <- FALSE
+  }
+  
   res <- Gmisc::getDescriptionStatsBy(
     x = x, by = y, digits = digits, html = TRUE, add_total_col = TRUE,
     show_all_values = TRUE, statistics = FALSE, useNA.digits = 0L,
     continuous_fn = continuous_fn
   )
-
   class(res) <- 'matrix'
   
   ## recolor missing
@@ -1304,11 +1343,11 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
   
   ## no stat fn, no pvalue column
   if (identical(NA, FUN))
-    return(structure(res, FUN = FALSE, p.value = NULL, fnames = NULL))
+    return(structure(res, FUN = FALSE, tfoot = ''))
   
   ## add pvalue column using stat fn
   pvn <- tryCatch(
-    get_stat_pval(x, y, FUN),
+    getPval_(x, y, FUN),
     error = function(e) {
       message(sprintf(
         '\nAn error occurred for %s\n\t%s\nSkipping test for %s\n',
@@ -1318,44 +1357,77 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
     }
   )
   
+  dags   <- c('&dagger;', '&dagger;', '&Dagger;')
+  dags   <- c('&#94;', '&dagger;', '&Dagger;')
   fname  <- attr(pvn, 'FUN') %||% fun
-  fnames <- setNames(
-    paste0(c('wilcox', 'kruskal', 'fisher'), '.test'),
-    c('&dagger;', '&dagger;', '&Dagger;')
+  attr(fname, 'tnames') <- attr(pvn, 'name')
+  fnamel <- list(
+    unordered = structure(
+      setNames(paste0(c('wilcox', 'kruskal', 'fisher'), '.test'), dags),
+      tnames = c('Wilcoxon rank-sum test', 'Kruskal-Wallis rank-sum test',
+                 'Fisher\'s exact test')
+    ),
+    ordered1  = structure(
+      setNames(paste0(c('cuzick', 'kw', 'cuzick'), '.test'), dags),
+      tnames = c('Cuzick\'s trend test',
+                 'Kruskal-Wallis trend test',
+                 'Cuzick\'s trend test')
+    ),
+    ordered2  = structure(
+      setNames(paste0(c('cuzick', 'cuzick', 'jt'), '.test'), dags),
+      tnames = c('Cuzick\'s trend test', 'Cuzick\'s trend test',
+                 'Jonckheere-Terpstra test')
+    )
   )
+  fnames <- fnamel[[1L + oy + ox]]
   
+  ## no fun - null out return
   ## user input fns get * identifier
-  if (!is.null(FUN) && !identical(FUN, FALSE) &&
-      is.na(pmatch(
-        tryCatch(as.character(FUN),
-                 error = function(e)
-                   paste0(deparse(FUN), collapse = '')
-        ),
-        c('fisher', 'wilcox', 'kruskal')))) {
+  ## else guess/construct footnote string
+  if (nof) {
+    fname   <- FALSE
+    p.value <- NULL
+    fnames  <- NULL
+  } else if (!is.null(FUN)) {
+    fname <- tryCatch({
+      # FUN <- match.arg(FUN, unique(unlist(fnamel)))
+      fn <- lapply(fnamel, function(x) {
+        idx <- match(fname, x)[1L]
+        if (!is.na(idx))
+          structure(x[idx], tnames = attr(x, 'tnames')[idx])
+        else NULL
+      })
+      Filter(Negate(is.null), fn)[[1L]]
+    }, error = function(e) fname
+    )
     if (!is.character(dagger))
-      dagger <- '*'
-    fnames <- c(fnames, setNames(fname, dagger))
+      dagger <- names(fname) %||% '&#42;'
+    fnames <- setNames(attr(fname, 'tnames'), dagger)
+  } else {
+    dagger <- if (isTRUE(dagger))
+      names(fnames)[match(fname, fnames, 3L)]
+    else if (is.character(dagger))
+      dagger else ''
+    fnames <- setNames(attr(fnames, 'tnames'), names(fnames))
+    fnames <- fnames[!duplicated(fnames)]
+    
+    ## only return one of wilcox/kruskal based on byvar
+    idx <- pmatch(c(substr(tolower(fname), 1L, 3L), 'fish'),
+                  unique(tolower(fnames)))
+    if (anyNA(idx))
+      idx <- c((n > 2L) + 1L, na.omit(idx))
+    fnames <- fnames[sort(idx)]
+    fnames <- fnames[!duplicated(fnames)]
   }
   
-  dagger <- if (isTRUE(dagger))
-    names(fnames)[match(fname, fnames, 3L)] else
-      if (is.character(dagger)) dagger else ''
-  fnames[1:3] <- setNames(c('Wilcoxon rank-sum test',
-                            'Kruskal-Wallis rank-sum test',
-                            'Fisher\'s exact test'),
-                          names(fnames)[1:3])
-  
-  ## only return one of wilcox/kruskal based on byvar
-  idx <- pmatch(c(substr(tolower(fname), 1L, 3L), 'fish'), tolower(fnames))
-  if (anyNA(idx))
-    idx <- c((n > 2L) + 1L, na.omit(idx))
-  fnames <- fnames[sort(idx)]
-  
   pvc <- if (is.null(pvn))
-    pvn else {
+    NULL else {
       if (color_pval)
-        color_pval(pvn)
-      else sprintf('<i>%s</i>', pvalr(pvn, html = TRUE))
+        color_pval(pvn, format_pval = format_pval)
+      else if (isTRUE(format_pval))
+        sprintf('<i>%s</i>', pvalr(pvn, html = TRUE))
+      else if (identical(format_pval, FALSE))
+        pvn else format_pval(pvn)
     }
   
   m <- matrix('', nrow(res))
@@ -1363,8 +1435,9 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
     '-' else sprintf('<i>%s</i><sup>%s</sup>', pvc, dagger)
   
   structure(
-    cbind(res, m), FUN = fname, p.value = pvn, fnames = fnames,
-    tfoot = toString(sprintf('<sup>%s</sup>%s', names(fnames), fnames))
+    cbind(res, m), FUN = unname(fname), p.value = pvn, fnames = fnames,
+    tfoot = if (nof)
+      '' else toString(sprintf('<sup>%s</sup>%s', names(fnames), fnames))
   )
 }
 
@@ -1389,59 +1462,67 @@ getPvalTtest <- function(x, by) {
   t.test(x ~ by, alternative = 'two.sided')$p.value
 }
 
-get_stat_pval <- function(x, y, FUN, n_unique_x = 10L) {
+getPval_ <- function(x, y, FUN, n_unique_x = 10L) {
   if (identical(FUN, FALSE))
-    return(structure(NULL, FUN = NULL))
-  
-  if (is.function(FUN))
-    return(structure(FUN(x, y), FUN = gsub('\\(.*', '', deparse(FUN)[2L])))
+    return(NULL)
   
   if (is.numeric(FUN))
-    return(structure(FUN, FUN = NULL))
+    return(FUN)
+  
+  if (is.function(FUN))
+    return(
+      structure(FUN(x, y), FUN = gsub('\\(.*', '', deparse(FUN)[2L]),
+                name = deparse(FUN)[2L])
+    )
   
   sFUN <- tryCatch(
-    match.arg(FUN, c('fisher', 'wilcoxon', 'kruskal', 'chisq',
-                     'anova', 'ttest', 'cuzick', 'jt', 'kw')),
-    error = function(e) {
+    match.arg(FUN, c('anova', 'chisq', 'cuzick', 'fisher', 'jt',
+                     'kw', 'kruskal', 'ttest', 'wilcoxon')),
+    error = function(e)
       if (grepl('one of', e$message))
         TRUE else stop(e$message)
-    }
   )
   
   if (isTRUE(sFUN))
-    return(structure(FUN, FUN = NULL))
+    return(FUN)
   
   if (is.character(FUN))
     return(
       switch(
         sFUN,
-        fisher   = structure(
-          Gmisc::getPvalFisher(x, y), FUN = 'fisher.test'),
-        wilcoxon = structure(
-          Gmisc::getPvalWilcox(x, y), FUN = 'wilcox.test'),
-        kruskal  = structure(
-          getPvalKruskal(x, y), FUN = 'kruskal.test'),
-        chisq    = structure(
-          Gmisc::getPvalChiSq(x, y), FUN = 'Chi-squared test'),
         anova    = structure(
-          Gmisc::getPvalAnova(x, y), FUN = 'One-way ANOVA'),
-        ttest    = structure(
-          getPvalTtest(x, y), FUN = 'Unpaired t-test'),
+          Gmisc::getPvalAnova(x, y),  FUN = 'anova',
+          name = 'ANOVA F-test'),
+        chisq    = structure(
+          Gmisc::getPvalChiSq(x, y),  FUN = 'chisq.test',
+          name = 'Pearson\'s chi-squared test'),
         cuzick   = structure(
-          getPvalCuzick(x, y), FUN = 'Cuzick\'s trend test'),
+          getPvalCuzick(x, y),        FUN = 'cuzick.test',
+          name = 'Cuzick\'s trend test'),
+        fisher   = structure(
+          Gmisc::getPvalFisher(x, y), FUN = 'fisher.test',
+          name = 'Fisher\'s exact test'),
         jt       = structure(
-          getPvalJTtest(x, y), FUN = 'Jonckheere-Terpstra test'),
+          getPvalJTtest(x, y),        FUN = 'jt.test',
+          name = 'Jonckheere-Terpstra test'),
+        kruskal  = structure(
+          getPvalKruskal(x, y),       FUN = 'kruskal.test',
+          name = 'Kruskal-Wallis rank-sum test'),
         kw       = structure(
-          getPvalKWtest(x, y), FUN = 'Kruskal-Wallis trend test')
+          getPvalKWtest(x, y),        FUN = 'kw.test',
+          name = 'Kruskal-Wallis trend test for count data'),
+        ttest    = structure(
+          getPvalTtest(x, y),         FUN = 't.test',
+          name = 'Unpaired T-test'),
+        wilcoxon = structure(
+          Gmisc::getPvalWilcox(x, y), FUN = 'wilcox.test',
+          name = 'Wilcoxon rank-sum test')
       )
     )
   
-  if (is.null(FUN)) {
-    fn <- guess_test(x, y, n_unique_x)
-    return(structure(fn, FUN = attr(fn, 'FUN')))
-  }
-  
-  structure(NULL, FUN = NA)
+  if (is.null(FUN))
+    guess_test(x, y, n_unique_x)
+  else NULL
 }
 
 guess_test <- function(x, y, n_unique_x = 10L) {
@@ -1457,20 +1538,28 @@ guess_test <- function(x, y, n_unique_x = 10L) {
   if (!is.character(x) && !is.factor(x) && nx >= n_unique_x) {
     if (ny > 2L) {
       if (oy)
-        structure(getPvalCuzick(x, y), FUN = 'Cuzick\'s trend test')
-      else structure(getPvalKruskal(x, y),  FUN = 'kruskal.test')
+        structure(getPvalCuzick(x, y), FUN = 'cuzick.test',
+                  name = 'Cuzick\'s trend test')
+      else
+        structure(getPvalKruskal(x, y),  FUN = 'kruskal.test',
+                  name = 'Kruskal-Wallis rank-sum test')
     } else {
-      structure(Gmisc::getPvalWilcox(x, y), FUN = 'wilcox.test')
+      structure(Gmisc::getPvalWilcox(x, y), FUN = 'wilcox.test',
+                name = 'Wilcoxon rank-sum test')
     }
   } else {
     if (ox & oy & nx > 2L & ny > 2L)
-      structure(getPvalJTtest(x, y), FUN = 'Jonckheere-Terpstra test')
+      structure(getPvalJTtest(x, y), FUN = 'jt.test',
+                name = 'Jonckheere-Terpstra test')
     else if (oy & ny > 2L)
-      structure(getPvalKWtest(x, y), FUN = 'Kruskal-Wallis trend test')
+      structure(getPvalKWtest(x, y), FUN = 'kw.test',
+                name = 'Kruskal-Wallis trend test for count data')
     else if (ox & nx > 2L)
-      structure(getPvalKWtest(y, x), FUN = 'Kruskal-Wallis trend test')
+      structure(getPvalKWtest(y, x), FUN = 'kw.test',
+                name = 'Kruskal-Wallis trend test for count data')
     else
-      structure(Gmisc::getPvalFisher(x, y), FUN = 'fisher.test')
+      structure(Gmisc::getPvalFisher(x, y), FUN = 'fisher.test',
+                name = 'Fisher\'s exact test')
   }
 }
 
@@ -1496,6 +1585,9 @@ guess_test <- function(x, y, n_unique_x = 10L) {
 #' @param FUN \code{NULL} or a list of functions performing the test of
 #' association between each \code{varname} and \code{byvar}; see
 #' \code{\link{tabler_stat}}
+#' @param format_pval logical; if \code{TRUE}, p-values will be formatted
+#' using \code{\link{pvalr}}; alternatively, a function may by used which
+#' will be applied to each p-value
 #' @param color_pval,color_missing,dagger \code{NULL} or vectors, recycled as
 #' needed for each \code{varname}; see \code{\link{tabler_stat}}
 #' @param statArgs a named list of additional arguments passed to
@@ -1547,26 +1639,32 @@ guess_test <- function(x, y, n_unique_x = 10L) {
 #' 
 #' @export
 
-tabler_stat2 <- function(data, varname, byvar, varname_label = varname,
-                         byvar_label = byvar, digits = NULL, FUN = NULL,
-                         color_pval = TRUE, color_missing = TRUE,
-                         dagger = TRUE, statArgs = NULL,
+tabler_stat2 <- function(data, varname, byvar, varname_label = names(varname),
+                         byvar_label = names(byvar), digits = NULL, FUN = NULL,
+                         format_pval = TRUE, color_pval = TRUE,
+                         color_missing = TRUE, dagger = TRUE, statArgs = NULL,
                          align = NULL, rgroup = NULL, cgroup = NULL,
                          tfoot = NULL, htmlArgs = NULL, zeros = '-') {
   data <- as.data.frame(data)
   nv   <- length(varname)
+  
+  varname_label <- varname_label %||% varname
+  byvar_label   <- byvar_label %||% byvar
   
   stopifnot(
     all(c(varname, byvar) %in% names(data)),
     length(byvar) == 1L,
     byvar %in% names(data),
     nv == length(varname_label),
-    is.null(FUN) || nv == length(FUN)
+    is.null(FUN) ||
+      !is.null(names(FUN)) ||
+      is.null(names(FUN)) & length(FUN) == 1L ||
+      nv == length(FUN)
   )
   
   l <- tabler_stat_list(
-    data, varname, byvar, varname_label, byvar_label,
-    digits, FUN, color_pval, color_missing, dagger, statArgs
+    data, varname, byvar, varname_label %||% varname, byvar_label %||% byvar,
+    digits, FUN, format_pval, color_pval, color_missing, dagger, statArgs
   )
   
   tabler_stat_html(l, align, rgroup, cgroup, tfoot, htmlArgs, zeros)
@@ -1574,8 +1672,9 @@ tabler_stat2 <- function(data, varname, byvar, varname_label = varname,
 
 tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
                              byvar_label = byvar, digits = NULL, FUN = NULL,
-                             color_pval = TRUE, color_missing = TRUE,
-                             dagger = TRUE, statArgs = NULL) {
+                             format_pval = TRUE, color_pval = TRUE,
+                             color_missing = TRUE, dagger = TRUE,
+                             statArgs = NULL) {
   nv <- length(varname)
   byvar <- byvar[1L]
   
@@ -1608,7 +1707,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
   
   l <- do.call('Map', c(list(
     f = tabler_stat, data, varname, byvar, digits, FUN,
-    color_pval, color_missing, dagger), statArgs)
+    list(format_pval), color_pval, color_missing, dagger), statArgs)
   )
   names(l) <- varname_label
   

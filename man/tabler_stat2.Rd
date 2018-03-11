@@ -4,11 +4,11 @@
 \alias{tabler_stat2}
 \title{\code{tabler_stat} wrappers}
 \usage{
-tabler_stat2(data, varname, byvar, varname_label = varname,
-  byvar_label = byvar, digits = NULL, FUN = NULL, color_pval = TRUE,
-  color_missing = TRUE, dagger = TRUE, statArgs = NULL, align = NULL,
-  rgroup = NULL, cgroup = NULL, tfoot = NULL, htmlArgs = NULL,
-  zeros = "-")
+tabler_stat2(data, varname, byvar, varname_label = names(varname),
+  byvar_label = names(byvar), digits = NULL, FUN = NULL,
+  format_pval = TRUE, color_pval = TRUE, color_missing = TRUE,
+  dagger = TRUE, statArgs = NULL, align = NULL, rgroup = NULL,
+  cgroup = NULL, tfoot = NULL, htmlArgs = NULL, zeros = "-")
 }
 \arguments{
 \item{data}{a matrix or data frame with variables \code{varname} and
@@ -34,6 +34,10 @@ a \emph{named} vector of \code{digits} corresponding to one or more
 \item{FUN}{\code{NULL} or a list of functions performing the test of
 association between each \code{varname} and \code{byvar}; see
 \code{\link{tabler_stat}}}
+
+\item{format_pval}{logical; if \code{TRUE}, p-values will be formatted
+using \code{\link{pvalr}}; alternatively, a function may by used which
+will be applied to each p-value}
 
 \item{color_pval, color_missing, dagger}{\code{NULL} or vectors, recycled as
 needed for each \code{varname}; see \code{\link{tabler_stat}}}

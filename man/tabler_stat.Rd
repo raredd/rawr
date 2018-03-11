@@ -5,8 +5,9 @@
 \title{Description statistics \code{tabler}}
 \usage{
 tabler_stat(data, varname, byvar, digits = 0L, FUN = NULL,
-  color_pval = TRUE, color_missing = TRUE, dagger = TRUE,
-  continuous_fn = function(...) Gmisc::describeMedian(..., iqr = FALSE), ...)
+  format_pval = TRUE, color_pval = TRUE, color_missing = TRUE,
+  dagger = TRUE, continuous_fn = function(...) Gmisc::describeMedian(...,
+  iqr = FALSE), ...)
 }
 \arguments{
 \item{data}{a matrix or data frame with variables \code{varname} and
@@ -20,6 +21,10 @@ tabler_stat(data, varname, byvar, digits = 0L, FUN = NULL,
 \code{varname} and \code{byvar}; \code{FALSE} will suppress the test but
 keep a column for p-values; \code{NA} will suppress the test and drop the
 column for p-values; or a character string; see details}
+
+\item{format_pval}{logical; if \code{TRUE}, p-values will be formatted
+using \code{\link{pvalr}}; alternatively, a function may by used which will
+be applied to each p-value}
 
 \item{color_pval}{logical; if \code{TRUE}, p-values will be colored
 by significance; see \code{\link{color_pval}}}
@@ -70,7 +75,8 @@ For special cases, the function is not always guessed correctly (e.g., if
 the row data contains few unique values, a Fisher test may be used where
 not appropriate). One of the default tests can be given explicitly with a
 character string, one of \code{"fisher"}, \code{"wilcoxon"}, \code{"ttest"},
-\code{"kruskal"}, \code{"chisq"}, or \code{"anova"} (can be abbreviated).
+\code{"kruskal"}, \code{"chisq"}, \code{"anova"}, \code{"cuzick"},
+\code{"jt"}, or \code{"kw"} (can be abbreviated).
 
 If \code{FUN} is a function, it must take two vector arguments: the row
 variable vector, \code{data$varname}, and the column variable vector,
@@ -78,8 +84,8 @@ variable vector, \code{data$varname}, and the column variable vector,
 }
 \examples{
 tabler_stat(mtcars, 'mpg', 'cyl') ## picks kruskal-wallis
-tabler_stat(mtcars, 'mpg', 'cyl', FUN = NA) ## no test, no p-value column
-tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE) ## test and p-value column
+tabler_stat(mtcars, 'mpg', 'cyl', FUN = NA)    ## no test, no p-value column
+tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE) ## no test, p-value column
 tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'fisher') ## force fisher test
 tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'anova')  ## force anova test
 
@@ -112,7 +118,19 @@ ht <- htmlTable::htmlTable(
 )
 structure(ht, class = 'htmlTable')
 
+
+## use the tabler_stat2 wrapper for convenience
+tabler_stat2(mt, names(mt)[-10L], 'gear')
+tabler_stat2(mt, names(mt)[-10L], 'gear', FUN = c(cyl = 'jt'))
+mt$gear <- factor(mt$gear, ordered = TRUE)
+tabler_stat2(mt, names(mt)[-10L], 'gear',
+  format_pval = function(x) format.pval(x, digits = 3))
+
 }
 \seealso{
 \code{\link{tabler_stat2}}; \code{\link{tabler}}; \code{\link{tabler_by}}
+
+\code{\link{fisher.test}}; \code{\link{wilcox.test}}; \code{\link{t.test}};
+\code{\link{kruskal.test}}; \code{\link{chisq.test}}; \code{\link{anova}};
+\code{\link{cuzick.test}}; \code{\link{jt.test}}; \code{\link{kw.test}}
 }
