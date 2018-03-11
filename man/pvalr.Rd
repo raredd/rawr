@@ -32,8 +32,9 @@ where appropriate}
 \item{breaks, cols}{a numeric vector defining breaks in \code{(0,1)} (passed
 to \code{\link{findInterval}}) and the corresponding colors}
 
-\item{format_pval}{logical; if \code{TRUE} (default), p-values will first
-be passed to \code{pvalr} to be formatted}
+\item{format_pval}{logical; if \code{TRUE}, p-values will be formatted
+using \code{\link{pvalr}}; alternatively, a function may by used which will
+be applied to each p-value}
 }
 \description{
 Formats several cases of p-values; see details.
@@ -60,6 +61,7 @@ pvalr2(pvals)
 
 pvals <- c(0.00001, 0.03, .06, .11, .49, .51, .89, .9, 1)
 show_html(color_pval(pvals))
+show_html(color_pval(pvals, format_pval = format.pval))
 show_html(iprint(color_pval(pvals, show.p = TRUE)))
 
 }
