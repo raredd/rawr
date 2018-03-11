@@ -11,7 +11,7 @@ guess <- function(x, y, pattern) {
     res <- guess_test(x, y)
   )
   
-  grepl(pattern, attr(res, 'FUN'), ignore.case = TRUE, perl = TRUE)
+  grepl(paste0(pattern, '\\.test'), attr(res, 'FUN'))
 }
 
 test_that('correct test is used based on input - contingency table', {
@@ -32,27 +32,27 @@ test_that('correct test is used based on input - contingency table', {
   
   
   ## both ordered
-  expect_true(guess(ox2, oy2, 'fish'))
-  expect_true(guess(ox2, oy3, 'krus.*trend'))
-  expect_true(guess(ox3, oy2, 'krus.*trend'))
-  expect_true(guess(ox3, oy3, 'jonck'))
+  expect_true(guess(ox2, oy2, 'fisher'))
+  expect_true(guess(ox2, oy3, 'kw'))
+  expect_true(guess(ox3, oy2, 'kw'))
+  expect_true(guess(ox3, oy3, 'jt'))
   
   ## one ordered
-  expect_true(guess(ux2, oy2, 'fish'))
-  expect_true(guess(ux2, oy3, 'krus.*trend'))
-  expect_true(guess(ux3, oy2, 'fish'))
-  expect_true(guess(ux3, oy3, 'krus.*trend'))
+  expect_true(guess(ux2, oy2, 'fisher'))
+  expect_true(guess(ux2, oy3, 'kw'))
+  expect_true(guess(ux3, oy2, 'fisher'))
+  expect_true(guess(ux3, oy3, 'kw'))
   
-  expect_true(guess(ox2, uy2, 'fish'))
-  expect_true(guess(ox2, uy3, 'fish'))
-  expect_true(guess(ox3, uy2, 'krus.*trend'))
-  expect_true(guess(ox3, uy3, 'krus.*trend'))
+  expect_true(guess(ox2, uy2, 'fisher'))
+  expect_true(guess(ox2, uy3, 'fisher'))
+  expect_true(guess(ox3, uy2, 'kw'))
+  expect_true(guess(ox3, uy3, 'kw'))
   
   ## both unordered
-  expect_true(guess(ux2, uy2, 'fish'))
-  expect_true(guess(ux2, uy3, 'fish'))
-  expect_true(guess(ux3, uy2, 'fish'))
-  expect_true(guess(ux3, uy3, 'fish'))
+  expect_true(guess(ux2, uy2, 'fisher'))
+  expect_true(guess(ux2, uy3, 'fisher'))
+  expect_true(guess(ux3, uy2, 'fisher'))
+  expect_true(guess(ux3, uy3, 'fisher'))
 })
 
 
@@ -75,12 +75,12 @@ test_that('correct test is used based on input - continuous variable', {
   
   ## unordered
   expect_true(guess(x, uy2, 'wilcox'))
-  expect_true(guess(x, uy3, 'krus.*(?!trend)'))
+  expect_true(guess(x, uy3, 'kruskal'))
   
   
   ## character strings
   expect_true(guess(x, as.character(oy2), 'wilcox'))
-  expect_true(guess(x, as.character(oy3), 'krus.*(?!trend)'))
+  expect_true(guess(x, as.character(oy3), 'kruskal'))
 })
 
 test_that('getPval* testing', {
