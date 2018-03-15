@@ -7,7 +7,7 @@
 psum(..., na.rm = FALSE)
 }
 \arguments{
-\item{...}{numeric vectors}
+\item{...}{numeric vectors equal in length}
 
 \item{na.rm}{logical; if \code{TRUE}, omits missing values (including
 \code{\link{NaN}}) from calculations}
@@ -18,20 +18,14 @@ A single vector of element-wise sums.
 \description{
 Compute the pairwise sum of two or more vectors.
 }
-\details{
-Each vector passed in \code{...} must be equal in length. The function
-coerces the vectors into a matrix and \code{\link{rowSums}} the rows.
-}
 \examples{
-x <- c(-1, NA, 4, 5)
+x <- c(-1, NA, 4, 15)
 y <- c(NA, NA, 6, -1)
 psum(x, y)
 psum(x, y, na.rm = TRUE)
 
 }
-\references{
-\href{http://stackoverflow.com/questions/13123638/there-is-pmin-and-pmax-each-taking-na-rm-why-no-psum}{SO question}
-}
 \seealso{
-\code{\link{pmin}}, \code{\link{pmax}}
+Adapted from \url{https://stackoverflow.com/a/13123779/2994949};
+\code{\link{pmin}}; \code{\link{pmax}}
 }

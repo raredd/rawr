@@ -456,10 +456,7 @@ parse_namespace <- function(
 #' 
 #' Compute the pairwise sum of two or more vectors.
 #' 
-#' Each vector passed in \code{...} must be equal in length. The function
-#' coerces the vectors into a matrix and \code{\link{rowSums}} the rows.
-#' 
-#' @param ... numeric vectors
+#' @param ... numeric vectors equal in length
 #' @param na.rm logical; if \code{TRUE}, omits missing values (including
 #' \code{\link{NaN}}) from calculations
 #' 
@@ -467,13 +464,11 @@ parse_namespace <- function(
 #' A single vector of element-wise sums.
 #' 
 #' @seealso
-#' \code{\link{pmin}}, \code{\link{pmax}}
-#' 
-#' @references
-#' \href{http://stackoverflow.com/questions/13123638/there-is-pmin-and-pmax-each-taking-na-rm-why-no-psum}{SO question}
+#' Adapted from \url{https://stackoverflow.com/a/13123779/2994949};
+#' \code{\link{pmin}}; \code{\link{pmax}}
 #' 
 #' @examples
-#' x <- c(-1, NA, 4, 5)
+#' x <- c(-1, NA, 4, 15)
 #' y <- c(NA, NA, 6, -1)
 #' psum(x, y)
 #' psum(x, y, na.rm = TRUE)

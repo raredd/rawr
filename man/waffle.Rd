@@ -2,20 +2,19 @@
 % Please edit documentation in R/plot.R
 \name{waffle}
 \alias{waffle}
-\title{waffle chart}
+\title{waffle}
 \usage{
-waffle(mat, xpad = 0.05, ypad = xpad, heights, widths, colpad = 0,
-  rowpad = 0, invert = "", ..., reset_par = TRUE)
+waffle(mat, xpad = 0, ypad = 0, heights = NULL, widths = NULL,
+  colpad = 0, rowpad = 0, invert = "", ..., reset_par = TRUE,
+  add = FALSE)
 }
 \arguments{
 \item{mat}{a matrix of integers or character strings of color names; if
 \code{mat} is a matrix of integers, the colors used will correspond to
 the current \code{\link{palette}}}
 
-\item{xpad, ypad}{amount of padding between \code{rect}s along axes; note
-that if if \code{xpad}/\code{ypad} have the same length as the number of
-columns/rows, the padding will be applied to the column/row; otherwise,
-the vector is recycled and each \code{rect} uses its own padding}
+\item{xpad, ypad}{padding between \code{rect}s, recycled as needed; note
+that these do not affect the center coordinates of the rectangles}
 
 \item{heights, widths}{the row heights and column widths, respectively,
 usually in \code{0,1}, and recycled as needed; note that \code{xpad} and
@@ -24,8 +23,8 @@ are given; the same recycling that is done for \code{xpad}/\code{ypad} is
 also repeated here (see the note in \code{xpad})}
 
 \item{colpad, rowpad}{amount of padding between columns and rows; note that
-changing these moves the \code{rect} center positions rather than
-affecting the heights and widths}
+changing these shifts the \code{rect} center coordinates rather than the
+heights and widths directly}
 
 \item{invert}{character string indicating about which axis the matrix
 should be inverted; possible values are \code{"x"}, \code{"y"}, or
@@ -37,6 +36,9 @@ such as \code{border}, \code{density}, \code{lty}, etc.}
 \item{reset_par}{logical; if \code{TRUE}, resets \code{\link{par}}
 settings to state before function call; setting \code{reset_par = FALSE}
 along with the return value is useful for adding to a \code{waffle} plot}
+
+\item{add}{logical; if \code{TRUE}, adds to an existing plot; otherwise,
+a new frame and window are initialized}
 }
 \value{
 A list of three matrices:
@@ -62,12 +64,12 @@ cols <- c(cor(mtcars))
 cols <- rawr::tcol(c('blue', 'red')[(cols > 0) + 1L], alpha = c(abs(cols)))
 
 mat <- matrix(cols, 11)
-waffle(mat, reset_par = FALSE, xpad = 0, invert = 'x')
+waffle(mat, reset_par = FALSE, invert = 'x')
 axis(3, at = 1:11 - .5, labels = names(mtcars), lwd = 0)
 
 
 ## use colpad/rowpad to create sections
-w <- waffle(mat, reset_par = FALSE, xpad = 0, invert = 'x',
+w <- waffle(mat, reset_par = FALSE, invert = 'x',
             colpad = rep(c(0, 0.5, 1, 0), c(5, 1, 1, 4)),
             rowpad = rep(c(0, 0.5, 0), c(5, 1, 5)))
 axis(3, unique(w$centers[, 'x']), names(mtcars), lwd = 0)
@@ -103,8 +105,7 @@ text(w$c[, 'x'], w$c[, 'y'], labels = palette(), col = 'white')
 \dontrun{
 ## this is similar to ?rawr::show_colors
 col <- colors()[1:25 ^ 2]
-w <- waffle(matrix(col, 25), reset_par = FALSE, invert = 'xy',
-            xpad = 0, border = c(col))
+w <- waffle(matrix(col, 25), reset_par = FALSE, invert = 'xy', border = NA)
 text(w$c[, 'x'], w$c[, 'y'], labels = col, col = 'black', cex = .4)
 }
 

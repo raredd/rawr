@@ -980,25 +980,23 @@ dsplot.formula <- function(formula, data = NULL, ...,
   do.call('dsplot', c(list(mf[[-response]], mf[[response]]), args))
 }
 
-#' waffle chart
+#' waffle
 #' 
 #' A waffle chart.
 #' 
 #' @param mat a matrix of integers or character strings of color names; if
 #' \code{mat} is a matrix of integers, the colors used will correspond to
 #' the current \code{\link{palette}}
-#' @param xpad,ypad amount of padding between \code{rect}s along axes; note
-#' that if if \code{xpad}/\code{ypad} have the same length as the number of
-#' columns/rows, the padding will be applied to the column/row; otherwise,
-#' the vector is recycled and each \code{rect} uses its own padding
+#' @param xpad,ypad padding between \code{rect}s, recycled as needed; note
+#' that these do not affect the center coordinates of the rectangles
 #' @param heights,widths the row heights and column widths, respectively,
 #' usually in \code{0,1}, and recycled as needed; note that \code{xpad} and
 #' \code{ypad} are ignored if \code{widths} or \code{heights}, respectively,
 #' are given; the same recycling that is done for \code{xpad}/\code{ypad} is
 #' also repeated here (see the note in \code{xpad})
 #' @param colpad,rowpad amount of padding between columns and rows; note that
-#' changing these moves the \code{rect} center positions rather than
-#' affecting the heights and widths
+#' changing these shifts the \code{rect} center coordinates rather than the
+#' heights and widths directly
 #' @param invert character string indicating about which axis the matrix
 #' should be inverted; possible values are \code{"x"}, \code{"y"}, or
 #' \code{"xy"}
@@ -1007,6 +1005,8 @@ dsplot.formula <- function(formula, data = NULL, ...,
 #' @param reset_par logical; if \code{TRUE}, resets \code{\link{par}}
 #' settings to state before function call; setting \code{reset_par = FALSE}
 #' along with the return value is useful for adding to a \code{waffle} plot
+#' @param add logical; if \code{TRUE}, adds to an existing plot; otherwise,
+#' a new frame and window are initialized
 #' 
 #' @return
 #' A list of three matrices:
@@ -1029,12 +1029,12 @@ dsplot.formula <- function(formula, data = NULL, ...,
 #' cols <- rawr::tcol(c('blue', 'red')[(cols > 0) + 1L], alpha = c(abs(cols)))
 #' 
 #' mat <- matrix(cols, 11)
-#' waffle(mat, reset_par = FALSE, xpad = 0, invert = 'x')
+#' waffle(mat, reset_par = FALSE, invert = 'x')
 #' axis(3, at = 1:11 - .5, labels = names(mtcars), lwd = 0)
 #' 
 #' 
 #' ## use colpad/rowpad to create sections
-#' w <- waffle(mat, reset_par = FALSE, xpad = 0, invert = 'x',
+#' w <- waffle(mat, reset_par = FALSE, invert = 'x',
 #'             colpad = rep(c(0, 0.5, 1, 0), c(5, 1, 1, 4)),
 #'             rowpad = rep(c(0, 0.5, 0), c(5, 1, 5)))
 #' axis(3, unique(w$centers[, 'x']), names(mtcars), lwd = 0)
@@ -1070,22 +1070,22 @@ dsplot.formula <- function(formula, data = NULL, ...,
 #' \dontrun{
 #' ## this is similar to ?rawr::show_colors
 #' col <- colors()[1:25 ^ 2]
-#' w <- waffle(matrix(col, 25), reset_par = FALSE, invert = 'xy',
-#'             xpad = 0, border = c(col))
+#' w <- waffle(matrix(col, 25), reset_par = FALSE, invert = 'xy', border = NA)
 #' text(w$c[, 'x'], w$c[, 'y'], labels = col, col = 'black', cex = .4)
 #' }
 #' 
 #' @export
 
-waffle <- function(mat, xpad = 0.05, ypad = xpad, heights, widths,
-                   colpad = 0, rowpad = 0,
-                   invert = '', ..., reset_par = TRUE) {
+waffle <- function(mat, xpad = 0, ypad = 0,
+                   heights = NULL, widths = NULL,
+                   colpad = 0, rowpad = 0, invert = '',
+                   ..., reset_par = TRUE, add = FALSE) {
   op <- par(no.readonly = TRUE)
   if (reset_par)
     on.exit(par(op))
   
-  omat <- mat <- as.matrix(mat)
-  mat  <- mat[rev(seq.int(nrow(mat))), , drop = FALSE]
+  mat <- omat <- as.matrix(mat)
+  mat <- mat[rev(seq.int(nrow(mat))), , drop = FALSE]
   o    <- cbind(c(row(mat)), c(col(mat))) - 1L
   
   if (grepl('x', invert)) {
@@ -1097,41 +1097,53 @@ waffle <- function(mat, xpad = 0.05, ypad = xpad, heights, widths,
     o[, 2L] <- rev(o[, 2L])
   }
   
-  ## xpad/ypad intended to be by column/row
-  if (length(mat) > length(xpad) & length(xpad) == ncol(mat))
-    xpad <- rep(xpad, each = nrow(mat))
-  if (length(mat) > length(ypad) & length(ypad) == nrow(mat))
-    ypad <- rep(ypad, each = ncol(mat))
+  nc <- ncol(mat)
+  nr <- nrow(mat)
+  nn <- length(mat)
   
-  if (!missing(heights)) {
-    if (length(mat) > length(heights) & length(heights) == ncol(mat))
-      heights <- rep(heights, each = nrow(mat))
+  ## xpad/ypad intended to be by column/row
+  if (nn > length(xpad) & length(xpad) == nc)
+    xpad <- rep(xpad, each = nr)
+  if (nn > length(ypad) & length(ypad) == nr)
+    ypad <- rep(ypad, each = nc)
+  
+  if (!is.null(heights)) {
+    if (nn > length(heights) & length(heights) == nc)
+      heights <- rep(heights, each = nc)
     ypad <- 1 - (1 - rev(heights)) / 2
   }
-  if (!missing(widths)) {
-    if (length(mat) > length(widths) & length(widths) == ncol(mat))
-      widths <- rep(widths, each = nrow(mat))
-    xpad <- 1 - rep((1 - widths) / 2, each = ncol(mat))
+  if (!is.null(widths)) {
+    if (nn > length(widths) & length(widths) == nc)
+      widths <- rep(widths, each = nr)
+    xpad <- 1 - rep((1 - widths) / 2, each = nc)
   }
   
   ## add column/row sep values to origins
-  colpad <- c(0, cumsum(rep_len(colpad, ncol(mat) - 1L)))
-  rowpad <- c(0, cumsum(rep_len(rowpad, nrow(mat) - 1L)))
+  colpad <- c(0, cumsum(rep_len(colpad, nc - 1L)))
+  rowpad <- c(0, cumsum(rep_len(rowpad, nr - 1L)))
   
-  o <- o + cbind(rev(rep(rowpad, ncol(mat))), rep(colpad, each = nrow(mat)))
+  o <- o + cbind(rev(rep(rowpad, nc)), rep(colpad, each = nr))
   
-  plot.new()
-  plot.window(xlim = c(0, max(o[, 2L]) + 1),
-              ylim = c(0, max(o[, 1L]) + 1),
-              xaxs = 'i', yaxs = 'i')
-  rect(xl <- o[, 2L] + xpad, yb <- o[, 1L] + ypad,
-       xr <- o[, 2L] + (1 - xpad), yt <- o[, 1L] + (1 - ypad),
-       col = c(omat), ...)
+  if (!add) {
+    plot.new()
+    plot.window(
+      xlim = c(0, max(o[, 2L]) + 1L), ylim = c(0, max(o[, 1L]) + 1L),
+      xaxs = 'i', yaxs = 'i'
+    )
+  }
   
-  invisible(
-    list(matrix = mat, origin = `colnames<-`(o[, 2:1], c('x', 'y')),
-         centers = cbind(x = psum(xl, xr) / 2, y = psum(yb, yt) / 2))
+  rect(
+    xl <- o[, 2L] + xpad, yb <- o[, 1L] + ypad,
+    xr <- o[, 2L] + (1 - xpad), yt <- o[, 1L] + (1 - ypad),
+    col = c(omat), ...
   )
+  
+  res <- list(
+    matrix = mat, origin = `colnames<-`(o[, 2:1], c('x', 'y')),
+    centers = cbind(x = psum(xl, xr) / 2, y = psum(yb, yt) / 2)
+  )
+  
+  invisible(res)
 }
 
 #' River plots
