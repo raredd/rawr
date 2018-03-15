@@ -1,7 +1,7 @@
 ### statistical functions
 # bincon, bintest, dlt_table, pr_table, power_cv, simon2, moods_test, fakeglm,
 # gcd, install.bioc, lm.beta, cuzick.test, cuzick.test.default,
-# cuzick.test.formula, jt.test, hl_est, rcor, kw.test, kw.test.default,
+# cuzick.test.formula, jt.test, hl_est, rcor, rsum, kw.test, kw.test.default,
 # kw.test.formula
 # 
 # S3 methods:
@@ -1947,6 +1947,75 @@ rcorn <- function(y, x, rho) {
     warning('Joint correlations not possible', call. = FALSE)
     rep(0, nr)
   }
+}
+
+#' Random sum
+#' 
+#' Returns a vector of length \code{n} from \code{a} to \code{b} which sum to
+#' \code{k}.
+#' 
+#' To find the \code{n} integers in \code{[a, b]} which sum to \code{k}, the
+#' range \code{1:k} is broken into \code{n} pieces requiring \code{n - 1}
+#' cutpoints.
+#' 
+#' Note that the solution may not contain a unique set of integers unless
+#' \code{unique = TRUE}. Additionally, this algorithm is not guaranteed to
+#' find a solution even if one exists regardless of many \code{iterations}.
+#' Finally, depending on the input parameters, the algorithm may complete
+#' after one or require thousands of iterations.
+#' 
+#' @param a,b,n,k \code{n} integers in the range \code{[a,b]} which sum to
+#' \code{k}
+#' @param unique logical; if \code{TRUE}, the returned vector of integers
+#' will be unique if possible
+#' @param iterations maximum number of iterations to repeat the algorithm
+#' until a solution is found
+#' 
+#' @seealso
+#' Adapted from \url{https://stackoverflow.com/a/49016614/2994949};
+#' \code{Surrogate::RandVec}
+#' 
+#' @examples
+#' set.seed(1)
+#' rsum(1, 100, 5, 98)
+#' rsum(1, 100, 5, 120, TRUE)
+#' sum(rsum(1, 100, 10, 98))
+#' 
+#' @export
+
+rsum <- function(a, b, n, k, unique = FALSE, iterations = 100L) {
+  a <- as.integer(a)
+  b <- as.integer(b)
+  n <- as.integer(n)
+  k <- as.integer(k)
+  
+  for (ii in seq.int(iterations)) {
+    r <- k - n * a
+    p <- n - 1L
+    x <- sort(sample(seq.int(r), p, TRUE))
+    x <- c(x, r) - c(0L, x)
+    
+    if (x[1L] < a || x[p] > b)
+      next
+    
+    if (max(x) <= b - a + 1L) {
+      res <- structure(sort(a + x), iterations = ii)
+      break
+    }
+    
+    if (ii == iterations) {
+      message(
+        sprintf('Note: maximum of %s iterations attempted:\n\t', iterations),
+        'Try increasing the number of iterations; otherwise\n\t',
+        'n or k may be too large, b - a is too small, or no solution exists'
+      )
+      return(invisible(NULL))
+    }
+  }
+  
+  if (!unique || length(unique(res)) == n)
+    res
+  else Recall(a, b, n, k, TRUE, iterations)
 }
 
 #' Kruskal-Wallis test for count data
