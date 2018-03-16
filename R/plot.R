@@ -987,15 +987,13 @@ dsplot.formula <- function(formula, data = NULL, ...,
 #' @param mat a matrix of integers or character strings of color names; if
 #' \code{mat} is a matrix of integers, the colors used will correspond to
 #' the current \code{\link{palette}}
-#' @param xpad,ypad padding between \code{rect}s, recycled as needed; note
-#' that these do not affect the center coordinates of the rectangles
-#' @param heights,widths the row heights and column widths, respectively,
-#' usually in \code{0,1}, and recycled as needed; note that \code{xpad} and
-#' \code{ypad} are ignored if \code{widths} or \code{heights}, respectively,
-#' are given; the same recycling that is done for \code{xpad}/\code{ypad} is
-#' also repeated here (see the note in \code{xpad})
+#' @param xpad,ypad padding between \code{\link{rect}}s, recycled as needed;
+#' note that these do not affect the center coordinates of the rectangles
+#' @param heights,widths row heights and column widths, respectively, usually
+#' in \code{[0,1]}, recycled as needed; note \code{xpad} and/or \code{ypad}
+#' are ignored if \code{widths} and/or \code{heights} are used, respectively
 #' @param colpad,rowpad amount of padding between columns and rows; note that
-#' changing these shifts the \code{rect} center coordinates rather than the
+#' these shift the \code{\link{rect}} center coordinates rather than the
 #' heights and widths directly
 #' @param invert character string indicating about which axis the matrix
 #' should be inverted; possible values are \code{"x"}, \code{"y"}, or
@@ -1004,16 +1002,16 @@ dsplot.formula <- function(formula, data = NULL, ...,
 #' such as \code{border}, \code{density}, \code{lty}, etc.
 #' @param reset_par logical; if \code{TRUE}, resets \code{\link{par}}
 #' settings to state before function call; setting \code{reset_par = FALSE}
-#' along with the return value is useful for adding to a \code{waffle} plot
-#' @param add logical; if \code{TRUE}, adds to an existing plot; otherwise,
+#' along with the return value are useful for adding to a \code{waffle} plot
+#' @param add logical; use \code{TRUE} to add to an existing plot; otherwise,
 #' a new frame and window are initialized
 #' 
 #' @return
-#' A list of three matrices:
-#' \item{\code{$matrix}}{the input matrix as plotted, including inversions}
+#' A list of four matrices:
+#' \item{\code{$matrix}}{the input matrix as plotted including inversions}
 #' \item{\code{$origin}}{coordinates of the bottom-left corner for each box}
-#' \item{\code{$centers}}{the coordinates for the centers of each box
-#' adjusted for \code{xpad}, \code{ypad} or \code{heights}, \code{widths}}
+#' \item{\code{$centers}}{coordinates for the centers of each box}
+#' \item{\code{$rect}}{coordinates for each corner of each box}
 #' 
 #' @examples
 #' op <- par(no.readonly = TRUE)
@@ -1052,7 +1050,10 @@ dsplot.formula <- function(formula, data = NULL, ...,
 #' plot(cumsum(rnorm(n)), type = 'l', ann = FALSE, xaxt = 'n')
 #' 
 #' par(fig = c(0,1,0,.2), mar = c(1,5,0,1), new = TRUE)
-#' waffle(matrix(x, ng), heights = c(0.95, 0.5, 0.95), border = 'white')
+#' waffle(matrix(x, ng), heights = c(0.95, 0.5, 0.95), border = 'white',
+#'        reset_par = FALSE) -> wf
+#' text(0, rev(unique(wf$centers[, 'y'])), paste('Feature', 1:3),
+#'      xpd = NA, pos = 2L)
 #' 
 #' par(fig = c(0,1,.9,1), mar = c(.5,5,.5,1), new = TRUE)
 #' waffle(matrix(x, ng)[1L, , drop = FALSE], heights = 0.5,
@@ -1139,8 +1140,10 @@ waffle <- function(mat, xpad = 0, ypad = 0,
   )
   
   res <- list(
-    matrix = mat, origin = `colnames<-`(o[, 2:1], c('x', 'y')),
-    centers = cbind(x = psum(xl, xr) / 2, y = psum(yb, yt) / 2)
+    matrix  = mat,
+    origin  = `colnames<-`(o[, 2:1], c('x', 'y')),
+    centers = cbind(x = psum(xl, xr) / 2, y = psum(yb, yt) / 2),
+    rect    = cbind(xleft = xl, ybottom = yb, xright = xr, ytop = yt)
   )
   
   invisible(res)
