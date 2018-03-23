@@ -1956,7 +1956,8 @@ rcorn <- function(y, x, rho) {
 #' 
 #' To find the \code{n} integers in \code{[a, b]} which sum to \code{k}, the
 #' range \code{1:k} is broken into \code{n} pieces requiring \code{n - 1}
-#' cutpoints.
+#' cutpoints, and the distance between cutpoints is summed and shifted by
+#' \code{a}.
 #' 
 #' Note that the solution may not contain a unique set of integers unless
 #' \code{unique = TRUE}. Additionally, this algorithm is not guaranteed to
@@ -1989,27 +1990,27 @@ rsum <- function(a, b, n, k, unique = FALSE, iterations = 100L) {
   n <- as.integer(n)
   k <- as.integer(k)
   
-  for (ii in seq.int(iterations)) {
-    r <- k - n * a
-    p <- n - 1L
-    x <- sort(sample(seq.int(r), p, TRUE))
-    x <- c(x, r) - c(0L, x)
-    
-    if (x[1L] < a || x[p] > b)
-      next
-    
-    if (max(x) <= b - a + 1L) {
-      res <- structure(sort(a + x), iterations = ii)
-      break
-    }
-    
-    if (ii == iterations) {
+  for (ii in seq.int(iterations + 1L)) {
+    if (ii > iterations) {
       message(
         sprintf('Note: maximum of %s iterations attempted:\n\t', iterations),
         'Try increasing the number of iterations; otherwise\n\t',
         'n or k may be too large, b - a is too small, or no solution exists'
       )
       return(invisible(NULL))
+    }
+    
+    r <- k - n * a
+    p <- n - 1L
+    x <- sample(seq.int(r), p, TRUE)
+    x <- diff(c(0, sort(x), r))
+    
+    if (x[1L] < a || x[p] > b)
+      next
+    
+    if (max(x) <= b - a) {
+      res <- structure(sort(a + x), iterations = ii)
+      break
     }
   }
   

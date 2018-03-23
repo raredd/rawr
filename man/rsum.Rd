@@ -23,7 +23,8 @@ Returns a vector of length \code{n} from \code{a} to \code{b} which sum to
 \details{
 To find the \code{n} integers in \code{[a, b]} which sum to \code{k}, the
 range \code{1:k} is broken into \code{n} pieces requiring \code{n - 1}
-cutpoints.
+cutpoints, and the distance between cutpoints is summed and shifted by
+\code{a}.
 
 Note that the solution may not contain a unique set of integers unless
 \code{unique = TRUE}. Additionally, this algorithm is not guaranteed to
