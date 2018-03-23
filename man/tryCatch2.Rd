@@ -49,7 +49,7 @@ tryCatch2({message('calculating...'); 1})
 }
 \seealso{
 \code{\link[base]{tryCatch}}; \code{\link[logR]{tryCatch2}};
-\url{http://stackoverflow.com/questions/4948361/how-do-i-save-warnings-and-errors-as-output-from-a-function};
+\url{https://stackoverflow.com/q/4948361/2994949};
 \href{https://github.com/jangorecki/logR}{\pkg{logR} github repo}
 }
 \author{

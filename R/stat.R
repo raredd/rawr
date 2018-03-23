@@ -1767,9 +1767,9 @@ combn_fun <- function(x, FUN, n = 2L, ...) {
 #' \code{rpart_nodes} returns a factor variable 
 #' 
 #' @seealso
-#' \url{http://stackoverflow.com/questions/36086990/how-to-climb-the-tree-structure-of-rpart-object-using-path-in-order-to-purge-man}
+#' \url{https://stackoverflow.com/q/36086990/2994949}
 #' 
-#' \url{http://stackoverflow.com/questions/36748531/getting-the-observations-in-a-rparts-node-i-e-cart}
+#' \url{https://stackoverflow.com/q/36748531/2994949}
 #' 
 #' @examples
 #' rpart_parent(116)
@@ -1878,7 +1878,7 @@ rpart_nodes <- function(tree, node_labels = FALSE, droplevels = TRUE) {
 
 #' Correlate variables
 #' 
-#' Generate a (random) vector with a desired correlation to one or more other
+#' Generate a (random) vector having a desired correlation with one or more
 #' variables.
 #' 
 #' @param y a numeric vector or matrix used to set correlation(s)
@@ -1889,7 +1889,7 @@ rpart_nodes <- function(tree, node_labels = FALSE, droplevels = TRUE) {
 #' is a vector)
 #' 
 #' @seealso
-#' \url{https://stats.stackexchange.com/questions/15011/generate-a-random-variable-with-a-defined-correlation-to-an-existing-variables}
+#' Adapted from \url{https://stats.stackexchange.com/q/15011/66247}
 #' 
 #' @examples
 #' set.seed(1)
@@ -1906,7 +1906,7 @@ rpart_nodes <- function(tree, node_labels = FALSE, droplevels = TRUE) {
 #'   cbind(rcor(y, x, rho = c(.75, -.5, .25)), y),
 #'   upper.panel = function(x, y, ...) {
 #'     points(x, y)
-#'     abline(lm(y ~ x))
+#'     abline(lm(y ~ x), col = 2)
 #'     mtext(parse(text = sprintf('rho==%.2f', cor(x, y))), cex = 2, col = 2)
 #'   }
 #' )

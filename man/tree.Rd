@@ -23,5 +23,5 @@ str(tree(system.file(package = 'rawr'), FALSE))
 
 }
 \references{
-\href{http://stackoverflow.com/questions/14188197/representing-a-directory-tree-as-a-recursive-list}{SO question}
+\url{https://stackoverflow.com/q/14188197/2994949}
 }

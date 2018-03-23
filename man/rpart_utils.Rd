@@ -97,7 +97,7 @@ rpart_subset(fit, 14:15)
 
 }
 \seealso{
-\url{http://stackoverflow.com/questions/36086990/how-to-climb-the-tree-structure-of-rpart-object-using-path-in-order-to-purge-man}
+\url{https://stackoverflow.com/q/36086990/2994949}
 
-\url{http://stackoverflow.com/questions/36748531/getting-the-observations-in-a-rparts-node-i-e-cart}
+\url{https://stackoverflow.com/q/36748531/2994949}
 }

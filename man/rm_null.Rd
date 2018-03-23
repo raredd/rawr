@@ -22,5 +22,5 @@ str(rm_null(l, FALSE))
 
 }
 \references{
-\href{http://stackoverflow.com/questions/26539441/r-remove-null-elements-from-list-of-lists}{SO question}
+\url{https://stackoverflow.com/q/26539441/2994949}
 }

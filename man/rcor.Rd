@@ -17,7 +17,7 @@ number of columns of \code{y}, recycled as needed (or length 1 if \code{y}
 is a vector)}
 }
 \description{
-Generate a (random) vector with a desired correlation to one or more other
+Generate a (random) vector having a desired correlation with one or more
 variables.
 }
 \examples{
@@ -35,12 +35,12 @@ pairs(
   cbind(rcor(y, x, rho = c(.75, -.5, .25)), y),
   upper.panel = function(x, y, ...) {
     points(x, y)
-    abline(lm(y ~ x))
+    abline(lm(y ~ x), col = 2)
     mtext(parse(text = sprintf('rho==\%.2f', cor(x, y))), cex = 2, col = 2)
   }
 )
 
 }
 \seealso{
-\url{https://stats.stackexchange.com/questions/15011/generate-a-random-variable-with-a-defined-correlation-to-an-existing-variables}
+Adapted from \url{https://stats.stackexchange.com/q/15011/66247}
 }

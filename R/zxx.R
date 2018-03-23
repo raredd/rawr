@@ -1478,7 +1478,7 @@ mgsub <- function(pattern, replacement, x, ...) {
 #' @param l a list
 #' 
 #' @references
-#' \href{https://stackoverflow.com/questions/8139677/how-to-flatten-a-list-to-a-list-without-coercion}{SO question}
+#' \url{https://stackoverflow.com/q/8139677/2994949}
 #' 
 #' @examples
 #' (l <- list(matrix(1:3), list(1:3, 'foo'), TRUE, 'hi',
@@ -1488,7 +1488,7 @@ mgsub <- function(pattern, replacement, x, ...) {
 #' @export
 
 flatten <- function(l) {
-  while (any(vapply(l, islist, NA))) {
+  while (any(vapply(l, islist, logical(1L)))) {
     l <- lapply(l, function(x)
       if (islist(x))
         x else list(x))
@@ -1509,7 +1509,7 @@ flatten <- function(l) {
 #' to print
 #' 
 #' @references
-#' \href{http://stackoverflow.com/questions/14188197/representing-a-directory-tree-as-a-recursive-list}{SO question}
+#' \url{https://stackoverflow.com/q/14188197/2994949}
 #' 
 #' @examples
 #' str(tree(system.file(package = 'rawr'), FALSE))
@@ -1550,7 +1550,7 @@ tree <- function(path = '.', full.names = FALSE, ndirs = 5L, nfiles = 5L) {
 #' object will not be removed
 #' 
 #' @references
-#' \href{http://stackoverflow.com/questions/26539441/r-remove-null-elements-from-list-of-lists}{SO question}
+#' \url{https://stackoverflow.com/q/26539441/2994949}
 #' 
 #' @examples
 #' str(l <- list(list(NULL),list(1),list('a', NULL)))
@@ -1735,7 +1735,7 @@ cum_mid <- function(x, adj = 0.5) {
 #' \code{length(x)} for each match found in \code{x}.
 #' 
 #' @references
-#' Adapted from \href{http://stackoverflow.com/questions/33027611/how-to-index-a-vector-sequence-within-a-vector-sequence/33028695}{SO question}
+#' Adapted from \url{https://stackoverflow.com/q/33027611/2994949}
 #' 
 #' @seealso
 #' \code{\link{grep}}; \code{\link[rawr]{mgrep}}; \code{\link[rawr]{\%==\%}}
@@ -1788,7 +1788,7 @@ vgrepl <- function(pattern, x) {
 #' \code{\link{strwrap}}
 #' 
 #' @references
-#' Adapted from \href{http://stackoverflow.com/questions/34710597/justify-text-in-r}{SO question}
+#' Adapted from \url{https://stackoverflow.com/q/34710597/2994949}
 #' 
 #' @examples
 #' x <- paste(rownames(mtcars), collapse = ' ')

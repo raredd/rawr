@@ -19,5 +19,5 @@ flatten(l)
 
 }
 \references{
-\href{https://stackoverflow.com/questions/8139677/how-to-flatten-a-list-to-a-list-without-coercion}{SO question}
+\url{https://stackoverflow.com/q/8139677/2994949}
 }

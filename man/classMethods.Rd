@@ -31,7 +31,7 @@ classMethods(mtcars, summary)
 }
 \references{
 \url{https://gist.github.com/MrFlick/55ed854eb935e5c21f71};
-\url{http://stackoverflow.com/questions/42738851/r-how-to-find-what-s3-method-will-be-called-on-an-object}
+\url{https://stackoverflow.com/q/42738851/2994949}
 }
 \seealso{
 \code{\link{methods}}, \code{\link{S3Methods}}, \code{\link{class}}

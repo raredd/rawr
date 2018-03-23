@@ -172,7 +172,7 @@ show_markdown <- function(..., use_viewer = !is.null(getOption('viewer')),
 #' @seealso
 #' \code{\link{show_html}}, \code{\link{show_markdown}},
 #' \href{http://detexify.kirelabs.org/classify.html}{draw math symbols},
-#' \href{http://stackoverflow.com/questions/31193843/display-r-formula-elegantly-as-in-latex}{SO question}
+#' \url{https://stackoverflow.com/q/31193843/2994949}
 #' 
 #' @examples
 #' \dontrun{
@@ -208,7 +208,7 @@ show_markdown <- function(..., use_viewer = !is.null(getOption('viewer')),
 #' 
 #' @export
 
-show_math <- function(..., css, use_viewer = !is.null(getOption('viewer'))) {
+show_math <- function(..., css = '', use_viewer = !is.null(getOption('viewer'))) {
   mj <- "
   <script>
     (function () {
@@ -229,8 +229,6 @@ show_math <- function(..., css, use_viewer = !is.null(getOption('viewer'))) {
   
   if (!nzchar(x))
     return(invisible(NULL))
-  if (missing(css))
-    css <- ''
   
   show_html(
     sprintf('<span class="math" style="font-size: 24px; %s;">\n', css),

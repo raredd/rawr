@@ -1284,7 +1284,7 @@ roll_fun <- function(x, n = 5L, FUN = mean, ...,
 #' 
 #' @references
 #' \url{https://gist.github.com/MrFlick/55ed854eb935e5c21f71};
-#' \url{http://stackoverflow.com/questions/42738851/r-how-to-find-what-s3-method-will-be-called-on-an-object}
+#' \url{https://stackoverflow.com/q/42738851/2994949}
 #' 
 #' @examples
 #' fit <- glm(vs ~ mpg, data = mtcars)
@@ -1991,7 +1991,7 @@ insert_matrix <- function(x, rowsep, colsep, rowrep = NA, colrep = rowrep) {
 #' 
 #' @seealso
 #' \code{\link[base]{tryCatch}}; \code{\link[logR]{tryCatch2}};
-#' \url{http://stackoverflow.com/questions/4948361/how-do-i-save-warnings-and-errors-as-output-from-a-function};
+#' \url{https://stackoverflow.com/q/4948361/2994949};
 #' \href{https://github.com/jangorecki/logR}{\pkg{logR} github repo}
 #' 
 #' @examples

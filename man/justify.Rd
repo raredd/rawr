@@ -32,7 +32,7 @@ par(op)
 
 }
 \references{
-Adapted from \href{http://stackoverflow.com/questions/34710597/justify-text-in-r}{SO question}
+Adapted from \url{https://stackoverflow.com/q/34710597/2994949}
 }
 \seealso{
 \code{\link{strwrap}}
