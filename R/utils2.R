@@ -177,33 +177,38 @@ show_markdown <- function(..., use_viewer = !is.null(getOption('viewer')),
 #' @examples
 #' \dontrun{
 #' form1 <- '$$A=\\frac{B}{C}$$'
+#' 
 #' form2 <- '$$
 #'   \\frac{1}{\\displaystyle 1+
 #'   \\frac{1}{\\displaystyle 2+
 #'   \\frac{1}{\\displaystyle 3+x}}} +
 #'   \\frac{1}{1+\\frac{1}{2+\\frac{1}{3+x}}}
 #' $$'
+#' 
 #' form3 <- '\\frac{d}{dx}\\left( \\int_{0}^{x} f(u)\\,du\\right)=f(x)'
 #' 
-#' show_math(form1)
-#' show_math(form2, use_viewer = FALSE)
-#' show_math(form1, form2, form3, css = 'color: red; font-size: 15px;')
-#' 
 #' form4 <- "
-#' \\forall a,b,c \\in \\mathbb{R} \\\\
-#' \\begin{align}
-#'                       a + b &= c \\\\
-#'              (a + b)(a - b) &= c(a - b) \\\\
-#'                   a^2 - b^2 &= ca - cb \\\\
-#'                    a^2 - ca &= b^2 - cb \\\\
-#'   a^2 - ca + \\frac{c^2}{4} &= b^2 - cb + \\frac{c^2}{4} \\\\
-#'        (a - \\frac{c}{2})^2 &= (b - \\frac{c}{2})^2 \\\\
-#'            a - \\frac{c}{2} &= b - \\frac{c}{2} \\\\
-#'                           a &= b \\qquad \\qquad \\blacksquare \\\\
-#'  \\end{align}
+#'   \\forall a,b,c \\in \\mathbb{R} \\\\
+#'   \\begin{align}
+#'                         a + b &= c \\\\
+#'                (a + b)(a - b) &= c(a - b) \\\\
+#'                     a^2 - b^2 &= ca - cb \\\\
+#'                      a^2 - ca &= b^2 - cb \\\\
+#'     a^2 - ca + \\frac{c^2}{4} &= b^2 - cb + \\frac{c^2}{4} \\\\
+#'          (a - \\frac{c}{2})^2 &= (b - \\frac{c}{2})^2 \\\\
+#'              a - \\frac{c}{2} &= b - \\frac{c}{2} \\\\
+#'                             a &= b \\qquad \\qquad \\blacksquare \\\\
+#'    \\end{align}
 #' "
 #' 
+#' show_math(form1)
 #' cat(show_math(form4))
+#' 
+#' ## use default browser
+#' show_math(form2, use_viewer = FALSE)
+#' 
+#' ## concatenate multiple expressions
+#' show_math(form1, form2, form3, css = 'color: red; font-size: 15px;')
 #' }
 #' 
 #' @export
@@ -220,10 +225,11 @@ show_math <- function(..., css = '', use_viewer = !is.null(getOption('viewer')))
   </script>
   "
   
-  check_expr <- function(x)
+  check_expr <- function(x) {
     ## use \[ expr \] instead of $$ expr $$
     sprintf('\\[ %s \\]',
             gsub('\\\\\\[|\\\\]', '', gsub('^\\$+|\\$+$', '', x)))
+  }
   
   x <- paste(sapply(c(...), check_expr), collapse = '<br />')
   
