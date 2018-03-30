@@ -4,19 +4,22 @@
 \alias{kinda_sort}
 \title{Kinda sort}
 \usage{
-kinda_sort(x, n, decreasing = FALSE, indices)
+kinda_sort(x, n, decreasing = FALSE, indices = NULL, index.return = FALSE)
 }
 \arguments{
 \item{x}{a numeric, complex, character, or logical vector}
 
-\item{n}{number of elements of x to remove from sorting (the default is
+\item{n}{number of elements of x to remain unsorted (the default is
 approximately 10\% of \code{x}), ignored if \code{indices} is given}
 
 \item{decreasing}{logical; if \code{FALSE} (default), \code{x} is sorted
 in increasing order}
 
-\item{indices}{a vector of indices specifying which elemnts of \code{x}
+\item{indices}{a vector of indices specifying which elements of \code{x}
 should \emph{not} be sorted}
+
+\item{index.return}{logical; if \code{TRUE}, the ordering index vector is
+returned}
 }
 \value{
 \code{x} sorted approximately \code{(length(x) - n)/length(x)*100} percent.
@@ -31,14 +34,32 @@ will remain unsorted.
 }
 \examples{
 set.seed(1)
-(x <- sample(1:10))
-# [1]  3  4  5  7  2  8  9  6 10  1
+x <- sample(1:10)
 
-kinda_sort(x)
-# [1]  1  2  5  3  4  6  7  8  9 10
+rbind(
+  unsorted   = x,
+  '50\% sort' = kinda_sort(x, n = 5),
+  'fix 2:5'  = kinda_sort(x, indices = 2:5)
+)
 
-kinda_sort(x, indices = 2:5)
-# [1]  1  4  5  7  2  3  6  8  9 10
+#          [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
+# unsorted    3    4    5    7    2    8    9    6   10     1
+# 50\% sort    3    4    5    6    2    8    7    9   10     1
+# fix 2:5     1    4    5    7    2    3    6    8    9    10
+
+
+## use index.return = TRUE for indices instead of values
+set.seed(1)
+x  <- runif(100)
+o1 <- kinda_sort(x, n = 50, index.return = TRUE)
+
+set.seed(1)
+x  <- runif(100)
+o2 <- kinda_sort(x, n = 50)
+
+stopifnot(
+  identical(x[o1], o2)
+)
 
 }
 \seealso{
