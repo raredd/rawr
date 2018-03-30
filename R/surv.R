@@ -873,9 +873,12 @@ kmplot_data_ <- function(s, strata.lab) {
 #' Internal functions for \code{\link{survdiff}} and \code{\link{survfit}}
 #' objects.
 #' 
-#' \code{lr_pval} and \code{tt_pval} take objects or formulas and compute
-#' log-rank and Tarone's trend test, respectively. \code{lr_text} and
-#' \code{tt_text} format the test results for plotting.
+#' \code{*_pval} functions take (\code{survfit} or \code{survdiff}) objects
+#' or formulas and compute test statistics, p-values, etc. and return a
+#' numeric vector or list.
+#' 
+#' \code{*_text} functions format the test results for plotting and return
+#' an expression or vector of character strings.
 #' 
 #' @param formula,data,rho,... passed to \code{\link{survdiff}} or
 #' \code{\link{coxph}}
@@ -902,6 +905,7 @@ kmplot_data_ <- function(s, strata.lab) {
 #' \dontrun{
 #' library('survival')
 #' data('larynx', package = 'KMsurv')
+#' larynx$stage <- factor(larynx$stage)
 #' 
 #' form <- Surv(time, delta) ~ stage
 #' sf <- survfit(form, larynx)
@@ -909,18 +913,27 @@ kmplot_data_ <- function(s, strata.lab) {
 #' 
 #' kmplot(sf, lr_test = TRUE)
 #' 
+#' 
+#' ## log-rank
 #' rawr:::lr_pval(sf)
 #' rawr:::lr_pval(sd, TRUE)
 #' rawr:::lr_text(Surv(time, delta) ~ stage, larynx)
 #' 
 #' 
+#' ## tarone trend
 #' rawr:::tt_pval(sf)
 #' rawr:::tt_pval(sd, TRUE)
 #' rawr:::tt_text(Surv(time, delta) ~ stage, larynx)
 #' 
 #' ## compare
 #' chi <- coxph(Surv(time, delta) ~ stage, larynx)$score
-#' pchisq(chi, 1, lower.tail = FALSE)
+#' list(chi = chi, p.value = pchisq(chi, 1, lower.tail = FALSE))
+#' 
+#' 
+#' ## hazard ratio/wald p-values
+#' rawr:::hr_pval(sf)
+#' rawr:::hr_pval(sd, TRUE)
+#' rawr:::hr_text(Surv(time, delta) ~ stage, larynx)
 #' }
 #' 
 #' @name surv_test
