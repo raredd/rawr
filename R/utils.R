@@ -1827,7 +1827,7 @@ rapply2 <- function(l, FUN, classes = 'ANY', ...,
 #' @param margin margin to sort by; default is to sort on row values
 #' (\code{margin = 1}); sort on column values using \code{margin = 2}
 #' @param order vector specifying all unique values of \code{m} in the
-#' desired order; if missing, the order will be the sorted unique values
+#' desired order; if \code{NULL}, the order will be the sorted unique values
 #' of \code{m}
 #' @param na.last logical; if \code{TRUE}, missing values are put last; if
 #' \code{FALSE}, they are put first; see \code{\link{order}}
@@ -1835,25 +1835,40 @@ rapply2 <- function(l, FUN, classes = 'ANY', ...,
 #' 
 #' @examples
 #' set.seed(1)
-#' m <- matrix(rpois(5 * 10, 1), 5)
+#' m <- +!!matrix(rpois(5 * 10, 1), 5)
 #' 
 #' ## sort columns by decreasing row values
 #' sort_matrix(m)
 #' 
 #' ## return ordering vector
 #' o <- sort_matrix(m, index.return = TRUE)
-#' identical(sort_matrix(m), m[, o])
+#' stopifnot(
+#'   identical(sort_matrix(m), m[, o])
+#' )
 #' 
 #' ## sort rows by decreasing column values
 #' sort_matrix(m, 2)
 #' 
-#' ## sort 0s first followed by 4,3,2,1
+#' ## sort first by column then by row
+#' sort_matrix(m, 2:1)
+#' ## equivalent to
+#' sort_matrix(sort_matrix(m, 2), 1)
+#' 
+#' ## compare: default vs sort 0s first followed by 4,3,2,1
+#' set.seed(1)
+#' m <- matrix(rpois(5 * 10, 1), 5)
+#' sort_matrix(m, 2)
 #' sort_matrix(m, order = c(0, 4:1))
 #' 
 #' @export
 
-sort_matrix <- function(m, margin = 1L, order, na.last = TRUE,
+sort_matrix <- function(m, margin = 1L, order = NULL, na.last = TRUE,
                         index.return = FALSE) {
+  if (length(margin) > 1L) {
+    m <- Recall(m, margin[1L], order, na.last, index.return)
+    return(Recall(m, margin[-1L], order, na.last, index.return))
+  }
+  
   stopifnot(
     sum(1:2 == margin) == 1L,
     is.logical(na.last) & !is.na(na.last)
@@ -1862,8 +1877,7 @@ sort_matrix <- function(m, margin = 1L, order, na.last = TRUE,
   m <- as.matrix(m)
   m <- if (margin == 1L)
     t(m) else m
-  if (missing(order))
-    order <- sort(unique(c(m)), decreasing = TRUE, na.last = na.last)
+  order <- order %||% sort(unique(c(m)), decreasing = TRUE, na.last = na.last)
   
   stopifnot(
     length(order) == length(unique(c(m)))

@@ -4,7 +4,8 @@
 \alias{sort_matrix}
 \title{Sort matrix}
 \usage{
-sort_matrix(m, margin = 1L, order, na.last = TRUE, index.return = FALSE)
+sort_matrix(m, margin = 1L, order = NULL, na.last = TRUE,
+  index.return = FALSE)
 }
 \arguments{
 \item{m}{a matrix, usually an integer matrix}
@@ -13,7 +14,7 @@ sort_matrix(m, margin = 1L, order, na.last = TRUE, index.return = FALSE)
 (\code{margin = 1}); sort on column values using \code{margin = 2}}
 
 \item{order}{vector specifying all unique values of \code{m} in the
-desired order; if missing, the order will be the sorted unique values
+desired order; if \code{NULL}, the order will be the sorted unique values
 of \code{m}}
 
 \item{na.last}{logical; if \code{TRUE}, missing values are put last; if
@@ -27,19 +28,29 @@ columns.
 }
 \examples{
 set.seed(1)
-m <- matrix(rpois(5 * 10, 1), 5)
+m <- +!!matrix(rpois(5 * 10, 1), 5)
 
 ## sort columns by decreasing row values
 sort_matrix(m)
 
 ## return ordering vector
 o <- sort_matrix(m, index.return = TRUE)
-identical(sort_matrix(m), m[, o])
+stopifnot(
+  identical(sort_matrix(m), m[, o])
+)
 
 ## sort rows by decreasing column values
 sort_matrix(m, 2)
 
-## sort 0s first followed by 4,3,2,1
+## sort first by column then by row
+sort_matrix(m, 2:1)
+## equivalent to
+sort_matrix(sort_matrix(m, 2), 1)
+
+## compare: default vs sort 0s first followed by 4,3,2,1
+set.seed(1)
+m <- matrix(rpois(5 * 10, 1), 5)
+sort_matrix(m, 2)
 sort_matrix(m, order = c(0, 4:1))
 
 }
