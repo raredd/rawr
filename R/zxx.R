@@ -1061,7 +1061,7 @@ fill_df <- function(data, key, ids, fill, values) {
 #' \code{x} sorted approximately \code{(length(x) - n)/length(x)*100} percent.
 #' 
 #' @seealso
-#' \code{\link{sym_sort}}
+#' \code{\link{sort2}}; \code{\link{sym_sort}}
 #' 
 #' @examples
 #' set.seed(1)
@@ -1097,22 +1097,15 @@ fill_df <- function(data, key, ids, fill, values) {
 kinda_sort <- function(x, n, decreasing = FALSE, indices = NULL,
                        index.return = FALSE) {
   l <- length(x)
-  o <- seq.int(l)
   n <- if (missing(n))
     ceiling(0.1 * l) else if (n > l) l else n
   
   if ((n <- as.integer(n)[1L]) == 0L)
     return(x)
   
-  ## replace kept values with NA and order remaining
-  s <- x
-  k <- sort(indices %||% sample(o, n))
-  s[k] <- NA
-  i <- with(rle(!is.na(s)), rep(values, lengths))
-  
-  ## update sorted and kept indices
-  o[i]  <- order(s, decreasing = decreasing, na.last = NA)
-  o[!i] <- k
+  k <- sort(indices %||% sample(seq.int(l), n))
+  s <- replace(x, k, NA)
+  o <- sort2(s, decreasing, TRUE)
   
   if (index.return)
     o else x[o]

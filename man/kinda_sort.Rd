@@ -63,5 +63,5 @@ stopifnot(
 
 }
 \seealso{
-\code{\link{sym_sort}}
+\code{\link{sort2}}; \code{\link{sym_sort}}
 }
