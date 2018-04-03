@@ -4,7 +4,7 @@
 # classMethods, getMethods, regcaptures, regcaptures2, cast, melt, View2, view,
 # clist, rapply2, sort_matrix, insert, insert_matrix, tryCatch2, rleid,
 # droplevels2, combine_levels, combine_regex, rownames_to_column,
-# column_to_rownames, split_nth
+# column_to_rownames, split_nth, sort2
 # 
 # rawr_ops:
 # %ni%, %==%, %||%, %inside%, %:%
@@ -2386,4 +2386,48 @@ split_nth <- function(text, pattern, n = NULL, keep_split = FALSE,
     paste0(repl, regmatches(text, m)[[1L]][n], repl) else repl
   
   strsplit(text, repl, fixed = TRUE)[[1L]]
+}
+
+#' Sorting or ordering of vectors
+#' 
+#' Sort (or order) a vector or factor (partially) into ascending or descending
+#' order keeping \code{NA} values in place.
+#' 
+#' @param x a numeric, complex, or logical vector
+#' @param decreasing logical; if \code{TRUE}, \code{x} is sorted in decreasing
+#' order
+#' @param index.return logical; if \code{TRUE}, an integer vector with the
+#' ordering index is returned
+#' @param method the sorting method used, \code{"shell"} (default) or
+#' \code{"radix"}; see \code{\link{order}}
+#' 
+#' @examples
+#' set.seed(1)
+#' x <- sample(10)
+#' x[4:6] <- NA
+#' 
+#' sort2(x)
+#' 
+#' ## compare
+#' sort(x, na.last = NA)
+#' sort(x, na.last = TRUE)
+#' sort(x, na.last = FALSE)
+#' 
+#' @export
+
+sort2 <- function(x, decreasing = FALSE, index.return = FALSE,
+                  method = c('shell', 'radix')) {
+  method <- match.arg(method)
+  
+  o <- if (anyNA(x)) {
+    o <- seq_along(x)
+    i <- with(rle(!is.na(x)), rep(values, lengths))
+    o[i] <- order(x, decreasing = decreasing, na.last = NA, method = method)
+    o
+  } else {
+    order(x, decreasing = decreasing, method = method)
+  }
+  
+  if (index.return)
+    o else x[o]
 }
