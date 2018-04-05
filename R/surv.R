@@ -1117,12 +1117,14 @@ hr_text <- function(formula, data, ..., details = TRUE, pFUN = NULL) {
           if (!missing(data)) data else eval(formula$call$data), ...)
   else formula
   
-  cph <- tryCatch(
-    if (inherits(object, 'coxph'))
-      object else coxph(formula, data, ...),
-    warning = function(w) '',
-    error   = function(e) e
-  )
+  suppressWarnings({
+    cph <- tryCatch(
+      if (inherits(object, 'coxph'))
+        object else coxph(formula, data, ...),
+      # warning = function(w) '',
+      error   = function(e) e
+    )
+  })
   
   if (isTRUE(cph))
     return(FALSE)
@@ -1134,7 +1136,8 @@ hr_text <- function(formula, data, ..., details = TRUE, pFUN = NULL) {
   obj <- hr_pval(cph, details = TRUE)
   
   txt <- apply(obj, 1L, function(x)
-    sprintf('HR %.2f [%.2f, %.2f], %s', x[1L], x[2L], x[3L], pFUN(x[4L])))
+    sprintf('HR %.2f [%.2f, %.2f], %s', x[1L], x[2L], x[3L],
+            {pv <- pFUN(x[4L]); if (is.na(pv)) 'p > 0.99' else pv}))
   txt <- paste(cph$xlevels[[attr(terms(cph), 'term.labels')]],
                c('Reference', txt), sep = ': ')
   
