@@ -281,7 +281,8 @@ kmplot <- function(s,
   }
   ## remove missing here for special case: all NA for one strata level
   ## drops level in s$strata but not in table(sdat[, svar])
-  sdat <- na.omit(sdat[, all.vars(form)])
+  if (!is.null(sdat))
+    sdat <- na.omit(sdat[, all.vars(form)])
   
   ## single strata
   one <- identical(svar, '1')
