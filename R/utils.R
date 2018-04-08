@@ -1724,12 +1724,12 @@ clist <- function (x, y, how = c('cbind', 'rbind', 'cbindx', 'rbindx')) {
   cbindx.data.frame <- cbindx
   rbindx.data.frame <- rbindx
   
-  nn  <- names(rapply(c(x, y), names, how = 'list'))
+  nn <- names(rapply(c(x, y), names, how = 'list'))
   if (is.null(nn) || any(!nzchar(nn)))
     stop('All non-NULL list elements should have unique names', domain = NA)
   
   nn <- unique(c(names(x), names(y)))
-  z <- setNames(vector('list', length(nn)), nn)
+  z  <- setNames(vector('list', length(nn)), nn)
   
   bind <- function(x, y)
     switch(class(x %||% y),

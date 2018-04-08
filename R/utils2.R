@@ -296,6 +296,8 @@ roundr.default <- function(x, digits = 1L) {
   zero <- sprintf(fmt, 0)
   res[res == paste0('-', zero)] <- zero
   
+  res[is.na(x)] <- NA
+  
   setNames(res, names(x))
 }
 
