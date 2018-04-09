@@ -111,7 +111,8 @@
 #' @param test_details logical; if \code{TRUE} (default), all test details
 #' (test statistic, degrees of freedom, p-value) are shown; if \code{FALSE},
 #' only the p-value is shown
-#' @param test.args an optional \emph{named} list of 
+#' @param test.args an optional \emph{named} list of \code{\link{mtext}}
+#' arguments controlling the \code{*_test} text
 #' @param hr_text logical; if \code{TRUE}, a \code{\link{coxph}} model is fit,
 #' and a summary of the hazard ratios, confidence intervals, and Wald p-values
 #' is shown
