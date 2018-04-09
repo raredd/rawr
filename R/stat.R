@@ -2119,6 +2119,7 @@ kw.test.default <- function(x, g, ..., simulate.p.value = FALSE, B = 2000L) {
       stop('all entries of \'x\' must be nonnegative and finite')
     if (!missing(g))
       warning('\'x\' is a matrix - ignoring \'g\'')
+    names(dimnames(x)) <- NULL
     x <- data.frame(as.table(x))
     g <- rep(x$Var2, times = x$Freq)
     x <- rep(x$Var1, times = x$Freq)
