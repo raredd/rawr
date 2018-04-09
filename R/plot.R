@@ -219,6 +219,8 @@ jmplot <- function(x, y, z,
 #' used, e.g., \code{test = cuzick.test} or \code{function(x, g)
 #' cuzick.test(x, g)}; note that if \code{test} is a function, it must have
 #' at least two arguments with the numeric data values and group
+#' @param test.args an optional \emph{named} list of \code{\link{mtext}}
+#' arguments controlling the \code{test} text
 #' @param ann logical; annotate plot
 #' @param add logical; add to an existing plot
 #' @param panel.first an "expression" to be evaluated after the plot axes are
@@ -279,7 +281,8 @@ jmplot <- function(x, y, z,
 #' 
 #' tplot(mpg ~ gear, mtcars, test = rawr::cuzick.test) ## trend test
 #' tplot(mtcars$mpg, 1:2, test = function(x, g)        ## custom test
-#'   wilcox.test(x ~ g, data.frame(x, g), exact = FALSE, paired = TRUE))
+#'   wilcox.test(x ~ g, data.frame(x, g), exact = FALSE, paired = TRUE),
+#'   test.args = list(col = 2, at = 1.5, adj = 0.5, line = -3, cex = 2))
 #' 
 #' 
 #' ## tplot has the same return value as boxplot
@@ -345,7 +348,7 @@ tplot.default <- function(x, g, ..., type = 'db',
                           text.na = 'missing',
                           
                           ## extra stuff
-                          test = FALSE,
+                          test = FALSE, test.args = list(),
                           ann = par('ann'), axes = TRUE, frame.plot = axes,
                           add = FALSE, at, horizontal = FALSE,
                           panel.first = NULL, panel.last = NULL) {
@@ -642,9 +645,16 @@ tplot.default <- function(x, g, ..., type = 'db',
       }
     )
     
-    mtext(pvalr(pv$p.value, show.p = TRUE), side = 3L, line = 0.5,
-          # at = if (ng %% 2 == 0) NA else par('usr')[2] * .95,
-          cex = 1.2, at = par('usr')[2], font = 3L, adj = 1)
+    ## defaults passed to mtext
+    targs <- list(
+      text = pvalr(pv$p.value, show.p = TRUE),
+      side = 3L, line = 0.5, cex = 1.2,
+      at = par('usr')[2L], font = 3L, adj = 1
+    )
+    
+    if (!islist(test.args))
+      test.args <- list()
+    do.call('mtext', modifyList(targs, test.args))
   }
   
   panel.last
