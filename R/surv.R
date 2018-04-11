@@ -114,10 +114,14 @@
 #' @param test.args an optional \emph{named} list of \code{\link{mtext}}
 #' arguments controlling the \code{*_test} text
 #' @param hr_text logical; if \code{TRUE}, a \code{\link{coxph}} model is fit,
-#' and a summary of the hazard ratios, confidence intervals, and Wald p-values
+#' and a summary (hazard ratios, confidence intervals, and Wald p-values)
 #' is shown
 #' @param hr.args an optional \emph{named} list of \code{\link{legend}}
 #' arguments controlling the \code{hr_text} legend
+#' @param pw_test logical; if \code{TRUE}, all pairwise tests of survival
+#' curves are performed, and p-valuees are shown
+#' @param pw.args an optional \emph{named} list of \code{\link{legend}}
+#' arguments controlling the \code{pw_text} legend
 #' @param format_pval logical; if \code{TRUE}, p-values are formatted with
 #' \code{\link{pvalr}}; if \code{FALSE}, no formatting is performed;
 #' alternatively, a function can be passed which should take a numeric value
@@ -169,6 +173,8 @@
 #' kmplot(km2, tt_test = TRUE, format_pval = format.pval)
 #' kmplot(km1, wh.atrisk = 'survival', atrisk.digits = 3L)
 #' kmplot(km1, wh.atrisk = 'atrisk-events')
+#' kmplot(survfit(Surv(time, status) ~ rx, data = colon),
+#'        pw_test = TRUE, pw.args = list(text.col = 1:3, x = 'bottomleft'))
 #' 
 #' ## expressions in at-risk table (strata.expr takes precedence)
 #' kmplot(km1, strata.lab = c('\u2640', '\u2642'))
@@ -251,6 +257,7 @@ kmplot <- function(s,
                    lr_test = FALSE, tt_test = FALSE, test_details = TRUE,
                    test.args = list(),
                    hr_text = FALSE, hr.args = list(),
+                   pw_test = FALSE, pw.args = list(),
                    format_pval = TRUE,
                    
                    ## other options
@@ -590,6 +597,17 @@ kmplot <- function(s,
     do.call('legend', modifyList(largs, hr.args))
   }
   
+  ## pairwise tests
+  if (!identical(pw_test, FALSE)) {
+    txt <- pw_text(s$call$formula, data = sdat)
+    
+    largs <- list(x = 'topright', legend = txt, bty = 'n')
+    
+    if (!islist(pw.args))
+      pw.args <- list()
+    do.call('legend', modifyList(largs, pw.args))
+  }
+  
   ## survival and confidence lines
   u0 <- u1 <- par('usr')
   u1[2L] <- oxlim[2L] * 1.01
@@ -839,6 +857,7 @@ points.kmplot <- function(x, xscale, xmax, fun,
       }
     }
   }
+  
   invisible(res)
 }
 
@@ -882,6 +901,12 @@ kmplot_data_ <- function(s, strata.lab) {
 #' \code{*_text} functions format the test results for plotting and return
 #' an expression or vector of character strings.
 #' 
+#' Note that \code{pw_pval} and \code{pw_text} do not support formulas
+#' with more than one predictor, e.g., \code{y ~ a + b}. An equivalent
+#' formula is acceptable, e.g., \code{y ~ x} where \code{x} is the
+#' \code{interaction(a, b)} or similar. See \code{\link{survdiff_pairs}}
+#' for more details and examples.
+#' 
 #' @param formula,data,rho,... passed to \code{\link{survdiff}} or
 #' \code{\link{coxph}}
 #' @param object a \code{\link{survfit}}, \code{\link{survdiff}}, or
@@ -922,6 +947,12 @@ kmplot_data_ <- function(s, strata.lab) {
 #' rawr:::lr_text(Surv(time, delta) ~ stage, larynx)
 #' 
 #' 
+#' ## pairwise log-rank
+#' sf$call$formula <- form
+#' rawr:::pw_pval(sf)
+#' rawr:::pw_text(sf)
+#' 
+#' 
 #' ## tarone trend
 #' rawr:::tt_pval(sf)
 #' rawr:::tt_pval(sd, TRUE)
@@ -947,7 +978,7 @@ lr_pval <- function(object, details = FALSE, data = NULL, ...) {
       object$call$formula <- eval(object$call$formula, parent.frame(1L))
     survdiff(as.formula(object$call$formula),
              eval(data %||% object$.data %||% object$call$data))
-  } else if (inherits(object, 'formula'))
+  } else if (inherits(object, c('formula', 'call')))
     survdiff(object, data, ...)
   else object
   
@@ -1019,7 +1050,7 @@ tt_pval <- function(object, details = FALSE, data = NULL, ...) {
       object$call$formula <- eval(object$call$formula, parent.frame(1L))
     coxph(as.formula(object$call$formula),
           eval(data %||% object$.data %||% object$call$data))
-  } else if (inherits(object, 'formula'))
+  } else if (inherits(object, c('formula', 'call')))
     coxph(object, data, ...)
   else object
   
@@ -1083,7 +1114,7 @@ hr_pval <- function(object, details = FALSE, data = NULL, ...) {
       object$call$formula <- eval(object$call$formula, parent.frame(1L))
     coxph(as.formula(object$call$formula),
           eval(data %||% object$.data %||% object$call$data))
-  } else if (inherits(object, 'formula'))
+  } else if (inherits(object, c('formula', 'call')))
     coxph(object, data, ...)
   else object
   
@@ -1145,6 +1176,47 @@ hr_text <- function(formula, data, ..., details = TRUE, pFUN = NULL) {
   if (is.null(cph$xlevels))
     c(NA, gsub('^.*: ', '', txt)[-1L])
   else txt
+}
+
+#' @rdname surv_test
+pw_pval <- function(object, details = FALSE, data = NULL, ...) {
+  object <- if (inherits(object, 'survdiff_pairs'))
+    object
+  else if (inherits(object, c('survdiff', 'survfit'))) {
+    survdiff_pairs(object, ..., digits = 10L)
+  } else if (inherits(object, c('formula', 'call'))) {
+    object <- eval(
+      substitute(survdiff(form, data = data, ...), list(form = object))
+    )
+    survdiff_pairs(object)
+  } else stop('pw_pval - Invalid object', call. = FALSE)
+  
+  stopifnot(
+    inherits(object, 'survdiff_pairs')
+  )
+  
+  m <- object$p.value
+  p <- m[lower.tri(m)]
+  n <- sprintf('%s vs %s', colnames(m)[col(m)[lower.tri(m, FALSE)]],
+               rownames(m)[row(m)[lower.tri(m, FALSE)]])
+  
+  setNames(p, n)
+}
+
+#' @rdname surv_test
+pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL) {
+  pFUN <- if (is.null(pFUN) || isTRUE(pFUN))
+    function(x) pvalr(x, show.p = TRUE)
+  else if (identical(pFUN, FALSE))
+    identity
+  else {
+    stopifnot(is.function(pFUN))
+    pFUN
+  }
+  
+  obj <- pw_pval(formula, data = data, ...)
+  
+  sprintf('%s: %s', names(obj), pFUN(obj))
 }
 
 #' kmplot_by
@@ -1912,7 +1984,12 @@ survdiff_pairs <- function(s, ..., method = p.adjust.methods, digits = 3L) {
     p.adjust(p.value[lower.tri(p.value)], method = method)
   p.value <- t(tpv)
   
-  lapply(list(n = nn, chi.sq = chisq, p.value = p.value), round, digits)
+  res <- list(n = nn, chi.sq = chisq, p.value = p.value)
+  
+  structure(
+    lapply(res, round, digits),
+    class = 'survdiff_pairs'
+  )
 }
 
 #' Landmark

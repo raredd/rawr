@@ -8,6 +8,8 @@
 \alias{tt_text}
 \alias{hr_pval}
 \alias{hr_text}
+\alias{pw_pval}
+\alias{pw_text}
 \title{Survival curve tests}
 \usage{
 lr_pval(object, details = FALSE, data = NULL, ...)
@@ -21,6 +23,10 @@ tt_text(formula, data, ..., details = TRUE, pFUN = NULL)
 hr_pval(object, details = FALSE, data = NULL, ...)
 
 hr_text(formula, data, ..., details = TRUE, pFUN = NULL)
+
+pw_pval(object, details = FALSE, data = NULL, ...)
+
+pw_text(formula, data, ..., details = TRUE, pFUN = NULL)
 }
 \arguments{
 \item{object}{a \code{\link{survfit}}, \code{\link{survdiff}}, or
@@ -48,6 +54,12 @@ numeric vector or list.
 
 \code{*_text} functions format the test results for plotting and return
 an expression or vector of character strings.
+
+Note that \code{pw_pval} and \code{pw_text} do not support formulas
+with more than one predictor, e.g., \code{y ~ a + b}. An equivalent
+formula is acceptable, e.g., \code{y ~ x} where \code{x} is the
+\code{interaction(a, b)} or similar. See \code{\link{survdiff_pairs}}
+for more details and examples.
 }
 \examples{
 \dontrun{
@@ -66,6 +78,12 @@ kmplot(sf, lr_test = TRUE)
 rawr:::lr_pval(sf)
 rawr:::lr_pval(sd, TRUE)
 rawr:::lr_text(Surv(time, delta) ~ stage, larynx)
+
+
+## pairwise log-rank
+sf$call$formula <- form
+rawr:::pw_pval(sf)
+rawr:::pw_text(sf)
 
 
 ## tarone trend

@@ -18,7 +18,8 @@ kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
   cex.axis = par("cex.axis"), legend = !atrisk && !is.null(s$strata),
   legend.args = list(), lr_test = FALSE, tt_test = FALSE,
   test_details = TRUE, test.args = list(), hr_text = FALSE,
-  hr.args = list(), format_pval = TRUE, add = FALSE, panel.first = NULL,
+  hr.args = list(), pw_test = FALSE, pw.args = list(),
+  format_pval = TRUE, add = FALSE, panel.first = NULL,
   panel.last = NULL, ...)
 }
 \arguments{
@@ -129,11 +130,17 @@ only the p-value is shown}
 arguments controlling the \code{*_test} text}
 
 \item{hr_text}{logical; if \code{TRUE}, a \code{\link{coxph}} model is fit,
-and a summary of the hazard ratios, confidence intervals, and Wald p-values
+and a summary (hazard ratios, confidence intervals, and Wald p-values)
 is shown}
 
 \item{hr.args}{an optional \emph{named} list of \code{\link{legend}}
 arguments controlling the \code{hr_text} legend}
+
+\item{pw_test}{logical; if \code{TRUE}, all pairwise tests of survival
+curves are performed, and p-valuees are shown}
+
+\item{pw.args}{an optional \emph{named} list of \code{\link{legend}}
+arguments controlling the \code{pw_text} legend}
 
 \item{format_pval}{logical; if \code{TRUE}, p-values are formatted with
 \code{\link{pvalr}}; if \code{FALSE}, no formatting is performed;
@@ -211,6 +218,8 @@ kmplot(km2, tt_test = TRUE, test_details = FALSE)
 kmplot(km2, tt_test = TRUE, format_pval = format.pval)
 kmplot(km1, wh.atrisk = 'survival', atrisk.digits = 3L)
 kmplot(km1, wh.atrisk = 'atrisk-events')
+kmplot(survfit(Surv(time, status) ~ rx, data = colon),
+       pw_test = TRUE, pw.args = list(text.col = 1:3, x = 'bottomleft'))
 
 ## expressions in at-risk table (strata.expr takes precedence)
 kmplot(km1, strata.lab = c('\\u2640', '\\u2642'))
