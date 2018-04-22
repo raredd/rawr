@@ -93,8 +93,7 @@ kmplot_by(time = 'time', event = 'status', data = colon)
 colon2 <- within(colon[duplicated(colon$id), ], {
   pfs_time <- time
   pfs_ind  <- status
-  sex <- c('Female','Male')[sex + 1L]
-  sex1 <- 'Male'
+  sex <- factor(sex, 0:1, c('Female','Male'))
 })
 
 kmplot_by('rx', 'pfs', data = colon2, col.surv = 1:3,
@@ -117,10 +116,10 @@ kmplot_by('rx + sex', 'pfs', colon2, strata_lab = FALSE, lty.surv = 1:6)
 
 ## if "by" is given, default is to plot separately
 kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3,
-  strata_lab = c('Observation','Trt','Trt + 5-FU'))
+  strata_lab = c('Observation', 'Trt', 'Trt + 5-FU'))
   
 ## if "by" is given, use map.col to map colors to plots
-kmplot_by('rx', 'pfs', colon2, by = 'rx', map.col = TRUE, single = FALSE)
+kmplot_by( 'rx', 'pfs', colon2, by = 'rx', map.col = TRUE, single = FALSE)
 kmplot_by('sex', 'pfs', colon2, by = 'rx', map.col = TRUE, single = FALSE)
 
 ## to ensure colors are mapped to the same strata across plots (eg, if
@@ -131,8 +130,7 @@ kmplot_by('rx', 'pfs', colon2, by = 'rx', xlim = c(0, 3000),
 
 ## if single = FALSE, uses n2mfrow function to set par('mfrow')
 kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3, single = FALSE,
-  strata_lab = c('Observation','Trt','Trt + 5-FU'),
-  main = levels(factor(colon2$sex)))
+  strata_lab = c('Observe', 'Trt', 'Trt + 5-FU'), main = levels(colon2$sex))
 
 
 ## if par('mfrow') is anything other than c(1,1), uses current setting
@@ -140,7 +138,7 @@ par(mfrow = c(2,2))
 kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3, single = FALSE,
   strata_lab = c('Observation','Trt','Trt + 5-FU'), add = TRUE)
 kmplot_by('1', 'pfs', colon2, by = 'sex', col.surv = 1:3, single = FALSE,
-  strata_lab = FALSE)
+  strata_lab = FALSE, fig = c('C', 'D'), lr_test = FALSE)
 
 
 ## use add = TRUE to add to a figure region without using the by argument
