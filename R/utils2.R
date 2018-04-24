@@ -952,8 +952,7 @@ tabler.survfit <- function(x, ...) {
 #' t2 <- t2[, apply(t2, 2, function(x) !all(x %in% '0'))]
 #' rownames(t2)[duplicated(rownames(t2))] <- ''
 #' 
-#' identical(t1, t2)
-#' # [1] TRUE
+#' stopifnot(identical(t1, t2))
 #' 
 #' 
 #' ## example workflow
@@ -970,7 +969,7 @@ tabler.survfit <- function(x, ...) {
 #' ## get worst toxicities by id, by grade
 #' n <- colSums(table(tox$id, tox$phase) > 0)
 #' tox[] <- lapply(tox, factor)
-#' tox <- tox_worst(tox, desc = 'tox_desc')$tox_worst
+#' tox <- tox_worst(tox, desc = 'tox_desc')
 #' 
 #' out <- tabler_by2(tox, 'tox_desc', 'grade', stratvar = 'phase', zeros = '-')
 #' colnames(out)[1] <- sprintf('Total<br /><font size=1>n = %s</font>', sum(n))
@@ -2050,11 +2049,18 @@ match_ctc <- function(..., version = 4L) {
 #' return toxicity descriptions rather than codes; if showing toxicity codes
 #' is desired, use \code{desc} instead
 #' 
+#' note that \code{version} should be either \code{3} or \code{4} (default)
+#' corresponding to \code{\link{ctcae_v3}} or \code{\link{ctcae_v4}},
+#' respectively
+#' 
 #' @return
-#' A list of length three with \code{tox_worst}, the filtered data frame;
-#' \code{data}, the input data frame sorted by \code{id}, \code{desc},
-#' and \code{grade}; and \code{duplicates}, the rows which correspond to
-#' duplicate \code{desc} per \code{id} but of an equal or lesser \code{grade}.
+#' A filtered data frame with attributes:
+#' 
+#' \item{\code{attr(., "data")}}{the input data frame sorted by \code{id},
+#' \code{desc}, and \code{grade}}
+#' \item{\code{attr(., "duplicates"}}{the indices of rows removed from
+#' \code{attr(., "data")} which correspond to duplicate \code{desc} per
+#' \code{id} with equal or lesser \code{grade}s}
 #' 
 #' @seealso
 #' \code{\link{match_ctc}}, \code{\link{tabler_by}}; \code{\link{tabler_by2}}
@@ -2067,16 +2073,30 @@ match_ctc <- function(..., version = 4L) {
 #'                   code = f(rawr::ctcae_v4$tox_code[1:10]),
 #'                   grade = factor(f(1:3, prob = c(.3, .4, .3))))
 #' 
-#' (tox1 <- tox_worst(tox, code = 'code'))
+#' ## get worst tox by CTCAE code
+#' ## this will convert the code to description strings
+#' tox1 <- tox_worst(tox, id = 'id', grade = 'grade', code = 'code')
 #' 
+#' ## or by formatted descriptions and grade
 #' tox$desc <- factor(match_ctc(tox$code)$matches$tox_desc)
-#' (tox2 <- tox_worst(tox))
+#' tox2 <- tox_worst(tox, id = 'id', grade = 'grade', desc = 'desc')
 #' 
+#' ## both methods are equivalent
 #' stopifnot(identical(tox1, tox2))
 #' 
+#' 
+#' ## these rows have been removed from attr(tox1, 'data')
+#' attr(tox1, 'duplicates')
+#' 
+#' stopifnot(
+#'   all.equal(tox1, attr(tox1, 'data')[-attr(tox1, 'duplicates'), ],
+#'             check.attributes = FALSE)
+#' )
+#' 
+#' 
 #' ## use tabler_by/tabler_by2 to summarize
-#' tabler_by(tox1$tox_worst, 'desc', 'grade', n = 10, pct.sign = FALSE)
-#' tabler_by2(tox1$tox_worst, 'desc', 'grade', stratvar = 'phase')
+#' tabler_by(tox1, 'desc', 'grade', n = 10, pct.sign = FALSE)
+#' tabler_by2(tox1, 'desc', 'grade', stratvar = 'phase')
 #' 
 #' @export
 
@@ -2092,13 +2112,12 @@ tox_worst <- function(data, id = 'id', desc = 'desc', grade = 'grade',
   }
   
   data <- data[order(data[, id], data[, desc], -xtfrm(data[, grade])), ]
-  idx <- which(duplicated(data[, c(id, desc)]))
+  idx  <- which(duplicated(data[, c(id, desc)]))
   
-  list(
-    tox_worst  = if (length(idx))
+  structure(
+    if (length(idx))
       data[-idx, ] else data,
-    data       = data,
-    duplicates = idx
+    data = data, duplicates = idx
   )
 }
 

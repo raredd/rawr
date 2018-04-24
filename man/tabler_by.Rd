@@ -111,8 +111,7 @@ t2 <- t2[!t2[, 'Total'] \%in\% '0', ]
 t2 <- t2[, apply(t2, 2, function(x) !all(x \%in\% '0'))]
 rownames(t2)[duplicated(rownames(t2))] <- ''
 
-identical(t1, t2)
-# [1] TRUE
+stopifnot(identical(t1, t2))
 
 
 ## example workflow
@@ -129,7 +128,7 @@ tox <- cbind(tox, match_ctc(tox$code)$matches[, c('tox_cat', 'tox_desc')])
 ## get worst toxicities by id, by grade
 n <- colSums(table(tox$id, tox$phase) > 0)
 tox[] <- lapply(tox, factor)
-tox <- tox_worst(tox, desc = 'tox_desc')$tox_worst
+tox <- tox_worst(tox, desc = 'tox_desc')
 
 out <- tabler_by2(tox, 'tox_desc', 'grade', stratvar = 'phase', zeros = '-')
 colnames(out)[1] <- sprintf('Total<br /><font size=1>n = \%s</font>', sum(n))
