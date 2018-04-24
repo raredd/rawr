@@ -9,7 +9,9 @@
 #' and categories.
 #' 
 #' @source
-#' \href{http://ctep.cancer.gov/protocolDevelopment/electronic_applications/docs/ctcaev3.pdf}{CTCAEv3.pdf}
+#' \url{http://ctep.cancer.gov/protocolDevelopment/electronic_applications/docs/ctcaev3.pdf}
+#' 
+#' \url{https://ctep.cancer.gov/protocoldevelopment/electronic_applications/ctc.htm}
 #'
 #' @format
 #' A data frame with 1059 rows and 4 variables:
@@ -21,7 +23,8 @@
 #' }
 #' 
 #' @seealso
-#' \code{\link{ctcae_v4}}; \code{\link{match_ctc}}
+#' \code{\link{ctcae_v4}}; \code{\link{match_ctc}}; \code{\link{tox_worst}}
+
 'ctcae_v3'
 
 #' Common Terminology Criteria for Adverse Events, v4
@@ -30,7 +33,9 @@
 #' and categories.
 #'  
 #' @source
-#' \href{http://evs.nci.nih.gov/ftp1/CTCAE/CTCAE_4.03_2010-06-14_QuickReference_8.5x11.pdf}{CTCAEv4.pdf}
+#' \url{https://ctep.cancer.gov/protocoldevelopment/electronic_applications/docs/ctcae_4_with_lay_terms.pdf}
+#' 
+#' \url{https://ctep.cancer.gov/protocoldevelopment/electronic_applications/ctc.htm}
 #'
 #' @format
 #' A data frame with 790 rows and 5 variables:
@@ -44,5 +49,6 @@
 #' }
 #' 
 #' @seealso
-#' \code{\link{ctcae_v3}}; \code{\link{match_ctc}}
+#' \code{\link{ctcae_v3}}; \code{\link{match_ctc}}; \code{\link{tox_worst}}
+
 'ctcae_v4'

@@ -14,7 +14,9 @@
 Activities codes, v12 \cr
 }}
 \source{
-\href{http://evs.nci.nih.gov/ftp1/CTCAE/CTCAE_4.03_2010-06-14_QuickReference_8.5x11.pdf}{CTCAEv4.pdf}
+\url{https://ctep.cancer.gov/protocoldevelopment/electronic_applications/docs/ctcae_4_with_lay_terms.pdf}
+
+\url{https://ctep.cancer.gov/protocoldevelopment/electronic_applications/ctc.htm}
 }
 \usage{
 ctcae_v4
@@ -24,6 +26,6 @@ A dataset containing the CTCAE (version 4) toxicity codes, descriptions,
 and categories.
 }
 \seealso{
-\code{\link{ctcae_v3}}; \code{\link{match_ctc}}
+\code{\link{ctcae_v3}}; \code{\link{match_ctc}}; \code{\link{tox_worst}}
 }
 \keyword{datasets}

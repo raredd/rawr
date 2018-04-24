@@ -12,7 +12,9 @@
 \tab \code{ctc_version} \tab version number \cr
 }}
 \source{
-\href{http://ctep.cancer.gov/protocolDevelopment/electronic_applications/docs/ctcaev3.pdf}{CTCAEv3.pdf}
+\url{http://ctep.cancer.gov/protocolDevelopment/electronic_applications/docs/ctcaev3.pdf}
+
+\url{https://ctep.cancer.gov/protocoldevelopment/electronic_applications/ctc.htm}
 }
 \usage{
 ctcae_v3
@@ -22,6 +24,6 @@ A dataset containing the CTCAE (version 3) toxicity codes, descriptions,
 and categories.
 }
 \seealso{
-\code{\link{ctcae_v4}}; \code{\link{match_ctc}}
+\code{\link{ctcae_v4}}; \code{\link{match_ctc}}; \code{\link{tox_worst}}
 }
 \keyword{datasets}
