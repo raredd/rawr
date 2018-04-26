@@ -6,8 +6,9 @@
 \usage{
 tabler_stat(data, varname, byvar, digits = 0L, FUN = NULL,
   format_pval = TRUE, color_pval = TRUE, color_missing = TRUE,
-  dagger = TRUE, continuous_fn = function(...) Gmisc::describeMedian(...,
-  iqr = FALSE), ...)
+  dagger = TRUE, color_cell_by = c("none", "value", "pct"),
+  cell_color = c("black", "red"), continuous_fn = function(...)
+  Gmisc::describeMedian(..., iqr = FALSE), ...)
 }
 \arguments{
 \item{data}{a matrix or data frame with variables \code{varname} and
@@ -27,15 +28,21 @@ using \code{\link{pvalr}}; alternatively, a function may by used which will
 be applied to each p-value}
 
 \item{color_pval}{logical; if \code{TRUE}, p-values will be colored
-by significance; see \code{\link{color_pval}}}
+by significance; see \code{\link{color_pval}}; alternatively, a vector of
+colors passed to \code{\link{color_pval}})}
 
 \item{color_missing}{logical; if \code{TRUE}, rows summarizing missing
-values will be shown in light grey; a color string can be used for a
-custom color}
+values will be shown in light grey; alternatively, a color string can be
+used for a custom color}
 
 \item{dagger}{logical or a character string giving the character to
 associate with \code{FUN}; if \code{FALSE}, none are used; if \code{TRUE},
 the defaults are used (\code{"*"} is used if \code{FUN} is given)}
+
+\item{color_cell_by}{apply a color gradient to each cell (for html output);
+one of \code{"none"} for no coloring, \code{"value"} to color by numeric
+summary (e.g., for continuous variables), or \code{"pct"} to color by
+proportions (e.g., for factors)}
 
 \item{continuous_fn}{a function to describe continuous variables (default
 is to show median and range); see \code{\link[Gmisc]{getDescriptionStatsBy}}}
@@ -108,6 +115,8 @@ mt <- within(mtcars, {
 
 tbl <- lapply(names(mt)[-10L], function(x)
   tabler_stat(mt, x, 'gear', percentage_sign = FALSE,
+              color_cell_by = ifelse(is.factor(mt[, x]), 'pct', 'value'),
+              cell_color = c('black', 'blue', 'red'),
               continuous_fn = Gmisc::describeMean))
 
 ht <- htmlTable::htmlTable(
@@ -121,7 +130,9 @@ structure(ht, class = 'htmlTable')
 
 ## use the tabler_stat2 wrapper for convenience
 tabler_stat2(mt, names(mt)[-10L], 'gear')
+
 tabler_stat2(mt, names(mt)[-10L], 'gear', FUN = c(cyl = 'jt'))
+
 mt$gear <- factor(mt$gear, ordered = TRUE)
 tabler_stat2(mt, names(mt)[-10L], 'gear',
   format_pval = function(x) format.pval(x, digits = 3))

@@ -1222,13 +1222,18 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' using \code{\link{pvalr}}; alternatively, a function may by used which will
 #' be applied to each p-value
 #' @param color_pval logical; if \code{TRUE}, p-values will be colored
-#' by significance; see \code{\link{color_pval}}
+#' by significance; see \code{\link{color_pval}}; alternatively, a vector of
+#' colors passed to \code{\link{color_pval}})
 #' @param color_missing logical; if \code{TRUE}, rows summarizing missing
-#' values will be shown in light grey; a color string can be used for a
-#' custom color
+#' values will be shown in light grey; alternatively, a color string can be
+#' used for a custom color
 #' @param dagger logical or a character string giving the character to
 #' associate with \code{FUN}; if \code{FALSE}, none are used; if \code{TRUE},
 #' the defaults are used (\code{"*"} is used if \code{FUN} is given)
+#' @param color_cell_by apply a color gradient to each cell (for html output);
+#' one of \code{"none"} for no coloring, \code{"value"} to color by numeric
+#' summary (e.g., for continuous variables), or \code{"pct"} to color by
+#' proportions (e.g., for factors)
 #' @param continuous_fn a function to describe continuous variables (default
 #' is to show median and range); see \code{\link[Gmisc]{getDescriptionStatsBy}}
 #' @param ... additional arguments passed to
@@ -1280,6 +1285,7 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' 
 #' tbl <- lapply(names(mt)[-10L], function(x)
 #'   tabler_stat(mt, x, 'gear', percentage_sign = FALSE,
+#'               color_cell_by = ifelse(is.factor(mt[, x]), 'pct', 'none'),
 #'               continuous_fn = Gmisc::describeMean))
 #' 
 #' ht <- htmlTable::htmlTable(
@@ -1293,7 +1299,9 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' 
 #' ## use the tabler_stat2 wrapper for convenience
 #' tabler_stat2(mt, names(mt)[-10L], 'gear')
+#' 
 #' tabler_stat2(mt, names(mt)[-10L], 'gear', FUN = c(cyl = 'jt'))
+#' 
 #' mt$gear <- factor(mt$gear, ordered = TRUE)
 #' tabler_stat2(mt, names(mt)[-10L], 'gear',
 #'   format_pval = function(x) format.pval(x, digits = 3))
@@ -1303,6 +1311,8 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
                         format_pval = TRUE, color_pval = TRUE,
                         color_missing = TRUE, dagger = TRUE,
+                        color_cell_by = c('none', 'value', 'pct'),
+                        cell_color = c('black', 'red'),
                         continuous_fn = function(...)
                           Gmisc::describeMedian(..., iqr = FALSE), ...) {
   fun <- deparse(substitute(FUN))
@@ -1311,6 +1321,13 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
     'lightgrey'
   else if (identical(color_missing, FALSE))
     NULL else color_missing
+  pcol <- if (isTRUE(color_pval))
+    c('red', 'black')
+  else if (!identical(color_pval, FALSE)) {
+    pcol <- color_pval
+    color_pval <- TRUE
+    pcol
+  } else NULL
   
   x <- if (is.character(x <- data[, varname]))
     as.factor(x) else x
@@ -1333,7 +1350,7 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
   res <- Gmisc::getDescriptionStatsBy(
     x = x, by = y, digits = digits, html = TRUE, add_total_col = TRUE,
     show_all_values = TRUE, statistics = FALSE, useNA.digits = 0L,
-    continuous_fn = continuous_fn
+    continuous_fn = continuous_fn, ...
   )
   class(res) <- 'matrix'
   
@@ -1344,6 +1361,22 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
                                  color_missing, rownames(res)[wh])
     res[wh, ] <- sprintf('<font color=%s><i>%s</i></font>',
                          color_missing, res[wh, ])
+  }
+  
+  ## color cells of by variable by proportion or value
+  ## assume prop is in parens and value starts string
+  ## eg, -value (proportion%)
+  color_cell_by <- match.arg(color_cell_by)
+  if (color_cell_by %ni% 'none') {
+    wh <- !wh
+    pp <- switch(color_cell_by,
+                 value = '(^[^(]+)|.',
+                 pct   = '\\(.*?([0-9.]+).*?\\)|.')
+    pp <- gsub(pp, '\\1', res[wh, -1L], perl = TRUE)
+    
+    res[wh, -1L] <-
+      sprintf('<font color="%s">%s</font>', 
+              col_scaler(as.numeric(pp), cell_color), res[wh, -1L])
   }
   
   ## no stat fn, no pvalue column
@@ -1428,7 +1461,8 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
   pvc <- if (is.null(pvn))
     NULL else {
       if (color_pval)
-        color_pval(pvn, format_pval = format_pval)
+        color_pval(pvn, cols = colorRampPalette(pcol)(6L),
+                   format_pval = format_pval)
       else if (isTRUE(format_pval))
         sprintf('<i>%s</i>', pvalr(pvn, html = TRUE))
       else if (identical(format_pval, FALSE))
@@ -1647,7 +1681,9 @@ guess_test <- function(x, y, n_unique_x = 10L) {
 tabler_stat2 <- function(data, varname, byvar, varname_label = names(varname),
                          byvar_label = names(byvar), digits = NULL, FUN = NULL,
                          format_pval = TRUE, color_pval = TRUE,
-                         color_missing = TRUE, dagger = TRUE, statArgs = NULL,
+                         color_missing = TRUE, dagger = TRUE,
+                         cell_color_by = 'none',
+                         cell_color = c('black', 'red'), statArgs = NULL,
                          align = NULL, rgroup = NULL, cgroup = NULL,
                          tfoot = NULL, htmlArgs = NULL, zeros = '-') {
   data <- as.data.frame(data)
@@ -1669,7 +1705,8 @@ tabler_stat2 <- function(data, varname, byvar, varname_label = names(varname),
   
   l <- tabler_stat_list(
     data, varname, byvar, varname_label %||% varname, byvar_label %||% byvar,
-    digits, FUN, format_pval, color_pval, color_missing, dagger, statArgs
+    digits, FUN, format_pval, color_pval, color_missing, dagger,
+    cell_color_by, cell_color, statArgs
   )
   
   tabler_stat_html(l, align, rgroup, cgroup, tfoot, htmlArgs, zeros)
@@ -1679,6 +1716,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
                              byvar_label = byvar, digits = NULL, FUN = NULL,
                              format_pval = TRUE, color_pval = TRUE,
                              color_missing = TRUE, dagger = TRUE,
+                             color_cell_by = 'none', cell_color = NULL,
                              statArgs = NULL) {
   nv <- length(varname)
   byvar <- byvar[1L]
@@ -1707,12 +1745,21 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
     else replace(fun, name_or_index(names(FUN), varname), FUN)
   }
   
+  cell_color <- if (is.null(cell_color))
+    list(c('black', 'red'))
+  else if (islist(cell_color))
+    cell_color else list(cell_color)
+  cell_color <- rep_len(cell_color, nv)
+  
+  color_cell_by <- rep_len(color_cell_by, nv)
+  
   data <- rep_len(list(data), nv)
   pval <- any(!is.na(FUN))
   
   l <- do.call('Map', c(list(
     f = tabler_stat, data, varname, byvar, digits, FUN,
-    list(format_pval), color_pval, color_missing, dagger), statArgs)
+    list(format_pval), color_pval, color_missing, dagger,
+    color_cell_by, cell_color), statArgs)
   )
   names(l) <- varname_label
   
