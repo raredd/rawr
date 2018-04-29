@@ -2252,7 +2252,7 @@ combine_levels <- function(x, levels, labels = NULL, regex = FALSE, ...) {
 #' @rdname combine_levels
 #' @export
 combine_regex <- function(x, levels, labels, keep.original = FALSE, ...) {
-  if (inherits(levels, 'list')) {
+  if (islist(levels)) {
     stopifnot(
       (ok <- sum(nul <- sapply(levels, is.null))) <= 1
     )
@@ -2279,7 +2279,7 @@ combine_regex <- function(x, levels, labels, keep.original = FALSE, ...) {
   )
   
   res <- if (keep.original)
-    x else rep_len(tail(labels, 1L), length(x))
+    as.character(x) else rep_len(tail(labels, 1L), length(x))
   for (ii in seq_along(levels))
     res[grep(pattern = levels[ii], x = x, ...)] <- labels[ii]
   
