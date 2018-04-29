@@ -918,6 +918,9 @@ kmplot_data_ <- function(s, strata.lab) {
 #' \code{\link{pvalr}}; if \code{FALSE}, no formatting is performed;
 #' alternatively, a function can be passed which should take a numeric value
 #' and return a character string (or a value to be coerced) for printing
+#' @param method for \code{pw_*}, the method used to adjust p-values for
+#' multiple comparisons (default is \code{"none"}); see
+#' \code{\link{p.adjust.methods}}
 #' 
 #' @references
 #' Tarone, Robert E. Tests for Trend in Life Table Analysis. \emph{Biometrika}
@@ -1179,7 +1182,8 @@ hr_text <- function(formula, data, ..., details = TRUE, pFUN = NULL) {
 }
 
 #' @rdname surv_test
-pw_pval <- function(object, details = FALSE, data = NULL, ...) {
+pw_pval <- function(object, details = FALSE, data = NULL, ...,
+                    method = 'none') {
   object <- if (inherits(object, 'survdiff_pairs'))
     object
   else if (inherits(object, c('survdiff', 'survfit'))) {
@@ -1197,6 +1201,7 @@ pw_pval <- function(object, details = FALSE, data = NULL, ...) {
   
   m <- object$p.value
   p <- m[lower.tri(m)]
+  p <- p.adjust(p, method = method)
   n <- sprintf('%s vs %s', colnames(m)[col(m)[lower.tri(m, FALSE)]],
                rownames(m)[row(m)[lower.tri(m, FALSE)]])
   
@@ -1204,7 +1209,8 @@ pw_pval <- function(object, details = FALSE, data = NULL, ...) {
 }
 
 #' @rdname surv_test
-pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL) {
+pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
+                    method = 'none') {
   pFUN <- if (is.null(pFUN) || isTRUE(pFUN))
     function(x) pvalr(x, show.p = TRUE)
   else if (identical(pFUN, FALSE))
@@ -1214,7 +1220,7 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL) {
     pFUN
   }
   
-  obj <- pw_pval(formula, data = data, ...)
+  obj <- pw_pval(object = formula, data = data, method = method, ...)
   
   sprintf('%s: %s', names(obj), pFUN(obj))
 }

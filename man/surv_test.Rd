@@ -24,9 +24,9 @@ hr_pval(object, details = FALSE, data = NULL, ...)
 
 hr_text(formula, data, ..., details = TRUE, pFUN = NULL)
 
-pw_pval(object, details = FALSE, data = NULL, ...)
+pw_pval(object, details = FALSE, data = NULL, ..., method = "none")
 
-pw_text(formula, data, ..., details = TRUE, pFUN = NULL)
+pw_text(formula, data, ..., details = TRUE, pFUN = NULL, method = "none")
 }
 \arguments{
 \item{object}{a \code{\link{survfit}}, \code{\link{survdiff}}, or
@@ -43,6 +43,10 @@ and p-value where \code{FALSE} returns only a pvalue}
 \code{\link{pvalr}}; if \code{FALSE}, no formatting is performed;
 alternatively, a function can be passed which should take a numeric value
 and return a character string (or a value to be coerced) for printing}
+
+\item{method}{for \code{pw_*}, the method used to adjust p-values for
+multiple comparisons (default is \code{"none"}); see
+\code{\link{p.adjust.methods}}}
 }
 \description{
 Internal functions for \code{\link{survdiff}} and \code{\link{survfit}}
