@@ -115,8 +115,7 @@ mt <- within(mtcars, {
 
 tbl <- lapply(names(mt)[-10L], function(x)
   tabler_stat(mt, x, 'gear', percentage_sign = FALSE,
-              color_cell_by = ifelse(is.factor(mt[, x]), 'pct', 'value'),
-              cell_color = c('black', 'blue', 'red'),
+              color_cell_by = ifelse(is.factor(mt[, x]), 'pct', 'none'),
               continuous_fn = Gmisc::describeMean))
 
 ht <- htmlTable::htmlTable(
