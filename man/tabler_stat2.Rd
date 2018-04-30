@@ -7,7 +7,7 @@
 tabler_stat2(data, varname, byvar, varname_label = names(varname),
   byvar_label = names(byvar), digits = NULL, FUN = NULL,
   format_pval = TRUE, color_pval = TRUE, color_missing = TRUE,
-  dagger = TRUE, cell_color_by = "none", cell_color = c("black", "red"),
+  dagger = TRUE, color_cell_by = "none", cell_color = c("black", "red"),
   statArgs = NULL, align = NULL, rgroup = NULL, cgroup = NULL,
   tfoot = NULL, htmlArgs = NULL, zeros = "-")
 }
@@ -42,6 +42,10 @@ will be applied to each p-value}
 
 \item{color_pval, color_missing, dagger}{\code{NULL} or vectors, recycled as
 needed for each \code{varname}; see \code{\link{tabler_stat}}}
+
+\item{color_cell_by, cell_color}{apply a color gradient (\code{cell_color})
+to each cell (for html output); one of \code{"none"}, \code{"value"}, or
+\code{"pct"}; see \code{\link{tabler_stat}}}
 
 \item{statArgs}{a named list of additional arguments passed to
 \code{\link[Gmisc]{getDescriptionStatsBy}}}

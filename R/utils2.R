@@ -1234,6 +1234,7 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' one of \code{"none"} for no coloring, \code{"value"} to color by numeric
 #' summary (e.g., for continuous variables), or \code{"pct"} to color by
 #' proportions (e.g., for factors)
+#' @param cell_color a vector of colors used for \code{color_cell_by}
 #' @param continuous_fn a function to describe continuous variables (default
 #' is to show median and range); see \code{\link[Gmisc]{getDescriptionStatsBy}}
 #' @param ... additional arguments passed to
@@ -1629,6 +1630,9 @@ guess_test <- function(x, y, n_unique_x = 10L) {
 #' will be applied to each p-value
 #' @param color_pval,color_missing,dagger \code{NULL} or vectors, recycled as
 #' needed for each \code{varname}; see \code{\link{tabler_stat}}
+#' @param color_cell_by,cell_color apply a color gradient (\code{cell_color})
+#' to each cell (for html output); one of \code{"none"}, \code{"value"}, or
+#' \code{"pct"}; see \code{\link{tabler_stat}}
 #' @param statArgs a named list of additional arguments passed to
 #' \code{\link[Gmisc]{getDescriptionStatsBy}}
 #' @param align,rgroup,cgroup,tfoot optional arguments passed to
@@ -1682,7 +1686,7 @@ tabler_stat2 <- function(data, varname, byvar, varname_label = names(varname),
                          byvar_label = names(byvar), digits = NULL, FUN = NULL,
                          format_pval = TRUE, color_pval = TRUE,
                          color_missing = TRUE, dagger = TRUE,
-                         cell_color_by = 'none',
+                         color_cell_by = 'none',
                          cell_color = c('black', 'red'), statArgs = NULL,
                          align = NULL, rgroup = NULL, cgroup = NULL,
                          tfoot = NULL, htmlArgs = NULL, zeros = '-') {
@@ -1706,7 +1710,7 @@ tabler_stat2 <- function(data, varname, byvar, varname_label = names(varname),
   l <- tabler_stat_list(
     data, varname, byvar, varname_label %||% varname, byvar_label %||% byvar,
     digits, FUN, format_pval, color_pval, color_missing, dagger,
-    cell_color_by, cell_color, statArgs
+    color_cell_by, cell_color, statArgs
   )
   
   tabler_stat_html(l, align, rgroup, cgroup, tfoot, htmlArgs, zeros)

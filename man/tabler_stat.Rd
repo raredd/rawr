@@ -44,6 +44,8 @@ one of \code{"none"} for no coloring, \code{"value"} to color by numeric
 summary (e.g., for continuous variables), or \code{"pct"} to color by
 proportions (e.g., for factors)}
 
+\item{cell_color}{a vector of colors used for \code{color_cell_by}}
+
 \item{continuous_fn}{a function to describe continuous variables (default
 is to show median and range); see \code{\link[Gmisc]{getDescriptionStatsBy}}}
 
