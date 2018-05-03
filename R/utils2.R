@@ -1451,8 +1451,8 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
     fnames <- fnames[!duplicated(fnames)]
     
     ## only return one of wilcox/kruskal based on byvar
-    idx <- pmatch(c(substr(tolower(fname), 1L, 3L), 'fish'),
-                  unique(tolower(fnames)))
+    idx <- gsub('^kw\\.$', 'krus', substr(tolower(fname), 1L, 3L))
+    idx <- pmatch(c(idx, 'fish'), unique(tolower(fnames)))
     if (anyNA(idx))
       idx <- c((n > 2L) + 1L, na.omit(idx))
     fnames <- fnames[sort(idx)]
@@ -1833,13 +1833,15 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
 }
 
 guess_digits <- function(x, default = 0L) {
-  if (!is.numeric(x))
+  if (!inherits(x, 'numeric'))
     return(default)
   
   co <- capture.output(cat(x))
   co <- strsplit(co, ' ')[[1L]]
   
   digits <- max(nchar(sub('.*?(?:\\.|$)', '', co)))
+  if (digits >= getOption('digits'))
+    digits <- 1L
   
   if (digits)
     digits else default
