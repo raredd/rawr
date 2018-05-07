@@ -64,8 +64,10 @@ Helper functions for using \code{tabler_stat}.
 }
 \examples{
 sapply(mtcars, rawr:::guess_digits)
+Map(rawr::roundr, mtcars, sapply(mtcars, rawr:::guess_digits))
 
 rawr:::get_tabler_stat_n(mtcars$gear)
+
 
 ## typical usage
 mt <- within(mtcars, {

@@ -1651,8 +1651,10 @@ guess_test <- function(x, y, n_unique_x = 10L) {
 #' 
 #' @examples
 #' sapply(mtcars, rawr:::guess_digits)
+#' Map(rawr::roundr, mtcars, sapply(mtcars, rawr:::guess_digits))
 #' 
 #' rawr:::get_tabler_stat_n(mtcars$gear)
+#' 
 #' 
 #' ## typical usage
 #' mt <- within(mtcars, {
@@ -1837,14 +1839,14 @@ guess_digits <- function(x, default = 0L) {
     return(default)
   
   co <- capture.output(cat(x))
-  co <- strsplit(co, ' ')[[1L]]
+  co <- strsplit(co, '\\s+')[[1L]]
   
-  digits <- max(nchar(sub('.*?(?:\\.|$)', '', co)))
-  if (digits >= getOption('digits'))
-    digits <- 1L
+  nch <- max(nchar(sub('.*?(?:\\.|$)', '', co)))
+  dig <- if (nch >= 4L)
+    1L else nch
   
-  if (digits)
-    digits else default
+  if (dig)
+    dig else default
 }
 
 get_tabler_stat_n <- function(x, pct = TRUE) {

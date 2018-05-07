@@ -16,7 +16,7 @@
 # parse_yaml, parse_index, parse_news, parse_namespace
 # 
 # unexported:
-# islist, done, where, dots, name_or_index, insert_
+# islist, done, where_, where, dots, name_or_index, insert_
 ###
 
 
@@ -40,7 +40,7 @@ done <- function(type = c('notifier', 'beep')) {
   )
 }
 
-where <- function(x, env = parent.frame(1L)) {
+where_ <- function(x, env = environment(NULL)) {
   ## recursively find env where x is defined
   stopifnot(
     is.character(x),
@@ -54,13 +54,29 @@ where <- function(x, env = parent.frame(1L)) {
     env else Recall(x, parent.env(env))
 }
 
+where <- function(x) {
+  ## recursively find env where x is defined
+  stopifnot(
+    is.character(x),
+    length(x) == 1L
+  )
+  sys <- sys.frames()
+  
+  for (env in sys)
+    if (exists(x, env, inherits = FALSE))
+      return(env)
+  
+  where_(x)
+}
+
 dots <- function(...) {
   ## rawr:::dots(mean, 1, x = y, rnorm(5))
+  # eval(sys.call())
   eval(substitute(alist(...)))
 }
 
-
 name_or_index <- function(x, y = NULL) {
+  ## return integer vector where x occurs in y
   ## rawr:::name_or_index(c('1', '3', 'e'))
   ## rawr:::name_or_index(c('a', 'c', 'e'), letters)
   ## table is given priority over integer, eg, idx = 27 instead of 4
@@ -69,12 +85,10 @@ name_or_index <- function(x, y = NULL) {
     ix <- as.integer(x)
   )
   
-  if (is.null(y))
-    return(ix)
-  
-  iy <- match(x, y)
-  
-  replace(iy, is.na(iy), ix[is.na(iy)])
+  if (!is.null(y)) {
+    iy <- match(x, y)
+    replace(iy, is.na(iy), ix[is.na(iy)])
+  } else ix
 }
 
 #' rawr operators
