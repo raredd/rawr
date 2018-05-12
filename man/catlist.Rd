@@ -2,26 +2,28 @@
 % Please edit documentation in R/utils2.R
 \name{catlist}
 \alias{catlist}
-\title{Concatenate a named list for output}
+\title{Concatenate list for output}
 \usage{
-catlist(l)
+catlist(l, sep = " = ", collapse = ", ")
 }
 \arguments{
-\item{l}{list to concatenate}
+\item{l}{a list to concatenate}
+
+\item{sep, collapse}{passed to \code{\link{paste}} controlling the string
+to separate name from value and list elements, respectively; if
+\code{collapse} is a non character string, the result will be a vector
+of strings}
 }
 \description{
-Print a \emph{named} \code{list} as a character string with values.
+Print a \code{list} (usually named) as a character vector or string.
 }
 \examples{
-(l <- list(a = 1, b = 2))
+l <- list(a = 1:3, b = 2, '4')
+catlist(l)
+catlist(l, collapse = FALSE)
+cat(catlist(par()[1:5], ':\\n  ', collapse = '\\n'))
 
-# $a
-# [1] 1
-#
-# $b
-# [1] 2
-
-catlist(l) # [1] "a = 1, b = 2"
-catlist(par()[1:5])
-
+}
+\seealso{
+\code{\link{iprint}}
 }

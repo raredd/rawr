@@ -495,28 +495,35 @@ color_pval <- function(pvals, breaks = c(0, .01, .05, .1, .5, 1),
   sprintf('<font color=\"%s\">%s</font>', pvc, pvals)
 }
 
-#' Concatenate a named list for output
+#' Concatenate list for output
 #' 
-#' Print a \emph{named} \code{list} as a character string with values.
+#' Print a \code{list} (usually named) as a character vector or string.
 #'
-#' @param l list to concatenate
+#' @param l a list to concatenate
+#' @param sep,collapse passed to \code{\link{paste}} controlling the string
+#' to separate name from value and list elements, respectively; if
+#' \code{collapse} is a non character string, the result will be a vector
+#' of strings
+#' 
+#' @seealso
+#' \code{\link{iprint}}
 #' 
 #' @examples
-#' (l <- list(a = 1, b = 2))
-#' 
-#' # $a
-#' # [1] 1
-#' #
-#' # $b
-#' # [1] 2
-#' 
-#' catlist(l) # [1] "a = 1, b = 2"
-#' catlist(par()[1:5])
+#' l <- list(a = 1:3, b = 2, '4')
+#' catlist(l)
+#' catlist(l, collapse = FALSE)
+#' cat(catlist(par()[1:5], ':\n  ', collapse = '\n'))
 #' 
 #' @export
 
-catlist <- function(l) {
-  paste0(paste(names(l), l, sep = ' = ', collapse = ', '))
+catlist <- function(l, sep = ' = ', collapse = ', ') {
+  res <- paste(names(l), l, sep = sep)
+  
+  idx <- !nzchar(names(l))
+  res[idx] <- gsub(sprintf('^%s', sep), '', res)[idx]
+  
+  if (is.character(collapse))
+    paste(res, collapse = collapse) else res
 }
 
 #' \code{bincon} formatter
@@ -656,22 +663,28 @@ num2char <- function(x, informal = FALSE, cap = TRUE) {
         Recall(as.num(digits[(3 * nSuffix):1]))))
     }
   }
-  as.num <- function(...) as.numeric(paste(..., collapse = ''))
-  trim <- function(x)
+  as.num <- function(...) {
+    as.numeric(paste(..., collapse = ''))
+  }
+  trim <- function(x) {
     gsub('\\s*,|,\\s*$|\\s*and\\s*$', '', trimws(x))
+  }
   
   ## definitions
   ones <- setNames(
-    c('','one','two','three','four','five','six','seven','eight','nine'),
+    c('', 'one', 'two', 'three', 'four', 'five',
+      'six',' seven', 'eight', 'nine'),
     0:9
   )
   teens <- setNames(
-    c('ten','eleven','twelve',
-      paste0(c('thir', 'four','fif','six','seven','eigh','nine'), 'teen')),
+    c('ten', 'eleven', 'twelve',
+      paste0(c('thir', 'four', 'fif', 'six',
+               'seven', 'eigh', 'nine'), 'teen')),
     0:9
   )
   tens <- setNames(
-    c('twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'),
+    c('twenty', 'thirty', 'forty', 'fifty',
+      'sixty', 'seventy', 'eighty', 'ninety'),
     2:9
   )
   suffixes <- c('thousand', 'million', 'billion', 'trillion')
@@ -718,7 +731,7 @@ num2char <- function(x, informal = FALSE, cap = TRUE) {
 #' 
 #' @export
 
-iprint <- function (..., wrap = '', sep = ', ', copula, digits = 2) {
+iprint <- function (..., wrap = '', sep = ', ', copula, digits = 2L) {
   x <- c(...)
   if (!(len <- length(x)))
     return('')
@@ -765,7 +778,9 @@ iprint <- function (..., wrap = '', sep = ', ', copula, digits = 2) {
 #' @export
 
 writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
-  stopifnot(inherits(x, 'ftable'))
+  stopifnot(
+    inherits(x, 'ftable')
+  )
   
   ## add row/col names if blank (ie, if vectors used in ftable)
   rn <- names(attr(x, 'row.vars'))
@@ -791,8 +806,9 @@ writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
 #' \code{\link{survfit}}
 #' @param digits number of digits printed
 #' @param level confidence level; default is \code{0.95}
-#' @param type use \code{"or"} for odds ratios; others may be added later
-#' @param ... additional parameters passed to other methods
+#' @param exp logical; if \code{TRUE}, estimates and confidence intervals are
+#' exponentiated (for \code{glm} or \code{coxph} methods only)
+#' @param ... additional arguments passed to or from other methods
 #' 
 #' @seealso
 #' \code{\link{tabler_by}}; \code{\link{tabler_stat}}
@@ -802,11 +818,15 @@ writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
 #' tabler(lmfit)
 #' 
 #' glmfit <- glm(vs ~ drat + factor(gear), data = mtcars, family = 'binomial')
-#' tabler(glmfit, type = 'or')
+#' tabler(glmfit)
+#' tabler(glmfit, exp = FALSE)
 #' 
 #' library('survival')
 #' sfit <- survfit(Surv(time, status) ~ 1, data = cancer, conf.int = 0.9)
 #' tabler(sfit)
+#' 
+#' cphfit <- coxph(Surv(time, status) ~ factor(sex) + age, cancer)
+#' tabler(cphfit)
 #' 
 #' @export
 
@@ -832,24 +852,37 @@ tabler.lm <- function(x, digits = 3L, ...) {
 
 #' @rdname tabler
 #' @export
-tabler.glm <- function(x, digits = 3L, level = 0.95, type = '', ...) {
+tabler.glm <- function(x, digits = 3L, level = 0.95, exp = TRUE, ...) {
   res <- data.frame(summary(x, ...)$coefficients, check.names = FALSE)
   res[, ncol(res)] <- pvalr(res[, ncol(res)], ...)
   
-  if (tolower(type) == 'or') {
-    suppressMessages(
-      res <- cbind.data.frame(
-        exp(cbind(coef(x), confint(x, level = level))), res[, 4L]
+  suppressMessages(
+    res <-
+      data.frame(
+        exp(cbind(coef(x), confint(x, level = level))),
+        res[, 4L],
+        stringsAsFactors = FALSE
       )
-    )
-    fmt <- '%.df (%.df, %.df)'
-    res <- cbind(res, sprintf(chartr('d', as.character(digits), fmt),
-                              res[, 1L], res[, 2L], res[, 3L]))
-    
-    level <- level * 100
-    res <- setNames(res, c('OR', paste0(c('L', 'U'), level), 'Pr(>|z|)',
-                           sprintf('OR (%s%% CI)', level)))
-  }
+  )
+  
+  if (!exp)
+    res[, 1:3] <- log(res[, 1:3])
+  
+  level <- level * 100
+  
+  fmt <- sprintf('%%.0%1$sf (%%.0%1$sf, %%.0%1$sf)', digits)
+  res <- data.frame(
+    res,
+    sprintf(fmt, res[, 1L], res[, 2L], res[, 3L]),
+    stringsAsFactors = FALSE
+  )
+  
+  res <- setNames(
+    res,
+    c(if (exp) 'OR' else 'Est',
+      paste0(c('L', 'U'), level), 'Pr(>|z|)',
+      sprintf('OR (%s%% CI)', level))
+  )
   
   res[, 1:3] <- lapply(res[, 1:3], round, digits = digits)
   res
@@ -859,6 +892,44 @@ tabler.glm <- function(x, digits = 3L, level = 0.95, type = '', ...) {
 #' @export
 tabler.survfit <- function(x, ...) {
   surv_table(x, ...)
+}
+
+#' @rdname tabler
+#' @export
+tabler.coxph <- function(x, digits = 3L, level = 0.95, exp = TRUE, ...) {
+  res <- data.frame(summary(x, ...)$coefficients, check.names = FALSE)
+  res[, ncol(res)] <- pvalr(res[, ncol(res)], ...)
+  
+  suppressMessages(
+    res <-
+      data.frame(
+        exp(cbind(coef(x), confint(x, level = level))),
+        res[, 4L],
+        stringsAsFactors = FALSE
+      )
+  )
+  
+  if (!exp)
+    res[, 1:3] <- log(res[, 1:3])
+  
+  level <- level * 100
+  
+  fmt <- sprintf('%%.0%1$sf (%%.0%1$sf, %%.0%1$sf)', digits)
+  res <- data.frame(
+    res,
+    sprintf(fmt, res[, 1L], res[, 2L], res[, 3L]),
+    stringsAsFactors = FALSE
+  )
+  
+  res <- setNames(
+    res,
+    c(ifelse(exp, 'HR', 'Est'),
+      paste0(c('L', 'U'), level), 'Pr(>|z|)',
+      sprintf('%s (%s%% CI)', ifelse(exp, 'HR', 'Est'), level))
+  )
+  
+  res[, 1:3] <- lapply(res[, 1:3], round, digits = digits)
+  res
 }
 
 #' tabler_by

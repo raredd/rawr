@@ -93,5 +93,5 @@ kw.test(regimen ~ response2, dat, simulate.p.value = TRUE, B = 10000)
 }
 \seealso{
 \code{\link{kruskal.test}}; \code{\link{jt.test}} for doubly-ordered
-tables; \code{\link{cuzick.test}}
+tables; \code{\link{cuzick.test}}; \code{DescTools::CochranArmitageTest}
 }
