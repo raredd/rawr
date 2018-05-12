@@ -4,7 +4,7 @@
 \alias{iprint}
 \title{In-line printing}
 \usage{
-iprint(..., wrap = "", sep = ", ", copula, digits = 2)
+iprint(..., wrap = "", sep = ", ", copula, digits = 2L)
 }
 \arguments{
 \item{...}{one or more numeric or character elements to be converted into

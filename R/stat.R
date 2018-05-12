@@ -2065,7 +2065,7 @@ rsum <- function(a, b, n, k, unique = FALSE, iterations = 100L) {
 #' 
 #' @seealso
 #' \code{\link{kruskal.test}}; \code{\link{jt.test}} for doubly-ordered
-#' tables; \code{\link{cuzick.test}}
+#' tables; \code{\link{cuzick.test}}; \code{DescTools::CochranArmitageTest}
 #' 
 #' @examples
 #' ## example from Exact Test (Mehta), figure 11.1
