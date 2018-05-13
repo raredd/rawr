@@ -1739,7 +1739,8 @@ combn_fun <- function(x, FUN, n = 2L, ...) {
 #' @description
 #' Utilities for the \pkg{\link{rpart}} package:
 #' 
-#' \code{rpart_parent} returns all parent nodes of \code{node}.
+#' \code{rpart_parent} returns all parent nodes of \code{node}, i.e., the
+#' path from node \code{1} to \code{node}.
 #' 
 #' \code{rpart_subset} and \code{rpart_subset2} (in examples) return a
 #' subset of the data used in \code{rpart} for any intermediate or terminal
@@ -1778,7 +1779,10 @@ combn_fun <- function(x, FUN, n = 2L, ...) {
 #' fit <- rpart(Kyphosis ~ Age + Number + Start, kyphosis, minsplit = 5)
 #' 
 #' ## children nodes should have identical paths
-#' identical(head(rpart_parent(28), -1L), head(rpart_parent(29), -1L))
+#' identical(
+#'   head(rpart_parent(28), -1L),
+#'   head(rpart_parent(29), -1L)
+#' )
 #' 
 #' ## terminal nodes should combine to original data
 #' nodes <- as.integer(rownames(fit$frame[fit$frame$var %in% '<leaf>', ]))
@@ -1800,7 +1804,7 @@ combn_fun <- function(x, FUN, n = 2L, ...) {
 #'   data_party(ptree, node)[, seq_along(ptree$data)]
 #' }
 #' 
-#' ## note differences in nodes labels in party vs rpart
+#' ## note differences in node labels in party vs rpart
 #' dim(rpart_subset(fit, 4))
 #' dim(rpart_subset2(fit, 3))
 #' 
@@ -1825,9 +1829,9 @@ NULL
 #' @rdname rpart_utils
 #' @export
 rpart_parent <- function(node = 1L) {
-  if (node[1L] != 1L)
-    c(Recall(if (node %% 2 == 0L) node / 2 else (node - 1) / 2), node)
-  else node
+  node <- as.integer(node)
+  if (node[1L] == 1L)
+    1L else sort(c(node, Recall(node %/% 2)))
 }
 
 #' @rdname rpart_utils
