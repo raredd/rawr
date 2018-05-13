@@ -33,10 +33,8 @@ interleave(l, which = 'cbind')
 interleave(l, l, l, which = 'cbind')
 
 
-\dontrun{
-interleave(d1, m2, which = 'rbind')  ## error
-interleave(d1, m2, which = 'rbindx') ## works
-}
+# interleave(d1, m2, which = 'rbind')  ## error
+interleave(d1, m2, which = 'rbindx')   ## works
 
 }
 \seealso{

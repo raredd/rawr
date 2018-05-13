@@ -124,7 +124,6 @@ name_or_index <- function(x, y = NULL) {
 #' \code{\link{==}}, \code{\link{\%in\%}}, \code{\link{||}}
 #' 
 #' @examples
-#' \dontrun{
 #' 1:5 %ni% 3:5
 #' 
 #' c(0,4) %inside% c(0, 4)
@@ -139,8 +138,8 @@ name_or_index <- function(x, y = NULL) {
 #' ## desired results
 #' a %==% b   # FALSE TRUE FALSE
 #' 
-#' NULL || TRUE   # error
-#' NULL %||% TRUE # TRUE
+#' # NULL || TRUE   # error
+#' NULL %||% TRUE   # TRUE
 #' 
 #' 1:5 %:% c(3,5)
 #' letters %:% c('e', 'n')
@@ -149,7 +148,6 @@ name_or_index <- function(x, y = NULL) {
 #' mtcars %:% c('hp','vs')
 #' mtcars %:% c(4, 8)
 #' names(mtcars[, 4:8])
-#' }
 #' 
 #' @aliases oror notin inside
 #' @name rawr_ops
@@ -1082,10 +1080,8 @@ rbindlist2 <- function(data, column, split = '\\W+', fixed = FALSE, perl = FALSE
 #' interleave(l, l, l, which = 'cbind')
 #' 
 #' 
-#' \dontrun{
-#' interleave(d1, m2, which = 'rbind')  ## error
-#' interleave(d1, m2, which = 'rbindx') ## works
-#' }
+#' # interleave(d1, m2, which = 'rbind')  ## error
+#' interleave(d1, m2, which = 'rbindx')   ## works
 #' 
 #' @export
 
@@ -1515,7 +1511,7 @@ regcaptures2 <- function(x, pattern, use.names = TRUE) {
 #' ## equivalent ways to give `varying`
 #' melt(dat, list(3:4))
 #' melt(dat, 3:4)
-#' (l <- melt(dat, c('x','y')))
+#' l <- melt(dat, c('x','y'))
 #' 
 #' ## equivalent ways to give `idvar`, `timevar`, `v.names`
 #' cast(l, c('id','visit'), 'variable', 'value')

@@ -707,12 +707,10 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
 #' simon2(.2, c(.4, .5))
 #' simon2(p0 = seq(.55, .6, by = .01), pa = .75, ntmax = 60)
 #' 
-#' \dontrun{
 #' ## compare this function to results from desmon::simon
 #' simon2(.4, .6)
 #' ## from desmon package
 #' rawr:::simon(.4, .6)
-#' }
 #' 
 #' @export
 
@@ -1169,7 +1167,7 @@ install.bioc <- function(pkgs, upgrade = FALSE) {
 #' \url{http://onlinelibrary.wiley.com/doi/10.1002/sim.3107/abstract}
 #' 
 #' @examples
-#' (cc <- with(mtcars, cor(mpg, wt)))
+#' cc <- with(mtcars, cor(mpg, wt))
 #' lm.beta(lm(mpg ~ wt, data = mtcars))
 #' 
 #' cc ^ 2
@@ -1711,7 +1709,7 @@ jt.test.stat <- function(x, y) {
 #' @examples
 #' set.seed(1)
 #' x <- rnorm(100)
-#' (hl <- hl_est(x))
+#' hl <- hl_est(x)
 #' 
 #' ## compare
 #' hl2 <- wilcox.test(x, exact = TRUE, conf.int = TRUE)
@@ -1777,7 +1775,7 @@ combn_fun <- function(x, FUN, n = 2L, ...) {
 #' 
 #' \dontrun{
 #' library('rpart')
-#' (fit <- rpart(Kyphosis ~ Age + Number + Start, kyphosis, minsplit = 5))
+#' fit <- rpart(Kyphosis ~ Age + Number + Start, kyphosis, minsplit = 5)
 #' 
 #' ## children nodes should have identical paths
 #' identical(head(rpart_parent(28), -1L), head(rpart_parent(29), -1L))

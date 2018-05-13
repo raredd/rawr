@@ -72,7 +72,7 @@ apply_formats('.C', parse_formats(formats), droplevels = TRUE)
 x <- sample(0:2, 10, TRUE)
 apply_formats(x, setNames(letters[1:5], 0:4))
 
-(fmt <- apply_formats(x, formats))
+fmt <- apply_formats(x, formats)
 table(apply_formats(x, formats), x)
 
 }

@@ -100,14 +100,13 @@ box('outer')
 ## waffle conveniently returns the centers of the rects
 ## be sure _not_ to reset pars for proper alignment
 par(op)
-(w <- waffle(matrix(1:8, 2), reset_par = FALSE, invert = 'xy'))
+w <- waffle(matrix(1:8, 2), reset_par = FALSE, invert = 'xy')
 text(w$c[, 'x'], w$c[, 'y'], labels = palette(), col = 'white')
 
-\dontrun{
+
 ## this is similar to ?rawr::show_colors
 col <- colors()[1:25 ^ 2]
 w <- waffle(matrix(col, 25), reset_par = FALSE, invert = 'xy', border = NA)
 text(w$c[, 'x'], w$c[, 'y'], labels = col, col = 'black', cex = .4)
-}
 
 }

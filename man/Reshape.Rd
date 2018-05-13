@@ -62,7 +62,7 @@ dat <- data.frame(id = rep(1:4, rep(2, 4)),
 ## equivalent ways to give `varying`
 melt(dat, list(3:4))
 melt(dat, 3:4)
-(l <- melt(dat, c('x','y')))
+l <- melt(dat, c('x','y'))
 
 ## equivalent ways to give `idvar`, `timevar`, `v.names`
 cast(l, c('id','visit'), 'variable', 'value')

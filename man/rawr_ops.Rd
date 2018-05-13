@@ -58,7 +58,6 @@ is desirable to return some other default value.
 character strings rather than by index.
 }
 \examples{
-\dontrun{
 1:5 \%ni\% 3:5
 
 c(0,4) \%inside\% c(0, 4)
@@ -73,8 +72,8 @@ a \%in\% b   # TRUE  TRUE TRUE
 ## desired results
 a \%==\% b   # FALSE TRUE FALSE
 
-NULL || TRUE   # error
-NULL \%||\% TRUE # TRUE
+# NULL || TRUE   # error
+NULL \%||\% TRUE   # TRUE
 
 1:5 \%:\% c(3,5)
 letters \%:\% c('e', 'n')
@@ -83,7 +82,6 @@ letters \%:\% c('e', 'n')
 mtcars \%:\% c('hp','vs')
 mtcars \%:\% c(4, 8)
 names(mtcars[, 4:8])
-}
 
 }
 \seealso{

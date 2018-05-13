@@ -36,7 +36,7 @@ heavy-tailed distributions that lack any finite mean.
 \examples{
 set.seed(1)
 x <- rnorm(100)
-(hl <- hl_est(x))
+hl <- hl_est(x)
 
 ## compare
 hl2 <- wilcox.test(x, exact = TRUE, conf.int = TRUE)

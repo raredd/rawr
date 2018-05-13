@@ -50,7 +50,11 @@ multiple comparisons (default is \code{"none"}); see
 }
 \description{
 Internal functions for \code{\link{survdiff}} and \code{\link{survfit}}
-objects.
+objects. Current methods include log-rank (\code{lr_*}) and pairwise
+(\code{pw_*}) log-rank tests (by default although the exact test may be
+controlled with the \code{rho} parameter passed to \code{survdiff}); a
+trend test described by Tarone (\code{tt_*}); and Wald tests of
+coefficients in a Cox regression (\code{hr_*}).
 
 \code{*_pval} functions take (\code{survfit} or \code{survdiff}) objects
 or formulas and compute test statistics, p-values, etc. and return a

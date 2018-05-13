@@ -512,7 +512,7 @@ color_pval <- function(pvals, breaks = c(0, .01, .05, .1, .5, 1),
 #' l <- list(a = 1:3, b = 2, '4')
 #' catlist(l)
 #' catlist(l, collapse = FALSE)
-#' cat(catlist(par()[1:5], ':\n  ', collapse = '\n'))
+#' cat(catlist(par()[1:5], sep = ':\n  ', collapse = '\n'))
 #' 
 #' @export
 

@@ -13,9 +13,10 @@ flatten(l)
 Flattens lists and nested lists of vectors, matrices, and/or data frames.
 }
 \examples{
-(l <- list(matrix(1:3), list(1:3, 'foo'), TRUE, 'hi',
-           list(head(mtcars), list(tail(mtcars)))))
-flatten(l)
+l <- list(matrix(1:3), list(1:3, 'foo'), TRUE, 'hi',
+           list(mtcars[1:5, 1:5], list(mtcars[1:5, 1:5])))
+str(l)
+str(flatten(l))
 
 }
 \references{

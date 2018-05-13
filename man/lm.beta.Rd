@@ -23,7 +23,7 @@ references). Additionally, \code{weights} can be a vector of weights for
 each coefficient.
 }
 \examples{
-(cc <- with(mtcars, cor(mpg, wt)))
+cc <- with(mtcars, cor(mpg, wt))
 lm.beta(lm(mpg ~ wt, data = mtcars))
 
 cc ^ 2

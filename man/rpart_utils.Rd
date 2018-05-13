@@ -51,7 +51,7 @@ rpart_parent(29)
 
 \dontrun{
 library('rpart')
-(fit <- rpart(Kyphosis ~ Age + Number + Start, kyphosis, minsplit = 5))
+fit <- rpart(Kyphosis ~ Age + Number + Start, kyphosis, minsplit = 5)
 
 ## children nodes should have identical paths
 identical(head(rpart_parent(28), -1L), head(rpart_parent(29), -1L))
