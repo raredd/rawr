@@ -1,7 +1,7 @@
 Package: rawr
 Type: Package
 Title: rawr miscellaneous
-Version: 0.8.9
+Version: 0.9.0
 Authors@R: person("Robert", "Redd", email = "raredd01@gmail.com",
   role = c("aut", "cre"))
 Author: Robert Redd

@@ -1,3 +1,13 @@
+rawr 0.9.0
+--------
+  * tox_worst - change list return to single data frame with attributes; this
+    will break code
+  * tabler_stat/tabler_stat2 - options to color cells
+  * kmplot - change naming conventions on legend.args, test.args, etc due to
+    multiple arg matching in some calls from kmplot_by; rename atrisk to
+    atrisk.table to disambiguate; these will break code
+  * tplot - change test.args to args.test for consistency
+
 rawr 0.8.9
 --------
   * add coords, pr_table, surv_median, heatmap.3, col_scaler, tabler_stat2,
