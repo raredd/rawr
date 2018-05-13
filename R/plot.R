@@ -219,7 +219,7 @@ jmplot <- function(x, y, z,
 #' used, e.g., \code{test = cuzick.test} or \code{function(x, g)
 #' cuzick.test(x, g)}; note that if \code{test} is a function, it must have
 #' at least two arguments with the numeric data values and group
-#' @param test.args an optional \emph{named} list of \code{\link{mtext}}
+#' @param args.test an optional \emph{named} list of \code{\link{mtext}}
 #' arguments controlling the \code{test} text
 #' @param ann logical; annotate plot
 #' @param add logical; add to an existing plot
@@ -282,7 +282,7 @@ jmplot <- function(x, y, z,
 #' tplot(mpg ~ gear, mtcars, test = rawr::cuzick.test) ## trend test
 #' tplot(mtcars$mpg, 1:2, test = function(x, g)        ## custom test
 #'   wilcox.test(x ~ g, data.frame(x, g), exact = FALSE, paired = TRUE),
-#'   test.args = list(col = 2, at = 1.5, adj = 0.5, line = -3, cex = 2))
+#'   args.test = list(col = 2, at = 1.5, adj = 0.5, line = -3, cex = 2))
 #' 
 #' 
 #' ## tplot has the same return value as boxplot
@@ -348,7 +348,7 @@ tplot.default <- function(x, g, ..., type = 'db',
                           text.na = 'missing',
                           
                           ## extra stuff
-                          test = FALSE, test.args = list(),
+                          test = FALSE, args.test = list(),
                           ann = par('ann'), axes = TRUE, frame.plot = axes,
                           add = FALSE, at, horizontal = FALSE,
                           panel.first = NULL, panel.last = NULL) {
@@ -652,9 +652,9 @@ tplot.default <- function(x, g, ..., type = 'db',
       at = par('usr')[2L], font = 3L, adj = 1
     )
     
-    if (!islist(test.args))
-      test.args <- list()
-    do.call('mtext', modifyList(targs, test.args))
+    if (!islist(args.test))
+      args.test <- list()
+    do.call('mtext', modifyList(targs, args.test))
   }
   
   panel.last
@@ -1075,15 +1075,14 @@ dsplot.formula <- function(formula, data = NULL, ...,
 #' ## waffle conveniently returns the centers of the rects
 #' ## be sure _not_ to reset pars for proper alignment
 #' par(op)
-#' (w <- waffle(matrix(1:8, 2), reset_par = FALSE, invert = 'xy'))
+#' w <- waffle(matrix(1:8, 2), reset_par = FALSE, invert = 'xy')
 #' text(w$c[, 'x'], w$c[, 'y'], labels = palette(), col = 'white')
 #' 
-#' \dontrun{
+#' 
 #' ## this is similar to ?rawr::show_colors
 #' col <- colors()[1:25 ^ 2]
 #' w <- waffle(matrix(col, 25), reset_par = FALSE, invert = 'xy', border = NA)
 #' text(w$c[, 'x'], w$c[, 'y'], labels = col, col = 'black', cex = .4)
-#' }
 #' 
 #' @export
 

@@ -15,7 +15,7 @@ tplot(x, ...)
   cex = par("cex"), group.cex = FALSE, median.line = FALSE,
   mean.line = FALSE, median.pars = list(), mean.pars = list(),
   boxplot.pars = list(), show.n = TRUE, show.na = show.n, cex.n = cex,
-  text.na = "missing", test = FALSE, test.args = list(),
+  text.na = "missing", test = FALSE, args.test = list(),
   ann = par("ann"), axes = TRUE, frame.plot = axes, add = FALSE, at,
   horizontal = FALSE, panel.first = NULL, panel.last = NULL)
 
@@ -85,7 +85,7 @@ used, e.g., \code{test = cuzick.test} or \code{function(x, g)
 cuzick.test(x, g)}; note that if \code{test} is a function, it must have
 at least two arguments with the numeric data values and group}
 
-\item{test.args}{an optional \emph{named} list of \code{\link{mtext}}
+\item{args.test}{an optional \emph{named} list of \code{\link{mtext}}
 arguments controlling the \code{test} text}
 
 \item{ann}{logical; annotate plot}
@@ -173,7 +173,7 @@ tplot(mpg ~ gear, mtcars, test = TRUE) ## >=2 groups - kruskal.test
 tplot(mpg ~ gear, mtcars, test = rawr::cuzick.test) ## trend test
 tplot(mtcars$mpg, 1:2, test = function(x, g)        ## custom test
   wilcox.test(x ~ g, data.frame(x, g), exact = FALSE, paired = TRUE),
-  test.args = list(col = 2, at = 1.5, adj = 0.5, line = -3, cex = 2))
+  args.test = list(col = 2, at = 1.5, adj = 0.5, line = -3, cex = 2))
 
 
 ## tplot has the same return value as boxplot
