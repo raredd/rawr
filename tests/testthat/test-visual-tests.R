@@ -12,10 +12,10 @@ test_that('Visual tests for kmplot and kmplot_by', {
     mar <- c(5,6,2,2)
     par(mar = mar)
     plot(s, mark.time = TRUE, col = 1:2)
-    kmplot(s, atrisk = FALSE, mar = mar)
-    kmplot_by(s, atrisk = FALSE, mar = mar)
+    kmplot(s, atrisk.table = FALSE, mar = mar)
+    kmplot_by(s, atrisk.table = FALSE, mar = mar)
     kmplot_by(time = 'time', strata = 'sex', event = 'status', data = lung,
-              atrisk = FALSE, mar = mar)
+              atrisk.table = FALSE, mar = mar)
     
     
     colon2 <- within(colon[duplicated(colon$id), ], {
@@ -43,11 +43,11 @@ test_that('Visual tests for kmplot and kmplot_by', {
               col.surv = c('1' = 'green', '2' = 'blue'))
     
     kmplot_by('sex', 'pfs', colon2, by = 'sex', single = FALSE,
-              strata_lab = c('1','2'))
+              strata_lab = c('1', '2'))
     
     ## labels are mapped
     kmplot_by('sex', 'pfs', colon2, by = 'rx', single = FALSE,
-              strata_lab = c('abc','def'),
+              strata_lab = c('abc', 'def'),
               col.surv = c('abc' = 'magenta', 'def' = 'blue'))
     
     ## --- drop a level for one plot --- ##
@@ -81,7 +81,7 @@ test_that('Visual tests for waffle', {
       text(w$c[, 'x'], w$c[, 'y'], labels = colors)
     }
     
-    cc <- sample(colors(), 20)
+    cc <- sample(colors(), 20L)
     f(cc, '')
     f(cc, 'x')
     f(cc, 'y')
@@ -91,5 +91,3 @@ test_that('Visual tests for waffle', {
   })
   
 })
-
-

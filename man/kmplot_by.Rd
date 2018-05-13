@@ -7,7 +7,7 @@
 kmplot_by(strata = "1", event, data, by = NULL, single = TRUE,
   lr_test = TRUE, main = NULL, ylab = NULL, sub = NULL,
   strata_lab = NULL, fig_lab = NULL, col.surv = NULL, map.col = FALSE,
-  time = NULL, add = FALSE, plot = TRUE, ...)
+  time = NULL, legend = FALSE, add = FALSE, plot = TRUE, ...)
 }
 \arguments{
 \item{strata}{character string of the strata variable}
@@ -52,6 +52,10 @@ to the corresponding strata; see \code{\link{kmplot}}}
 of all curves in each plot (only used when \code{by} is non-missing)}
 
 \item{time}{character string of the time variable (optional)}
+
+\item{legend}{logical, a vector of x/y coordinates, or a keyword (see
+\code{\link{legend}}); if \code{TRUE}, the default position is
+\code{"bottomleft"}}
 
 \item{add}{logical; if \code{FALSE} (default), resets graphical parameters
 to settings before \code{kmplot_by} was called; set to \code{TRUE} for

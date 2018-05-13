@@ -60,13 +60,13 @@
 #' values will be used; if \code{FALSE}, \code{NA}, or \code{NULL}, no
 #' bands will be plotted; also note that this is not a true confidence band;
 #' see details
-#' @param atrisk logical; if \code{TRUE} (default), draws at-risk table
-#' @param wh.atrisk a character string giving the type of at-risk table to
+#' @param atrisk.table logical; if \code{TRUE} (default), draws at-risk table
+#' @param atrisk.type a character string giving the type of at-risk table to
 #' show; one of \code{"atrisk"} (number at-risk), \code{"events"} (cumulative
 #' number of events), \code{"atrisk-events"} (both), or \code{"survival"}
 #' (survival estimate)
 #' @param atrisk.digits when survival estimates are shown in at-risk table
-#' (see \code{wh.atrisk}), number of digits past the decimal to show
+#' (see \code{atrisk.type}), number of digits past the decimal to show
 #' @param atrisk.lab heading for at-risk table
 #' @param atrisk.lines logical; draw lines next to strata in at-risk table
 #' @param atrisk.col logical or a vector with colors for at-risk table text;
@@ -85,7 +85,7 @@
 #' @param median logical or numeric; if \code{TRUE}, median and confidence
 #' interval for each curve is added to at-risk table at a calculated
 #' position; for more control, use a specific x-coordinate
-#' @param median.digits number of digits past the decimal point to keep for
+#' @param digits.median number of digits past the decimal point to keep for
 #' median(s)
 #' @param xaxs style of axis; see details or \code{\link{par}}
 #' @param xlim,ylim x- and y-axis limits
@@ -99,7 +99,7 @@
 #' @param legend logical, a vector of x/y coordinates, or a keyword (see
 #' \code{\link{legend}}); if \code{TRUE}, the default position is
 #' \code{"bottomleft"}
-#' @param legend.args an optional \emph{named} list of \code{\link{legend}}
+#' @param args.legend an optional \emph{named} list of \code{\link{legend}}
 #' arguments controlling the \code{legend}
 #' @param lr_test logical or numeric; if \code{TRUE}, a log-rank test will be
 #' performed and the results added to the top-right corner of the plot; if
@@ -111,16 +111,16 @@
 #' @param test_details logical; if \code{TRUE} (default), all test details
 #' (test statistic, degrees of freedom, p-value) are shown; if \code{FALSE},
 #' only the p-value is shown
-#' @param test.args an optional \emph{named} list of \code{\link{mtext}}
+#' @param args.test an optional \emph{named} list of \code{\link{mtext}}
 #' arguments controlling the \code{*_test} text
 #' @param hr_text logical; if \code{TRUE}, a \code{\link{coxph}} model is fit,
 #' and a summary (hazard ratios, confidence intervals, and Wald p-values)
 #' is shown
-#' @param hr.args an optional \emph{named} list of \code{\link{legend}}
+#' @param args.hr an optional \emph{named} list of \code{\link{legend}}
 #' arguments controlling the \code{hr_text} legend
 #' @param pw_test logical; if \code{TRUE}, all pairwise tests of survival
 #' curves are performed, and p-valuees are shown
-#' @param pw.args an optional \emph{named} list of \code{\link{legend}}
+#' @param args.pw an optional \emph{named} list of \code{\link{legend}}
 #' arguments controlling the \code{pw_text} legend
 #' @param format_pval logical; if \code{TRUE}, p-values are formatted with
 #' \code{\link{pvalr}}; if \code{FALSE}, no formatting is performed;
@@ -151,10 +151,10 @@
 #' ## basic usage
 #' kmplot(km1)
 #' kmplot(km1, atrisk.col = c('grey50','tomato'), lr_test = TRUE,
-#'        test.args = list(col = 'red', cex = 1.5, line = 0))
+#'        args.test = list(col = 'red', cex = 1.5, line = 0))
 #' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
 #' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3700)
-#' kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5,
+#' kmplot(km2, atrisk.table = FALSE, lwd.surv = 2, lwd.mark = .5,
 #'        col.surv = 1:4, col.band = c(1,0,0,4))
 #' 
 #' 
@@ -162,19 +162,19 @@
 #' kmplot(survfit(Surv(time, status) ~ factor(sex), data = colon),
 #'        hr_text = TRUE, strata.lab = TRUE)
 #' kmplot(survfit(Surv(time, status) ~ interaction(sex, rx), data = colon),
-#'        hr_text = TRUE, atrisk = FALSE, legend = FALSE)
+#'        hr_text = TRUE, atrisk.table = FALSE, legend = FALSE)
 #' kmplot(survfit(Surv(time, status) ~ interaction(sex, rx), data = colon),
-#'        hr_text = TRUE, atrisk = FALSE, legend = FALSE,
+#'        hr_text = TRUE, atrisk.table = FALSE, legend = FALSE,
 #'        format_pval = function(x) format(x, digits = 2, scipen = 0))
 #' 
 #' 
 #' ## at-risk and p-value options
 #' kmplot(km2, tt_test = TRUE, test_details = FALSE)
 #' kmplot(km2, tt_test = TRUE, format_pval = format.pval)
-#' kmplot(km1, wh.atrisk = 'survival', atrisk.digits = 3L)
-#' kmplot(km1, wh.atrisk = 'atrisk-events')
+#' kmplot(km1, atrisk.type = 'survival', atrisk.digits = 3L)
+#' kmplot(km1, atrisk.type = 'atrisk-events')
 #' kmplot(survfit(Surv(time, status) ~ rx, data = colon),
-#'        pw_test = TRUE, pw.args = list(text.col = 1:3, x = 'bottomleft'))
+#'        pw_test = TRUE, args.pw = list(text.col = 1:3, x = 'bottomleft'))
 #' 
 #' ## expressions in at-risk table (strata.expr takes precedence)
 #' kmplot(km1, strata.lab = c('\u2640', '\u2642'))
@@ -196,6 +196,7 @@
 #' 
 #' 
 #' \dontrun{
+#' ## more customized figure
 #' pdf(tf <- tempfile(fileext = '.pdf'), height = 8, width = 11,
 #'     pointsize = 12, family = 'serif')
 #' kmplot(survfit(Surv(time, status) ~ rx + adhere, data = colon),
@@ -207,18 +208,20 @@
 #'        yaxis.lab = pretty(0:1) * 100,     # change to percent
 #'        xlab = 'Time (years)',
 #'        ylab = 'Percent survival',
-#'        col.surv = c('blue','red','green','black','purple','orange'),
+#'        lr_test = TRUE, test_details = FALSE, # custom test output
+#'        args.test = list(line = -2, col = 'red', cex = 2, at = 11 * 365),
+#'        col.surv = c('blue', 'red', 'green', 'black', 'purple', 'orange'),
 #'        col.ci   = c(0,0,0,0,'purple',0),  # CI only for one group
 #'        extra.margin = 6,        # increase margin for long strata labels
-#'        strata.lab = c('Obs','Obs+','Lev','Lev+','Lev5fu','Lev5fu+'),
+#'        strata.lab = c('Obs', 'Obs+', 'Lev', 'Lev+', 'Lev5fu', 'Lev5fu+'),
 #'        strata.order = c(5,6,3,1,4,2),     # order table by curve positions
-#'        median = TRUE,                     # add median and CI
-#'        oma = c(0,0,0,1),                  # extra space for median
+#'        median = 10.5 * 365,               # add median and CI
+#'        atrisk.col = TRUE,                 # color at-risk text
 #'        font = 2, bty = 'l', tcl = .5)     # bold table text, other options
-#' title(main = 'Chemotherapy for stage B/C colon cancer',
-#'       font.main = 1, line = 2.5)
+#' title(main = 'Chemotherapy for stage B/C colon cancer', line = 2.5)
 #' dev.off()
 #' system2(getOption('pdfviewer'), tf)
+#' unlink(tf)
 #' }
 #' 
 #' @export
@@ -234,14 +237,15 @@ kmplot <- function(s,
                    col.ci = col.surv, col.band = FALSE,
                    
                    ## at-risk table options
-                   atrisk = TRUE, atrisk.lab = NULL,
-                   wh.atrisk = c('atrisk', 'events', 'atrisk-events', 'survival'),
+                   atrisk.table = TRUE, atrisk.lab = NULL,
+                   atrisk.type = c('atrisk', 'events',
+                                   'atrisk-events', 'survival'),
                    atrisk.digits = 2L,
                    atrisk.lines = TRUE, atrisk.col = !atrisk.lines,
                    strata.lab = NULL,
                    strata.expr = NULL, strata.order = seq_along(s$n),
                    extra.margin = 5, mar = NULL,
-                   median = FALSE, median.digits = 0L,
+                   median = FALSE, digits.median = 0L,
                    
                    ## aesthetics
                    xaxs = 's', xlim = NULL, ylim = NULL,
@@ -250,14 +254,14 @@ kmplot <- function(s,
                    yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
                    xlab = 'Time', ylab = 'Probability',
                    main = NULL, cex.axis = par('cex.axis'),
-                   legend = !atrisk && !is.null(s$strata),
-                   legend.args = list(),
+                   legend = !atrisk.table && !is.null(s$strata),
+                   args.legend = list(),
                    
                    ## test/hazard ratio options
                    lr_test = FALSE, tt_test = FALSE, test_details = TRUE,
-                   test.args = list(),
-                   hr_text = FALSE, hr.args = list(),
-                   pw_test = FALSE, pw.args = list(),
+                   args.test = list(),
+                   hr_text = FALSE, args.hr = list(),
+                   pw_test = FALSE, args.pw = list(),
                    format_pval = TRUE,
                    
                    ## other options
@@ -393,10 +397,10 @@ kmplot <- function(s,
     on.exit(par(op))
 
   ## guess margins based on atrisk table options
-  par(mar = c(4 + ng * atrisk,
-              4 + pmax(4, extra.margin) - 3 * !atrisk,
+  par(mar = c(4 + ng * atrisk.table,
+              4 + pmax(4, extra.margin) - 3 * !atrisk.table,
               2,
-              2 + 6 * (median & atrisk))
+              2 + 6 * (median & atrisk.table))
   )
   par(...)
   if (!is.null(mar))
@@ -439,7 +443,7 @@ kmplot <- function(s,
   )
   
   ## at-risk table below surv plot
-  if (atrisk) {
+  if (atrisk.table) {
     usr <- par('usr')
     
     atrisk.at <- atrisk.at[atrisk.at <= usr[2L]]
@@ -476,9 +480,9 @@ kmplot <- function(s,
              col = col.surv[ii], lty = lty.surv[ii], lwd = lwd.surv[ii])
     
     ## at-risk table
-    wh.atrisk <- match.arg(wh.atrisk)
+    atrisk.type <- match.arg(atrisk.type)
     wh <- switch(
-      wh.atrisk,
+      atrisk.type,
       atrisk = 'n.risk',
       events = 'events',
       'atrisk-events' = 'atrisk-events',
@@ -516,13 +520,13 @@ kmplot <- function(s,
             las = 1L, line = line.pos[ii], cex = cex.axis,
             ## center atrisk-events
             # at = tmp$time + w.adj, adj = 1,
-            at = tmp$time + w.adj * wh.atrisk %ni% 'atrisk-events',
-            adj = 1 - 0.5 * wh.atrisk %in% 'atrisk-events')
+            at = tmp$time + w.adj * atrisk.type %ni% 'atrisk-events',
+            adj = 1 - 0.5 * atrisk.type %in% 'atrisk-events')
     }
     
     if (is.null(atrisk.lab))
       atrisk.lab <- switch(
-        wh.atrisk,
+        atrisk.type,
         atrisk = 'Number at risk',
         events = 'Cumulative events',
         'atrisk-events' = 'At risk (Events)',
@@ -540,7 +544,7 @@ kmplot <- function(s,
         as.data.frame(st) else as.data.frame(t(st))
       tt <- do.call('sprintf', c(list(
         fmt = '%s (%s, %s)'),
-        tail(lapply(st, roundr, digits = median.digits), 3L))
+        tail(lapply(st, roundr, digits = digits.median), 3L))
       )
       tt <- ifelse(is.na(st$median), '-', gsub('NA', '-', tt, fixed = TRUE))
       at <- if (isTRUE(median.at))
@@ -566,9 +570,9 @@ kmplot <- function(s,
       lty = lty.surv[strata.order], lwd = lwd.surv[strata.order]
     )
     
-    if (!islist(legend.args))
-      legend.args <- list()
-    do.call('legend', modifyList(largs, legend.args))
+    if (!islist(args.legend))
+      args.legend <- list()
+    do.call('legend', modifyList(largs, args.legend))
   }
   
   ## hazard ratios
@@ -592,9 +596,9 @@ kmplot <- function(s,
       lty = lty.surv[strata.order], lwd = lwd.surv[strata.order]
     )
     
-    if (!islist(hr.args))
-      hr.args <- list()
-    do.call('legend', modifyList(largs, hr.args))
+    if (!islist(args.hr))
+      args.hr <- list()
+    do.call('legend', modifyList(largs, args.hr))
   }
   
   ## pairwise tests
@@ -603,9 +607,9 @@ kmplot <- function(s,
     
     largs <- list(x = 'topright', legend = txt, bty = 'n')
     
-    if (!islist(pw.args))
-      pw.args <- list()
-    do.call('legend', modifyList(largs, pw.args))
+    if (!islist(args.pw))
+      args.pw <- list()
+    do.call('legend', modifyList(largs, args.pw))
   }
   
   ## survival and confidence lines
@@ -674,9 +678,9 @@ kmplot <- function(s,
         adj = 1, cex = 0.8, line = 0.5
       )
       
-      if (!islist(test.args))
-        test.args <- list()
-      do.call('mtext', modifyList(largs, test.args))
+      if (!islist(args.test))
+        args.test <- list()
+      do.call('mtext', modifyList(largs, args.test))
     }
   }
   
@@ -892,7 +896,11 @@ kmplot_data_ <- function(s, strata.lab) {
 #' 
 #' @description
 #' Internal functions for \code{\link{survdiff}} and \code{\link{survfit}}
-#' objects.
+#' objects. Current methods include log-rank (\code{lr_*}) and pairwise
+#' (\code{pw_*}) log-rank tests (by default although the exact test may be
+#' controlled with the \code{rho} parameter passed to \code{survdiff}); a
+#' trend test described by Tarone (\code{tt_*}); and Wald tests of
+#' coefficients in a Cox regression (\code{hr_*}).
 #' 
 #' \code{*_pval} functions take (\code{survfit} or \code{survdiff}) objects
 #' or formulas and compute test statistics, p-values, etc. and return a
@@ -1272,6 +1280,9 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
 #' @param map.col logical; if \code{TRUE}, \code{col.surv} will be the color
 #' of all curves in each plot (only used when \code{by} is non-missing)
 #' @param time character string of the time variable (optional)
+#' @param legend logical, a vector of x/y coordinates, or a keyword (see
+#' \code{\link{legend}}); if \code{TRUE}, the default position is
+#' \code{"bottomleft"}
 #' @param add logical; if \code{FALSE} (default), resets graphical parameters
 #' to settings before \code{kmplot_by} was called; set to \code{TRUE} for
 #' adding to existing plots
@@ -1358,7 +1369,7 @@ kmplot_by <- function(strata = '1', event, data, by = NULL, single = TRUE,
                       lr_test = TRUE, main = NULL, ylab = NULL, sub = NULL,
                       strata_lab = NULL, fig_lab = NULL,
                       col.surv = NULL, map.col = FALSE, time = NULL,
-                      add = FALSE, plot = TRUE, ...) {
+                      legend = FALSE, add = FALSE, plot = TRUE, ...) {
   op <- par(no.readonly = TRUE)
   if (is.logical(lr_test)) {
     rho <- 0
@@ -1510,7 +1521,7 @@ kmplot_by <- function(strata = '1', event, data, by = NULL, single = TRUE,
     if (!plot)
       return(s0)
     
-    kmplot(s, add = add, legend = FALSE, main = names(sp)[x], ylab = ylab,
+    kmplot(s, add = add, legend = legend, main = names(sp)[x], ylab = ylab,
            lr_test = lr_test, ...,
            col.surv = if (map.col) unname(col.surv)[x] else col.surv,
            panel.first = {

@@ -6,19 +6,19 @@
 \usage{
 kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
   col.surv = seq_along(s$n), mark = 3L, lwd.mark = lwd.surv, lty.ci = 0,
-  lwd.ci = lwd.surv, col.ci = col.surv, col.band = FALSE, atrisk = TRUE,
-  atrisk.lab = NULL, wh.atrisk = c("atrisk", "events", "atrisk-events",
-  "survival"), atrisk.digits = 2L, atrisk.lines = TRUE,
-  atrisk.col = !atrisk.lines, strata.lab = NULL, strata.expr = NULL,
-  strata.order = seq_along(s$n), extra.margin = 5, mar = NULL,
-  median = FALSE, median.digits = 0L, xaxs = "s", xlim = NULL,
-  ylim = NULL, xaxis.at = pretty(xlim), xaxis.lab = xaxis.at,
-  atrisk.at = xaxis.at, yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
-  xlab = "Time", ylab = "Probability", main = NULL,
-  cex.axis = par("cex.axis"), legend = !atrisk && !is.null(s$strata),
-  legend.args = list(), lr_test = FALSE, tt_test = FALSE,
-  test_details = TRUE, test.args = list(), hr_text = FALSE,
-  hr.args = list(), pw_test = FALSE, pw.args = list(),
+  lwd.ci = lwd.surv, col.ci = col.surv, col.band = FALSE,
+  atrisk.table = TRUE, atrisk.lab = NULL, atrisk.type = c("atrisk",
+  "events", "atrisk-events", "survival"), atrisk.digits = 2L,
+  atrisk.lines = TRUE, atrisk.col = !atrisk.lines, strata.lab = NULL,
+  strata.expr = NULL, strata.order = seq_along(s$n), extra.margin = 5,
+  mar = NULL, median = FALSE, digits.median = 0L, xaxs = "s",
+  xlim = NULL, ylim = NULL, xaxis.at = pretty(xlim),
+  xaxis.lab = xaxis.at, atrisk.at = xaxis.at, yaxis.at = pretty(ylim),
+  yaxis.lab = yaxis.at, xlab = "Time", ylab = "Probability",
+  main = NULL, cex.axis = par("cex.axis"), legend = !atrisk.table &&
+  !is.null(s$strata), args.legend = list(), lr_test = FALSE,
+  tt_test = FALSE, test_details = TRUE, args.test = list(),
+  hr_text = FALSE, args.hr = list(), pw_test = FALSE, args.pw = list(),
   format_pval = TRUE, add = FALSE, panel.first = NULL,
   panel.last = NULL, ...)
 }
@@ -49,17 +49,17 @@ values will be used; if \code{FALSE}, \code{NA}, or \code{NULL}, no
 bands will be plotted; also note that this is not a true confidence band;
 see details}
 
-\item{atrisk}{logical; if \code{TRUE} (default), draws at-risk table}
+\item{atrisk.table}{logical; if \code{TRUE} (default), draws at-risk table}
 
 \item{atrisk.lab}{heading for at-risk table}
 
-\item{wh.atrisk}{a character string giving the type of at-risk table to
+\item{atrisk.type}{a character string giving the type of at-risk table to
 show; one of \code{"atrisk"} (number at-risk), \code{"events"} (cumulative
 number of events), \code{"atrisk-events"} (both), or \code{"survival"}
 (survival estimate)}
 
 \item{atrisk.digits}{when survival estimates are shown in at-risk table
-(see \code{wh.atrisk}), number of digits past the decimal to show}
+(see \code{atrisk.type}), number of digits past the decimal to show}
 
 \item{atrisk.lines}{logical; draw lines next to strata in at-risk table}
 
@@ -86,7 +86,7 @@ table are long (note that this will be overridden by \code{mar})}
 interval for each curve is added to at-risk table at a calculated
 position; for more control, use a specific x-coordinate}
 
-\item{median.digits}{number of digits past the decimal point to keep for
+\item{digits.median}{number of digits past the decimal point to keep for
 median(s)}
 
 \item{xaxs}{style of axis; see details or \code{\link{par}}}
@@ -110,7 +110,7 @@ median(s)}
 \code{\link{legend}}); if \code{TRUE}, the default position is
 \code{"bottomleft"}}
 
-\item{legend.args}{an optional \emph{named} list of \code{\link{legend}}
+\item{args.legend}{an optional \emph{named} list of \code{\link{legend}}
 arguments controlling the \code{legend}}
 
 \item{lr_test}{logical or numeric; if \code{TRUE}, a log-rank test will be
@@ -126,20 +126,20 @@ that this will override \code{lr_test}}
 (test statistic, degrees of freedom, p-value) are shown; if \code{FALSE},
 only the p-value is shown}
 
-\item{test.args}{an optional \emph{named} list of \code{\link{mtext}}
+\item{args.test}{an optional \emph{named} list of \code{\link{mtext}}
 arguments controlling the \code{*_test} text}
 
 \item{hr_text}{logical; if \code{TRUE}, a \code{\link{coxph}} model is fit,
 and a summary (hazard ratios, confidence intervals, and Wald p-values)
 is shown}
 
-\item{hr.args}{an optional \emph{named} list of \code{\link{legend}}
+\item{args.hr}{an optional \emph{named} list of \code{\link{legend}}
 arguments controlling the \code{hr_text} legend}
 
 \item{pw_test}{logical; if \code{TRUE}, all pairwise tests of survival
 curves are performed, and p-valuees are shown}
 
-\item{pw.args}{an optional \emph{named} list of \code{\link{legend}}
+\item{args.pw}{an optional \emph{named} list of \code{\link{legend}}
 arguments controlling the \code{pw_text} legend}
 
 \item{format_pval}{logical; if \code{TRUE}, p-values are formatted with
@@ -196,10 +196,10 @@ km2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 ## basic usage
 kmplot(km1)
 kmplot(km1, atrisk.col = c('grey50','tomato'), lr_test = TRUE,
-       test.args = list(col = 'red', cex = 1.5, line = 0))
+       args.test = list(col = 'red', cex = 1.5, line = 0))
 kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
 kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3700)
-kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5,
+kmplot(km2, atrisk.table = FALSE, lwd.surv = 2, lwd.mark = .5,
        col.surv = 1:4, col.band = c(1,0,0,4))
 
 
@@ -207,19 +207,19 @@ kmplot(km2, atrisk = FALSE, lwd.surv = 2, lwd.mark = .5,
 kmplot(survfit(Surv(time, status) ~ factor(sex), data = colon),
        hr_text = TRUE, strata.lab = TRUE)
 kmplot(survfit(Surv(time, status) ~ interaction(sex, rx), data = colon),
-       hr_text = TRUE, atrisk = FALSE, legend = FALSE)
+       hr_text = TRUE, atrisk.table = FALSE, legend = FALSE)
 kmplot(survfit(Surv(time, status) ~ interaction(sex, rx), data = colon),
-       hr_text = TRUE, atrisk = FALSE, legend = FALSE,
+       hr_text = TRUE, atrisk.table = FALSE, legend = FALSE,
        format_pval = function(x) format(x, digits = 2, scipen = 0))
 
 
 ## at-risk and p-value options
 kmplot(km2, tt_test = TRUE, test_details = FALSE)
 kmplot(km2, tt_test = TRUE, format_pval = format.pval)
-kmplot(km1, wh.atrisk = 'survival', atrisk.digits = 3L)
-kmplot(km1, wh.atrisk = 'atrisk-events')
+kmplot(km1, atrisk.type = 'survival', atrisk.digits = 3L)
+kmplot(km1, atrisk.type = 'atrisk-events')
 kmplot(survfit(Surv(time, status) ~ rx, data = colon),
-       pw_test = TRUE, pw.args = list(text.col = 1:3, x = 'bottomleft'))
+       pw_test = TRUE, args.pw = list(text.col = 1:3, x = 'bottomleft'))
 
 ## expressions in at-risk table (strata.expr takes precedence)
 kmplot(km1, strata.lab = c('\\u2640', '\\u2642'))
@@ -241,6 +241,7 @@ kmplot(km2, add = TRUE, strata.lab = TRUE, mar = mar)
 
 
 \dontrun{
+## more customized figure
 pdf(tf <- tempfile(fileext = '.pdf'), height = 8, width = 11,
     pointsize = 12, family = 'serif')
 kmplot(survfit(Surv(time, status) ~ rx + adhere, data = colon),
@@ -252,18 +253,20 @@ kmplot(survfit(Surv(time, status) ~ rx + adhere, data = colon),
        yaxis.lab = pretty(0:1) * 100,     # change to percent
        xlab = 'Time (years)',
        ylab = 'Percent survival',
-       col.surv = c('blue','red','green','black','purple','orange'),
+       lr_test = TRUE, test_details = FALSE, # custom test output
+       args.test = list(line = -2, col = 'red', cex = 2, at = 11 * 365),
+       col.surv = c('blue', 'red', 'green', 'black', 'purple', 'orange'),
        col.ci   = c(0,0,0,0,'purple',0),  # CI only for one group
        extra.margin = 6,        # increase margin for long strata labels
-       strata.lab = c('Obs','Obs+','Lev','Lev+','Lev5fu','Lev5fu+'),
+       strata.lab = c('Obs', 'Obs+', 'Lev', 'Lev+', 'Lev5fu', 'Lev5fu+'),
        strata.order = c(5,6,3,1,4,2),     # order table by curve positions
-       median = TRUE,                     # add median and CI
-       oma = c(0,0,0,1),                  # extra space for median
+       median = 10.5 * 365,               # add median and CI
+       atrisk.col = TRUE,                 # color at-risk text
        font = 2, bty = 'l', tcl = .5)     # bold table text, other options
-title(main = 'Chemotherapy for stage B/C colon cancer',
-      font.main = 1, line = 2.5)
+title(main = 'Chemotherapy for stage B/C colon cancer', line = 2.5)
 dev.off()
 system2(getOption('pdfviewer'), tf)
+unlink(tf)
 }
 
 }
