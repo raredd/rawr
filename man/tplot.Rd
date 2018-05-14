@@ -33,11 +33,15 @@ elements of \code{x}, ignored with a warning if \code{x} is a list}
 \item{type}{type of plot (dot, dot-box, box-dot, box)}
 
 \item{jit, dist}{jitter parameters for overlapping points (use \code{0} for
-overlapping points and larger values for more distance between points);
-both can be length 1 (recycled as needed) or equal to the number of groups
+no jitter (i.e., points may overlap) and values > 0 for more distance
+between points); both can be length 1 (recycled as needed for groups) or
+equal to the number of groups (useful if one group has more points and
+needs more jittering than other groups)
 
-\code{dist} and \code{jit} define the \code{x}-interval width and spreading
-factors, respectively}
+\code{jit} controls the amount of spread in a group of neighboring points,
+and \code{dist} controls the size of the interval to group neighboring
+points, i.e., a group of sequential points that are no more than
+\code{dist} apart are considered neighbors and will be jittered}
 
 \item{main, sub}{overall title and sub-title for the plot (below x-axis)}
 
@@ -145,33 +149,33 @@ An alternative to \code{\link{boxplot}}. The individual data can be shown
 }
 \examples{
 ## these are equivalent ways to call tplot
-## formula method is a convenience function for the second (split) case
 x <- mtcars$mpg
 g <- interaction(mtcars$gear, mtcars$vs)
 
 tplot(x, g)
 tplot(split(x, g))
+tplot(x ~ g)
 tplot(mpg ~ gear + vs, mtcars)
 
 
-## horizontal plots may cut off text
+## horizontal plots may cut off show.n/show.na text
 tplot(x, g, horizontal = TRUE)
 
-op <- par(no.readonly = TRUE)
-par(mar = c(5,5,5,5))
+op <- par(mar = par('mar') + c(0, 0, 0, 2))
 tplot(x, g, horizontal = TRUE)
+
+## and/or rotate labels
+tplot(x, g, horizontal = TRUE, srt = 45)
 par(op)
-
-## or rotate labels
-tplot(x, g, horizontal = TRUE, srt = -90)
 
 
 ## add rank-sum or custom test to plot
 tplot(mpg ~ vs, mtcars, test = TRUE)   ## two groups - wilcox.test
 tplot(mpg ~ gear, mtcars, test = TRUE) ## >=2 groups - kruskal.test
-
 tplot(mpg ~ gear, mtcars, test = rawr::cuzick.test) ## trend test
-tplot(mtcars$mpg, 1:2, test = function(x, g)        ## custom test
+
+## custom test/text formatting
+tplot(mtcars$mpg, 1:2, test = function(x, g)
   wilcox.test(x ~ g, data.frame(x, g), exact = FALSE, paired = TRUE),
   args.test = list(col = 2, at = 1.5, adj = 0.5, line = -3, cex = 2))
 

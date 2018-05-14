@@ -190,11 +190,15 @@ jmplot <- function(x, y, z,
 #' @param at group positions on axis
 #' @param horizontal logical; flip axes
 #' @param jit,dist jitter parameters for overlapping points (use \code{0} for
-#' overlapping points and larger values for more distance between points);
-#' both can be length 1 (recycled as needed) or equal to the number of groups
+#' no jitter (i.e., points may overlap) and values > 0 for more distance
+#' between points); both can be length 1 (recycled as needed for groups) or
+#' equal to the number of groups (useful if one group has more points and
+#' needs more jittering than other groups)
 #' 
-#' \code{dist} and \code{jit} define the \code{x}-interval width and spreading
-#' factors, respectively
+#' \code{jit} controls the amount of spread in a group of neighboring points,
+#' and \code{dist} controls the size of the interval to group neighboring
+#' points, i.e., a group of sequential points that are no more than
+#' \code{dist} apart are considered neighbors and will be jittered
 #' @param boxplot.pars additional list of graphical parameters for box plots
 #' @param col plotting color
 #' @param group.col logical; if \code{TRUE}, color by group; otherwise by order
@@ -254,33 +258,33 @@ jmplot <- function(x, y, z,
 #'
 #' @examples
 #' ## these are equivalent ways to call tplot
-#' ## formula method is a convenience function for the second (split) case
 #' x <- mtcars$mpg
 #' g <- interaction(mtcars$gear, mtcars$vs)
 #' 
 #' tplot(x, g)
 #' tplot(split(x, g))
+#' tplot(x ~ g)
 #' tplot(mpg ~ gear + vs, mtcars)
 #' 
 #' 
-#' ## horizontal plots may cut off text
+#' ## horizontal plots may cut off show.n/show.na text
 #' tplot(x, g, horizontal = TRUE)
 #' 
-#' op <- par(no.readonly = TRUE)
-#' par(mar = c(5,5,5,5))
+#' op <- par(mar = par('mar') + c(0, 0, 0, 2))
 #' tplot(x, g, horizontal = TRUE)
+#' 
+#' ## and/or rotate labels
+#' tplot(x, g, horizontal = TRUE, srt = 45)
 #' par(op)
-#' 
-#' ## or rotate labels
-#' tplot(x, g, horizontal = TRUE, srt = -90)
 #' 
 #' 
 #' ## add rank-sum or custom test to plot
 #' tplot(mpg ~ vs, mtcars, test = TRUE)   ## two groups - wilcox.test
 #' tplot(mpg ~ gear, mtcars, test = TRUE) ## >=2 groups - kruskal.test
-#' 
 #' tplot(mpg ~ gear, mtcars, test = rawr::cuzick.test) ## trend test
-#' tplot(mtcars$mpg, 1:2, test = function(x, g)        ## custom test
+#' 
+#' ## custom test/text formatting
+#' tplot(mtcars$mpg, 1:2, test = function(x, g)
 #'   wilcox.test(x ~ g, data.frame(x, g), exact = FALSE, paired = TRUE),
 #'   args.test = list(col = 2, at = 1.5, adj = 0.5, line = -3, cex = 2))
 #' 
@@ -390,7 +394,7 @@ tplot.default <- function(x, g, ..., type = 'db',
     attributes(args)$names !=  '' else logical(length(args))
   groups <- if (is.list(x))
     x else args[!namedargs]
-  pars   <- args[namedargs]
+  pars <- args[namedargs]
   
   if ((n <- length(groups)) == 0L)
     stop('invalid first argument')
@@ -499,7 +503,7 @@ tplot.default <- function(x, g, ..., type = 'db',
   
   ## defaults for dist and jit for groups
   dist <- rep_len(if (is.null(dist) || is.na(dist))
-    diff(range(ylim)) / 100 else dist, ng)
+    diff(range(ylim)) / pmax(100, nv) else dist, ng)
   jit  <- rep_len(if (is.null(jit) || is.na(jit))
     # 0.025 * ng else jit, ng)
     min(1 / lg) else jit, ng)
@@ -517,19 +521,18 @@ tplot.default <- function(x, g, ..., type = 'db',
       do.call('localWindow', c(list(xlim, ylim), pars))
   }
   
-  if (show.n && horizontal)
-    par(oma = par('oma') + c(0,0,0,2))
+  # if (show.n && horizontal) {
+  #   op <- par(mar = par('mar') + c(0, 0, 0, 5))
+  #   on.exit(par(op))
+  # }
   panel.first
   
   Lme <- 0.2 * c(-1, 1)
   
   for (i in seq.int(ng)) {
-    to.plot <- groups[[i]]
-    nn <- names(groups)
-    gs <- to.plot$g.si
-    hm <- to.plot$hmsf
-    x <- rep(at[i], nrow(to.plot)) + jit_(gs, hm) * jit[i]
-    y <- to.plot$vs
+    p <- groups[[i]]
+    y <- ave(p$vs, p$g.id, FUN = sym_sort)
+    x <- rep_len(at[i], nrow(p)) + jit_(p$g.si, p$hmsf) * jit[i]
     
     ## dots behind
     if (type[i] == 'bd') {
