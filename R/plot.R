@@ -503,7 +503,7 @@ tplot.default <- function(x, g, ..., type = 'db',
   
   ## defaults for dist and jit for groups
   dist <- rep_len(if (is.null(dist) || is.na(dist))
-    diff(range(ylim)) / pmax(100, nv) else dist, ng)
+    diff(range(ylim)) / pmax(500, nv) else dist, ng)
   jit  <- rep_len(if (is.null(jit) || is.na(jit))
     # 0.025 * ng else jit, ng)
     min(1 / lg) else jit, ng)
