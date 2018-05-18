@@ -10,5 +10,9 @@ clc(all.names = FALSE)
 \item{all.names}{logical; if \code{TRUE}, also removes hidden (dot) objects}
 }
 \description{
-Clear the workspace by removing all objects in \code{\link{ls}}.
+Clear the workspace by removing all objects in \code{\link{ls}} followed
+by \code{\link[=gc]{garbage collection}}.
+}
+\seealso{
+\code{\link{clear}}
 }

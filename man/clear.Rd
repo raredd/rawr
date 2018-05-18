@@ -12,3 +12,6 @@ clear(...)
 \description{
 Clear the console window.
 }
+\seealso{
+\code{\link{clc}}
+}
