@@ -188,9 +188,10 @@ NULL
 #' 
 #' These functions begin with \code{ls} and list different things. \code{lss}
 #' is an "improved" \code{\link{ls}} which gives more details of objects in
-#' the workspace such as size and dimensions; \code{lsp} lists the
-#' \code{p}ackage contents, i.e., exported and/or non exported obejcts (see
-#' details); and \code{lsf} lists package \code{f}iles (see details).
+#' the workspace such as type, size, and dimensions; \code{lsp} lists
+#' \code{p}ackage contents, i.e., exported and/or non exported obejcts,
+#' methods, lazy data, etc.; and \code{lsf} lists package \code{f}iles. See
+#' details and examples.
 #' 
 #' \code{lsf} prints package files (e.g., \code{DESCRIPTION}, \code{NEWS},
 #' \code{INDEX}, \code{NAMESPACE}, etc.) to console and returns (invisibly)
@@ -301,11 +302,16 @@ lss <- function(pos = 1L, pattern, by = NULL, all.names = FALSE,
   idx   <- is.na(dims)[, 1L] & (type != 'function')
   dims[idx, 1L] <- napply(names, length)[idx]
   
-  res <- data.frame(type, unlist(size), sizef,
-                    nrow = dims[, 1L], ncol = dims[, 2L])
+  res <- data.frame(
+    type, size = unlist(size), sizef, nrow = dims[, 1L], ncol = dims[, 2L],
+    ' ' = symnum(unlist(size), corr = FALSE, na = FALSE,
+                 cutpoints = c(-Inf, 0.001, 0.1, 0.5, 1, Inf) * 1024 ^ 3,
+                 symbols = c(' ', '.', '*', '**', '***')),
+    stringsAsFactors = FALSE, check.names = FALSE
+  )
   
-  if ((mb <- sum(napply(names, object.size)) / (1024 * 1024)) > 1)
-    on.exit(message(sprintf('Total size: %s Mb', roundr(mb, 1L))))
+  if ((mb <- sum(napply(names, object.size)) / (1024 ^ 2)) > 1)
+    on.exit(message(sprintf('Total size: %s Mb', rawr::roundr(mb, 1L))))
   
   if (!is.null(by))
     res <- res[order(res[, by], decreasing = decreasing), ]
@@ -537,14 +543,20 @@ rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
 
 #' Clear workspace
 #' 
-#' Clear the workspace by removing all objects in \code{\link{ls}}.
+#' Clear the workspace by removing all objects in \code{\link{ls}} followed
+#' by \code{\link[=gc]{garbage collection}}.
 #' 
 #' @param all.names logical; if \code{TRUE}, also removes hidden (dot) objects
+#' 
+#' @seealso
+#' \code{\link{clear}}
 #' 
 #' @export
 
 clc <- function(all.names = FALSE) {
   rm(list = ls(.GlobalEnv, all.names = all.names), envir = .GlobalEnv)
+  gc(TRUE)
+  invisible(NULL)
 }
 
 #' Clear console
@@ -552,6 +564,9 @@ clc <- function(all.names = FALSE) {
 #' Clear the console window.
 #' 
 #' @param ... ignored
+#' 
+#' @seealso
+#' \code{\link{clc}}
 #' 
 #' @export
 
