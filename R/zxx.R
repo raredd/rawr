@@ -95,7 +95,7 @@ ht <- function(x, n = 6L, sep = NULL) {
 #' 
 #' @export
 
-progress <- function (value, max.value, textbar = FALSE) {
+progress <- function(value, max.value, textbar = FALSE) {
   if (!is.numeric(value))
     stop('\'value\' must be numeric')
   
@@ -140,12 +140,12 @@ progress <- function (value, max.value, textbar = FALSE) {
     if (percent) {
       backspaces <- f(rep('\b', l + 14L))
       message <- if (erase.only)
-        '' else paste0('Progress: ', round(value), '%  ')
+        '' else sprintf('Progress: %s%%', round(value))
       cat(backspaces, message, sep = '')
     } else {
       backspaces <- f(rep('\b', 2 * l + 17L))
       message <- if (erase.only)
-        '' else f('Progress: ', value, ' of ', max.value, '  ')
+        '' else sprintf('Progress: %s of %s  ', value, max.value)
       cat(backspaces, message, sep = '')
     }
   }

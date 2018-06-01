@@ -133,7 +133,7 @@
 #' @param panel.last an expression to be evaluated after plotting but before
 #' returning from the function
 #' @param ... additional parameters (\code{font}, \code{mfrow}, \code{bty},
-#' \code{tcl}, \code{cex.lab}, \code{xaxs}, etc) passed to \code{par}
+#' \code{tcl}, \code{cex.lab}, etc) passed to \code{par}
 #' 
 #' @references
 #' \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}

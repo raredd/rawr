@@ -157,7 +157,7 @@ set up but before any plotting takes place}
 returning from the function}
 
 \item{...}{additional parameters (\code{font}, \code{mfrow}, \code{bty},
-\code{tcl}, \code{cex.lab}, \code{xaxs}, etc) passed to \code{par}}
+\code{tcl}, \code{cex.lab}, etc) passed to \code{par}}
 }
 \description{
 Plot Kaplan-Meier or Cox regression models with optional at-risk table,

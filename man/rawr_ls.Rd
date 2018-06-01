@@ -53,7 +53,7 @@ returns a vector of character strings.
 \description{
 These functions begin with \code{ls} and list different things. \code{lss}
 is an "improved" \code{\link{ls}} which gives more details of objects in
-the workspace such as type, size, and dimensions; \code{lsp} lists the
+the workspace such as type, size, and dimensions; \code{lsp} lists
 \code{p}ackage contents, i.e., exported and/or non exported obejcts,
 methods, lazy data, etc.; and \code{lsf} lists package \code{f}iles. See
 details and examples.
