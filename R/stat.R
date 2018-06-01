@@ -2,7 +2,7 @@
 # bincon, bintest, dlt_table, pr_table, power_cv, simon2, moods_test, fakeglm,
 # gcd, install.bioc, lm.beta, cuzick.test, cuzick.test.default,
 # cuzick.test.formula, jt.test, hl_est, rcor, rsum, kw.test, kw.test.default,
-# kw.test.formula
+# kw.test.formula, lspline
 # 
 # S3 methods:
 # cuzick.test, kw.test
@@ -2231,4 +2231,86 @@ kw.test.pvalue <- function(x, g, ordered = FALSE, B = 2000L,
     setNames(c(p, ci), c('p.value', 'LCI', 'UCI')),
     conf.level = alpha
   )
+}
+
+#' Linear spline
+#' 
+#' Fit a linear spline regression model with pre-specified knots.
+#' 
+#' @param x,y the x- and y-axis variables
+#' @param knots value(s) of \code{x} where knots will be set
+#' @param plot logical; if \code{TRUE}, fit lines will be plotted
+#' @param col a vector of colors for each spline
+#' 
+#' @return
+#' A list with components \code{x} and \code{y} having the x- and y-values
+#' for each \code{knot}.
+#' Additionally, the linear spline model is returned as an \code{\link{lm}}
+#' object (\code{attr(., "model")}).
+#' 
+#' @examples
+#' x <- cars$speed
+#' y <- cars$dist
+#' 
+#' lspline(x, y)
+#' ls <- lspline(x, y, plot = TRUE, knots = c(10, 20))
+#' plot(x, y)
+#' Map('lines', ls$x, ls$y, col = 1:3)
+#' 
+#' 
+#' ## compare
+#' lspline(x, y, plot = TRUE, knots = 15, col = 2:3)
+#' 
+#' knot <- 15
+#' fit <- lm(dist ~ speed + I((speed - knot) * (speed >= knot)), cars)
+#' plot(y ~ x)
+#' xx <- seq(min(x), knot, length.out = 1000L)
+#' co <- coef(fit)
+#' lines(xx, co[1] + co[2] * xx, col = 2)
+#' xx <- seq(knot, max(x), length.out = 1000L)
+#' lines(xx, co[1] + co[2] * xx + co[3] * (xx - knot), col = 3)
+#' abline(v = knot)
+#' 
+#' @export
+
+lspline <- function(x, y, knots = NULL, plot = FALSE, col = NULL) {
+  dd <- data.frame(y = y, x = x)
+  
+  if (is.null(knots)) {
+    fit <- lm(y ~ x, dd)
+    if (plot) {
+      plot(y ~ x, dd)
+      abline(fit, col = col[1L] %||% palette()[1L])
+    }
+    
+    return(structure(list(x = dd$x, y = dd$y), model = fit))
+  }
+  
+  f <- function(nd, k) {
+    nd <- data.frame(x = nd)
+    nd[, paste0('x', k)] <- lapply(k, function(x)
+      (nd$x >= x) * (nd$x - x))
+    nd
+  }
+  
+  dd[, paste0('x', knots)] <- lapply(knots, function(x) {
+    (dd$x >= x) * (dd$x - x)
+  })
+  fit <- lm(y ~ ., dd)
+  
+  xx <- Map(function(x, y) seq(x, y, length.out = 1000L),
+            c(min(dd$x, na.rm = TRUE), knots),
+            c(knots, max(dd$x, na.rm = TRUE)))
+  nd <- Map(f, xx, list(knots))
+  
+  if (plot)
+    plot(y ~ x, dd)
+  yy <- lapply(seq_along(xx), function(ii) {
+    pr <- predict(fit, nd[[ii]])
+    if (plot)
+      lines(xx[[ii]], pr, col = (col %||% palette())[ii])
+    unname(pr)
+  })
+  
+  structure(list(x = xx, y = yy), model = fit)
 }
