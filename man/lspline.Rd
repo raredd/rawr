@@ -16,8 +16,11 @@ lspline(x, y, knots = NULL, plot = FALSE, col = NULL)
 \item{col}{a vector of colors for each spline}
 }
 \value{
-A list with components \code{x} and \code{y} having the x- and y-values
-for each \code{knot}.
+A list with the following components:
+
+\item{\code{x}}{a data frame used to fit the splines}
+\item{\code{y}}{adjusted response values}
+
 Additionally, the linear spline model is returned as an \code{\link{lm}}
 object (\code{attr(., "model")}).
 }
