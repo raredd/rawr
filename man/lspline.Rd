@@ -2,43 +2,58 @@
 % Please edit documentation in R/stat.R
 \name{lspline}
 \alias{lspline}
+\alias{plot.lspline}
 \title{Linear spline}
 \usage{
-lspline(x, y, knots = NULL, plot = FALSE, col = NULL)
+lspline(x, y, knots = NULL)
+
+\method{plot}{lspline}(x, col = NULL, which = 1:2, ...)
 }
 \arguments{
 \item{x, y}{the x- and y-axis variables}
 
-\item{knots}{value(s) of \code{x} where knots will be set}
-
-\item{plot}{logical; if \code{TRUE}, fit lines will be plotted}
+\item{knots}{value(s) of \code{x} where knots will be fixed}
 
 \item{col}{a vector of colors for each spline}
+
+\item{which}{an integer vector specifying the plot(s); see details}
+
+\item{...}{additional graphical parameters passed to \code{\link{par}}}
 }
 \value{
-A list with the following components:
-
-\item{\code{x}}{a data frame used to fit the splines}
-\item{\code{y}}{adjusted response values}
-
-Additionally, the linear spline model is returned as an \code{\link{lm}}
-object (\code{attr(., "model")}).
+\code{lspline} returns an \code{\link{lm}} object with class
+\code{"lspline"} and attribute \code{attr(., "knots")}. The data used to
+fit the model can be accessed with \code{$model} or created using
+\code{rawr:::lsdata}.
 }
 \description{
 Fit a linear spline regression model with pre-specified knots.
+}
+\details{
+\code{rawr:::lsdata} creates a data set to fit \code{\link{lm}} for
+the \code{knots}. Adjusted values may be extracted with
+\code{\link{predict.lm}}.
+
+The plotting method draws one or two figures: if \code{which = 1}, the
+original \code{x} and \code{y} values are plotted with fit lines for
+each spline, and \code{{x, y}} coordinates are projected onto the line.
+If \code{which = 2}, the \code{x} values are plotted with the fitted
+\code{y} values and colored by spline.
 }
 \examples{
 x <- cars$speed
 y <- cars$dist
 
-lspline(x, y)
-ls <- lspline(x, y, plot = TRUE, knots = c(10, 20))
-plot(x, y)
-Map('lines', ls$x, ls$y, col = 1:3)
+lspline(x, y, NULL)
+lm(y ~ x)
+
+ls <- lspline(x, y, c(10, 20))
+predict(ls)
+plot(ls)
 
 
 ## compare
-lspline(x, y, plot = TRUE, knots = 15, col = 2:3)
+plot(lspline(x, y, knots = 15), col = 2:3, which = 1L)
 
 knot <- 15
 fit <- lm(dist ~ speed + I((speed - knot) * (speed >= knot)), cars)
@@ -48,6 +63,5 @@ co <- coef(fit)
 lines(xx, co[1] + co[2] * xx, col = 2)
 xx <- seq(knot, max(x), length.out = 1000L)
 lines(xx, co[1] + co[2] * xx + co[3] * (xx - knot), col = 3)
-abline(v = knot)
 
 }
