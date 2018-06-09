@@ -391,7 +391,8 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
 
 #' Probability tables
 #' 
-#' @description
+#' Functions to generate standard 3+3 or generalized probability tables.
+#' 
 #' \code{dlt_table} creates a standard 3+3 dose-limiting toxicity table with
 #' probabilities of dose-escalation for true but unknown probabilities of
 #' experiencing toxicity.
@@ -404,9 +405,10 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
 #' @param prob a vector of probabilities
 #' @param digits number of digits past the decimal point to keep; if
 #' \code{NULL}, then no rounding is done
-#' @param n,crit the total sample size and critical number of events; note
-#' that this value will \emph{always} be included in the outcome regardless
-#' of the value of \code{greater}
+#' @param n,crit sample size and critical number of events, respectively; note
+#' that the probabilities will always be calculated as weakly less or greater
+#' than \code{crit}, i.e., \code{Pr(>= crit)} or \code{Pr(<= crit)} depending
+#' if \code{greater} is \code{TRUE} or \code{FALSE}
 #' @param greater logical; the direction of \code{crit}: if \code{FALSE},
 #' the probabilities are calculated for \code{crit} \emph{or fewer} events;
 #' if \code{TRUE}, the probabilities are calculated for \code{crit} \emph{or
