@@ -6,12 +6,12 @@
 \alias{pr_table}
 \title{Probability tables}
 \usage{
-dlt_table(probs, digits = NULL)
+dlt_table(prob, digits = NULL)
 
-pr_table(probs, n, crit, greater = FALSE, digits = NULL)
+pr_table(prob, n, crit, greater = FALSE, digits = NULL)
 }
 \arguments{
-\item{probs}{a vector of probabilities}
+\item{prob}{a vector of probabilities}
 
 \item{digits}{number of digits past the decimal point to keep; if
 \code{NULL}, then no rounding is done}
@@ -36,22 +36,22 @@ greater if \code{greater = TRUE}) events for true but unknown probabilities
 of the event occurring.
 }
 \examples{
-probs <- c(1, 5, 1:5 * 10) / 100
+prob <- c(1, 5, 1:5 * 10) / 100
 
 ## standard 3+3 escalation design for true but unknown
 ## probabilities of experiencing event
-dlt_table(probs)
-t(dlt_table(probs, 3))
+dlt_table(prob)
+t(dlt_table(prob, 3))
 
 
-## probabilities of crit or fewer events given true but unknown probs
-pr_table(probs, n = 15, crit = 3, greater = FALSE)
+## probabilities of crit or fewer events given true but unknown prob
+pr_table(prob, n = 15, crit = 3, greater = FALSE)
 
 
-## probabilities of crit or more events given true but unknown probs
-pr_table(probs, n = 15, crit = 3, greater = TRUE)
+## probabilities of crit or more events given true but unknown prob
+pr_table(prob, n = 15, crit = 3, greater = TRUE)
 
 ## compare
-1 - pr_table(probs, n = 15, crit = 2, greater = FALSE)[2L, ]
+1 - pr_table(prob, n = 15, crit = 2, greater = FALSE)[2L, ]
 
 }

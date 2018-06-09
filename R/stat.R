@@ -401,7 +401,7 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
 #' greater if \code{greater = TRUE}) events for true but unknown probabilities
 #' of the event occurring.
 #' 
-#' @param probs a vector of probabilities
+#' @param prob a vector of probabilities
 #' @param digits number of digits past the decimal point to keep; if
 #' \code{NULL}, then no rounding is done
 #' @param n,crit the total sample size and critical number of events; note
@@ -413,36 +413,36 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
 #' greater} events
 #' 
 #' @examples
-#' probs <- c(1, 5, 1:5 * 10) / 100
+#' prob <- c(1, 5, 1:5 * 10) / 100
 #' 
 #' ## standard 3+3 escalation design for true but unknown
 #' ## probabilities of experiencing event
-#' dlt_table(probs)
-#' t(dlt_table(probs, 3))
+#' dlt_table(prob)
+#' t(dlt_table(prob, 3))
 #' 
 #' 
-#' ## probabilities of crit or fewer events given true but unknown probs
-#' pr_table(probs, n = 15, crit = 3, greater = FALSE)
+#' ## probabilities of crit or fewer events given true but unknown prob
+#' pr_table(prob, n = 15, crit = 3, greater = FALSE)
 #' 
 #' 
-#' ## probabilities of crit or more events given true but unknown probs
-#' pr_table(probs, n = 15, crit = 3, greater = TRUE)
+#' ## probabilities of crit or more events given true but unknown prob
+#' pr_table(prob, n = 15, crit = 3, greater = TRUE)
 #' 
 #' ## compare
-#' 1 - pr_table(probs, n = 15, crit = 2, greater = FALSE)[2L, ]
+#' 1 - pr_table(prob, n = 15, crit = 2, greater = FALSE)[2L, ]
 #' 
 #' @name pr_tables
 NULL
 
 #' @rdname pr_tables
 #' @export
-dlt_table <- function(probs, digits = NULL) {
-  res <- sapply(probs, function(pr) {
+dlt_table <- function(prob, digits = NULL) {
+  res <- sapply(prob, function(pr) {
     dbinom(0L, 3L, pr) + dbinom(0L, 3L, pr) * dbinom(1L, 3L, pr)
   })
   
   res <- rbind(
-    'Pr(DLT)' = probs,
+    'Pr(DLT)' = prob,
     'Pr(Escalation)' = res
   )
   
@@ -452,11 +452,11 @@ dlt_table <- function(probs, digits = NULL) {
 
 #' @rdname pr_tables
 #' @export
-pr_table <- function(probs, n, crit, greater = FALSE, digits = NULL) {
+pr_table <- function(prob, n, crit, greater = FALSE, digits = NULL) {
   n <- as.integer(n)
   crit <- c(0L, sequence(max(as.integer(crit - greater))))
   
-  res <- sapply(probs, function(pr) {
+  res <- sapply(prob, function(pr) {
     x <- sum(mapply(function(x) dbinom(x, n, pr), crit))
     if (greater)
       1 - x else x
@@ -467,7 +467,7 @@ pr_table <- function(probs, n, crit, greater = FALSE, digits = NULL) {
     sprintf('Pr(%s%s)', c('<=', '>=')[greater + 1L], max(crit) + greater)
   )
   res <- structure(
-    rbind(probs, res),
+    rbind(prob, res),
     dimnames = list(nn, NULL)
   )
   
