@@ -1449,6 +1449,7 @@ cuzick.test.formula <- function (formula, data, ...) {
   if (is.matrix(eval(m$data, parent.frame(1L))))
     m$data <- as.data.frame(data)
   m[[1L]] <- quote(stats::model.frame)
+  m$`...` <- NULL
   mf <- eval(m, parent.frame(1L))
   
   if (length(mf) > 2L)
@@ -1456,7 +1457,7 @@ cuzick.test.formula <- function (formula, data, ...) {
   
   dname <- paste(names(mf), collapse = ' by ')
   names(mf) <- NULL
-  y <- do.call('cuzick.test', as.list(mf))
+  y <- do.call('cuzick.test', list(x = mf[, 1L], g = mf[, 2L], ...))
   y$data.name <- dname
   
   y
@@ -1525,9 +1526,10 @@ cuzick.test.pvalue <- function(x, g, correct, B = 2000L,
   }
   
   Z <- cuzick.test.stat(x, g, correct)
+  Z <- abs(Z)
   r <- unname(replicate(B, f()))
-  z <- r >= Z
-  p <- mean(z, na.rm = TRUE)
+  z <- r > Z
+  p <- mean(z, na.rm = TRUE) * 2
   
   if (!ci)
     return(p)
