@@ -1882,7 +1882,7 @@ surv_summary <- function(s, digits = 3L, ...) {
 #' @export
 
 surv_table <- function(s, digits = 3, times = pretty(s$time),
-                       maxtime = TRUE, ...) {
+                       maxtime = FALSE, ...) {
   if (maxtime) {
     idx <- s$n.event > 0
     maxtime <- max(s$time[if (any(idx))
