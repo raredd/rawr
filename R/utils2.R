@@ -1939,11 +1939,14 @@ get_tabler_stat_n <- function(x, pct = TRUE) {
 #' format for easy display.
 #' 
 #' @param x a factor variable of responses; responses should be ordered as
-#' CR, PR, SD, PD, NE or similar
-#' @param r_or_better if an integer, the first \code{r_or_better} levels of
-#' \code{x} will be combined and proportions and confidence intervals will be
-#' calculated for the aggregate; if \code{FALSE}; only single unique values
-#' of \code{x} are estimated
+#' CR, PR, SD, PD, NE or similar (i.e., best to worst)
+#' @param r_or_better if integer(s), indicates the levels of \code{x} that
+#' are to be combined with better responses; for example, if
+#' \code{r_or_better = 3} (default), then any occurrence of level 1, 2, or 3
+#' of \code{x} is treated as a response, and the proportion and confidence
+#' interval are calculated for the aggregate
+#' 
+#' if \code{FALSE}; levels of \code{x} are estimated independently
 #' @param conf,frac,show_conf,pct.sign additional arguments passed to
 #' \code{\link{binconr}}
 #' @param digits number of digits past the decimal point to keep
@@ -1952,9 +1955,9 @@ get_tabler_stat_n <- function(x, pct = TRUE) {
 #' optionally, fraction and percent out of \code{total} is added
 #' @param two_stage \code{FALSE} (default, assumes exact binomial CIs are
 #' desired) or a vector of length 3 with the 1) maximum number responses in
-#' the first stage that can be observed without continuing; 2) the number
-#' entered in the first stage; and 3) the additional number entered in the
-#' second
+#' the first stage that can be observed \emph{without} continuing; 2) the
+#' number entered in the first stage; and 3) the additional number entered
+#' in the second stage
 #' 
 #' if more than three integers are given, the remaining should indicate the
 #' columns which should be calculated as two-stage CIs; usually this is only
@@ -2011,9 +2014,10 @@ get_tabler_stat_n <- function(x, pct = TRUE) {
 #' 
 #' @export
 
-tabler_resp <- function(x, r_or_better = levels(x)[3L], conf = 0.95,
+tabler_resp <- function(x, r_or_better = levels(x)[1:3], conf = 0.95,
                         digits = 0L, frac = TRUE, show_conf = TRUE,
                         pct.sign = TRUE, total = FALSE, two_stage = FALSE) {
+  x  <- as.factor(x)
   rs <- names(table(x))
   lx <- length(x)
   
@@ -2021,14 +2025,15 @@ tabler_resp <- function(x, r_or_better = levels(x)[3L], conf = 0.95,
     r_or_better <- if (length(wh <- which(rs %in% r_or_better)))
       wh else {
         warning('Failed to guess \'r_or_better\'')
-        3L
+        ## take first 3 levels
+        1:3
       }
   
   res <- c(
     resp1(x, rs, conf, digits, frac, show_conf, pct.sign, two = FALSE),
     if (!is.numeric(r_or_better))
       NULL
-    else r_or_better1(x, rev(rs[seq.int(r_or_better)]), conf, digits,
+    else r_or_better1(x, rev(rs[sort(r_or_better)]), conf, digits,
                       frac, show_conf, pct.sign, two = FALSE)
   )
   
