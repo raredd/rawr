@@ -246,7 +246,7 @@ pdf(tf <- tempfile(fileext = '.pdf'), height = 8, width = 11,
     pointsize = 12, family = 'serif')
 kmplot(survfit(Surv(time, status) ~ rx + adhere, data = colon),
        panel.first = abline(v = c(0, .5, 1:9) * 365, lty = 3),
-       mark = 'bump',                     # no censor mark
+       mark = 'bump',                     # bump censor mark
        lty.ci = 2, lwd.ci = .3,           # dashed line for CIs
        xaxis.at = c(0, .5, 1:9) * 365,    # change days to years
        xaxis.lab = c(0, .5, 1:9),         # label years
