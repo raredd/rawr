@@ -201,7 +201,7 @@
 #'     pointsize = 12, family = 'serif')
 #' kmplot(survfit(Surv(time, status) ~ rx + adhere, data = colon),
 #'        panel.first = abline(v = c(0, .5, 1:9) * 365, lty = 3),
-#'        mark = 'bump',                     # no censor mark
+#'        mark = 'bump',                     # bump censor mark
 #'        lty.ci = 2, lwd.ci = .3,           # dashed line for CIs
 #'        xaxis.at = c(0, .5, 1:9) * 365,    # change days to years
 #'        xaxis.lab = c(0, .5, 1:9),         # label years
@@ -647,11 +647,9 @@ kmplot <- function(s,
     ## survival curves
     lines(s[ii], conf.int = FALSE, col = col.surv[ii],
           lty = lty.surv[ii], lwd = lwd.surv, mark.time = FALSE)
-    ## uncomment when bug in survival v2.39-5 fixed
-    # points(s[ii], lwd = lwd.surv, pch = mark, col = col.surv[ii])
-    ## actually use this for more features
+
     if (!mark[ii] == FALSE)
-      points.kmplot(s[ii], col = col.surv[ii], pch = mark[ii],
+      points.kmplot(s[ii], col = col.surv[ii], pch = mark[ii], xpd = NA,
                     censor = TRUE, event = FALSE, bump = mark[ii] == 'bump',
                     plot = TRUE, lwd = lwd.mark[ii])
   }
