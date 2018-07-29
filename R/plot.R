@@ -531,6 +531,8 @@ tplot.default <- function(x, g, ..., type = 'db',
   
   for (i in seq.int(ng)) {
     p <- groups[[i]]
+    if (!nrow(p))
+      next
     y <- ave(p$vs, p$g.id, FUN = sym_sort)
     x <- rep_len(at[i], nrow(p)) + jit_(p$g.si, p$hmsf) * jit[i]
     
