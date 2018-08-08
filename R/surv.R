@@ -626,6 +626,10 @@ kmplot <- function(s,
       x <- tmp$time
       L <- tmp$lower
       U <- tmp$upper
+      if (is.na(L[1L]))
+        L[1L] <- 1
+      if (is.na(U[1L]))
+        U[1L] <- 1
       S <- tmp$survival
       naL <- which(is.na(L))
       L[naL] <- L[naL - 1L]
