@@ -2130,10 +2130,10 @@ r_or_better1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
 #' @param version version number; default is CTCAE v4
 #' 
 #' @return
-#' A list containing:
-#' \item{\code{matches}}{a data frame of matches with toxicity codes and their
-#' respective descriptions and categories}
-#' \item{\code{version}}{CTCAE version used}
+#' A data frame of matches with toxicity codes, descriptions, and categories
+#' corresponding to the CTCAE version used.
+#' 
+#' The version is stored as an attribute, \code{attr(., "version")}.
 #' 
 #' @examples
 #' codes <- sample(rawr::ctcae_v4$tox_code, 10)
@@ -2149,18 +2149,24 @@ match_ctc <- function(..., version = 4L) {
   
   ctc <- if (version %ni% 3:4)
     stop('\'version\' should be 3 or 4')
-  else {
-    if (version == 3L)
-      rawr::ctcae_v3 else rawr::ctcae_v4
-  }
+  else if (version == 3L)
+    rawr::ctcae_v3
+  else rawr::ctcae_v4
   
   ## guess if input is code or description
   idx <- if (any(grepl('([A-Za-z -])([0-9])', x)))
     match(gsub('\\s*|-', '', x, perl = TRUE), ctc[, 'tox_code'])
   else grep(paste(x, collapse = '|'), ctc[, 'tox_desc'], ignore.case = TRUE)
   
-  list(
-    matches = `rownames<-`(ctc[idx, ], NULL),
+  if (anyNA(idx))
+    warning(
+      'CTCAE version may be incorrect - ',
+      'try version = ', ifelse(version == 4, 3, 4),
+      call. = FALSE
+    )
+  
+  structure(
+    `rownames<-`(ctc[idx, ], NULL),
     version = sprintf('CTCAE v%s', version)
   )
 }

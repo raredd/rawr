@@ -14,10 +14,10 @@ to be matched in the toxicity description}
 \item{version}{version number; default is CTCAE v4}
 }
 \value{
-A list containing:
-\item{\code{matches}}{a data frame of matches with toxicity codes and their
-respective descriptions and categories}
-\item{\code{version}}{CTCAE version used}
+A data frame of matches with toxicity codes, descriptions, and categories
+corresponding to the CTCAE version used.
+
+The version is stored as an attribute, \code{attr(., "version")}.
 }
 \description{
 Convenience function to convert CTCAE (version 3 or 4) toxicity codes or
