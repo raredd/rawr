@@ -1955,32 +1955,29 @@ sort_matrix <- function(m, margin = 1L, order = NULL, na.last = TRUE,
 #' 
 #' @export
 
-insert <- function(x, row, col, repl = NA) {
+insert <- function(x, row = NULL, col = NULL, repl = NA) {
   if (is.null(dim(x)))
-    return(
-      insert_(x, c(if (!missing(row)) row,
-                   if (!missing(col)) col),
-              repl)
-    )
+    return(insert_(x, c(row, col), repl))
   
-  if (!missing(row)) {
+  if (!is.null(row)) {
     n  <- nrow(x)
     rn <- rownames(x)
     idx_na <- insert_(seq.int(n), row, NA)
     idx <- locf(idx_na, fromLast = c(FALSE, TRUE))
     x   <- x[idx, , drop = FALSE]
     if (!is.null(rn))
-      rownames(x) <- rev(make.unique(rev(rn[idx])))
+      rownames(x) <- make.unique(rn[idx])
     x[which(is.na(idx_na)), ] <- repl
   }
   
-  if (!missing(col)) {
+  if (!is.null(col)) {
     n  <- ncol(x)
     cn <- colnames(x)
     idx_na <- insert_(seq.int(n), col, NA)
     idx <- locf(idx_na, fromLast = c(FALSE, TRUE))
     x   <- x[, idx, drop = FALSE]
-    colnames(x) <- cn[idx]
+    if (!is.null(cn))
+      colnames(x) <- make.unique(cn[idx])
     x[, which(is.na(idx_na))] <- repl
   }
   
@@ -1995,10 +1992,11 @@ insert_ <- function(x, where, what) {
 
 #' @rdname insert
 #' @export
-insert_matrix <- function(x, rowsep, colsep, rowrep = NA, colrep = rowrep) {
-  if (!missing(rowsep))
+insert_matrix <- function(x, rowsep = NULL, colsep = NULL,
+                          rowrep = NA, colrep = rowrep) {
+  if (!is.null(rowsep))
     x <- insert(x, rowsep, repl = rowrep)
-  if (!missing(colsep))
+  if (!is.null(colsep))
     x <- insert(x, col = colsep, repl = colrep)
   
   x
