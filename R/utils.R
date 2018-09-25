@@ -1832,12 +1832,15 @@ rapply2 <- function(l, FUN, classes = 'ANY', ...,
   is.nested <- if (check.nested)
     function(l) any(vapply(l, islist, NA)) else function(l) FALSE
   
-  for (ii in seq_along(l))
+  for (ii in seq_along(l)) {
+    if (is.null(l[[ii]]))
+      next
     l[[ii]] <- if (is.nested(l[[ii]]) ||
                    (islist(l[[ii]]) & ('list' %ni% classes)))
       Recall(l[[ii]], FUN, classes, ..., check.nested = check.nested) else
         if (any(toupper(classes) == 'ANY') || inherits(l[[ii]], classes))
           FUN(l[[ii]], ...) else l[[ii]]
+  }
   
   if ('list' %in% classes & !identical(FUN, unlist))
     FUN(l, ...) else l
