@@ -6,28 +6,35 @@
 \alias{color_pval}
 \title{p-value formatter}
 \usage{
-pvalr(pvals, sig.limit = 1e-03, digits = 3L, html = FALSE,
-  show.p = FALSE)
+pvalr(pv, sig.limit = 1e-03, digits = 3L, html = FALSE, show.p = FALSE,
+  journal = FALSE, ...)
 
-pvalr2(pvals, html = FALSE, show.p = FALSE)
+pvalr2(pv, html = FALSE, show.p = FALSE)
 
-color_pval(pvals, breaks = c(0, 0.01, 0.05, 0.1, 0.5, 1),
+color_pval(pv, breaks = c(0, 0.01, 0.05, 0.1, 0.5, 1),
   cols = colorRampPalette(2:1)(length(breaks)), sig.limit = 1e-03,
-  digits = 3L, show.p = FALSE, format_pval = TRUE)
+  digits = 3L, show.p = FALSE, format_pval = TRUE, journal = FALSE, ...)
 }
 \arguments{
-\item{pvals}{for \code{pvalr}, a numeric value or vector of p-values; for
+\item{pv}{for \code{pvalr}, a numeric value or vector of p-values; for
 \code{pvalr2}, a vector of p-values as character strings}
 
-\item{sig.limit}{lower bound for precision}
+\item{sig.limit}{lower bound for precision; smaller values will be shown as
+\code{< sig.limit}}
 
-\item{digits}{integer; number of decimal places; see also
-\code{\link[rawr]{roundr}}}
+\item{digits}{number of digits past the decimal point to keep}
 
-\item{html}{logical; if \code{TRUE}, uses \code{&lt;} instead of \code{<}}
+\item{html}{logical; if \code{TRUE}, uses HTML entities for \code{<}
+and \code{>}}
 
-\item{show.p}{logical; if \code{TRUE}, inserts \code{p = } or \code{p < }
-where appropriate}
+\item{show.p}{logical; if \code{TRUE}, inserts \code{p = }, \code{p < }, or
+\code{p > } where appropriate}
+
+\item{journal}{logical; if \code{TRUE}, p-values greater than
+\code{sig.limit} are rounded to \code{digits}}
+
+\item{...}{additional arguments passed to \code{\link{format.pval}} or
+further to \code{\link{format}}}
 
 \item{breaks, cols}{a numeric vector defining breaks in \code{(0,1)} (passed
 to \code{\link{findInterval}}) and the corresponding colors}
@@ -52,17 +59,20 @@ keep any trailing 0s.
 not ideal (0.000, 1.00, etc) and will leave others unchanged.
 }
 \examples{
-pvals <- c(-1, .00001, .004233, .060123, .13354, .4999, .51, .89, .9, 1)
-pvalr(pvals)
-pvalr(pvals, show.p = TRUE, html = TRUE)
+pv <- c(-1, .00001, .004233, .060123, .13354, .4999, .51, .89, .9, 1)
 
-pvals <- c('0.00000', '< 0.001', '0.0', '0.123', '0.6', '1', '1.0', '1.000')
-pvalr2(pvals)
+pvalr(pv)
+pvalr(pv, journal = TRUE)
+pvalr(pv, show.p = TRUE, html = TRUE)
 
-pvals <- c(0.00001, 0.03, .06, .11, .49, .51, .89, .9, 1)
-show_html(color_pval(pvals))
-show_html(color_pval(pvals, format_pval = format.pval))
-show_html(iprint(color_pval(pvals, show.p = TRUE)))
+pv <- c('0.00000', '< 0.001', '0.0', '0.123', '0.6', '1', '1.0', '1.000')
+pvalr2(pv)
+
+pv <- c(0, 0.00001, 0.03, .06, .11, .49, .51, .89, .9, 1)
+
+show_html(color_pval(pv))
+show_html(color_pval(pv, format_pval = format.pval))
+show_html(iprint(color_pval(pv, show.p = TRUE)))
 
 }
 \seealso{

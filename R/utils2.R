@@ -388,27 +388,34 @@ intr <- function(..., fun = median, conf = NULL,
 #' \code{pvalr2} deals with common cases of character string p-values which are
 #' not ideal (0.000, 1.00, etc) and will leave others unchanged.
 #' 
-#' @param pvals for \code{pvalr}, a numeric value or vector of p-values; for
+#' @param pv for \code{pvalr}, a numeric value or vector of p-values; for
 #' \code{pvalr2}, a vector of p-values as character strings
-#' @param sig.limit lower bound for precision
-#' @param digits integer; number of decimal places; see also
-#' \code{\link[rawr]{roundr}}
-#' @param html logical; if \code{TRUE}, uses \code{&lt;} instead of \code{<}
-#' @param show.p logical; if \code{TRUE}, inserts \code{p = } or \code{p < }
-#' where appropriate
+#' @param sig.limit lower bound for precision; smaller values will be shown as
+#' \code{< sig.limit}
+#' @param digits number of digits past the decimal point to keep
+#' @param html logical; if \code{TRUE}, uses HTML entities for \code{<}
+#' and \code{>}
+#' @param show.p logical; if \code{TRUE}, inserts \code{p = }, \code{p < }, or
+#' \code{p > } where appropriate
+#' @param journal logical; if \code{TRUE}, p-values greater than
+#' \code{sig.limit} are rounded to \code{digits}
+#' @param ... additional arguments passed to \code{\link{format.pval}} or
+#' further to \code{\link{format}}
 #' 
 #' @seealso
 #' \code{\link[rawr]{roundr}}; \code{\link[base]{format.pval}}
 #' 
 #' @examples
-#' pvals <- c(-1, .00001, .004233, .060123, .13354, .4999, .51, .89, .9, 1)
-#' pvalr(pvals)
-#' pvalr(pvals, show.p = TRUE, html = TRUE)
+#' pv <- c(-1, .00001, .004233, .060123, .13354, .4999, .51, .89, .9, 1)
+#' 
+#' pvalr(pv)
+#' pvalr(pv, journal = TRUE)
+#' pvalr(pv, show.p = TRUE, html = TRUE)
 #' 
 #' @export
 
-pvalr <- function(pvals, sig.limit = 0.001, digits = 3L,
-                  html = FALSE, show.p = FALSE) {
+pvalr <- function(pv, sig.limit = 0.001, digits = 3L, html = FALSE,
+                  show.p = FALSE, journal = FALSE, ...) {
   stopifnot(
     sig.limit > 0,
     sig.limit < 1
@@ -417,17 +424,20 @@ pvalr <- function(pvals, sig.limit = 0.001, digits = 3L,
   show.p <- show.p + 1L
   html   <- html + 1L
   
-  sapply(pvals, function(x, sig.limit) {
+  sapply(pv, function(x, sig.limit) {
     if (is.na(x) | !nzchar(x))
       return(NA)
     if (x >= 0.99)
       return(paste0(c('', 'p ')[show.p], c('> ', '&gt; ')[html], '0.99'))
-    if (x >= 0.9)
+    if (x >= 0.9 && !journal)
       return(paste0(c('', 'p ')[show.p], c('> ', '&gt; ')[html], '0.9'))
     if (x < sig.limit) {
-      paste0(c('', 'p ')[show.p], c('< ', '&lt; ')[html], format(sig.limit))
+      paste0(c('', 'p ')[show.p], c('< ', '&lt; ')[html],
+             format.pval(sig.limit, ...))
     } else {
-      nd <- c(digits, 2L, 1L)[findInterval(x, c(-Inf, .1, .5, Inf))]
+      nd <- if (journal)
+        c(digits, 2L)[findInterval(x, c(-Inf, .1, Inf))]
+      else c(digits, 2L, 1L)[findInterval(x, c(-Inf, .1, .5, Inf))]
       paste0(c('', 'p = ')[show.p], roundr(x, nd))
     }
   }, sig.limit)
@@ -435,13 +445,13 @@ pvalr <- function(pvals, sig.limit = 0.001, digits = 3L,
 
 #' @rdname pvalr
 #' @examples
-#' pvals <- c('0.00000', '< 0.001', '0.0', '0.123', '0.6', '1', '1.0', '1.000')
-#' pvalr2(pvals)
+#' pv <- c('0.00000', '< 0.001', '0.0', '0.123', '0.6', '1', '1.0', '1.000')
+#' pvalr2(pv)
 #' 
 #' @export
 
-pvalr2 <- function(pvals, html = FALSE, show.p = FALSE) {
-  x <- gsub('^1$', '1.0', pvals)
+pvalr2 <- function(pv, html = FALSE, show.p = FALSE) {
+  x <- gsub('^1$', '1.0', pv)
   x <- gsub('(?:^1\\.|\\G)\\K0(?=0*$)', '9', x, perl = TRUE)
   x <- gsub('^1\\.', '> 0.', x)
   x <- gsub('^(0\\.0*)0$', '< \\11', x)
@@ -452,7 +462,7 @@ pvalr2 <- function(pvals, html = FALSE, show.p = FALSE) {
   }
   
   if (show.p)
-    ifelse(grepl('[<>]', pvalr2(pvals)), paste0('p ', x), paste0('p = ', x))
+    ifelse(grepl('[<>]', pvalr2(pv)), paste0('p ', x), paste0('p = ', x))
   else x
 }
 
@@ -465,34 +475,35 @@ pvalr2 <- function(pvals, html = FALSE, show.p = FALSE) {
 #' be applied to each p-value
 #' 
 #' @examples
-#' pvals <- c(0.00001, 0.03, .06, .11, .49, .51, .89, .9, 1)
-#' show_html(color_pval(pvals))
-#' show_html(color_pval(pvals, format_pval = format.pval))
-#' show_html(iprint(color_pval(pvals, show.p = TRUE)))
+#' pv <- c(0, 0.00001, 0.03, .06, .11, .49, .51, .89, .9, 1)
+#' 
+#' show_html(color_pval(pv))
+#' show_html(color_pval(pv, format_pval = format.pval))
+#' show_html(iprint(color_pval(pv, show.p = TRUE)))
 #' 
 #' @export
 
-color_pval <- function(pvals, breaks = c(0, .01, .05, .1, .5, 1),
+color_pval <- function(pv, breaks = c(0, .01, .05, .1, .5, 1),
                        cols = colorRampPalette(2:1)(length(breaks)),
                        sig.limit = 0.001, digits = 3L, show.p = FALSE,
-                       format_pval = TRUE) {
-  if (!is.numeric(pvals))
-    return(pvals)
-  pvn <- pvals
+                       format_pval = TRUE, journal = FALSE, ...) {
+  if (!is.numeric(pv))
+    return(pv)
+  pvn <- pv
   
   stopifnot(
     length(breaks) == length(cols)
   )
   
-  pvals <- if (isTRUE(format_pval))
-    pvalr(pvn, sig.limit, digits, TRUE, show.p)
+  pv <- if (isTRUE(format_pval))
+    pvalr(pvn, sig.limit, digits, TRUE, show.p, journal, ...)
   else if (identical(format_pval, FALSE))
-    pvals
-  else format_pval(pvals)
+    pv
+  else format_pval(pv)
   
   pvc <- cols[findInterval(pvn, breaks)]
   
-  sprintf('<font color=\"%s\">%s</font>', pvc, pvals)
+  sprintf('<font color=\"%s\">%s</font>', pvc, pv)
 }
 
 #' Concatenate list for output
