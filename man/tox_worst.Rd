@@ -52,7 +52,7 @@ tox <- data.frame(id = rep(1:10, 10), phase = 1:2,
 tox1 <- tox_worst(tox, id = 'id', grade = 'grade', code = 'code')
 
 ## or by formatted descriptions and grade
-tox$desc <- factor(match_ctc(tox$code)$matches$tox_desc)
+tox$desc <- factor(match_ctc(tox$code)$tox_desc)
 tox2 <- tox_worst(tox, id = 'id', grade = 'grade', desc = 'desc')
 
 ## both methods are equivalent

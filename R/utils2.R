@@ -1046,7 +1046,7 @@ tabler.coxph <- function(x, digits = 3L, level = 0.95, exp = TRUE, ...) {
 #'                   grade = f(1:3, prob = c(.6, .3, .1)),
 #'                   stringsAsFactors = FALSE)
 #' 
-#' tox <- cbind(tox, match_ctc(tox$code)$matches[, c('tox_cat', 'tox_desc')])
+#' tox <- cbind(tox, match_ctc(tox$code)[, c('tox_cat', 'tox_desc')])
 #' 
 #' ## get worst toxicities by id, by grade
 #' n <- colSums(table(tox$id, tox$phase) > 0)
@@ -2226,7 +2226,7 @@ match_ctc <- function(..., version = 4L) {
 #' tox1 <- tox_worst(tox, id = 'id', grade = 'grade', code = 'code')
 #' 
 #' ## or by formatted descriptions and grade
-#' tox$desc <- factor(match_ctc(tox$code)$matches$tox_desc)
+#' tox$desc <- factor(match_ctc(tox$code)$tox_desc)
 #' tox2 <- tox_worst(tox, id = 'id', grade = 'grade', desc = 'desc')
 #' 
 #' ## both methods are equivalent
@@ -2255,7 +2255,7 @@ tox_worst <- function(data, id = 'id', desc = 'desc', grade = 'grade',
   
   if (!missing(code)) {
     ctc <- match_ctc(data[, code], version = version)
-    data$desc <- factor(ctc$matches$tox_desc)
+    data$desc <- factor(ctc$tox_desc)
     desc <- 'desc'
   }
   

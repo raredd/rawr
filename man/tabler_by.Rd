@@ -123,7 +123,7 @@ tox <- data.frame(id = rep(1:10, 10), phase = 1:2,
                   grade = f(1:3, prob = c(.6, .3, .1)),
                   stringsAsFactors = FALSE)
 
-tox <- cbind(tox, match_ctc(tox$code)$matches[, c('tox_cat', 'tox_desc')])
+tox <- cbind(tox, match_ctc(tox$code)[, c('tox_cat', 'tox_desc')])
 
 ## get worst toxicities by id, by grade
 n <- colSums(table(tox$id, tox$phase) > 0)
