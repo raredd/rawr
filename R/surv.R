@@ -542,15 +542,19 @@ kmplot <- function(s,
       st <- ss$table
       st <- if (length(s$n) != 1L)
         as.data.frame(st) else as.data.frame(t(st))
-      tt <- do.call('sprintf', c(list(
-        fmt = '%s (%s, %s)'),
-        tail(lapply(st, roundr, digits = digits.median), 3L))
-      )
+      st <- st[, grep('(?i)median|[ul]cl', names(st)), drop = FALSE]
+      tt <- if (ncol(st) < 3L)
+        st[, 'median'] else
+          do.call('sprintf', c(list(
+            fmt = '%s (%s, %s)'), lapply(st, roundr, digits = digits.median))
+          )
       tt <- ifelse(is.na(st$median), '-', gsub('NA', '-', tt, fixed = TRUE))
       at <- if (isTRUE(median.at))
         usr[2L] + diff(usr[1:2]) / 8 else median.at
-      mtext(sprintf('Median (%s%% CI)', s$conf.int * 100), side = 1L,
-            at = at, adj = .5, line = 1.5, col = 1L, las = 1L)
+      mtext(if (!is.null(s$conf.int))
+        sprintf('Median (%s%% CI)', s$conf.int * 100) else 'Median',
+        side = 1L, at = at, adj = .5, line = 1.5, col = 1L, las = 1L
+      )
       mtext(tt, side = 1L, line = line.pos, las = 1L,
             at = at, adj = .5, col = col.atrisk)
     }
@@ -701,6 +705,7 @@ kmplot <- function(s,
 #' @param bump logical; \code{TRUE} will draw a bump mark rather than pch
 #' @param plot logical; \code{FALSE} will not plot but return plotting data
 #' @param ... additional graphical parameters passed to \code{\link{par}}
+
 points.kmplot <- function(x, xscale, xmax, fun,
                           col = par('col'), pch = par('pch'),
                           censor = TRUE, event = FALSE,
@@ -871,7 +876,7 @@ points.kmplot <- function(x, xscale, xmax, fun,
 #' 
 #' @param s a \code{\link{survfit}} object
 #' @param strata.lab character vector of strata labels; must be same length
-#' as s$n
+#' as \code{s$n}
 #' @seealso \code{\link{kmplot}}; \code{\link{kmplot_by}}
 
 kmplot_data_ <- function(s, strata.lab) {
@@ -887,8 +892,7 @@ kmplot_data_ <- function(s, strata.lab) {
   
   with(s, {
     data.frame(
-      time = time, n.risk = n.risk, n.event = n.event,
-      survival = surv, lower = lower, upper = upper,
+      time, n.risk, n.event, survival = surv, lower, upper,
       group = rep(strata.lab, gr), order = rep(seq.int(ng), gr)
     )
   })
@@ -1239,7 +1243,8 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
 #' 
 #' @description
 #' This function helps create stratified \code{\link{kmplot}}s quickly with
-#' panel labels and log-rank tests for each plot.
+#' panel labels, survival curve test(s), and/or Cox regression summaries for
+#' each plot.
 #' 
 #' \code{data} should have at least three variables: \code{strata},
 #' \code{*_time}, and \code{*_ind} where \code{*} is \code{event}. For
@@ -1253,11 +1258,10 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
 #' names in \code{data}. However, the method described above is more
 #' efficient and preferred.
 #' 
-#' @param strata character string of the strata variable
-#' @param event character string indicating the event (pfs, os, ttp, etc);
-#' see details
-#' @param data data frame to use
-#' @param by optional character string of stratification variable
+#' @param strata,event,time,by character strings of the strata, event (pfs, os,
+#' ttp, etc; see details), time (optional), and stratification variables;
+#' additionally, vectors for each are allowed
+#' @param data a data frame
 #' @param single logical; if \code{TRUE}, each level of \code{by} will be
 #' drawn in a separate window
 #' @param lr_test logical or numeric; if \code{TRUE}, a log-rank test will be
@@ -1281,7 +1285,6 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
 #' to the corresponding strata; see \code{\link{kmplot}}
 #' @param map.col logical; if \code{TRUE}, \code{col.surv} will be the color
 #' of all curves in each plot (only used when \code{by} is non-missing)
-#' @param time character string of the time variable (optional)
 #' @param legend logical, a vector of x/y coordinates, or a keyword (see
 #' \code{\link{legend}}); if \code{TRUE}, the default position is
 #' \code{"bottomleft"}
@@ -1305,6 +1308,7 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
 #' @examples
 #' library('survival')
 #' kmplot_by(time = 'time', event = 'status', data = colon)
+#' with(colon, kmplot_by('All', time = time, event = status))
 #' 
 #' 
 #' ## create *_ind, *_time variables, see details
@@ -1367,20 +1371,37 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
 #'   
 #' @export
 
-kmplot_by <- function(strata = '1', event, data, by = NULL, single = TRUE,
-                      lr_test = TRUE, main = NULL, ylab = NULL, sub = NULL,
-                      strata_lab = NULL, fig_lab = NULL,
-                      col.surv = NULL, map.col = FALSE, time = NULL,
-                      legend = FALSE, add = FALSE, plot = TRUE, ...) {
+kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
+                      time = NULL, single = TRUE, lr_test = TRUE, main = NULL,
+                      ylab = NULL, sub = NULL, strata_lab = NULL, fig_lab = NULL,
+                      col.surv = NULL, map.col = FALSE, legend = FALSE,
+                      add = FALSE, plot = TRUE, ...) {
   op <- par(no.readonly = TRUE)
+  
   if (is.logical(lr_test)) {
     rho <- 0
-  } else if (is.numeric(lr_test)) {
-    rho <- lr_test
-    lr_test <- TRUE
   } else {
-    rho <- 0
+    rho <- if (is.numeric(lr_test))
+    lr_test else 0
     lr_test <- TRUE
+  }
+  
+  ## defaults
+  type      <- 'kaplan-meier'
+  error     <- 'greenwood'
+  conf.int  <- 0.95
+  conf.type <- 'log'
+  se.fit    <- TRUE
+  
+  if (length(event) > 1L) {
+    data <- data.frame(
+      strata, event, time, by = by %||% NA,
+      stringsAsFactors = FALSE
+    )
+    strata <- 'strata'
+    event  <- 'event'
+    time   <- 'time'
+    by     <- if (is.null(by)) NULL else 'by'
   }
   
   if (inherits(strata, 'survfit')) {
@@ -1389,6 +1410,11 @@ kmplot_by <- function(strata = '1', event, data, by = NULL, single = TRUE,
       data <- deparse(strata$call$data)
       data <- get(data, where(gsub('[$[].*', '', data)))
     }
+    
+    conf.int  <- strata$conf.int  %||% conf.int
+    conf.type <- strata$conf.type %||% conf.type
+    se.fit    <- !is.null(strata$std.err)
+    
     form   <- as.character(strata$call$formula)[-1L]
     strata <- form[length(form)]
     event  <- gsub('(\\S+)\\)|.', '\\1', form[1L])
@@ -1410,7 +1436,6 @@ kmplot_by <- function(strata = '1', event, data, by = NULL, single = TRUE,
     data[, ev] <- as.integer(data[, ev])
   }
   
-  # par(oma = c(0,0,1,0))
   if (plot & (!add | !single))
     on.exit(par(op))
   if (add)
@@ -1428,8 +1453,7 @@ kmplot_by <- function(strata = '1', event, data, by = NULL, single = TRUE,
     }
     sp <- split(data, droplevels(data[, by]))
     ## list names will be main title(s)
-    names(sp) <- rep_len(main %||% paste(by, names(sp), sep = '='),
-                         length(sp))
+    names(sp) <- rep_len(main %||% paste(by, names(sp), sep = '='), length(sp))
   } else {
     if (missing(add)) {
       add <- FALSE
@@ -1460,7 +1484,10 @@ kmplot_by <- function(strata = '1', event, data, by = NULL, single = TRUE,
     names(sp) <- strata_names
   
   if (!is.null(by) & is.null(names(col.surv))) {
-    sl <- survfit(form, data)
+    sl <- survfit(
+      form, data, se.fit = se.fit, type = type, error = error,
+      conf.int = conf.int, conf.type = conf.type
+    )
     col.surv <- setNames(
       col.surv %||% seq_along(sl$n),
       if (by == strata || is.null(strata_lab) || identical(strata_lab, FALSE))
@@ -1474,9 +1501,9 @@ kmplot_by <- function(strata = '1', event, data, by = NULL, single = TRUE,
   sl <- lapply(seq_along(sp), function(x) {
     tryCatch({
       eval(substitute(
-        survfit(form, data = sp[[x]], type = 'kaplan-meier',
-                conf.type = 'log-log', error = 'greenwood',
-                conf.int = 0.95, se.fit = TRUE),
+        survfit(form, data = sp[[x]], type = type,
+                conf.type = conf.type, error = error,
+                conf.int = conf.int, se.fit = se.fit),
         list(form = form))
       )
     }, error = function(e) {
@@ -1486,9 +1513,9 @@ kmplot_by <- function(strata = '1', event, data, by = NULL, single = TRUE,
                 '\n\n', 'Returning null model: ',
                 deparse(update(form, . ~ 1)))
         eval(substitute(
-          survfit(form, data = sp[[x]], type = 'kaplan-meier',
-                  conf.type = 'log-log', error = 'greenwood',
-                  conf.int = 0.95, se.fit = TRUE),
+          survfit(form, data = sp[[x]], type = type,
+                  conf.type = conf.type, error = error,
+                  conf.int = conf.int, se.fit = se.fit),
           list(form = update(form, . ~ 1))))
       } else if (grepl('less than one element in integerOneIndex', e))
         stop('Check that \'event\' has at least one non-missing value')
@@ -1530,11 +1557,12 @@ kmplot_by <- function(strata = '1', event, data, by = NULL, single = TRUE,
              ## sub label - top left margin (default: strata var)
              mtxt <- if (!msub)
                rep_len(sub, length(sp))[x] else strata
-             mtext(mtxt, 3, 0.25, FALSE, 0, 0, font = 3)
+             mtext(mtxt, side = 3L, line = 0.25, outer = FALSE,
+                   at = 0, adj = 0, font = 3L)
              
              ## figure label - top left outer margin (eg, A, B, C)
-             mtext(fig[x], 3, 0.25, FALSE, 0 - par('usr')[2L] * .05,
-                   font = 2, cex = 1.2)
+             mtext(fig[x], side = 3L, line = 0.25, outer = FALSE,
+                   at = 0 - par('usr')[2L] * .05, font = 2, cex = 1.2)
            })
     s0
   })
@@ -1555,9 +1583,12 @@ kmplot_by <- function(strata = '1', event, data, by = NULL, single = TRUE,
 #' call to \code{survfit}
 #' @param by_var,what a variable, \code{by_var} in \code{data} for which
 #' tick marks are to be placed at each occurrence of \code{what}
+#' @param y the y-coordinate(s) for each point, recycled as needed
 #' @param time,event,strata (optional) variables used to fit \code{s}
 #' @param col a vector of colors (one for each strata level of \code{s}) for
 #' tick marks; note these colors should match the curves of the survival plot
+#' @param pch a vector of plotting characters to distinguish censoring and
+#' events
 #' @param ... additional arguments passed to \code{\link{points}}
 #' 
 #' @seealso
@@ -1567,14 +1598,14 @@ kmplot_by <- function(strata = '1', event, data, by = NULL, single = TRUE,
 #' s <- survfit(Surv(futime, fustat) ~ rx, ovarian)
 #' 
 #' kmplot(s, add = TRUE)
-#' kmplot_ticks(s, by_var = 'resid.ds', what = 1, col = 4:5)
-#' kmplot_ticks(s, by_var = 'resid.ds', what = 2, pch = '*')
+#' kmplot_ticks(s, by_var = 'resid.ds', what = 1)
+#' kmplot_ticks(s, by_var = 'resid.ds', what = 2, pch = '*', y = 0.05)
 #' 
 #' @export
 
 kmplot_ticks <- function(s, data = eval(s$call$data), by_var, what,
-                         time, event, strata,
-                         col = nlevels(factor(data[, strata])), ...) {
+                         y = 0, time, event, strata, col = NULL,
+                         pch = NULL, ...) {
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
   
@@ -1604,10 +1635,11 @@ kmplot_ticks <- function(s, data = eval(s$call$data), by_var, what,
     par(op)
     return(invisible(NULL))
   }
-  # segments(data[, time], y0 = rep(0, nrow(data)), y1 = par('usr')[3L],
-  #          col = col[as.numeric(data[, strata])], lwd = 2, ...)
-  points(data[, time], rep(0, nrow(data)),
-         col = col[as.numeric(data[, strata])], ...)
+  
+  col <- col[as.numeric(data[, strata])]
+  pch <- rep_len(pch %||% 3:4, 2L)
+  pch <- pch[(as.integer(data[, event]) == 1L) + 1L]
+  points(data[, time], rep_len(y, nrow(data)), col = col, pch = pch, ...)
   
   invisible(data)
 }

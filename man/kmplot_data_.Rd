@@ -10,7 +10,7 @@ kmplot_data_(s, strata.lab)
 \item{s}{a \code{\link{survfit}} object}
 
 \item{strata.lab}{character vector of strata labels; must be same length
-as s$n}
+as \code{s$n}}
 }
 \description{
 Create data frame to plot survival data

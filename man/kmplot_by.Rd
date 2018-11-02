@@ -4,20 +4,18 @@
 \alias{kmplot_by}
 \title{kmplot_by}
 \usage{
-kmplot_by(strata = "1", event, data, by = NULL, single = TRUE,
-  lr_test = TRUE, main = NULL, ylab = NULL, sub = NULL,
-  strata_lab = NULL, fig_lab = NULL, col.surv = NULL, map.col = FALSE,
-  time = NULL, legend = FALSE, add = FALSE, plot = TRUE, ...)
+kmplot_by(strata = "1", event = NULL, data = NULL, by = NULL,
+  time = NULL, single = TRUE, lr_test = TRUE, main = NULL,
+  ylab = NULL, sub = NULL, strata_lab = NULL, fig_lab = NULL,
+  col.surv = NULL, map.col = FALSE, legend = FALSE, add = FALSE,
+  plot = TRUE, ...)
 }
 \arguments{
-\item{strata}{character string of the strata variable}
+\item{strata, event, time, by}{character strings of the strata, event (pfs, os,
+ttp, etc; see details), time (optional), and stratification variables;
+additionally, vectors for each are allowed}
 
-\item{event}{character string indicating the event (pfs, os, ttp, etc);
-see details}
-
-\item{data}{data frame to use}
-
-\item{by}{optional character string of stratification variable}
+\item{data}{a data frame}
 
 \item{single}{logical; if \code{TRUE}, each level of \code{by} will be
 drawn in a separate window}
@@ -51,8 +49,6 @@ to the corresponding strata; see \code{\link{kmplot}}}
 \item{map.col}{logical; if \code{TRUE}, \code{col.surv} will be the color
 of all curves in each plot (only used when \code{by} is non-missing)}
 
-\item{time}{character string of the time variable (optional)}
-
 \item{legend}{logical, a vector of x/y coordinates, or a keyword (see
 \code{\link{legend}}); if \code{TRUE}, the default position is
 \code{"bottomleft"}}
@@ -74,7 +70,8 @@ value.
 }
 \description{
 This function helps create stratified \code{\link{kmplot}}s quickly with
-panel labels and log-rank tests for each plot.
+panel labels, survival curve test(s), and/or Cox regression summaries for
+each plot.
 
 \code{data} should have at least three variables: \code{strata},
 \code{*_time}, and \code{*_ind} where \code{*} is \code{event}. For
@@ -91,6 +88,7 @@ efficient and preferred.
 \examples{
 library('survival')
 kmplot_by(time = 'time', event = 'status', data = colon)
+with(colon, kmplot_by('All', time = time, event = status))
 
 
 ## create *_ind, *_time variables, see details
