@@ -2,7 +2,7 @@
 # bincon, bintest, dlt_table, pr_table, power_cv, simon2, moods_test, fakeglm,
 # gcd, install.bioc, lm.beta, cuzick.test, cuzick.test.default,
 # cuzick.test.formula, jt.test, hl_est, rcor, rsum, kw.test, kw.test.default,
-# kw.test.formula, lspline
+# kw.test.formula, lspline, winsorize
 # 
 # S3 methods:
 # cuzick.test, kw.test
@@ -2342,4 +2342,42 @@ plot.lspline <- function(x, col = NULL, which = 1:2, ...) {
          xlab = 'x', ylab = 'y')
   
   invisible(NULL)
+}
+
+#' Winsorization
+#' 
+#' Winsorize extreme values in a numeric vector.
+#' 
+#' @param x a numeric vector
+#' @param probs numeric vector of probability value(s) in \code{[0,1]}
+#' @param type an integer between 1 and 9 selecting one of the nine quantile
+#' algorithms; see \code{\link{quantile}}
+#' 
+#' @examples
+#' x <- c(92, 19, 101, 58, 1053, 91, 26, 78, 10, 13,
+#'        -40, 101, 86, 85, 15, 89, 89, 28, -5, 41)
+#' summary(x)
+#' 
+#' y <- winsorize(x, 0.1, type = 1L)
+#' summary(y)
+#' 
+#' @export
+
+winsorize <- function(x, probs = 1e-3, type = 7L) {
+  probs <- if (length(probs) == 1L)
+    c(probs, 1 - probs) else sort(probs)[1:2]
+  
+  stopifnot(
+    is.numeric(x),
+    type %in% 1:9,
+    probs[1L] > 0, probs[2L] < 1
+  )
+  
+  qn <- sort(quantile(x, probs, na.rm = TRUE, type = type))
+  nx <- !is.na(x)
+  
+  x[nx & x < qn[1L]] <- qn[1L]
+  x[nx & x > qn[2L]] <- qn[2L]
+  
+  x
 }
