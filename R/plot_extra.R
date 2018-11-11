@@ -1,7 +1,7 @@
 ### plot misc, extra, random
 # dodge, dodge.default, dodge.formula, dodge2, dodge2.default, dodge2.formula,
 # show_colors, show_pch, tcol, pretty_sci, oom, parse_sci, arrows2, carrows,
-# laxis, coords, col_scaler
+# laxis, col_scaler
 # 
 # S3 methods:
 # dodge, dodge2
@@ -319,16 +319,16 @@ show_colors <- function(..., plot = FALSE) {
       m <- array(NA, n2mfrow(length(cols)))
       x <- c(col(m)[, rev(seq.int(ncol(m)))])[seq_along(cols)]
       y <- c(row(m))[seq_along(cols)]
-      plot(y, x, pch = 16, cex = 3, col = cc,
+      plot(y, x, pch = 16L, cex = 3, col = cc,
            axes = FALSE, ann = FALSE, xpd = NA)
-      text(y, x, pos = 3, col = 1, xpd = NA, labels = cn)
-      text(y, x, pos = 1, col = 1, xpd = NA, labels = cc)
+      text(y, x, pos = 3L, col = 1, xpd = NA, labels = cn)
+      text(y, x, pos = 1L, col = 1, xpd = NA, labels = cc)
     }
     return(cols)
   }
   
   ## default plot of all colors with indices
-  par(mfrow = c(1,1), mar = c(2,3,4,3), cex = .7)
+  par(mfrow = c(1,1), mar = c(2,3,4,3), cex = 0.7)
   suppressWarnings({
     cc <- matrix(colors(), 30L)
     cc[duplicated(c(cc))] <- NA
@@ -338,12 +338,12 @@ show_colors <- function(..., plot = FALSE) {
   title(main = 'col = colors()[n]', line = 2)
   
   ## left/right axes: 1, 2, ..., 30
-  text(unique(w$centers[, 'x']),  0, 0:21 * 30, xpd = NA, pos = 1)
-  text(unique(w$centers[, 'x']), 30, 0:21 * 30, xpd = NA, pos = 3)
+  text(unique(w$centers[, 'x']),  0, 0:21 * 30, xpd = NA, pos = 1L)
+  text(unique(w$centers[, 'x']), 30, 0:21 * 30, xpd = NA, pos = 3L)
   
   ## top/bottom axes: 0, 30, ..., 630
-  axis(2, 1:30 - 0.5, 1:30, lwd = 0, las = 1)
-  axis(4, 1:30 - 0.5, 1:30, lwd = 0, las = 1)
+  axis(2, 1:30 - 0.5, 1:30, lwd = 0, las = 1L)
+  axis(4, 1:30 - 0.5, 1:30, lwd = 0, las = 1L)
   
   invisible(w)
 }
@@ -369,11 +369,11 @@ show_pch <- function(...) {
   op <- par(xpd = NA, mar = c(1,1,1,2))
   on.exit(par(op))
   
-  x <- rep(1:5, 6)[1:26]
-  y <- c(rep(5:1, each = 5)[1:25], 0)
+  x <- rep(1:5, 6L)[1:26]
+  y <- c(rep(5:1, each = 5L)[1:25], 0L)
   
   plot(x, y, pch = 0:25, axes = FALSE, bg = 'gray', cex = 2, col = 'red')
-  text(x = x, y = y, labels = 0:25, pos = 4, cex = 1.5, offset = 1)
+  text(x = x, y = y, labels = 0:25, pos = 4L, cex = 1.5, offset = 1)
   text(x = 4, y = 0, labels = 'plotting characters 0:25', cex = 1.5)
   
   invisible(NULL)
@@ -516,7 +516,7 @@ tcol <- function(colors, trans = NULL, alpha = NULL) {
 #' 
 #' @export
 
-pretty_sci <- function(x, digits = 0, base = 10,
+pretty_sci <- function(x, digits = 0L, base = 10,
                        limit = base ^ 3, simplify = TRUE) {
   l <- as.list(x)
   limit <- if (limit < 0)
@@ -537,7 +537,7 @@ oom <- function(x, base = 10) {
 
 #' @rdname pretty_sci
 #' @export
-parse_sci <- function(x, digits = 0, base = 10, simplify = TRUE) {
+parse_sci <- function(x, digits = 0L, base = 10, simplify = TRUE) {
   stopifnot(is.numeric(x))
   
   x <- to_sci_(x, digits, base)
@@ -610,7 +610,7 @@ to_sci_ <- function(x, digits, base) {
 #' @export
 
 arrows2 <- function(x0, y0, x1 = x0, y1 = y0, size = 1, width = 0.1 / cin,
-                    curve = 1, code = 2, col = par('fg'), lty = par('lty'),
+                    curve = 1, code = 2L, col = par('fg'), lty = par('lty'),
                     lwd = par('lwd'), fill = col, border = fill,
                     sadj = c(0,0,0,0), ...) {
   stopifnot(
@@ -650,8 +650,8 @@ arrows2 <- function(x0, y0, x1 = x0, y1 = y0, size = 1, width = 0.1 / cin,
   }
   
   if (code %in% c(1L, 3L)) {
-    arrows2(x1, y1, x0, y0, size, width, code = 2, curve, col = col,
-            lty = 0, lwd = 0, fill = fill, border = border, ...)
+    arrows2(x1, y1, x0, y0, size, width, code = 2L, curve, col = col,
+            lty = 0L, lwd = 0, fill = fill, border = border, ...)
   }
   
   invisible(NULL)
@@ -726,9 +726,9 @@ carrows <- function(p1, p2, arc, degree = FALSE, pad = 0.01 * 1:2,
   
   arc <- if (!missing(arc)) {
     if (degree | any(arc > 2 * pi))
-      d2r(arc) else arc[1:2]
+      arc * (pi / 180) else arc[1:2]
   } else sapply(list(p1, p2), function(x)
-    p2r(x[1L], x[2L], centers[1L], centers[2L]))
+    atan2(x[2L] - centers[2L], x[1L] - centers[1L]))
   
   ## convert polar to cart and plot lines/arrows
   theta <- seq(arc[1L], arc[2L], length.out = 500L) + if (flip) pi else 0
@@ -790,8 +790,8 @@ carrows <- function(p1, p2, arc, degree = FALSE, pad = 0.01 * 1:2,
 #' 
 #' @export
 
-laxis <- function(side = 1L, nticks = 5, labels = TRUE, digits = 0, base = 10,
-                  limit = base ^ 3, simplify = TRUE, ...) {
+laxis <- function(side = 1L, nticks = 5L, labels = TRUE, digits = 0L,
+                  base = 10, limit = base ^ 3, simplify = TRUE, ...) {
   ap <- par(switch(side, 'xaxp', 'yaxp', 'xaxp', 'yaxp', stop('Invalid axis')))
   yl <- c(-1, 1) + if (base == 10) log10(ap[-3L]) else c(1, ap[2L])
   pp <- seq(yl[1L], yl[2L])
@@ -813,81 +813,6 @@ laxis <- function(side = 1L, nticks = 5, labels = TRUE, digits = 0, base = 10,
        lwd.ticks = par('lwd'))
   
   invisible(list(at.major = at1, at.minor = at2))
-}
-
-#' Plotting coordinates
-#' 
-#' Return the user plot, figure, inner, and device \emph{{x,y}} coordinates
-#' for a vector of normalized (i.e., in \code{[0,1]}) coordinates. Or, if
-#' \code{line} and \code{side} are given, the x (or y) user coordinates.
-#' 
-#' @param x,y normalized x- and y-coordinates in \code{[0,1]}, recycled as
-#' needed
-#' @param to character string giving the coordinate system to convert to
-#' @param line,side the margin line starting at 0 counting outwards and side
-#' of the plot (1=below, 2=left, 3=above, 4=right); see \code{\link{mtext}}
-#' 
-#' @seealso
-#' \code{\link[=grconvertX]{convertXY}}; \code{\link{mtext}}
-#' 
-#' @examples
-#' op <- par(oma = 1:4, mar = 1:4, xpd = NA, pch = 16, xpd = NA)
-#' plot.new()
-#' box('plot', col = 1)
-#' box('figure', col = 2)
-#' box('outer', col = 3)
-#' # box('inner', col = 4)
-#' 
-#' xx <- c(1,2,1,2)
-#' yy <- c(1,1,2,2)
-#' 
-#' co <- coords()
-#' 
-#' points(co$plot$x[xx], co$plot$y[yy], cex = 5, col = 1)
-#' points(co$figure$x[xx], co$figure$y[yy], cex = 5, col = 2)
-#' points(co$device$x[xx], co$device$y[yy], cex = 5, col = 3)
-#' 
-#' 
-#' co <- coords(seq(0, 1, 0.1), 1)
-#' 
-#' points(co$plot$x, co$plot$y, cex = 2, col = 4)
-#' points(co$figure$x, co$figure$y, cex = 2, col = 5)
-#' points(co$device$x, co$device$y, cex = 2, col = 6)
-#' 
-#' 
-#' ## use line/side for x or y coordinates depending on side
-#' mtext('text', line = 1, side = 3, at = 0.5)
-#' text(0.5, coords(line = 1, side = 3), 'text', col = 2)
-#' 
-#' mtext('text', line = -1:4, side = 4, at = 0.5)
-#' text(coords(line = -1:4, side = 4), 0.5, 'text', col = 2, srt = 90)
-#' 
-#' par(op)
-#' 
-#' @export
-
-coords <- function(x = 0:1, y = x, to = 'user', line, side) {
-  xy <- cbind(x, y)
-  x  <- xy[, 1L]
-  y  <- xy[, 2L]
-  
-  if (!missing(line) | !missing(side)) {
-    lh <- par('cin')[2L] * par('cex') * par('lheight')
-    
-    sapply(line, function(li) {
-      li <- li + 0.5
-      x  <- diff(grconvertX(x, 'in', 'user')) * lh * li
-      y  <- diff(grconvertY(y, 'in', 'user')) * lh * li
-      
-      (par('usr')[c(3, 1, 4, 2)] + c(-y, -x, y, x))[match(side, 1:4)]
-    })
-  } else
-    list(
-      plot   = list(x = grconvertX(x, 'npc', to), y = grconvertY(y, 'npc', to)),
-      figure = list(x = grconvertX(x, 'nfc', to), y = grconvertY(y, 'nfc', to)),
-      inner  = list(x = grconvertX(x, 'nic', to), y = grconvertY(y, 'nic', to)),
-      device = list(x = grconvertX(x, 'ndc', to), y = grconvertY(y, 'ndc', to))
-    )
 }
 
 #' Color scaling
