@@ -4,7 +4,7 @@
 \alias{laxis}
 \title{Add a logarithmic axis}
 \usage{
-laxis(side = 1L, nticks = 5, labels = TRUE, digits = 0, base = 10,
+laxis(side = 1L, nticks = 5L, labels = TRUE, digits = 0L, base = 10,
   limit = base^3, simplify = TRUE, ...)
 }
 \arguments{

@@ -5,7 +5,7 @@
 \title{Add filled arrows to a plot}
 \usage{
 arrows2(x0, y0, x1 = x0, y1 = y0, size = 1, width = 0.1/cin,
-  curve = 1, code = 2, col = par("fg"), lty = par("lty"),
+  curve = 1, code = 2L, col = par("fg"), lty = par("lty"),
   lwd = par("lwd"), fill = col, border = fill, sadj = c(0, 0, 0, 0),
   ...)
 }

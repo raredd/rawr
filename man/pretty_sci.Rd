@@ -6,11 +6,11 @@
 \alias{parse_sci}
 \title{Print scientific numbers}
 \usage{
-pretty_sci(x, digits = 0, base = 10, limit = base^3, simplify = TRUE)
+pretty_sci(x, digits = 0L, base = 10, limit = base^3, simplify = TRUE)
 
 oom(x, base = 10)
 
-parse_sci(x, digits = 0, base = 10, simplify = TRUE)
+parse_sci(x, digits = 0L, base = 10, simplify = TRUE)
 }
 \arguments{
 \item{x}{a numeric vector}

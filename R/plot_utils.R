@@ -1,7 +1,6 @@
 ### plot utils, helpers for plotting functions
 # unexported:
-# %|%, do_sub_, dodge_, jit_, grouping_, do_rect_, do_seg_, d2r, r2d,
-# p2c, c2p, p2r, p2d
+# %|%, do_sub_, dodge_, jit_, grouping_, do_rect_, do_seg_
 ###
 
 
@@ -44,10 +43,11 @@ do_rect_ <- function(n, x, y, single = FALSE, border = NA, col = NA,
                      adj = 0.25, ...) {
   ## used in river/river2 to add rects for each n
   lx <- length(x)
-  if (lx == 1L && is.na(x)) return()
+  if (lx == 1L && is.na(x))
+    return(invisible(NULL))
   if (single || length(x) == 1L) {
-    rect(x[1], n[1] - 1 * adj, y[1], n[1] + 1 * adj, border = border[1],
-         col = col[1], ...)
+    rect(x[1L], n[1L] - 1 * adj, y[1L], n[1L] + 1 * adj, border = border[1L],
+         col = col[1L], ...)
   } else {
     ## x is a vector of start times, y is a vector of end times
     for (ii in seq_along(x))
@@ -60,47 +60,15 @@ do_rect_ <- function(n, x, y, single = FALSE, border = NA, col = NA,
 do_seg_ <- function(n, x, y, arrow, single = FALSE, ...) {
   ## used in river/river2 to add segs for each n
   if (single) {
-    n <- n[1]
-    x <- x[1]
-    y <- y[1]
+    n <- n[1L]
+    x <- x[1L]
+    y <- y[1L]
   }
-  if (is.na(x)) return()
-  if (arrow[1])
-    arrows(x, n, pmax(y,1, na.rm = TRUE), n, lwd = 2,
-           angle = 30, length = .15, ...)
+  if (is.na(x))
+    return(invisible(NULL))
+  if (arrow[1L])
+    arrows(x, n, pmax(y, 1, na.rm = TRUE), n, lwd = 2,
+           angle = 30, length = 0.15, ...)
   else segments(x, n, y, n, ...)
   invisible(NULL)
-}
-
-## convert degrees to radians or vice versa
-d2r <- function(degrees = 1) {
-  degrees * (pi / 180)
-}
-r2d <- function(radians = 1) {
-  radians * (180 / pi)
-}
-
-## convert polar to cartesian or vice versa
-p2c <- function(radius, theta, degree = FALSE) {
-  # p2c(c2p(0, 1)$r, c2p(0, 1)$t)
-  if (degree)
-    theta <- d2r(theta)
-  list(x = radius * cos(theta),
-       y = radius * sin(theta))
-}
-c2p <- function(x, y, degree = FALSE) {
-  # c2p(p2c(1, 30, TRUE)$x, p2c(1, 30, TRUE)$y, TRUE)
-  list(radius = sqrt(x ** 2 + y ** 2),
-       theta = atan2(y, x) * if (degree) r2d() else 1)
-}
-
-## x,y coords to radians/degrees
-p2r <- function(x, y, cx = 0, cy = 0) {
-  # p2r(0,1)
-  atan2(y - cy, x - cx)
-  # ifelse(r < 0, pi / 2 + abs(r), r)
-}
-p2d <- function(x, y, cx = 0, cy = 0) {
-  # p2d(0,1)
-  r2d(atan2(y - cy, x - cx))
 }
