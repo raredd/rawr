@@ -7,7 +7,7 @@
 # dodge, dodge2
 # 
 # unexported:
-# to_sci_
+# to_sci_, col_scaler2
 ###
 
 
@@ -902,4 +902,29 @@ col_scaler <- function(x, colors, alpha = 1,
   if (!all(alpha == 1))
     tcol(colors, alpha = rep_len(alpha, length(colors)))
   else tolower(colors)
+}
+
+# op <- par(no.readonly = TRUE)
+# set.seed(1)
+# x <- rnorm(100, 1)
+# c <- c('blue', 'black', 'red')
+# par(mfrow = c(2, 2), mar = c(3,3,1,1))
+# plot(x, col = col_scaler(x, c), pch = 16)
+# plot(x, col = col_scaler2(x, c), pch = 16)
+# plot(x, col = col_scaler2(x, c, 1), pch = 16)
+# plot(x, col = col_scaler2(x, c, 1, c(1, 1, 1), alpha = 0.5), pch = 16)
+# par(op)
+
+col_scaler2 <- function(x, colors, vec = 0, prop = c(3, 1, 3), ...) {
+  if (length(colors) == 2L)
+    colors <- c(colors[1L], 'black', colors[2L])
+  res <- character(length(x))
+  idx <- findInterval(x, vec)
+  
+  if (sum(lo <- idx %in% 0))
+    res[lo] <- col_scaler(x[lo], rep(colors[1:2], prop[1:2]), ...)
+  if (sum(hi <- idx %in% 1))
+    res[hi] <- col_scaler(x[hi], rep(colors[2:3], prop[2:3]), ...)
+  
+  replace(res, is.na(res) | !nzchar(res), '#000000')
 }
