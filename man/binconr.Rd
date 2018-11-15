@@ -4,8 +4,8 @@
 \alias{binconr}
 \title{\code{bincon} formatter}
 \usage{
-binconr(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
-  show_conf = TRUE, pct.sign = TRUE, method = "exact")
+binconr(r, n, conf = 0.95, digits = 0L, est = TRUE, frac = FALSE,
+  show_conf = TRUE, pct.sign = TRUE, method = "exact", percent = TRUE)
 }
 \arguments{
 \item{r}{number of responses (successes)}
@@ -26,6 +26,9 @@ binconr(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
 percents are shown without sign (this does not affect the confidence text)}
 
 \item{method}{method to use (default is exact); see \code{\link{bincon}}}
+
+\item{percent}{logical; if \code{TRUE} (default), estimates and intervals
+are returned as percentages}
 }
 \description{
 Binomial confidence interval (\code{\link{bincon}}) formatter.
@@ -37,6 +40,9 @@ two-stage designs by \code{method="two-stage"}. If both \code{r} and
 inputs, see \code{\link{bincon}}.
 }
 \examples{
+binconr(5, 10)
+binconr(5, 10, percent = FALSE)
+
 binconr(5, 10, .90, est = FALSE)
 binconr(45, 53, digits = 1, conf = .975)
 binconr(45, 53, show_conf = FALSE, frac = TRUE)

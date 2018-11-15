@@ -558,11 +558,16 @@ catlist <- function(l, sep = ' = ', collapse = ', ') {
 #' @param pct.sign logical; if \code{TRUE}, percent sign is shown; otherwise,
 #' percents are shown without sign (this does not affect the confidence text)
 #' @param method method to use (default is exact); see \code{\link{bincon}}
+#' @param percent logical; if \code{TRUE} (default), estimates and intervals
+#' are returned as percentages
 #' 
 #' @seealso
 #' \code{\link{bincon}}; \code{\link[Hmisc]{binconf}}
 #' 
 #' @examples
+#' binconr(5, 10)
+#' binconr(5, 10, percent = FALSE)
+#' 
 #' binconr(5, 10, .90, est = FALSE)
 #' binconr(45, 53, digits = 1, conf = .975)
 #' binconr(45, 53, show_conf = FALSE, frac = TRUE)
@@ -572,10 +577,16 @@ catlist <- function(l, sep = ' = ', collapse = ', ') {
 #' 
 #' @export
 
-binconr <- function(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
-                    show_conf = TRUE, pct.sign = TRUE, method = 'exact') {
+binconr <- function(r, n, conf = 0.95, digits = 0L, est = TRUE, frac = FALSE,
+                    show_conf = TRUE, pct.sign = TRUE, method = 'exact',
+                    percent = TRUE) {
   lr <- length(r)
   ln <- length(n)
+  xx <- if (!percent) {
+    pct.sign <- FALSE
+    digits <- ifelse(digits == 0, 2L, pmax(1L, digits))
+    1
+  } else 100
   
   method <- if (lr == 2L & ln == 2L)
     'two-stage' else {
@@ -588,7 +599,7 @@ binconr <- function(r, n, conf = 0.95, digits = 0, est = TRUE, frac = FALSE,
     nrow(bc) == 1L
   )
   
-  tmp <- roundr(bc * 100, digits)
+  tmp <- roundr(bc * xx, digits)
   res <- sprintf('%s%% CI: %s - %s%%', conf * 100, tmp[4L], tmp[5L])
   
   if (!show_conf)
