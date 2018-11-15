@@ -372,9 +372,12 @@ show_pch <- function(...) {
   x <- rep(1:5, 6L)[1:26]
   y <- c(rep(5:1, each = 5L)[1:25], 0L)
   
-  plot(x, y, pch = 0:25, axes = FALSE, bg = 'gray', cex = 2, col = 'red')
-  text(x = x, y = y, labels = 0:25, pos = 4L, cex = 1.5, offset = 1)
-  text(x = 4, y = 0, labels = 'plotting characters 0:25', cex = 1.5)
+  plot(
+    x, y, pch = 0:25, axes = FALSE, ann = FALSE,
+    bg = 'gray', cex = 2, col = 'red'
+  )
+  text(x, y, 0:25, pos = 4L, cex = 1.5, offset = 1)
+  text(par('usr')[2L], 0, 'plotting characters 0:25', cex = 1.5, adj = 1)
   
   invisible(NULL)
 }
