@@ -238,8 +238,8 @@ kmplot <- function(s,
                    
                    ## at-risk table options
                    atrisk.table = TRUE, atrisk.lab = NULL,
-                   atrisk.type = c('atrisk', 'events',
-                                   'atrisk-events', 'survival'),
+                   atrisk.type = c('atrisk', 'events', 'atrisk-events',
+                                   'survival', 'percent'),
                    atrisk.digits = 2L,
                    atrisk.lines = TRUE, atrisk.col = !atrisk.lines,
                    strata.lab = NULL,
@@ -486,7 +486,8 @@ kmplot <- function(s,
       atrisk = 'n.risk',
       events = 'events',
       'atrisk-events' = 'atrisk-events',
-      survival = 'survival'
+      survival = 'survival',
+      percent = 'percent'
     )
     
     ss <- summary(s, times = atrisk.at)
@@ -497,12 +498,14 @@ kmplot <- function(s,
       strata = c(ss$strata), surv = ss$surv
     )
     
+    mi <- missing(atrisk.digits)
     d2 <- split(d1, d1$strata)
     d2 <- lapply(d2, function(x) {
       x$atrisk <- x$n.risk
       x$events <- cumsum(x$n.event)
       x[, 'atrisk-events'] <- sprintf('%s (%s)', x$atrisk, x$events)
       x$survival <- roundr(x$surv, atrisk.digits)
+      x$percent  <- roundr(x$surv * 100, ifelse(mi, 0L, atrisk.digits))
       x
     })
     
@@ -530,7 +533,8 @@ kmplot <- function(s,
         atrisk = 'Number at risk',
         events = 'Cumulative events',
         'atrisk-events' = 'At risk (Events)',
-        survival = 'Probability'
+        survival = 'Probability',
+        percent = 'Percent'
       )
     
     if (!(identical(atrisk.lab, FALSE)))
@@ -548,7 +552,11 @@ kmplot <- function(s,
           do.call('sprintf', c(list(
             fmt = '%s (%s, %s)'), lapply(st, roundr, digits = digits.median))
           )
-      tt <- ifelse(is.na(st$median), '-', gsub('NA', '-', tt, fixed = TRUE))
+      tt <- ifelse(
+        # is.na(st$median)
+        rowSums(is.na(st)) == 3L,
+        '-', gsub('NA', '-', tt, fixed = TRUE)
+      )
       at <- if (isTRUE(median.at))
         usr[2L] + diff(usr[1:2]) / 8 else median.at
       mtext(if (!is.null(s$conf.int))
