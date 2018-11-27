@@ -615,7 +615,7 @@ kmplot <- function(s,
   
   ## pairwise tests
   if (!identical(pw_test, FALSE)) {
-    txt <- pw_text(s$call$formula, data = sdat)
+    txt <- pw_text(s$call$formula, sdat, pFUN = format_pval)
     
     largs <- list(x = 'topright', legend = txt, bty = 'n')
     
