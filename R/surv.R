@@ -663,11 +663,12 @@ kmplot <- function(s,
     ## survival curves
     lines(s[ii], conf.int = FALSE, col = col.surv[ii],
           lty = lty.surv[ii], lwd = lwd.surv, mark.time = FALSE)
-
+    
     if (!mark[ii] == FALSE)
-      points.kmplot(s[ii], col = col.surv[ii], pch = mark[ii], xpd = NA,
-                    censor = TRUE, event = FALSE, bump = mark[ii] == 'bump',
-                    plot = TRUE, lwd = lwd.mark[ii])
+      points.kmplot(
+        s[ii], col = col.surv[ii], pch = mark[ii], censor = TRUE, plot = TRUE,
+        event = FALSE, bump = mark[ii] == 'bump', lwd = lwd.mark[ii]
+      )
   }
   
   do.call('clip', as.list(u0))

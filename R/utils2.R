@@ -695,7 +695,7 @@ num2char <- function(x, informal = FALSE, cap = TRUE) {
   ## definitions
   ones <- setNames(
     c('', 'one', 'two', 'three', 'four', 'five',
-      'six',' seven', 'eight', 'nine'),
+      'six', 'seven', 'eight', 'nine'),
     0:9
   )
   teens <- setNames(
@@ -2036,7 +2036,7 @@ get_tabler_stat_n <- function(x, pct = TRUE) {
 #' 
 #' @export
 
-tabler_resp <- function(x, r_or_better = levels(x)[1:3], conf = 0.95,
+tabler_resp <- function(x, r_or_better = levels(x)[3:1], conf = 0.95,
                         digits = 0L, frac = TRUE, show_conf = TRUE,
                         pct.sign = TRUE, total = FALSE, two_stage = FALSE) {
   x  <- as.factor(x)
@@ -2044,19 +2044,20 @@ tabler_resp <- function(x, r_or_better = levels(x)[1:3], conf = 0.95,
   lx <- length(x)
   
   if (is.character(r_or_better))
-    r_or_better <- if (length(wh <- which(rs %in% r_or_better)))
+    r_or_better <- if (length(wh <- match(r_or_better, rs)))
       wh else {
         warning('Failed to guess \'r_or_better\'')
         ## take first 3 levels
-        1:3
+        3:1
       }
   
   res <- c(
-    resp1(x, rs, conf, digits, frac, show_conf, pct.sign, two = FALSE),
-    if (!is.numeric(r_or_better))
-      NULL
-    else r_or_better1(x, rev(rs[sort(r_or_better)]), conf, digits,
-                      frac, show_conf, pct.sign, two = FALSE)
+    resp1(x, rs, conf, digits, frac, show_conf, pct.sign, FALSE),
+    if (is.numeric(r_or_better))
+      rev(
+        r_or_better1(x, rev(rs), conf, digits, frac, show_conf, pct.sign, FALSE)
+      )[r_or_better]
+    else NULL
   )
   
   if (!identical(two_stage, FALSE)) {
@@ -2064,18 +2065,22 @@ tabler_resp <- function(x, r_or_better = levels(x)[1:3], conf = 0.95,
     two_stage <- two_stage[1:3]
     
     if (two_stage[1L] > two_stage[2L] || two_stage[1L] > two_stage[3L])
-      stop('For two-stage designs, \'two_stage\' should be a vector of ',
-           'length 3 giving:\n\t1) the max number of successes in the first ',
-           'stage that can be observed _without_ continuing; ',
-           '\n\t2) the number entered in the first stage; and ',
-           '\n\t3) additional entered in the second stage')
+      stop(
+        'For two-stage designs, \'two_stage\' should be a vector of ',
+        'length 3 giving:\n\t1) the max number of successes in the first ',
+        'stage that can be observed _without_ continuing; ',
+        '\n\t2) the number entered in the first stage; and ',
+        '\n\t3) additional entered in the second stage'
+      )
     
     res2 <- c(
       resp1(x, rs, conf, digits, frac, show_conf, pct.sign, two_stage),
-      if (!is.numeric(r_or_better))
-        NULL
-      else r_or_better1(x, rev(rs[seq.int(r_or_better)]), conf, digits,
-                        frac, show_conf, pct.sign, two_stage)
+      if (is.numeric(r_or_better))
+        rev(
+          r_or_better1(x, rev(rs), conf, digits, frac,
+                       show_conf, pct.sign, two_stage)
+        )[r_or_better]
+      else NULL
     )
     
     res[two_idx] <- res2[two_idx]
@@ -2127,14 +2132,15 @@ r_or_better1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
   x[x %ni% r] <- NA
   
   res <- if (all(is.na(x)))
-    rep('-', length(r)) else
-      sapply(seq_along(r), function(X)
-        if (identical(two, FALSE))
-          binconr(sum(x %in% r[X:length(r)]), length(x), conf,
-                  digits, TRUE, frac, show_conf, pct.sign, 'exact')
-        else binconr(c(two[1L], sum(x %in% r[X:length(r)])), two[2:3], conf,
-                     digits, TRUE, frac, show_conf, pct.sign, 'two-stage')
-      )
+    rep('-', length(r))
+  else
+    sapply(seq_along(r), function(X)
+      if (identical(two, FALSE))
+        binconr(sum(x %in% r[X:length(r)]), length(x), conf,
+                digits, TRUE, frac, show_conf, pct.sign, 'exact')
+      else binconr(c(two[1L], sum(x %in% r[X:length(r)])), two[2:3], conf,
+                   digits, TRUE, frac, show_conf, pct.sign, 'two-stage')
+    )
   
   setNames(res, paste(r, 'or better'))
 }
