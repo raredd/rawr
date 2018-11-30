@@ -1723,6 +1723,9 @@ guess_test <- function(x, y, n_unique_x = 10L) {
 #' will be applied to each p-value
 #' @param color_pval,color_missing,dagger \code{NULL} or vectors, recycled as
 #' needed for each \code{varname}; see \code{\link{tabler_stat}}
+#' @param group a \emph{named} vector of variables (either index of or a
+#' value in \code{varname}) to begin a new group (see \code{tspanner} in
+#' \code{\link[htmlTable]{htmlTable}})
 #' @param color_cell_by,cell_color apply a color gradient (\code{cell_color})
 #' to each cell (for html output); one of \code{"none"}, \code{"value"}, or
 #' \code{"pct"}; see \code{\link{tabler_stat}}
@@ -1743,8 +1746,8 @@ guess_test <- function(x, y, n_unique_x = 10L) {
 #' \code{rawr:::tabler_stat_list}; \code{rawr:::tabler_stat_html}
 #' 
 #' @examples
-#' sapply(mtcars, rawr:::guess_digits)
-#' Map(rawr::roundr, mtcars, sapply(mtcars, rawr:::guess_digits))
+#' sapply(mtcars[1:6], rawr:::guess_digits)
+#' Map(rawr::roundr, mtcars[1:6], sapply(mtcars[1:6], rawr:::guess_digits))
 #' 
 #' rawr:::get_tabler_stat_n(mtcars$gear)
 #' 
@@ -1757,6 +1760,9 @@ guess_test <- function(x, y, n_unique_x = 10L) {
 #' })
 #' 
 #' tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs')
+#' tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs', group = 'wt')
+#' tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs',
+#'   group = c(group1 = 1, 'Weight' = 3))
 #' tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs',
 #'   FUN = list('kruskal', 'fisher', FALSE))
 #' 
@@ -1781,7 +1787,7 @@ tabler_stat2 <- function(data, varname, byvar, varname_label = names(varname),
                          byvar_label = names(byvar), digits = NULL, FUN = NULL,
                          format_pval = TRUE, color_pval = TRUE,
                          color_missing = TRUE, dagger = TRUE,
-                         color_cell_by = 'none',
+                         group = NULL, color_cell_by = 'none',
                          cell_color = c('black', 'red'), statArgs = NULL,
                          align = NULL, rgroup = NULL, cgroup = NULL,
                          tfoot = NULL, htmlArgs = NULL, zeros = '-') {
@@ -1802,13 +1808,18 @@ tabler_stat2 <- function(data, varname, byvar, varname_label = names(varname),
       nv == length(FUN)
   )
   
+  if (is.character(group))
+    group <- na.omit(
+      setNames(match(group, c(varname), nomatch = NA), names(group))
+    )
+  
   l <- tabler_stat_list(
     data, varname, byvar, varname_label %||% varname, byvar_label %||% byvar,
     digits, FUN, format_pval, color_pval, color_missing, dagger,
     color_cell_by, cell_color, statArgs
   )
   
-  tabler_stat_html(l, align, rgroup, cgroup, tfoot, htmlArgs, zeros)
+  tabler_stat_html(l, align, rgroup, cgroup, tfoot, htmlArgs, zeros, group)
 }
 
 tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
@@ -1890,7 +1901,8 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
 }
 
 tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
-                             tfoot = NULL, htmlArgs = NULL, zeros = NULL) {
+                             tfoot = NULL, htmlArgs = NULL, zeros = NULL,
+                             group = NULL) {
   stopifnot(
     inherits(l, 'htmlStat')
   )
@@ -1912,6 +1924,27 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
     if (nchar(x) == 0L)
       NULL else grep(x, y, value = TRUE), dg, tf)
   tf <- toString(unique(unlist(tf)))
+  
+  ## tspanner
+  if (!is.null(group)) {
+    group <- group[group <= length(l$n.rgroup)]
+    names(group) <- names(group) %||% as.character(group)
+    group <- sort(group)
+    nt <- insert(l$n.rgroup, group)
+    nt <- cum_reset(nt, NA, function(x) sum(x, na.rm = TRUE))
+    ts <- names(group)
+    ts <- if (1 %ni% group)
+      c('', ts)
+    else if (0 %in% nt) {
+      nt <- nt[nt > 0]
+      ts
+    } else ts
+    
+    htmlArgs <- modifyList(
+      htmlArgs %||% list(),
+      list(n.tspanner = nt, tspanner = ts)
+    )
+  }
   
   ht <- do.call(
     htmlTable::htmlTable,

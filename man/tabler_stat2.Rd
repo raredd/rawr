@@ -7,9 +7,10 @@
 tabler_stat2(data, varname, byvar, varname_label = names(varname),
   byvar_label = names(byvar), digits = NULL, FUN = NULL,
   format_pval = TRUE, color_pval = TRUE, color_missing = TRUE,
-  dagger = TRUE, color_cell_by = "none", cell_color = c("black", "red"),
-  statArgs = NULL, align = NULL, rgroup = NULL, cgroup = NULL,
-  tfoot = NULL, htmlArgs = NULL, zeros = "-")
+  dagger = TRUE, group = NULL, color_cell_by = "none",
+  cell_color = c("black", "red"), statArgs = NULL, align = NULL,
+  rgroup = NULL, cgroup = NULL, tfoot = NULL, htmlArgs = NULL,
+  zeros = "-")
 }
 \arguments{
 \item{data}{a matrix or data frame with variables \code{varname} and
@@ -43,6 +44,10 @@ will be applied to each p-value}
 \item{color_pval, color_missing, dagger}{\code{NULL} or vectors, recycled as
 needed for each \code{varname}; see \code{\link{tabler_stat}}}
 
+\item{group}{a \emph{named} vector of variables (either index of or a
+value in \code{varname}) to begin a new group (see \code{tspanner} in
+\code{\link[htmlTable]{htmlTable}})}
+
 \item{color_cell_by, cell_color}{apply a color gradient (\code{cell_color})
 to each cell (for html output); one of \code{"none"}, \code{"value"}, or
 \code{"pct"}; see \code{\link{tabler_stat}}}
@@ -63,8 +68,8 @@ value keeps cells as-is)}
 Helper functions for using \code{tabler_stat}.
 }
 \examples{
-sapply(mtcars, rawr:::guess_digits)
-Map(rawr::roundr, mtcars, sapply(mtcars, rawr:::guess_digits))
+sapply(mtcars[1:6], rawr:::guess_digits)
+Map(rawr::roundr, mtcars[1:6], sapply(mtcars[1:6], rawr:::guess_digits))
 
 rawr:::get_tabler_stat_n(mtcars$gear)
 
@@ -77,6 +82,9 @@ mt <- within(mtcars, {
 })
 
 tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs')
+tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs', group = 'wt')
+tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs',
+  group = c(group1 = 1, 'Weight' = 3))
 tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs',
   FUN = list('kruskal', 'fisher', FALSE))
 
