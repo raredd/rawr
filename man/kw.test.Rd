@@ -55,8 +55,10 @@ squared distribution of the test statistic}
 count data}" and, optionally, the number of Monte Carlo replications, if
 applicable}
 \item{\code{data.name}}{a character string giving the names of the data}
-\item{\code{cont.int}}{optionally, (if \code{simulate.p.value = TRUE})
+\item{\code{conf.int}}{optionally (if \code{simulate.p.value = TRUE}),
 the 99\% confidence interval of the Monte Carlo p-value}
+\item{\code{summary}}{optionally (if \code{simulate.p.value = TRUE}),
+a summary of the simulated test statistics}
 }
 \description{
 Performs a Kruskal-Wallis test for an \code{r x c} contingency table in

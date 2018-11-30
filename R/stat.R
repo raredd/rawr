@@ -1251,8 +1251,10 @@ lm.beta <- function (x, weights = 1) {
 #' \item{data.name}{a character string giving the names of the data}
 #' \item{details}{a list of pairwise (\code{details}) and overall
 #' (\code{\link{kruskal.test}}) comparisons}
-#' \item{\code{cont.int}}{optionally, (if \code{simulate.p.value = TRUE})
+#' \item{\code{conf.int}}{optionally, (if \code{simulate.p.value = TRUE})
 #' the 99\% confidence interval of the Monte Carlo p-value}
+#' \item{\code{summary}}{optionally (if \code{simulate.p.value = TRUE}),
+#' a summary of the simulated test statistics}
 #' 
 #' @references
 #' Altman, D. G. 1991. \emph{Practical Statistics for Medical Research}.
@@ -1410,6 +1412,7 @@ cuzick.test.default <- function(x, g, details = wilcox.test, correct = TRUE,
     res$method <- sprintf('%s with simulated p-value (based on %s replicates)',
                           method, B)
     res$conf.int <- structure(p[2:3], conf.level = attr(p, 'conf.level'))
+    res$simulate <- attr(p, 'simulate')
   }
   
   ## pairwise details
@@ -1550,7 +1553,8 @@ cuzick.test.pvalue <- function(x, g, correct, B = 2000L,
   
   structure(
     setNames(c(p, ci), c('p.value', 'LCI', 'UCI')),
-    conf.level = alpha
+    conf.level = alpha,
+    simulate = summary(r)
   )
 }
 
@@ -2066,8 +2070,10 @@ rsum <- function(a, b, n, k, unique = FALSE, iterations = 100L) {
 #' count data}" and, optionally, the number of Monte Carlo replications, if
 #' applicable}
 #' \item{\code{data.name}}{a character string giving the names of the data}
-#' \item{\code{cont.int}}{optionally, (if \code{simulate.p.value = TRUE})
+#' \item{\code{conf.int}}{optionally (if \code{simulate.p.value = TRUE}),
 #' the 99\% confidence interval of the Monte Carlo p-value}
+#' \item{\code{summary}}{optionally (if \code{simulate.p.value = TRUE}),
+#' a summary of the simulated test statistics}
 #' 
 #' @seealso
 #' \code{\link{kruskal.test}}; \code{\link{jt.test}} for doubly-ordered
@@ -2162,6 +2168,7 @@ kw.test.default <- function(x, g, ..., simulate.p.value = FALSE, B = 2000L) {
     method <- sprintf('%s with simulated p-value (based on %s replicates)',
                       method, B)
     res$conf.int <- structure(p[2:3], conf.level = attr(p, 'conf.level'))
+    res$simulate <- attr(p, 'simulate')
   }
   
   res$data.name <- dname
@@ -2236,7 +2243,8 @@ kw.test.pvalue <- function(x, g, ordered = FALSE, B = 2000L,
   
   structure(
     setNames(c(p, ci), c('p.value', 'LCI', 'UCI')),
-    conf.level = alpha
+    conf.level = alpha,
+    simulate = summary(r)
   )
 }
 

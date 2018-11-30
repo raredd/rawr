@@ -57,8 +57,10 @@ A list with class "\code{htest}" containing the following components:
 \item{data.name}{a character string giving the names of the data}
 \item{details}{a list of pairwise (\code{details}) and overall
 (\code{\link{kruskal.test}}) comparisons}
-\item{\code{cont.int}}{optionally, (if \code{simulate.p.value = TRUE})
+\item{\code{conf.int}}{optionally, (if \code{simulate.p.value = TRUE})
 the 99\% confidence interval of the Monte Carlo p-value}
+\item{\code{summary}}{optionally (if \code{simulate.p.value = TRUE}),
+a summary of the simulated test statistics}
 }
 \description{
 An implementation of Cuzick's extension of the Wilcoxon rank-sum test to
