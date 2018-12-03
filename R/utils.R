@@ -7,7 +7,7 @@
 # column_to_rownames, split_nth, sort2
 # 
 # rawr_ops:
-# %ni%, %==%, %||%, %inside%, %:%
+# %ni%, %==%, %||%, %sinside%, %winside%, %inside%, %:%
 # 
 # rawr_ls:
 # lss, lsf, lsp
@@ -97,8 +97,10 @@ name_or_index <- function(x, y = NULL) {
 #' 
 #' \code{\%ni\%} is the negation of \code{\link[base]{\%in\%}}.
 #' 
-#' \code{\%inside\%} returns a logical vector indicating if \code{x} is inside
-#' the \code{interval} (inclusive).
+#' \code{\%winside\%} and \code{\%sinside\%} return a logical vector
+#' indicating if \code{x} is weakly or strongly inside \code{interval}.
+#' \code{\%inside\%} is an alias for \code{\%winside\%} to preserve existing
+#' code.
 #'
 #' \code{\%=\%} is an operator combining the qualities of \code{\link{==}} and
 #' \code{\link{\%in\%}} to compare vectors in a pairwise manner which may
@@ -126,9 +128,13 @@ name_or_index <- function(x, y = NULL) {
 #' @examples
 #' 1:5 %ni% 3:5
 #' 
-#' c(0,4) %inside% c(0, 4)
-#' -5:5 %inside% c(0,5)
-#' -5:5 %inside% c(5,0)
+#' 
+#' c(0,4) %winside% c(0, 4)
+#' c(0,4) %sinside% c(0, 4)
+#' 
+#' -5:5 %winside% c(0,5)
+#' -5:5 %sinside% c(0,5)
+#' 
 #' 
 #' a <- c(1, NA, 2)
 #' b <- c(2, NA, 1)
@@ -138,8 +144,10 @@ name_or_index <- function(x, y = NULL) {
 #' ## desired results
 #' a %==% b   # FALSE TRUE FALSE
 #' 
+#' 
 #' # NULL || TRUE   # error
 #' NULL %||% TRUE   # TRUE
+#' 
 #' 
 #' 1:5 %:% c(3,5)
 #' letters %:% c('e', 'n')
@@ -155,32 +163,51 @@ NULL
 
 #' @rdname rawr_ops
 #' @export
-'%ni%' <- function(x, table) !(match(x, table, nomatch = 0L) > 0L)
+'%ni%' <- function(x, table) {
+  !(match(x, table, nomatch = 0L) > 0L)
+}
 
 #' @rdname rawr_ops
 #' @export
-'%inside%' <- function(x, interval) {
+`%sinside%` <- function(x, interval) {
+  interval <- sort(interval)
+  x > interval[1L] & x < interval[2L]
+}
+
+#' @rdname rawr_ops
+#' @export
+`%winside%` <- function(x, interval) {
   interval <- sort(interval)
   x >= interval[1L] & x <= interval[2L]
 }
 
 #' @rdname rawr_ops
 #' @export
-'%==%' <- function(a, b)
+`%inside%` <- `%winside%`
+
+#' @rdname rawr_ops
+#' @export
+`%==%` <- function(a, b) {
   (is.na(a) & is.na(b)) | (!is.na(a) & !is.na(b) & a == b)
+}
 
 #' @rdname rawr_ops
 #' @export
-'%||%' <- function(a, b) if (!is.null(a)) a else b
+`%||%` <- function(a, b) {
+  if (!is.null(a))
+    a else b
+}
 
 #' @rdname rawr_ops
 #' @export
-'%:%' <- function(object, range) {
+`%:%` <- function(object, range) {
   FUN <- if (!is.null(dim(object))) {
     if (is.matrix(object)) colnames else names
   } else identity
+  
   wh <- if (is.numeric(range))
     range else which(FUN(object) %in% range)
+  
   FUN(object)[seq(wh[1L], wh[2L])]
 }
 
@@ -408,7 +435,7 @@ lsp <- function(package, what, pattern) {
 #' 
 #' @seealso
 #' \code{\link{parseNamespaceFile}}, \code{\link{lss}}, \code{\link{lsf}},
-#' \code{\link{lsp}}, \code{\link{parse_sci}}
+#' \code{\link{lsp}}
 #' 
 #' @examples
 #' parse_yaml(lsf(rawr, 'desc'))
@@ -2403,6 +2430,7 @@ split_nth <- function(text, pattern, n = NULL, keep_split = FALSE,
     is.character(pattern),
     length(text) == 1L
   )
+  
   m <- gregexpr(pattern, text, ...)
   l <- length(attr(m[[1L]], 'match.length'))
   n <- if (is.null(n))
@@ -2432,9 +2460,8 @@ split_nth <- function(text, pattern, n = NULL, keep_split = FALSE,
 #' x <- sample(10)
 #' x[4:6] <- NA
 #' 
-#' sort2(x)
-#' 
 #' ## compare
+#' sort2(x)
 #' sort(x, na.last = NA)
 #' sort(x, na.last = TRUE)
 #' sort(x, na.last = FALSE)
@@ -2442,7 +2469,7 @@ split_nth <- function(text, pattern, n = NULL, keep_split = FALSE,
 #' @export
 
 sort2 <- function(x, decreasing = FALSE, index.return = FALSE,
-                  method = c('shell', 'radix')) {
+                  method = c('auto', 'shell', 'radix')) {
   method <- match.arg(method)
   
   o <- if (anyNA(x)) {

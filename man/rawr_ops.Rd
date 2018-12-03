@@ -6,6 +6,8 @@
 \alias{notin}
 \alias{inside}
 \alias{\%ni\%}
+\alias{\%sinside\%}
+\alias{\%winside\%}
 \alias{\%inside\%}
 \alias{\%==\%}
 \alias{\%||\%}
@@ -13,6 +15,10 @@
 \title{rawr operators}
 \usage{
 x \%ni\% table
+
+x \%sinside\% interval
+
+x \%winside\% interval
 
 x \%inside\% interval
 
@@ -42,8 +48,10 @@ Some useful binary operators.
 \details{
 \code{\%ni\%} is the negation of \code{\link[base]{\%in\%}}.
 
-\code{\%inside\%} returns a logical vector indicating if \code{x} is inside
-the \code{interval} (inclusive).
+\code{\%winside\%} and \code{\%sinside\%} return a logical vector
+indicating if \code{x} is weakly or strongly inside \code{interval}.
+\code{\%inside\%} is an alias for \code{\%winside\%} to preserve existing
+code.
 
 \code{\%=\%} is an operator combining the qualities of \code{\link{==}} and
 \code{\link{\%in\%}} to compare vectors in a pairwise manner which may
@@ -60,9 +68,13 @@ character strings rather than by index.
 \examples{
 1:5 \%ni\% 3:5
 
-c(0,4) \%inside\% c(0, 4)
--5:5 \%inside\% c(0,5)
--5:5 \%inside\% c(5,0)
+
+c(0,4) \%winside\% c(0, 4)
+c(0,4) \%sinside\% c(0, 4)
+
+-5:5 \%winside\% c(0,5)
+-5:5 \%sinside\% c(0,5)
+
 
 a <- c(1, NA, 2)
 b <- c(2, NA, 1)
@@ -72,8 +84,10 @@ a \%in\% b   # TRUE  TRUE TRUE
 ## desired results
 a \%==\% b   # FALSE TRUE FALSE
 
+
 # NULL || TRUE   # error
 NULL \%||\% TRUE   # TRUE
+
 
 1:5 \%:\% c(3,5)
 letters \%:\% c('e', 'n')

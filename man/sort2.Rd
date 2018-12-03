@@ -4,8 +4,8 @@
 \alias{sort2}
 \title{Sorting or ordering of vectors}
 \usage{
-sort2(x, decreasing = FALSE, index.return = FALSE, method = c("shell",
-  "radix"))
+sort2(x, decreasing = FALSE, index.return = FALSE, method = c("auto",
+  "shell", "radix"))
 }
 \arguments{
 \item{x}{a numeric, complex, or logical vector}
@@ -28,9 +28,8 @@ set.seed(1)
 x <- sample(10)
 x[4:6] <- NA
 
-sort2(x)
-
 ## compare
+sort2(x)
 sort(x, na.last = NA)
 sort(x, na.last = TRUE)
 sort(x, na.last = FALSE)

@@ -4,7 +4,7 @@
 ###
 
 
-'%|%' <- Vectorize(function(x, y) if (is.na(x)) y else x)
+`%|%` <- Vectorize(function(x, y) if (is.na(x)) y else x)
 
 do_sub_ <- function(x, n, s) {
   if (length(x) == n)
