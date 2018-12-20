@@ -350,12 +350,12 @@ kmplot <- function(s,
   if (!is.null(strata.lab) && isTRUE(strata.lab))
     strata.lab <- NULL
   if (!is.null(strata.lab) && identical(strata.lab, FALSE))
-    strata.lab <- rep(FALSE, ng)
+    strata.lab <- rep_len('', ng)
   if (is.null(strata.lab))
     strata.lab <- names(s$strata)
-  if (length(unique(strata.lab)) != ng && strata.lab[1L] != FALSE) {
+  if (length(strata.lab) != ng && strata.lab[1L] != FALSE) {
     strata.lab <- strata.lab[seq.int(ng)]
-    warning('length(unique(strata.lab)) != number of groups')
+    warning('length(strata.lab) != number of groups')
   }
   if (suppressWarnings(any(sort(strata.order) != seq.int(ng))))
     stop('sort(strata.order) must equal 1:', ng)
@@ -576,7 +576,7 @@ kmplot <- function(s,
       y = if (length(legend) > 1L) legend[2L] else NULL,
       legend = if (!is.null(strata.expr))
         strata.expr[strata.order] else
-          (if (identical(strata.lab, FALSE))
+          (if (identical(strata.lab, FALSE) || all(strata.lab %in% ''))
             names(s$strata) else strata.lab)[strata.order],
       col = col.surv[strata.order], bty = 'n',
       lty = lty.surv[strata.order], lwd = lwd.surv[strata.order]
