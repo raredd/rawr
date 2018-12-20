@@ -459,7 +459,8 @@ pr_table <- function(prob, n, crit, greater = FALSE, digits = NULL) {
   crit <- c(0L, sequence(max(as.integer(crit - greater))))
   
   res <- sapply(prob, function(pr) {
-    x <- sum(mapply(function(x) dbinom(x, n, pr), crit))
+    # x <- sum(mapply(function(x) dbinom(x, n, pr), crit))
+    x <- sum(dbinom(crit, n, pr))
     if (greater)
       1 - x else x
   })
