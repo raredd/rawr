@@ -5,6 +5,9 @@
 # 
 # S3 methods:
 # tplot, dsplot
+# 
+# unexported:
+# vioplot
 ###
 
 
@@ -180,7 +183,9 @@ jmplot <- function(x, y, z,
 #' @param na.action a function which indicates what should happen when the data
 #' contain \code{\link{NA}}s; the default is to ignore missing values in either
 #' the response or the group
-#' @param type type of plot (dot, dot-box, box-dot, box)
+#' @param type type of plot (\code{"d"} for dot, \code{"db"} for dot-box,
+#' \code{"bd"} for box-dot, or \code{"b"} box; \code{"v"} may be used instead
+#' of \code{"b"} for a violin plot)
 #' @param main,sub overall title and sub-title for the plot (below x-axis)
 #' @param xlab,ylab x- and y-axis labels
 #' @param xlim,ylim x- and y-axis limits
@@ -204,14 +209,14 @@ jmplot <- function(x, y, z,
 #' @param group.col logical; if \code{TRUE}, color by group; otherwise by order
 #' @param boxcol,bordercol box fill and border colors
 #' @param pch plotting character
-#' @param group.pch logical; if \code{TRUE}, \code{pch} by group; o/w, by order
+#' @param group.pch logical; if \code{TRUE}, \code{pch} by group; otherwise
+#' by order
 #' @param cex \strong{c}haracter \strong{ex}pansion value
-#' @param group.cex logical; if \code{TRUE}, groups will use the same
-#' \code{cex} value; otherwise, points will have individual values, recycled if
-#' necessary
+#' @param group.cex logical; if \code{TRUE}, groups use the same \code{cex}
+#' value; otherwise, points have individual values, recycled if necessary
 #' @param median.line,mean.line logical; draw median, mean lines
-#' @param median.pars,mean.pars list of graphical parameters for median, mean
-#' lines
+#' @param median.pars,mean.pars lists of graphical parameters for median and
+#' mean lines
 #' @param show.n,show.na logical; show total and missing in each group
 #' @param cex.n character expansion for \code{show.n} and \code{show.na}
 #' @param text.na label for missing values (default is "missing")
@@ -225,6 +230,10 @@ jmplot <- function(x, y, z,
 #' at least two arguments with the numeric data values and group
 #' @param args.test an optional \emph{named} list of \code{\link{mtext}}
 #' arguments controlling the \code{test} text
+#' @param format_pval logical; if \code{TRUE}, p-values are formatted with
+#' \code{\link{pvalr}}; if \code{FALSE}, no formatting is performed;
+#' alternatively, a function can be passed which should take a numeric value
+#' and return a character string (or a value to be coerced) for printing
 #' @param ann logical; annotate plot
 #' @param add logical; add to an existing plot
 #' @param panel.first an "expression" to be evaluated after the plot axes are
@@ -265,6 +274,12 @@ jmplot <- function(x, y, z,
 #' tplot(split(x, g))
 #' tplot(x ~ g)
 #' tplot(mpg ~ gear + vs, mtcars)
+#' 
+#' 
+#' ## options for box, violin, dots
+#' types <- c('d', 'db', 'bd', 'b', 'v', 'vd', 'dv', 'n')
+#' l <- lapply(types, function(...) mtcars$mpg)
+#' tplot(l, type = types, names = types, xlab = 'type = \'x\'')
 #' 
 #' 
 #' ## horizontal plots may cut off show.n/show.na text
@@ -352,7 +367,7 @@ tplot.default <- function(x, g, ..., type = 'db',
                           text.na = 'missing',
                           
                           ## extra stuff
-                          test = FALSE, args.test = list(),
+                          test = FALSE, args.test = list(), format_pval = TRUE,
                           ann = par('ann'), axes = TRUE, frame.plot = axes,
                           add = FALSE, at, horizontal = FALSE,
                           panel.first = NULL, panel.last = NULL) {
@@ -369,6 +384,8 @@ tplot.default <- function(x, g, ..., type = 'db',
     points(...)
   localTitle  <- function(..., bg, cex, log, lty, lwd, tick, pos, padj)
     title(...)
+  localVplot  <- function(..., outline)
+    vioplot(...)
   localWindow <- function(..., bg, cex,      lty, lwd, tick, pos, padj)
     plot.window(...)
   
@@ -422,7 +439,8 @@ tplot.default <- function(x, g, ..., type = 'db',
   ## .x used when test = TRUE
   .x <- x
   
-  type <- match.arg(type, c('d', 'db', 'bd', 'b'), several.ok = TRUE)
+  type <- match.arg(type, c('d', 'db', 'bd', 'b', 'v', 'vd', 'dv', 'n'),
+                    several.ok = TRUE)
   ## type of plot for each group
   type <- rep_len(type, ng)
   
@@ -530,6 +548,7 @@ tplot.default <- function(x, g, ..., type = 'db',
   Lme <- 0.2 * c(-1, 1)
   
   for (i in seq.int(ng)) {
+    f <- ifelse(grepl('v', type[i]), 'localVplot', 'boxplot')
     p <- groups[[i]]
     if (!nrow(p))
       next
@@ -537,14 +556,16 @@ tplot.default <- function(x, g, ..., type = 'db',
     x <- rep_len(at[i], nrow(p)) + jit_(p$g.si, p$hmsf) * jit[i]
     
     ## dots behind
-    if (type[i] == 'bd') {
+    if (type[i] %in% c('bd', 'n', 'vd')) {
       bp <- do.call(
-        'boxplot',
+        f,
         c(list(x = y, at = at[i], plot = FALSE, add = FALSE,
                axes = FALSE, col = boxcol[i], border = boxborder[i],
                outline = FALSE, horizontal = horizontal),
           boxplot.pars)
       )
+      if (type[i] == 'n')
+        next
       
       notoplot <- (y <= bp$stats[5L, ]) & (y >= bp$stats[1L, ])
       
@@ -564,9 +585,9 @@ tplot.default <- function(x, g, ..., type = 'db',
     }
     
     ## box in front
-    if (type[i] %in% c('bd', 'b')) {
+    if (type[i] %in% c('bd', 'b', 'v', 'vd')) {
       bp <- do.call(
-        'boxplot',
+        f,
         c(list(x = y, at = at[i], add = TRUE, axes = FALSE,
                col = boxcol[i], border = boxborder[i],
                outline = FALSE, horizontal = horizontal),
@@ -591,9 +612,9 @@ tplot.default <- function(x, g, ..., type = 'db',
     }
     
     ## box behind
-    if (type[i] == 'db')
+    if (type[i] %in% c('db', 'dv'))
       bp <- do.call(
-        'boxplot',
+        f,
         c(list(x = y, at = at[i], add = TRUE, axes = FALSE,
                col = boxcol[i], border = boxborder[i],
                outline = FALSE, horizontal = horizontal),
@@ -601,7 +622,7 @@ tplot.default <- function(x, g, ..., type = 'db',
       )
     
     ## dots in front
-    if (type[i] %in% c('db', 'd')) {
+    if (type[i] %in% c('db', 'd', 'dv')) {
       do.call(
         'localPoints',
         if (horizontal)
@@ -652,7 +673,11 @@ tplot.default <- function(x, g, ..., type = 'db',
     
     ## defaults passed to mtext
     targs <- list(
-      text = pvalr(pv$p.value, show.p = TRUE),
+      text = if (isTRUE(format_pval))
+        pvalr(pv$p.value, show.p = TRUE)
+      else if (identical(format_pval, FALSE))
+        pv$p.value
+      else format_pval(pv$p.value),
       side = 3L, line = 0.5, cex = 1.2,
       at = par('usr')[2L], font = 3L, adj = 1
     )
@@ -2461,6 +2486,117 @@ heatmap.3 <- function(x,
                  'row dend', 'col dend', 'key'),
           sep = ': ')
   res$layout <- list(lmat = lmat, lhei = lhei, lwid = lwid)
+  
+  invisible(res)
+}
+
+vioplot <- function(x, range = 1.5, xlim = NULL, ylim = NULL, names,
+                    axes = TRUE, frame.plot = axes, horizontal = FALSE,
+                    col = 'lightgrey', border = par('fg'), lty = 1L,
+                    lwd = 1, boxcol = 'black', medcol = 'white', medpch = 21L,
+                    at, add = FALSE, width = 0.5, boxplot = TRUE,
+                    dFUN = c('density', 'sm.density'), plot = TRUE, ...) {
+  x <- if (inherits(x, 'list'))
+    x else list(x)
+  n <- length(x)
+  if (missing(at)) 
+    at <- seq_along(x)
+  label <- if (missing(names))
+    seq_along(x) else names
+  dFUN <- match.arg(dFUN)
+  
+  data <- lapply(x, function(y) {
+    s <- summary(y)
+    u <- min(s[5L] + range * IQR(y), s[6L])
+    l <- max(s[2L] - range * IQR(y), s[1L])
+    
+    xl <- c(min(l, s[1L]), max(u, s[6L]))
+    dn <- tryCatch(
+      switch(
+        dFUN,
+        density = stats::density(y, from = xl[1L], to = xl[2L]),
+        sm.density = sm::sm.density(y, xlim = xl, display = 'none')
+      ),
+      error = function(e) {
+        warning(e$message, call. = FALSE)
+        list(NA, NA)
+      }
+    )
+    list(x = dn[[1L]], y = dn[[2L]] * 0.4 / max(dn[[2L]]) * width,
+         u = u, l = l, ylim = suppressWarnings(range(dn[[1L]], na.rm = TRUE)),
+         stats = summary(y))
+  })
+  
+  stats <- sapply(data, `[[`, 'stats')
+  res   <- boxplot(x, plot = FALSE, horizontal = horizontal, names = label)
+  
+  if (!plot)
+    return(invisible(res))
+  
+  boxwex <- 0.05 * width
+  yl <- sapply(data, `[[`, 'ylim')
+  yl <- c(min(yl[1L, ], na.rm = TRUE), max(yl[2L, ], na.rm = TRUE))
+  xlim <- if (is.null(xlim))
+    if (n == 1L)
+      at + c(-0.5, 0.5) else range(at) + c(-0.5, 0.5)
+  else xlim
+  ylim <- if (is.null(ylim))
+    yl else ylim
+  
+  if (!add) {
+    plot.new()
+    op <- par(..., no.readonly = TRUE)
+    on.exit(par(op))
+    
+    if (horizontal) {
+      plot.window(ylim, xlim)
+      if (axes) {
+        axis(1L)
+        axis(2L, at, label)
+      }
+    } else {
+      plot.window(xlim, ylim)
+      if (axes) {
+        axis(1L, at, label)
+        axis(2L)
+      }
+    }
+    if (frame.plot)
+      box()
+  }
+  
+  for (ii in seq_along(x)) {
+    x <- data[[ii]]$x
+    y <- data[[ii]]$y
+    
+    if (horizontal) {
+      if (!identical(x, NA))
+        polygon(c(x, rev(x)), c(at[ii] - y, rev(at[ii] + y)),
+                col = col, border = border, lty = lty, lwd = lwd)
+      
+      if (boxplot) {
+        lines(c(data[[ii]]$l, data[[ii]]$u), rep_len(at[ii], 2L),
+              lwd = lwd, lty = lty)
+        rect(stats[2L, ii], at[ii] - boxwex / 2,
+             stats[5L, ii], at[ii] + boxwex / 2,
+             col = boxcol)
+        points(stats[3L, ii], at[ii], bg = medcol, col = 1L, pch = medpch)
+      }
+    } else {
+      if (!identical(x, NA))
+        polygon(c(at[ii] - y, rev(at[ii] + y)), c(x, rev(x)),
+                col = col, border = border, lty = lty, lwd = lwd)
+      
+      if (boxplot) {
+        lines(rep_len(at[ii], 2L), c(data[[ii]]$l, data[[ii]]$u),
+              lwd = lwd, lty = lty)
+        rect(at[ii] - boxwex / 2, stats[2L, ii],
+             at[ii] + boxwex / 2, stats[5L, ii],
+             col = boxcol)
+        points(at[ii], stats[3L, ii], bg = medcol, col = 1L, pch = medpch)
+      }
+    }
+  }
   
   invisible(res)
 }

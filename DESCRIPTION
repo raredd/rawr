@@ -28,6 +28,7 @@ Suggests:
     notifier,
     parallel,
     rstudioapi,
+    sm,
     testthat
 License: GPL-2
 LazyData: yes

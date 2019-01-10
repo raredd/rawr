@@ -16,8 +16,9 @@ tplot(x, ...)
   mean.line = FALSE, median.pars = list(), mean.pars = list(),
   boxplot.pars = list(), show.n = TRUE, show.na = show.n, cex.n = cex,
   text.na = "missing", test = FALSE, args.test = list(),
-  ann = par("ann"), axes = TRUE, frame.plot = axes, add = FALSE, at,
-  horizontal = FALSE, panel.first = NULL, panel.last = NULL)
+  format_pval = TRUE, ann = par("ann"), axes = TRUE, frame.plot = axes,
+  add = FALSE, at, horizontal = FALSE, panel.first = NULL,
+  panel.last = NULL)
 
 \method{tplot}{formula}(formula, data = NULL, ..., subset, na.action = NULL,
   panel.first = NULL, panel.last = NULL)
@@ -30,7 +31,9 @@ tplot(x, ...)
 \item{g}{a vector or factor object giving the group for the corresponding
 elements of \code{x}, ignored with a warning if \code{x} is a list}
 
-\item{type}{type of plot (dot, dot-box, box-dot, box)}
+\item{type}{type of plot (\code{"d"} for dot, \code{"db"} for dot-box,
+\code{"bd"} for box-dot, or \code{"b"} box; \code{"v"} may be used instead
+of \code{"b"} for a violin plot)}
 
 \item{jit, dist}{jitter parameters for overlapping points (use \code{0} for
 no jitter (i.e., points may overlap) and values > 0 for more distance
@@ -59,18 +62,18 @@ points, i.e., a group of sequential points that are no more than
 
 \item{pch}{plotting character}
 
-\item{group.pch}{logical; if \code{TRUE}, \code{pch} by group; o/w, by order}
+\item{group.pch}{logical; if \code{TRUE}, \code{pch} by group; otherwise
+by order}
 
 \item{cex}{\strong{c}haracter \strong{ex}pansion value}
 
-\item{group.cex}{logical; if \code{TRUE}, groups will use the same
-\code{cex} value; otherwise, points will have individual values, recycled if
-necessary}
+\item{group.cex}{logical; if \code{TRUE}, groups use the same \code{cex}
+value; otherwise, points have individual values, recycled if necessary}
 
 \item{median.line, mean.line}{logical; draw median, mean lines}
 
-\item{median.pars, mean.pars}{list of graphical parameters for median, mean
-lines}
+\item{median.pars, mean.pars}{lists of graphical parameters for median and
+mean lines}
 
 \item{boxplot.pars}{additional list of graphical parameters for box plots}
 
@@ -91,6 +94,11 @@ at least two arguments with the numeric data values and group}
 
 \item{args.test}{an optional \emph{named} list of \code{\link{mtext}}
 arguments controlling the \code{test} text}
+
+\item{format_pval}{logical; if \code{TRUE}, p-values are formatted with
+\code{\link{pvalr}}; if \code{FALSE}, no formatting is performed;
+alternatively, a function can be passed which should take a numeric value
+and return a character string (or a value to be coerced) for printing}
 
 \item{ann}{logical; annotate plot}
 
@@ -156,6 +164,12 @@ tplot(x, g)
 tplot(split(x, g))
 tplot(x ~ g)
 tplot(mpg ~ gear + vs, mtcars)
+
+
+## options for box, violin, dots
+types <- c('d', 'db', 'bd', 'b', 'v', 'vd', 'dv', 'n')
+l <- lapply(types, function(...) mtcars$mpg)
+tplot(l, type = types, names = types, xlab = 'type = \\'x\\'')
 
 
 ## horizontal plots may cut off show.n/show.na text
