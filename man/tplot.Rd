@@ -172,7 +172,7 @@ tplot(mpg ~ gear + vs, mtcars)
 ## options for box, violin, dots
 types <- c('d', 'db', 'bd', 'b', 'v', 'vd', 'dv', 'dbv', 'bv', 'n')
 l <- lapply(types, function(...) mtcars$mpg)
-tplot(l, type = types, names = types, xlab = 'type = \\'x\\'')
+tplot(l, type = types, names = types, xlab = 'tplot(x, type = ...)')
 
 
 ## horizontal plots may cut off show.n/show.na text
@@ -214,15 +214,14 @@ tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd', show.na = FALSE,
 ## example with missing data
 set.seed(1)
 dat <- data.frame(
-  age   = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
+  age   = replace(rnorm(80, rep(c(26, 36), c(70, 10)), 4), 1:5, NA),
   sex   = factor(sample(c('Female', 'Male'), 80, replace = TRUE)),
   group = paste0('Group ', sample(1:4, 80, prob = c(2, 5, 4, 1),
                                   replace = TRUE))
 )
-dat[1:5, 'age'] <- NA
 
 tplot(age ~ group, data = dat, las = 1, cex.axis = 1, bty = 'L',
-      type = c('db', 'db', 'db', 'd'), names = LETTERS[1:4],
+      type = c('db', 'dv', 'dbv', 'bv'), names = LETTERS[1:4],
       text.na = 'n/a', ## default is 'missing'
       group.pch = TRUE, pch = c(15, 17, 19, 8),
       group.col = FALSE, col = c('darkred', 'darkblue')[sex],

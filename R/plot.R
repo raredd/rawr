@@ -283,7 +283,7 @@ jmplot <- function(x, y, z,
 #' ## options for box, violin, dots
 #' types <- c('d', 'db', 'bd', 'b', 'v', 'vd', 'dv', 'dbv', 'bv', 'n')
 #' l <- lapply(types, function(...) mtcars$mpg)
-#' tplot(l, type = types, names = types, xlab = 'type = \'x\'')
+#' tplot(l, type = types, names = types, xlab = 'tplot(x, type = ...)')
 #' 
 #' 
 #' ## horizontal plots may cut off show.n/show.na text
@@ -325,15 +325,14 @@ jmplot <- function(x, y, z,
 #' ## example with missing data
 #' set.seed(1)
 #' dat <- data.frame(
-#'   age   = rnorm(80, rep(c(26, 36), c(70, 10)), 4),
+#'   age   = replace(rnorm(80, rep(c(26, 36), c(70, 10)), 4), 1:5, NA),
 #'   sex   = factor(sample(c('Female', 'Male'), 80, replace = TRUE)),
 #'   group = paste0('Group ', sample(1:4, 80, prob = c(2, 5, 4, 1),
 #'                                   replace = TRUE))
 #' )
-#' dat[1:5, 'age'] <- NA
 #' 
 #' tplot(age ~ group, data = dat, las = 1, cex.axis = 1, bty = 'L',
-#'       type = c('db', 'db', 'db', 'd'), names = LETTERS[1:4],
+#'       type = c('db', 'dv', 'dbv', 'bv'), names = LETTERS[1:4],
 #'       text.na = 'n/a', ## default is 'missing'
 #'       group.pch = TRUE, pch = c(15, 17, 19, 8),
 #'       group.col = FALSE, col = c('darkred', 'darkblue')[sex],
@@ -549,8 +548,13 @@ tplot.default <- function(x, g, ..., type = 'db',
   
   for (i in seq.int(ng)) {
     boxFUN <- ifelse(grepl('v', type[i]), 'localVplot', 'boxplot')
-    if (grepl('b', type[i]) & grepl('v', type[i]))
-      boxplot.pars <- modifyList(boxplot.pars, list(boxplot = TRUE))
+    
+    if (grepl('v', type[i])) {
+      if (grepl('b', type[i]))
+        boxplot.pars <- modifyList(boxplot.pars, list(boxplot = TRUE))
+      if (grepl('v', type[i]))
+        boxplot.pars <- modifyList(boxplot.pars, list(viocol = boxcol[i]))
+    }
     
     p <- groups[[i]]
     if (!nrow(p))
@@ -2495,7 +2499,7 @@ heatmap.3 <- function(x,
 
 vioplot <- function(x, range = 1.5, xlim = NULL, ylim = NULL, names, plot = TRUE,
                     axes = TRUE, frame.plot = axes, horizontal = FALSE,
-                    viocol = 'lightgrey', border = par('fg'), lty = 1L, lwd = 1,
+                    viocol = 'grey90', border = par('fg'), lty = 1L, lwd = 1,
                     boxcol = border, at, add = FALSE, viowex = 1, boxwex = viowex / 4,
                     boxplot = FALSE, dFUN = c('density', 'sm.density'), ...) {
   x <- ox <- if (inherits(x, 'list'))
