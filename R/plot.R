@@ -166,8 +166,10 @@ jmplot <- function(x, y, z,
 
 #' tplot
 #' 
-#' An alternative to \code{\link{boxplot}}. The individual data can be shown
-#' (either in the foreground or background) with jittering if necessary.
+#' An alternative to \code{\link{boxplot}} with additional annotations,
+#' hypothesis testing, and panel expressions. The individual data points can
+#' be shown (either in the foreground or background) with point-dodging.
+#' Violin plots with optional boxplots (and/or points) may also be shown.
 #' 
 #' @param x a numeric vector or a single list containing such vectors
 #' @param g a vector or factor object giving the group for the corresponding
@@ -185,8 +187,8 @@ jmplot <- function(x, y, z,
 #' the response or the group
 #' @param type type of plot (\code{"d"} for dot, \code{"db"} for dot-box,
 #' \code{"bd"} for box-dot, or \code{"b"} box; \code{"v"} may be used instead
-#' of \code{"b"} for a violin plot)
-#' @param main,sub overall title and sub-title for the plot (below x-axis)
+#' of \code{"b"} for a violin plot); see examples for all options
+#' @param main,sub overall title and sub-title (below x-axis) for the plot
 #' @param xlab,ylab x- and y-axis labels
 #' @param xlim,ylim x- and y-axis limits
 #' @param names group labels
@@ -260,6 +262,8 @@ jmplot <- function(x, y, z,
 #' elements indicate to which group the outlier belongs.}
 #' \item{\code{$names}}{a vector of names for the groups.}
 #'
+#' @aliases vioplot
+#' 
 #' @seealso
 #' \href{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}{Tatsuki
 #' \code{tplot}}; \href{http://data.vanderbilt.edu/~graywh/dotplot/}{web app
@@ -277,7 +281,7 @@ jmplot <- function(x, y, z,
 #' 
 #' 
 #' ## options for box, violin, dots
-#' types <- c('d', 'db', 'bd', 'b', 'v', 'vd', 'dv', 'n')
+#' types <- c('d', 'db', 'bd', 'b', 'v', 'vd', 'dv', 'dbv', 'bv', 'n')
 #' l <- lapply(types, function(...) mtcars$mpg)
 #' tplot(l, type = types, names = types, xlab = 'type = \'x\'')
 #' 
@@ -439,8 +443,8 @@ tplot.default <- function(x, g, ..., type = 'db',
   ## .x used when test = TRUE
   .x <- x
   
-  type <- match.arg(type, c('d', 'db', 'bd', 'b', 'v', 'vd', 'dv', 'n'),
-                    several.ok = TRUE)
+  opts <- c('d', 'db', 'bd', 'b', 'v', 'vd', 'dv', 'dbv', 'bv', 'n')
+  type <- match.arg(type, opts, several.ok = TRUE)
   ## type of plot for each group
   type <- rep_len(type, ng)
   
@@ -539,16 +543,15 @@ tplot.default <- function(x, g, ..., type = 'db',
       do.call('localWindow', c(list(xlim, ylim), pars))
   }
   
-  # if (show.n && horizontal) {
-  #   op <- par(mar = par('mar') + c(0, 0, 0, 5))
-  #   on.exit(par(op))
-  # }
   panel.first
   
   Lme <- 0.2 * c(-1, 1)
   
   for (i in seq.int(ng)) {
-    f <- ifelse(grepl('v', type[i]), 'localVplot', 'boxplot')
+    boxFUN <- ifelse(grepl('v', type[i]), 'localVplot', 'boxplot')
+    if (grepl('b', type[i]) & grepl('v', type[i]))
+      boxplot.pars <- modifyList(boxplot.pars, list(boxplot = TRUE))
+    
     p <- groups[[i]]
     if (!nrow(p))
       next
@@ -558,7 +561,7 @@ tplot.default <- function(x, g, ..., type = 'db',
     ## dots behind
     if (type[i] %in% c('bd', 'n', 'vd')) {
       bp <- do.call(
-        f,
+        boxFUN,
         c(list(x = y, at = at[i], plot = FALSE, add = FALSE,
                axes = FALSE, col = boxcol[i], border = boxborder[i],
                outline = FALSE, horizontal = horizontal),
@@ -585,9 +588,9 @@ tplot.default <- function(x, g, ..., type = 'db',
     }
     
     ## box in front
-    if (type[i] %in% c('bd', 'b', 'v', 'vd')) {
+    if (type[i] %in% c('bd', 'b', 'v', 'vd', 'bv')) {
       bp <- do.call(
-        f,
+        boxFUN,
         c(list(x = y, at = at[i], add = TRUE, axes = FALSE,
                col = boxcol[i], border = boxborder[i],
                outline = FALSE, horizontal = horizontal),
@@ -612,9 +615,9 @@ tplot.default <- function(x, g, ..., type = 'db',
     }
     
     ## box behind
-    if (type[i] %in% c('db', 'dv'))
+    if (type[i] %in% c('db', 'dv', 'dbv'))
       bp <- do.call(
-        f,
+        boxFUN,
         c(list(x = y, at = at[i], add = TRUE, axes = FALSE,
                col = boxcol[i], border = boxborder[i],
                outline = FALSE, horizontal = horizontal),
@@ -622,7 +625,7 @@ tplot.default <- function(x, g, ..., type = 'db',
       )
     
     ## dots in front
-    if (type[i] %in% c('db', 'd', 'dv')) {
+    if (type[i] %in% c('db', 'd', 'dv', 'dbv')) {
       do.call(
         'localPoints',
         if (horizontal)
@@ -2490,112 +2493,78 @@ heatmap.3 <- function(x,
   invisible(res)
 }
 
-vioplot <- function(x, range = 1.5, xlim = NULL, ylim = NULL, names,
+vioplot <- function(x, range = 1.5, xlim = NULL, ylim = NULL, names, plot = TRUE,
                     axes = TRUE, frame.plot = axes, horizontal = FALSE,
-                    col = 'lightgrey', border = par('fg'), lty = 1L,
-                    lwd = 1, boxcol = 'black', medcol = 'white', medpch = 21L,
-                    at, add = FALSE, width = 0.5, boxplot = TRUE,
-                    dFUN = c('density', 'sm.density'), plot = TRUE, ...) {
-  x <- if (inherits(x, 'list'))
-    x else list(x)
+                    viocol = 'lightgrey', border = par('fg'), lty = 1L, lwd = 1,
+                    boxcol = border, at, add = FALSE, viowex = 1, boxwex = viowex / 4,
+                    boxplot = FALSE, dFUN = c('density', 'sm.density'), ...) {
+  x <- ox <- if (inherits(x, 'list'))
+    x else if (is.data.frame(x))
+      as.list(x) else list(x)
   n <- length(x)
-  if (missing(at)) 
-    at <- seq_along(x)
+  at <- if (missing(at)) 
+    seq_along(x) else at
   label <- if (missing(names))
     seq_along(x) else names
   dFUN <- match.arg(dFUN)
   
-  data <- lapply(x, function(y) {
-    s <- summary(y)
-    u <- min(s[5L] + range * IQR(y), s[6L])
-    l <- max(s[2L] - range * IQR(y), s[1L])
-    
-    xl <- c(min(l, s[1L]), max(u, s[6L]))
-    dn <- tryCatch(
-      switch(
-        dFUN,
-        density = stats::density(y, from = xl[1L], to = xl[2L]),
-        sm.density = sm::sm.density(y, xlim = xl, display = 'none')
-      ),
-      error = function(e) {
-        warning(e$message, call. = FALSE)
-        list(NA, NA)
-      }
-    )
-    list(x = dn[[1L]], y = dn[[2L]] * 0.4 / max(dn[[2L]]) * width,
-         u = u, l = l, ylim = suppressWarnings(range(dn[[1L]], na.rm = TRUE)),
-         stats = summary(y))
-  })
-  
-  stats <- sapply(data, `[[`, 'stats')
   res   <- boxplot(x, plot = FALSE, horizontal = horizontal, names = label)
+  stats <- res$stats
   
   if (!plot)
     return(invisible(res))
   
-  boxwex <- 0.05 * width
-  yl <- sapply(data, `[[`, 'ylim')
-  yl <- c(min(yl[1L, ], na.rm = TRUE), max(yl[2L, ], na.rm = TRUE))
+  ylim <- if (is.null(ylim))
+    range(c(c(stats), res$out)) else ylim
   xlim <- if (is.null(xlim))
     if (n == 1L)
       at + c(-0.5, 0.5) else range(at) + c(-0.5, 0.5)
   else xlim
-  ylim <- if (is.null(ylim))
-    yl else ylim
   
   if (!add) {
     plot.new()
     op <- par(..., no.readonly = TRUE)
     on.exit(par(op))
     
-    if (horizontal) {
-      plot.window(ylim, xlim)
-      if (axes) {
-        axis(1L)
-        axis(2L, at, label)
-      }
-    } else {
-      plot.window(xlim, ylim)
-      if (axes) {
-        axis(1L, at, label)
-        axis(2L)
-      }
+    if (horizontal)
+      plot.window(ylim, xlim) else plot.window(xlim, ylim)
+    if (axes) {
+      axis((!horizontal) + 1L)
+      axis(horizontal + 1L, at, label)
     }
     if (frame.plot)
       box()
   }
   
   for (ii in seq_along(x)) {
-    x <- data[[ii]]$x
-    y <- data[[ii]]$y
+    xl <- range(ox[[ii]], na.rm = TRUE)
+    dn <- tryCatch(
+      switch(
+        dFUN,
+        density    = stats::density(ox[[ii]], from = xl[1L], to = xl[2L]),
+        sm.density = sm::sm.density(ox[[ii]], xlim = xl, display = 'none')
+      ),
+      error = function(e) {
+        warning(e$message, call. = FALSE)
+        list(NA, NA)
+      }
+    )
     
-    if (horizontal) {
-      if (!identical(x, NA))
-        polygon(c(x, rev(x)), c(at[ii] - y, rev(at[ii] + y)),
-                col = col, border = border, lty = lty, lwd = lwd)
-      
-      if (boxplot) {
-        lines(c(data[[ii]]$l, data[[ii]]$u), rep_len(at[ii], 2L),
-              lwd = lwd, lty = lty)
-        rect(stats[2L, ii], at[ii] - boxwex / 2,
-             stats[5L, ii], at[ii] + boxwex / 2,
-             col = boxcol)
-        points(stats[3L, ii], at[ii], bg = medcol, col = 1L, pch = medpch)
-      }
-    } else {
-      if (!identical(x, NA))
-        polygon(c(at[ii] - y, rev(at[ii] + y)), c(x, rev(x)),
-                col = col, border = border, lty = lty, lwd = lwd)
-      
-      if (boxplot) {
-        lines(rep_len(at[ii], 2L), c(data[[ii]]$l, data[[ii]]$u),
-              lwd = lwd, lty = lty)
-        rect(at[ii] - boxwex / 2, stats[2L, ii],
-             at[ii] + boxwex / 2, stats[5L, ii],
-             col = boxcol)
-        points(at[ii], stats[3L, ii], bg = medcol, col = 1L, pch = medpch)
-      }
-    }
+    x <- dn[[1L]]
+    y <- dn[[2L]] / max(dn[[2L]]) * viowex / 5
+    l <- list(x = c(at[ii] - y, rev(at[ii] + y)), y = c(x, rev(x)))
+    
+    if (horizontal)
+      names(l) <- rev(names(l))
+    
+    if (!identical(x, NA))
+      do.call('polygon', c(l, col = viocol, border = border))
+    
+    boxplot(
+      ox[[ii]], at = at[ii], add = TRUE, axes = FALSE, plot = boxplot,
+      border = border, boxcol = boxcol, outline = FALSE, boxwex = boxwex,
+      horizontal = horizontal
+    )
   }
   
   invisible(res)

@@ -2,6 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{tplot}
 \alias{tplot}
+\alias{vioplot}
 \alias{tplot.default}
 \alias{tplot.formula}
 \title{tplot}
@@ -33,7 +34,7 @@ elements of \code{x}, ignored with a warning if \code{x} is a list}
 
 \item{type}{type of plot (\code{"d"} for dot, \code{"db"} for dot-box,
 \code{"bd"} for box-dot, or \code{"b"} box; \code{"v"} may be used instead
-of \code{"b"} for a violin plot)}
+of \code{"b"} for a violin plot); see examples for all options}
 
 \item{jit, dist}{jitter parameters for overlapping points (use \code{0} for
 no jitter (i.e., points may overlap) and values > 0 for more distance
@@ -46,7 +47,7 @@ and \code{dist} controls the size of the interval to group neighboring
 points, i.e., a group of sequential points that are no more than
 \code{dist} apart are considered neighbors and will be jittered}
 
-\item{main, sub}{overall title and sub-title for the plot (below x-axis)}
+\item{main, sub}{overall title and sub-title (below x-axis) for the plot}
 
 \item{xlab, ylab}{x- and y-axis labels}
 
@@ -152,8 +153,10 @@ elements indicate to which group the outlier belongs.}
 \item{\code{$names}}{a vector of names for the groups.}
 }
 \description{
-An alternative to \code{\link{boxplot}}. The individual data can be shown
-(either in the foreground or background) with jittering if necessary.
+An alternative to \code{\link{boxplot}} with additional annotations,
+hypothesis testing, and panel expressions. The individual data points can
+be shown (either in the foreground or background) with point-dodging.
+Violin plots with optional boxplots (and/or points) may also be shown.
 }
 \examples{
 ## these are equivalent ways to call tplot
@@ -167,7 +170,7 @@ tplot(mpg ~ gear + vs, mtcars)
 
 
 ## options for box, violin, dots
-types <- c('d', 'db', 'bd', 'b', 'v', 'vd', 'dv', 'n')
+types <- c('d', 'db', 'bd', 'b', 'v', 'vd', 'dv', 'dbv', 'bv', 'n')
 l <- lapply(types, function(...) mtcars$mpg)
 tplot(l, type = types, names = types, xlab = 'type = \\'x\\'')
 
