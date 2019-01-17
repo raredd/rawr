@@ -6,11 +6,11 @@
 \usage{
 tabler_stat2(data, varname, byvar, varname_label = names(varname),
   byvar_label = names(byvar), digits = NULL, FUN = NULL,
-  format_pval = TRUE, color_pval = TRUE, color_missing = TRUE,
-  dagger = TRUE, group = NULL, color_cell_by = "none",
-  cell_color = c("black", "red"), statArgs = NULL, align = NULL,
-  rgroup = NULL, cgroup = NULL, tfoot = NULL, htmlArgs = NULL,
-  zeros = "-")
+  format_pval = TRUE, color_pval = TRUE, correct = FALSE,
+  color_missing = TRUE, dagger = TRUE, group = NULL,
+  color_cell_by = "none", cell_color = c("black", "red"), statArgs = NULL,
+  align = NULL, rgroup = NULL, cgroup = NULL, tfoot = NULL,
+  htmlArgs = NULL, zeros = "-")
 }
 \arguments{
 \item{data}{a matrix or data frame with variables \code{varname} and
@@ -43,6 +43,10 @@ will be applied to each p-value}
 
 \item{color_pval, color_missing, dagger}{\code{NULL} or vectors, recycled as
 needed for each \code{varname}; see \code{\link{tabler_stat}}}
+
+\item{correct}{logical or one of \code{\link{p.adjust.methods}}; if p-value
+correction is desired, a column is added to the table with the corrected
+p-values}
 
 \item{group}{a \emph{named} vector of variables (either index of or a
 value in \code{varname}) to begin a new group (see \code{tspanner} in

@@ -1723,6 +1723,9 @@ guess_test <- function(x, y, n_unique_x = 10L) {
 #' will be applied to each p-value
 #' @param color_pval,color_missing,dagger \code{NULL} or vectors, recycled as
 #' needed for each \code{varname}; see \code{\link{tabler_stat}}
+#' @param correct logical or one of \code{\link{p.adjust.methods}}; if p-value
+#' correction is desired, a column is added to the table with the corrected
+#' p-values
 #' @param group a \emph{named} vector of variables (either index of or a
 #' value in \code{varname}) to begin a new group (see \code{tspanner} in
 #' \code{\link[htmlTable]{htmlTable}})
@@ -1785,7 +1788,7 @@ guess_test <- function(x, y, n_unique_x = 10L) {
 
 tabler_stat2 <- function(data, varname, byvar, varname_label = names(varname),
                          byvar_label = names(byvar), digits = NULL, FUN = NULL,
-                         format_pval = TRUE, color_pval = TRUE,
+                         format_pval = TRUE, color_pval = TRUE, correct = FALSE,
                          color_missing = TRUE, dagger = TRUE,
                          group = NULL, color_cell_by = 'none',
                          cell_color = c('black', 'red'), statArgs = NULL,
@@ -1819,7 +1822,9 @@ tabler_stat2 <- function(data, varname, byvar, varname_label = names(varname),
     color_cell_by, cell_color, statArgs
   )
   
-  tabler_stat_html(l, align, rgroup, cgroup, tfoot, htmlArgs, zeros, group)
+  tabler_stat_html(
+    l, align, rgroup, cgroup, tfoot, htmlArgs, zeros, group, correct
+  )
 }
 
 tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
@@ -1902,7 +1907,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
 
 tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
                              tfoot = NULL, htmlArgs = NULL, zeros = NULL,
-                             group = NULL) {
+                             group = NULL, correct = FALSE) {
   stopifnot(
     inherits(l, 'htmlStat')
   )
@@ -1946,6 +1951,21 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
     )
   }
   
+  ## extract p-values and use correction method
+  method <- if (isTRUE(correct))
+    'fdr' else if (is.character(correct)) correct else 'none'
+  pvn <- lapply(seq_along(l$l), function(ii) attr(l$l[[ii]], 'p.value'))
+  if (!identical(correct, FALSE)) {
+    nc  <- ncol(res)
+    wh  <- nzchar(res[, nc])
+    pvc <- p.adjust(pvn, method = method)
+    res <- cbind(res, res[, nc])
+    res[, nc + 1L][wh] <- color_pval(pvc)
+    colnames(res)[nc + 1L] <-
+      gsub('(?=p)', paste(method, ''), colnames(res)[nc], perl = TRUE)
+    l$n.cgroup[length(l$n.cgroup)] <- l$n.cgroup[length(l$n.cgroup)] + 1L
+  }
+  
   ht <- do.call(
     htmlTable::htmlTable,
     c(list(
@@ -1957,7 +1977,7 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
       htmlArgs)
   )
   
-  structure(ht, class = 'htmlTable')
+  structure(ht, class = 'htmlTable', p.value = pvn)
 }
 
 guess_digits <- function(x, default = 0L) {
