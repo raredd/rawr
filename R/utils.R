@@ -2224,6 +2224,9 @@ droplevels2 <- function(x, min_level = 1L,
 #' ## use a named list to get the same as above
 #' combine_levels(x, list(a = 1:2, b = 3))
 #' 
+#' ## use NULL list to combine others
+#' combine_levels(x, list(others = NULL, b = 3))
+#' 
 #' 
 #' ## characters and factors
 #' combine_levels(LETTERS[x], list(x = 'C'))
@@ -2265,6 +2268,9 @@ combine_levels <- function(x, levels, labels = NULL, regex = FALSE, ...) {
   
   levels <- if (islist(levels))
     levels else list(levels)
+  levels <- lapply(levels, function(y)
+    if (is.null(y))
+      setdiff(x, unlist(levels)) else y)
   
   ## create unique labels (hopefully) distinct from any of levels
   labels  <- lapply(as.list(labels %||% names(levels)), as.character)

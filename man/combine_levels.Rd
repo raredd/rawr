@@ -65,6 +65,9 @@ combine_levels(x, list(1:2, 3), c('a', 'b'))
 ## use a named list to get the same as above
 combine_levels(x, list(a = 1:2, b = 3))
 
+## use NULL list to combine others
+combine_levels(x, list(others = NULL, b = 3))
+
 
 ## characters and factors
 combine_levels(LETTERS[x], list(x = 'C'))
