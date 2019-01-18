@@ -398,11 +398,11 @@ tplot.default <- function(x, g, ..., type = 'db',
     if (is.list(x))
       message('\'x\' is a list -- \'g\' will be ignored', domain = NA)
     else {
-        if (is.null(ylab))
-          ylab <- deparse(substitute(x))
-        if (is.null(xlab))
-          xlab <- deparse(substitute(g))
-        x <- split(x, g)
+      if (is.null(ylab))
+        ylab <- deparse(substitute(x))
+      if (is.null(xlab))
+        xlab <- deparse(substitute(g))
+      x <- split(x, g)
     }
   } else {
     if (is.null(xlab))

@@ -1,6 +1,6 @@
 ### plot utils, helpers for plotting functions
 # unexported:
-# %|%, do_sub_, dodge_, jit_, grouping_, do_rect_, do_seg_
+# %|%, do_sub_, dodge_, grouping_, jit_, do_rect_, do_seg_
 ###
 
 
@@ -13,30 +13,31 @@ do_sub_ <- function(x, n, s) {
 
 dodge_ <- function(x, at, dist, jit) {
   ## add jitter to points in a single group and return adjusted values
-  # dodge_(rep(1, 5), rep(1, 5), .1, .1)
+  # rawr:::dodge_(rep(1, 5), rep(1, 5), .1, .1)
   x <- x[nas <- !is.na(x)]
   gr <- grouping_(x, dist)
   offset <- jit_(gr$g.si, gr$hmsf) * jit
   data.frame(x = at + (offset - mean(offset)), y = gr$vs)
 }
 
-jit_ <- function(g.si, hmsf) {
-  hmsf - (g.si + 1) / 2
-}
-
 grouping_ <- function(v, dif) {
   ## turn values in each group into their plotting points
-  # grouping_(rep(1:2, 4), .1)
+  # rawr:::grouping_(rep(1:2, 4), .1)
   hmsf_ <- function(x)
     ave(x, x, FUN = seq_along)
   vs <- sort(v)
   together <- c(FALSE, diff(vs) <=  dif)
+  together[is.na(together)] <- FALSE
   g.id <- cumsum(!together)
   g.si <- rep(x <- as.vector(table(g.id)), x)
   vg <- cbind(vs = vs, g.id = g.id, g.si = g.si)[rank(v), ]
   if (length(v) == 1L)
     vg <- as.data.frame(t(vg))
   data.frame(vg, hmsf = hmsf_(vg[, 2L]))
+}
+
+jit_ <- function(g.si, hmsf) {
+  hmsf - (g.si + 1) / 2
 }
 
 do_rect_ <- function(n, x, y, single = FALSE, border = NA, col = NA,
