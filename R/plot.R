@@ -207,6 +207,11 @@ jmplot <- function(x, y, z,
 #' points, i.e., a group of sequential points that are no more than
 #' \code{dist} apart are considered neighbors and will be jittered
 #' @param boxplot.pars additional list of graphical parameters for box plots
+#' (or violin plots)
+#' @param quantiles for violin plots, probabilities for quantile lines (as an
+#' alternative to box plots); note \code{lwd}/\code{lty} may be passed via
+#' \code{boxplot.pars} (e.g., \code{boxplot.pars = list(lwd = c(.5, 2, .5),
+#' lty = 2)})
 #' @param col plotting color
 #' @param group.col logical; if \code{TRUE}, color by group; otherwise by order
 #' @param boxcol,bordercol box fill and border colors
@@ -333,6 +338,7 @@ jmplot <- function(x, y, z,
 #' 
 #' tplot(age ~ group, data = dat, las = 1, cex.axis = 1, bty = 'L',
 #'       type = c('db', 'dv', 'dbv', 'bv'), names = LETTERS[1:4],
+#'       quantiles = c(0.25, 0.5, 0.75), ## quantile lines for vioplots
 #'       text.na = 'n/a', ## default is 'missing'
 #'       group.pch = TRUE, pch = c(15, 17, 19, 8),
 #'       group.col = FALSE, col = c('darkred', 'darkblue')[sex],
@@ -363,7 +369,7 @@ tplot.default <- function(x, g, ..., type = 'db',
                           ## additional aesthetics
                           median.line = FALSE, mean.line = FALSE,
                           median.pars = list(), mean.pars = list(),
-                          boxplot.pars = list(),
+                          boxplot.pars = list(), quantiles = NULL,
                           
                           ## n/missing for each group
                           show.n = TRUE, show.na = show.n, cex.n = cex,
@@ -383,7 +389,7 @@ tplot.default <- function(x, g, ..., type = 'db',
     mtext(..., cex = cex.n)
   localText   <- function(..., bg, cex, log, lty, lwd, tick,      padj)
     text(..., cex = cex.n)
-  localPoints <- function(...,          log,           tick, pos, padj)
+  localPoints <- function(...,          log, lty, lwd, tick, pos, padj)
     points(...)
   localTitle  <- function(..., bg, cex, log, lty, lwd, tick, pos, padj)
     title(...)
@@ -550,6 +556,7 @@ tplot.default <- function(x, g, ..., type = 'db',
     boxFUN <- ifelse(grepl('v', type[i]), 'localVplot', 'boxplot')
     
     if (grepl('v', type[i])) {
+      boxplot.pars <- modifyList(boxplot.pars, list(quantiles = quantiles))
       if (grepl('b', type[i]))
         boxplot.pars <- modifyList(boxplot.pars, list(boxplot = TRUE))
       if (grepl('v', type[i]))
@@ -601,7 +608,8 @@ tplot.default <- function(x, g, ..., type = 'db',
           boxplot.pars)
       )
       
-      toplot <- (y > bp$stats[5L, ]) | (y < bp$stats[1L, ])
+      toplot <- if (type[i] %in% c('bd', 'v', 'vd', 'bv'))
+        0 else (y > bp$stats[5L, ]) | (y < bp$stats[1L, ])
       
       if (sum(toplot) > 0)
         if (col[[i]][toplot][1] == '#bfbfbf')
@@ -2497,11 +2505,12 @@ heatmap.3 <- function(x,
   invisible(res)
 }
 
-vioplot <- function(x, range = 1.5, xlim = NULL, ylim = NULL, names, plot = TRUE,
-                    axes = TRUE, frame.plot = axes, horizontal = FALSE,
-                    viocol = 'grey90', border = par('fg'), lty = 1L, lwd = 1,
-                    boxcol = border, at, add = FALSE, viowex = 1, boxwex = viowex / 4,
-                    boxplot = FALSE, dFUN = c('density', 'sm.density'), ...) {
+vioplot <- function(x, range = 1.5, xlim = NULL, ylim = NULL, names,
+                    plot = TRUE, axes = TRUE, frame.plot = axes,
+                    horizontal = FALSE, viocol = 'grey90', border = par('fg'),
+                    lty = 1L, lwd = 1, boxcol = border, at, add = FALSE,
+                    viowex = 1, boxwex = viowex / 4, boxplot = FALSE,
+                    dFUN = c('density', 'sm.density'), quantiles = NULL, ...) {
   x <- ox <- if (inherits(x, 'list'))
     x else if (is.data.frame(x))
       as.list(x) else list(x)
@@ -2563,6 +2572,12 @@ vioplot <- function(x, range = 1.5, xlim = NULL, ylim = NULL, names, plot = TRUE
     
     if (!identical(x, NA))
       do.call('polygon', c(l, col = viocol, border = border))
+    
+    if (length(quantiles)) {
+      f <- stats::approxfun(x, y)
+      z <- quantile(ox[[ii]], probs = quantiles)
+      segments(at + f(z), z, at - f(z), col = boxcol, lty = lty, lwd = lwd)
+    }
     
     boxplot(
       ox[[ii]], at = at[ii], add = TRUE, axes = FALSE, plot = boxplot,

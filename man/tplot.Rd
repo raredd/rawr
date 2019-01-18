@@ -15,11 +15,11 @@ tplot(x, ...)
   bordercol = par("fg"), pch = par("pch"), group.pch = TRUE,
   cex = par("cex"), group.cex = FALSE, median.line = FALSE,
   mean.line = FALSE, median.pars = list(), mean.pars = list(),
-  boxplot.pars = list(), show.n = TRUE, show.na = show.n, cex.n = cex,
-  text.na = "missing", test = FALSE, args.test = list(),
-  format_pval = TRUE, ann = par("ann"), axes = TRUE, frame.plot = axes,
-  add = FALSE, at, horizontal = FALSE, panel.first = NULL,
-  panel.last = NULL)
+  boxplot.pars = list(), quantiles = NULL, show.n = TRUE,
+  show.na = show.n, cex.n = cex, text.na = "missing", test = FALSE,
+  args.test = list(), format_pval = TRUE, ann = par("ann"), axes = TRUE,
+  frame.plot = axes, add = FALSE, at, horizontal = FALSE,
+  panel.first = NULL, panel.last = NULL)
 
 \method{tplot}{formula}(formula, data = NULL, ..., subset, na.action = NULL,
   panel.first = NULL, panel.last = NULL)
@@ -76,7 +76,13 @@ value; otherwise, points have individual values, recycled if necessary}
 \item{median.pars, mean.pars}{lists of graphical parameters for median and
 mean lines}
 
-\item{boxplot.pars}{additional list of graphical parameters for box plots}
+\item{boxplot.pars}{additional list of graphical parameters for box plots
+(or violin plots)}
+
+\item{quantiles}{for violin plots, probabilities for quantile lines (as an
+alternative to box plots); note \code{lwd}/\code{lty} may be passed via
+\code{boxplot.pars} (e.g., \code{boxplot.pars = list(lwd = c(.5, 2, .5),
+lty = 2)})}
 
 \item{show.n, show.na}{logical; show total and missing in each group}
 
@@ -222,6 +228,7 @@ dat <- data.frame(
 
 tplot(age ~ group, data = dat, las = 1, cex.axis = 1, bty = 'L',
       type = c('db', 'dv', 'dbv', 'bv'), names = LETTERS[1:4],
+      quantiles = c(0.25, 0.5, 0.75), ## quantile lines for vioplots
       text.na = 'n/a', ## default is 'missing'
       group.pch = TRUE, pch = c(15, 17, 19, 8),
       group.col = FALSE, col = c('darkred', 'darkblue')[sex],
