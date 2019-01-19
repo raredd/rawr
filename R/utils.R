@@ -1133,7 +1133,7 @@ interleave <- function(..., which) {
   if (all(sapply(l, function(x) is.null(dim(x)))))
     return(c(do.call('rbind', l)))
   
-  which <- match.arg(which, c('rbind','cbind','rbindx','cbindx'))
+  which <- match.arg(which, c('rbind', 'cbind', 'rbindx', 'cbindx'))
   
   if (which %in% c('rbind', 'rbindx'))
     do.call(which, l)[order(sequence(sapply(l, nrow))), ]

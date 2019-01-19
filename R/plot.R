@@ -338,7 +338,7 @@ jmplot <- function(x, y, z,
 #' 
 #' tplot(age ~ group, data = dat, las = 1, cex.axis = 1, bty = 'L',
 #'       type = c('db', 'dv', 'dbv', 'bv'), names = LETTERS[1:4],
-#'       quantiles = c(0.25, 0.5, 0.75), ## quantile lines for vioplots
+#'       quantiles = c(0.25, 0.5, 0.75), lwd = c(.5, 2, .5),
 #'       text.na = 'n/a', ## default is 'missing'
 #'       group.pch = TRUE, pch = c(15, 17, 19, 8),
 #'       group.col = FALSE, col = c('darkred', 'darkblue')[sex],
@@ -556,7 +556,10 @@ tplot.default <- function(x, g, ..., type = 'db',
     boxFUN <- ifelse(grepl('v', type[i]), 'localVplot', 'boxplot')
     
     if (grepl('v', type[i])) {
-      boxplot.pars <- modifyList(boxplot.pars, list(quantiles = quantiles))
+      boxplot.pars <- modifyList(
+        boxplot.pars,
+        list(quantiles = quantiles, lwd = pars$lwd %||% 1, lty = pars$lty %||% 1L)
+      )
       if (grepl('b', type[i]))
         boxplot.pars <- modifyList(boxplot.pars, list(boxplot = TRUE))
       if (grepl('v', type[i]))

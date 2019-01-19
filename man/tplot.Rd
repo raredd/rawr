@@ -228,7 +228,7 @@ dat <- data.frame(
 
 tplot(age ~ group, data = dat, las = 1, cex.axis = 1, bty = 'L',
       type = c('db', 'dv', 'dbv', 'bv'), names = LETTERS[1:4],
-      quantiles = c(0.25, 0.5, 0.75), ## quantile lines for vioplots
+      quantiles = c(0.25, 0.5, 0.75), lwd = c(.5, 2, .5),
       text.na = 'n/a', ## default is 'missing'
       group.pch = TRUE, pch = c(15, 17, 19, 8),
       group.col = FALSE, col = c('darkred', 'darkblue')[sex],
