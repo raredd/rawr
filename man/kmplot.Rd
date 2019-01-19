@@ -16,7 +16,7 @@ kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
   xaxis.lab = xaxis.at, atrisk.at = xaxis.at, yaxis.at = pretty(ylim),
   yaxis.lab = yaxis.at, xlab = "Time", ylab = "Probability",
   main = NULL, cex.axis = par("cex.axis"), legend = !atrisk.table &&
-  !is.null(s$strata), args.legend = list(), lr_test = FALSE,
+  !is.null(s$strata), args.legend = list(), lr_test = TRUE,
   tt_test = FALSE, test_details = TRUE, args.test = list(),
   hr_text = FALSE, args.hr = list(), pw_test = FALSE, args.pw = list(),
   format_pval = TRUE, add = FALSE, panel.first = NULL,
@@ -195,7 +195,7 @@ km2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 
 ## basic usage
 kmplot(km1)
-kmplot(km1, atrisk.col = c('grey50','tomato'), lr_test = TRUE,
+kmplot(km1, atrisk.col = c('grey50','tomato'),
        args.test = list(col = 'red', cex = 1.5, line = 0))
 kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
 kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3700)

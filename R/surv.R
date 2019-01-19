@@ -150,7 +150,7 @@
 #' 
 #' ## basic usage
 #' kmplot(km1)
-#' kmplot(km1, atrisk.col = c('grey50','tomato'), lr_test = TRUE,
+#' kmplot(km1, atrisk.col = c('grey50','tomato'),
 #'        args.test = list(col = 'red', cex = 1.5, line = 0))
 #' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
 #' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3700)
@@ -258,7 +258,7 @@ kmplot <- function(s,
                    args.legend = list(),
                    
                    ## test/hazard ratio options
-                   lr_test = FALSE, tt_test = FALSE, test_details = TRUE,
+                   lr_test = TRUE, tt_test = FALSE, test_details = TRUE,
                    args.test = list(),
                    hr_text = FALSE, args.hr = list(),
                    pw_test = FALSE, args.pw = list(),
@@ -678,16 +678,16 @@ kmplot <- function(s,
     FUN <- if (tt_test)
       function(f, d, r, ...) tt_text(f, d, ...)
     else lr_text
-    txt <- tryCatch(
-      FUN(as.formula(form), sdat, rho, details = test_details,
-          pFUN = format_pval),
-      error = function(e) 'n/a'
-    )
-    if (identical(txt, FALSE)) {
-      message('There is only one group',
-              if (svar == '1') '' else paste(' for', svar),
-              ' -- no test performed')
-    } else {
+    txt <- if (svar == '1')
+      '' else
+        tryCatch(
+          FUN(as.formula(form), sdat, rho, details = test_details,
+              pFUN = format_pval),
+          error = function(e) 'n/a'
+        )
+    if (identical(txt, FALSE))
+      message('There is only one group for ', svar, ' -- no test performed')
+    else {
       largs <- alist(
         text = txt, side = 3L, at = par('usr')[2L],
         adj = 1, cex = 0.8, line = 0.5
