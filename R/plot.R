@@ -553,24 +553,35 @@ tplot.default <- function(x, g, ..., type = 'db',
   Lme <- 0.2 * c(-1, 1)
   
   for (i in seq.int(ng)) {
+    p <- groups[[i]]
+    if (!nrow(p))
+      next
+    y <- ave(p$vs, p$g.id, FUN = sym_sort)
+    x <- rep_len(at[i], nrow(p)) + jit_(p$g.si, p$hmsf) * jit[i]
+    
     boxFUN <- ifelse(grepl('v', type[i]), 'localVplot', 'boxplot')
     
     if (grepl('v', type[i])) {
       boxplot.pars <- modifyList(
         boxplot.pars,
-        list(quantiles = quantiles, lwd = pars$lwd %||% 1, lty = pars$lty %||% 1L)
+        list(
+          quantiles = quantiles,
+          lwd = pars$lwd %||% 1,
+          lty = pars$lty %||% 1L
+        )
       )
+      
       if (grepl('b', type[i]))
         boxplot.pars <- modifyList(boxplot.pars, list(boxplot = TRUE))
       if (grepl('v', type[i]))
         boxplot.pars <- modifyList(boxplot.pars, list(viocol = boxcol[i]))
     }
     
-    p <- groups[[i]]
-    if (!nrow(p))
-      next
-    y <- ave(p$vs, p$g.id, FUN = sym_sort)
-    x <- rep_len(at[i], nrow(p)) + jit_(p$g.si, p$hmsf) * jit[i]
+    ## switch to points if not enough data for density estimation
+    if (nrow(p) == 1L && grepl('v', type[i])) {
+      boxFUN <- 'boxplot'
+      type[i] <- gsub('v', ifelse(grepl('d', type[i]), '', 'd'), type[i])
+    }
     
     ## dots behind
     if (type[i] %in% c('bd', 'n', 'vd')) {
@@ -621,8 +632,7 @@ tplot.default <- function(x, g, ..., type = 'db',
         'localPoints',
         if (horizontal)
           c(list(x = y[toplot], y = x[toplot], pch = pch[[i]][toplot],
-                 col = col[[i]][toplot], cex = cex[[i]][toplot]),
-            pars)
+                 col = col[[i]][toplot], cex = cex[[i]][toplot]), pars)
         else
           c(list(x = x[toplot], y = y[toplot], pch = pch[[i]][toplot],
                  col = col[[i]][toplot], cex = cex[[i]][toplot]), pars)
