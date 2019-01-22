@@ -2013,7 +2013,8 @@ surv_table <- function(s, digits = 3, times = pretty(s$time),
 #' 
 #' @export
 
-survdiff_pairs <- function(s, ..., method = p.adjust.methods, digits = 3L) {
+survdiff_pairs <- function(s, ..., method = p.adjust.methods,
+                           digits = getOption('digits')) {
   pwchisq <- function(i, j) {
     data <- data[data[, rhs] %in% c(unq[i], unq[j]), ]
     survdiff(as.formula(s$call$formula), data = data, ...)$chisq
@@ -2045,7 +2046,7 @@ survdiff_pairs <- function(s, ..., method = p.adjust.methods, digits = 3L) {
   res <- list(n = nn, chi.sq = chisq, p.value = p.value)
   
   structure(
-    lapply(res, round, digits),
+    lapply(res, round, digits = digits),
     class = 'survdiff_pairs'
   )
 }
