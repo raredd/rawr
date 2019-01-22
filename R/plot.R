@@ -2586,7 +2586,7 @@ vioplot <- function(x, range = 1.5, xlim = NULL, ylim = NULL, names,
     if (!identical(x, NA))
       do.call('polygon', c(l, col = viocol, border = border))
     
-    if (length(quantiles)) {
+    if (lunique(ox[[ii]]) > 1 && length(quantiles)) {
       f <- stats::approxfun(x, y)
       z <- quantile(ox[[ii]], probs = quantiles)
       segments(at + f(z), z, at - f(z), col = boxcol, lty = lty, lwd = lwd)
