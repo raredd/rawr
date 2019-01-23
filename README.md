@@ -1,10 +1,3 @@
----
-date: "22 Jan 2019"
-output:
-  html_document:
-    keep_md: yes
----
-
 rawr
 ====
 
@@ -17,18 +10,20 @@ to install:
 devtools::install_github('raredd/rawr')
 ```
 
-**some useful things for ...**
+---
 
+**some useful things for ...**
 
 
 ### survival analysis
 
 
+**kaplan-meier with a whole bunch of extra junk**
+
 ```r
 library('survival')
 s <- survfit(Surv(time, status) ~ factor(ph.ecog), cancer)
 
-## kaplan-meier with a whole bunch of extra junk
 kmplot(
   s,
   atrisk.col = TRUE, strata.lab = TRUE,
@@ -38,8 +33,9 @@ kmplot(
 
 ![](inst/etc/km1.png)
 
+**convenience function for survival analysis**
+
 ```r
-## convenience function for survival analysis
 kmplot_by(
   'factor(ph.ecog)', time = 'time', event = 'status', cancer,
   tt_test = TRUE, by = 'sex', strata_lab = FALSE, atrisk.type = 'survival',
@@ -49,8 +45,9 @@ kmplot_by(
 
 ![](inst/etc/km2.png)
 
+**get the pairwise differences easily**
+
 ```r
-## get the pairwise differences easily
 survdiff_pairs(s)
 ```
 
@@ -122,7 +119,6 @@ heatmap.3(
 
 **tests for doubly- (jonckheere-terpstra) or singly-ordered (kruskal-wallis) tables**
 
-
 ```r
 tbl <- table(mtcars$gear, mtcars$cyl)
 # fisher.test(tbl)
@@ -153,7 +149,6 @@ kw.test(tbl, simulate.p.value = TRUE)
 
 **test for _ordered_ kruskal-wallis rank-sum**
 
-
 ```r
 # kruskal.test(mpg ~ cyl, mtcars)
 cuzick.test(mpg ~ cyl, mtcars)
@@ -173,7 +168,6 @@ cuzick.test(mpg ~ cyl, mtcars)
 ### knitr/convenience things
 
 **basically a table**
-
 
 ```r
 tabler_by2(
@@ -195,7 +189,6 @@ tabler_by2(
 
 **basically a table**
 
-
 ```r
 tabler_stat2(
   within(mtcars, cyl <- factor(cyl, ordered = TRUE)),
@@ -203,11 +196,6 @@ tabler_stat2(
   c('# of gears' = 'gear'), correct = 'BH',
   htmlArgs = list(caption = 'Table 1.')
 )
-```
-
-```
-## Warning in kw.test.default(x, by): Chi-squared approximation may be incorrect - cells with < 5 observations
-## 	Consider using simulate.p.value = TRUE for Monte Carlo p-value
 ```
 
 <table class='gmisc_table' style='border-collapse: collapse; margin-top: 1em; margin-bottom: 1em;' >
@@ -298,7 +286,6 @@ Table 1.</td></tr>
 
 **a table, basically**
 
-
 ```r
 set.seed(1)
 r <- c('CR', 'PR', 'SD', 'PD', 'NE')
@@ -330,7 +317,6 @@ t(t(tabler_resp(x, 3:1)))
 ```
 
 **in-line convenience functions**
-
 
 ```r
 intr(mtcars$mpg)
