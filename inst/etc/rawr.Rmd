@@ -1,0 +1,148 @@
+---
+date: "`r format(Sys.Date(), format = '%d %b %Y')`"
+output:
+  html_document:
+    keep_md: yes
+---
+
+rawr
+====
+
+personal package with miscellaneous functions, stuff in progress, and tools I use regularly
+
+to install:
+
+```r
+# install.packages('devtools')
+devtools::install_github('raredd/rawr')
+```
+
+**some useful things for ...**
+
+```{r, echo=FALSE}
+library('rawr')
+
+options(width = 100)
+
+library('knitr')
+opts_chunk$set(fig.width = 10, fig.height = 8)
+```
+
+### survival analysis
+
+```{r}
+library('survival')
+s <- survfit(Surv(time, status) ~ factor(ph.ecog), cancer)
+
+## kaplan-meier with a whole bunch of extra junk
+kmplot(
+  s,
+  atrisk.col = TRUE, strata.lab = TRUE,
+  median = TRUE, hr_text = TRUE, pw_test = TRUE
+)
+
+## convenience function for survival analysis
+kmplot_by(
+  'factor(ph.ecog)', time = 'time', event = 'status', cancer,
+  tt_test = TRUE, by = 'sex', strata_lab = FALSE, atrisk.type = 'survival',
+  atrisk.col = TRUE, median = TRUE, hr_text = TRUE, pw_test = TRUE
+)
+
+## get the pairwise differences easily
+survdiff_pairs(s)
+```
+
+### misc plots
+
+**box plot + violin plot + dot plot + testing + ...**
+
+```{r}
+tplot(
+  mpg ~ vs + gear, mtcars, test = TRUE,
+  type = c('dv', 'v', 'd', 'db', 'b', 'd'),
+  quantiles = c(0.25, 0.5, 0.75), lwd = c(1, 2.5, 1)
+)
+```
+
+**heatmap + row/column matrices + formatting**
+
+```{r}
+x <- scale(as.matrix(mtcars))
+
+rc <- cbind(gear = x[, 'gear'], am = x[, 'am'], vs = x[, 'vs'])
+rc[] <- palette()[rc + 2L]
+
+cc <- rbind(var1 = nchar(colnames(x)), var2 = nchar(sort(colnames(x))))
+cc[] <- palette()[cc]
+
+heatmap.3(
+  x, scale = 'column', distfun = 'spearman', hclustfun = 'ward.D2',
+  RowSideColors = rc, ColSideColors = cc,
+  labRowCol = rc[, 3], labColCol = cc[1, ],
+  margins = c(5, 10),
+  colsep = c(2, 6), rowsep = c(9, 14, 21), sepwidth = c(5, 2)
+)
+```
+
+### stat things
+
+**tests for doubly- (jonckheere-terpstra) or singly-ordered (kruskal-wallis) tables**
+
+```{r}
+tbl <- table(mtcars$gear, mtcars$cyl)
+# fisher.test(tbl)
+jt.test(tbl)
+
+kw.test(tbl, simulate.p.value = TRUE)
+```
+
+**test for _ordered_ kruskal-wallis rank-sum**
+
+```{r}
+# kruskal.test(mpg ~ cyl, mtcars)
+cuzick.test(mpg ~ cyl, mtcars)
+```
+
+### knitr/convenience things
+
+**basically a table**
+
+```{r}
+tabler_by2(
+  mtcars, c('gear', 'vs'), 'cyl',
+  stratvar = 'am', n = table(mtcars$am),
+  zeros = '-', pct = TRUE, pct.total = TRUE
+)
+```
+
+**basically a table**
+
+```{r}
+tabler_stat2(
+  within(mtcars, cyl <- factor(cyl, ordered = TRUE)),
+  c('Miles/gal' = 'mpg', 'Engine (V/S)' = 'vs', Cylinders = 'cyl'),
+  c('# of gears' = 'gear'), correct = 'BH',
+  htmlArgs = list(caption = 'Table 1.')
+)
+```
+
+**a table, basically**
+
+```{r}
+set.seed(1)
+r <- c('CR', 'PR', 'SD', 'PD', 'NE')
+x <- factor(sample(r, 30, replace = TRUE), r)
+
+table(x)
+t(t(tabler_resp(x, 3:1)))
+```
+
+**in-line convenience functions**
+
+```{r}
+intr(mtcars$mpg)
+intr(mtcars$mpg, conf = 0.95)
+
+countr(mtcars$cyl)
+countr(table(mtcars$vs))
+```

@@ -36,7 +36,7 @@ kmplot(
 )
 ```
 
-![](inst/etc/km1.png)
+![](./inst/etc/km1.png)
 
 ```r
 ## convenience function for survival analysis
@@ -47,7 +47,7 @@ kmplot_by(
 )
 ```
 
-![](inst/etc/km2.png)
+![](./inst/etc/km2.png)
 
 ```r
 ## get the pairwise differences easily
@@ -61,21 +61,21 @@ survdiff_pairs(s)
 ## 1 176 113 NA NA
 ## 2 113 163 50 NA
 ## 3  64 114 51  1
-##
+## 
 ## $chi.sq
 ##           0        1       2  3
 ## 0        NA       NA      NA NA
 ## 1  3.456831       NA      NA NA
 ## 2 16.682328 8.433446      NA NA
 ## 3  5.779873 5.333335 1.24231 NA
-##
+## 
 ## $p.value
 ##           0         1         2         3
 ## 0        NA 0.1259819 0.0002651 0.0648429
 ## 1 0.0629909        NA 0.0184191 0.0648429
 ## 2 0.0000442 0.0036838        NA 0.2650263
 ## 3 0.0162107 0.0209213 0.2650263        NA
-##
+## 
 ## attr(,"class")
 ## [1] "survdiff_pairs"
 ```
@@ -93,7 +93,7 @@ tplot(
 )
 ```
 
-![](inst/etc/tp.png)
+![](./inst/etc/tp.png)
 
 **heatmap + row/column matrices + formatting**
 
@@ -116,7 +116,7 @@ heatmap.3(
 )
 ```
 
-![](inst/etc/hm.png)
+![](./inst/etc/hm.png)
 
 ### stat things
 
@@ -130,9 +130,9 @@ jt.test(tbl)
 ```
 
 ```
-##
+## 
 ## 	Jonckheere-Terpstra Test
-##
+## 
 ## data:  tbl
 ## z = -3.1551, p-value = 0.001604
 ```
@@ -142,9 +142,9 @@ kw.test(tbl, simulate.p.value = TRUE)
 ```
 
 ```
-##
+## 
 ## 	Kruskal-Wallis test for count data with simulated p-value (based on 2000 replicates)
-##
+## 
 ## data:  tbl
 ## Kruskal-Wallis chi-squared = 16.722, df = 2, p-value < 2.2e-16
 ## 99 percent confidence interval:
@@ -160,13 +160,13 @@ cuzick.test(mpg ~ cyl, mtcars)
 ```
 
 ```
-##
+## 
 ## 	Wilcoxon rank-sum test for trend in 3 ordered groups (corrected for ties)
-##
+## 
 ## data:  mpg by cyl
 ## z = -5.0741, p-value = 3.894e-07
 ## sample estimates:
-## median of 4 median of 6 median of 8
+## median of 4 median of 6 median of 8 
 ##        26.0        19.7        15.2
 ```
 
@@ -184,11 +184,11 @@ tabler_by2(
 ```
 
 ```
-##   vs  Total      Total      4         6         8          Total     4         6         8
-## 3 "0" "12 (38%)" "12 (63%)" "-"       "-"       "12 (63%)" "-"       "-"       "-"       "-"
-##   "1" "3 (9%)"   "3 (16%)"  "1 (5%)"  "2 (11%)" "-"        "-"       "-"       "-"       "-"
-## 4 "0" "2 (6%)"   "-"        "-"       "-"       "-"        "2 (15%)" "-"       "2 (15%)" "-"
-##   "1" "10 (31%)" "4 (21%)"  "2 (11%)" "2 (11%)" "-"        "6 (46%)" "6 (46%)" "-"       "-"
+##   vs  Total      Total      4         6         8          Total     4         6         8        
+## 3 "0" "12 (38%)" "12 (63%)" "-"       "-"       "12 (63%)" "-"       "-"       "-"       "-"      
+##   "1" "3 (9%)"   "3 (16%)"  "1 (5%)"  "2 (11%)" "-"        "-"       "-"       "-"       "-"      
+## 4 "0" "2 (6%)"   "-"        "-"       "-"       "-"        "2 (15%)" "-"       "2 (15%)" "-"      
+##   "1" "10 (31%)" "4 (21%)"  "2 (11%)" "2 (11%)" "-"        "6 (46%)" "6 (46%)" "-"       "-"      
 ## 5 "0" "4 (13%)"  "-"        "-"       "-"       "-"        "4 (31%)" "1 (8%)"  "1 (8%)"  "2 (15%)"
 ##   "1" "1 (3%)"   "-"        "-"       "-"       "-"        "1 (8%)"  "1 (8%)"  "-"       "-"
 ```
@@ -232,7 +232,7 @@ Table 1.</td></tr>
 <th style='border-bottom: 1px solid grey; text-align: center;'><i>BH p-value</i></th>
 </tr>
 </thead>
-<tbody>
+<tbody> 
 <tr><td colspan='9' style='font-weight: 900;'>Miles/gal</td></tr>
 <tr>
 <td style='text-align: left;'>&nbsp;&nbsp;Median (range)</td>
@@ -244,7 +244,7 @@ Table 1.</td></tr>
 <td style='' colspan='1'>&nbsp;</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'><i><font color="#FF0000">&lt; 0.001</font></i><sup>&dagger;</sup></td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'><font color="#FF0000">0.001</font></td>
-</tr>
+</tr> 
 <tr><td colspan='9' style='font-weight: 900;'>Engine (V/S)</td></tr>
 <tr>
 <td style='text-align: left;'>&nbsp;&nbsp;Median (range)</td>
@@ -256,7 +256,7 @@ Table 1.</td></tr>
 <td style='' colspan='1'>&nbsp;</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'><i><font color="#FF0000">0.001</font></i><sup>&Dagger;</sup></td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'><font color="#FF0000">0.001</font></td>
-</tr>
+</tr> 
 <tr><td colspan='9' style='font-weight: 900;'>Cylinders</td></tr>
 <tr>
 <td style='text-align: left;'>&nbsp;&nbsp;4</td>
@@ -309,7 +309,7 @@ table(x)
 
 ```
 ## x
-## CR PR SD PD NE
+## CR PR SD PD NE 
 ##  4 11  2  7  6
 ```
 
@@ -318,12 +318,12 @@ t(t(tabler_resp(x, 3:1)))
 ```
 
 ```
-##              [,1]
-## CR           "4/30, 13% (95% CI: 4 - 31%)"
+##              [,1]                           
+## CR           "4/30, 13% (95% CI: 4 - 31%)"  
 ## PR           "11/30, 37% (95% CI: 20 - 56%)"
-## SD           "2/30, 7% (95% CI: 1 - 22%)"
-## PD           "7/30, 23% (95% CI: 10 - 42%)"
-## NE           "6/30, 20% (95% CI: 8 - 39%)"
+## SD           "2/30, 7% (95% CI: 1 - 22%)"   
+## PD           "7/30, 23% (95% CI: 10 - 42%)" 
+## NE           "6/30, 20% (95% CI: 8 - 39%)"  
 ## SD or better "17/30, 57% (95% CI: 37 - 75%)"
 ## PR or better "15/30, 50% (95% CI: 31 - 69%)"
 ## CR or better "4/30, 13% (95% CI: 4 - 31%)"
