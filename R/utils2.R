@@ -502,8 +502,9 @@ color_pval <- function(pv, breaks = c(0, .01, .05, .1, .5, 1),
   else format_pval(pv)
   
   pvc <- cols[findInterval(pvn, breaks)]
+  res <- sprintf('<font color=\"%s\">%s</font>', pvc, pv)
   
-  sprintf('<font color=\"%s\">%s</font>', pvc, pv)
+  replace(res, grepl('>NA<', res, fixed = TRUE), '-')
 }
 
 #' Concatenate list for output
@@ -1552,9 +1553,9 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
     fnames <- fnames[!duplicated(fnames)]
   }
   
-  pvc <- if (is.null(pvn))
+  pvc <- if (is.null(pvn) || is.na(pvn))
     NULL else {
-      if (color_pval)
+    if (color_pval)
         color_pval(pvn, cols = colorRampPalette(pcol)(6L),
                    format_pval = format_pval)
       else if (isTRUE(format_pval))
@@ -1823,7 +1824,7 @@ tabler_stat2 <- function(data, varname, byvar, varname_label = names(varname),
   )
   
   tabler_stat_html(
-    l, align, rgroup, cgroup, tfoot, htmlArgs, zeros, group, correct
+    l, align, rgroup, cgroup, tfoot, htmlArgs, zeros, group, correct, format_pval
   )
 }
 
@@ -1907,7 +1908,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
 
 tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
                              tfoot = NULL, htmlArgs = NULL, zeros = NULL,
-                             group = NULL, correct = FALSE) {
+                             group = NULL, correct = FALSE, format_pval = TRUE) {
   stopifnot(
     inherits(l, 'htmlStat')
   )
@@ -1954,13 +1955,14 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
   ## extract p-values and use correction method
   method <- if (isTRUE(correct))
     'fdr' else if (is.character(correct)) correct else 'none'
-  pvn <- lapply(seq_along(l$l), function(ii) attr(l$l[[ii]], 'p.value'))
+  pvn <- sapply(seq_along(l$l), function(ii)
+    attr(l$l[[ii]], 'p.value') %||% NA)
   if (!identical(correct, FALSE)) {
     nc  <- ncol(res)
     wh  <- nzchar(res[, nc])
-    pvc <- p.adjust(pvn, method = method)
+    pvc <- p.adjust(pvn, method, length(sort(pvn))) ## only non na pvalues
     res <- cbind(res, res[, nc])
-    res[, nc + 1L][wh] <- color_pval(pvc)
+    res[, nc + 1L][wh] <- color_pval(pvc, format_pval = format_pval)
     colnames(res)[nc + 1L] <-
       gsub('(?=p)', paste(method, ''), colnames(res)[nc], perl = TRUE)
     l$n.cgroup[length(l$n.cgroup)] <- l$n.cgroup[length(l$n.cgroup)] + 1L
