@@ -80,9 +80,8 @@ mean lines}
 (or violin plots)}
 
 \item{quantiles}{for violin plots, probabilities for quantile lines (as an
-alternative to box plots); note \code{lwd}/\code{lty} may be passed via
-\code{boxplot.pars} (e.g., \code{boxplot.pars = list(lwd = c(.5, 2, .5),
-lty = 2)})}
+alternative to box plots); note \code{lwd}/\code{lty} may be passed to
+control the quantile lines}
 
 \item{show.n, show.na}{logical; show total and missing in each group}
 

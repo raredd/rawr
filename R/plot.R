@@ -209,9 +209,8 @@ jmplot <- function(x, y, z,
 #' @param boxplot.pars additional list of graphical parameters for box plots
 #' (or violin plots)
 #' @param quantiles for violin plots, probabilities for quantile lines (as an
-#' alternative to box plots); note \code{lwd}/\code{lty} may be passed via
-#' \code{boxplot.pars} (e.g., \code{boxplot.pars = list(lwd = c(.5, 2, .5),
-#' lty = 2)})
+#' alternative to box plots); note \code{lwd}/\code{lty} may be passed to
+#' control the quantile lines
 #' @param col plotting color
 #' @param group.col logical; if \code{TRUE}, color by group; otherwise by order
 #' @param boxcol,bordercol box fill and border colors
