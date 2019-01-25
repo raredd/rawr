@@ -10,16 +10,16 @@
 tplot(x, ...)
 
 \method{tplot}{default}(x, g, ..., type = "db", jit = NULL, dist = NULL,
-  main = NULL, sub = NULL, xlab = NULL, ylab = NULL, xlim = NULL,
-  ylim = NULL, names, col, group.col = TRUE, boxcol = "grey90",
-  bordercol = par("fg"), pch = par("pch"), group.pch = TRUE,
-  cex = par("cex"), group.cex = FALSE, median.line = FALSE,
-  mean.line = FALSE, median.pars = list(), mean.pars = list(),
-  boxplot.pars = list(), quantiles = NULL, show.n = TRUE,
-  show.na = show.n, cex.n = cex, text.na = "missing", test = FALSE,
-  args.test = list(), format_pval = TRUE, ann = par("ann"), axes = TRUE,
-  frame.plot = axes, add = FALSE, at, horizontal = FALSE,
-  panel.first = NULL, panel.last = NULL)
+  dist.n = Inf, main = NULL, sub = NULL, xlab = NULL, ylab = NULL,
+  xlim = NULL, ylim = NULL, names, col, group.col = TRUE,
+  boxcol = "grey90", bordercol = par("fg"), pch = par("pch"),
+  group.pch = TRUE, cex = par("cex"), group.cex = FALSE,
+  median.line = FALSE, mean.line = FALSE, median.pars = list(),
+  mean.pars = list(), boxplot.pars = list(), quantiles = NULL,
+  show.n = TRUE, show.na = show.n, cex.n = cex, text.na = "missing",
+  test = FALSE, args.test = list(), format_pval = TRUE,
+  ann = par("ann"), axes = TRUE, frame.plot = axes, add = FALSE, at,
+  horizontal = FALSE, panel.first = NULL, panel.last = NULL)
 
 \method{tplot}{formula}(formula, data = NULL, ..., subset, na.action = NULL,
   panel.first = NULL, panel.last = NULL)
@@ -36,16 +36,19 @@ elements of \code{x}, ignored with a warning if \code{x} is a list}
 \code{"bd"} for box-dot, or \code{"b"} box; \code{"v"} may be used instead
 of \code{"b"} for a violin plot); see examples for all options}
 
-\item{jit, dist}{jitter parameters for overlapping points (use \code{0} for
-no jitter (i.e., points may overlap) and values > 0 for more distance
-between points); both can be length 1 (recycled as needed for groups) or
-equal to the number of groups (useful if one group has more points and
-needs more jittering than other groups)
+\item{jit, dist, dist.n}{jitter parameters for overlapping points (use
+\code{0} for no jitter (i.e., points may overlap) and values > 0 for more
+distance between points); both can be length 1 (recycled as needed for
+groups) or equal to the number of groups (useful if one group has more
+points and needs more jittering than other groups)
 
 \code{jit} controls the amount of spread in a group of neighboring points,
 and \code{dist} controls the size of the interval to group neighboring
 points, i.e., a group of sequential points that are no more than
-\code{dist} apart are considered neighbors and will be jittered}
+\code{dist} apart are considered neighbors and will be jittered
+
+\code{dist.n} is the maximum number of points allowed in each group of
+neighboring points, useful for limiting the spread of points}
 
 \item{main, sub}{overall title and sub-title (below x-axis) for the plot}
 

@@ -15,12 +15,12 @@ dodge_ <- function(x, at, dist, jit) {
   ## add jitter to points in a single group and return adjusted values
   # rawr:::dodge_(rep(1, 5), rep(1, 5), .1, .1)
   x <- x[nas <- !is.na(x)]
-  gr <- grouping_(x, dist)
-  offset <- jit_(gr$g.si, gr$hmsf) * jit
-  data.frame(x = at + (offset - mean(offset)), y = gr$vs)
+  g <- grouping_(x, dist)
+  offset <- jit_(g$g.si, g$hmsf) * jit
+  data.frame(x = at + (offset - mean(offset)), y = g$vs)
 }
 
-grouping_ <- function(v, dif) {
+grouping_ <- function(v, dif, max.n = Inf) {
   ## turn values in each group into their plotting points
   # rawr:::grouping_(rep(1:2, 4), .1)
   hmsf_ <- function(x)
@@ -28,16 +28,34 @@ grouping_ <- function(v, dif) {
   vs <- sort(v)
   together <- c(FALSE, diff(vs) <=  dif)
   together[is.na(together)] <- FALSE
+  together <- tryCatch(
+    together_(together, max.n),
+    error = function(e) {
+      print(e$message)
+      together
+    }
+  )
   g.id <- cumsum(!together)
   g.si <- rep(x <- as.vector(table(g.id)), x)
-  vg <- cbind(vs = vs, g.id = g.id, g.si = g.si)[rank(v), ]
+  # vg <- cbind(vs = vs, g.id = g.id, g.si = g.si)[rank(v), ]
+  vg <- cbind(vs = vs, g.id = g.id, g.si = g.si)[order(v), ]
   if (length(v) == 1L)
     vg <- as.data.frame(t(vg))
   data.frame(vg, hmsf = hmsf_(vg[, 2L]))
 }
 
+together_ <- function(x, n = Inf) {
+  rl <- rle(x)
+  if (n == Inf || all(idx <- rl$lengths <= n | !rl$values))
+    return(x)
+  x[min(length(x), sum(rl$lengths[cumprod(idx) == 1]) + n + 1L)] <- FALSE
+  Recall(x, n)
+}
+
 jit_ <- function(g.si, hmsf) {
-  hmsf - (g.si + 1) / 2
+  # hmsf - (g.si + 1) / 2
+  ave(seq_along(g.si), g.si, FUN = function(ii)
+    scale(hmsf[ii] - (g.si[ii] + 1 / 2), scale = FALSE))
 }
 
 do_rect_ <- function(n, x, y, single = FALSE, border = NA, col = NA,

@@ -196,16 +196,19 @@ jmplot <- function(x, y, z,
 #' @param frame.plot logical; draw box around \code{x-y} plot
 #' @param at group positions on axis
 #' @param horizontal logical; flip axes
-#' @param jit,dist jitter parameters for overlapping points (use \code{0} for
-#' no jitter (i.e., points may overlap) and values > 0 for more distance
-#' between points); both can be length 1 (recycled as needed for groups) or
-#' equal to the number of groups (useful if one group has more points and
-#' needs more jittering than other groups)
+#' @param jit,dist,dist.n jitter parameters for overlapping points (use
+#' \code{0} for no jitter (i.e., points may overlap) and values > 0 for more
+#' distance between points); both can be length 1 (recycled as needed for
+#' groups) or equal to the number of groups (useful if one group has more
+#' points and needs more jittering than other groups)
 #' 
 #' \code{jit} controls the amount of spread in a group of neighboring points,
 #' and \code{dist} controls the size of the interval to group neighboring
 #' points, i.e., a group of sequential points that are no more than
 #' \code{dist} apart are considered neighbors and will be jittered
+#' 
+#' \code{dist.n} is the maximum number of points allowed in each group of
+#' neighboring points, useful for limiting the spread of points
 #' @param boxplot.pars additional list of graphical parameters for box plots
 #' (or violin plots)
 #' @param quantiles for violin plots, probabilities for quantile lines (as an
@@ -355,7 +358,7 @@ tplot <- function(x, ...) {
 #' @rdname tplot
 #' @export
 tplot.default <- function(x, g, ..., type = 'db',
-                          jit = NULL, dist = NULL,
+                          jit = NULL, dist = NULL, dist.n = Inf,
                           
                           ## labels/aesthetics
                           main = NULL, sub = NULL, xlab = NULL, ylab = NULL,
@@ -517,15 +520,13 @@ tplot.default <- function(x, g, ..., type = 'db',
   }
   
   ## scales
-  if (is.null(ylim))
-    ylim <- range(res$stats[is.finite(res$stats)],
-                  if (is.null(args$outline) || isTRUE(args$outline))
-                    res$out[is.finite(res$out)],
-                  if (isTRUE(args$notch))
-                    res$conf[is.finite(res$conf)])
-    
-  if (is.null(xlim))
-    xlim <- range(at, finite = TRUE) + c(-0.5, 0.5)
+  xlim <- xlim %||% range(at, finite = TRUE) + c(-0.5, 0.5)
+  ylim <- ylim %||%
+    range(res$stats[is.finite(res$stats)],
+          if (is.null(args$outline) || isTRUE(args$outline))
+            res$out[is.finite(res$out)],
+          if (isTRUE(args$notch))
+            res$conf[is.finite(res$conf)])
   
   ## defaults for dist and jit for groups
   dist <- rep_len(if (is.null(dist) || is.na(dist))
@@ -534,8 +535,11 @@ tplot.default <- function(x, g, ..., type = 'db',
     # 0.025 * ng else jit, ng)
     min(1 / lg) else jit, ng)
   
-  groups <- lapply(seq_along(groups), function(ii)
-    grouping_(groups[[ii]], dist[ii]))
+  
+  dist.n <- rep_len(dist.n, ng)
+  groups <- lapply(seq_along(groups), function(ii) {
+    grouping_(groups[[ii]], dist[ii], dist.n[ii])
+  })
   ## rawr:::grouping_; rawr:::jit_
   
   ## set up new plot unless adding to existing one
