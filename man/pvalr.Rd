@@ -7,13 +7,13 @@
 \title{p-value formatter}
 \usage{
 pvalr(pv, sig.limit = 1e-03, digits = 3L, html = FALSE, show.p = FALSE,
-  journal = FALSE, ...)
+  journal = TRUE, ...)
 
 pvalr2(pv, html = FALSE, show.p = FALSE)
 
 color_pval(pv, breaks = c(0, 0.01, 0.05, 0.1, 0.5, 1),
   cols = colorRampPalette(2:1)(length(breaks)), sig.limit = 1e-03,
-  digits = 3L, show.p = FALSE, format_pval = TRUE, journal = FALSE, ...)
+  digits = 3L, show.p = FALSE, format_pval = TRUE, journal = TRUE, ...)
 }
 \arguments{
 \item{pv}{for \code{pvalr}, a numeric value or vector of p-values; for

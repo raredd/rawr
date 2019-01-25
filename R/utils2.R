@@ -415,7 +415,7 @@ intr <- function(..., fun = median, conf = NULL,
 #' @export
 
 pvalr <- function(pv, sig.limit = 0.001, digits = 3L, html = FALSE,
-                  show.p = FALSE, journal = FALSE, ...) {
+                  show.p = FALSE, journal = TRUE, ...) {
   stopifnot(
     sig.limit > 0,
     sig.limit < 1
@@ -486,7 +486,7 @@ pvalr2 <- function(pv, html = FALSE, show.p = FALSE) {
 color_pval <- function(pv, breaks = c(0, .01, .05, .1, .5, 1),
                        cols = colorRampPalette(2:1)(length(breaks)),
                        sig.limit = 0.001, digits = 3L, show.p = FALSE,
-                       format_pval = TRUE, journal = FALSE, ...) {
+                       format_pval = TRUE, journal = TRUE, ...) {
   if (!is.numeric(pv))
     return(pv)
   pvn <- pv
@@ -2241,7 +2241,7 @@ match_ctc <- function(..., version = 4L) {
     match(gsub('\\s*|-', '', x, perl = TRUE), ctc[, 'tox_code'])
   else grep(paste(x, collapse = '|'), ctc[, 'tox_desc'], ignore.case = TRUE)
   
-  if (anyNA(idx))
+  if (anyNA(idx[nzchar(x) & !is.na(x)]))
     warning(
       'CTCAE version may be incorrect - ',
       'try version = ', ifelse(version == 4, 3, 4),
