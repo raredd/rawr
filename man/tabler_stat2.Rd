@@ -10,7 +10,7 @@ tabler_stat2(data, varname, byvar, varname_label = names(varname),
   color_missing = TRUE, dagger = TRUE, group = NULL,
   color_cell_by = "none", cell_color = c("black", "red"), statArgs = NULL,
   align = NULL, rgroup = NULL, cgroup = NULL, tfoot = NULL,
-  htmlArgs = NULL, zeros = "-")
+  tfoot2 = NULL, htmlArgs = NULL, zeros = "-")
 }
 \arguments{
 \item{data}{a matrix or data frame with variables \code{varname} and
@@ -61,6 +61,8 @@ to each cell (for html output); one of \code{"none"}, \code{"value"}, or
 
 \item{align, rgroup, cgroup, tfoot}{optional arguments passed to
 \code{\link[htmlTable]{htmlTable}}}
+
+\item{tfoot2}{optional footnote(s) appended to \code{tfoot}}
 
 \item{htmlArgs}{a named list of additional arguments passed to
 \code{\link[htmlTable]{htmlTable}}}

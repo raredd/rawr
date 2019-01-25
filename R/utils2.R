@@ -1737,6 +1737,7 @@ guess_test <- function(x, y, n_unique_x = 10L) {
 #' \code{\link[Gmisc]{getDescriptionStatsBy}}
 #' @param align,rgroup,cgroup,tfoot optional arguments passed to
 #' \code{\link[htmlTable]{htmlTable}}
+#' @param tfoot2 optional footnote(s) appended to \code{tfoot}
 #' @param htmlArgs a named list of additional arguments passed to
 #' \code{\link[htmlTable]{htmlTable}}
 #' @param zeros a character string used in place of zero cells (non-character
@@ -1794,7 +1795,7 @@ tabler_stat2 <- function(data, varname, byvar, varname_label = names(varname),
                          group = NULL, color_cell_by = 'none',
                          cell_color = c('black', 'red'), statArgs = NULL,
                          align = NULL, rgroup = NULL, cgroup = NULL,
-                         tfoot = NULL, htmlArgs = NULL, zeros = '-') {
+                         tfoot = NULL, tfoot2 = NULL, htmlArgs = NULL, zeros = '-') {
   data <- as.data.frame(data)
   nv   <- length(varname)
   
@@ -1824,7 +1825,7 @@ tabler_stat2 <- function(data, varname, byvar, varname_label = names(varname),
   )
   
   tabler_stat_html(
-    l, align, rgroup, cgroup, tfoot, htmlArgs, zeros, group, correct, format_pval
+    l, align, rgroup, cgroup, tfoot, tfoot2, htmlArgs, zeros, group, correct, format_pval
   )
 }
 
@@ -1907,7 +1908,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
 }
 
 tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
-                             tfoot = NULL, htmlArgs = NULL, zeros = NULL,
+                             tfoot = NULL, tfoot2 = NULL, htmlArgs = NULL, zeros = NULL,
                              group = NULL, correct = FALSE, format_pval = TRUE) {
   stopifnot(
     inherits(l, 'htmlStat')
@@ -1930,6 +1931,9 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
     if (nchar(x) == 0L)
       NULL else grep(x, y, value = TRUE), dg, tf)
   tf <- toString(unique(unlist(tf)))
+  
+  if (!is.null(tfoot2))
+    tf <- sprintf('%s<br />%s', tf, paste0(tfoot2, collapse = '<br />'))
   
   ## tspanner
   if (!is.null(group)) {
@@ -1968,6 +1972,9 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
     l$n.cgroup[length(l$n.cgroup)] <- l$n.cgroup[length(l$n.cgroup)] + 1L
   }
   
+  tr <- function(x) {
+    gsub('\\s{2,}', ' ', x)
+  }
   ht <- do.call(
     htmlTable::htmlTable,
     c(list(
@@ -1975,7 +1982,7 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
       rgroup = rgroup %||% l$rgroup, n.rgroup = l$n.rgroup,
       cgroup = cgroup %||% l$cgroup, n.cgroup = l$n.cgroup,
       css.cell = 'padding: 0px 5px 0px; white-space: nowrap;',
-      tfoot = tfoot %||% sprintf('<font size=1>%s</font>', tf)),
+      tfoot = tr(tfoot %||% sprintf('<font size=1>%s</font>', tf))),
       htmlArgs)
   )
   
