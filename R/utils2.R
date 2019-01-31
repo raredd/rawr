@@ -1489,6 +1489,8 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
       NULL
     }
   )
+  if (is.null(pvn))
+    nof <- TRUE
   
   dags   <- c('&dagger;', '&dagger;', '&Dagger;')
   dags   <- c('&#94;', '&dagger;', '&Dagger;')
@@ -1819,13 +1821,14 @@ tabler_stat2 <- function(data, varname, byvar, varname_label = names(varname),
     )
   
   l <- tabler_stat_list(
-    data, varname, byvar, varname_label %||% varname, byvar_label %||% byvar,
-    digits, FUN, format_pval, color_pval, color_missing, dagger,
-    color_cell_by, cell_color, statArgs
+    data, varname, byvar, varname_label, byvar_label, digits, FUN,
+    format_pval, color_pval, color_missing, dagger, color_cell_by,
+    cell_color, statArgs
   )
   
   tabler_stat_html(
-    l, align, rgroup, cgroup, tfoot, tfoot2, htmlArgs, zeros, group, correct, format_pval
+    l, align, rgroup, cgroup, tfoot, tfoot2,
+    htmlArgs, zeros, group, correct, format_pval
   )
 }
 
