@@ -4,7 +4,8 @@
 \alias{surv_table}
 \title{Summary table}
 \usage{
-surv_table(s, digits = 3, times = pretty(s$time), maxtime = FALSE, ...)
+surv_table(s, digits = 3, times = pretty(s$time), maxtime = FALSE,
+  ...)
 }
 \arguments{
 \item{s}{a \code{\link[survival]{survfit}} object}

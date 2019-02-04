@@ -4,8 +4,8 @@
 \alias{sparkDT}
 \title{\code{datatable}s with sparklines}
 \usage{
-sparkDT(data, spark, type = c("line", "bar", "box1", "box2"), spark_range,
-  options = list(), ...)
+sparkDT(data, spark, type = c("line", "bar", "box1", "box2"),
+  spark_range, options = list(), ...)
 }
 \arguments{
 \item{data}{a data frame or matrix}

@@ -5,22 +5,23 @@
 \title{Survival curves}
 \usage{
 kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
-  col.surv = seq_along(s$n), mark = 3L, lwd.mark = lwd.surv, lty.ci = 0,
-  lwd.ci = lwd.surv, col.ci = col.surv, col.band = FALSE,
-  atrisk.table = TRUE, atrisk.lab = NULL, atrisk.type = c("atrisk",
-  "events", "atrisk-events", "survival", "percent"), atrisk.digits = 2L,
-  atrisk.lines = TRUE, atrisk.col = !atrisk.lines, strata.lab = NULL,
-  strata.expr = NULL, strata.order = seq_along(s$n), extra.margin = 5,
-  mar = NULL, median = FALSE, digits.median = 0L, xaxs = "s",
-  xlim = NULL, ylim = NULL, xaxis.at = pretty(xlim),
-  xaxis.lab = xaxis.at, atrisk.at = xaxis.at, yaxis.at = pretty(ylim),
+  col.surv = seq_along(s$n), mark = 3L, lwd.mark = lwd.surv,
+  lty.ci = 0, lwd.ci = lwd.surv, col.ci = col.surv,
+  col.band = FALSE, atrisk.table = TRUE, atrisk.lab = NULL,
+  atrisk.type = c("atrisk", "events", "atrisk-events", "survival",
+  "percent"), atrisk.digits = 2L, atrisk.lines = TRUE,
+  atrisk.col = !atrisk.lines, strata.lab = NULL, strata.expr = NULL,
+  strata.order = seq_along(s$n), extra.margin = 5, mar = NULL,
+  median = FALSE, digits.median = 0L, xaxs = "s", xlim = NULL,
+  ylim = NULL, xaxis.at = pretty(xlim), xaxis.lab = xaxis.at,
+  atrisk.at = xaxis.at, yaxis.at = pretty(ylim),
   yaxis.lab = yaxis.at, xlab = "Time", ylab = "Probability",
   main = NULL, cex.axis = par("cex.axis"), legend = !atrisk.table &&
   !is.null(s$strata), args.legend = list(), lr_test = TRUE,
   tt_test = FALSE, test_details = TRUE, args.test = list(),
-  hr_text = FALSE, args.hr = list(), pw_test = FALSE, args.pw = list(),
-  format_pval = TRUE, add = FALSE, panel.first = NULL,
-  panel.last = NULL, ...)
+  hr_text = FALSE, args.hr = list(), pw_test = FALSE,
+  args.pw = list(), format_pval = TRUE, add = FALSE,
+  panel.first = NULL, panel.last = NULL, ...)
 }
 \arguments{
 \item{s}{an object of class \code{\link{survfit}} or \code{survfit.cox}}

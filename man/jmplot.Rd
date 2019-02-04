@@ -4,11 +4,11 @@
 \alias{jmplot}
 \title{Joint-marginal plot}
 \usage{
-jmplot(x, y, z, main = "", sub = "", xlab = NULL, ylab = NULL, names,
-  xlim = NULL, ylim = NULL, axes = TRUE, frame.plot = axes, log = "",
-  xratio = 0.8, yratio = xratio, show.n = TRUE, show.na = show.n,
-  cex.n = 1, ann = par("ann"), asp = NA, panel.first = NULL,
-  panel.last = NULL, ...)
+jmplot(x, y, z, main = "", sub = "", xlab = NULL, ylab = NULL,
+  names, xlim = NULL, ylim = NULL, axes = TRUE, frame.plot = axes,
+  log = "", xratio = 0.8, yratio = xratio, show.n = TRUE,
+  show.na = show.n, cex.n = 1, ann = par("ann"), asp = NA,
+  panel.first = NULL, panel.last = NULL, ...)
 }
 \arguments{
 \item{x, y}{x- and y-axis variables}

@@ -4,8 +4,8 @@
 \alias{kmplot_ticks}
 \title{Add ticks to \code{kmplot}}
 \usage{
-kmplot_ticks(s, data = eval(s$call$data), by_var, what, y = 0, time, event,
-  strata, col = NULL, pch = NULL, ...)
+kmplot_ticks(s, data = eval(s$call$data), by_var, what, y = 0, time,
+  event, strata, col = NULL, pch = NULL, ...)
 }
 \arguments{
 \item{s}{an object of class \code{\link{survfit}}}

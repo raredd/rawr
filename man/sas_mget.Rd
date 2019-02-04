@@ -5,8 +5,8 @@
 \title{Convert multiple \code{SAS} data sets to \code{R} data frame}
 \usage{
 sas_mget(libpath = getwd(), dsn = dsn, saspath = sas_path(),
-  fmtpath = NULL, catalog = length(dcf) == 1L, log.file = "_temp_.log",
-  ..., force = FALSE, write = FALSE)
+  fmtpath = NULL, catalog = length(dcf) == 1L,
+  log.file = "_temp_.log", ..., force = FALSE, write = FALSE)
 }
 \arguments{
 \item{libpath}{directory to data set(s) as character string; if missing,

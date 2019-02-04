@@ -4,8 +4,8 @@
 \alias{bintest}
 \title{Single-stage designs}
 \usage{
-bintest(p0low, p0high = p0low, p1low, p1high = p1low, n.max, r = n.max,
-  alpha = 0.1, beta = 0.1)
+bintest(p0low, p0high = p0low, p1low, p1high = p1low, n.max,
+  r = n.max, alpha = 0.1, beta = 0.1)
 }
 \arguments{
 \item{p0low, p0high}{low and high values for p0}

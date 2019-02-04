@@ -8,7 +8,8 @@
 \usage{
 kw.test(x, ...)
 
-\method{kw.test}{default}(x, g, ..., simulate.p.value = FALSE, B = 2000L)
+\method{kw.test}{default}(x, g, ..., simulate.p.value = FALSE,
+  B = 2000L)
 
 \method{kw.test}{formula}(formula, data, ...)
 }

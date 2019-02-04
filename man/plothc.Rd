@@ -4,7 +4,8 @@
 \alias{plothc}
 \title{Color \code{plot.hclust}}
 \usage{
-plothc(hc, labels = hc$labels, col = as.factor(labels), hang = 0.1, ...)
+plothc(hc, labels = hc$labels, col = as.factor(labels), hang = 0.1,
+  ...)
 }
 \arguments{
 \item{hc}{an \code{\link{hclust}} object}

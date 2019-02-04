@@ -4,7 +4,8 @@
 \alias{split_nth}
 \title{Split at nth pattern}
 \usage{
-split_nth(text, pattern, n = NULL, keep_split = FALSE, repl = "$$$", ...)
+split_nth(text, pattern, n = NULL, keep_split = FALSE, repl = "$$$",
+  ...)
 }
 \arguments{
 \item{text, pattern}{the text and pattern character strings}

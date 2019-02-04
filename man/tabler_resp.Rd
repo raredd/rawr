@@ -4,9 +4,9 @@
 \alias{tabler_resp}
 \title{Response table}
 \usage{
-tabler_resp(x, r_or_better = levels(x)[3:1], conf = 0.95, digits = 0L,
-  frac = TRUE, show_conf = TRUE, pct.sign = TRUE, total = FALSE,
-  two_stage = FALSE)
+tabler_resp(x, r_or_better = levels(x)[3:1], conf = 0.95,
+  digits = 0L, frac = TRUE, show_conf = TRUE, pct.sign = TRUE,
+  total = FALSE, two_stage = FALSE)
 }
 \arguments{
 \item{x}{a factor variable of responses; responses should be ordered as

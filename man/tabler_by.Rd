@@ -6,12 +6,12 @@
 \title{tabler_by}
 \usage{
 tabler_by(data, varname, byvar, n, order = FALSE, zeros = TRUE,
-  pct = FALSE, pct.column = FALSE, pct.total = FALSE, pct.sign = FALSE,
-  drop = TRUE)
+  pct = FALSE, pct.column = FALSE, pct.total = FALSE,
+  pct.sign = FALSE, drop = TRUE)
 
-tabler_by2(data, varname, byvar, n, order = FALSE, stratvar, zeros = TRUE,
-  pct = FALSE, pct.column = FALSE, pct.total = FALSE, pct.sign = TRUE,
-  drop = TRUE)
+tabler_by2(data, varname, byvar, n, order = FALSE, stratvar,
+  zeros = TRUE, pct = FALSE, pct.column = FALSE, pct.total = FALSE,
+  pct.sign = TRUE, drop = TRUE)
 }
 \arguments{
 \item{data}{a data frame; variables \code{varname} and \code{byvar} should

@@ -3,7 +3,6 @@
 \name{mgrep}
 \alias{mgrep}
 \alias{mgrepl}
-\alias{mgrep}
 \alias{msub}
 \alias{mgsub}
 \title{Multiple pattern matching and replacement}

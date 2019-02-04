@@ -26,7 +26,8 @@ hr_text(formula, data, ..., details = TRUE, pFUN = NULL)
 
 pw_pval(object, details = FALSE, data = NULL, ..., method = "none")
 
-pw_text(formula, data, ..., details = TRUE, pFUN = NULL, method = "none")
+pw_text(formula, data, ..., details = TRUE, pFUN = NULL,
+  method = "none")
 }
 \arguments{
 \item{object}{a \code{\link{survfit}}, \code{\link{survdiff}}, or

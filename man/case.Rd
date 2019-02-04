@@ -4,8 +4,8 @@
 \alias{case}
 \title{Letter case}
 \usage{
-case(x, case = c("first", "upcase", "downcase", "camelcase", "upper", "lower",
-  "lowup", "uplow"), translate = FALSE)
+case(x, case = c("first", "upcase", "downcase", "camelcase", "upper",
+  "lower", "lowup", "uplow"), translate = FALSE)
 }
 \arguments{
 \item{x}{a text string}

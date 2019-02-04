@@ -6,8 +6,8 @@
 \alias{check_river_format}
 \title{River plots}
 \usage{
-river(data, bar_data, id, at, legend = "topleft", xlim, ylim, rev = FALSE,
-  stagger = TRUE, col)
+river(data, bar_data, id, at, legend = "topleft", xlim, ylim,
+  rev = FALSE, stagger = TRUE, col)
 
 river2(data, bar_data, bar_data2, id, legend = "topleft", xlim, ylim,
   rev = FALSE, stagger = FALSE, split = FALSE, col, col2)

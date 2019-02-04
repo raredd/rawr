@@ -4,7 +4,8 @@
 \alias{kinda_sort}
 \title{Kinda sort}
 \usage{
-kinda_sort(x, n, decreasing = FALSE, indices = NULL, index.return = FALSE)
+kinda_sort(x, n, decreasing = FALSE, indices = NULL,
+  index.return = FALSE)
 }
 \arguments{
 \item{x}{a numeric, complex, character, or logical vector}

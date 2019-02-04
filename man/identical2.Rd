@@ -4,8 +4,9 @@
 \alias{identical2}
 \title{Test two or more objects for exact equality}
 \usage{
-identical2(..., num.eq = TRUE, single.NA = TRUE, attrib.as.set = TRUE,
-  ignore.bytecode = TRUE, ignore.environment = FALSE)
+identical2(..., num.eq = TRUE, single.NA = TRUE,
+  attrib.as.set = TRUE, ignore.bytecode = TRUE,
+  ignore.environment = FALSE)
 }
 \arguments{
 \item{...}{any \code{R} objects}
