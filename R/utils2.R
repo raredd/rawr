@@ -1407,7 +1407,7 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
                         format_pval = TRUE, color_pval = TRUE,
                         color_missing = TRUE, dagger = TRUE,
                         color_cell_by = c('none', 'value', 'pct'),
-                        cell_color = c('black', 'red'),
+                        cell_color = palette()[1:2],
                         continuous_fn = function(...)
                           Gmisc::describeMedian(..., iqr = FALSE), ...) {
   fun <- deparse(substitute(FUN))
@@ -1417,7 +1417,7 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
   else if (identical(color_missing, FALSE))
     NULL else color_missing
   pcol <- if (isTRUE(color_pval))
-    c('red', 'black')
+    palette()[2:1]
   else if (!identical(color_pval, FALSE)) {
     pcol <- color_pval
     color_pval <- TRUE
@@ -1806,7 +1806,7 @@ tabler_stat2 <- function(data, varname, byvar = NULL,
                          format_pval = TRUE, color_pval = TRUE, correct = FALSE,
                          color_missing = TRUE, dagger = TRUE,
                          group = NULL, color_cell_by = 'none',
-                         cell_color = c('black', 'red'), statArgs = NULL,
+                         cell_color = palette()[1:2], statArgs = NULL,
                          align = NULL, rgroup = NULL, cgroup = NULL,
                          tfoot = NULL, tfoot2 = NULL, htmlArgs = NULL, zeros = '-') {
   data <- as.data.frame(data)
@@ -1883,7 +1883,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
   }
   
   cell_color <- if (is.null(cell_color))
-    list(c('black', 'red'))
+    list(palette()[1:2])
   else if (islist(cell_color))
     cell_color else list(cell_color)
   cell_color <- rep_len(cell_color, nv)

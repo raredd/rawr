@@ -7,7 +7,7 @@
 tabler_stat(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
   format_pval = TRUE, color_pval = TRUE, color_missing = TRUE,
   dagger = TRUE, color_cell_by = c("none", "value", "pct"),
-  cell_color = c("black", "red"), continuous_fn = function(...)
+  cell_color = palette()[1:2], continuous_fn = function(...)
   Gmisc::describeMedian(..., iqr = FALSE), ...)
 }
 \arguments{

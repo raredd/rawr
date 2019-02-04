@@ -8,10 +8,9 @@ tabler_stat2(data, varname, byvar = NULL,
   varname_label = names(varname), byvar_label = names(byvar),
   digits = NULL, FUN = NULL, format_pval = TRUE, color_pval = TRUE,
   correct = FALSE, color_missing = TRUE, dagger = TRUE,
-  group = NULL, color_cell_by = "none", cell_color = c("black",
-  "red"), statArgs = NULL, align = NULL, rgroup = NULL,
-  cgroup = NULL, tfoot = NULL, tfoot2 = NULL, htmlArgs = NULL,
-  zeros = "-")
+  group = NULL, color_cell_by = "none", cell_color = palette()[1:2],
+  statArgs = NULL, align = NULL, rgroup = NULL, cgroup = NULL,
+  tfoot = NULL, tfoot2 = NULL, htmlArgs = NULL, zeros = "-")
 }
 \arguments{
 \item{data}{a matrix or data frame with variables \code{varname} and
