@@ -1403,7 +1403,7 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' 
 #' @export
 
-tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
+tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
                         format_pval = TRUE, color_pval = TRUE,
                         color_missing = TRUE, dagger = TRUE,
                         color_cell_by = c('none', 'value', 'pct'),
@@ -1423,6 +1423,12 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
     color_pval <- TRUE
     pcol
   } else NULL
+  
+  if (is.null(byvar)) {
+    FUN   <- NA
+    byvar <- '_by_var_'
+    data[, byvar] <- factor(1, 1:2)
+  }
   
   x <- if (is.character(x <- data[, varname]))
     as.factor(x) else x
@@ -1476,7 +1482,10 @@ tabler_stat <- function(data, varname, byvar, digits = 0L, FUN = NULL,
   
   ## no stat fn, no pvalue column
   if (identical(NA, FUN))
-    return(structure(res, FUN = FALSE, tfoot = ''))
+    return(
+      structure(if (byvar == '_by_var_')
+        res[, 1L, drop = FALSE] else res, FUN = FALSE, tfoot = '')
+    )
   
   ## add pvalue column using stat fn
   pvn <- tryCatch(
@@ -1766,6 +1775,7 @@ guess_test <- function(x, y, n_unique_x = 10L) {
 #'   vs2  <- factor(vs, 1:0)
 #' })
 #' 
+#' tabler_stat2(mt, c('mpg', 'cyl', 'wt'))
 #' tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs')
 #' tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs', group = 'wt')
 #' tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs',
@@ -1790,8 +1800,9 @@ guess_test <- function(x, y, n_unique_x = 10L) {
 #' 
 #' @export
 
-tabler_stat2 <- function(data, varname, byvar, varname_label = names(varname),
-                         byvar_label = names(byvar), digits = NULL, FUN = NULL,
+tabler_stat2 <- function(data, varname, byvar = NULL,
+                         varname_label = names(varname), byvar_label = names(byvar),
+                         digits = NULL, FUN = NULL,
                          format_pval = TRUE, color_pval = TRUE, correct = FALSE,
                          color_missing = TRUE, dagger = TRUE,
                          group = NULL, color_cell_by = 'none',
@@ -1806,7 +1817,7 @@ tabler_stat2 <- function(data, varname, byvar, varname_label = names(varname),
   
   stopifnot(
     all(c(varname, byvar) %in% names(data)),
-    length(byvar) == 1L,
+    length(byvar) %in% 0:1,
     byvar %in% names(data),
     nv == length(varname_label),
     is.null(FUN) ||
@@ -1838,6 +1849,12 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
                              color_missing = TRUE, dagger = TRUE,
                              color_cell_by = 'none', cell_color = NULL,
                              statArgs = NULL) {
+  if (is.null(byvar)) {
+    FUN   <- NA
+    byvar <- '_by_var_'
+    data[, byvar] <- factor(1, 1:2)
+  }
+  
   nv <- length(varname)
   byvar <- byvar[1L]
   
@@ -1917,8 +1934,14 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
     inherits(l, 'htmlStat')
   )
   
+  if (noby <- l$byvar == '_by_var_') {
+    l$cgroup <- l$cgroup[1L]
+    l$n.cgroup <- 1L
+  }
+  
   cn <- c(get_tabler_stat_n(l$data[, l$byvar]), '<i>p-value</i>')
-  colnames(l$output_data) <- if (l$pval) cn else head(cn, -1L)
+  colnames(l$output_data) <- if (noby)
+    cn[1L] else if (l$pval) cn else head(cn, -1L)
   
   res <- gsub('%', '', l$output_data, fixed = TRUE)
   p <- c('\\s*0\\s*\\(\\s*0\\s*\\)\\s*', '^\\s*0\\s*$',

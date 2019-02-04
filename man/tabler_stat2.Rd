@@ -4,13 +4,14 @@
 \alias{tabler_stat2}
 \title{\code{tabler_stat} wrappers}
 \usage{
-tabler_stat2(data, varname, byvar, varname_label = names(varname),
-  byvar_label = names(byvar), digits = NULL, FUN = NULL,
-  format_pval = TRUE, color_pval = TRUE, correct = FALSE,
-  color_missing = TRUE, dagger = TRUE, group = NULL,
-  color_cell_by = "none", cell_color = c("black", "red"), statArgs = NULL,
-  align = NULL, rgroup = NULL, cgroup = NULL, tfoot = NULL,
-  tfoot2 = NULL, htmlArgs = NULL, zeros = "-")
+tabler_stat2(data, varname, byvar = NULL,
+  varname_label = names(varname), byvar_label = names(byvar),
+  digits = NULL, FUN = NULL, format_pval = TRUE, color_pval = TRUE,
+  correct = FALSE, color_missing = TRUE, dagger = TRUE,
+  group = NULL, color_cell_by = "none", cell_color = c("black",
+  "red"), statArgs = NULL, align = NULL, rgroup = NULL,
+  cgroup = NULL, tfoot = NULL, tfoot2 = NULL, htmlArgs = NULL,
+  zeros = "-")
 }
 \arguments{
 \item{data}{a matrix or data frame with variables \code{varname} and
@@ -87,6 +88,7 @@ mt <- within(mtcars, {
   vs2  <- factor(vs, 1:0)
 })
 
+tabler_stat2(mt, c('mpg', 'cyl', 'wt'))
 tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs')
 tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs', group = 'wt')
 tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs',
