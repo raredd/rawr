@@ -44,21 +44,22 @@
 #' @export
 
 show_html <- function(..., use_viewer = !is.null(getOption('viewer'))) {
-  htmlFile <- tempfile(fileext = '.html')
   x <- c(...)
-  
   if (is.null(x))
     return(invisible(NULL))
   
+  htmlFile <- tempfile(fileext = '.html')
   writeLines(x, con = htmlFile)
+  
   if (use_viewer)
-    tryCatch(rstudioapi::viewer(htmlFile),
-             error = function(e) {
-               message('Viewer not available - opening in browser.\n',
-                       'In RStudio, try installing the \'rstudio\' package.',
-                       domain = NA)
-               browseURL(htmlFile)
-             })
+    tryCatch(
+      rstudioapi::viewer(htmlFile),
+      error = function(e) {
+        message('Viewer not available - opening in browser.\n',
+                'In RStudio, try installing the \'rstudio\' package.',
+                domain = NA)
+        browseURL(htmlFile)
+      })
   else browseURL(htmlFile)
   
   invisible(x)
@@ -225,10 +226,9 @@ show_math <- function(..., css = '', use_viewer = !is.null(getOption('viewer')))
   </script>
   "
   
+  ## use \[ expr \] instead of $$ expr $$
   check_expr <- function(x) {
-    ## use \[ expr \] instead of $$ expr $$
-    sprintf('\\[ %s \\]',
-            gsub('\\\\\\[|\\\\]', '', gsub('^\\$+|\\$+$', '', x)))
+    sprintf('\\[ %s \\]', gsub('\\\\\\[|\\\\]', '', gsub('^\\$+|\\$+$', '', x)))
   }
   
   x <- paste(sapply(c(...), check_expr), collapse = '<br />')
@@ -314,9 +314,9 @@ roundr.matrix <- function(x, digits = 1L) {
 #' @rdname roundr
 #' @export
 roundr.data.frame <- function(x, digits = 1L) {
-  x[] <- lapply(x, function(ii)
-    if (is.numeric(ii) || is.complex(ii))
-      roundr.default(ii, digits = digits) else ii)
+  x[] <- lapply(x, function(xx)
+    if (is.numeric(xx) || is.complex(xx))
+      roundr.default(xx, digits = digits) else xx)
   
   x
 }
@@ -340,7 +340,7 @@ roundr.data.frame <- function(x, digits = 1L) {
 #' 
 #' @examples
 #' intr(1:10)
-#' intr(1:10, conf = .95)
+#' intr(1:10, conf = 0.95)
 #' 
 #' # inner quartile range
 #' `colnames<-`(cbind(lapply(mtcars, intr, conf = .5),
@@ -1671,7 +1671,7 @@ getPval_ <- function(x, y, FUN, n_unique_x = 10L) {
 }
 
 guess_test <- function(x, y, n_unique_x = 10L) {
-  ## guess stat fn based on x by data
+  ## guess stat test for table var (x) using stratification var (y)
   ## x with >= n_unique_x unique values is assumed continuous
   ## dbl/int with many (?) unique values uses rank-sum tests
   ## otherwise assume contingency table

@@ -2149,14 +2149,15 @@ rleid <- function(x) {
 #' x <- factor(c('b', 'd'), levels = letters[1:5])
 #' droplevels(x)
 #' 
+#' ## levels between used levels are kept
 #' droplevels2(x)
-#' droplevels2(x, min_level = 2, max_level = 5)
 #' 
-#' droplevels2(factor(c(1, NA)))
+#' ## keep first level thru last level used
+#' droplevels2(x, min_level = 1)
 #' 
 #' @export
 
-droplevels2 <- function(x, min_level = 1L,
+droplevels2 <- function(x, min_level = min(as.integer(x), na.rm = TRUE),
                         max_level = max(as.integer(x), na.rm = TRUE)) {
   min_level <- as.integer(min_level)
   max_level <- as.integer(max_level)

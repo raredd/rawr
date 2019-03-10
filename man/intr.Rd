@@ -26,7 +26,7 @@ Calculate summary statistic with range or confidence interval.
 }
 \examples{
 intr(1:10)
-intr(1:10, conf = .95)
+intr(1:10, conf = 0.95)
 
 # inner quartile range
 `colnames<-`(cbind(lapply(mtcars, intr, conf = .5),

@@ -1394,9 +1394,9 @@ cuzick.test.default <- function(x, g, details = wilcox.test, correct = TRUE,
   
   estimate <- c(tapply(x, g, median))
   names(estimate) <- paste('median of', names(estimate))
+  attr(estimate, 'n') <- c(table(g))
   method <- sprintf(
-    paste('Wilcoxon rank-sum test for trend in %s ordered groups',
-          '(%scorrected for ties)'),
+    'Wilcoxon rank-sum test for trend in %s ordered groups (%scorrected for ties)',
     ug, c('un', '')[correct + 1L]
   )
   z <- cuzick.test.stat(x, g, correct)
@@ -1410,8 +1410,9 @@ cuzick.test.default <- function(x, g, details = wilcox.test, correct = TRUE,
   if (simulate.p.value) {
     p <- cuzick.test.pvalue(x, g, correct, B, TRUE)
     res$p.value <- unname(p[1L])
-    res$method <- sprintf('%s with simulated p-value (based on %s replicates)',
-                          method, B)
+    res$method <- sprintf(
+      '%s with simulated p-value (based on %s replicates)', method, B
+    )
     res$conf.int <- structure(p[2:3], conf.level = attr(p, 'conf.level'))
     res$simulate <- attr(p, 'simulate')
   }
