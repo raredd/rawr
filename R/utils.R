@@ -1,10 +1,10 @@
 ### utilities
-# psum, rescaler, clc, clear, bind_all, cbindx, rbindx, rbindfill, rbindfill2,
-# rbindlist, rbindlist2, interleave, outer2, merge2, locf, roll_fun,
-# classMethods, getMethods, regcaptures, regcaptures2, cast, melt, View2, view,
-# clist, rapply2, sort_matrix, insert, insert_matrix, tryCatch2, rleid,
-# droplevels2, combine_levels, combine_regex, rownames_to_column,
-# column_to_rownames, split_nth, sort2
+# psum, rescaler, bind_all, cbindx, rbindx, rbindfill, rbindfill2, rbindlist,
+# rbindlist2, interleave, outer2, merge2, locf, roll_fun, classMethods,
+# getMethods, regcaptures, regcaptures2, cast, melt, View2, view, clist,
+# rapply2, sort_matrix, insert, insert_matrix, tryCatch2, rleid, droplevels2,
+# combine_levels, combine_regex, rownames_to_column, column_to_rownames,
+# split_nth, sort2
 # 
 # rawr_ops:
 # %ni%, %==%, %||%, %sinside%, %winside%, %inside%, %:%
@@ -566,39 +566,6 @@ rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
     return(rep(mean(to), length(x)))
   
   (x - from[1L]) / diff(from) * diff(to) + to[1L]
-}
-
-#' Clear workspace
-#' 
-#' Clear the workspace by removing all objects in \code{\link{ls}} followed
-#' by \code{\link[=gc]{garbage collection}}.
-#' 
-#' @param all.names logical; if \code{TRUE}, also removes hidden (dot) objects
-#' 
-#' @seealso
-#' \code{\link{clear}}
-#' 
-#' @export
-
-clc <- function(all.names = FALSE) {
-  rm(list = ls(.GlobalEnv, all.names = all.names), envir = .GlobalEnv)
-  gc(TRUE)
-  invisible(NULL)
-}
-
-#' Clear console
-#' 
-#' Clear the console window.
-#' 
-#' @param ... ignored
-#' 
-#' @seealso
-#' \code{\link{clc}}
-#' 
-#' @export
-
-clear <- function(...) {
-  cat('\014')
 }
 
 #' Bind objects

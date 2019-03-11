@@ -1393,8 +1393,8 @@ cuzick.test.default <- function(x, g, details = wilcox.test, correct = TRUE,
   ni <- table(g)[li]
   
   estimate <- c(tapply(x, g, median))
-  names(estimate) <- paste('median of', names(estimate))
-  attr(estimate, 'n') <- c(table(g))
+  npg <- c(table(g))
+  names(estimate) <- sprintf('median of %s (n=%s)', names(estimate), npg)
   method <- sprintf(
     'Wilcoxon rank-sum test for trend in %s ordered groups (%scorrected for ties)',
     ug, c('un', '')[correct + 1L]
@@ -1404,7 +1404,7 @@ cuzick.test.default <- function(x, g, details = wilcox.test, correct = TRUE,
   
   res <- list(
     statistic = c(z = z), p.value = pval, estimate = estimate,
-    method = method, data.name = dname, details = NULL
+    method = method, data.name = dname, npg = npg, details = NULL
   )
   
   if (simulate.p.value) {

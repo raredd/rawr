@@ -3,18 +3,227 @@
 # roundr.data.frame, intr, pvalr, pvalr2, color_pval, catlist, binconr,
 # num2char, iprint, writeftable, tabler, tabler.default, tabler.lm, tabler.glm,
 # tabler.survfit, tabler_by, tabler_by2, tabler_stat, tabler_stat2, tabler_resp,
-# match_ctc, tox_worst, countr, dmy, combine_table, inject_div, sparKDT, case,
+# match_ctc, tox_worst, countr, dmy, combine_table, inject_div, case,
 # write_htmlTable, html_align
 # 
 # S3 methods:
 # roundr, tabler
 # 
+## in-line stats
+# anova, chisq, cuzick, fisher, jt, kruskal, kw, t, wilcox
+# 
 # unexported:
 # getPvalCuzick, getPvalJTtest, getPvalKruskal, getPvalKWtest, getPvalTtest,
 # getPval_, guess_test, tabler_stat_list, tabler_stat_html, guess_digits,
-# get_tabler_stat_n, resp1, r_or_better1, inject_, render_sparkDT
+# get_tabler_stat_n, resp1, r_or_better1, inject_
 ###
 
+
+#' In-line stats
+#' 
+#' Convenience functions to summarize statistical tests.
+#' 
+#' @param x numeric or factor-like variable, table, or a list depending on
+#' the statistic
+#' @param y (optional) group or stratification variable
+#' @param ... additional arguments passed to the stat function
+#' @param details logical; if \code{FALSE}, only the p-value is printed; if
+#' \code{TRUE}, additional details, such as the test statistic, degrees of
+#' freedom depending on the test, are printed
+#' @param digits number of digits past the decimal point to keep
+#' 
+#' @examples
+#' x <- mtcars$vs
+#' y <- mtcars$am
+#' 
+#' fisher.test(x, y)
+#' inl_fisher(x, y)
+#' 
+#' chisq.test(table(x, y))
+#' inl_chisq(x, y)
+#' 
+#' wilcox.test(mtcars$mpg ~ y)
+#' inl_wilcox(mtcars$mpg, y)
+#' 
+#' cuzick.test(mpg ~ gear, mtcars)
+#' inl_cuzick(mtcars$mpg, mtcars$gear)
+#' 
+#' jt.test(table(mtcars$gear, mtcars$cyl))
+#' inl_jt(mtcars$gear, mtcars$cyl)
+#' 
+#' kw.test(table(mtcars$vs, mtcars$cyl))
+#' inl_kw(mtcars$vs, mtcars$cyl)
+#' 
+#' @name inline_stats
+NULL
+
+#' @rdname inline_stats
+#' @export
+inl_anova <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
+  res <- anova(lm(y ~ x, ...))
+  
+  if (!details)
+    pvalr(res[['Pr(>F)']][[1L]], show.p = TRUE)
+  else {
+    sprintf(
+      'F: %s (%s df), one-way ANOVA p-value: %s',
+      roundr(res[['F value']][[1L]], digits), res$Df[[1L]],
+      pvalr(res[['Pr(>F)']][[1L]])
+    )
+  }
+}
+
+#' @rdname inline_stats
+#' @export
+inl_chisq <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
+  tbl <- if (!is.null(dim(x)))
+    x else table(x, y)
+  
+  suppressWarnings({
+    res <- chisq.test(tbl, ...)
+  })
+  
+  if (!details)
+    pvalr(res$p.value, show.p = TRUE)
+  else {
+    sprintf(
+      '&chi;<sup>2</sup>: %s (%s df), chi-squared p-value: %s',
+      roundr(res$statistic, digits), res$parameter, pvalr(res$p.value)
+    )
+  }
+}
+
+#' @rdname inline_stats
+#' @export
+inl_cuzick <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
+  if (inherits(x, 'list')) {
+    x <- rbindlist(x)
+    y <- x[, 1L]
+    x <- x[, 2L]
+  }
+  res <- cuzick.test(x ~ as.factor(y), ...)
+  
+  if (!details)
+    pvalr(res$p.value, show.p = TRUE)
+  else {
+    sprintf(
+      'z: %s (%s ordered groups), Cuzick trend p-value: %s',
+      roundr(res$statistic, digits), length(res$estimate), pvalr(res$p.value)
+    )
+  }
+}
+
+#' @rdname inline_stats
+#' @export
+inl_fisher <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
+  tbl <- if (!is.null(dim(x)))
+    x else table(x, y)
+  res <- fisher.test(tbl, ...)
+  
+  if (!details || any(dim(tbl) > 2L))
+    pvalr(res$p.value, show.p = TRUE)
+  else {
+    sprintf(
+      'OR: %s (%s%% CI: %s - %s), Fisher\'s exact p-value: %s',
+      roundr(res$estimate, digits), attr(res$conf.int, 'conf.level') * 100,
+      roundr(res$conf.int[1L], digits), roundr(res$conf.int[2L], digits),
+      pvalr(res$p.value, show.p = FALSE)
+    )
+  }
+}
+
+#' @rdname inline_stats
+#' @export
+inl_jt <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
+  res <- jt.test(x, y, ...)
+  
+  if (!details)
+    pvalr(res$p.value, show.p = TRUE)
+  else {
+    sprintf(
+      'z: %s, Jonckheere-Terpstra p-value: %s',
+      roundr(res$statistic, digits), pvalr(res$p.value)
+    )
+  }
+}
+
+#' @rdname inline_stats
+#' @export
+inl_kruskal <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
+  if (inherits(x, 'list')) {
+    x <- rbindlist(x)
+    y <- x[, 1L]
+    x <- x[, 2L]
+  }
+  res <- kruskal.test(x ~ as.factor(y), ...)
+  
+  if (!details)
+    pvalr(res$p.value, show.p = TRUE)
+  else {
+    sprintf(
+      '&chi;<sup>2</sup>: %s (%s df), Kruskal-Wallis rank-sum p-value: %s',
+      roundr(res$statistic, digits), res$parameter, pvalr(res$p.value)
+    )
+  }
+}
+
+#' @rdname inline_stats
+#' @export
+inl_kw <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
+  tbl <- if (!is.null(dim(x)))
+    x else table(x, y)
+  
+  suppressWarnings({
+    res <- kw.test(tbl, ...)
+  })
+  
+  if (!details)
+    pvalr(res$p.value, show.p = TRUE)
+  else {
+    sprintf(
+      '&chi;<sup>2</sup>: %s (%s df), Kruskal-Wallis p-value: %s',
+      roundr(res$statistic, digits), res$parameter, pvalr(res$p.value)
+    )
+  }
+}
+
+#' @rdname inline_stats
+#' @export
+inl_t <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
+  res <- t.test(x, y, ...)
+  
+  if (!details)
+    pvalr(res$p.value, show.p = TRUE)
+  else {
+    sprintf(
+      't: %s, %s p-value: %s',
+      roundr(res$statistic, digits), res$method, pvalr(res$p.value)
+    )
+  }
+}
+
+#' @rdname inline_stats
+#' @export
+inl_wilcox <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
+  if (inherits(x, 'list')) {
+    x <- rbindlist(x)
+    y <- x[, 1L]
+    x <- x[, 2L]
+  }
+  
+  suppressWarnings({
+    res <- wilcox.test(x ~ y, ...)
+  })
+  
+  if (!details)
+    pvalr(res$p.value, show.p = TRUE)
+  else {
+    sprintf(
+      'w: %s, Wilcoxon rank-sum p-value: %s',
+      roundr(res$statistic, digits), pvalr(res$p.value)
+    )
+  }
+}
 
 #' Show HTML
 #' 
@@ -2603,153 +2812,6 @@ inject_ <- function(x, where, what) {
   
   mat[where] <- what
   mat
-}
-
-#' \code{datatable}s with sparklines
-#' 
-#' Create an HTML table widget using the JavaScript library DataTables
-#' (\code{\link[DT]{datatable}}) with \code{\link[sparkline]{sparkline}}
-#' columns.
-#' 
-#' @param data a data frame or matrix
-#' @param spark a \emph{named} list of lists for each column of \code{data}
-#' for which an interactive sparkline will replace each row cell
-#' 
-#' each named list of \code{spark} should have length \code{nrow(data)} and
-#' contain at least one numeric value
-#' @param type the type of sparkline, one or more of "line", "bar", "box1",
-#' or "box2", recycled as needed; the only difference between "box1" and
-#' "box2" is the use of \code{spark_range}
-#' @param spark_range an optional list or vector (recycled as needed) giving
-#' the overall range for each list of \code{spark}; if missing, the ranges
-#' will be calculated; note this is only applicable for \code{type = "line"}
-#' or \code{type = "box1"}
-#' @param options,... \code{options} or additional arguments passed to
-#' \code{\link[DT]{datatable}}
-#' 
-#' @seealso
-#' Adapted from \url{leonawicz.github.io/HtmlWidgetExamples/ex_dt_sparkline.html}
-#' 
-#' @examples
-#' \dontrun{
-#' library('DT')
-#' 
-#' ## strings of data separated by commas should be passed to each row
-#' ## this data will be used to generate the sparkline
-#' dd <- aggregate(cbind(wt, mpg) ~ gear, mtcars, function(x)
-#'   toString(fivenum(x)))
-#' sparkDT(dd)
-#' 
-#' 
-#' ## for each column, create a list of vectors for each row to be plotted
-#' l <- sapply(c('wt', 'mpg'), function(x)
-#'   split(mtcars[, x], mtcars$gear), simplify = FALSE, USE.NAMES = TRUE)
-#' 
-#' sparkDT(dd, l, type = 'box1')
-#' 
-#' 
-#' set.seed(1)
-#' spark <- replicate(nrow(mtcars), round(rnorm(sample(20:100, 1)), 2), FALSE)
-#' 
-#' sparkDT(mtcars, list(mpg = spark, wt = spark, disp = spark, qsec = spark))
-#' 
-#' sparkDT(mtcars, list(mpg = spark, wt = spark, disp = spark, qsec = spark),
-#'         spark_range = list(disp = c(-5, 5), mpg = c(0, 10)))
-#' 
-#' ## note difference between box1 (boxes aligned) and box2 (max size)
-#' sparkDT(mtcars[, c('mpg', 'wt')],
-#'         list(mpg = spark, wt = spark),
-#'         type = c('box1', 'box2'),
-#'         # range = c(-2, 2),
-#'         rownames = FALSE,
-#'         colnames = c('box1', 'box2')
-#' )
-#' }
-#' 
-#' @export
-
-sparkDT <- function(data, spark, type = c('line', 'bar', 'box1', 'box2'),
-                    spark_range, options = list(), ...) {
-  data <- as.data.frame(data)
-  if (missing(spark))
-    return(DT::datatable(data = data, ..., options = options))
-  
-  srange <- lapply(spark, function(x) range(unlist(x), na.rm = TRUE))
-  
-  spark_range <- if (missing(spark_range))
-    srange
-  else if (!is.list(spark_range))
-    setNames(list(spark_range)[rep_len(1L, length(spark))], names(spark))
-  else if (length(names(spark_range)))
-    modifyList(srange, spark_range)
-  else setNames(spark_range, names(spark))
-  
-  spark_range <- spark_range[names(spark)]
-  
-  type <- match.arg(type, several.ok = TRUE)
-  type <- rep_len(type, length(spark))
-  
-  stopifnot(
-    all(names(spark) %in% names(data))
-  )
-  
-  spark <- rapply(spark, paste, collapse = ', ', how = 'list')
-  data[, names(spark)] <- lapply(spark, unlist)
-  
-  render_sparkDT(data, names(spark), type, spark_range, options, ...)
-}
-
-render_sparkDT <- function(data, variables, type, range, options, ...) {
-  ## catch case of rownames = FALSE - first spark col does not render
-  dots <- lapply(substitute(alist(...))[-1L], eval)
-  if (identical(dots$rownames, FALSE))
-    dots$rownames <- rep_len('', nrow(data))
-  
-  targets <- match(variables, names(data))
-  idx <- seq_along(targets)
-  
-  ## each column definition and type need a distinct class with variable name
-  columnDefs <- lapply(idx, function(ii)
-    list(
-      targets = targets[ii],
-      render = DT::JS(
-        sprintf("function(data, type, full){ return '<span class=spark%s>' + data + '</span>' }",
-                variables[ii])
-      )
-    )
-  )
-  
-  type <- lapply(idx, function(ii) {
-    bar  <- "type: 'bar' ,  barColor: 'orange', negBarColor: 'purple',      highlightColor: 'black'"
-    line <- "type: 'line', lineColor: 'black',    fillColor: '#cccccc', highlightLineColor: 'orange', highlightSpotColor: 'orange'"
-    box  <- "type: 'box' , lineColor: 'black', whiskerColor: 'black' ,    outlierFillColor: 'black' ,   outlierLineColor: 'black',  medianColor: 'black', boxFillColor: 'orange', boxLineColor: 'black'"
-    
-    r <- range[[ii]]
-    line_range <- sprintf("%s , chartRangeMin: %s , chartRangeMax: %s",
-                          line, r[1L], r[2L])
-    box_range  <- sprintf("%s , chartRangeMin: %s , chartRangeMax: %s",
-                          box, r[1L], r[2L])
-    
-    types <- list(bar = bar, line = line_range, box1 = box_range, box2 = box)
-    
-    types[match(type[ii], names(types))]
-  })
-  
-  js <- sapply(idx, function(ii) sprintf(
-    "$('.spark%s:not(:has(canvas))').sparkline('html', { %s }); \n",
-    variables[ii], type[[ii]])
-  )
-  js <- sprintf("function (oSettings, json) {\n %s }\n",
-                paste(js, collapse = '\n'))
-  
-  oo <- list(columnDefs = columnDefs, fnDrawCallback = DT::JS(js))
-  dt <- do.call(DT::datatable, c(
-    list(data = data, options = modifyList(options, oo)), dots)
-  )
-  dt$dependencies <- c(dt$dependencies,
-                       htmlwidgets::getDependency('sparkline'))
-  
-  dt
 }
 
 #' Letter case
