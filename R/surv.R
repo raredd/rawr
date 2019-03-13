@@ -1470,6 +1470,7 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
     }
     map.col <- FALSE
     sp <- list(data)
+    names(sp) <- main
   }
   
   ## define these before passing to loop
