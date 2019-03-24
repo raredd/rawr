@@ -117,4 +117,9 @@ tabler_stat2(
 \code{rawr:::guess_digits}; \code{rawr:::name_or_index}
 
 \code{rawr:::tabler_stat_list}; \code{rawr:::tabler_stat_html}
+
+Other tabler: \code{\link{tabler_bincon}},
+  \code{\link{tabler_by}}, \code{\link{tabler_resp}},
+  \code{\link{tabler_stat}}, \code{\link{tabler}}
 }
+\concept{tabler}

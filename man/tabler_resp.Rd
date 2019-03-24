@@ -92,4 +92,9 @@ structure(ht, class = 'htmlTable')
 }
 \seealso{
 \code{\link{bincon}}; \code{\link{binconr}}
+
+Other tabler: \code{\link{tabler_bincon}},
+  \code{\link{tabler_by}}, \code{\link{tabler_stat2}},
+  \code{\link{tabler_stat}}, \code{\link{tabler}}
 }
+\concept{tabler}

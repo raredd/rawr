@@ -175,4 +175,9 @@ structure(ht, clas = 'htmlTable')
 }
 \seealso{
 \code{\link{tox_worst}}; \code{\link{match_ctc}}
+
+Other tabler: \code{\link{tabler_bincon}},
+  \code{\link{tabler_resp}}, \code{\link{tabler_stat2}},
+  \code{\link{tabler_stat}}, \code{\link{tabler}}
 }
+\concept{tabler}
