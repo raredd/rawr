@@ -2480,9 +2480,10 @@ r_or_better1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
 #' @family tabler
 #' 
 #' @examples
-#' dat <- mtcars
+#' dat <- mtcars[sample(nrow(mtcars), 100L, TRUE), ]
 #' dat[1, 2] <- NA
 #' vv  <- c('cyl', 'vs', 'gear', 'carb')
+#' dat$gear <- factor(dat$gear, 3:6)
 #' 
 #' tabler_bincon(
 #'   dat, vv, 'am',
@@ -2534,6 +2535,9 @@ tabler_bincon <- function(data, varname, byvar,
   })
   tt <- do.call('rbind', tt)
   
+  na <- is.nan(ff[, 1L])
+  ff[na, ] <- NA
+  tt <- replace(tt, na, '-')
   
   a <- rownames(ff) %in% 'Missing'
   if (!show_missing) {
@@ -2559,8 +2563,7 @@ tabler_bincon <- function(data, varname, byvar,
   par(mar = c(5, 0, 3, 0), oma = c(0, 1, 0, 1), family = 'serif')
   
   col <- if (show_overall & length(col) == 2L)
-    rep(col, c(1, length(nn) - 1L))
-  else rep_len(col, length(nn))
+    rep(col, c(1L, length(nn) - 1L)) else rep_len(col, length(nn))
   col <- rep(col, nn)
   
   y <- rev(seq.int(nrow(ff)))
@@ -2569,18 +2572,12 @@ tabler_bincon <- function(data, varname, byvar,
   
   plot(
     ff[, 1L], y, xlim = c(0, 1), bty = 'n', axes = FALSE, ann = FALSE,
-    pch = ifelse(i, 18L, 16L),
-    # col = ifelse(i, col[1L], col[2L]),
-    # col = tcol(ifelse(i, col[1L], col[2L]), alpha = a),
-    col = tcol(col, alpha = a),
-    cex = ifelse(i, 3, 2),
+    pch = ifelse(i, 18L, 16L), col = tcol(col, alpha = a), cex = i + 2L,
     panel.first = {
       bars_(y)
       abline(v = ff[1L, 1L], lwd = 2, lty = 2L, col = 'grey')
-      arrows(
-        ff[, 2L], y, ff[, 3L], code = 3L, angle = 90, lwd = 1.5, length = 0.05,
-        col = tcol(c('grey50', 'black')[i + 1L], alpha = a)
-      )
+      arrows(ff[, 2L], y, ff[, 3L], code = 3L, angle = 90, length = 0.05,
+             lwd = 1.5, col = tcol(c('grey50', 'black')[i + 1L], alpha = a))
     },
     panel.last = {
       axis(1L, cex.axis = 1.5)
@@ -2591,28 +2588,20 @@ tabler_bincon <- function(data, varname, byvar,
   
   x <- rep_len(0, length(y))
   par(mar = c(5, 2, 3, 4), xpd = NA)
-  plot(
-    x, y, type = 'n', ann = FALSE, axes = FALSE,
-    panel.last = {
-      title(main = 'Subgroup', cex.main = 1.5, adj = 0, xpd = NA, line = 0.5)
-    }
-  )
-  text(x - ifelse(is.na(ff[, 1L]) | y == max(y), 1, 0.75), y,
-       rownames(ff), col = tcol('black', alpha = a),
-       adj = 0, cex = 1.5, font = ifelse(i, 2L, 1L))
+  plot(x, y, type = 'n', ann = FALSE, axes = FALSE)
+  title(main = 'Subgroup', cex.main = 1.5, adj = 0, xpd = NA, line = 0.5)
+  
+  pad <- 0.8
+  lag <- (is.na(ff[, 1L]) & !na) | y == max(y)
+  text(x - ifelse(lag, 1, pad), y, rownames(ff), font = i + 1L,
+       col = tcol('black', alpha = a), adj = 0, cex = 1.5)
   
   x <- rep_len(0, length(y))
-  plot(
-    x, y, type = 'n', ann = FALSE, axes = FALSE,
-    panel.last = {
-      title(main = sprintf('Point estimate (%s%% CI)', conf * 100),
-            cex.main = 1.5, xpd = NA, line = 0.5)
-    }
-  )
-  text(
-    x, y, tt[, 1L], col = tcol('black', alpha = a),
-    cex = 1.5, font = ifelse(i, 2L, 1L), xpd = NA
-  )
+  plot(x, y, type = 'n', ann = FALSE, axes = FALSE)
+  title(main = sprintf('Point estimate (%s%% CI)', conf * 100),
+        cex.main = 1.5, xpd = NA, line = 0.5)
+  text(x, y, tt[, 1L], col = tcol('black', alpha = a),
+       cex = 1.5, font = ifelse(i, 2L, 1L), xpd = NA)
   box('outer')
   
   invisible(list(ff, tt))
@@ -2654,10 +2643,8 @@ binconr_ <- function(outcome, variable, addNA = TRUE, lbl = NULL,
   sp <- split(outcome, variable)
   
   txt <- lapply(sp, function(x)
-    binconr(
-      sum(x - 1L), length(x), frac = TRUE, conf = conf, digits = digits,
-      show_conf = FALSE, est = TRUE, pct.sign = TRUE, percent = FALSE
-    )
+    binconr(sum(x - 1L), length(x), frac = TRUE, conf = conf, digits = digits,
+            show_conf = FALSE, est = TRUE, pct.sign = TRUE, percent = FALSE)
   )
   num <- lapply(sp, function(x)
     bincon(sum(x - 1L), length(x), alpha = 1 - conf)[3:5]

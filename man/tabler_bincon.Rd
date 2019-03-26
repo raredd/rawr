@@ -42,9 +42,10 @@ transparency added to missing value rows; passed to \code{\link{tcol}}}
 Wrapper function to create table of binomial confidence intervals.
 }
 \examples{
-dat <- mtcars
+dat <- mtcars[sample(nrow(mtcars), 100L, TRUE), ]
 dat[1, 2] <- NA
 vv  <- c('cyl', 'vs', 'gear', 'carb')
+dat$gear <- factor(dat$gear, 3:6)
 
 tabler_bincon(
   dat, vv, 'am',
