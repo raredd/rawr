@@ -4,7 +4,7 @@
 \alias{countr}
 \title{Count formatter}
 \usage{
-countr(top, n, lowcase = TRUE, frac = FALSE, digits = 0L,
+countr(top, n, lowcase = NA, frac = FALSE, digits = 0L,
   which = seq_along(top))
 }
 \arguments{

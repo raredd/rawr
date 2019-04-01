@@ -2218,6 +2218,7 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
   tr <- function(x) {
     gsub('\\s{2,}', ' ', x)
   }
+  
   ht <- do.call(
     htmlTable::htmlTable,
     c(list(
@@ -2828,7 +2829,7 @@ tox_worst <- function(data, id = 'id', desc = 'desc', grade = 'grade',
 #' 
 #' @export
 
-countr <- function(top, n, lowcase = TRUE, frac = FALSE, digits = 0L,
+countr <- function(top, n, lowcase = NA, frac = FALSE, digits = 0L,
                    which = seq_along(top)) {
   if (inherits(top, 'table')) {
     ## if top is a table, get n
