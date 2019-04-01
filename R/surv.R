@@ -1352,6 +1352,7 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
 #' ## if "by" is given, use map.col to map colors to plots
 #' kmplot_by( 'rx', 'pfs', colon2, by = 'rx', map.col = TRUE, single = FALSE)
 #' kmplot_by('sex', 'pfs', colon2, by = 'rx', map.col = TRUE, single = FALSE)
+#' kmplot_by('sex', 'pfs', colon2, by = 'age > 60', map.col = TRUE, single = FALSE)
 #' 
 #' ## to ensure colors are mapped to the same strata across plots (eg, if
 #' ## all sub plots do not have the same groups), use a _named_ vector
@@ -1451,7 +1452,9 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
     on.exit(NULL)
     
   if (!is.null(by)) {
-    data[, by] <- as.factor(data[, by])
+    data[, by] <- if (by %in% names(data))
+      as.factor(data[, by])
+    else factor(with(data, eval(parse(text = by))))
     if (single) {
       add <- FALSE
       par(mfrow = c(1L,1L))

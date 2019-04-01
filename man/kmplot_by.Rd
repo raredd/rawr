@@ -123,6 +123,7 @@ kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3,
 ## if "by" is given, use map.col to map colors to plots
 kmplot_by( 'rx', 'pfs', colon2, by = 'rx', map.col = TRUE, single = FALSE)
 kmplot_by('sex', 'pfs', colon2, by = 'rx', map.col = TRUE, single = FALSE)
+kmplot_by('sex', 'pfs', colon2, by = 'age > 60', map.col = TRUE, single = FALSE)
 
 ## to ensure colors are mapped to the same strata across plots (eg, if
 ## all sub plots do not have the same groups), use a _named_ vector
