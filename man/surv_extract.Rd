@@ -8,7 +8,8 @@
 \usage{
 surv_extract(x, what = "median")
 
-surv_median(x, ci = FALSE, digits = 0L, which = NULL, print = TRUE)
+surv_median(x, ci = FALSE, digits = 0L, which = NULL, print = TRUE,
+  na = ifelse(ci, "NR", "not reached"))
 
 surv_prob(x, times = pretty(x$time), ci = TRUE, digits = 2L,
   which = 1L, print = TRUE)
@@ -30,6 +31,9 @@ for one strata so \code{which} should be length 1}
 
 \item{print}{logical; if \code{TRUE}, output is prepared for in-line
 printing}
+
+\item{na}{a character string to replace \code{NA} when median
+times have not yet been reached}
 
 \item{times}{vector of times passed to \code{\link{surv_table}}}
 }

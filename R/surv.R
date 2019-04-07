@@ -2152,6 +2152,8 @@ landmark <- function(s, times = NULL, lr_test = TRUE, adjust_start = FALSE,
 #' for one strata so \code{which} should be length 1
 #' @param print logical; if \code{TRUE}, output is prepared for in-line
 #' printing
+#' @param na a character string to replace \code{NA} when median
+#' times have not yet been reached
 #' @param times vector of times passed to \code{\link{surv_table}}
 #' 
 #' @examples
@@ -2207,8 +2209,11 @@ surv_extract <- function(x, what = 'median') {
 
 #' @rdname surv_extract
 #' @export
-surv_median <- function(x, ci = FALSE, digits = 0L,
-                        which = NULL, print = TRUE) {
+surv_median <- function(x, ci = FALSE, digits = 0L, which = NULL,
+                        print = TRUE, na = ifelse(ci, 'NR', 'not reached')) {
+  nr <- function(x) {
+    gsub('NA', na, x)
+  }
   nst <- pmax(1L, length(x$strata))
   which <- if (is.null(which))
     seq.int(nst) else which
@@ -2217,7 +2222,7 @@ surv_median <- function(x, ci = FALSE, digits = 0L,
     res <- surv_extract(x, 'median')[which]
     return(
       if (print)
-        iprint(res, digits = digits) else res
+        nr(iprint(res, digits = digits)) else res
     )
   }
   
@@ -2233,7 +2238,7 @@ surv_median <- function(x, ci = FALSE, digits = 0L,
     f(res) else apply(res, 1L, f)
   
   if (print)
-    iprint(res) else res
+    nr(iprint(res)) else res
 }
 
 #' @rdname surv_extract
