@@ -1547,8 +1547,6 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' @param ... additional arguments passed to
 #' \code{\link[Gmisc]{getDescriptionStatsBy}}
 #' 
-#' @family tabler
-#' 
 #' @return
 #' A matrix with additional attributes:
 #' 
@@ -1562,9 +1560,9 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' \item{\code{attr(,"tfoot")}}{a footnote for the table using each dagger
 #' and corresponding test name}
 #' 
-#' @seealso
-#' \code{\link{tabler_stat2}}; \code{\link{tabler}}; \code{\link{tabler_by}}
+#' @family tabler
 #' 
+#' @seealso
 #' \code{\link{fisher.test}}; \code{\link{wilcox.test}}; \code{\link{t.test}};
 #' \code{\link{kruskal.test}}; \code{\link{chisq.test}}; \code{\link{anova}};
 #' \code{\link{cuzick.test}}; \code{\link{jt.test}}; \code{\link{kw.test}}
@@ -1925,7 +1923,7 @@ guess_test <- function(x, y, n_unique_x = 10L) {
 
 #' \code{tabler_stat} wrappers
 #' 
-#' Helper functions for using \code{tabler_stat}.
+#' Helper functions for using \code{\link{tabler_stat}}.
 #' 
 #' @param data a matrix or data frame with variables \code{varname} and
 #' \code{byvar}
@@ -1934,6 +1932,11 @@ guess_test <- function(x, y, n_unique_x = 10L) {
 #' @param byvar a stratification variable; the column variable of the table
 #' @param varname_label,byvar_label optional labels for each \code{varname}
 #' and \code{byvar}
+#' 
+#' note that duplicated \code{varname_label}s will be processed individually
+#' then grouped; this is useful if one variable is shown as continuous and
+#' categorical, for example; grouped variables should be consecutive, see
+#' examples
 #' @param digits \code{NULL} or a vector of digits past the decimal point to
 #' keep for each \code{varname}; if \code{NULL}, these will be guessed using
 #' \code{rawr:::guess_digits}; if length 1, all will be rounded to
@@ -1988,8 +1991,7 @@ guess_test <- function(x, y, n_unique_x = 10L) {
 #' ## typical usage
 #' mt <- within(mtcars, {
 #'   cyl  <- factor(cyl)
-#'   gear <- factor(gear)
-#'   vs2  <- factor(vs, 1:0)
+#'   mpg2 <- factor(+(mpg > 20), 0:1, c('&le; 20', '&gt; 20'))
 #' })
 #' 
 #' tabler_stat2(mt, c('mpg', 'cyl', 'wt'))
@@ -2007,9 +2009,9 @@ guess_test <- function(x, y, n_unique_x = 10L) {
 #' )
 #' 
 #' tabler_stat2(
-#'   mt, c('mpg', 'cyl', 'wt'), 'vs',
-#'   byvar_label = 'V/S engine',
-#'   varname_label = c('MPG', 'Cylinders', 'Weight'),
+#'   mt,
+#'   varname = c(MPG = 'mpg', MPG = 'mpg2', Cylinders = 'cyl', Weight = 'wt'),
+#'   byvar = c('V/S engine' = 'vs'),
 #'   zeros = NULL,
 #'   digits = c(wt = 2)
 #'   # digits = c('3' = 2) ## equivalently
@@ -2115,14 +2117,23 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
     list(format_pval), color_pval, color_missing, dagger,
     color_cell_by, cell_color), statArgs)
   )
-  names(l) <- varname_label
   
   tbl <- lapply(l, function(x)
     x[!(duplicated(x, fromLast = TRUE) &
           duplicated(rownames(x), fromLast = TRUE)), , drop = FALSE]
   )
+  names(l) <- names(tbl) <- varname_label
   
   res <- do.call('rbind', tbl)
+  
+  dup <- table(names(tbl))
+  if (length(dup <- dup[dup > 1L])) {
+    for (dd in names(dup)) {
+      ii <- names(tbl) %in% dd
+      tbl[[which(ii)[1L]]] <- do.call('rbind', tbl[ii])
+      tbl <- tbl[-which(ii)[-1L]]
+    }
+  }
   
   rgroup   <- names(tbl)
   n.rgroup <- unname(sapply(rgroup, function(x) nrow(tbl[[x]]) %||% 1L))

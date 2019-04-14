@@ -22,7 +22,12 @@ statistics by \code{byvar}; the rows variable(s) of the table}
 \item{byvar}{a stratification variable; the column variable of the table}
 
 \item{varname_label, byvar_label}{optional labels for each \code{varname}
-and \code{byvar}}
+and \code{byvar}
+
+note that duplicated \code{varname_label}s will be processed individually
+then grouped; this is useful if one variable is shown as continuous and
+categorical, for example; grouped variables should be consecutive, see
+examples}
 
 \item{digits}{\code{NULL} or a vector of digits past the decimal point to
 keep for each \code{varname}; if \code{NULL}, these will be guessed using
@@ -71,7 +76,7 @@ to each cell (for html output); one of \code{"none"}, \code{"value"}, or
 value keeps cells as-is)}
 }
 \description{
-Helper functions for using \code{tabler_stat}.
+Helper functions for using \code{\link{tabler_stat}}.
 }
 \examples{
 sapply(mtcars[1:6], rawr:::guess_digits)
@@ -83,8 +88,7 @@ rawr:::get_tabler_stat_n(mtcars$gear)
 ## typical usage
 mt <- within(mtcars, {
   cyl  <- factor(cyl)
-  gear <- factor(gear)
-  vs2  <- factor(vs, 1:0)
+  mpg2 <- factor(+(mpg > 20), 0:1, c('&le; 20', '&gt; 20'))
 })
 
 tabler_stat2(mt, c('mpg', 'cyl', 'wt'))
@@ -102,9 +106,9 @@ tabler_stat2(
 )
 
 tabler_stat2(
-  mt, c('mpg', 'cyl', 'wt'), 'vs',
-  byvar_label = 'V/S engine',
-  varname_label = c('MPG', 'Cylinders', 'Weight'),
+  mt,
+  varname = c(MPG = 'mpg', MPG = 'mpg2', Cylinders = 'cyl', Weight = 'wt'),
+  byvar = c('V/S engine' = 'vs'),
   zeros = NULL,
   digits = c(wt = 2)
   # digits = c('3' = 2) ## equivalently
