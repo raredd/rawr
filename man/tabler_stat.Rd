@@ -140,8 +140,6 @@ tabler_stat2(mt, names(mt)[-10L], 'gear',
 
 }
 \seealso{
-\code{\link{tabler_stat2}}; \code{\link{tabler}}; \code{\link{tabler_by}}
-
 \code{\link{fisher.test}}; \code{\link{wilcox.test}}; \code{\link{t.test}};
 \code{\link{kruskal.test}}; \code{\link{chisq.test}}; \code{\link{anova}};
 \code{\link{cuzick.test}}; \code{\link{jt.test}}; \code{\link{kw.test}}
