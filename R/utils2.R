@@ -1661,11 +1661,19 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
     ox <- FALSE
   }
   
-  res <- Gmisc::getDescriptionStatsBy(
-    x = x, by = y, digits = digits, html = TRUE, add_total_col = TRUE,
-    show_all_values = TRUE, statistics = FALSE, useNA.digits = 0L,
-    continuous_fn = continuous_fn, ...
-  )
+  
+  res <- if (inherits(x, c('Date', 'POSIXct', 'POSIXt'))) {
+    color_cell_by <- 'none'
+    FUN <- if (length(FUN) && is.na(FUN))
+      NA else FALSE
+    describeDateBy(x, y, ...)
+  } else {
+    Gmisc::getDescriptionStatsBy(
+      x, y, digits = digits, html = TRUE, add_total_col = TRUE,
+      show_all_values = TRUE, statistics = FALSE, useNA.digits = 0L,
+      continuous_fn = continuous_fn, ...
+    )
+  }
   class(res) <- 'matrix'
   
   ## recolor missing
@@ -1919,6 +1927,97 @@ guess_test <- function(x, y, n_unique_x = 10L) {
       structure(Gmisc::getPvalFisher(x, y), FUN = 'fisher.test',
                 name = 'Fisher\'s exact test')
   }
+}
+
+#' Describe a date
+#' 
+#' A function that returns the range of a date object.
+#' 
+#' @param x,by vectors of dates and the variable to split \code{x} by
+#' @param format the date format; see \code{\link{strptime}}
+#' @param copula character string to separate the range
+#' @param FUN a function to summarize \code{x}, usually \code{range} or
+#' \code{min}
+#' @param add_total_col logical, \code{"first"}, or \code{"last"}; adds
+#' the total column to the output
+#' @param useNA how to handle missing values, one of \code{"ifany"} (default),
+#' \code{"no"}, or \code{"always"}
+#' @param useNA.digits number of digits to use for missing percentages
+#' @param percentage_sign logical; if \code{TRUE}, percent signs are added
+#' 
+#' @seealso
+#' \code{\link[Gmisc]{getDescriptionStatsBy}}
+#' 
+#' @examples
+#' x <- c(1:4, NA, 5)
+#' d <- as.Date(x, origin = Sys.Date())
+#' y <- c(1, 1, 2, 2, 1, 3)
+#' describeDate(x)
+#' describeDateBy(d, y, copula = ' - ', format = '%d %B')
+#' describeDateBy(d, y, percentage_sign = TRUE, useNA.digits = 2, FUN = min)
+#' 
+#' dd <- data.frame(x, y, d)
+#' tabler_stat(dd, 'd', 'y')
+#' tabler_stat2(dd, c(Integer = 'x', Date = 'd'), c(Byvar = 'y'))
+#' 
+#' @export
+
+describeDate <- function(x, format = '%b %d, %Y', copula = ' to ', FUN = range) {
+  x <- x[!is.na(x)]
+  FUN <- match.fun(FUN)
+  res <- format(FUN(x), format = format)
+  
+  if (length(res) == 1L)
+    res else sprintf('%s%s%s', res[1L], copula, res[2L])
+}
+
+#' @rdname describeDate
+#' @export
+describeDateBy <- function(x, by, format = '%b %d, %Y', copula = ' to ',
+                           FUN = range, add_total_col = TRUE,
+                           useNA = c('ifany', 'no', 'always'),
+                           useNA.digits = 0L, percentage_sign = FALSE) {
+  nax <- is.na(x)
+  nay <- is.na(by)
+  
+  if (anyNA(by)) {
+    warning(
+      '\n Your \'by\' variable has ', sum(nay), ' missing values\n',
+      '  The corresponding \'x\' and \'by\' variables are automatically removed'
+    )
+    x <- x[!nay]
+    by <- by[!nay]
+  }
+  
+  by_y <- by(x, by, function(x)
+    describeDate(x, format = format, copula = copula, FUN = FUN))
+  by_y <- matrix(unlist(by_y), ncol = length(by_y),
+                 dimnames = list('Date', names(by_y)))
+  by_t <- describeDate(x, format = format, copula = copula, FUN = FUN)
+  by_t <- matrix(by_t, dimnames = list('Date', 'Total'))
+  
+  res <- if (isTRUE(add_total_col) || add_total_col %in% 'first')
+    cbind(by_t, by_y)
+  else if (add_total_col %in% 'last')
+    cbind(by_y, by_t)
+  else by_y
+  
+  useNA <- match.arg(useNA)
+  
+  if (useNA %in% 'always' || (anyNA(x) & !useNA %in% 'no')) {
+    mis <- c(list(x), split(x, by))
+    mis <- sapply(mis, function(m) {
+      s <- sum(is.na(m))
+      sprintf('%s (%s%%)', s, if (s == 0) '0'
+              else roundr(s / length(m) * 100, useNA.digits))
+    })
+    if (!percentage_sign)
+      mis <- gsub('%', '', mis)
+    
+    res <- rbind(res, Missing = mis)
+  }
+  
+  res
 }
 
 #' \code{tabler_stat} wrappers
