@@ -410,6 +410,10 @@ tplot.default <- function(x, g, ..., type = 'db',
         ylab <- deparse(substitute(x))
       if (is.null(xlab))
         xlab <- deparse(substitute(g))
+      if (is.numeric(g)) {
+        g <- as.integer(g)
+        g <- factor(g, seq(min(g), max(g)))
+      }
       x <- split(x, g)
     }
   } else {

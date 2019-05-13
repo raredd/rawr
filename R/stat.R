@@ -1302,45 +1302,39 @@ lm.beta <- function (x, weights = 1) {
 #' ## increasing metastatic potential; number of lung metastases found in each
 #' ## mouse after inoculation
 #' 
-#' x <- list(c(0, 0, 1, 1, 2, 2, 4, 9),
-#'            c(0, 0, 5, 7, 8, 11, 13, 23, 25, 97),
-#'            c(2, 3, 6, 9, 10, 11, 11, 12, 21),
-#'            c(0, 3, 5, 6, 10, 19, 56, 100, 132),
-#'            c(2, 4, 6, 6, 6, 7, 18, 39, 60))
-#' g <- rep(1:5, sapply(x, length))
-#' cuzick.test(unlist(x), g)$p.value / 2 ## one-sided
+#' x <- list(
+#'   'CMT 64'  = c(0, 0, 1, 1, 2, 2, 4, 9),
+#'   'CMT 167' = c(0, 0, 5, 7, 8, 11, 13, 23, 25, 97),
+#'   'CMT 170' = c(2, 3, 6, 9, 10, 11, 11, 12, 21),
+#'   'CMT 175' = c(0, 3, 5, 6, 10, 19, 56, 100, 132),
+#'   'CMT 181' = c(2, 4, 6, 6, 6, 7, 18, 39, 60)
+#' )
+#' cuzick.test(x)$p.value / 2 ## one-sided (corrected for ties)
 #' 
 #' 
 #' ## coercing character group vector g to factor may have undesired order
 #' set.seed(1)
-#' x <- sort(rnorm(20))
-#' g1 <- sample(paste0(c(5,10,15), 'mg'), 20, replace = TRUE)
-#' g2 <- factor(g1, levels = paste0(c(5,10,15), 'mg'))
+#' x  <- sort(rnorm(20))
+#' g1 <- sample(paste0(c(5, 10, 15), 'mg'), 20, replace = TRUE)
+#' g2 <- factor(g1, levels = paste0(c(5, 10, 15), 'mg'))
 #' 
 #' ## wrong order
-#' p1 <- cuzick.test(x, g1)$p.value
-#' tplot(x ~ g1, data.frame(x, g1), type = 'db',
-#'       panel.first = title(sub = pvalr(p1, show.p = TRUE)))
+#' tplot(x ~ g1, data.frame(x, g1), type = 'db', test = cuzick.test)
 #' 
 #' ## correct order
-#' p2 <- cuzick.test(x, g2)$p.value
-#' tplot(x ~ g2, data.frame(x, g2), type = 'db',
-#'       panel.first = title(sub = pvalr(p2, show.p = TRUE)))
+#' tplot(x ~ g2, data.frame(x, g2), type = 'db', test = cuzick.test)
 #' 
 #' 
 #' ## groups need not be equally-spaced but will affect statistic/p-value
 #' set.seed(1)
-#' x <- sort(rnorm(20))
+#' x  <- sort(rnorm(20))
 #' g1 <- sample(1:3, 20, replace = TRUE)
 #' g2 <- g1 + (g1 == 3)
 #' 
-#' tplot(x, g1, at = sort(unique(g1)))
-#' mtext(pvalr(cuzick.test(x, g1)$p.value, show.p = TRUE),
-#'       at = par('usr')[2L], adj = 1)
-#' 
-#' tplot(x, g2, at = sort(unique(g2)))
-#' mtext(pvalr(cuzick.test(x, g2)$p.value, show.p = TRUE),
-#'       at = par('usr')[2L], adj = 1)
+#' tplot(x, g1, test = cuzick.test)
+#' tplot(x, g2, test = cuzick.test)
+#' ## compare
+#' tplot(x, factor(g2), test = cuzick.test)
 #' 
 #' @export
 
@@ -1363,8 +1357,8 @@ cuzick.test.default <- function(x, g, details = wilcox.test, correct = TRUE,
     if (!all(sapply(x, is.numeric)))
       warning('some elements of \'x\' are not numeric and will be coerced')
     l <- sapply(x, length)
-    if (any(l == 0L))
-      stop('all groups must contain data')
+    # if (any(l == 0L))
+    #   stop('all groups must contain data')
     g <- factor(rep.int(seq_len(length(x)), l))
     x <- unlist(x)
   } else {
@@ -1382,14 +1376,14 @@ cuzick.test.default <- function(x, g, details = wilcox.test, correct = TRUE,
   
   fac <- if (is.factor(g) || is.character(g)) {
     g <- as.factor(g)
-    if (nlevels(g) != nlevels(g <- droplevels(g)))
-      warning('unused factor level(s) dropped')
+    # if (nlevels(g) != nlevels(g <- droplevels(g)))
+    #   warning('unused factor level(s) dropped')
     TRUE
   } else FALSE
   
   ug <- length(unique(g))
   li <- if (fac)
-    seq.int(ug) else as.character(sort(unique(g)))
+    seq.int(levels(g)) else as.character(sort(unique(g)))
   ni <- table(g)[li]
   
   estimate <- c(tapply(x, g, median))
@@ -1430,7 +1424,18 @@ cuzick.test.default <- function(x, g, details = wilcox.test, correct = TRUE,
     sp  <- lapply(idx, function(x) setNames(l2df(sp[x]), c('x', 'g')))
     names(sp) <- ids
     
-    pw <- lapply(sp, function(X) suppressWarnings(details(x ~ g, X, ...)))
+    # pw <- lapply(sp, function(X) suppressWarnings(details(x ~ g, X, ...)))
+    pw <- lapply(sp, function(X) {
+      suppressWarnings({
+        tryCatch(
+          details(x ~ g, X, ...),
+          error = function(e)
+            structure(list(statistic = NA, parameter = NULL, p.value = NA,
+                           null.value = NA, alternative = NA, method = NA,
+                           data.name = NA), class = 'htest')
+        )
+      })
+    })
     PW <- tryCatch(lapply(pw, tidy), error = function(e) NULL)
     
     pw <- list(pairs = if (is.null(PW)) pw else
@@ -1474,13 +1479,14 @@ cuzick.test.stat <- function(x, g, correct) {
   
   fac <- if (is.factor(g) || is.character(g)) {
     g <- as.factor(g)
-    if (nlevels(g) != nlevels(g <- droplevels(g)))
-      warning('unused factor level(s) dropped')
+    # if (nlevels(g) != nlevels(g <- droplevels(g)))
+    #   warning('unused factor level(s) dropped')
     TRUE
   } else FALSE
   
   ux <- length(unique(x))
-  ug <- length(unique(g))
+  # ug <- length(unique(g))
+  ug <- max(length(unique(g)), nlevels(g))
   
   if (!is.numeric(x))
     stop('\'x\' values must be numeric')
@@ -1503,7 +1509,7 @@ cuzick.test.stat <- function(x, g, correct) {
   L  <- sum(li * ni)
   
   ## T statistic, expected value, variance
-  T  <- sum(li * Ri)
+  T  <- sum(li * Ri, na.rm = TRUE)
   eT <- (N + 1) * L / 2
   vT <- (N + 1) / 12 * (N * sum(li ^ 2 * ni) - L ^ 2)
   

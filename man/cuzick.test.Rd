@@ -117,45 +117,39 @@ cuzick.test(x, details = coin::wilcox_test)$details
 ## increasing metastatic potential; number of lung metastases found in each
 ## mouse after inoculation
 
-x <- list(c(0, 0, 1, 1, 2, 2, 4, 9),
-           c(0, 0, 5, 7, 8, 11, 13, 23, 25, 97),
-           c(2, 3, 6, 9, 10, 11, 11, 12, 21),
-           c(0, 3, 5, 6, 10, 19, 56, 100, 132),
-           c(2, 4, 6, 6, 6, 7, 18, 39, 60))
-g <- rep(1:5, sapply(x, length))
-cuzick.test(unlist(x), g)$p.value / 2 ## one-sided
+x <- list(
+  'CMT 64'  = c(0, 0, 1, 1, 2, 2, 4, 9),
+  'CMT 167' = c(0, 0, 5, 7, 8, 11, 13, 23, 25, 97),
+  'CMT 170' = c(2, 3, 6, 9, 10, 11, 11, 12, 21),
+  'CMT 175' = c(0, 3, 5, 6, 10, 19, 56, 100, 132),
+  'CMT 181' = c(2, 4, 6, 6, 6, 7, 18, 39, 60)
+)
+cuzick.test(x)$p.value / 2 ## one-sided (corrected for ties)
 
 
 ## coercing character group vector g to factor may have undesired order
 set.seed(1)
-x <- sort(rnorm(20))
-g1 <- sample(paste0(c(5,10,15), 'mg'), 20, replace = TRUE)
-g2 <- factor(g1, levels = paste0(c(5,10,15), 'mg'))
+x  <- sort(rnorm(20))
+g1 <- sample(paste0(c(5, 10, 15), 'mg'), 20, replace = TRUE)
+g2 <- factor(g1, levels = paste0(c(5, 10, 15), 'mg'))
 
 ## wrong order
-p1 <- cuzick.test(x, g1)$p.value
-tplot(x ~ g1, data.frame(x, g1), type = 'db',
-      panel.first = title(sub = pvalr(p1, show.p = TRUE)))
+tplot(x ~ g1, data.frame(x, g1), type = 'db', test = cuzick.test)
 
 ## correct order
-p2 <- cuzick.test(x, g2)$p.value
-tplot(x ~ g2, data.frame(x, g2), type = 'db',
-      panel.first = title(sub = pvalr(p2, show.p = TRUE)))
+tplot(x ~ g2, data.frame(x, g2), type = 'db', test = cuzick.test)
 
 
 ## groups need not be equally-spaced but will affect statistic/p-value
 set.seed(1)
-x <- sort(rnorm(20))
+x  <- sort(rnorm(20))
 g1 <- sample(1:3, 20, replace = TRUE)
 g2 <- g1 + (g1 == 3)
 
-tplot(x, g1, at = sort(unique(g1)))
-mtext(pvalr(cuzick.test(x, g1)$p.value, show.p = TRUE),
-      at = par('usr')[2L], adj = 1)
-
-tplot(x, g2, at = sort(unique(g2)))
-mtext(pvalr(cuzick.test(x, g2)$p.value, show.p = TRUE),
-      at = par('usr')[2L], adj = 1)
+tplot(x, g1, test = cuzick.test)
+tplot(x, g2, test = cuzick.test)
+## compare
+tplot(x, factor(g2), test = cuzick.test)
 
 }
 \references{
