@@ -23,7 +23,8 @@
 #' }
 #' 
 #' @seealso
-#' \code{\link{ctcae_v4}}; \code{\link{match_ctc}}; \code{\link{tox_worst}}
+#' \code{\link{ctcae_v4}}; \code{\link{ctcae_v5}}; \code{\link{match_ctc}};
+#' \code{\link{tox_worst}}
 
 'ctcae_v3'
 
@@ -49,6 +50,33 @@
 #' }
 #' 
 #' @seealso
-#' \code{\link{ctcae_v3}}; \code{\link{match_ctc}}; \code{\link{tox_worst}}
+#' \code{\link{ctcae_v3}}; \code{\link{ctcae_v5}}; \code{\link{match_ctc}};
+#' \code{\link{tox_worst}}
 
 'ctcae_v4'
+
+#' Common Terminology Criteria for Adverse Events, v5
+#'
+#' A dataset containing the CTCAE (version 5) toxicity codes, descriptions,
+#' and categories.
+#'  
+#' @source
+#' \url{https://ctep.cancer.gov/protocolDevelopment/electronic_applications/ctc.htm#ctc_50}
+#'
+#' @format
+#' A data frame with 837 rows and 6 variables:
+#' \tabular{lll}{
+#' \tab \code{tox_code} \tab unavailable \cr
+#' \tab \code{tox_desc} \tab description \cr
+#' \tab \code{tox_cat} \tab category \cr
+#' \tab \code{ctc_version} \tab version number \cr
+#' \tab \code{MedDRA_code_v50} \tab Medical Dictionary for Regulatory 
+#' Activities codes, v50 \cr
+#' \tab \code{tox_def} \tab definition \cr
+#' }
+#' 
+#' @seealso
+#' \code{\link{ctcae_v3}}; \code{\link{ctcae_v4}}; \code{\link{match_ctc}};
+#' \code{\link{tox_worst}}
+
+'ctcae_v5'

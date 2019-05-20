@@ -26,6 +26,7 @@ A dataset containing the CTCAE (version 4) toxicity codes, descriptions,
 and categories.
 }
 \seealso{
-\code{\link{ctcae_v3}}; \code{\link{match_ctc}}; \code{\link{tox_worst}}
+\code{\link{ctcae_v3}}; \code{\link{ctcae_v5}}; \code{\link{match_ctc}};
+\code{\link{tox_worst}}
 }
 \keyword{datasets}
