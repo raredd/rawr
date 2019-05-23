@@ -1733,8 +1733,8 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
                  'Fisher\'s exact test')
     ),
     ordered1  = structure(
-      setNames(paste0(c('cuzick', 'kw', 'cuzick'), '.test'), dags),
-      tnames = c('Cuzick\'s trend test',
+      setNames(paste0(c('kw', 'kw', 'cuzick'), '.test'), dags),
+      tnames = c('Kruskal-Wallis trend test',
                  'Kruskal-Wallis trend test',
                  'Cuzick\'s trend test')
     ),
