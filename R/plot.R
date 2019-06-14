@@ -229,6 +229,8 @@ jmplot <- function(x, y, z,
 #' @param show.n,show.na logical; show total and missing in each group
 #' @param cex.n character expansion for \code{show.n} and \code{show.na}
 #' @param text.na label for missing values (default is "missing")
+#' @param n.at the y-coordinate (or x-coordinate if \code{horizontal = TRUE})
+#' to place the total and missing in each group
 #' @param test logical or function; if \code{TRUE}, a rank-sum p-value is
 #' added to the plot (\code{\link{wilcox.test}} or \code{\link{kruskal.test}}
 #' based on the number of groups)
@@ -375,7 +377,7 @@ tplot.default <- function(x, g, ..., type = 'db',
                           
                           ## n/missing for each group
                           show.n = TRUE, show.na = show.n, cex.n = cex,
-                          text.na = 'missing',
+                          text.na = 'missing', n.at = NULL,
                           
                           ## extra stuff
                           test = FALSE, args.test = list(), format_pval = TRUE,
@@ -745,6 +747,7 @@ tplot.default <- function(x, g, ..., type = 'db',
                    if (show.na)
                      ifelse(l2 > 0L, l2, '') else ''
     )
+    txt <- trimws(txt)
     
     log <- if (is.null(args$log))
       '' else args$log
@@ -758,14 +761,17 @@ tplot.default <- function(x, g, ..., type = 'db',
       yx = c(10, 10, 10, 10)
     )[[idx]] ^ usr
     
+    if (is.null(n.at))
+      n.at <- if (horizontal)
+        (diff(ylim) * 0.08 * sign(ylim) + ylim)[2L] else usr[4L]
+    
     do.call(
       'localText',
       if (horizontal)
-        c(list(x = (diff(ylim) * .08 * sign(ylim) + ylim)[2L], y = at,
-               labels = txt, xaxt = 's', yaxt = 's', xpd = NA), pars)
+        c(list(x = n.at, y = at, labels = txt, xpd = NA), pars)
       else
-        c(list(x = at, y = usr[4L], labels = txt,
-               xaxt = 's', yaxt = 's', xpd = NA, pos = 3), pars)
+        c(list(x = at, y = n.at, labels = txt, xpd = NA,
+               pos = if (is.null(pars$srt)) 3L else NULL), pars)
     )
   }
   

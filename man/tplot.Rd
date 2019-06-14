@@ -17,10 +17,10 @@ tplot(x, ...)
   group.cex = FALSE, median.line = FALSE, mean.line = FALSE,
   median.pars = list(), mean.pars = list(), boxplot.pars = list(),
   quantiles = NULL, show.n = TRUE, show.na = show.n, cex.n = cex,
-  text.na = "missing", test = FALSE, args.test = list(),
-  format_pval = TRUE, ann = par("ann"), axes = TRUE,
-  frame.plot = axes, add = FALSE, at, horizontal = FALSE,
-  panel.first = NULL, panel.last = NULL)
+  text.na = "missing", n.at = NULL, test = FALSE,
+  args.test = list(), format_pval = TRUE, ann = par("ann"),
+  axes = TRUE, frame.plot = axes, add = FALSE, at,
+  horizontal = FALSE, panel.first = NULL, panel.last = NULL)
 
 \method{tplot}{formula}(formula, data = NULL, ..., subset,
   na.action = NULL, panel.first = NULL, panel.last = NULL)
@@ -92,6 +92,9 @@ control the quantile lines}
 \item{cex.n}{character expansion for \code{show.n} and \code{show.na}}
 
 \item{text.na}{label for missing values (default is "missing")}
+
+\item{n.at}{the y-coordinate (or x-coordinate if \code{horizontal = TRUE})
+to place the total and missing in each group}
 
 \item{test}{logical or function; if \code{TRUE}, a rank-sum p-value is
 added to the plot (\code{\link{wilcox.test}} or \code{\link{kruskal.test}}
