@@ -482,6 +482,11 @@ tcol <- function(colors, trans = NULL, alpha = NULL) {
 #' if only one color is given, the scaled value of \code{x} will determine
 #' the amount of transparency (default is from 0, fully-transparent to 1-
 #' fully opaque)
+#' @param na.color color used for \code{NA} values of \code{x}
+#' @param breaks (optional) numeric vector to center interpolation; if
+#' \code{NULL} (default), \code{colors} are uniformly spread over a continuous
+#' \code{x}; useful if \code{colors} should be centered at a specific value
+#' of \code{x}; see examples
 #' @param alpha transparency applied to interpolated colors (i.e., if
 #' \code{colors} is not a single color)
 #' @param alpha.min if a single color name is given, sets the lower bound of
@@ -502,6 +507,7 @@ tcol <- function(colors, trans = NULL, alpha = NULL) {
 #' 
 #' set.seed(1)
 #' x <- sort(runif(50, 0, 2))
+#' # x <- replace(x, runif(length(x)) > 0.75, NA)
 #' p <- function(y, c) {
 #'   points(seq_along(c), rep_len(y, length(c)),
 #'          col = c, pch = 16, cex = 5, xpd = NA)
@@ -519,11 +525,29 @@ tcol <- function(colors, trans = NULL, alpha = NULL) {
 #' p(-3, col_scaler(x, rainbow, alpha = 0.1))
 #' p(-4, col_scaler(x, colorRampPalette(c('tomato', 'white', 'blue4'))))
 #' 
+#' 
+#' op <- par(no.readonly = TRUE)
+#' set.seed(1)
+#' x <- runif(1000)
+#' y <- c('red', 'black', 'red')
+#' par(mfrow = c(2, 2), mar = c(3,3,1,1))
+#' plot(x, col = col_scaler(x, y), pch = 16)
+#' plot(x, col = col_scaler(x, y, breaks = 0.5), pch = 16)
+#' plot(x, col = col_scaler(x, y, breaks = 0.9), pch = 16)
+#' plot(x, col = col_scaler(x, c(y, 'blue'), breaks = c(0.25, 0.75)), pch = 16)
+#' par(op)
+#' 
 #' @export
 
-col_scaler <- function(x, colors, alpha = 1,
+col_scaler <- function(x, colors, na.color = NA, breaks = NULL, alpha = 1,
                        alpha.min = min(0.1, x[x >= 0], na.rm = TRUE),
                        to = c(0, 1), from = range(x, na.rm = TRUE)) {
+  if (!is.null(breaks))
+    return(
+      col_scaler2(x, colors, breaks, na.color = na.color, alpha = alpha,
+                  alpha.min = alpha.min)
+    )
+  
   pals <- c('rainbow', paste0(c('heat', 'terrain', 'topo', 'cm'), '.colors'))
   colors <- if (is.numeric(colors))
     rep_len(palette(), max(colors, na.rm = TRUE))[as.integer(colors)]
@@ -535,10 +559,13 @@ col_scaler <- function(x, colors, alpha = 1,
   
   x <- if (is.factor(x) || is.character(x) || is.integer(x))
     as.integer(as.factor(x)) else as.numeric(x)
+  na <- is.na(x)
   
   ## add alpha
-  if (is.character(colors) & length(colors) == 1L)
-    return(tcol(colors, alpha = rescaler(x, c(alpha.min, to[2L]), from)))
+  if (is.character(colors) & length(colors) == 1L) {
+    res <- tcol(colors, alpha = rescaler(x, c(alpha.min, to[2L]), from))
+    return(replace(res, na, na.color))
+  }
   
   ## use interpolation
   n  <- 10000L
@@ -550,32 +577,27 @@ col_scaler <- function(x, colors, alpha = 1,
     colors(n + 1L)[x]
   else colorRampPalette(colors)(n + 1L)[x]
   
-  if (!all(alpha == 1))
+  res <- if (!all(alpha == 1))
     tcol(colors, alpha = rep_len(alpha, length(colors)))
   else tolower(colors)
+  
+  replace(res, na, na.color)
 }
 
-# op <- par(no.readonly = TRUE)
-# set.seed(1)
-# x <- rnorm(100, 1)
-# c <- c('blue', 'black', 'red')
-# par(mfrow = c(2, 2), mar = c(3,3,1,1))
-# plot(x, col = col_scaler(x, c), pch = 16)
-# plot(x, col = col_scaler2(x, c), pch = 16)
-# plot(x, col = col_scaler2(x, c, 1), pch = 16)
-# plot(x, col = col_scaler2(x, c, 1, c(1, 1, 1), alpha = 0.5), pch = 16)
-# par(op)
-
-col_scaler2 <- function(x, colors, vec = 0, prop = c(3, 1, 3), ...) {
-  if (length(colors) == 2L)
-    colors <- c(colors[1L], 'black', colors[2L])
+col_scaler2 <- function(x, colors, breaks = 0, ...) {
+  stopifnot(
+    length(colors) == length(breaks) + 2L,
+    all(breaks %inside% range(x, na.rm = TRUE))
+  )
+  
   res <- character(length(x))
-  idx <- findInterval(x, vec)
+  idx <- cut(x, c(-Inf, breaks, Inf))
+  udx <- seq_along(levels(idx))
   
-  if (sum(lo <- idx %in% 0))
-    res[lo] <- col_scaler(x[lo], rep(colors[1:2], prop[1:2]), ...)
-  if (sum(hi <- idx %in% 1))
-    res[hi] <- col_scaler(x[hi], rep(colors[2:3], prop[2:3]), ...)
+  for (ui in udx) {
+    ii <- as.integer(idx) %in% ui
+    res[ii] <- col_scaler(x[ii], colors[ui + 0:1], breaks = NULL, ...)
+  }
   
-  replace(res, is.na(res) | !nzchar(res), '#000000')
+  res
 }

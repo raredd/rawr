@@ -4,8 +4,9 @@
 \alias{col_scaler}
 \title{Color scaling}
 \usage{
-col_scaler(x, colors, alpha = 1, alpha.min = min(0.1, x[x >= 0], na.rm
-  = TRUE), to = c(0, 1), from = range(x, na.rm = TRUE))
+col_scaler(x, colors, na.color = NA, breaks = NULL, alpha = 1,
+  alpha.min = min(0.1, x[x >= 0], na.rm = TRUE), to = c(0, 1),
+  from = range(x, na.rm = TRUE))
 }
 \arguments{
 \item{x}{a numeric or integer vector}
@@ -19,6 +20,13 @@ returns a vector of colors (e.g., \code{\link{colorRampPalette}} or
 if only one color is given, the scaled value of \code{x} will determine
 the amount of transparency (default is from 0, fully-transparent to 1-
 fully opaque)}
+
+\item{na.color}{color used for \code{NA} values of \code{x}}
+
+\item{breaks}{(optional) numeric vector to center interpolation; if
+\code{NULL} (default), \code{colors} are uniformly spread over a continuous
+\code{x}; useful if \code{colors} should be centered at a specific value
+of \code{x}; see examples}
 
 \item{alpha}{transparency applied to interpolated colors (i.e., if
 \code{colors} is not a single color)}
@@ -47,6 +55,7 @@ col_scaler(mtcars$vs, c('red', 'black'))
 
 set.seed(1)
 x <- sort(runif(50, 0, 2))
+# x <- replace(x, runif(length(x)) > 0.75, NA)
 p <- function(y, c) {
   points(seq_along(c), rep_len(y, length(c)),
          col = c, pch = 16, cex = 5, xpd = NA)
@@ -63,5 +72,17 @@ p(-1, col_scaler(round(x), 1:3))
 p(-2, col_scaler(x, 'heat.colors'))
 p(-3, col_scaler(x, rainbow, alpha = 0.1))
 p(-4, col_scaler(x, colorRampPalette(c('tomato', 'white', 'blue4'))))
+
+
+op <- par(no.readonly = TRUE)
+set.seed(1)
+x <- runif(1000)
+y <- c('red', 'black', 'red')
+par(mfrow = c(2, 2), mar = c(3,3,1,1))
+plot(x, col = col_scaler(x, y), pch = 16)
+plot(x, col = col_scaler(x, y, breaks = 0.5), pch = 16)
+plot(x, col = col_scaler(x, y, breaks = 0.9), pch = 16)
+plot(x, col = col_scaler(x, c(y, 'blue'), breaks = c(0.25, 0.75)), pch = 16)
+par(op)
 
 }
