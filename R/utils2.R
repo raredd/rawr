@@ -2546,8 +2546,9 @@ resp1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
 }
 
 r_or_better1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
-  # rawr:::r_or_better1(x, c('CR','PR'), .9, 0L, TRUE, TRUE, TRUE, FALSE)
+  # rawr:::r_or_better1(x, unique(x), .9, 0L, TRUE, TRUE, TRUE, FALSE)
   x[x %ni% r] <- NA
+  x <- na.omit(x)
   
   res <- if (all(is.na(x)))
     rep('-', length(r))
