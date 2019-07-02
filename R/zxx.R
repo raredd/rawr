@@ -2197,3 +2197,24 @@ clc <- function(all.names = FALSE) {
 clear <- function(...) {
   cat('\014')
 }
+
+#' Re-load a package
+#' 
+#' Detach and re-load a package.
+#' 
+#' @param package package name, as a \code{\link{name}} or literal character
+#' string
+#' 
+#' @export
+
+reload <- function(package) {
+  if (!is.character(substitute(package)))
+    package <- deparse(substitute(package))
+  
+  tryCatch(
+    detach(paste0('package:', package), unload = TRUE, character.only = TRUE),
+    error = function(e) NULL
+  )
+  
+  require(package, character.only = TRUE)
+}
