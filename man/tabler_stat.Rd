@@ -144,8 +144,8 @@ tabler_stat2(mt, names(mt)[-10L], 'gear',
 \code{\link{kruskal.test}}; \code{\link{chisq.test}}; \code{\link{anova}};
 \code{\link{cuzick.test}}; \code{\link{jt.test}}; \code{\link{kw.test}}
 
-Other tabler: \code{\link{tabler_bincon}},
-  \code{\link{tabler_by}}, \code{\link{tabler_resp}},
-  \code{\link{tabler_stat2}}, \code{\link{tabler}}
+Other tabler: \code{\link{tabler_by}},
+  \code{\link{tabler_resp}}, \code{\link{tabler_stat2}},
+  \code{\link{tabler}}
 }
 \concept{tabler}

@@ -57,8 +57,8 @@ tabler(cphfit)
 \seealso{
 \code{\link{tabler_by}}; \code{\link{tabler_stat}}
 
-Other tabler: \code{\link{tabler_bincon}},
-  \code{\link{tabler_by}}, \code{\link{tabler_resp}},
-  \code{\link{tabler_stat2}}, \code{\link{tabler_stat}}
+Other tabler: \code{\link{tabler_by}},
+  \code{\link{tabler_resp}}, \code{\link{tabler_stat2}},
+  \code{\link{tabler_stat}}
 }
 \concept{tabler}

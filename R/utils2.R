@@ -3,8 +3,8 @@
 # roundr.data.frame, intr, pvalr, pvalr2, color_pval, catlist, binconr,
 # num2char, iprint, writeftable, tabler, tabler.default, tabler.lm, tabler.glm,
 # tabler.survfit, tabler_by, tabler_by2, tabler_stat, tabler_stat2, tabler_resp,
-# tabler_bincon, match_ctc, tox_worst, countr, dmy, combine_table, inject_div,
-# case, write_htmlTable, html_align
+# match_ctc, tox_worst, countr, dmy, combine_table, inject_div, case,
+# write_htmlTable, html_align
 # 
 # S3 methods:
 # roundr, tabler
@@ -15,7 +15,7 @@
 # unexported:
 # getPvalCuzick, getPvalJTtest, getPvalKruskal, getPvalKWtest, getPvalTtest,
 # getPval_, guess_test, tabler_stat_list, tabler_stat_html, guess_digits,
-# get_tabler_stat_n, resp1, r_or_better1, bars_, binconr_, inject_
+# get_tabler_stat_n, resp1, r_or_better1, inject_
 ###
 
 
@@ -2564,210 +2564,6 @@ r_or_better1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
   setNames(res, paste(r, 'or better'))
 }
 
-
-#' Binomial confidence interval \code{tabler}
-#' 
-#' Wrapper function to create table of binomial confidence intervals.
-#' 
-#' @param data a matrix or data frame with variables \code{varname} and
-#' \code{byvar}
-#' @param varname,byvar one or more variables in \code{data} to calculate
-#' binomial confidence intervals by \code{byvar}; the rows variable(s) of
-#' the table;
-#' 
-#' note that \code{varname} variables should be factor-like, and \code{byvar}
-#' should be binary
-#' @param varname_label,byvar_label optional labels for each \code{varname}
-#' and \code{byvar}
-#' @param main,xlab the x-axis and title labels
-#' @param col a vector of colors for each \code{varname}; the first will be
-#' used for the overall (if \code{show_overall = TRUE})
-#' @param conf confidence level; passed to \code{\link{binconr}}
-#' @param digits the number of places past the decimal to keep
-#' @param show_overall,show_missing logical; if \code{TRUE}, rows with the
-#' overall and missing value confidence intervals are shown, respectively
-#' @param alpha_missing if \code{show_missing = TRUE}, the amount of alpha
-#' transparency added to missing value rows; passed to \code{\link{tcol}}
-#' 
-#' @family tabler
-#' 
-#' @examples
-#' dat <- mtcars[sample(nrow(mtcars), 100L, TRUE), ]
-#' dat[1, 2] <- NA
-#' vv  <- c('cyl', 'vs', 'gear', 'carb')
-#' dat$gear <- factor(dat$gear, 3:6)
-#' 
-#' tabler_bincon(
-#'   dat, vv, 'am',
-#'   col = c(0, seq_along(vv)) + 1L,
-#'   main = 'Manual rate', xlab = 'Proportion of manual'
-#' )
-#' 
-#' tabler_bincon(
-#'   dat, setNames(vv, toupper(vv)), 'am',
-#'   col = c('red', 'grey50', 'blue', 'grey50', 'blue'),
-#'   conf = 0.9, alpha_missing = 0.4
-#' )
-#' 
-#' @export
-
-tabler_bincon <- function(data, varname, byvar,
-                          varname_label = names(varname),
-                          byvar_label = names(byvar),
-                          main = byvar_label, xlab = byvar_label,
-                          col = c('dodgerblue4', 'dodgerblue2'),
-                          conf = 0.95, digits = 2L,
-                          show_overall = TRUE, show_missing = TRUE,
-                          alpha_missing = 1) {
-  varname_label <- varname_label %||% varname
-  byvar_label <- byvar_label %||% byvar
-  
-  if (show_overall) {
-    data$Overall <- 'Overall'
-    varname <- c('Overall', varname)
-    varname_label <- c('Overall', varname_label)
-  }
-  
-  ff <- lapply(seq_along(varname), function(ii) {
-    res <- binconr_(
-      data[, byvar], data[, varname[ii]], lbl = varname_label[ii],
-      conf = conf, digits = digits
-    )
-    do.call('rbind', res$num)
-  })
-  nn <- sapply(ff, nrow)
-  ff <- do.call('rbind', ff)
-  
-  tt <- lapply(seq_along(varname), function(ii) {
-    res <- binconr_(
-      data[, byvar], data[, varname[ii]], lbl = varname_label[ii],
-      conf = conf, digits = digits
-    )
-    do.call('rbind', res$txt)
-  })
-  tt <- do.call('rbind', tt)
-  
-  na <- is.nan(ff[, 1L])
-  ff[na, ] <- NA
-  tt <- replace(tt, na, '-')
-  
-  a <- rownames(ff) %in% 'Missing'
-  if (!show_missing) {
-    ff <- ff[!a, ]
-    tt <- tt[!a, , drop = FALSE]
-    a  <- rep_len(FALSE, nrow(tt))
-  }
-  
-  a <- if (isTRUE(alpha_missing))
-    c(1, 0.4)[a + 1L]
-  else if (is.numeric(alpha_missing))
-    c(1, alpha_missing)[a + 1L]
-  else rep_len(1, length(a))
-  
-  op <- par(no.readonly = TRUE)
-  on.exit({
-    par(op)
-    dev.flush()
-  })
-  dev.hold()
-  
-  lo <- layout(t(c(2, 1, 3)), widths = c(3, 3.5, 3))
-  par(mar = c(5, 0, 3, 0), oma = c(0, 1, 0, 1), family = 'serif')
-  
-  col <- if (show_overall & length(col) == 2L)
-    rep(col, c(1L, length(nn) - 1L)) else rep_len(col, length(nn))
-  col <- rep(col, nn)
-  
-  y <- rev(seq.int(nrow(ff)))
-  i <- if (show_overall)
-    y == max(y) else rep_len(FALSE, length(y))
-  
-  plot(
-    ff[, 1L], y, xlim = c(0, 1), bty = 'n', axes = FALSE, ann = FALSE,
-    pch = ifelse(i, 18L, 16L), col = tcol(col, alpha = a), cex = i + 2L,
-    panel.first = {
-      bars_(y)
-      abline(v = ff[1L, 1L], lwd = 2, lty = 2L, col = 'grey')
-      arrows(ff[, 2L], y, ff[, 3L], code = 3L, angle = 90, length = 0.05,
-             lwd = 1.5, col = tcol(c('grey50', 'black')[i + 1L], alpha = a))
-    },
-    panel.last = {
-      axis(1L, cex.axis = 1.5)
-      title(xlab = xlab, cex.lab = 1.5)
-      title(main = main, cex.main = 1.5, line = 0.5)
-    }
-  )
-  
-  x <- rep_len(0, length(y))
-  par(mar = c(5, 2, 3, 4), xpd = NA)
-  plot(x, y, type = 'n', ann = FALSE, axes = FALSE)
-  title(main = 'Subgroup', cex.main = 1.5, adj = 0, xpd = NA, line = 0.5)
-  
-  pad <- 0.8
-  lag <- (is.na(ff[, 1L]) & !na) | y == max(y)
-  text(x - ifelse(lag, 1, pad), y, rownames(ff), font = i + 1L,
-       col = tcol('black', alpha = a), adj = 0, cex = 1.5)
-  
-  x <- rep_len(0, length(y))
-  plot(x, y, type = 'n', ann = FALSE, axes = FALSE)
-  title(main = sprintf('Point estimate (%s%% CI)', conf * 100),
-        cex.main = 1.5, xpd = NA, line = 0.5)
-  text(x, y, tt[, 1L], col = tcol('black', alpha = a),
-       cex = 1.5, font = ifelse(i, 2L, 1L), xpd = NA)
-  box('outer')
-  
-  invisible(list(ff, tt))
-}
-
-bars_ <- function(x, cols = c(grey(0.95), NA), horiz = TRUE, fullspan = TRUE) {
-  ## forest:::bars
-  p <- if (fullspan)
-    c(grconvertX(c(0.025, 0.975), 'ndc'), grconvertY(c(0, 1), 'ndc'))
-  else par('usr')
-  
-  cols <- rep_len(cols, length(x))
-  x <- rev(x) + 0.5
-  
-  if (horiz)
-    rect(p[1L], x - 1L, p[2L], x, border = NA, col = cols, xpd = NA)
-  else rect(x - 1L, p[3L], x, p[4L], border = NA, col = rev(cols), xpd = NA)
-  
-  invisible(NULL)
-}
-
-binconr_ <- function(outcome, variable, addNA = TRUE, lbl = NULL,
-                     conf = 0.95, digits = 2L) {
-  # binconr_(mtcars$vs, mtcars$gear)
-  pad <- if (all(variable == 'Overall')) {
-    lbl <- NULL
-    NULL
-  } else NA
-  na <- is.na(outcome)
-  
-  outcome  <- as.integer(as.factor(outcome))[!na]
-  variable <- as.factor(variable)[!na]
-  
-  if (addNA) {
-    variable <- addNA(variable, TRUE)
-    levels(variable)[is.na(levels(variable))] <- 'Missing'
-  }
-  
-  sp <- split(outcome, variable)
-  
-  txt <- lapply(sp, function(x)
-    binconr(sum(x - 1L), length(x), frac = TRUE, conf = conf, digits = digits,
-            show_conf = FALSE, est = TRUE, pct.sign = TRUE, percent = FALSE)
-  )
-  num <- lapply(sp, function(x)
-    bincon(sum(x - 1L), length(x), alpha = 1 - conf)[3:5]
-  )
-  
-  list(
-    num = setNames(c(pad, num), c(lbl, names(num))),
-    txt = setNames(c(pad, txt), c(lbl, names(num)))
-  )
-}
-
 #' Match CTCAE codes
 #' 
 #' Convenience function to convert CTCAE (version 3 or 4) toxicity codes or
@@ -2809,7 +2605,7 @@ match_ctc <- function(..., version = 4L) {
     match(gsub('\\s*|-', '', x, perl = TRUE), ctc[, 'tox_code'])
   else grep(paste(x, collapse = '|'), ctc[, 'tox_desc'], ignore.case = TRUE)
   
-  if (anyNA(idx[nzchar(x) & !is.na(x)]))
+  if (anyNA(idx[nzchar(as.character(x)) & !is.na(x)]))
     warning(
       'CTCAE version may be incorrect - ',
       'try version = ', ifelse(version == 4, 3, 4),
