@@ -19,31 +19,41 @@ test_that('new tcol is identical to old', {
     
     rgb <- rbind(col2rgb(color), trans)
     res <- paste0('#', apply(apply(rgb, 2, num2hex), 2, paste, collapse = ''))
-    return(res)
+    
+    tolower(res)
   }
   
   ## tests
-  cols <- c('red','green','pink')
-  colh <- c('#FF0000','#00FF00','#FFC0CB')
+  cols <- c('red', 'green', 'pink')
+  colh <- c('#FF0000', '#00FF00', '#FFC0CB')
+  trns <- c(50, 100, 150, 200)
+  alps <- trns / 255
   
   invisible(
     lapply(list(cols, colh), function(col) {
-      expect_identical(tcol_old(col), toupper(tcol(col)))
+      expect_identical(tcol_old(col), tcol(col))
       
-      expect_identical(tcol_old(col[1], c(50, 100, 150, 200)), 
-                       toupper(tcol(col[1], c(50, 100, 150, 200))))
+      expect_identical(
+        tcol_old(col[1], trns),
+        tcol(col[1], alps)
+      )
       
-      expect_identical(tcol_old(col[1:2], c(200, 100)), 
-                       toupper(tcol(col[1:2], c(200, 100))))
+      expect_identical(
+        tcol_old(col[1:2], trns[4:3]),
+        tcol(col[1:2], alps[4:3])
+      )
       
-      expect_identical(tcol_old(col, c(200)),
-                       toupper(tcol(col, c(200))))
-    }))
+      expect_identical(
+        tcol_old(col, trns[4]),
+        tcol(col, alps[4])
+      )
+    })
+  )
   
   ## these lengths are not compatible
   ## e.g., 2 colors and 3 transparencies
-  expect_error(tcol(cols[1:2], c(50, 100, 150)))
-  expect_error(tcol(cols, c(50, 150)))
-  expect_error(tcol(coln[1:2], c(50, 100, 150)))
-  expect_error(tcol(colh, c(50, 150)))
+  expect_error(tcol(cols[1:2], alps[1:3]))
+  expect_error(tcol(cols, alps[1:2]))
+  expect_error(tcol(coln[1:2], alps[1:3]))
+  expect_error(tcol(colh, alps[1:2]))
 })
