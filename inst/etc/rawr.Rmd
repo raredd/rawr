@@ -50,6 +50,12 @@ kmplot_by(
 
 ## get the pairwise differences easily
 survdiff_pairs(s)
+
+## make a summary table
+combine_table(
+  surv_table(s),
+  caption = 'Survival summary'
+)
 ```
 
 ### misc plots
@@ -60,6 +66,7 @@ survdiff_pairs(s)
 tplot(
   mpg ~ vs + gear, mtcars, test = TRUE,
   type = c('dv', 'v', 'd', 'db', 'b', 'd'),
+  ## options for violin plots
   quantiles = c(0.25, 0.5, 0.75), lwd = c(1, 2.5, 1)
 )
 ```
@@ -69,6 +76,7 @@ tplot(
 ```{r}
 x <- scale(as.matrix(mtcars))
 
+## row and column colors
 rc <- cbind(gear = x[, 'gear'], am = x[, 'am'], vs = x[, 'vs'])
 rc[] <- palette()[rc + 2L]
 
@@ -81,6 +89,21 @@ heatmap.3(
   labRowCol = rc[, 3], labColCol = cc[1, ],
   margins = c(5, 10),
   colsep = c(2, 6), rowsep = c(9, 14, 21), sepwidth = c(5, 2)
+)
+```
+
+**binomial CI forest plot**
+
+```{r}
+dat <- mtcars[sample(nrow(mtcars), 100L, TRUE), ]
+dat[1, 2] <- NA
+vv  <- c('cyl', 'vs', 'gear', 'carb')
+dat$gear <- factor(dat$gear, 3:6)
+
+bplot(
+  dat, setNames(vv, case(vv)), 'am',
+  col = c('red', 'grey50', 'blue', 'grey50', 'blue'),
+  conf = 0.9, alpha_missing = 0.4
 )
 ```
 
@@ -139,10 +162,78 @@ t(t(tabler_resp(x, 3:1)))
 
 **in-line convenience functions**
 
-```{r}
+```{r, results="hold"}
 intr(mtcars$mpg)
 intr(mtcars$mpg, conf = 0.95)
 
 countr(mtcars$cyl)
-countr(table(mtcars$vs))
+countr(table(mtcars$vs), frac = TRUE)
+```
+
+for survival analysis
+
+```{r, results="hold"}
+surv_median(s)
+surv_median(s, ci = TRUE)
+
+surv_prob(s)
+surv_prob(s, times = c(1, 3) * 100, ci = TRUE)
+
+## unexported but useful (log-rank, pair-wise log-rank, tarone trend, wald)
+rawr:::lr_pval(s)
+rawr:::pw_pval(s)
+rawr:::tt_pval(s)
+rawr:::hr_pval(s)
+```
+
+stats
+
+```{r, results="hold"}
+binconr(25, 50)
+binconr(25, 50, show_conf = FALSE, frac = TRUE, percent = FALSE)
+
+## length 2 vectors assume two-stage confidence intervals
+binconr(c(10, 25), c(20, 30), show_conf = FALSE, frac = TRUE)
+
+
+## p-values
+pvalr(1e-3)
+pvalr(1e-8, show.p = TRUE)
+```
+
+in-line test summaries
+
+```{r, results="hold"}
+x <- mtcars$vs
+y <- mtcars$am
+
+# fisher.test(x, y)
+inl_fisher(x, y)
+inl_fisher(x, y, details = FALSE)
+
+# chisq.test(table(x, y))
+inl_chisq(x, y)
+inl_chisq(x, y, details = FALSE)
+
+# wilcox.test(mtcars$mpg ~ y)
+inl_wilcox(mtcars$mpg, y)
+
+# cuzick.test(mpg ~ gear, mtcars)
+inl_cuzick(mtcars$mpg, mtcars$gear)
+
+# jt.test(table(mtcars$gear, mtcars$cyl))
+inl_jt(mtcars$gear, mtcars$cyl)
+
+# kw.test(table(mtcars$vs, mtcars$cyl))
+inl_kw(mtcars$vs, mtcars$cyl)
+```
+
+etc
+
+```{r, results="hold"}
+iprint(letters[1:3])
+iprint(letters[1:3], copula = ' & ')
+
+num2char(-5)
+num2char(134)
 ```
