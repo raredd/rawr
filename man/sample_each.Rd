@@ -7,17 +7,18 @@
 sample_each(x, n = 1L)
 }
 \arguments{
-\item{x}{a vector}
+\item{x}{a character, factor, or numeric vector}
 
 \item{n}{number to sample from each unique group in order; if \code{x} is
-a factor, \code{n} should correspond to the order of \code{levels(x)};
-otherwise, \code{n} will be matched with the sorted unique groups}
+a factor, \code{n} should correspond to \code{levels(x)}; otherwise,
+\code{n} will be matched with the sorted unique groups}
 }
 \value{
 A logical vector the same length as \code{x} identifying selected indices.
 }
 \description{
-Sample each unique value of a vector.
+Returns a logical vector where \code{n} items are randomly sampled from
+each unique value of a vector, \code{x}.
 }
 \examples{
 x <- mtcars$gear
@@ -26,8 +27,8 @@ sample_each(x)
 mtcars[sample_each(x), ]
 
 ## compare numeric vs factor vectors (see description above)
-X <- factor(x, 5:3)
 mtcars[sample_each(x, 3:5), ]
+X <- factor(x, 5:3)
 mtcars[sample_each(X, 3:5), ]
 
 }

@@ -1176,7 +1176,7 @@ install.bioc <- function(pkgs, upgrade = FALSE) {
 #' cc ^ 2
 #' summary(lm(mpg ~ wt, data = mtcars))$r.squared
 #' 
-#' lm.beta(lm(mpg ~ wt + disp + factor(vs), data = mtcars), weights = 2)
+#' lm.beta(lm(mpg ~ wt + disp + vs, data = mtcars), weights = 2)
 #' 
 #' @export
 

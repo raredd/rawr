@@ -20,11 +20,11 @@ versions should be downloaded from the repositories}
 \description{
 This function will create a temporary \code{.libPath}, install, and load
 packages for use in a single \code{R} session. \cr \cr To install a repo
-from github temporarily, use \code{\link[devtools]{with_libpaths}}.
+from github temporarily, use \code{\link[withr]{with_libpaths}}.
 }
 \examples{
 \dontrun{
-install_temp(c('devtools','testthat'))
+install_temp(c('devtools', 'testthat'))
 }
 
 }

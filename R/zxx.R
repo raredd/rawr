@@ -1196,7 +1196,7 @@ rgene <- function(n = 1L, alpha = LETTERS[1:5], nalpha = 2:5,
 #' 
 #' This function will create a temporary \code{.libPath}, install, and load
 #' packages for use in a single \code{R} session. \cr \cr To install a repo
-#' from github temporarily, use \code{\link[devtools]{with_libpaths}}.
+#' from github temporarily, use \code{\link[withr]{with_libpaths}}.
 #' 
 #' @param pkgs character vector of the names of packages whose current
 #' versions should be downloaded from the repositories
@@ -1208,7 +1208,7 @@ rgene <- function(n = 1L, alpha = LETTERS[1:5], nalpha = 2:5,
 #' 
 #' @examples
 #' \dontrun{
-#' install_temp(c('devtools','testthat'))
+#' install_temp(c('devtools', 'testthat'))
 #' }
 #' 
 #' @export
@@ -1216,11 +1216,13 @@ rgene <- function(n = 1L, alpha = LETTERS[1:5], nalpha = 2:5,
 install_temp <- function(pkgs, lib, ...) {
   if (missing(lib))
     lib <- tempdir()
+  
   ## resetting libPaths before restarting r session may not be desired
   # lp <- .libPaths()
   # on.exit(.libPaths(lp))
   .libPaths(lib)
   utils::install.packages(pkgs = pkgs, lib = lib, ...)
+  
   for (ii in pkgs)
     require(ii, character.only = TRUE)
   
@@ -1890,12 +1892,13 @@ factors <- function(...) {
 
 #' Sample each
 #' 
-#' Sample each unique value of a vector.
+#' Returns a logical vector where \code{n} items are randomly sampled from
+#' each unique value of a vector, \code{x}.
 #' 
-#' @param x a vector
+#' @param x a character, factor, or numeric vector
 #' @param n number to sample from each unique group in order; if \code{x} is
-#' a factor, \code{n} should correspond to the order of \code{levels(x)};
-#' otherwise, \code{n} will be matched with the sorted unique groups
+#' a factor, \code{n} should correspond to \code{levels(x)}; otherwise,
+#' \code{n} will be matched with the sorted unique groups
 #' 
 #' @return
 #' A logical vector the same length as \code{x} identifying selected indices.
@@ -1910,8 +1913,8 @@ factors <- function(...) {
 #' mtcars[sample_each(x), ]
 #' 
 #' ## compare numeric vs factor vectors (see description above)
-#' X <- factor(x, 5:3)
 #' mtcars[sample_each(x, 3:5), ]
+#' X <- factor(x, 5:3)
 #' mtcars[sample_each(X, 3:5), ]
 #' 
 #' @export

@@ -2243,7 +2243,7 @@ surv_median <- function(x, ci = FALSE, digits = 0L, which = NULL,
 
 #' @rdname surv_extract
 #' @export
-surv_prob <- function(x, times = pretty(x$time), ci = TRUE,
+surv_prob <- function(x, times = pretty(x$time), ci = FALSE,
                       digits = 2L, which = 1L, print = TRUE) {
   stopifnot(
     length(which) == 1L
