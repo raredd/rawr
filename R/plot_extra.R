@@ -412,6 +412,7 @@ tcol <- function(col, alpha = 1) {
   col <- replace(col, col %in% 0, NA)
   dat <- data.frame(col = col, alpha = alpha, stringsAsFactors = FALSE)
   nas <- !complete.cases(dat)
+  dat$alpha[is.na(dat$alpha)] <- 0
   
   x <- t(col2rgb(dat$col))
   x <- rgb(x, alpha = dat$alpha * 255, maxColorValue = 255)
