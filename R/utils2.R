@@ -955,23 +955,29 @@ num2char <- function(x, informal = FALSE, cap = TRUE) {
 #' \code{\link[pander]{p}}; \code{\link{roundr}}; \code{\link{countr}}
 #' 
 #' @examples
-#' iprint('fee', 'fi', 'fo', 'fum')
 #' iprint(rnorm(2))
 #' iprint(-0.000, 0.100)
+#' 
+#' ## compare numeric and integer default printing
+#' iprint(1, 2, 3)
+#' iprint(1:3)
+#' 
+#' iprint('fee', 'fi', 'fo', 'fum')
 #' iprint(LETTERS[1:5], copula = ', and the letter ')
 #' iprint('Thelma', 'Louise', copula = ' & ')
 #' 
 #' @export
 
-iprint <- function (..., wrap = '', sep = ', ', copula, digits = 2L) {
+iprint <- function (..., wrap = '', sep = ', ', copula = ', and ',
+                    digits = if (is.integer(x)) 0L else 2L) {
   x <- c(...)
   if (!(len <- length(x)))
     return('')
   
   f <- function(x, wrap = '"') sprintf('%s%s%s', wrap, x, wrap)
   
-  if (missing(copula))
-    copula <- ifelse(len == 2L, ' and ', ', and ')
+  if (len == 2L)
+    copula <- sub(',', '', copula)
   if (is.numeric(x))
     x <- roundr(x, digits = digits)
   

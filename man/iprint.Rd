@@ -4,7 +4,8 @@
 \alias{iprint}
 \title{In-line printing}
 \usage{
-iprint(..., wrap = "", sep = ", ", copula, digits = 2L)
+iprint(..., wrap = "", sep = ", ", copula = ", and ", digits = if
+  (is.integer(x)) 0L else 2L)
 }
 \arguments{
 \item{...}{one or more numeric or character elements to be converted into
@@ -23,9 +24,14 @@ character vectors}
 Modified \code{\link[pander]{p}} function from the \pkg{pander} package.
 }
 \examples{
-iprint('fee', 'fi', 'fo', 'fum')
 iprint(rnorm(2))
 iprint(-0.000, 0.100)
+
+## compare numeric and integer default printing
+iprint(1, 2, 3)
+iprint(1:3)
+
+iprint('fee', 'fi', 'fo', 'fum')
 iprint(LETTERS[1:5], copula = ', and the letter ')
 iprint('Thelma', 'Louise', copula = ' & ')
 
