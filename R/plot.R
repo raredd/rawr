@@ -2639,6 +2639,7 @@ vioplot <- function(x, range = 1.5, xlim = NULL, ylim = NULL, names,
 #' overall and missing value confidence intervals are shown, respectively
 #' @param alpha_missing if \code{show_missing = TRUE}, the amount of alpha
 #' transparency added to missing value rows; passed to \code{\link{tcol}}
+#' @param ... additional graphical parameters passed to \code{\link{par}}
 #' 
 #' @examples
 #' dat <- mtcars[sample(nrow(mtcars), 100L, TRUE), ]
@@ -2664,7 +2665,7 @@ bplot <- function(data, varname, byvar, varname_label = names(varname),
                   byvar_label = names(byvar), main = byvar_label,
                   xlab = byvar_label, col = c('dodgerblue4', 'dodgerblue2'),
                   conf = 0.95, digits = 2L, show_overall = TRUE,
-                  show_missing = TRUE, alpha_missing = 1) {
+                  show_missing = TRUE, alpha_missing = 1, ...) {
   varname_label <- varname_label %||% varname
   byvar_label <- byvar_label %||% byvar
   
@@ -2719,6 +2720,7 @@ bplot <- function(data, varname, byvar, varname_label = names(varname),
   
   lo <- layout(t(c(2, 1, 3)), widths = c(3, 3.5, 3))
   par(mar = c(5, 0, 3, 0), oma = c(0, 1, 0, 1), family = 'serif')
+  par(...)
   
   col <- if (show_overall & length(col) == 2L)
     rep(col, c(1L, length(nn) - 1L)) else rep_len(col, length(nn))

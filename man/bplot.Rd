@@ -8,12 +8,12 @@
 bplot(data, varname, byvar, varname_label = names(varname),
   byvar_label = names(byvar), main = byvar_label, xlab = byvar_label,
   col = c("dodgerblue4", "dodgerblue2"), conf = 0.95, digits = 2L,
-  show_overall = TRUE, show_missing = TRUE, alpha_missing = 1)
+  show_overall = TRUE, show_missing = TRUE, alpha_missing = 1, ...)
 
 tabler_bincon(data, varname, byvar, varname_label = names(varname),
   byvar_label = names(byvar), main = byvar_label, xlab = byvar_label,
   col = c("dodgerblue4", "dodgerblue2"), conf = 0.95, digits = 2L,
-  show_overall = TRUE, show_missing = TRUE, alpha_missing = 1)
+  show_overall = TRUE, show_missing = TRUE, alpha_missing = 1, ...)
 }
 \arguments{
 \item{data}{a matrix or data frame with variables \code{varname} and
@@ -43,6 +43,8 @@ overall and missing value confidence intervals are shown, respectively}
 
 \item{alpha_missing}{if \code{show_missing = TRUE}, the amount of alpha
 transparency added to missing value rows; passed to \code{\link{tcol}}}
+
+\item{...}{additional graphical parameters passed to \code{\link{par}}}
 }
 \description{
 Wrapper function to create table of binomial confidence intervals and draw
