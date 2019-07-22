@@ -1302,6 +1302,11 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
 #' adding to existing plots
 #' @param plot logical; if \code{FALSE}, no plot is created but a list with
 #' \code{survfit}s is returned
+#' @param args.survfit a \emph{named} list of optional arguments passed to
+#' \code{\link{survfit.formula}}; relevant arguments include \code{type}
+#' (default is \code{"kaplan-meier"}), \code{error} (\code{"greenwood"}),
+#' \code{conf.int} (\code{0.95}), \code{"conf.type"} (\code{"log"}), and
+#' \code{"se.fit"} (\code{TRUE})
 #' @param ... additional arguments passed to \code{\link{kmplot}} or
 #' graphical parameters subsequently passed to \code{\link{par}}
 #' 
@@ -1328,7 +1333,9 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
 #' })
 #' 
 #' kmplot_by('rx', 'pfs', data = colon2, col.surv = 1:3,
-#'   strata_lab = FALSE, col.band = NA)
+#'   strata_lab = FALSE, median = TRUE)
+#' kmplot_by('rx', 'pfs', data = colon2, col.surv = 1:3,
+#'   strata_lab = FALSE, median = TRUE, args.survfit = list(conf.int = 0.90))
 #' 
 #' 
 #' ## these are equivalent (with minor differences in aesthetics)
@@ -1374,8 +1381,8 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
 #' 
 #' 
 #' ## use add = TRUE to add to a figure region without using the by argument
-#' par(mfrow = c(1,2))
-#' mar <- c(8,6,3,2)  ## to align axes
+#' par(mfrow = c(1, 2))
+#' mar <- c(8, 6, 3, 2) ## to align axes
 #' kmplot_by( 'rx', 'pfs', colon2, strata_lab = FALSE, add = TRUE, mar = mar)
 #' kmplot_by('sex', 'pfs', colon2, strata_lab = FALSE, add = TRUE, mar = mar)
 #'   
@@ -1385,7 +1392,7 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
                       time = NULL, single = TRUE, lr_test = TRUE, main = NULL,
                       ylab = NULL, sub = NULL, strata_lab = NULL, fig_lab = NULL,
                       col.surv = NULL, map.col = FALSE, legend = FALSE,
-                      add = FALSE, plot = TRUE, ...) {
+                      add = FALSE, plot = TRUE, args.survfit = list(), ...) {
   op <- par(no.readonly = TRUE)
   
   if (is.logical(lr_test)) {
@@ -1397,11 +1404,11 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
   }
   
   ## defaults
-  type      <- 'kaplan-meier'
-  error     <- 'greenwood'
-  conf.int  <- 0.95
-  conf.type <- 'log'
-  se.fit    <- TRUE
+  type      <- args.survfit$type      %||% 'kaplan-meier'
+  error     <- args.survfit$error     %||% 'greenwood'
+  conf.int  <- args.survfit$conf.int  %||% 0.95
+  conf.type <- args.survfit$conf.type %||% 'log'
+  se.fit    <- args.survfit$se.fit    %||% TRUE
   
   if (length(event) > 1L) {
     data <- data.frame(

@@ -8,7 +8,7 @@ kmplot_by(strata = "1", event = NULL, data = NULL, by = NULL,
   time = NULL, single = TRUE, lr_test = TRUE, main = NULL,
   ylab = NULL, sub = NULL, strata_lab = NULL, fig_lab = NULL,
   col.surv = NULL, map.col = FALSE, legend = FALSE, add = FALSE,
-  plot = TRUE, ...)
+  plot = TRUE, args.survfit = list(), ...)
 }
 \arguments{
 \item{strata, event, time, by}{character strings of the strata, event (pfs, os,
@@ -60,6 +60,12 @@ adding to existing plots}
 \item{plot}{logical; if \code{FALSE}, no plot is created but a list with
 \code{survfit}s is returned}
 
+\item{args.survfit}{a \emph{named} list of optional arguments passed to
+\code{\link{survfit.formula}}; relevant arguments include \code{type}
+(default is \code{"kaplan-meier"}), \code{error} (\code{"greenwood"}),
+\code{conf.int} (\code{0.95}), \code{"conf.type"} (\code{"log"}), and
+\code{"se.fit"} (\code{TRUE})}
+
 \item{...}{additional arguments passed to \code{\link{kmplot}} or
 graphical parameters subsequently passed to \code{\link{par}}}
 }
@@ -99,7 +105,9 @@ colon2 <- within(colon[duplicated(colon$id), ], {
 })
 
 kmplot_by('rx', 'pfs', data = colon2, col.surv = 1:3,
-  strata_lab = FALSE, col.band = NA)
+  strata_lab = FALSE, median = TRUE)
+kmplot_by('rx', 'pfs', data = colon2, col.surv = 1:3,
+  strata_lab = FALSE, median = TRUE, args.survfit = list(conf.int = 0.90))
 
 
 ## these are equivalent (with minor differences in aesthetics)
@@ -145,8 +153,8 @@ kmplot_by('1', 'pfs', colon2, by = 'sex', col.surv = 1:3, single = FALSE,
 
 
 ## use add = TRUE to add to a figure region without using the by argument
-par(mfrow = c(1,2))
-mar <- c(8,6,3,2)  ## to align axes
+par(mfrow = c(1, 2))
+mar <- c(8, 6, 3, 2) ## to align axes
 kmplot_by( 'rx', 'pfs', colon2, strata_lab = FALSE, add = TRUE, mar = mar)
 kmplot_by('sex', 'pfs', colon2, strata_lab = FALSE, add = TRUE, mar = mar)
   
