@@ -548,13 +548,13 @@ kmplot <- function(s,
         as.data.frame(st) else as.data.frame(t(st))
       st <- st[, grep('(?i)median|[ul]cl', names(st)), drop = FALSE]
       tt <- if (ncol(st) < 3L)
-        st[, 'median'] else
+        roundr(st[, 'median'], digits.median) else
           do.call('sprintf', c(list(
             fmt = '%s (%s, %s)'), lapply(st, roundr, digits = digits.median))
           )
       tt <- ifelse(
         # is.na(st$median)
-        rowSums(is.na(st)) == 3L,
+        rowSums(is.na(st)) == ncol(st),
         '-', gsub('NA', '-', tt, fixed = TRUE)
       )
       at <- if (isTRUE(median.at))
