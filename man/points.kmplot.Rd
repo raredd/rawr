@@ -21,5 +21,5 @@ and event times, respectively}
 \item{...}{additional graphical parameters passed to \code{\link{par}}}
 }
 \description{
-\code{survival:::points.survfit} with additional features
+\code{survival:::points.survfit} with additional features.
 }

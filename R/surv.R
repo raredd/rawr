@@ -189,7 +189,7 @@
 #' 
 #' 
 #' ## when using mfrow options, use add = TRUE and same mar to align axes
-#' mar <- c(8,6,2,2)
+#' mar <- c(8, 6, 2, 2)
 #' par(mfrow = c(1, 2))
 #' kmplot(km1, add = TRUE, mar = mar)
 #' kmplot(km2, add = TRUE, strata.lab = TRUE, mar = mar)
@@ -199,12 +199,13 @@
 #' ## more customized figure
 #' pdf(tf <- tempfile(fileext = '.pdf'), height = 8, width = 11,
 #'     pointsize = 12, family = 'serif')
+#' 
 #' kmplot(survfit(Surv(time, status) ~ rx + adhere, data = colon),
-#'        panel.first = abline(v = c(0, .5, 1:9) * 365, lty = 3),
+#'        panel.first = abline(v = c(0, 0.5, 1:9) * 365, lty = 3),
 #'        mark = 'bump',                     # bump censor mark
-#'        lty.ci = 2, lwd.ci = .3,           # dashed line for CIs
-#'        xaxis.at = c(0, .5, 1:9) * 365,    # change days to years
-#'        xaxis.lab = c(0, .5, 1:9),         # label years
+#'        lty.ci = 2, lwd.ci = 0.3,          # dashed line for CIs
+#'        xaxis.at = c(0, 0.5, 1:9) * 365,   # change days to years
+#'        xaxis.lab = c(0, 0.5, 1:9),        # label years
 #'        yaxis.lab = pretty(0:1) * 100,     # change to percent
 #'        xlab = 'Time (years)',
 #'        ylab = 'Percent survival',
@@ -217,9 +218,11 @@
 #'        strata.order = c(5,6,3,1,4,2),     # order table by curve positions
 #'        median = 10.5 * 365,               # add median and CI
 #'        atrisk.col = TRUE,                 # color at-risk text
-#'        font = 2, bty = 'l', tcl = .5)     # bold table text, other options
+#'        font = 2, bty = 'l', tcl = 0.5)    # bold table text, other options
 #' title(main = 'Chemotherapy for stage B/C colon cancer', line = 2.5)
+#' 
 #' dev.off()
+#' 
 #' system2(getOption('pdfviewer'), tf)
 #' unlink(tf)
 #' }
@@ -229,8 +232,7 @@
 kmplot <- function(s,
                    ## basic plot options
                    lty.surv = par('lty'), lwd.surv = par('lwd'),
-                   col.surv = seq_along(s$n), mark = 3L,
-                   lwd.mark = lwd.surv,
+                   col.surv = seq_along(s$n), mark = 3L, lwd.mark = lwd.surv,
                    
                    ## confidence options
                    lty.ci = 0, lwd.ci = lwd.surv,
@@ -251,7 +253,7 @@ kmplot <- function(s,
                    xaxs = 's', xlim = NULL, ylim = NULL,
                    xaxis.at = pretty(xlim), xaxis.lab = xaxis.at,
                    atrisk.at = xaxis.at,
-                   yaxis.at = pretty(ylim), yaxis.lab = yaxis.at,
+                   yaxis.at = pretty(0:1), yaxis.lab = yaxis.at,
                    xlab = 'Time', ylab = 'Probability',
                    main = NULL, cex.axis = par('cex.axis'),
                    legend = !atrisk.table && !is.null(s$strata),
@@ -410,7 +412,7 @@ kmplot <- function(s,
     xlim <- c(0, max(s$time))
   oxlim <- xlim
   if (is.null(ylim))
-    ylim <- c(0, 1)
+    ylim <- c(0, 1.025)
   
   ## if default *lim not used, get new *-axis positions
   if (is.null(xaxis.at))
@@ -450,8 +452,7 @@ kmplot <- function(s,
     
     ## set colors for lines of text
     col.atrisk <- if (isTRUE(atrisk.col))
-      col.surv else if (!identical(atrisk.col, FALSE) &&
-                        length(atrisk.col) == ng)
+      col.surv else if (!identical(atrisk.col, FALSE) && length(atrisk.col) == ng)
         atrisk.col else rep_len(1L, ng)
     
     ## labels for each row in at-risk table
@@ -564,7 +565,7 @@ kmplot <- function(s,
         side = 1L, at = at, adj = .5, line = 1.5, col = 1L, las = 1L
       )
       mtext(tt, side = 1L, line = line.pos, las = 1L,
-            at = at, adj = .5, col = col.atrisk)
+            at = at, adj = 0.5, col = col.atrisk)
     }
   }
   
@@ -678,7 +679,7 @@ kmplot <- function(s,
     FUN <- if (tt_test)
       function(f, d, r, ...) tt_text(f, d, ...)
     else lr_text
-    txt <- if (svar == '1')
+    txt <- if (identical(svar, '1'))
       '' else
         tryCatch(
           FUN(as.formula(form), sdat, rho, details = test_details,
@@ -706,7 +707,7 @@ kmplot <- function(s,
 
 #' \code{kmplot} points
 #' 
-#' \code{survival:::points.survfit} with additional features
+#' \code{survival:::points.survfit} with additional features.
 #' 
 #' @param x,xscale,xmax,fun,col,pch see \code{\link{points.survfit}}
 #' @param censor,event logical; \code{TRUE} will draw points at censored
@@ -802,16 +803,17 @@ points.kmplot <- function(x, xscale, xmax, fun,
   
   if (!missing(fun)) {
     if (is.character(fun)) {
-      tfun <- switch(fun,
-                     'log'      = function(x) x,
-                     'event'    = function(x) 1 - x,
-                     'cumhaz'   = function(x) -log(x),
-                     'cloglog'  = function(x) log(-log(x)),
-                     'pct'      = function(x) x * 100,
-                     ## special case further below
-                     'logpct'   = function(x) 100 * x,
-                     'identity' = function(x) x,
-                     stop('Unrecognized function argument')
+      tfun <- switch(
+        fun,
+        'log'      = function(x) x,
+        'event'    = function(x) 1 - x,
+        'cumhaz'   = function(x) -log(x),
+        'cloglog'  = function(x) log(-log(x)),
+        'pct'      = function(x) x * 100,
+        ## special case further below
+        'logpct'   = function(x) 100 * x,
+        'identity' = function(x) x,
+        stop('Unrecognized function argument')
       )
     } else if (is.function(fun))
       tfun <- fun

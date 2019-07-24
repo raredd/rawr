@@ -14,9 +14,9 @@ kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
   strata.order = seq_along(s$n), extra.margin = 5, mar = NULL,
   median = FALSE, digits.median = 0L, xaxs = "s", xlim = NULL,
   ylim = NULL, xaxis.at = pretty(xlim), xaxis.lab = xaxis.at,
-  atrisk.at = xaxis.at, yaxis.at = pretty(ylim),
-  yaxis.lab = yaxis.at, xlab = "Time", ylab = "Probability",
-  main = NULL, cex.axis = par("cex.axis"), legend = !atrisk.table &&
+  atrisk.at = xaxis.at, yaxis.at = pretty(0:1), yaxis.lab = yaxis.at,
+  xlab = "Time", ylab = "Probability", main = NULL,
+  cex.axis = par("cex.axis"), legend = !atrisk.table &&
   !is.null(s$strata), args.legend = list(), lr_test = TRUE,
   tt_test = FALSE, test_details = TRUE, args.test = list(),
   hr_text = FALSE, args.hr = list(), pw_test = FALSE,
@@ -235,7 +235,7 @@ kmplot(km1, strata.lab  = c('Sex[Female]', 'Sex[Male]'))
 
 
 ## when using mfrow options, use add = TRUE and same mar to align axes
-mar <- c(8,6,2,2)
+mar <- c(8, 6, 2, 2)
 par(mfrow = c(1, 2))
 kmplot(km1, add = TRUE, mar = mar)
 kmplot(km2, add = TRUE, strata.lab = TRUE, mar = mar)
@@ -245,12 +245,13 @@ kmplot(km2, add = TRUE, strata.lab = TRUE, mar = mar)
 ## more customized figure
 pdf(tf <- tempfile(fileext = '.pdf'), height = 8, width = 11,
     pointsize = 12, family = 'serif')
+
 kmplot(survfit(Surv(time, status) ~ rx + adhere, data = colon),
-       panel.first = abline(v = c(0, .5, 1:9) * 365, lty = 3),
+       panel.first = abline(v = c(0, 0.5, 1:9) * 365, lty = 3),
        mark = 'bump',                     # bump censor mark
-       lty.ci = 2, lwd.ci = .3,           # dashed line for CIs
-       xaxis.at = c(0, .5, 1:9) * 365,    # change days to years
-       xaxis.lab = c(0, .5, 1:9),         # label years
+       lty.ci = 2, lwd.ci = 0.3,          # dashed line for CIs
+       xaxis.at = c(0, 0.5, 1:9) * 365,   # change days to years
+       xaxis.lab = c(0, 0.5, 1:9),        # label years
        yaxis.lab = pretty(0:1) * 100,     # change to percent
        xlab = 'Time (years)',
        ylab = 'Percent survival',
@@ -263,9 +264,11 @@ kmplot(survfit(Surv(time, status) ~ rx + adhere, data = colon),
        strata.order = c(5,6,3,1,4,2),     # order table by curve positions
        median = 10.5 * 365,               # add median and CI
        atrisk.col = TRUE,                 # color at-risk text
-       font = 2, bty = 'l', tcl = .5)     # bold table text, other options
+       font = 2, bty = 'l', tcl = 0.5)    # bold table text, other options
 title(main = 'Chemotherapy for stage B/C colon cancer', line = 2.5)
+
 dev.off()
+
 system2(getOption('pdfviewer'), tf)
 unlink(tf)
 }
