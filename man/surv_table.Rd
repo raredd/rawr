@@ -4,8 +4,8 @@
 \alias{surv_table}
 \title{Summary table}
 \usage{
-surv_table(s, digits = 3, times = pretty(s$time), maxtime = FALSE,
-  ...)
+surv_table(s, digits = ifelse(percent, 0L, 3L), times = pretty(s$time),
+  maxtime = FALSE, percent = FALSE, ...)
 }
 \arguments{
 \item{s}{a \code{\link[survival]{survfit}} object}
@@ -16,6 +16,9 @@ surv_table(s, digits = 3, times = pretty(s$time), maxtime = FALSE,
 
 \item{maxtime}{logical; if \code{TRUE}, adds the maximum time for which an
 even occurs; if \code{FALSE}, number of events may not sum to total}
+
+\item{percent}{logical; if \code{TRUE}, percentages are shown instead of
+probabilities}
 
 \item{...}{additional arguments passed to \code{\link{summary.survfit}}}
 }
@@ -39,12 +42,14 @@ fit1 <- survfit(coxph(Surv(time, status == 2) ~ strata(I(age > 60)),
                 conf.type = 'log-log', conf.int = 0.9)
 surv_table(fit1)
 
-s <- `colnames<-`(surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4],
-                  c('Time','No. at risk','No. of events','Surv (95\% CI)'))
+s <- `colnames<-`(
+  surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4],
+  c('Time', 'No. at risk', 'No. of events', 'Surv (95\% CI)')
+)
 ht <- htmlTable::htmlTable(s, caption = 'Table: Overall survival.')
 structure(ht, class = 'htmlTable')
 
 }
 \seealso{
-\code{\link{survfit}}, \code{\link{print.summary.survfit}}
+\code{\link{survfit}}; \code{\link{print.summary.survfit}}
 }

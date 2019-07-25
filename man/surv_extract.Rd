@@ -11,8 +11,9 @@ surv_extract(x, what = "median")
 surv_median(x, ci = FALSE, digits = 0L, which = NULL, print = TRUE,
   na = ifelse(ci, "NR", "not reached"))
 
-surv_prob(x, times = pretty(x$time), ci = FALSE, digits = 2L,
-  which = 1L, print = TRUE)
+surv_prob(x, times = pretty(x$time), ci = FALSE,
+  digits = ifelse(percent, 0L, 2L), which = 1L, print = TRUE,
+  show_conf = TRUE, percent = FALSE)
 }
 \arguments{
 \item{x}{an object of class \code{\link[survival]{survfit}}}
@@ -36,6 +37,11 @@ printing}
 times have not yet been reached}
 
 \item{times}{vector of times passed to \code{\link{surv_table}}}
+
+\item{show_conf}{logical; if \code{TRUE}, includes the confidence level}
+
+\item{percent}{logical; if \code{TRUE}, percentages are shown instead of
+probabilities}
 }
 \description{
 Convenience functions to print results from \code{summary(x)$table}

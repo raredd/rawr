@@ -1309,8 +1309,9 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
 #' (default is \code{"kaplan-meier"}), \code{error} (\code{"greenwood"}),
 #' \code{conf.int} (\code{0.95}), \code{"conf.type"} (\code{"log"}), and
 #' \code{"se.fit"} (\code{TRUE})
-#' @param ... additional arguments passed to \code{\link{kmplot}} or
-#' graphical parameters subsequently passed to \code{\link{par}}
+#' @param panel.first,panel.last,... additional arguments passed to
+#' \code{\link{kmplot}} or graphical parameters subsequently passed to
+#' \code{\link{par}}
 #' 
 #' @return
 #' Invisibly returns a list of \code{\link{survfit}} object(s) used to generate
@@ -1318,7 +1319,7 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
 #' value.
 #' 
 #' @seealso
-#' \code{\link{kmplot}}, \code{\link{survdiff}}; \code{\link{kmplot_data_}};
+#' \code{\link{kmplot}}; \code{\link{survdiff}}; \code{\link{kmplot_data_}};
 #' \code{\link{lr_text}}; \code{\link{lr_pval}}; \code{\link{points.kmplot}}
 #' 
 #' @examples
@@ -1394,7 +1395,8 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
                       time = NULL, single = TRUE, lr_test = TRUE, main = NULL,
                       ylab = NULL, sub = NULL, strata_lab = NULL, fig_lab = NULL,
                       col.surv = NULL, map.col = FALSE, legend = FALSE,
-                      add = FALSE, plot = TRUE, args.survfit = list(), ...) {
+                      add = FALSE, plot = TRUE, args.survfit = list(),
+                      panel.first = NULL, panel.last = NULL, ...) {
   op <- par(no.readonly = TRUE)
   
   if (is.logical(lr_test)) {
@@ -1573,7 +1575,7 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
       return(s0)
     
     kmplot(s, add = add, legend = legend, main = names(sp)[x], ylab = ylab,
-           lr_test = lr_test, ...,
+           lr_test = lr_test, ..., panel.last = panel.last,
            col.surv = if (map.col) unname(col.surv)[x] else col.surv,
            panel.first = {
              ## sub label - top left margin (default: strata var)
@@ -1585,6 +1587,8 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
              ## figure label - top left outer margin (eg, A, B, C)
              mtext(fig[x], side = 3L, line = 0.25, outer = FALSE,
                    at = 0 - par('usr')[2L] * .05, font = 2, cex = 1.2)
+             
+             panel.first
            })
     s0
   })
@@ -1819,7 +1823,7 @@ surv_cp <- function(data, time.var, status.var,
 #' strata, i.e., the output printed.
 #' 
 #' @seealso
-#' \code{\link{survfit}}, \code{\link{print.summary.survfit}}
+#' \code{\link{survfit}}; \code{\link{print.summary.survfit}}
 #' 
 #' @examples
 #' library('survival')
@@ -1909,13 +1913,15 @@ surv_summary <- function(s, digits = 3L, ...) {
 #' @param ... additional arguments passed to \code{\link{summary.survfit}}
 #' @param maxtime logical; if \code{TRUE}, adds the maximum time for which an
 #' even occurs; if \code{FALSE}, number of events may not sum to total
+#' @param percent logical; if \code{TRUE}, percentages are shown instead of
+#' probabilities
 #' 
 #' @return
 #' A matrix (or list of matrices) with formatted summaries for each strata; see
 #' \code{\link{summary.survfit}}
 #' 
 #' @seealso
-#' \code{\link{survfit}}, \code{\link{print.summary.survfit}}
+#' \code{\link{survfit}}; \code{\link{print.summary.survfit}}
 #' 
 #' @examples
 #' library('survival')
@@ -1930,15 +1936,18 @@ surv_summary <- function(s, digits = 3L, ...) {
 #'                 conf.type = 'log-log', conf.int = 0.9)
 #' surv_table(fit1)
 #' 
-#' s <- `colnames<-`(surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4],
-#'                   c('Time','No. at risk','No. of events','Surv (95% CI)'))
+#' s <- `colnames<-`(
+#'   surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4],
+#'   c('Time', 'No. at risk', 'No. of events', 'Surv (95% CI)')
+#' )
 #' ht <- htmlTable::htmlTable(s, caption = 'Table: Overall survival.')
 #' structure(ht, class = 'htmlTable')
 #' 
 #' @export
 
-surv_table <- function(s, digits = 3, times = pretty(s$time),
-                       maxtime = FALSE, ...) {
+surv_table <- function(s, digits = ifelse(percent, 0L, 3L),
+                       times = pretty(s$time), maxtime = FALSE,
+                       percent = FALSE, ...) {
   if (maxtime) {
     idx <- s$n.event > 0
     maxtime <- max(s$time[if (any(idx))
@@ -1947,26 +1956,42 @@ surv_table <- function(s, digits = 3, times = pretty(s$time),
   }
   
   capture.output(
-    summ <- surv_summary(s, digits = digits, times = unique(times), ...)
+    ss <- surv_summary(s, digits = 7L, times = unique(times), ...)
   )
+  
+  if (percent) {
+    ss <- if (islist(ss)) {
+      lapply(ss, function(x) {
+        idx <- grep('survival|lower|upper', colnames(x))
+        x[, idx] <- x[, idx] * 100
+        x
+      })
+    } else {
+      idx <- grep('survival|lower|upper', colnames(ss))
+      ss[, idx] <- ss[, idx] * 100
+      ss
+    }
+  }
   
   f <- function(x, d = digits, vars = vars) {
     vars <- colnames(x)
-    g <- function(wh, x = x, cn = vars)
+    
+    g <- function(wh, x = x, cn = vars) {
       cn[grepl(wh, cn)]
+    }
     
     tmpvar <- g('survival|std.err|lower|upper')
     x[, tmpvar] <- roundr(x[, tmpvar], digits = d)
     surv <- sprintf('%s (%s, %s)',
                     x[, g('survival')], x[, g('lower')], x[, g('upper')])
-    cn <- c('Time','No. at risk','No. event','Std.Error',
+    cn <- c('Time', 'No. at risk', 'No. event', 'Std.Error',
             sprintf('Surv (%s%% CI)', s$conf.int * 100))
     `colnames<-`(cbind(x[, c(setdiff(vars, tmpvar), 'std.err'),
                          drop = FALSE], surv), cn)
   }
   
-  if (is.list(summ))
-    Map('f', summ) else f(summ)
+  if (is.list(ss))
+    Map('f', ss) else f(ss)
 }
 
 #' Pairwise \code{survdiff} comparisons
@@ -2164,6 +2189,9 @@ landmark <- function(s, times = NULL, lr_test = TRUE, adjust_start = FALSE,
 #' @param na a character string to replace \code{NA} when median
 #' times have not yet been reached
 #' @param times vector of times passed to \code{\link{surv_table}}
+#' @param show_conf logical; if \code{TRUE}, includes the confidence level
+#' @param percent logical; if \code{TRUE}, percentages are shown instead of
+#' probabilities
 #' 
 #' @examples
 #' library('survival')
@@ -2253,20 +2281,22 @@ surv_median <- function(x, ci = FALSE, digits = 0L, which = NULL,
 #' @rdname surv_extract
 #' @export
 surv_prob <- function(x, times = pretty(x$time), ci = FALSE,
-                      digits = 2L, which = 1L, print = TRUE) {
+                      digits = ifelse(percent, 0L, 2L), which = 1L,
+                      print = TRUE, show_conf = TRUE, percent = FALSE) {
   stopifnot(
     length(which) == 1L
   )
   
-  res <- surv_table(x, digits, times, FALSE)
+  res <- surv_table(x, digits, times, FALSE, percent = percent)
   if (islist(res))
     res <- res[[which]]
   res <- res[, grep('Surv', colnames(res))]
   res <- if (!ci)
     gsub(' .*', '', res) else gsub(', ', ' - ', res)
   
-  res <- gsub('(?<=\\()', sprintf('%s%% CI: ', x$conf.int * 100),
-              res, perl = TRUE)
+  if (show_conf)
+    res <- gsub('(?<=\\()', sprintf('%s%% CI: ', x$conf.int * 100),
+                res, perl = TRUE)
   
   if (print)
     iprint(res) else res
