@@ -2247,7 +2247,8 @@ surv_extract <- function(x, what = 'median') {
 #' @rdname surv_extract
 #' @export
 surv_median <- function(x, ci = FALSE, digits = 0L, which = NULL,
-                        print = TRUE, na = ifelse(ci, 'NR', 'not reached')) {
+                        print = TRUE, na = ifelse(ci, 'NR', 'not reached'),
+                        show_conf = TRUE) {
   nr <- function(x) {
     gsub('NA', na, x)
   }
@@ -2267,8 +2268,10 @@ surv_median <- function(x, ci = FALSE, digits = 0L, which = NULL,
   res <- roundr(res, digits)
   
   f <- function(.x) {
-    sprintf('%s (%s%% CI: %s - %s)',
-            .x[1L], x$conf.int * 100, .x[2L], .x[3L])
+    if (show_conf)
+        sprintf('%s (%s%% CI: %s - %s)',
+                .x[1L], x$conf.int * 100, .x[2L], .x[3L])
+    else sprintf('%s (%s - %s)', .x[1L], .x[2L], .x[3L])
   }
   
   res <- if (is.null(dim(res)))

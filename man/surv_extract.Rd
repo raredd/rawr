@@ -9,7 +9,7 @@
 surv_extract(x, what = "median")
 
 surv_median(x, ci = FALSE, digits = 0L, which = NULL, print = TRUE,
-  na = ifelse(ci, "NR", "not reached"))
+  na = ifelse(ci, "NR", "not reached"), show_conf = TRUE)
 
 surv_prob(x, times = pretty(x$time), ci = FALSE,
   digits = ifelse(percent, 0L, 2L), which = 1L, print = TRUE,
@@ -36,9 +36,9 @@ printing}
 \item{na}{a character string to replace \code{NA} when median
 times have not yet been reached}
 
-\item{times}{vector of times passed to \code{\link{surv_table}}}
-
 \item{show_conf}{logical; if \code{TRUE}, includes the confidence level}
+
+\item{times}{vector of times passed to \code{\link{surv_table}}}
 
 \item{percent}{logical; if \code{TRUE}, percentages are shown instead of
 probabilities}
