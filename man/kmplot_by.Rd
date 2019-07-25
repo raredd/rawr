@@ -8,7 +8,8 @@ kmplot_by(strata = "1", event = NULL, data = NULL, by = NULL,
   time = NULL, single = TRUE, lr_test = TRUE, main = NULL,
   ylab = NULL, sub = NULL, strata_lab = NULL, fig_lab = NULL,
   col.surv = NULL, map.col = FALSE, legend = FALSE, add = FALSE,
-  plot = TRUE, args.survfit = list(), ...)
+  plot = TRUE, args.survfit = list(), panel.first = NULL,
+  panel.last = NULL, ...)
 }
 \arguments{
 \item{strata, event, time, by}{character strings of the strata, event (pfs, os,
@@ -66,8 +67,9 @@ adding to existing plots}
 \code{conf.int} (\code{0.95}), \code{"conf.type"} (\code{"log"}), and
 \code{"se.fit"} (\code{TRUE})}
 
-\item{...}{additional arguments passed to \code{\link{kmplot}} or
-graphical parameters subsequently passed to \code{\link{par}}}
+\item{panel.first, panel.last, ...}{additional arguments passed to
+\code{\link{kmplot}} or graphical parameters subsequently passed to
+\code{\link{par}}}
 }
 \value{
 Invisibly returns a list of \code{\link{survfit}} object(s) used to generate
@@ -160,6 +162,6 @@ kmplot_by('sex', 'pfs', colon2, strata_lab = FALSE, add = TRUE, mar = mar)
   
 }
 \seealso{
-\code{\link{kmplot}}, \code{\link{survdiff}}; \code{\link{kmplot_data_}};
+\code{\link{kmplot}}; \code{\link{survdiff}}; \code{\link{kmplot_data_}};
 \code{\link{lr_text}}; \code{\link{lr_pval}}; \code{\link{points.kmplot}}
 }

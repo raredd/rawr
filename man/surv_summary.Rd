@@ -32,5 +32,5 @@ surv_summary(fit1, times = c(0, 100, 200))
 
 }
 \seealso{
-\code{\link{survfit}}, \code{\link{print.summary.survfit}}
+\code{\link{survfit}}; \code{\link{print.summary.survfit}}
 }
