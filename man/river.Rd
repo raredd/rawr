@@ -6,11 +6,13 @@
 \alias{check_river_format}
 \title{River plots}
 \usage{
-river(data, bar_data, id, at, legend = "topleft", xlim, ylim,
-  rev = FALSE, stagger = TRUE, col)
+river(data, bar_data, id, at, legend = "topleft", xlim = NULL,
+  ylim = NULL, rev = FALSE, stagger = TRUE, col = NULL,
+  axes = TRUE)
 
-river2(data, bar_data, bar_data2, id, legend = "topleft", xlim, ylim,
-  rev = FALSE, stagger = FALSE, split = FALSE, col, col2)
+river2(data, bar_data, bar_data2, id, legend = "topleft", xlim = NULL,
+  ylim = NULL, rev = FALSE, stagger = FALSE, split = FALSE, col,
+  col2, axes = TRUE)
 
 check_river_format(data, bar_data)
 }
@@ -35,6 +37,8 @@ rather than relative to the first start date if \code{TRUE} (default)}
 
 \item{col, col2}{vectors of colors for responses (\code{river}) or toxicity
 grades \code{river2}, respectively}
+
+\item{axes}{logical; if \code{TRUE}, x-axes are drawn}
 
 \item{split}{logical; if \code{TRUE}, rows of \code{bar_data2} will be
 plotted individually}

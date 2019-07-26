@@ -1292,10 +1292,11 @@ waffle <- function(mat, xpad = 0, ypad = 0,
 #' to bottom
 #' @param stagger logical; if \code{FALSE}, start dates will be fixed at 0
 #' rather than relative to the first start date if \code{TRUE} (default)
-#' @param split logical; if \code{TRUE}, rows of \code{bar_data2} will be
-#' plotted individually
 #' @param col,col2 vectors of colors for responses (\code{river}) or toxicity
 #' grades \code{river2}, respectively
+#' @param axes logical; if \code{TRUE}, x-axes are drawn
+#' @param split logical; if \code{TRUE}, rows of \code{bar_data2} will be
+#' plotted individually
 #' 
 #' @examples
 #' ## to print a summary of the required formats
@@ -1358,7 +1359,8 @@ waffle <- function(mat, xpad = 0, ypad = 0,
 #' @export
 
 river <- function(data, bar_data, id, at, legend = 'topleft',
-                  xlim, ylim, rev = FALSE, stagger = TRUE, col) {
+                  xlim = NULL, ylim = NULL, rev = FALSE,
+                  stagger = TRUE, col = NULL, axes = TRUE) {
   ## error checks
   dd <- check_river_format(data)
   bd <- check_river_format(data, bar_data)
@@ -1378,7 +1380,7 @@ river <- function(data, bar_data, id, at, legend = 'topleft',
   dd <- merge(bd, dd, by = 'id', all = TRUE)
   
   ## colors for resp - PD:CR
-  cols <- if (missing(col))
+  cols <- if (is.null(col))
     c('red', 'transparent', 'yellow', 'orange',
       'deepskyblue', 'dodgerblue3', 'blue4')
   else rep_len(col, nlevels(dd$assess))
@@ -1408,13 +1410,17 @@ river <- function(data, bar_data, id, at, legend = 'topleft',
   
   plot.new()
   par(mar = c(4,1,1,0))
-  plot.window(if (!missing(xlim)) xlim else c(0, diff(rx)),
+  plot.window(if (!is.null(xlim)) xlim else c(0, diff(rx)),
               ## set min ylim to c(0,5) for case: id < 5
-              if (!missing(ylim)) ylim else range(c(0, at, 5)))
-  axis(1, tcl = .2, las = 1L)
-  title(xlab = sprintf('Days from %sregistration',
-                       c('', 'first ')[stagger + 1L]),
-        line = 2.5)
+              if (!is.null(ylim)) ylim else range(c(0, at, 5)))
+  if (axes) {
+    axis(1, tcl = 0.2, las = 1L)
+    title(
+      xlab = sprintf('Days from %sregistration',
+                     c('', 'first ')[stagger + 1L]),
+      line = 2.5
+    )
+  }
   
   if (legend[[1L]] != FALSE)
     do.call('legend',
@@ -1465,14 +1471,15 @@ river <- function(data, bar_data, id, at, legend = 'topleft',
 #' @rdname river
 #' @export
 river2 <- function(data, bar_data, bar_data2, id, legend = 'topleft',
-                   xlim, ylim, rev = FALSE, stagger = FALSE,
-                   split = FALSE, col, col2) {
+                   xlim = NULL, ylim = NULL, rev = FALSE, stagger = FALSE,
+                   split = FALSE, col, col2, axes = TRUE) {
   ## error checks
   if (!missing(data)) {
     if (missing(bar_data2))
       return(
         river(data = data, bar_data = bar_data, id = id, at = 1, rev = rev,
-              legend = legend, xlim = xlim, ylim = ylim, stagger = stagger)
+              legend = legend, xlim = xlim, ylim = ylim, stagger = stagger,
+              axes = axes)
       )
   } else {
     mmin <- function(x) min(x, na.rm = !all(is.na(x)))
@@ -1525,8 +1532,9 @@ river2 <- function(data, bar_data, bar_data2, id, legend = 'topleft',
   rv <- river(
     data = data, bar_data = bar_data, id = id, at = 1, col = col,
     legend = FALSE, rev = FALSE, stagger = stagger, xlim = xlim,
-    ylim = if (missing(ylim))
-      c(0, max(5, (if (split) max(nn) else length(nn)) + 1)) else ylim
+    ylim = if (is.null(ylim))
+      c(0, max(5, (if (split) max(nn) else length(nn)) + 1)) else ylim,
+    axes = axes
   )
   
   td <- within(td, {
