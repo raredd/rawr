@@ -2274,7 +2274,10 @@ kw.test.pvalue <- function(x, g, ordered = FALSE, B = 2000L,
 #' @param knots value(s) of \code{x} where knots will be fixed
 #' @param col a vector of colors for each spline
 #' @param which an integer vector specifying the plot(s); see details
-#' @param ... additional graphical parameters passed to \code{\link{par}}
+#' @param ... additional arguments passed to \code{\link{plot.default}} or
+#' further to \code{\link{par}}
+#' @param type character indicating the type of plotting; see
+#' \code{\link{plot.default}}
 #' 
 #' @return
 #' \code{lspline} returns an \code{\link{lm}} object with class
@@ -2293,6 +2296,9 @@ kw.test.pvalue <- function(x, g, ordered = FALSE, B = 2000L,
 #' predict(ls)
 #' plot(ls)
 #' 
+#' plot(y ~ x)
+#' points(ls, col = 3:5, pch = 16)
+#' lines(ls, col = 3:5, lwd = 2)
 #' 
 #' ## compare
 #' plot(lspline(x, y, knots = 15), col = 2:3, which = 1L)
@@ -2339,12 +2345,11 @@ plot.lspline <- function(x, col = NULL, which = 1:2, ...) {
   else seq(min(sort(data$x)), max(sort(data$x)), length.out = 1000L)
   
   op <- par(mfrow = c(1L, length(which)))
-  par(...)
   on.exit(par(op))
   
   col <- (col %||% palette())[findInterval(data$x, knots) + 1L]
   if (1L %in% which) {
-    plot(y ~ x, data)
+    plot(y ~ x, data, ...)
     
     pr <- lapply(seq_along(xx), function(ii) {
       pr <- predict(x, lsdata(xx[[ii]], knots))
@@ -2353,9 +2358,43 @@ plot.lspline <- function(x, col = NULL, which = 1:2, ...) {
     points(data$x, predict(x), col = col)
   }
   
-  if (2L %in% which)
-    plot(I(data$y - predict(x)) ~ data$x, col = col,
-         xlab = 'x', ylab = 'y')
+  if (2L %in% which) {
+    data$y <- data$y - predict(x)
+    plot(y ~ x, data, col = col, ...)
+  }
+  
+  invisible(NULL)
+}
+
+#' @rdname lspline
+#' @export
+points.lspline <- function(x, y = NULL, type = 'p', col = NULL, ...) {
+  knots <- attr(x, 'knots')
+  data  <- x$model
+  col   <- rep_len(col %||% seq_along(c(1L, knots)), length(knots) + 1L)
+  col   <- (col %||% palette())[findInterval(data$x, knots) + 1L]
+  
+  points(data$x, predict(x), col = col, type = type, ...)
+  
+  invisible(NULL)
+}
+
+#' @rdname lspline
+#' @export
+lines.lspline <- function(x, y = NULL, type = 'l', col = NULL, ...) {
+  knots <- attr(x, 'knots')
+  data  <- x$model
+  col   <- rep_len(col %||% seq_along(c(1L, knots)), length(knots) + 1L)
+  
+  xx <- if (!is.null(knots))
+    Map(function(x, y) seq(x, y, length.out = 1000L),
+        c(min(sort(data$x)), knots), c(knots, max(sort(data$x))))
+  else seq(min(sort(data$x)), max(sort(data$x)), length.out = 1000L)
+  
+  pr <- lapply(seq_along(xx), function(ii) {
+    pr <- predict(x, lsdata(xx[[ii]], knots))
+    lines(xx[[ii]], pr, col = (col %||% palette())[ii], type = type, ...)
+  })
   
   invisible(NULL)
 }

@@ -3,11 +3,17 @@
 \name{lspline}
 \alias{lspline}
 \alias{plot.lspline}
+\alias{points.lspline}
+\alias{lines.lspline}
 \title{Linear spline}
 \usage{
 lspline(x, y, knots = NULL)
 
 \method{plot}{lspline}(x, col = NULL, which = 1:2, ...)
+
+\method{points}{lspline}(x, y = NULL, type = "p", col = NULL, ...)
+
+\method{lines}{lspline}(x, y = NULL, type = "l", col = NULL, ...)
 }
 \arguments{
 \item{x, y}{the x- and y-axis variables}
@@ -18,7 +24,11 @@ lspline(x, y, knots = NULL)
 
 \item{which}{an integer vector specifying the plot(s); see details}
 
-\item{...}{additional graphical parameters passed to \code{\link{par}}}
+\item{...}{additional arguments passed to \code{\link{plot.default}} or
+further to \code{\link{par}}}
+
+\item{type}{character indicating the type of plotting; see
+\code{\link{plot.default}}}
 }
 \value{
 \code{lspline} returns an \code{\link{lm}} object with class
@@ -51,6 +61,9 @@ ls <- lspline(x, y, c(10, 20))
 predict(ls)
 plot(ls)
 
+plot(y ~ x)
+points(ls, col = 3:5, pch = 16)
+lines(ls, col = 3:5, lwd = 2)
 
 ## compare
 plot(lspline(x, y, knots = 15), col = 2:3, which = 1L)
