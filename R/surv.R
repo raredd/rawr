@@ -200,25 +200,27 @@
 #' pdf(tf <- tempfile(fileext = '.pdf'), height = 8, width = 11,
 #'     pointsize = 12, family = 'serif')
 #' 
-#' kmplot(survfit(Surv(time, status) ~ rx + adhere, data = colon),
-#'        panel.first = abline(v = c(0, 0.5, 1:9) * 365, lty = 3),
-#'        mark = 'bump',                     # bump censor mark
-#'        lty.ci = 2, lwd.ci = 0.3,          # dashed line for CIs
-#'        xaxis.at = c(0, 0.5, 1:9) * 365,   # change days to years
-#'        xaxis.lab = c(0, 0.5, 1:9),        # label years
-#'        yaxis.lab = pretty(0:1) * 100,     # change to percent
-#'        xlab = 'Time (years)',
-#'        ylab = 'Percent survival',
-#'        lr_test = TRUE, test_details = FALSE, # custom test output
-#'        args.test = list(line = -2, col = 'red', cex = 2, at = 11 * 365),
-#'        col.surv = c('blue', 'red', 'green', 'black', 'purple', 'orange'),
-#'        col.ci   = c(0,0,0,0,'purple',0),  # CI only for one group
-#'        extra.margin = 6,        # increase margin for long strata labels
-#'        strata.lab = c('Obs', 'Obs+', 'Lev', 'Lev+', 'Lev5fu', 'Lev5fu+'),
-#'        strata.order = c(5,6,3,1,4,2),     # order table by curve positions
-#'        median = 10.5 * 365,               # add median and CI
-#'        atrisk.col = TRUE,                 # color at-risk text
-#'        font = 2, bty = 'l', tcl = 0.5)    # bold table text, other options
+#' kmplot(
+#'   survfit(Surv(time, status) ~ rx + adhere, data = colon),
+#'   panel.first = abline(v = c(0, 0.5, 1:9) * 365, lty = 3),
+#'   mark = 'bump',                     # bump censor mark
+#'   lty.ci = 2, lwd.ci = 0.3,          # dashed line for CIs
+#'   xaxis.at = c(0, 0.5, 1:9) * 365,   # change days to years
+#'   xaxis.lab = c(0, 0.5, 1:9),        # label years
+#'   yaxis.lab = pretty(0:1) * 100,     # change to percent
+#'   xlab = 'Time (years)',
+#'   ylab = 'Percent survival',
+#'   lr_test = TRUE, test_details = FALSE, # custom test output
+#'   args.test = list(line = -2, col = 'red', cex = 2, at = 11 * 365),
+#'   col.surv = c('blue', 'red', 'green', 'black', 'purple', 'orange'),
+#'   col.ci   = c(0,0,0,0,'purple',0),  # CI only for one group
+#'   extra.margin = 6,        # increase margin for long strata labels
+#'   strata.lab = c('Obs', 'Obs+', 'Lev', 'Lev+', 'Lev5fu', 'Lev5fu+'),
+#'   strata.order = c(5,6,3,1,4,2),     # order table by curve positions
+#'   median = 10.5 * 365,               # add median and CI
+#'   atrisk.col = TRUE,                 # color at-risk text
+#'   font = 2, bty = 'l', tcl = 0.5     # bold table text, other options
+#' )
 #' title(main = 'Chemotherapy for stage B/C colon cancer', line = 2.5)
 #' 
 #' dev.off()
