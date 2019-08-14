@@ -4,7 +4,7 @@
 # getMethods, regcaptures, regcaptures2, cast, melt, View2, view, clist,
 # rapply2, sort_matrix, insert, insert_matrix, tryCatch2, rleid, droplevels2,
 # combine_levels, combine_regex, rownames_to_column, column_to_rownames,
-# split_nth, sort2
+# split_nth, sort2, response
 # 
 # rawr_ops:
 # %ni%, %==%, %||%, %sinside%, %winside%, %inside%, %:%
@@ -338,7 +338,7 @@ lss <- function(pos = 1L, pattern, by = NULL, all.names = FALSE,
   )
   
   if ((mb <- sum(napply(names, object.size)) / (1024 ^ 2)) > 1)
-    on.exit(message(sprintf('Total size: %s Mb', rawr::roundr(mb, 1L))))
+    on.exit(message(sprintf('Total size: %s Mb', roundr(mb, 1L))))
   
   if (!is.null(by))
     res <- res[order(res[, by], decreasing = decreasing), ]
@@ -1052,7 +1052,7 @@ rbindlist2 <- function(data, column, split = '\\W+', fixed = FALSE, perl = FALSE
     message('No rows were split for column ', shQuote(column))
     return(data)
   }
-  l <- rawr::rbindlist(l, use.rownames = FALSE, use.names = FALSE)
+  l <- rbindlist(l, use.rownames = FALSE, use.names = FALSE)
   
   data <- data[l[, 1L], ]
   data[, column] <- as.character(data[, column])
@@ -2457,4 +2457,248 @@ sort2 <- function(x, decreasing = FALSE, index.return = FALSE,
   
   if (index.return)
     o else x[o]
+}
+
+#' Response data
+#' 
+#' Get response data (dates, progression, best-so-far, best overall,
+#' confirmed, etc.) for vectors of dates and response assessments.
+#' 
+#' @param date date of assessment
+#' @param response a factor variable of responses for each \code{date} with
+#' levels ordered from best response to worst (e.g.,
+#' \code{factor(., levels = c('CR', 'PR', 'SD', 'PD'))}
+#' @param include optional vector of \code{response} to include, e.g., useful
+#' if a minimal response is required
+#' @param progression a character string to identify progression events in
+#' \code{response}
+#' @param n_confirm to confirm each response, the number of subsequent
+#' responses equal or better required; e.g., if \code{n_confirm = 2}, to
+#' confirm a minimal response, the next to assessments must be minimal or
+#' better to confirm
+#' @param strict logical; if \code{TRUE}, only the first uninterrupted
+#' sequence of confirmed responses will be evaluated for best response
+#' @param dr (optional) difference in level required to confirm responses; if
+#' \code{dr = 0} (default), the next response must be equal to or better to
+#' confirm; if \code{dr = -1}, the next response must be at least one level
+#' better; \code{dr = Inf} will be equivalent to unconfirmed responses since
+#' any subsequent response can confirm
+#' @param dp (optional) difference in level required to show progression; if
+#' \code{dp = NULL} (default), only responses matching \code{progression}
+#' pattern show progression; if \code{dp = 0}, any worse response will be
+#' considered progression (e.g., CR followed by PR); \code{dp = 1},
+#' progression is defined as a drop in response of two or more levels (e.g.,
+#' CR to PR is not progression but CR to MR is progression)
+#' 
+#' @return
+#' A list with the following elements:
+#' \item{$unconfirmed}{a \code{1 x 9} data frame with dates of first and last
+#' response, first and last best response, and progression as well as the
+#' response for each}
+#' \item{$confirmed}{similar to \code{$unconfirmed} but only for responses
+#' that have been confirmed}
+#' \item{$bsf_unconfirmed}{an \code{n x 2} data frame with the best-so-far
+#' responses matching \code{include} with corresponding dates}
+#' \item{$bsf_confirmed}{similar to \code{$bsf_unconfirmed} but only for
+#' responses that have been confirmed}
+#' 
+#' @examples
+#' set.seed(1)
+#' rsp <- c('CR', 'PR', 'SD', 'PD')
+#' rsp <- c('sCR', 'CR', 'VGPR', 'PR', 'MR', 'SD', 'PD')
+#' dat <- data.frame(
+#'   id = rep(1:5, each = 10),
+#'   date = Sys.Date() + 1:10,
+#'   response = factor(
+#'     # rsp[sample(seq_along(rsp), 50, TRUE, c(0.2, 0.5, 0.2, 0.1))], rsp
+#'     rsp[sample(seq_along(rsp), 50, TRUE)], rsp
+#'   )
+#' )
+#' 
+#' sp <- split(dat[, -1L], dat$id)
+#' ii <- 2
+#' response(sp[[ii]]$date, sp[[ii]]$response)
+#' 
+#' unconf <- do.call(
+#'   'rbind',
+#'   lapply(sp, function(x) response(x$date, x$response)$unconfirmed)
+#' )
+#' conf <- do.call(
+#'   'rbind',
+#'   lapply(sp, function(x) response(x$date, x$response)$confirmed)
+#' )
+#' do.call('cbind', sp)
+#' 
+#' @export
+
+response <- function(date, response, include = 'resp|[CPM]R$',
+                     progression = 'prog|pd|relapse', n_confirm = 1L,
+                     strict = FALSE, dr = 0, dp = NULL) {
+  stopifnot(
+    is.factor(response),
+    !anyNA(date),
+    all(diff(date) >= 0)
+  )
+  
+  best_seq <- function(x) {
+    ## get first continuous sequence of best response
+    x[x > min(x)] <- NA
+    rl <- rle(x)
+    rl$values[duplicated(rl$values)] <- NA
+    res <- inverse.rle(rl)
+    replace(res, is.na(res), Inf)
+  }
+  
+  confirm <- function(x, n = 2L, d = 0) {
+    ## find confirmed responses requiring n in a row of at least d
+    ##   d = 0 (default) as-good or better response needed
+    ##   d = -1 better response (by at least one level) needed
+    x <- as.integer(x)
+    n <- as.integer(n)
+    if (length(x) < n || n < 2L)
+      return(rep_len(TRUE, length(x)))
+    res <- sapply(seq.int(n), function(ii) {
+      ii <- ii - 1L
+      if (ii == 0L)
+        x else c(tail(x, -ii), rep_len(Inf, ii))
+    })
+    apply(res, 1L, function(x) all(diff(x) <= d))
+  }
+  
+  data <- data.frame(date = date, response = response)[order(date), ]
+  data$responsei <- as.integer(data$response)
+  
+  lvls <- levels(response)
+  include <- if (is.numeric(include))
+    lvls[include]
+  else grep(include, lvls, value = TRUE, ignore.case = TRUE)
+  
+  nr <- nrow(data)
+  pd <- grep(progression, data$response, ignore.case = TRUE)
+  if (!is.null(dp))
+    pd <- sort(c(pd, which(diff(data$responsei) > dp) + 1L))
+  dt_prog <- if (length(pd))
+    data$date[min(pd)] else as.Date(NA)
+  
+  ## select rows up until first progression
+  data <- if (length(pd))
+    data[seq(1L, min(pd) - 1L), ] else data
+  
+  na  <- as.Date(NA)
+  bsf <- data.frame(dt_bsf = na, response_bsf = NA)
+  rsp_na <- data.frame(
+    dt_first = na, response_first = NA, dt_last = na, response_last = NA,
+    dt_best_first = na, response_best_first = NA, dt_best_last = na,
+    response_best_last = NA, dt_prog = dt_prog
+  )
+  
+  if (!any(data$response %in% include) || length(pd) && min(pd) == 1L)
+    return(
+      list(
+        unconfirmed = rsp_na, confirmed = rsp_na,
+        bsf_unconfirmed = bsf, bsf_confirmed = bsf
+      )
+    )
+  
+  ## confirmed
+  data <- within(data, {
+    bsfi <- locf(cummin_na(responsei))
+    bsf  <- factor(bsfi, seq_along(lvls), lvls)
+    
+    confirm <- responsei
+    # confirm <- c(confirm[-1L] <= confirm[-length(confirm)], FALSE)
+    confirm <- confirm(responsei, n_confirm + 1L, dr)
+    confirm[grepl(progression, response)] <- NA
+    confirm_best <- replace(confirm, responsei > min(bsfi), FALSE)
+    
+    confirm_date <- c(date[-1L], NA)
+    confirm_date[!confirm %in% TRUE] <- NA
+    
+    responsei_confirm <- ifelse(confirm %in% TRUE, responsei, NA)
+    bsfi_confirm <- locf(cummin_na(responsei_confirm))
+    bsf_confirm <- factor(bsfi_confirm, seq_along(lvls), lvls)
+    
+    best_confirm <- if (all(is.na(responsei_confirm[confirm])))
+      responsei_confirm[confirm]
+    else lvls[min(responsei_confirm[confirm],
+                  na.rm = sum(sort(responsei_confirm[confirm])) > 0)]
+  })
+  
+  ## select only rows that meet minimal response criteria
+  if (length(include))
+    dd <- data[data$response %in% include, ]
+  
+  ## first/last response of any type, first/last of best response
+  bes <- dd$responsei
+  bes <- best_seq(bes)
+  
+  idx <- c(
+    first = 1L, last = nrow(dd),
+    best_first = max.col(-t(bes), 'first'),
+    best_last  = max.col(-t(bes), 'last')
+  )
+  
+  rsp <- lapply(seq_along(idx), function(ii) {
+    x <- idx[ii]
+    setNames(
+      data.frame(date = dd$date[x], response = dd$response[x]),
+      paste0(c('dt_', 'response_'), names(idx)[ii])
+    )
+  })
+  rsp <- do.call('cbind', rsp)
+  
+  ## best so far response
+  bsf <- data.frame(dt_bsf = locf(dd$date), response_bsf = dd$bsf)
+  
+  ## repeat but only for confirmed responses
+  id <- rleid(dd$confirm_best)
+  dd <- if (strict)
+    dd[id %in% id[dd$confirm_best %in% TRUE][1L], ]
+  else dd[dd$confirm %in% TRUE, ]
+  
+  if (nrow(dd) == 0L) {
+    bsf_na <- data.frame(dt_bsf = as.Date(NA), response_bsf = NA)
+    rsp$dt_prog <- rsp_na$dt_prog
+    
+    return(
+      list(
+        unconfirmed = rsp, confirmed = rsp_na,
+        bsf_unconfirmed = bsf, bsf_confirmed = bsf_na
+      )
+    )
+  }
+  
+  bes <- dd$responsei
+  bes <- best_seq(bes)
+  
+  idx_confirm <- c(
+    first = 1L, last = nrow(dd),
+    best_first = max.col(-t(bes), 'first'),
+    best_last  = max.col(-t(bes), 'last')
+  )
+  
+  rsp_confirm <- lapply(seq_along(idx_confirm), function(ii) {
+    x <- idx_confirm[ii]
+    setNames(
+      data.frame(date = dd$date[x], response = dd$response[x]),
+      paste0(c('dt_', 'response_'), names(idx_confirm)[ii])
+    )
+  })
+  rsp_confirm <- do.call('cbind', rsp_confirm)
+  
+  
+  ## first progression if any
+  rsp$dt_prog <- rsp_confirm$dt_prog <- dt_prog
+  
+  
+  ## best so far response
+  bsf_confirm <- data.frame(
+    dt_bsf = locf(dd$date),
+    response_bsf = dd$bsf_confirm
+  )
+  
+  list(
+    unconfirmed = rsp, confirmed = rsp_confirm,
+    bsf_unconfirmed = bsf, bsf_confirmed = bsf_confirm
+  )
 }
