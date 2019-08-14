@@ -11,8 +11,8 @@ river(data, bar_data, id, at, legend = "topleft", xlim = NULL,
   axes = TRUE)
 
 river2(data, bar_data, bar_data2, id, legend = "topleft", xlim = NULL,
-  ylim = NULL, rev = FALSE, stagger = FALSE, split = FALSE, col,
-  col2, axes = TRUE)
+  ylim = NULL, rev = FALSE, stagger = FALSE, split = FALSE,
+  col = NULL, col2 = NULL, axes = TRUE)
 
 check_river_format(data, bar_data)
 }

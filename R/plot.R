@@ -1105,7 +1105,7 @@ dsplot.formula <- function(formula, data = NULL, ...,
 #' ## heatmap
 #' ## convert the numeric data to color strings
 #' cols <- c(cor(mtcars))
-#' cols <- rawr::tcol(c('blue', 'red')[(cols > 0) + 1L], alpha = c(abs(cols)))
+#' cols <- tcol(c('blue', 'red')[(cols > 0) + 1L], alpha = c(abs(cols)))
 #' 
 #' mat <- matrix(cols, 11)
 #' waffle(mat, reset_par = FALSE, invert = 'x')
@@ -1125,7 +1125,7 @@ dsplot.formula <- function(formula, data = NULL, ...,
 #' ng <- 3
 #' cols <- c('beige', 'dodgerblue2', 'green', 'orange')
 #' x <- sample(cols, n * ng, replace = TRUE, prob = c(.05,.31,.32,.32))
-#' x <- rawr::kinda_sort(x, n = 20)
+#' x <- kinda_sort(x, n = 20)
 #' 
 #' par(fig = c(0,1,.2,.9), mar = c(0,5,0,1))
 #' plot(cumsum(rnorm(n)), type = 'l', ann = FALSE, xaxt = 'n')
@@ -1472,7 +1472,7 @@ river <- function(data, bar_data, id, at, legend = 'topleft',
 #' @export
 river2 <- function(data, bar_data, bar_data2, id, legend = 'topleft',
                    xlim = NULL, ylim = NULL, rev = FALSE, stagger = FALSE,
-                   split = FALSE, col, col2, axes = TRUE) {
+                   split = FALSE, col = NULL, col2 = NULL, axes = TRUE) {
   ## error checks
   if (!missing(data)) {
     if (missing(bar_data2))
@@ -1522,7 +1522,7 @@ river2 <- function(data, bar_data, bar_data2, id, legend = 'topleft',
   td <- td[do.call('order', as.list(td[, c('dt_start', 'desc')])), ]
   
   ## grade colors - 1:5
-  cols <- if (missing(col2))
+  cols <- if (is.null(col2))
     c('green', 'blue', 'orange', 'red', 'black')
   else rep_len(tcol(col2), lunique(td$grade))
   nn <- if (split)

@@ -4,7 +4,7 @@ options(scipen = -1L)
 ## binding notes
 if (getRversion() >= '2.15.1') {
   utils::globalVariables(c(
-    'x', 'survfit', 'survdiff',
+    'x', 'survfit', 'survdiff', 'responsei',
     
     ## install.bioc
     'biocLite',

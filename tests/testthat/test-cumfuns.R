@@ -6,7 +6,7 @@ test_that('cumulative functions are identical to base with no NA', {
   x <- 1:10
   
   expect_true(
-    rawr::identical2(
+    identical2(
       cumsum(x),
       cum_na(x, cumsum, TRUE),
       cum_na(x, cumsum, FALSE),
@@ -16,7 +16,7 @@ test_that('cumulative functions are identical to base with no NA', {
   )
   
   expect_true(
-    rawr::identical2(
+    identical2(
       cumprod(x),
       cum_na(x, cumprod, TRUE),
       cum_na(x, cumprod, FALSE),
@@ -26,7 +26,7 @@ test_that('cumulative functions are identical to base with no NA', {
   )
   
   expect_true(
-    rawr::identical2(
+    identical2(
       cummax(x),
       cum_na(x, cummax, TRUE),
       cum_na(x, cummax, FALSE),
@@ -36,7 +36,7 @@ test_that('cumulative functions are identical to base with no NA', {
   )
   
   expect_true(
-    rawr::identical2(
+    identical2(
       cummin(x),
       cum_na(x, cummin, TRUE),
       cum_na(x, cummin, FALSE),

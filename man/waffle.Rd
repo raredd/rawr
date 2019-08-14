@@ -59,7 +59,7 @@ waffle(matrix(1:9, 3), xpad = 0, colpad = c(0, .1, 0))
 ## heatmap
 ## convert the numeric data to color strings
 cols <- c(cor(mtcars))
-cols <- rawr::tcol(c('blue', 'red')[(cols > 0) + 1L], alpha = c(abs(cols)))
+cols <- tcol(c('blue', 'red')[(cols > 0) + 1L], alpha = c(abs(cols)))
 
 mat <- matrix(cols, 11)
 waffle(mat, reset_par = FALSE, invert = 'x')
@@ -79,7 +79,7 @@ n  <- 97
 ng <- 3
 cols <- c('beige', 'dodgerblue2', 'green', 'orange')
 x <- sample(cols, n * ng, replace = TRUE, prob = c(.05,.31,.32,.32))
-x <- rawr::kinda_sort(x, n = 20)
+x <- kinda_sort(x, n = 20)
 
 par(fig = c(0,1,.2,.9), mar = c(0,5,0,1))
 plot(cumsum(rnorm(n)), type = 'l', ann = FALSE, xaxt = 'n')
