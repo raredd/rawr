@@ -692,8 +692,7 @@ kmplot <- function(s,
       message('There is only one group for ', svar, ' -- no test performed')
     else {
       largs <- alist(
-        text = txt, side = 3L, at = par('usr')[2L],
-        adj = 1, cex = 0.8, line = 0.5
+        text = txt, side = 3L, at = par('usr')[2L], adj = 1, line = 0.25
       )
       
       if (!islist(args.test))
