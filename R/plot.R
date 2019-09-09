@@ -178,8 +178,8 @@ jmplot <- function(x, y, z,
 #' @param formula a \code{\link{formula}}, such as \code{y ~ grp}, where y is
 #' a numeric vector of data values to be split into groups according to the
 #' grouping variable \code{grp} (usually a factor)
-#' @param data a data frame (or list) from which the variables in formula
-#' should be taken
+#' @param data a data frame (or list) from which the variables in
+#' \code{formula} should be taken
 #' @param subset an optional vector specifying a subset of observations to be
 #' used for plotting
 #' @param na.action a function which indicates what should happen when the data

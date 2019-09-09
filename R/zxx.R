@@ -2219,5 +2219,7 @@ reload <- function(package) {
     error = function(e) NULL
   )
   
-  require(package, character.only = TRUE)
+  # require(package, character.only = TRUE)
+  library(package, character.only = TRUE)
+  invisible(TRUE)
 }

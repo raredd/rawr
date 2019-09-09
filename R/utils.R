@@ -1817,7 +1817,6 @@ clist <- function (x, y, how = c('cbind', 'rbind', 'cbindx', 'rbindx')) {
 #' 
 #' @export
 
-
 rapply2 <- function(l, FUN, classes = 'ANY', ...,
                     check.nested = 'list' %in% classes) {
   stopifnot(islist(l))
