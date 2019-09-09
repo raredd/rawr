@@ -139,8 +139,8 @@ place but before the axes, title, and box are added; see the comments about
 a numeric vector of data values to be split into groups according to the
 grouping variable \code{grp} (usually a factor)}
 
-\item{data}{a data frame (or list) from which the variables in formula
-should be taken}
+\item{data}{a data frame (or list) from which the variables in
+\code{formula} should be taken}
 
 \item{subset}{an optional vector specifying a subset of observations to be
 used for plotting}
