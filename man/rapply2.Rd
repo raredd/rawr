@@ -5,7 +5,7 @@
 \title{Recursively apply a function to a list}
 \usage{
 rapply2(l, FUN, classes = "ANY", ..., check.nested = "list" \%in\%
-  classes)
+  classes, skip.null = TRUE)
 }
 \arguments{
 \item{l}{a list}
@@ -21,6 +21,9 @@ rapply2(l, FUN, classes = "ANY", ..., check.nested = "list" \%in\%
 \item{check.nested}{logical; if \code{TRUE}, for nested lists,
 \code{rapply2} will continue to walk down the list rather than stop at
 the first list (only if \code{"list" \%in\% classes})}
+
+\item{skip.null}{logical; if \code{TRUE} (default), \code{NULL} elements
+of \code{l} will be skipped before \code{FUN} can be applied}
 }
 \value{
 A list having the same structure as \code{l} with \code{FUN} applied to
@@ -56,6 +59,12 @@ ll <- list(a = list(id = 1, name = 'a-1'),
 ## compare
 str(rapply2(ll, f, 'list', check.nested = FALSE))
 str(rapply2(ll, f, 'list', check.nested = TRUE))
+
+
+## use skip.null = FALSE to apply FUN to NULL list elements
+ll <- list(NULL, 1, list(2, NULL, list(3, NULL)))
+rapply2(ll, function(x) if (is.null(x)) NA else x)
+rapply2(ll, function(x) if (is.null(x)) NA else x, skip.null = FALSE)
 
 }
 \seealso{

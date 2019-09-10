@@ -1780,6 +1780,8 @@ clist <- function (x, y, how = c('cbind', 'rbind', 'cbindx', 'rbindx')) {
 #' @param check.nested logical; if \code{TRUE}, for nested lists,
 #' \code{rapply2} will continue to walk down the list rather than stop at
 #' the first list (only if \code{"list" \%in\% classes})
+#' @param skip.null logical; if \code{TRUE} (default), \code{NULL} elements
+#' of \code{l} will be skipped before \code{FUN} can be applied
 #' 
 #' @return
 #' A list having the same structure as \code{l} with \code{FUN} applied to
@@ -1815,10 +1817,16 @@ clist <- function (x, y, how = c('cbind', 'rbind', 'cbindx', 'rbindx')) {
 #' str(rapply2(ll, f, 'list', check.nested = FALSE))
 #' str(rapply2(ll, f, 'list', check.nested = TRUE))
 #' 
+#' 
+#' ## use skip.null = FALSE to apply FUN to NULL list elements
+#' ll <- list(NULL, 1, list(2, NULL, list(3, NULL)))
+#' rapply2(ll, function(x) if (is.null(x)) NA else x)
+#' rapply2(ll, function(x) if (is.null(x)) NA else x, skip.null = FALSE)
+#' 
 #' @export
 
 rapply2 <- function(l, FUN, classes = 'ANY', ...,
-                    check.nested = 'list' %in% classes) {
+                    check.nested = 'list' %in% classes, skip.null = TRUE) {
   stopifnot(islist(l))
   FUN <- match.fun(FUN)
   
@@ -1826,13 +1834,15 @@ rapply2 <- function(l, FUN, classes = 'ANY', ...,
     function(l) any(vapply(l, islist, NA)) else function(l) FALSE
   
   for (ii in seq_along(l)) {
-    if (is.null(l[[ii]]))
+    if (skip.null && is.null(l[[ii]]))
       next
     l[[ii]] <- if (is.nested(l[[ii]]) ||
                    (islist(l[[ii]]) & ('list' %ni% classes)))
-      Recall(l[[ii]], FUN, classes, ..., check.nested = check.nested) else
-        if (any(toupper(classes) == 'ANY') || inherits(l[[ii]], classes))
-          FUN(l[[ii]], ...) else l[[ii]]
+      Recall(l[[ii]], FUN, classes, ..., check.nested = check.nested,
+             skip.null = skip.null)
+    else if (any(toupper(classes) == 'ANY') || inherits(l[[ii]], classes))
+      FUN(l[[ii]], ...)
+    else l[[ii]]
   }
   
   if ('list' %in% classes & !identical(FUN, unlist))
