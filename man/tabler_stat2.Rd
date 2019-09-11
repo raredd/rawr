@@ -10,7 +10,8 @@ tabler_stat2(data, varname, byvar = NULL,
   correct = FALSE, color_missing = TRUE, dagger = TRUE,
   group = NULL, color_cell_by = "none", cell_color = palette()[1:2],
   statArgs = NULL, align = NULL, rgroup = NULL, cgroup = NULL,
-  tfoot = NULL, tfoot2 = NULL, htmlArgs = NULL, zeros = "-")
+  tfoot = NULL, tfoot2 = NULL, htmlArgs = NULL, zeros = "-",
+  clean_daggers = FALSE)
 }
 \arguments{
 \item{data}{a matrix or data frame with variables \code{varname} and
@@ -74,6 +75,9 @@ to each cell (for html output); one of \code{"none"}, \code{"value"}, or
 
 \item{zeros}{a character string used in place of zero cells (non-character
 value keeps cells as-is)}
+
+\item{clean_daggers}{logical or one of \code{"letters"}, \code{"numbers"};
+values other than \code{FALSE} will replace default dagger characters}
 }
 \description{
 Helper functions for using \code{\link{tabler_stat}}.

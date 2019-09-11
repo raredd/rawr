@@ -1728,24 +1728,26 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
   if (is.null(pvn))
     nof <- TRUE
   
-  dags   <- c('&dagger;', '&dagger;', '&Dagger;')
-  dags   <- c('&#94;', '&dagger;', '&Dagger;')
-  fname  <- attr(pvn, 'FUN') %||% fun
+  dags  <- c('&dagger;', '&Dagger;', '&#94;', '&sect;', 'v')
+  dags1 <- dags[c(1, 3, 2)]
+  dags2 <- dags[c(4, 4, 1)]
+  dags3 <- dags[c(2, 2, 5)]
+  fname <- attr(pvn, 'FUN') %||% fun
   attr(fname, 'tnames') <- attr(pvn, 'name')
+  
   fnamel <- list(
     unordered = structure(
-      setNames(paste0(c('wilcox', 'kruskal', 'fisher'), '.test'), dags),
+      setNames(paste0(c('wilcox', 'kruskal', 'fisher'), '.test'), dags1),
       tnames = c('Wilcoxon rank-sum test', 'Kruskal-Wallis rank-sum test',
                  'Fisher\'s exact test')
     ),
-    ordered1  = structure(
-      setNames(paste0(c('kw', 'kw', 'cuzick'), '.test'), dags),
-      tnames = c('Kruskal-Wallis trend test',
-                 'Kruskal-Wallis trend test',
+    ordered1 = structure(
+      setNames(paste0(c('kw', 'kw', 'cuzick'), '.test'), dags2),
+      tnames = c('Kruskal-Wallis trend test', 'Kruskal-Wallis trend test',
                  'Cuzick\'s trend test')
     ),
-    ordered2  = structure(
-      setNames(paste0(c('cuzick', 'cuzick', 'jt'), '.test'), dags),
+    ordered2 = structure(
+      setNames(paste0(c('cuzick', 'cuzick', 'jt'), '.test'), dags3),
       tnames = c('Cuzick\'s trend test', 'Cuzick\'s trend test',
                  'Jonckheere-Terpstra test')
     )
@@ -1764,6 +1766,7 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
       # FUN <- match.arg(FUN, unique(unlist(fnamel)))
       fn <- lapply(fnamel, function(x) {
         idx <- match(fname, x)[1L]
+        # idx <- tail(match(fname, x), 1L)
         if (!is.na(idx))
           structure(x[idx], tnames = attr(x, 'tnames')[idx])
         else NULL
@@ -2076,6 +2079,8 @@ describeDateBy <- function(x, by, format = '%b %d, %Y', copula = ' to ',
 #' \code{\link[htmlTable]{htmlTable}}
 #' @param zeros a character string used in place of zero cells (non-character
 #' value keeps cells as-is)
+#' @param clean_daggers logical or one of \code{"letters"}, \code{"numbers"};
+#' values other than \code{FALSE} will replace default dagger characters
 #' 
 #' @family tabler
 #' 
@@ -2132,7 +2137,8 @@ tabler_stat2 <- function(data, varname, byvar = NULL,
                          group = NULL, color_cell_by = 'none',
                          cell_color = palette()[1:2], statArgs = NULL,
                          align = NULL, rgroup = NULL, cgroup = NULL,
-                         tfoot = NULL, tfoot2 = NULL, htmlArgs = NULL, zeros = '-') {
+                         tfoot = NULL, tfoot2 = NULL, htmlArgs = NULL,
+                         zeros = '-', clean_daggers = FALSE) {
   data <- as.data.frame(data)
   nv   <- length(varname)
   
@@ -2162,8 +2168,8 @@ tabler_stat2 <- function(data, varname, byvar = NULL,
   )
   
   tabler_stat_html(
-    l, align, rgroup, cgroup, tfoot, tfoot2,
-    htmlArgs, zeros, group, correct, format_pval
+    l, align, rgroup, cgroup, tfoot, tfoot2, htmlArgs,
+    zeros, group, correct, format_pval, clean_daggers
   )
 }
 
@@ -2262,10 +2268,15 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
 
 tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
                              tfoot = NULL, tfoot2 = NULL, htmlArgs = NULL, zeros = NULL,
-                             group = NULL, correct = FALSE, format_pval = TRUE) {
+                             group = NULL, correct = FALSE, format_pval = TRUE,
+                             clean_daggers = FALSE) {
   stopifnot(
     inherits(l, 'htmlStat')
   )
+  
+  tr <- function(x) {
+    gsub('\\s{2,}', ' ', x)
+  }
   
   if (noby <- l$byvar == '_by_var_') {
     l$cgroup <- l$cgroup[1L]
@@ -2283,13 +2294,15 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
     res <- gsub(paste(p, collapse = '|'), zeros, res)
   
   ## text/daggers used in footnotes
-  tf <- strsplit(sapply(l$l, attr, 'tfoot'), ', (?=<sup>)', perl =  TRUE)
+  tt <- strsplit(sapply(l$l, attr, 'tfoot'), ', (?=<sup>)', perl = TRUE)
   dg <- lapply(l$l, function(x)
     gsub('<sup>([^<]+)</sup>|.', '\\1', x[1L, ncol(x)]))
   tf <- Map(function(x, y)
     if (nchar(x) == 0L)
-      NULL else grep(x, y, value = TRUE), dg, tf)
-  tf <- toString(unique(unlist(tf)))
+      NULL else grep(x, y, value = TRUE), dg, tt)
+  lf <- unique(unlist(tf))
+  tf <- toString(lf)
+  
   
   if (!is.null(tfoot2))
     tf <- sprintf('%s<br />%s', tf, paste0(tfoot2, collapse = '<br />'))
@@ -2331,8 +2344,21 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
     l$n.cgroup[length(l$n.cgroup)] <- l$n.cgroup[length(l$n.cgroup)] + 1L
   }
   
-  tr <- function(x) {
-    gsub('\\s{2,}', ' ', x)
+  if (!identical(clean_daggers, FALSE)) {
+    old <- gsub('</sup>.*', '</sup>', lf)
+    dag <- if (isTRUE(clean_daggers) | clean_daggers %in% 'letters')
+      letters else seq_along(old)
+    new <- sprintf('<sup>%s</sup>', dag[seq_along(old)])
+    
+    m <- gregexpr('<sup>.+</sup>', res)
+    r <- lapply(regmatches(res, m), function(x)
+      as.character(factor(x, old, new)))
+    
+    res[] <- `regmatches<-`(res, m, FALSE, r)
+    
+    ## update footnote
+    tf <- unique(gsub('.*>', '', unlist(tt)))
+    tf <- toString(paste0(new, tf))
   }
   
   ht <- do.call(
