@@ -2501,9 +2501,9 @@ sort2 <- function(x, decreasing = FALSE, index.return = FALSE,
 #' 
 #' @return
 #' A list with the following elements:
-#' \item{$unconfirmed}{a \code{1 x 9} data frame with dates of first and last
-#' response, first and last best response, and progression as well as the
-#' response for each}
+#' \item{$unconfirmed}{a \code{1 x 10} data frame with dates of first and last
+#' response, first and last best response, the response for each, date last
+#' free from progression, and date of progression}
 #' \item{$confirmed}{similar to \code{$unconfirmed} but only for responses
 #' that have been confirmed}
 #' \item{$bsf_unconfirmed}{an \code{n x 2} data frame with the best-so-far
@@ -2592,13 +2592,14 @@ response <- function(date, response, include = 'resp|[CPM]R$',
   ## select rows up until first progression
   data <- if (length(pd))
     data[seq(1L, min(pd) - 1L), ] else data
+  dt_progfree <- max(data$date)
   
   na  <- as.Date(NA)
   bsf <- data.frame(dt_bsf = na, response_bsf = NA)
   rsp_na <- data.frame(
     dt_first = na, response_first = NA, dt_last = na, response_last = NA,
     dt_best_first = na, response_best_first = NA, dt_best_last = na,
-    response_best_last = NA, dt_prog = dt_prog
+    response_best_last = NA, dt_lastprogfree = dt_progfree, dt_prog = dt_prog
   )
   
   if (!any(data$response %in% include) || length(pd) && min(pd) == 1L)
@@ -2668,6 +2669,7 @@ response <- function(date, response, include = 'resp|[CPM]R$',
   if (nrow(dd) == 0L) {
     bsf_na <- data.frame(dt_bsf = as.Date(NA), response_bsf = NA)
     rsp$dt_prog <- rsp_na$dt_prog
+    rsp$dt_lastprogfree <- rsp_na$dt_lastprogfree <- dt_progfree
     
     return(
       list(
@@ -2698,6 +2700,7 @@ response <- function(date, response, include = 'resp|[CPM]R$',
   
   ## first progression if any
   rsp$dt_prog <- rsp_confirm$dt_prog <- dt_prog
+  rsp$dt_lastprogfree <- rsp_confirm$dt_lastprogfree <- dt_progfree
   
   
   ## best so far response

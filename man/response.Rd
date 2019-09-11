@@ -44,9 +44,9 @@ CR to PR is not progression but CR to MR is progression)}
 }
 \value{
 A list with the following elements:
-\item{$unconfirmed}{a \code{1 x 9} data frame with dates of first and last
-response, first and last best response, and progression as well as the
-response for each}
+\item{$unconfirmed}{a \code{1 x 10} data frame with dates of first and last
+response, first and last best response, the response for each, date last
+free from progression, and date of progression}
 \item{$confirmed}{similar to \code{$unconfirmed} but only for responses
 that have been confirmed}
 \item{$bsf_unconfirmed}{an \code{n x 2} data frame with the best-so-far
