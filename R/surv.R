@@ -87,6 +87,8 @@
 #' position; for more control, use a specific x-coordinate
 #' @param digits.median number of digits past the decimal point to keep for
 #' median(s)
+#' @param ci.median logical; if \code{TRUE}, confidence interval for medians
+#' are shown
 #' @param xaxs style of axis; see details or \code{\link{par}}
 #' @param xlim,ylim x- and y-axis limits
 #' @param xaxis.at,yaxis.at positions for x- and y-axis labels and ticks
@@ -249,7 +251,7 @@ kmplot <- function(s,
                    strata.lab = NULL,
                    strata.expr = NULL, strata.order = seq_along(s$n),
                    extra.margin = 5, mar = NULL,
-                   median = FALSE, digits.median = 0L,
+                   median = FALSE, digits.median = 0L, ci.median = TRUE,
                    
                    ## aesthetics
                    xaxs = 's', xlim = NULL, ylim = NULL,
@@ -560,6 +562,10 @@ kmplot <- function(s,
         rowSums(is.na(st)) == ncol(st),
         '-', gsub('NA', '-', tt, fixed = TRUE)
       )
+      if (!ci.median) {
+        s$conf.int <- NULL
+        tt <- gsub('\\s*\\(.*$', '', tt)
+      }
       at <- if (isTRUE(median.at))
         usr[2L] + diff(usr[1:2]) / 8 else median.at
       mtext(if (!is.null(s$conf.int))

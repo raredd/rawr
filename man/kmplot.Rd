@@ -12,11 +12,11 @@ kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
   "percent"), atrisk.digits = 2L, atrisk.lines = TRUE,
   atrisk.col = !atrisk.lines, strata.lab = NULL, strata.expr = NULL,
   strata.order = seq_along(s$n), extra.margin = 5, mar = NULL,
-  median = FALSE, digits.median = 0L, xaxs = "s", xlim = NULL,
-  ylim = NULL, xaxis.at = pretty(xlim), xaxis.lab = xaxis.at,
-  atrisk.at = xaxis.at, yaxis.at = pretty(0:1), yaxis.lab = yaxis.at,
-  xlab = "Time", ylab = "Probability", main = NULL,
-  cex.axis = par("cex.axis"), legend = !atrisk.table &&
+  median = FALSE, digits.median = 0L, ci.median = TRUE, xaxs = "s",
+  xlim = NULL, ylim = NULL, xaxis.at = pretty(xlim),
+  xaxis.lab = xaxis.at, atrisk.at = xaxis.at, yaxis.at = pretty(0:1),
+  yaxis.lab = yaxis.at, xlab = "Time", ylab = "Probability",
+  main = NULL, cex.axis = par("cex.axis"), legend = !atrisk.table &&
   !is.null(s$strata), args.legend = list(), lr_test = TRUE,
   tt_test = FALSE, test_details = TRUE, args.test = list(),
   hr_text = FALSE, args.hr = list(), pw_test = FALSE,
@@ -89,6 +89,9 @@ position; for more control, use a specific x-coordinate}
 
 \item{digits.median}{number of digits past the decimal point to keep for
 median(s)}
+
+\item{ci.median}{logical; if \code{TRUE}, confidence interval for medians
+are shown}
 
 \item{xaxs}{style of axis; see details or \code{\link{par}}}
 
