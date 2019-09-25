@@ -36,6 +36,9 @@
 #' x <- mtcars$vs
 #' y <- mtcars$am
 #' 
+#' t.test(x ~ y)
+#' inl_t(split(x, y))
+#' 
 #' fisher.test(x, y)
 #' inl_fisher(x, y)
 #' 
@@ -190,7 +193,13 @@ inl_kw <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
 #' @rdname inline_stats
 #' @export
 inl_t <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
-  res <- t.test(x, y, ...)
+  if (inherits(x, 'list')) {
+    x <- rbindlist(x)
+    y <- x[, 1L]
+    x <- x[, 2L]
+  }
+  
+  res <- t.test(x ~ as.factor(y), ...)
   
   if (!details)
     pvalr(res$p.value, show.p = TRUE)
@@ -212,7 +221,7 @@ inl_wilcox <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
   }
   
   suppressWarnings({
-    res <- wilcox.test(x ~ y, ...)
+    res <- wilcox.test(x ~ as.factor(y), ...)
   })
   
   if (!details)
@@ -2390,12 +2399,13 @@ guess_digits <- function(x, default = 0L) {
     dig else default
 }
 
-get_tabler_stat_n <- function(x, pct = TRUE) {
+get_tabler_stat_n <- function(x, pct = TRUE, use_labels = TRUE) {
   fmt <- if (pct)
     '%s<br /><font weight=normal; size=1>n = %s (%s)</font>' else
       '%s<br /><font weight=normal; size=1>n = %s</font>'
   x <- as.factor(x)
-  l <- levels(x)
+  l <- if (use_labels)
+    levels(x) else rep_len('Total', nlevels(x))
   t <- table(x)
   p <- roundr(prop.table(t) * 100, 0)
   o <- Vectorize('sprintf')(c('Total', l), c(sum(t), t), c('%', p), fmt = fmt)

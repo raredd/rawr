@@ -52,6 +52,9 @@ Convenience functions to summarize statistical tests.
 x <- mtcars$vs
 y <- mtcars$am
 
+t.test(x ~ y)
+inl_t(split(x, y))
+
 fisher.test(x, y)
 inl_fisher(x, y)
 
