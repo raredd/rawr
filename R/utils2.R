@@ -3,14 +3,14 @@
 # roundr.data.frame, intr, pvalr, pvalr2, color_pval, catlist, binconr,
 # num2char, iprint, writeftable, tabler, tabler.default, tabler.lm, tabler.glm,
 # tabler.survfit, tabler_by, tabler_by2, tabler_stat, tabler_stat2, tabler_resp,
-# match_ctc, tox_worst, countr, dmy, combine_table, inject_div, case,
-# write_htmlTable, html_align
+# match_ctc, tox_worst, countr, dmy, combine_table, combine_table2, inject_div,
+# case, write_htmlTable, html_align
 # 
 # S3 methods:
 # roundr, tabler
 # 
 ## in-line stats
-# anova, chisq, cuzick, fisher, jt, kruskal, kw, t, wilcox
+# anova, chisq, cuzick, fisher, jt, kruskal, kw, t, wilcox, logrank
 # 
 # unexported:
 # getPvalCuzick, getPvalJTtest, getPvalKruskal, getPvalKWtest, getPvalTtest,
@@ -31,6 +31,8 @@
 #' \code{TRUE}, additional details, such as the test statistic, degrees of
 #' freedom depending on the test, are printed
 #' @param digits number of digits past the decimal point to keep
+#' @param object for \code{inl_logrank}, a \code{\link[survfit]{survdiff}}
+#' object or formula to be passed to \code{survdiff}
 #' 
 #' @examples
 #' x <- mtcars$vs
@@ -38,24 +40,38 @@
 #' 
 #' t.test(x ~ y)
 #' inl_t(split(x, y))
+#' inl_t(x, y)
 #' 
 #' fisher.test(x, y)
 #' inl_fisher(x, y)
+#' inl_fisher(table(x, y))
 #' 
 #' chisq.test(table(x, y))
 #' inl_chisq(x, y)
+#' inl_chisq(table(x, y))
 #' 
 #' wilcox.test(mtcars$mpg ~ y)
 #' inl_wilcox(mtcars$mpg, y)
+#' inl_wilcox(split(mtcars$mpg, y))
 #' 
 #' cuzick.test(mpg ~ gear, mtcars)
 #' inl_cuzick(mtcars$mpg, mtcars$gear)
+#' inl_cuzick(split(mtcars$mpg, mtcars$gear))
 #' 
 #' jt.test(table(mtcars$gear, mtcars$cyl))
 #' inl_jt(mtcars$gear, mtcars$cyl)
+#' inl_jt(table(mtcars$gear, mtcars$cyl))
 #' 
 #' kw.test(table(mtcars$vs, mtcars$cyl))
 #' inl_kw(mtcars$vs, mtcars$cyl)
+#' inl_kw(table(mtcars$vs, mtcars$cyl))
+#' 
+#' library('survival')
+#' s1 <- survdiff(Surv(time, status) ~ sex, colon)
+#' s2 <- survdiff(Surv(time, status) ~ sex + strata(age), colon)
+#' inl_logrank(s1)
+#' inl_logrank(s2)
+#' inl_logrank(Surv(time, status) ~ sex, data = colon)
 #' 
 #' @name inline_stats
 NULL
@@ -186,6 +202,22 @@ inl_kw <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
     sprintf(
       '&chi;<sup>2</sup>: %s (%s df), Kruskal-Wallis p-value: %s',
       roundr(res$statistic, digits), res$parameter, pvalr(res$p.value)
+    )
+  }
+}
+
+#' @rdname inline_stats
+#' @export
+inl_logrank <- function(object, ..., details = TRUE, digits = 2L) {
+  res <- lr_pval(object, ..., details = TRUE)
+  str <- !is.null(object$strata)
+  
+  if (!details)
+    pvalr(res$p.value, show.p = TRUE)
+  else {
+    sprintf(
+      '%slog-rank test p-value: %s',
+      ifelse(str, 'stratified ', ''), pvalr(res$p.value)
     )
   }
 }
@@ -897,7 +929,7 @@ num2char <- function(x, informal = FALSE, cap = TRUE) {
     else {
       nSuffix <- ((nDigits + 2) %/% 3) - 1L
       if (nSuffix > length(suffixes))
-        stop(x, ' is too large!')
+        return(x)
       trim(paste(Recall(as.num(digits[
         nDigits:(3 * nSuffix + 1L)])),
         suffixes[nSuffix], ',' ,
@@ -939,10 +971,10 @@ num2char <- function(x, informal = FALSE, cap = TRUE) {
     x <- gsub(' and ', ' ', x)
   
   ## add hyphen between tens and ones
-  x <- gsub(sprintf('(.*%s) (%s)$',
-                    paste(tens, collapse = '|'),
-                    paste(ones, collapse = '|')),
-            '\\1-\\2', x)
+  x <- gsub(
+    sprintf('(.*%s) (%s)$', paste(tens, collapse = '|'),
+            paste(ones, collapse = '|')), '\\1-\\2', x
+  )
   
   if (cap)
     case(x) else x
@@ -2866,16 +2898,23 @@ dmy <- function(d, m, y, origin = c(1, 1, 1900)) {
 #' Combine html tables
 #' 
 #' Wrapper to easily combine a list of data frames or matrices into html
-#' tables using the \pkg{htmlTable} package.
+#' tables using the \pkg{htmlTable} package. \code{combine_table2} can join
+#' tables vertically or horizontally (common column and row names are not
+#' required).
 #' 
 #' @param l a list of matrices or data frames
 #' @param tspanner,n.tspanner table spanner labels and number of rows,
 #' respectively, passed to \code{\link[htmlTable]{htmlTable}}; if missing,
-#' \code{names(l)} and \code{sapply(l, nrow)} is used
+#' \code{names(l)} and \code{sapply(l, nrow)} are used
+#' @param cgroup,n.cgroup table column labels and number of columns for each,
+#' respectively, passed to \code{\link[htmlTable]{htmlTable}}; if missing,
+#' \code{names(l)} and \code{sapply(l, ncol)} are used
+#' @param how method to join objects, by row (\code{"rbind"}) or column
+#' (\code{"cbind"}) binding
 #' @param ... additional arguments passed to \code{\link[htmlTable]{htmlTable}}
 #' 
 #' @examples
-#' sp <- lapply(split(mtcars, rep(1:3, c(1,11,20))), as.matrix)
+#' sp <- lapply(split(mtcars, rep(1:3, c(1, 11, 20))), as.matrix)
 #' 
 #' ## basic table
 #' combine_table(sp)
@@ -2888,6 +2927,8 @@ dmy <- function(d, m, y, origin = c(1, 1, 1900)) {
 #'   css.cell = 'padding: 0 10 5px;',
 #'   css.tspanner = 'text-align: center; color: red; font-style: italic;'
 #' )
+#' 
+#' combine_table2(sp, how = 'c', cgroup = LETTERS[1:3])
 #' 
 #' @export
 
@@ -2902,6 +2943,35 @@ combine_table <- function(l, tspanner, n.tspanner, ...) {
   
   ht <- htmlTable::htmlTable(
     do.call('rbind', l), tspanner = tspanner, n.tspanner = n.tspanner, ...
+  )
+  
+  structure(ht, class = 'htmlTable')
+}
+
+#' @rdname combine_table
+#' @export
+combine_table2 <- function(l, tspanner, n.tspanner, cgroup, n.cgroup,
+                           how = c('rbind', 'cbind'), ...) {
+  l <- if (!islist(l))
+    list(l) else l
+  how <- switch(match.arg(how), rbind = 'rbindx', cbind = 'cbindx')
+  
+  if (how %in% 'rbindx') {
+    n.tspanner <- if (missing(n.tspanner))
+      sapply(l, function(x) nrow(x) %||% 1L) else n.tspanner
+    tspanner   <- if (missing(tspanner))
+      names(l) %||% rep(' ', each = length(n.tspanner)) else tspanner
+  } else {
+    n.cgroup <- if (missing(n.cgroup))
+      sapply(l, function(x) ncol(x) %||% 1L) else n.cgroup
+    cgroup   <- if (missing(cgroup))
+      names(l) %||% rep(' ', each = length(n.cgroup)) else cgroup
+  }
+  
+  ht <- htmlTable::htmlTable(
+    do.call(how, l), ...,
+    tspanner = tspanner, n.tspanner = n.tspanner,
+    cgroup = cgroup, n.cgroup = n.cgroup
   )
   
   structure(ht, class = 'htmlTable')

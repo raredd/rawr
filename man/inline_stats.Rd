@@ -9,6 +9,7 @@
 \alias{inl_jt}
 \alias{inl_kruskal}
 \alias{inl_kw}
+\alias{inl_logrank}
 \alias{inl_t}
 \alias{inl_wilcox}
 \title{In-line stats}
@@ -27,6 +28,8 @@ inl_kruskal(x, y = NULL, ..., details = TRUE, digits = 2L)
 
 inl_kw(x, y = NULL, ..., details = TRUE, digits = 2L)
 
+inl_logrank(object, ..., details = TRUE, digits = 2L)
+
 inl_t(x, y = NULL, ..., details = TRUE, digits = 2L)
 
 inl_wilcox(x, y = NULL, ..., details = TRUE, digits = 2L)
@@ -44,6 +47,9 @@ the statistic}
 freedom depending on the test, are printed}
 
 \item{digits}{number of digits past the decimal point to keep}
+
+\item{object}{for \code{inl_logrank}, a \code{\link[survfit]{survdiff}}
+object or formula to be passed to \code{survdiff}}
 }
 \description{
 Convenience functions to summarize statistical tests.
@@ -54,23 +60,37 @@ y <- mtcars$am
 
 t.test(x ~ y)
 inl_t(split(x, y))
+inl_t(x, y)
 
 fisher.test(x, y)
 inl_fisher(x, y)
+inl_fisher(table(x, y))
 
 chisq.test(table(x, y))
 inl_chisq(x, y)
+inl_chisq(table(x, y))
 
 wilcox.test(mtcars$mpg ~ y)
 inl_wilcox(mtcars$mpg, y)
+inl_wilcox(split(mtcars$mpg, y))
 
 cuzick.test(mpg ~ gear, mtcars)
 inl_cuzick(mtcars$mpg, mtcars$gear)
+inl_cuzick(split(mtcars$mpg, mtcars$gear))
 
 jt.test(table(mtcars$gear, mtcars$cyl))
 inl_jt(mtcars$gear, mtcars$cyl)
+inl_jt(table(mtcars$gear, mtcars$cyl))
 
 kw.test(table(mtcars$vs, mtcars$cyl))
 inl_kw(mtcars$vs, mtcars$cyl)
+inl_kw(table(mtcars$vs, mtcars$cyl))
+
+library('survival')
+s1 <- survdiff(Surv(time, status) ~ sex, colon)
+s2 <- survdiff(Surv(time, status) ~ sex + strata(age), colon)
+inl_logrank(s1)
+inl_logrank(s2)
+inl_logrank(Surv(time, status) ~ sex, data = colon)
 
 }
