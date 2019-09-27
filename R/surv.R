@@ -1035,11 +1035,7 @@ lr_text <- function(formula, data, rho = 0, ..., details = TRUE, pFUN = NULL) {
   pFUN <- if (is.null(pFUN) || isTRUE(pFUN))
     function(x) pvalr(x, show.p = TRUE)
   else if (identical(pFUN, FALSE))
-    identity
-  else {
-    stopifnot(is.function(pFUN))
-    pFUN
-  }
+    identity else match.fun(pFUN)
   
   object <- if (inherits(formula, 'survdiff'))
     formula
@@ -1106,11 +1102,7 @@ tt_text <- function(formula, data, ..., details = TRUE, pFUN = NULL) {
   pFUN <- if (is.null(pFUN) || isTRUE(pFUN))
     function(x) pvalr(x, show.p = TRUE)
   else if (identical(pFUN, FALSE))
-    identity
-  else {
-    stopifnot(is.function(pFUN))
-    pFUN
-  }
+    identity else match.fun(pFUN)
   
   object <- if (inherits(formula, 'coxph'))
     formula
@@ -1171,11 +1163,7 @@ hr_text <- function(formula, data, ..., details = TRUE, pFUN = NULL) {
   pFUN <- if (is.null(pFUN) || isTRUE(pFUN))
     function(x) pvalr(x, show.p = TRUE)
   else if (identical(pFUN, FALSE))
-    identity
-  else {
-    stopifnot(is.function(pFUN))
-    pFUN
-  }
+    identity else match.fun(pFUN)
   
   object <- if (inherits(formula, 'coxph'))
     formula
@@ -1246,11 +1234,7 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
   pFUN <- if (is.null(pFUN) || isTRUE(pFUN))
     function(x) pvalr(x, show.p = TRUE)
   else if (identical(pFUN, FALSE))
-    identity
-  else {
-    stopifnot(is.function(pFUN))
-    pFUN
-  }
+    identity else match.fun(pFUN)
   
   obj <- pw_pval(object = formula, data = data, method = method, ...)
   
