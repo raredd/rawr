@@ -9,14 +9,15 @@ kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
   lty.ci = 0, lwd.ci = lwd.surv, col.ci = col.surv,
   col.band = FALSE, atrisk.table = TRUE, atrisk.lab = NULL,
   atrisk.type = c("atrisk", "events", "atrisk-events", "survival",
-  "percent"), atrisk.digits = 2L, atrisk.lines = TRUE,
-  atrisk.col = !atrisk.lines, strata.lab = NULL, strata.expr = NULL,
-  strata.order = seq_along(s$n), extra.margin = 5, mar = NULL,
-  median = FALSE, digits.median = 0L, ci.median = TRUE, xaxs = "s",
-  xlim = NULL, ylim = NULL, xaxis.at = pretty(xlim),
-  xaxis.lab = xaxis.at, atrisk.at = xaxis.at, yaxis.at = pretty(0:1),
-  yaxis.lab = yaxis.at, xlab = "Time", ylab = "Probability",
-  main = NULL, cex.axis = par("cex.axis"), legend = !atrisk.table &&
+  "survival-ci", "percent", "percent-ci"), atrisk.digits = 2L,
+  atrisk.lines = TRUE, atrisk.col = !atrisk.lines, strata.lab = NULL,
+  strata.expr = NULL, strata.order = seq_along(s$n),
+  extra.margin = 5, mar = NULL, median = FALSE, digits.median = 0L,
+  ci.median = TRUE, xaxs = "s", xlim = NULL, ylim = NULL,
+  xaxis.at = pretty(xlim), xaxis.lab = xaxis.at,
+  atrisk.at = xaxis.at, yaxis.at = pretty(0:1), yaxis.lab = yaxis.at,
+  xlab = "Time", ylab = "Probability", main = NULL,
+  cex.axis = par("cex.axis"), legend = !atrisk.table &&
   !is.null(s$strata), args.legend = list(), lr_test = TRUE,
   tt_test = FALSE, test_details = TRUE, args.test = list(),
   hr_text = FALSE, args.hr = list(), pw_test = FALSE,
@@ -56,8 +57,9 @@ see details}
 
 \item{atrisk.type}{a character string giving the type of at-risk table to
 show; one of \code{"atrisk"} (number at-risk), \code{"events"} (cumulative
-number of events), \code{"atrisk-events"} (both), or \code{"survival"}
-(survival estimate)}
+number of events), \code{"atrisk-events"} (both), \code{"survival"}
+(survival estimate), or \code{"percent"} (percent); \code{"survival-ci"}
+and \code{"percent-ci"} are similar but add confidence intervals}
 
 \item{atrisk.digits}{when survival estimates are shown in at-risk table
 (see \code{atrisk.type}), number of digits past the decimal to show}

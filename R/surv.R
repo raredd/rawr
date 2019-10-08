@@ -63,8 +63,9 @@
 #' @param atrisk.table logical; if \code{TRUE} (default), draws at-risk table
 #' @param atrisk.type a character string giving the type of at-risk table to
 #' show; one of \code{"atrisk"} (number at-risk), \code{"events"} (cumulative
-#' number of events), \code{"atrisk-events"} (both), or \code{"survival"}
-#' (survival estimate)
+#' number of events), \code{"atrisk-events"} (both), \code{"survival"}
+#' (survival estimate), or \code{"percent"} (percent); \code{"survival-ci"}
+#' and \code{"percent-ci"} are similar but add confidence intervals
 #' @param atrisk.digits when survival estimates are shown in at-risk table
 #' (see \code{atrisk.type}), number of digits past the decimal to show
 #' @param atrisk.lab heading for at-risk table
@@ -245,7 +246,8 @@ kmplot <- function(s,
                    ## at-risk table options
                    atrisk.table = TRUE, atrisk.lab = NULL,
                    atrisk.type = c('atrisk', 'events', 'atrisk-events',
-                                   'survival', 'percent'),
+                                   'survival', 'survival-ci',
+                                   'percent', 'percent-ci'),
                    atrisk.digits = 2L,
                    atrisk.lines = TRUE, atrisk.col = !atrisk.lines,
                    strata.lab = NULL,
@@ -492,7 +494,9 @@ kmplot <- function(s,
       events = 'events',
       'atrisk-events' = 'atrisk-events',
       survival = 'survival',
-      percent = 'percent'
+      'survival-ci' = 'survival.ci',
+      percent = 'percent',
+      'percent-ci' = 'percent.ci'
     )
     
     ss <- summary(s, times = atrisk.at)
@@ -500,7 +504,7 @@ kmplot <- function(s,
       ss$strata <- rep_len(1L, length(ss$time))
     d1 <- data.frame(
       time = ss$time, n.risk = ss$n.risk, n.event = ss$n.event,
-      strata = c(ss$strata), surv = ss$surv
+      strata = c(ss$strata), surv = ss$surv, lci = ss$lower, uci = ss$upper
     )
     
     mi <- missing(atrisk.digits)
@@ -509,8 +513,27 @@ kmplot <- function(s,
       x$atrisk <- x$n.risk
       x$events <- cumsum(x$n.event)
       x[, 'atrisk-events'] <- sprintf('%s (%s)', x$atrisk, x$events)
+      
       x$survival <- roundr(x$surv, atrisk.digits)
+      x$survival.ci <- sprintf(
+        '%s (%s, %s)', x$survival,
+        roundr(x$lci, atrisk.digits),
+        roundr(x$uci, atrisk.digits)
+      )
+      
       x$percent  <- roundr(x$surv * 100, ifelse(mi, 0L, atrisk.digits))
+      x$percent.ci <- sprintf(
+        '%s (%s, %s)', x$percent,
+        roundr(x$lci * 100, ifelse(mi, 0L, atrisk.digits)),
+        roundr(x$uci * 100, ifelse(mi, 0L, atrisk.digits))
+      )
+      
+      if (0 %in% atrisk.at) {
+        zeros <- x[x$time %in% 0, c('survival.ci', 'percent.ci')]
+        x[x$time %in% 0, c('survival.ci', 'percent.ci')] <-
+          gsub('\\s+.*', '', zeros)
+      }
+      
       x
     })
     
@@ -524,12 +547,19 @@ kmplot <- function(s,
       tmp <- d2[[ii]]
       w.adj <- strwidth('0', cex = cex.axis, font = par('font')) /
         2 * nd[seq.int(nrow(tmp))]
-      mtext(tmp[, wh], side = 1L, col = col.atrisk[ii],
-            las = 1L, line = line.pos[ii], cex = cex.axis,
-            ## center atrisk-events
-            # at = tmp$time + w.adj, adj = 1,
-            at = tmp$time + w.adj * atrisk.type %ni% 'atrisk-events',
-            adj = 1 - 0.5 * atrisk.type %in% 'atrisk-events')
+      
+      ## right-justify
+      right <- c('atrisk', 'events', 'atrisk-events')
+      right <- ''
+      
+      mtext(
+        tmp[, wh], side = 1L, col = col.atrisk[ii],
+        las = 1L, line = line.pos[ii], cex = cex.axis,
+        # at = tmp$time + w.adj, adj = 1,
+        # at = tmp$time + w.adj * atrisk.type %ni% right,
+        # adj = 1 - 0.5 * atrisk.type %in% right
+        at = tmp$time, adj = if (atrisk.type %in% right) 1 else 0.5
+      )
     }
     
     if (is.null(atrisk.lab))
@@ -539,7 +569,9 @@ kmplot <- function(s,
         events = 'Cumulative events',
         'atrisk-events' = 'At risk (Events)',
         survival = 'Probability',
-        percent = 'Percent'
+        'survival-ci' = sprintf('Probability (%s%% CI)', ss$conf.int * 100),
+        percent = 'Percent',
+        'percent-ci' = sprintf('Percent (%s%% CI)', ss$conf.int * 100)
       )
     
     if (!(identical(atrisk.lab, FALSE)))
