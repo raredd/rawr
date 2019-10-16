@@ -408,8 +408,7 @@ kmplot <- function(s,
   par(mar = c(4 + ng * atrisk.table,
               4 + pmax(4, extra.margin) - 3 * !atrisk.table,
               2,
-              2 + 6 * (median & atrisk.table))
-  )
+              2 + 6 * (median & atrisk.table)))
   par(...)
   if (!is.null(mar))
     par(mar = mar)
@@ -1095,8 +1094,11 @@ lr_text <- function(formula, data, rho = 0, ..., details = TRUE, pFUN = NULL) {
   if (!inherits(sd, 'survdiff'))
     stop(sd)
   
-  df <- sum(1 * (colSums(if (is.matrix(sd$obs))
-    sd$exp else t(sd$exp)) > 0)) - 1
+  ## does not work with stratified models
+  # df <- sum(1 * (colSums(if (is.matrix(sd$obs))
+  #   sd$exp else t(sd$exp)) > 0)) - 1
+  
+  df <- length(sd$n) - 1L
   pv <- pchisq(sd$chisq, df, lower.tail = FALSE)
   
   txt <- sprintf('%s (%s df), %s', roundr(sd$chisq, 1L), df, pFUN(pv))
