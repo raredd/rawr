@@ -1334,6 +1334,7 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
 #' (default is \code{"kaplan-meier"}), \code{error} (\code{"greenwood"}),
 #' \code{conf.int} (\code{0.95}), \code{"conf.type"} (\code{"log"}), and
 #' \code{"se.fit"} (\code{TRUE})
+#' @param stratify (dev) \code{\link[survival]{strata}} variables
 #' @param panel.first,panel.last,... additional arguments passed to
 #' \code{\link{kmplot}} or graphical parameters subsequently passed to
 #' \code{\link{par}}
@@ -1376,6 +1377,7 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
 #' str(lapply(l, kmplot))
 #' str(lapply(l, kmplot_by))
 #' 
+#' 
 #' ## multiple variables can be combined
 #' kmplot_by('rx + sex', 'pfs', colon2, strata_lab = FALSE, lty.surv = 1:6)
 #' 
@@ -1413,7 +1415,7 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
 #' mar <- c(8, 6, 3, 2) ## to align axes
 #' kmplot_by( 'rx', 'pfs', colon2, strata_lab = FALSE, add = TRUE, mar = mar)
 #' kmplot_by('sex', 'pfs', colon2, strata_lab = FALSE, add = TRUE, mar = mar)
-#'   
+#' 
 #' @export
 
 kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
@@ -1421,7 +1423,7 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
                       ylab = NULL, sub = NULL, strata_lab = NULL, fig_lab = NULL,
                       col.surv = NULL, map.col = FALSE, legend = FALSE,
                       add = FALSE, plot = TRUE, args.survfit = list(),
-                      panel.first = NULL, panel.last = NULL, ...) {
+                      stratify = NULL, panel.first = NULL, panel.last = NULL, ...) {
   op <- par(no.readonly = TRUE)
   
   if (is.logical(lr_test)) {
@@ -1599,8 +1601,18 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
     if (!plot)
       return(s0)
     
+    ## stratified log-rank
+    lr <- if (strata != '' && !is.null(stratify)) {
+      st <- paste(sprintf('strata(%s)', stratify), collapse = ' + ')
+      ff <- as.character(form)
+      ff <- as.formula(sprintf('%s ~ %s + %s', ff[2L], ff[3L], st))
+      sd <- survdiff(ff, s$.data)
+      sprintf('Stratified LR: %s', lr_text(sd, details = FALSE))
+    } else NULL
+    
     kmplot(s, add = add, legend = legend, main = names(sp)[x], ylab = ylab,
            lr_test = lr_test, ..., panel.last = panel.last,
+           args.test = if (is.null(stratify)) list() else list(text = lr),
            col.surv = if (map.col) unname(col.surv)[x] else col.surv,
            panel.first = {
              ## sub label - top left margin (default: strata var)
