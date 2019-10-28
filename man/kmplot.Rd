@@ -21,8 +21,8 @@ kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
   !is.null(s$strata), args.legend = list(), lr_test = TRUE,
   tt_test = FALSE, test_details = TRUE, args.test = list(),
   hr_text = FALSE, args.hr = list(), pw_test = FALSE,
-  args.pw = list(), format_pval = TRUE, add = FALSE,
-  panel.first = NULL, panel.last = NULL, ...)
+  args.pw = list(), format_pval = TRUE, stratify = NULL,
+  add = FALSE, panel.first = NULL, panel.last = NULL, ...)
 }
 \arguments{
 \item{s}{an object of class \code{\link{survfit}} or \code{survfit.cox}}
@@ -153,6 +153,8 @@ arguments controlling the \code{pw_text} legend}
 alternatively, a function can be passed which should take a numeric value
 and return a character string (or a value to be coerced) for printing}
 
+\item{stratify}{(dev) \code{\link[survival]{strata}} variables}
+
 \item{add}{logical; if \code{TRUE}, \code{par}s are not reset; allows for
 multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}}
 
@@ -207,6 +209,11 @@ kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
 kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3700)
 kmplot(km2, atrisk.table = FALSE, lwd.surv = 2, lwd.mark = .5,
        col.surv = 1:4, col.band = c(1,0,0,4))
+
+
+## use stratified models
+kmplot(km1, stratify = 'differ')
+kmplot(km1, stratify = c('differ', 'adhere'))
 
 
 ## for hazard ratios, use factors to fit the proper cox model

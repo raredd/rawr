@@ -60,6 +60,11 @@ colon$int <- with(colon, interaction(sex, extent))
 sfit <- survfit(Surv(time, status) ~ int, data = colon)
 survdiff_pairs(sfit, rho = 1, method = 'BH')
 
+
+## stratified models are accepted
+sdif2 <- survdiff(Surv(time, status) ~ sex + strata(inst), data = lung)
+survdiff_pairs(sdif2)
+
 }
 \seealso{
 \code{\link[rawr]{pvalr}}; \code{\link{survdiff}}; \code{\link{p.adjust}};

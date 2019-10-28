@@ -3,12 +3,23 @@
 # surv_table, survdiff_pairs, landmark, surv_extract, surv_median, surv_prob
 #
 # unexported:
-# points.kmplot, kmplot_data_, terms.inner
+# stratify_formula, points.kmplot, kmplot_data_, terms.inner
 # 
 # surv_test (unexported):
 # lr_text, lr_pval, tt_text, tt_pval, hr_text, hr_pval
 ###
 
+
+stratify_formula <- function(formula, vars = NULL) {
+  # stratify_formula(Surv(a, b) ~ x, c('y', 'z'))
+  if (is.null(vars))
+    return(as.formula(formula))
+  
+  st <- paste(sprintf('strata(%s)', vars), collapse = ' + ')
+  ff <- as.character(formula)
+  
+  as.formula(sprintf('%s ~ %s + %s', ff[2L], ff[3L], st))
+}
 
 #' Survival curves
 #' 
@@ -129,6 +140,7 @@
 #' \code{\link{pvalr}}; if \code{FALSE}, no formatting is performed;
 #' alternatively, a function can be passed which should take a numeric value
 #' and return a character string (or a value to be coerced) for printing
+#' @param stratify (dev) \code{\link[survival]{strata}} variables
 #' @param add logical; if \code{TRUE}, \code{par}s are not reset; allows for
 #' multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}
 #' @param panel.first an expression to be evaluated after the plot axes are
@@ -159,6 +171,11 @@
 #' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3700)
 #' kmplot(km2, atrisk.table = FALSE, lwd.surv = 2, lwd.mark = .5,
 #'        col.surv = 1:4, col.band = c(1,0,0,4))
+#' 
+#' 
+#' ## use stratified models
+#' kmplot(km1, stratify = 'differ')
+#' kmplot(km1, stratify = c('differ', 'adhere'))
 #' 
 #' 
 #' ## for hazard ratios, use factors to fit the proper cox model
@@ -273,6 +290,7 @@ kmplot <- function(s,
                    format_pval = TRUE,
                    
                    ## other options
+                   stratify = NULL,
                    add = FALSE, panel.first = NULL, panel.last = NULL, ...) {
   if (!inherits(s, 'survfit'))
     stop('\'s\' must be a \'survfit\' object')
@@ -292,6 +310,10 @@ kmplot <- function(s,
   
   svar <- as.character(form <- s$call$formula)
   svar <- svar[-(1:2)]
+  
+  ## formula with strata (if given), used for tests/coxph
+  sform <- stratify_formula(form, stratify)
+  
   sdat <- s$.data %||% {
     sdat <- deparse(s$call$data)
     sname <- gsub('[$[].*', '', sdat)
@@ -302,7 +324,7 @@ kmplot <- function(s,
   ## remove missing here for special case: all NA for one strata level
   ## drops level in s$strata but not in table(sdat[, svar])
   if (!is.null(sdat))
-    sdat <- na.omit(sdat[, all.vars(form)])
+    sdat <- na.omit(sdat[, c(all.vars(form), stratify)])
   
   ## single strata
   one <- identical(svar, '1')
@@ -630,7 +652,7 @@ kmplot <- function(s,
   ## hazard ratios
   if (!identical(hr_text, FALSE)) {
     txt <- tryCatch(
-      hr_text(as.formula(form), sdat, pFUN = format_pval),
+      hr_text(sform, sdat, pFUN = format_pval),
       error = function(e) ''
     )
     
@@ -655,7 +677,7 @@ kmplot <- function(s,
   
   ## pairwise tests
   if (!identical(pw_test, FALSE)) {
-    txt <- pw_text(s$call$formula, sdat, pFUN = format_pval)
+    txt <- pw_text(sform, sdat, pFUN = format_pval)
     
     largs <- list(x = 'topright', legend = txt, bty = 'n')
     
@@ -721,8 +743,7 @@ kmplot <- function(s,
     txt <- if (identical(svar, '1'))
       '' else
         tryCatch(
-          FUN(as.formula(form), sdat, rho, details = test_details,
-              pFUN = format_pval),
+          FUN(sform, sdat, rho, details = test_details, pFUN = format_pval),
           error = function(e) 'n/a'
         )
     if (identical(txt, FALSE))
@@ -1227,7 +1248,8 @@ hr_text <- function(formula, data, ..., details = TRUE, pFUN = NULL) {
   txt <- apply(obj, 1L, function(x)
     sprintf('HR %.2f [%.2f, %.2f], %s', x[1L], x[2L], x[3L],
             {pv <- pFUN(x[4L]); if (is.na(pv)) 'p > 0.99' else pv}))
-  txt <- paste(cph$xlevels[[attr(terms(cph), 'term.labels')]],
+  lbl <- attr(terms(cph), 'term.labels')
+  txt <- paste(cph$xlevels[[lbl[!grepl('strata\\(', lbl)]]],
                c('Reference', txt), sep = ': ')
   
   if (is.null(cph$xlevels))
@@ -1601,18 +1623,8 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
     if (!plot)
       return(s0)
     
-    ## stratified log-rank
-    lr <- if (strata != '' && !is.null(stratify)) {
-      st <- paste(sprintf('strata(%s)', stratify), collapse = ' + ')
-      ff <- as.character(form)
-      ff <- as.formula(sprintf('%s ~ %s + %s', ff[2L], ff[3L], st))
-      sd <- survdiff(ff, s$.data)
-      sprintf('Stratified LR: %s', lr_text(sd, details = FALSE))
-    } else NULL
-    
     kmplot(s, add = add, legend = legend, main = names(sp)[x], ylab = ylab,
-           lr_test = lr_test, ..., panel.last = panel.last,
-           args.test = if (is.null(stratify)) list() else list(text = lr),
+           lr_test = lr_test, ..., panel.last = panel.last, stratify = stratify,
            col.surv = if (map.col) unname(col.surv)[x] else col.surv,
            panel.first = {
              ## sub label - top left margin (default: strata var)
@@ -2086,6 +2098,11 @@ surv_table <- function(s, digits = ifelse(percent, 0L, 3L),
 #' sfit <- survfit(Surv(time, status) ~ int, data = colon)
 #' survdiff_pairs(sfit, rho = 1, method = 'BH')
 #' 
+#' 
+#' ## stratified models are accepted
+#' sdif2 <- survdiff(Surv(time, status) ~ sex + strata(inst), data = lung)
+#' survdiff_pairs(sdif2)
+#' 
 #' @export
 
 survdiff_pairs <- function(s, ..., method = p.adjust.methods,
@@ -2095,10 +2112,15 @@ survdiff_pairs <- function(s, ..., method = p.adjust.methods,
     survdiff(as.formula(s$call$formula), data = data, ...)$chisq
   }
 
+  # rhs <- all.vars(s$call$formula)[-(1:2)]
+  rhs <- strsplit(as.character(s$call$formula)[-(1:2)], '\\s*\\+\\s*')[[1L]]
+  rhs <- grep('strata\\(', rhs, value = TRUE, invert = TRUE)
+  
   stopifnot(
     inherits(s, c('survdiff', 'survfit')),
-    length(rhs <- all.vars(s$call$formula)[-(1:2)]) == 1L
+    length(rhs) == 1L
   )
+  
   method <- match.arg(method)
   data   <- eval(s$call$data, envir = parent.frame(1L))
   unq    <- as.character(sort(unique(data[, rhs])))
