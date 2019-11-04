@@ -1092,7 +1092,7 @@ writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
 #' @family tabler
 #' 
 #' @seealso
-#' \code{\link{tabler_by}}; \code{\link{tabler_stat}}
+#' \code{\link{surv_table}}
 #' 
 #' @examples
 #' lmfit <- lm(mpg ~ hp + disp + wt, data = mtcars)
@@ -1140,8 +1140,7 @@ tabler.glm <- function(x, digits = 3L, level = 0.95, exp = TRUE, ...) {
   suppressMessages(
     res <-
       data.frame(
-        exp(cbind(coef(x), confint(x, level = level))),
-        res[, 4L],
+        exp(cbind(coef(x), confint(x, level = level))), res[, 4L],
         stringsAsFactors = FALSE
       )
   )
@@ -1164,8 +1163,8 @@ tabler.glm <- function(x, digits = 3L, level = 0.95, exp = TRUE, ...) {
       paste0(c('L', 'U'), level), 'Pr(>|z|)',
       sprintf('OR (%s%% CI)', level))
   )
-  
   res[, 1:3] <- lapply(res[, 1:3], round, digits = digits)
+  
   res
 }
 
@@ -1184,8 +1183,7 @@ tabler.coxph <- function(x, digits = 3L, level = 0.95, exp = TRUE, ...) {
   suppressMessages(
     res <-
       data.frame(
-        exp(cbind(coef(x), confint(x, level = level))),
-        res[, 4L],
+        exp(cbind(coef(x), confint(x, level = level))), res[, 4L],
         stringsAsFactors = FALSE
       )
   )
@@ -1208,8 +1206,8 @@ tabler.coxph <- function(x, digits = 3L, level = 0.95, exp = TRUE, ...) {
       paste0(c('L', 'U'), level), 'Pr(>|z|)',
       sprintf('%s (%s%% CI)', ifelse(exp, 'HR', 'Est'), level))
   )
-  
   res[, 1:3] <- lapply(res[, 1:3], round, digits = digits)
+  
   res
 }
 

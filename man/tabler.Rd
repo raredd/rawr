@@ -55,7 +55,7 @@ tabler(cphfit)
 
 }
 \seealso{
-\code{\link{tabler_by}}; \code{\link{tabler_stat}}
+\code{\link{surv_table}}
 
 Other tabler: \code{\link{tabler_by}},
   \code{\link{tabler_resp}}, \code{\link{tabler_stat2}},

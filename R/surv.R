@@ -1974,16 +1974,14 @@ surv_summary <- function(s, digits = 3L, ...) {
 #' 
 #' @examples
 #' library('survival')
-#' fit0 <- survfit(coxph(Surv(time, status == 2) ~ 1,
-#'                       data = cancer),
-#'                 conf.type = 'log-log')
+#' fit0 <- survfit(Surv(time, status == 2) ~ 1, data = cancer)
 #' surv_table(fit0, times = 0:2 * 100, maxtime = FALSE)
 #' 
 #' ## also works for list of tables
-#' fit1 <- survfit(coxph(Surv(time, status == 2) ~ strata(I(age > 60)),
-#'                       data = cancer),
-#'                 conf.type = 'log-log', conf.int = 0.9)
+#' fit1 <- survfit(Surv(time, status == 2) ~ sex, data = cancer, conf.int = 0.9)
 #' surv_table(fit1)
+#' rawr::combine_table(surv_table(fit1))
+#' 
 #' 
 #' s <- `colnames<-`(
 #'   surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4],
