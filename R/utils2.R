@@ -1720,6 +1720,8 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
     )
   }
   class(res) <- 'matrix'
+  ## sub out ' ( - )' pattern (all NA in continuous var)
+  res[] <- gsub('\\s*\\(\\s*\\-\\s*\\)', '-', res)
   
   ## recolor missing
   if (is.character(color_missing)) {
