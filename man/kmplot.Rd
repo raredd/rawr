@@ -22,7 +22,8 @@ kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
   tt_test = FALSE, test_details = TRUE, args.test = list(),
   hr_text = FALSE, args.hr = list(), pw_test = FALSE,
   args.pw = list(), format_pval = TRUE, stratify = NULL,
-  add = FALSE, panel.first = NULL, panel.last = NULL, ...)
+  fun = c("S", "F"), add = FALSE, panel.first = NULL,
+  panel.last = NULL, ...)
 }
 \arguments{
 \item{s}{an object of class \code{\link{survfit}} or \code{survfit.cox}}
@@ -155,6 +156,9 @@ and return a character string (or a value to be coerced) for printing}
 
 \item{stratify}{(dev) \code{\link[survival]{strata}} variables}
 
+\item{fun}{survival curve transformation, one of \code{"S"} or \code{"F"}
+for the usual survival curve or empirical CDF, respectively}
+
 \item{add}{logical; if \code{TRUE}, \code{par}s are not reset; allows for
 multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}}
 
@@ -203,6 +207,7 @@ km2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 
 ## basic usage
 kmplot(km1)
+kmplot(km1, fun = 'F')
 kmplot(km1, atrisk.col = c('grey50','tomato'),
        args.test = list(col = 'red', cex = 1.5, line = 0))
 kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)

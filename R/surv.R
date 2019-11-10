@@ -141,6 +141,8 @@ stratify_formula <- function(formula, vars = NULL) {
 #' alternatively, a function can be passed which should take a numeric value
 #' and return a character string (or a value to be coerced) for printing
 #' @param stratify (dev) \code{\link[survival]{strata}} variables
+#' @param fun survival curve transformation, one of \code{"S"} or \code{"F"}
+#' for the usual survival curve or empirical CDF, respectively
 #' @param add logical; if \code{TRUE}, \code{par}s are not reset; allows for
 #' multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}
 #' @param panel.first an expression to be evaluated after the plot axes are
@@ -165,6 +167,7 @@ stratify_formula <- function(formula, vars = NULL) {
 #' 
 #' ## basic usage
 #' kmplot(km1)
+#' kmplot(km1, fun = 'F')
 #' kmplot(km1, atrisk.col = c('grey50','tomato'),
 #'        args.test = list(col = 'red', cex = 1.5, line = 0))
 #' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
@@ -290,7 +293,7 @@ kmplot <- function(s,
                    format_pval = TRUE,
                    
                    ## other options
-                   stratify = NULL,
+                   stratify = NULL, fun = c('S', 'F'),
                    add = FALSE, panel.first = NULL, panel.last = NULL, ...) {
   if (!inherits(s, 'survfit'))
     stop('\'s\' must be a \'survfit\' object')
@@ -307,6 +310,8 @@ kmplot <- function(s,
   }
   if (tt_test)
     lr_test <- FALSE
+  
+  fun <- match.arg(fun)
   
   svar <- as.character(form <- s$call$formula)
   svar <- svar[-(1:2)]
@@ -531,6 +536,9 @@ kmplot <- function(s,
     mi <- missing(atrisk.digits)
     d2 <- split(d1, d1$strata)
     d2 <- lapply(d2, function(x) {
+      if (fun == 'F')
+        x$surv <- 1 - x$surv
+      
       x$atrisk <- x$n.risk
       x$events <- cumsum(x$n.event)
       x[, 'atrisk-events'] <- sprintf('%s (%s)', x$atrisk, x$events)
@@ -723,13 +731,13 @@ kmplot <- function(s,
     }
     
     ## survival curves
-    lines(s[ii], conf.int = FALSE, col = col.surv[ii],
+    lines(s[ii], conf.int = FALSE, col = col.surv[ii], fun = fun,
           lty = lty.surv[ii], lwd = lwd.surv, mark.time = FALSE)
     
     if (!mark[ii] == FALSE)
       points.kmplot(
         s[ii], col = col.surv[ii], pch = mark[ii], censor = TRUE, plot = TRUE,
-        event = FALSE, bump = mark[ii] == 'bump', lwd = lwd.mark[ii]
+        event = FALSE, bump = mark[ii] == 'bump', lwd = lwd.mark[ii], fun = fun
       )
   }
   
@@ -872,6 +880,8 @@ points.kmplot <- function(x, xscale, xmax, fun,
         ## special case further below
         'logpct'   = function(x) 100 * x,
         'identity' = function(x) x,
+        'S'        = function(x) x,
+        'F'        = function(x) 1 - x,
         stop('Unrecognized function argument')
       )
     } else if (is.function(fun))
