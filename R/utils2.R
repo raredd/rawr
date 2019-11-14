@@ -1587,6 +1587,8 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' summary (e.g., for continuous variables), or \code{"pct"} to color by
 #' proportions (e.g., for factors)
 #' @param cell_color a vector of colors used for \code{color_cell_by}
+#' @param confint logical or \code{varname}; if \code{TRUE} (or \code{varname})
+#' rows will be formatted as confidence intervals; see \code{\link{binconr}}
 #' @param continuous_fn a function to describe continuous variables (default
 #' is to show median and range); see \code{\link[Gmisc]{getDescriptionStatsBy}}
 #' @param ... additional arguments passed to
@@ -1665,7 +1667,7 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
                         format_pval = TRUE, color_pval = TRUE,
                         color_missing = TRUE, dagger = TRUE,
                         color_cell_by = c('none', 'value', 'pct'),
-                        cell_color = palette()[1:2],
+                        cell_color = palette()[1:2], confint = FALSE,
                         continuous_fn = function(...)
                           Gmisc::describeMedian(..., iqr = FALSE), ...) {
   fun <- deparse(substitute(FUN))
@@ -1706,12 +1708,17 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
     ox <- FALSE
   }
   
+  confint <- if (isTRUE(confint))
+    varname else if (identical(confint, FALSE)) NULL else confint
+  
   
   res <- if (inherits(x, c('Date', 'POSIXct', 'POSIXt'))) {
     color_cell_by <- 'none'
     FUN <- if (length(FUN) && is.na(FUN))
       NA else FALSE
     describeDateBy(x, y, ...)
+  } else if (varname %in% confint) {
+    describeConfInt(x, y, ...)
   } else {
     Gmisc::getDescriptionStatsBy(
       x, y, digits = digits, html = TRUE, add_total_col = TRUE,
@@ -2058,8 +2065,8 @@ describeDateBy <- function(x, by, format = '%b %d, %Y', copula = ' to ',
     mis <- c(list(x), split(x, by))
     mis <- sapply(mis, function(m) {
       s <- sum(is.na(m))
-      sprintf('%s (%s%%)', s, if (s == 0) '0'
-              else roundr(s / length(m) * 100, useNA.digits))
+      sprintf('%s (%s%%)', s, if (s == 0)
+        '0' else roundr(s / length(m) * 100, useNA.digits))
     })
     if (!percentage_sign)
       mis <- gsub('%', '', mis)
@@ -2068,6 +2075,35 @@ describeDateBy <- function(x, by, format = '%b %d, %Y', copula = ' to ',
   }
   
   res
+}
+
+describeConfInt <- function(x, y, include_NA = TRUE, percent = TRUE,
+                            digits = ifelse(percent, 0L, 2L),
+                            add_total_col = TRUE, useNA.digits = 0L,
+                            conf = 0.95, frac = TRUE, ...) {
+  if (!include_NA) {
+    na <- is.na(x) | is.na(y)
+    x <- x[!na]
+    y <- y[!na]
+  }
+  
+  x <- as.factor(x)
+  sp <- split(x, y)
+  sp <- c(Total = list(x), sp)
+  
+  res <- lapply(sp, function(xx) {
+    n <- table(xx)
+    x <- sapply(n, function(r)
+      binconr(r, sum(n), show_conf = FALSE, frac = frac, conf = conf,
+              percent = percent, digits = digits))
+    matrix(x, dimnames = list(names(n), NULL))
+  })
+  
+  res <- do.call('cbind', res)
+  colnames(res) <- names(sp)
+  
+  if (add_total_col)
+    res else res[, -1L, drop = FALSE]
 }
 
 #' \code{tabler_stat} wrappers
@@ -2097,6 +2133,8 @@ describeDateBy <- function(x, by, format = '%b %d, %Y', copula = ' to ',
 #' @param FUN \code{NULL} or a list of functions performing the test of
 #' association between each \code{varname} and \code{byvar}; see
 #' \code{\link{tabler_stat}}
+#' @param confint optional vector of \code{varname}(s) to summarize as
+#' confidence intervals
 #' @param format_pval logical; if \code{TRUE}, p-values will be formatted
 #' using \code{\link{pvalr}}; alternatively, a function may by used which
 #' will be applied to each p-value
@@ -2163,6 +2201,7 @@ describeDateBy <- function(x, by, format = '%b %d, %Y', copula = ' to ',
 #'   mt,
 #'   varname = c(MPG = 'mpg', MPG = 'mpg2', Cylinders = 'cyl', Weight = 'wt'),
 #'   byvar = c('V/S engine' = 'vs'),
+#'   confint = c('mpg2', 'cyl'),
 #'   zeros = NULL,
 #'   digits = c(wt = 2)
 #'   # digits = c('3' = 2) ## equivalently
@@ -2172,7 +2211,7 @@ describeDateBy <- function(x, by, format = '%b %d, %Y', copula = ' to ',
 
 tabler_stat2 <- function(data, varname, byvar = NULL,
                          varname_label = names(varname), byvar_label = names(byvar),
-                         digits = NULL, FUN = NULL,
+                         digits = NULL, FUN = NULL, confint = FALSE,
                          format_pval = TRUE, color_pval = TRUE, correct = FALSE,
                          color_missing = TRUE, dagger = TRUE,
                          group = NULL, color_cell_by = 'none',
@@ -2205,7 +2244,7 @@ tabler_stat2 <- function(data, varname, byvar = NULL,
   l <- tabler_stat_list(
     data, varname, byvar, varname_label, byvar_label, digits, FUN,
     format_pval, color_pval, color_missing, dagger, color_cell_by,
-    cell_color, statArgs
+    cell_color, confint, statArgs
   )
   
   tabler_stat_html(
@@ -2219,7 +2258,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
                              format_pval = TRUE, color_pval = TRUE,
                              color_missing = TRUE, dagger = TRUE,
                              color_cell_by = 'none', cell_color = NULL,
-                             statArgs = NULL) {
+                             confint = NULL, statArgs = NULL) {
   if (is.null(byvar)) {
     FUN   <- NA
     byvar <- '_by_var_'
@@ -2267,7 +2306,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
   l <- do.call('Map', c(list(
     f = tabler_stat, data, varname, byvar, digits, FUN,
     list(format_pval), color_pval, color_missing, dagger,
-    color_cell_by, cell_color), statArgs)
+    color_cell_by, cell_color, list(confint %||% '')), statArgs)
   )
   
   tbl <- lapply(l, function(x)

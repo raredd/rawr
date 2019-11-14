@@ -7,8 +7,9 @@
 tabler_stat(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
   format_pval = TRUE, color_pval = TRUE, color_missing = TRUE,
   dagger = TRUE, color_cell_by = c("none", "value", "pct"),
-  cell_color = palette()[1:2], continuous_fn = function(...)
-  Gmisc::describeMedian(..., iqr = FALSE), ...)
+  cell_color = palette()[1:2], confint = FALSE,
+  continuous_fn = function(...) Gmisc::describeMedian(..., iqr = FALSE),
+  ...)
 }
 \arguments{
 \item{data}{a matrix or data frame with variables \code{varname} and
@@ -45,6 +46,9 @@ summary (e.g., for continuous variables), or \code{"pct"} to color by
 proportions (e.g., for factors)}
 
 \item{cell_color}{a vector of colors used for \code{color_cell_by}}
+
+\item{confint}{logical or \code{varname}; if \code{TRUE} (or \code{varname})
+rows will be formatted as confidence intervals; see \code{\link{binconr}}}
 
 \item{continuous_fn}{a function to describe continuous variables (default
 is to show median and range); see \code{\link[Gmisc]{getDescriptionStatsBy}}}

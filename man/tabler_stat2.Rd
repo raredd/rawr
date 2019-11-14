@@ -6,12 +6,12 @@
 \usage{
 tabler_stat2(data, varname, byvar = NULL,
   varname_label = names(varname), byvar_label = names(byvar),
-  digits = NULL, FUN = NULL, format_pval = TRUE, color_pval = TRUE,
-  correct = FALSE, color_missing = TRUE, dagger = TRUE,
-  group = NULL, color_cell_by = "none", cell_color = palette()[1:2],
-  statArgs = NULL, align = NULL, rgroup = NULL, cgroup = NULL,
-  tfoot = NULL, tfoot2 = NULL, htmlArgs = NULL, zeros = "-",
-  clean_daggers = FALSE)
+  digits = NULL, FUN = NULL, confint = FALSE, format_pval = TRUE,
+  color_pval = TRUE, correct = FALSE, color_missing = TRUE,
+  dagger = TRUE, group = NULL, color_cell_by = "none",
+  cell_color = palette()[1:2], statArgs = NULL, align = NULL,
+  rgroup = NULL, cgroup = NULL, tfoot = NULL, tfoot2 = NULL,
+  htmlArgs = NULL, zeros = "-", clean_daggers = FALSE)
 }
 \arguments{
 \item{data}{a matrix or data frame with variables \code{varname} and
@@ -42,6 +42,9 @@ a \emph{named} vector of \code{digits} corresponding to one or more
 \item{FUN}{\code{NULL} or a list of functions performing the test of
 association between each \code{varname} and \code{byvar}; see
 \code{\link{tabler_stat}}}
+
+\item{confint}{optional vector of \code{varname}(s) to summarize as
+confidence intervals}
 
 \item{format_pval}{logical; if \code{TRUE}, p-values will be formatted
 using \code{\link{pvalr}}; alternatively, a function may by used which
@@ -113,6 +116,7 @@ tabler_stat2(
   mt,
   varname = c(MPG = 'mpg', MPG = 'mpg2', Cylinders = 'cyl', Weight = 'wt'),
   byvar = c('V/S engine' = 'vs'),
+  confint = c('mpg2', 'cyl'),
   zeros = NULL,
   digits = c(wt = 2)
   # digits = c('3' = 2) ## equivalently
