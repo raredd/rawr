@@ -26,9 +26,7 @@ surv_prob(x, times = pretty(x$time), ci = FALSE,
 \item{digits}{number of digits past the decimal point to keep}
 
 \item{which}{optional integer or character vector to select or re-order
-the output; for \code{surv_median}, \code{which = NULL} and returns
-results for all strata; for \code{surv_prob}, probabilities are returned
-for one strata so \code{which} should be length 1}
+the output; \code{which = NULL} and returns results for all strata}
 
 \item{print}{logical; if \code{TRUE}, output is prepared for in-line
 printing}
@@ -79,5 +77,7 @@ summary(sfit1, times)
 surv_prob(sfit2, times, which = 'sex=2', digits = 3)
 ## compare
 summary(sfit2, times)
+
+surv_prob(sfit2, times = 365, ci = TRUE, which = NULL)
 
 }

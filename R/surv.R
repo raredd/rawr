@@ -2248,9 +2248,7 @@ landmark <- function(s, times = NULL, lr_test = TRUE, adjust_start = FALSE,
 #' @param ci logical; if \code{TRUE}, the confidence interval is printed
 #' @param digits number of digits past the decimal point to keep
 #' @param which optional integer or character vector to select or re-order
-#' the output; for \code{surv_median}, \code{which = NULL} and returns
-#' results for all strata; for \code{surv_prob}, probabilities are returned
-#' for one strata so \code{which} should be length 1
+#' the output; \code{which = NULL} and returns results for all strata
 #' @param print logical; if \code{TRUE}, output is prepared for in-line
 #' printing
 #' @param na a character string to replace \code{NA} when median
@@ -2288,6 +2286,8 @@ landmark <- function(s, times = NULL, lr_test = TRUE, adjust_start = FALSE,
 #' surv_prob(sfit2, times, which = 'sex=2', digits = 3)
 #' ## compare
 #' summary(sfit2, times)
+#' 
+#' surv_prob(sfit2, times = 365, ci = TRUE, which = NULL)
 #' 
 #' @export
 
@@ -2353,21 +2353,24 @@ surv_median <- function(x, ci = FALSE, digits = 0L, which = NULL,
 surv_prob <- function(x, times = pretty(x$time), ci = FALSE,
                       digits = ifelse(percent, 0L, 2L), which = 1L,
                       print = TRUE, show_conf = TRUE, percent = FALSE) {
-  stopifnot(
-    length(which) == 1L
-  )
-  
   res <- surv_table(x, digits, times, FALSE, percent = percent)
-  if (islist(res))
-    res <- res[[which]]
-  res <- res[, grep('Surv', colnames(res))]
-  res <- if (!ci)
-    gsub(' .*', '', res) else gsub(', ', ' - ', res)
+  if (!islist(res))
+    res <- list(res)
   
-  if (show_conf)
-    res <- gsub('(?<=\\()', sprintf('%s%% CI: ', x$conf.int * 100),
-                res, perl = TRUE)
+  res <- lapply(res, function(y) {
+    y <- unname(y[, grep('Surv', colnames(y))])
+    y <- if (!ci)
+      gsub(' .*', '', y) else gsub(', ', ' - ', y)
+    
+    if (show_conf)
+      y <- gsub('(?<=\\()', sprintf('%s%% CI: ', x$conf.int * 100), y, perl = TRUE)
+    
+    if (print)
+      iprint(y) else y
+  })
   
-  if (print)
+  if (length(which) == 1L)
+    res[[which]]
+  else if (print & length(times) == 1L)
     iprint(res) else res
 }
