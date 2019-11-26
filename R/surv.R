@@ -1256,7 +1256,7 @@ hr_text <- function(formula, data, ..., details = TRUE, pFUN = NULL) {
   obj <- hr_pval(cph, details = TRUE)
   
   txt <- apply(obj, 1L, function(x)
-    sprintf('HR %.2f [%.2f, %.2f], %s', x[1L], x[2L], x[3L],
+    sprintf('HR %.2f (%.2f, %.2f), %s', x[1L], x[2L], x[3L],
             {pv <- pFUN(x[4L]); if (is.na(pv)) 'p > 0.99' else pv}))
   lbl <- attr(terms(cph), 'term.labels')
   txt <- paste(cph$xlevels[[lbl[!grepl('strata\\(', lbl)]]],
