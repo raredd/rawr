@@ -4,7 +4,8 @@
 \alias{response}
 \title{Response data}
 \usage{
-response(date, response, include = "resp|[CPM]R$",
+response(date, response, include = "(resp|stable)|([cpm]r|sd)$",
+  default = NA, no_confirm = "stable|sd",
   progression = "prog|pd|relapse", n_confirm = 1L, strict = FALSE,
   dr = 0, dp = NULL)
 }
@@ -15,16 +16,24 @@ response(date, response, include = "resp|[CPM]R$",
 levels ordered from best response to worst (e.g.,
 \code{factor(., levels = c('CR', 'PR', 'SD', 'PD'))}}
 
-\item{include}{optional vector of \code{response} to include, e.g., useful
-if a minimal response is required}
+\item{include}{integer vector of levels of \code{response} to include or
+a single regular expression to match levels of \code{response}; useful if
+a minimal response is required}
+
+\item{default}{(optional) the default response if no assessments have been
+confirmed, usually stable disease; must be a level of \code{response}}
+
+\item{no_confirm}{responses that do not require confirmation assessments,
+usually stable disease (default); must match a level of \code{response}}
 
 \item{progression}{a character string to identify progression events in
-\code{response}}
+\code{response}; must match a level of \code{response}}
 
-\item{n_confirm}{to confirm each response, the number of subsequent
-responses equal or better required; e.g., if \code{n_confirm = 2}, to
-confirm a minimal response, the next to assessments must be minimal or
-better to confirm}
+\item{n_confirm}{to confirm a response, the number of subsequent responses
+equal to or better than required; e.g., if \code{n_confirm = 1} (default),
+to confirm a response, the next assessment must be at least as good as the
+current; note that this only affects \code{.$confirmed} and
+\code{.$bsf_confirmed} in the return object}
 
 \item{strict}{logical; if \code{TRUE}, only the first uninterrupted
 sequence of confirmed responses will be evaluated for best response}
@@ -81,7 +90,7 @@ unconf <- do.call(
 )
 conf <- do.call(
   'rbind',
-  lapply(sp, function(x) response(x$date, x$response)$confirmed)
+  lapply(sp, function(x) response(x$date, x$response, default = 'SD')$confirmed)
 )
 do.call('cbind', sp)
 
