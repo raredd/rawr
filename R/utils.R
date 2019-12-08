@@ -2633,9 +2633,13 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
     data$date[min(pd)] else na
   
   ## confirmed pd
-  pd_conf <- which(diff(pd) == 1L)[1L] + 1L
-  dt_prog_conf <- if (any(diff(pd) == 1L))
+  pd_conf <- grep(progression, data$response, ignore.case = TRUE)
+  if (!is.null(dp))
+    pd_conf <- sort(c(pd_conf, which(diff(data$responsei) > dp) + 1L))
+  pd_conf <- pd_conf[which(diff(pd_conf) == 1L)[1L]]
+  dt_prog_conf <- if (!is.na(pd_conf))
     data$date[pd_conf] else na
+  
   
   ## select rows up until first progression
   data_conf <- if (!is.na(pd_conf))
