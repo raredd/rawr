@@ -6,8 +6,8 @@
 \usage{
 response(date, response, include = "(resp|stable)|([cpm]r|sd)$",
   default = NA, no_confirm = "stable|sd",
-  progression = "prog|pd|relapse", n_confirm = 1L, strict = FALSE,
-  dr = 0, dp = NULL)
+  progression = "prog|pd|relapse", n_confirm = 1L,
+  n_prog = n_confirm, strict = FALSE, dr = 0, dp = NULL)
 }
 \arguments{
 \item{date}{date of assessment}
@@ -33,6 +33,11 @@ usually stable disease (default); must match a level of \code{response}}
 equal to or better than required; e.g., if \code{n_confirm = 1} (default),
 to confirm a response, the next assessment must be at least as good as the
 current; note that this only affects \code{.$confirmed} and
+\code{.$bsf_confirmed} in the return object}
+
+\item{n_prog}{similar to \code{n_confirm} but for progression; if
+\code{nprog = 1}, then a progression must be followed by at least one
+progression to confirm; note that this only affects \code{.$confirmed} and
 \code{.$bsf_confirmed} in the return object}
 
 \item{strict}{logical; if \code{TRUE}, only the first uninterrupted

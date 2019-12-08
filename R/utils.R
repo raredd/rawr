@@ -2491,6 +2491,10 @@ sort2 <- function(x, decreasing = FALSE, index.return = FALSE,
 #' to confirm a response, the next assessment must be at least as good as the
 #' current; note that this only affects \code{.$confirmed} and
 #' \code{.$bsf_confirmed} in the return object
+#' @param n_prog similar to \code{n_confirm} but for progression; if
+#' \code{nprog = 1}, then a progression must be followed by at least one
+#' progression to confirm; note that this only affects \code{.$confirmed} and
+#' \code{.$bsf_confirmed} in the return object
 #' @param strict logical; if \code{TRUE}, only the first uninterrupted
 #' sequence of confirmed responses will be evaluated for best response
 #' @param dr (optional) difference in level required to confirm responses; if
@@ -2549,7 +2553,7 @@ sort2 <- function(x, decreasing = FALSE, index.return = FALSE,
 response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
                      default = NA, no_confirm = 'stable|sd',
                      progression = 'prog|pd|relapse', n_confirm = 1L,
-                     strict = FALSE, dr = 0, dp = NULL) {
+                     n_prog = n_confirm, strict = FALSE, dr = 0, dp = NULL) {
   stopifnot(
     is.factor(response),
     !anyNA(date),
@@ -2618,19 +2622,31 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
   no_confirmi <- grep(no_confirm[1L], lvls, ignore.case = TRUE)
   no_confirm <- lvls[no_confirm]
   
-  nr <- nrow(data)
+  na  <- as.Date(NA)
+  
+  
+  ## unconfirmed pd
   pd <- grep(progression, data$response, ignore.case = TRUE)
   if (!is.null(dp))
     pd <- sort(c(pd, which(diff(data$responsei) > dp) + 1L))
   dt_prog <- if (length(pd))
-    data$date[min(pd)] else as.Date(NA)
+    data$date[min(pd)] else na
+  
+  ## confirmed pd
+  pd_conf <- which(diff(pd) == 1L)[1L] + 1L
+  dt_prog_conf <- if (any(diff(pd) == 1L))
+    data$date[pd_conf] else na
   
   ## select rows up until first progression
+  data_conf <- if (!is.na(pd_conf))
+    data[seq(1L, pd_conf - 1L), ] else data
+  dt_progfree_conf <- max(data_conf$date)
+  
   data <- if (length(pd))
     data[seq(1L, min(pd) - 1L), ] else data
   dt_progfree <- max(data$date)
   
-  na  <- as.Date(NA)
+  
   bsf <- data.frame(dt_bsf = na, response_bsf = NA)
   rsp_na <- data.frame(
     dt_first = na, response_first = NA, dt_last = na, response_last = NA,
@@ -2645,13 +2661,13 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
   if (!any(data$response %in% c(include, no_confirm)) || length(pd) && min(pd) == 1L)
     return(
       list(
-        unconfirmed = rsp_na, confirmed = rsp_na,
+        unconfirmed = rsp_na, confirmed = within(rsp_na, dt_prog <- dt_prog_conf),
         bsf_unconfirmed = bsf, bsf_confirmed = bsf
       )
     )
   
   ## confirmed
-  data <- within(data, {
+  data_conf <- within(data_conf, {
     bsfi <- locf(cummin_na(responsei))
     bsf  <- factor(bsfi, seq_along(lvls), lvls)
     
@@ -2676,7 +2692,7 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
   
   ## select only rows that meet minimal response criteria or require no conf
   if (length(include))
-    dd <- data[data$response %in% c(include, no_confirm), ]
+    dd <- data_conf[data_conf$response %in% c(include, no_confirm), ]
   
   ## first/last response of any type, first/last of best response
   bes <- dd$responsei
@@ -2707,7 +2723,7 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
   else dd[dd$confirm %in% TRUE, ]
   
   if (nrow(dd) == 0L) {
-    bsf_na <- data.frame(dt_bsf = as.Date(NA), response_bsf = NA)
+    bsf_na <- data.frame(dt_bsf = na, response_bsf = NA)
     rsp$dt_prog <- rsp_na$dt_prog
     rsp$dt_lastprogfree <- rsp_na$dt_lastprogfree <- dt_progfree
     
@@ -2717,7 +2733,7 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
     
     return(
       list(
-        unconfirmed = rsp, confirmed = rsp_na,
+        unconfirmed = rsp, confirmed = within(rsp_na, dt_prog <- dt_prog_conf),
         bsf_unconfirmed = bsf, bsf_confirmed = bsf_na
       )
     )
@@ -2743,8 +2759,10 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
   
   
   ## first progression if any
-  rsp$dt_prog <- rsp_confirm$dt_prog <- dt_prog
-  rsp$dt_lastprogfree <- rsp_confirm$dt_lastprogfree <- dt_progfree
+  rsp$dt_prog <- dt_prog
+  rsp_confirm$dt_prog <- dt_prog_conf
+  rsp$dt_lastprogfree <- dt_progfree
+  rsp_confirm$dt_lastprogfree <- dt_progfree_conf
   
   
   ## best so far response
