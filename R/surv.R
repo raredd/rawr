@@ -2162,14 +2162,18 @@ survdiff_pairs <- function(s, ..., method = p.adjust.methods,
 #' 
 #' @param s a \code{\link[survival]{survfit}} object
 #' @param times a vector of landmark times
+#' @param col color for \code{times} annotations; use \code{col = 0} to
+#' suppress labels
+#' @param plot,plot.main logicals; if \code{TRUE}, landmark and \code{s} are
+#' plotted, respectively
 #' @param lr_test logical or numeric; if \code{TRUE}, a log-rank test will be
 #' performed and the results added to the top-right corner of the plot; if
 #' numeric, the value is passed as \code{rho} controlling the type of test
 #' performed; see \code{\link{survdiff}}
 #' @param adjust_start logical; if \code{TRUE}, each landmark plot will begin
 #' at the y-axis
-#' @param ... additional parameters passed to \code{\link{kmplot}}
-#' @param add logical; if \code{TRUE}, plots are added to current plot
+#' @param ... additional arguments passed to \code{\link{kmplot}}
+#' @param single logical; if \code{TRUE}, plots drawn on a single frame
 #' 
 #' @return
 #' A data frame with the sample size, chi-square statistic, degrees of
@@ -2179,34 +2183,35 @@ survdiff_pairs <- function(s, ..., method = p.adjust.methods,
 #' 
 #' @examples
 #' library('survival')
-#' s <- survfit(Surv(time, status) ~ node4, colon)
-#' landmark(s, times = c(500, 1000, 2500))
+#' s <- survfit(Surv(time, status) ~ rx, colon)
+#' l <- landmark(s, times = c(500, 1000, 2000), single = TRUE)
+#' l
 #' 
-#' layout(matrix(c(1,1,1,1,2,3), 2))
-#' landmark(s, times = c(500, 2500), adjust_start = TRUE, add = TRUE)
+#' layout(matrix(c(1, 1, 2, 3), 2))
+#' landmark(s, times = c(500, 2000), adjust_start = TRUE,
+#'          hr_text = TRUE, col.surv = 4:6)
 #' 
 #' @export
 
-landmark <- function(s, times = NULL, lr_test = TRUE, adjust_start = FALSE,
-                     ..., add = FALSE) {
+landmark <- function(s, times = NULL, col = 2L, plot = TRUE, plot.main = plot,
+                     lr_test = TRUE, adjust_start = FALSE, ..., single = FALSE) {
   form <- s$call$formula
   data <- eval(s$call$data)
   tvar <- terms.inner(form)[1L]
   
-  op <- par(no.readonly = TRUE)
-  on.exit(par(op))
-  if (!add) {
-    plot.new()
-    par(mfrow = n2mfrow(length(times) + 1L))
-  }
+  if (single)
+    par(mfrow = n2mfrow(length(times) + plot.main))
   
   st <- data.frame(n = sum(s$n), lr_pval(s, TRUE), row.names = 'Total')
-  kmplot(s, ..., add = TRUE, lr_test = lr_test,
-         panel.first = {
-           abline(v = times, col = 2)
-           if (length(times))
-             mtext(seq_along(times), at = times, cex = .8, col = 2)
-         })
+  if (plot.main)
+    kmplot(
+      s, ..., add = TRUE, lr_test = lr_test,
+      panel.first = {
+        abline(v = times, col = col)
+        if (length(times))
+          mtext(seq_along(times), at = times, cex = par('cex.lab'), col = col)
+      }
+    )
   
   sd <- 
     if (length(times))
@@ -2219,13 +2224,17 @@ landmark <- function(s, times = NULL, lr_test = TRUE, adjust_start = FALSE,
         si$.data <- tmp
         at <- pretty(si$time)
         
-        kmplot(si, ..., add = TRUE, lr_test = lr_test, xaxis.at = at,
-               xaxis.lab = ifelse(adjust_start, ii, 0) + at,
-               panel.first = {
-                 abline(v = ii, col = if (adjust_start) 0L else 2L)
-                 mtext(which(times %in% ii), at = par('usr')[1L],
-                       col = 2L, cex = 1.5, font = 2L, line = 1)
-               })
+        if (plot)
+          kmplot(
+            si, ..., add = TRUE, lr_test = lr_test, xaxis.at = at,
+            xaxis.lab = ifelse(adjust_start, ii, 0) + at,
+            panel.first = {
+              abline(v = ii, col = if (adjust_start) 0L else 2L)
+              mtext(which(times %in% ii), at = par('usr')[1L], col = col,
+                    cex = par('cex.main'), font = par('font.main'))
+            }
+          )
+        
         data.frame(n = sum(si$n), lr_pval(si, TRUE), row.names = ii)
       }) else NULL
   

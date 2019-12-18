@@ -4,13 +4,19 @@
 \alias{landmark}
 \title{Landmark}
 \usage{
-landmark(s, times = NULL, lr_test = TRUE, adjust_start = FALSE, ...,
-  add = FALSE)
+landmark(s, times = NULL, col = 2L, plot = TRUE, plot.main = plot,
+  lr_test = TRUE, adjust_start = FALSE, ..., single = FALSE)
 }
 \arguments{
 \item{s}{a \code{\link[survival]{survfit}} object}
 
 \item{times}{a vector of landmark times}
+
+\item{col}{color for \code{times} annotations; use \code{col = 0} to
+suppress labels}
+
+\item{plot, plot.main}{logicals; if \code{TRUE}, landmark and \code{s} are
+plotted, respectively}
 
 \item{lr_test}{logical or numeric; if \code{TRUE}, a log-rank test will be
 performed and the results added to the top-right corner of the plot; if
@@ -20,9 +26,9 @@ performed; see \code{\link{survdiff}}}
 \item{adjust_start}{logical; if \code{TRUE}, each landmark plot will begin
 at the y-axis}
 
-\item{...}{additional parameters passed to \code{\link{kmplot}}}
+\item{...}{additional arguments passed to \code{\link{kmplot}}}
 
-\item{add}{logical; if \code{TRUE}, plots are added to current plot}
+\item{single}{logical; if \code{TRUE}, plots drawn on a single frame}
 }
 \value{
 A data frame with the sample size, chi-square statistic, degrees of
@@ -35,10 +41,12 @@ Fit survival curves for landmark time points.
 }
 \examples{
 library('survival')
-s <- survfit(Surv(time, status) ~ node4, colon)
-landmark(s, times = c(500, 1000, 2500))
+s <- survfit(Surv(time, status) ~ rx, colon)
+l <- landmark(s, times = c(500, 1000, 2000), single = TRUE)
+l
 
-layout(matrix(c(1,1,1,1,2,3), 2))
-landmark(s, times = c(500, 2500), adjust_start = TRUE, add = TRUE)
+layout(matrix(c(1, 1, 2, 3), 2))
+landmark(s, times = c(500, 2000), adjust_start = TRUE,
+         hr_text = TRUE, col.surv = 4:6)
 
 }
