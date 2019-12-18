@@ -150,7 +150,8 @@ contain \code{\link{NA}}s; the default is to ignore missing values in either
 the response or the group}
 }
 \value{
-A list with the following components (see \code{\link{boxplot}}:
+A list with the following elements (see \code{\link{boxplot}}:
+
 \item{\code{$stats}}{a matrix, each column contains the extreme of the lower
 whisker, the lower hinge, the median, the upper hinge and the extreme of the
 upper whisker for one group/plot. If all the inputs have the same class

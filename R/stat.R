@@ -308,7 +308,7 @@ twocon <- function(n1, n2, r1, r, conf = 0.95, dp = 1) {
 #' @param alpha,beta type-I and type-II errors
 #' 
 #' @return
-#' A list with the following components:
+#' A list with the following elements:
 #' 
 #' \item{\code{$designs}}{a matrix with a row giving a summary of each design
 #' which meets the criteria. The columns are: \code{p0} and \code{p1}, the
@@ -679,7 +679,7 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
 #' minimize the maximum sample size
 #' 
 #' @return
-#' A list with the following components:
+#' A list with the following elements:
 #' 
 #' \item{\code{$designs}}{a matrix with a row giving a summary of each
 #' design which meets the criteria. The columns are: \code{n1}, the number of
@@ -1243,7 +1243,7 @@ lm.beta <- function (x, weights = 1) {
 #' Carlo test
 #' 
 #' @return
-#' A list with class "\code{htest}" containing the following components:
+#' A list with class "\code{htest}" containing the following elements:
 #' 
 #' \item{statistic}{the value of the test statistic with a name describing it}
 #' \item{p.value}{the p-value for the test (two-sided, (un)corrected for ties)}
@@ -1576,7 +1576,7 @@ cuzick.test.pvalue <- function(x, g, correct, B = 2000L,
 #' @param y a factor object; ignored if x is a matrix
 #' 
 #' @return
-#' A list with class "\code{htest}" containing the following components:
+#' A list with class "\code{htest}" containing the following elements:
 #' 
 #' \item{statistic}{the value of the test statistic with a name describing it}
 #' \item{p.value}{the p-value for the test (two-sided, corrected for ties)}
@@ -2068,7 +2068,7 @@ rsum <- function(a, b, n, k, unique = FALSE, iterations = 100L) {
 #' default the variables are taken from \code{environment(formula)}
 #' 
 #' @return
-#' A list with class "\code{htest}" containing the following components:
+#' A list with class "\code{htest}" containing the following elements:
 #' 
 #' \item{\code{statistic}}{the Kruskal-Wallis test statistic}
 #' \item{\code{parameter}}{the degrees of freedom of the approximate chi-

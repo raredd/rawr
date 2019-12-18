@@ -21,7 +21,7 @@ may occur is known}
 \item{alpha, beta}{type-I and type-II errors}
 }
 \value{
-A list with the following components:
+A list with the following elements:
 
 \item{\code{$designs}}{a matrix with a row giving a summary of each design
 which meets the criteria. The columns are: \code{p0} and \code{p1}, the

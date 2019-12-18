@@ -31,10 +31,14 @@ at the y-axis}
 \item{single}{logical; if \code{TRUE}, plots drawn on a single frame}
 }
 \value{
-A data frame with the sample size, chi-square statistic, degrees of
-freedom, and p-value for the test (the type of test can be controlled by
-using a numeric value for \code{lr_test}, passed as \code{rho} to
-\code{\link{survdiff}}).
+A list with the following elements:
+
+\item{\code{$table}}{data frame with the sample size, chi-square
+statistic, degrees of freedom, and p-value for the test (the type of test
+can be controlled by using a numeric value for \code{lr_test}, passed as
+\code{rho} to \code{\link{survdiff}})}
+\item{\code{$survfit}}{a list with each \code{\link[survival]{survfit}}
+object}
 }
 \description{
 Fit survival curves for landmark time points.
@@ -43,7 +47,7 @@ Fit survival curves for landmark time points.
 library('survival')
 s <- survfit(Surv(time, status) ~ rx, colon)
 l <- landmark(s, times = c(500, 1000, 2000), single = TRUE)
-l
+l$table
 
 layout(matrix(c(1, 1, 2, 3), 2))
 landmark(s, times = c(500, 2000), adjust_start = TRUE,

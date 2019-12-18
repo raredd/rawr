@@ -13,7 +13,7 @@ factor object}
 \item{y}{a factor object; ignored if x is a matrix}
 }
 \value{
-A list with class "\code{htest}" containing the following components:
+A list with class "\code{htest}" containing the following elements:
 
 \item{statistic}{the value of the test statistic with a name describing it}
 \item{p.value}{the p-value for the test (two-sided, corrected for ties)}

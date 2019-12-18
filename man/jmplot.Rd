@@ -57,7 +57,7 @@ place but before the axes, title, and box are added; see the comments about
 etc) and/or \code{\link{tplot}} (\code{group.col}, \code{group.pch}, etc)}
 }
 \value{
-A list with components \code{x} and \code{y} corresponding to boxplots
+A list with elements \code{x} and \code{y} corresponding to boxplots
 on x- and y-axes, respectively. See \code{\link{boxplot}} or
 \code{\link{tplot}} for a detailed description of each list.
 }

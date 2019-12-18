@@ -46,7 +46,7 @@ gives the (unordered) row variable and \code{column} gives the
 default the variables are taken from \code{environment(formula)}}
 }
 \value{
-A list with class "\code{htest}" containing the following components:
+A list with class "\code{htest}" containing the following elements:
 
 \item{\code{statistic}}{the Kruskal-Wallis test statistic}
 \item{\code{parameter}}{the degrees of freedom of the approximate chi-

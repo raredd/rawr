@@ -24,7 +24,7 @@ the null with within \code{del} of the minimum possible value}
 minimize the maximum sample size}
 }
 \value{
-A list with the following components:
+A list with the following elements:
 
 \item{\code{$designs}}{a matrix with a row giving a summary of each
 design which meets the criteria. The columns are: \code{n1}, the number of

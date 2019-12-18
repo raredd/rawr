@@ -48,7 +48,7 @@ of the corresponding groups}
 default the variables are taken from \code{environment(formula)}}
 }
 \value{
-A list with class "\code{htest}" containing the following components:
+A list with class "\code{htest}" containing the following elements:
 
 \item{statistic}{the value of the test statistic with a name describing it}
 \item{p.value}{the p-value for the test (two-sided, (un)corrected for ties)}
