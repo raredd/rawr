@@ -2199,6 +2199,9 @@ landmark <- function(s, times = NULL, col = 2L, plot = TRUE, plot.main = plot,
   data <- eval(s$call$data)
   tvar <- terms.inner(form)[1L]
   
+  op <- par(no.readonly = TRUE)
+  on.exit(par(op))
+  
   if (single)
     par(mfrow = n2mfrow(length(times) + plot.main))
   
@@ -2229,7 +2232,7 @@ landmark <- function(s, times = NULL, col = 2L, plot = TRUE, plot.main = plot,
             si, ..., add = TRUE, lr_test = lr_test, xaxis.at = at,
             xaxis.lab = ifelse(adjust_start, ii, 0) + at,
             panel.first = {
-              abline(v = ii, col = if (adjust_start) 0L else 2L)
+              abline(v = ii, col = if (adjust_start) 0L else col)
               mtext(which(times %in% ii), at = par('usr')[1L], col = col,
                     cex = par('cex.main'), font = par('font.main'))
             }
