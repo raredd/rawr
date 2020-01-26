@@ -13,11 +13,19 @@
 # anova, chisq, cuzick, fisher, jt, kruskal, kw, t, wilcox, logrank
 # 
 # unexported:
-# getPvalCuzick, getPvalJTtest, getPvalKruskal, getPvalKWtest, getPvalTtest,
+# js, getPvalCuzick, getPvalJTtest, getPvalKruskal, getPvalKWtest, getPvalTtest,
 # getPval_, guess_test, tabler_stat_list, tabler_stat_html, guess_digits,
 # get_tabler_stat_n, resp1, r_or_better1, inject_
 ###
 
+
+js <- function() {
+  # <div class="fold o">
+  # <div class="fold s">
+  # <div class="fold s o">
+  # https://stackoverflow.com/a/37839683/2994949
+  system.file('scripts', 'toggleFold.js', package = 'rawr')
+}
 
 #' In-line stats
 #' 
