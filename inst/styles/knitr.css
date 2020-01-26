@@ -259,3 +259,40 @@ figcaption {
   text-justify: inter-word;
   font-size: 90%;
 }
+
+/* overflow / scrolling */
+
+/*
+.scroll-x {
+  overflow-x: auto;
+}
+pre code {
+  word-wrap: normal;
+  white-space: pre;
+}
+
+.scroll-y {
+  max-height: 300px;
+  overflow-y: auto;
+}
+*/
+
+.showopt {
+  background-color: #a9a9a9;
+  color: #000000; 
+  width: 100px;
+  height: 20px;
+  text-align: center;
+  vertical-align: middle !important;
+  float: right;
+  border-radius: 8px;
+}
+
+.showopt:hover {
+    background-color: #a9a9a9;
+    color: #d3d3d3;
+}
+
+pre .plot {
+  background-color: #ffffff !important;
+}
