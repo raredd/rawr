@@ -2376,8 +2376,8 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
     cn[1L] else if (l$pval) cn else head(cn, -1L)
   
   res <- gsub('%', '', l$output_data, fixed = TRUE)
-  p <- c('\\s*0\\s*\\(\\s*0\\s*\\)\\s*', '^\\s*0\\s*$',
-         '\\s*NA\\s*\\(\\s*NA\\s*-\\s*NA\\s*\\)\\s*')
+  p <- c('^\\s*0\\s*\\(\\s*0\\s*\\)\\s*$', '^\\s*0\\s*$',
+         '^\\s*NA\\s*\\(\\s*NA\\s*-\\s*NA\\s*\\)\\s*$')
   if (is.character(zeros))
     res <- gsub(paste(p, collapse = '|'), zeros, res)
   
