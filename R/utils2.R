@@ -1695,7 +1695,7 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
   if (is.null(byvar)) {
     FUN   <- NA
     byvar <- '_by_var_'
-    data[, byvar] <- factor(1, 1:2)
+    data[, byvar] <- factor(1L, 1:2)
   }
   
   x <- if (is.character(x <- data[, varname]))
@@ -2233,8 +2233,14 @@ tabler_stat2 <- function(data, varname, byvar = NULL,
   varname_label <- varname_label %||% varname
   byvar_label   <- byvar_label %||% byvar
   
+  if (!all(c(varname, byvar) %in% names(data))) {
+    stop(
+      sprintf('%s not found in data',
+              toString(shQuote(setdiff(c(varname, byvar), names(data)))))
+    )
+  }
+  
   stopifnot(
-    all(c(varname, byvar) %in% names(data)),
     length(byvar) %in% 0:1,
     byvar %in% names(data),
     nv == length(varname_label),
