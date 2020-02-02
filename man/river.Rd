@@ -6,13 +6,37 @@
 \alias{check_river_format}
 \title{River plots}
 \usage{
-river(data, bar_data, id, at, legend = "topleft", xlim = NULL,
-  ylim = NULL, rev = FALSE, stagger = TRUE, col = NULL,
-  axes = TRUE)
+river(
+  data,
+  bar_data,
+  id,
+  at,
+  legend = TRUE,
+  args.legend = list(),
+  xlim = NULL,
+  ylim = NULL,
+  rev = FALSE,
+  stagger = TRUE,
+  col = NULL,
+  axes = TRUE
+)
 
-river2(data, bar_data, bar_data2, id, legend = "topleft", xlim = NULL,
-  ylim = NULL, rev = FALSE, stagger = FALSE, split = FALSE,
-  col = NULL, col2 = NULL, axes = TRUE)
+river2(
+  data,
+  bar_data,
+  bar_data2,
+  id,
+  legend = TRUE,
+  args.legend = list(),
+  xlim = NULL,
+  ylim = NULL,
+  rev = FALSE,
+  stagger = FALSE,
+  split = FALSE,
+  col = NULL,
+  col2 = NULL,
+  axes = TRUE
+)
 
 check_river_format(data, bar_data)
 }
@@ -24,8 +48,11 @@ format, see details, examples, or run \code{check_river_format()}}
 \code{data} to plot and their positions along the y-axis; if not given,
 timelines are plotted sequentially}
 
-\item{legend}{character string giving position (see \code{\link{legend}}),
-\code{FALSE}, or a list of named arguments passed to \code{legend}}
+\item{legend}{logical; if \code{TRUE}, a legend using the unique values of
+\code{data$status} is drawn}
+
+\item{args.legend}{a \emph{named} list of arguments passed to
+\code{\link{legend}}}
 
 \item{xlim, ylim}{x- and y-axis limits}
 
@@ -98,20 +125,24 @@ check_river_format()
 
 
 ## data in river format:
-dd <- data.frame(id       = c(1,2,3,4,5),
-                 dt_reg   = c(1,2,3,4,5),
-                 dt_txst  = c(1,2,3,4,5) + 1,
-                 dt_txend = c(10,11,12,13,8),
-                 dt_prog  = c(11,16,NA,NA,8),
-                 dt_offtx = c(12,19,NA,NA,8),
-                 dt_surv  = c(12,19,24,25,NA),
-                 surv     = c(0,1,0,0,NA),
-                 dt_last  = c(12,19,24,25,NA),
-                 dt_off   = c(12,19,NA,NA,8))
-bd <- data.frame(id        = c(3,3,3,3,4,4),
-                 dt_assess = c(9,13,17,21,10,15),
-                 resp = factor(c('MR','PR','PR','CR','PR','CR'),
-                               levels = c('PD','SD','MR','PR','CR')))
+dd <- data.frame(
+  id       = 1:5,
+  dt_reg   = 1:5,
+  dt_txst  = 1:5 + 1,
+  dt_txend = c(10:13, 8),
+  dt_prog  = c(11, 16, NA, NA, 8),
+  dt_offtx = c(12, 19, NA, NA, 8),
+  dt_surv  = c(12, 19, 24, 25, NA),
+  surv     = c(0, 1, 0, 0, NA),
+  dt_last  = c(12, 19, 24, 25, NA),
+  dt_off   = c(12, 19, NA, NA, 8)
+)
+bd <- data.frame(
+  id        = c(3,3,3,3,4,4),
+  dt_assess = c(9,13,17,21,10,15),
+  resp = factor(c('MR', 'PR', 'PR', 'CR', 'PR', 'CR'),
+                levels = c('PD', 'SD', 'MR', 'PR', 'CR'))
+)
 
 river(dd, bd, stagger = FALSE, rev = TRUE, col = 2:6,
       legend = list(x = 'bottom', title = 'Response', horiz = TRUE))
@@ -128,20 +159,24 @@ river(dd, bd1, id = c(1,2,5,3,4), at = c(1:2, 4, 6:7), legend = FALSE)
 
 
 ## additional data for river2
-tt <- data.frame(id = rep(c(1, 3), times = c(1, 5)),
-                 dt_start = c(3,5,5,8,9,11),
-                 dt_end = c(NA,5,NA,10,10,NA),
-                 grade = c(1,4,3,4,1,2),
-                 desc = paste('tox', c(1,1:5)))
+tt <- data.frame(
+  id       = rep(c(1, 3), times = c(1, 5)),
+  dt_start = c(3, 5, 5, 8, 9, 11),
+  dt_end   = c(NA, 5, NA, 10, 10, NA),
+  grade    = c(1, 4, 3, 4, 1, 2),
+  desc     = paste('tox', c(1, 1:5))
+)
 
 river2(dd, bd, tt, id = 3)
 
 ## multiple records per id (ie, worsening toxicities)
-tt2 <- data.frame(id = rep(c(1, 3), times = c(1, 8)),
-                  dt_start = c(3,5,5,7,15,8,9,11,14),
-                  dt_end = c(NA,5,7,15,NA,10,10,14,NA),
-                  grade = c(1,4,1,2,3,4,1,2,3),
-                  desc = paste('tox', c(1,1,2,2,2,3,4,5,5)))
+tt2 <- data.frame(
+  id       = rep(c(1, 3), times = c(1, 8)),
+  dt_start = c(3, 5, 5, 7, 15, 8, 9, 11, 14),
+  dt_end   = c(NA, 5, 7, 15, NA, 10, 10, 14, NA),
+  grade    = c(1, 4, 1, 2, 3, 4, 1, 2, 3),
+  desc     = paste('tox', c(1, 1, 2, 2, 2, 3, 4, 5, 5))
+)
                   
 river2(dd, bd, tt2, id = 3)
 
@@ -149,5 +184,12 @@ river2(dd, bd, tt2, id = 3)
 ## bar_data can also be given in river2 without additional information
 river2(bar_data = tt,  id = 3)
 river2(bar_data = tt2, id = 3)
+
+
+## use custom axis() to change time units
+river2(bar_data = tt2, id = 3, axes = FALSE)
+at <- axTicks(1L)
+axis(1L, at, at * 12)
+title(xlab = 'Months from registration', line = 2.5)
 
 }
