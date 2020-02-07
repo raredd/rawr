@@ -2492,8 +2492,9 @@ get_tabler_stat_n <- function(x, pct = TRUE, use_labels = TRUE) {
   l <- if (use_labels)
     levels(x) else rep_len('Total', nlevels(x))
   t <- table(x)
+  n <- format(c(sum(t), t), big.mark = ',', scientific = FALSE)
   p <- roundr(prop.table(t) * 100, 0)
-  o <- Vectorize('sprintf')(c('Total', l), c(sum(t), t), c('%', p), fmt = fmt)
+  o <- Vectorize('sprintf')(c('Total', l), n, c('%', p), fmt = fmt)
   
   drop(o)
 }
