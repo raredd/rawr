@@ -4,8 +4,11 @@
 \alias{droplevels2}
 \title{Drop factor levels}
 \usage{
-droplevels2(x, min_level = min(as.integer(x), na.rm = TRUE),
-  max_level = max(as.integer(x), na.rm = TRUE))
+droplevels2(
+  x,
+  min_level = min(as.integer(x), na.rm = TRUE),
+  max_level = max(as.integer(x), na.rm = TRUE)
+)
 }
 \arguments{
 \item{x}{a factor variable}

@@ -5,10 +5,16 @@
 \title{Power calculations for one- and two-sample t-tests using ratio of means and
 coefficients of variation}
 \usage{
-power_cv(n = NULL, f = NULL, cv = NULL, sig.level = NULL,
-  power = NULL, type = c("two.sample", "one.sample", "paired"),
+power_cv(
+  n = NULL,
+  f = NULL,
+  cv = NULL,
+  sig.level = NULL,
+  power = NULL,
+  type = c("two.sample", "one.sample", "paired"),
   alternative = c("two.sided", "less", "greater"),
-  distribution = c("t", "normal", "log.normal"))
+  distribution = c("t", "normal", "log.normal")
+)
 }
 \arguments{
 \item{n}{number of observations (per group)}

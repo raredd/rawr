@@ -10,6 +10,7 @@
 \alias{hr_text}
 \alias{pw_pval}
 \alias{pw_text}
+\alias{c_text}
 \title{Survival curve tests}
 \usage{
 lr_pval(object, details = FALSE, data = NULL, ...)
@@ -26,8 +27,19 @@ hr_text(formula, data, ..., details = TRUE, pFUN = NULL)
 
 pw_pval(object, details = FALSE, data = NULL, ..., method = "none")
 
-pw_text(formula, data, ..., details = TRUE, pFUN = NULL,
-  method = "none")
+pw_text(formula, data, ..., details = TRUE, pFUN = NULL, method = "none")
+
+c_text(
+  formula,
+  data,
+  tau = NULL,
+  iter = 1000L,
+  seed = 1L,
+  digits = 2L,
+  conf = 0.95,
+  show_conf = TRUE,
+  ...
+)
 }
 \arguments{
 \item{object}{a \code{\link{survfit}}, \code{\link{survdiff}}, or

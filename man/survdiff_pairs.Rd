@@ -4,8 +4,7 @@
 \alias{survdiff_pairs}
 \title{Pairwise \code{survdiff} comparisons}
 \usage{
-survdiff_pairs(s, ..., method = p.adjust.methods,
-  digits = getOption("digits"))
+survdiff_pairs(s, ..., method = p.adjust.methods, digits = getOption("digits"))
 }
 \arguments{
 \item{s}{an object of class \code{\link[survival]{survdiff}} or

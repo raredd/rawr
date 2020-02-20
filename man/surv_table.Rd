@@ -4,8 +4,14 @@
 \alias{surv_table}
 \title{Summary table}
 \usage{
-surv_table(s, digits = ifelse(percent, 0L, 3L), times = pretty(s$time),
-  maxtime = FALSE, percent = FALSE, ...)
+surv_table(
+  s,
+  digits = ifelse(percent, 0L, 3L),
+  times = pretty(s$time),
+  maxtime = FALSE,
+  percent = FALSE,
+  ...
+)
 }
 \arguments{
 \item{s}{a \code{\link[survival]{survfit}} object}

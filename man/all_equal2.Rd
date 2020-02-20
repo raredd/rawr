@@ -4,9 +4,15 @@
 \alias{all_equal2}
 \title{Test if two or more objects are (nearly) equal}
 \usage{
-all_equal2(..., tolerance = .Machine$double.eps^0.5, scale = NULL,
-  check.attributes = TRUE, use.names = TRUE, all.names = TRUE,
-  check.names = TRUE)
+all_equal2(
+  ...,
+  tolerance = .Machine$double.eps^0.5,
+  scale = NULL,
+  check.attributes = TRUE,
+  use.names = TRUE,
+  all.names = TRUE,
+  check.names = TRUE
+)
 }
 \arguments{
 \item{...}{any \code{R} objects}

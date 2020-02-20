@@ -4,8 +4,7 @@
 \alias{countr}
 \title{Count formatter}
 \usage{
-countr(top, n, lowcase = NA, frac = FALSE, digits = 0L,
-  which = seq_along(top))
+countr(top, n, lowcase = NA, frac = FALSE, digits = 0L, which = seq_along(top))
 }
 \arguments{
 \item{top}{named vector of counts (a summary or table) or a long vector of

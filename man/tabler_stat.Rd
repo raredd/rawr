@@ -4,12 +4,23 @@
 \alias{tabler_stat}
 \title{Description statistics \code{tabler}}
 \usage{
-tabler_stat(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
-  format_pval = TRUE, color_pval = TRUE, color_missing = TRUE,
-  dagger = TRUE, color_cell_by = c("none", "value", "pct"),
-  cell_color = palette()[1:2], confint = FALSE,
+tabler_stat(
+  data,
+  varname,
+  byvar = NULL,
+  digits = 0L,
+  FUN = NULL,
+  FUN2 = NULL,
+  format_pval = TRUE,
+  color_pval = TRUE,
+  color_missing = TRUE,
+  dagger = TRUE,
+  color_cell_by = c("none", "value", "pct"),
+  cell_color = palette()[1:2],
+  confint = FALSE,
   continuous_fn = function(...) Gmisc::describeMedian(..., iqr = FALSE),
-  ...)
+  ...
+)
 }
 \arguments{
 \item{data}{a matrix or data frame with variables \code{varname} and
@@ -148,8 +159,10 @@ tabler_stat2(mt, names(mt)[-10L], 'gear',
 \code{\link{kruskal.test}}; \code{\link{chisq.test}}; \code{\link{anova}};
 \code{\link{cuzick.test}}; \code{\link{jt.test}}; \code{\link{kw.test}}
 
-Other tabler: \code{\link{tabler_by}},
-  \code{\link{tabler_resp}}, \code{\link{tabler_stat2}},
-  \code{\link{tabler}}
+Other tabler: 
+\code{\link{tabler_by}()},
+\code{\link{tabler_resp}()},
+\code{\link{tabler_stat2}()},
+\code{\link{tabler}()}
 }
 \concept{tabler}

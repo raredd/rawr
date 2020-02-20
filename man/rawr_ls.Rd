@@ -7,8 +7,14 @@
 \alias{lsp}
 \title{List utilities}
 \usage{
-lss(pos = 1L, pattern, by = NULL, all.names = FALSE,
-  decreasing = TRUE, n = 40L)
+lss(
+  pos = 1L,
+  pattern,
+  by = NULL,
+  all.names = FALSE,
+  decreasing = TRUE,
+  n = 40L
+)
 
 lsf(package, file = "DESCRIPTION")
 

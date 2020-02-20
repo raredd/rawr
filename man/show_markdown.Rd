@@ -4,8 +4,11 @@
 \alias{show_markdown}
 \title{Show markdown}
 \usage{
-show_markdown(..., use_viewer = !is.null(getOption("viewer")),
-  markArgs = list())
+show_markdown(
+  ...,
+  use_viewer = !is.null(getOption("viewer")),
+  markArgs = list()
+)
 }
 \arguments{
 \item{...}{one or more character strings}

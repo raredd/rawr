@@ -14,9 +14,12 @@ parse_index(x)
 
 parse_news(x)
 
-parse_namespace(x, wh = c("import", "export", "exportPattern",
-  "importClass", "importMethod", "exportClass", "exportMethod",
-  "exportClassPattern", "useDynLib", "nativeRoutine", "S3method"))
+parse_namespace(
+  x,
+  wh = c("import", "export", "exportPattern", "importClass", "importMethod",
+    "exportClass", "exportMethod", "exportClassPattern", "useDynLib", "nativeRoutine",
+    "S3method")
+)
 }
 \arguments{
 \item{x}{a vector of character strings}

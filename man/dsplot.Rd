@@ -8,11 +8,19 @@
 \usage{
 dsplot(x, ...)
 
-\method{dsplot}{default}(x, y, ..., bg.col = TRUE, col = par("col"),
-  xlab = NULL, ylab = NULL, pch = par("pch"), cex = par("cex"))
+\method{dsplot}{default}(
+  x,
+  y,
+  ...,
+  bg.col = TRUE,
+  col = par("col"),
+  xlab = NULL,
+  ylab = NULL,
+  pch = par("pch"),
+  cex = par("cex")
+)
 
-\method{dsplot}{formula}(formula, data = NULL, ..., subset,
-  na.action = NULL)
+\method{dsplot}{formula}(formula, data = NULL, ..., subset, na.action = NULL)
 }
 \arguments{
 \item{x, y}{x- and y-axis variables}

@@ -4,8 +4,17 @@
 \alias{rmacro}
 \title{Call \code{SAS} macros}
 \usage{
-rmacro(path, name, args, saspath, show.args = FALSE, force = FALSE,
-  firstArgs, lastArgs, out = getwd())
+rmacro(
+  path,
+  name,
+  args,
+  saspath,
+  show.args = FALSE,
+  force = FALSE,
+  firstArgs,
+  lastArgs,
+  out = getwd()
+)
 }
 \arguments{
 \item{path}{path to macro (\code{.sas}) file as character string}
@@ -47,7 +56,7 @@ i.e., \code{.lst} file(s)}
 \dontrun{
 rmacro(system.file('testfiles', 'onemacro.sas', package = 'rawr'),
        args = 'arg1 = 1, arg2 = 2',
-       firstArgs = 'options nodate nocenter; x \\'cd ~/desktop\\';',
+       firstArgs = 'options nodate nocenter; x \'cd ~/desktop\';',
        lastArgs = 'endsas;')
        
 ## options nodate nocenter; 

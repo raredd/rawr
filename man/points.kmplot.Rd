@@ -4,9 +4,19 @@
 \alias{points.kmplot}
 \title{\code{kmplot} points}
 \usage{
-\method{points}{kmplot}(x, xscale, xmax, fun, col = par("col"),
-  pch = par("pch"), censor = TRUE, event = FALSE, bump = FALSE,
-  plot = TRUE, ...)
+\method{points}{kmplot}(
+  x,
+  xscale,
+  xmax,
+  fun,
+  col = par("col"),
+  pch = par("pch"),
+  censor = TRUE,
+  event = FALSE,
+  bump = FALSE,
+  plot = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x, xscale, xmax, fun, col, pch}{see \code{\link{points.survfit}}}

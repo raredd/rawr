@@ -4,9 +4,16 @@
 \alias{col_scaler}
 \title{Color scaling}
 \usage{
-col_scaler(x, colors, na.color = NA, breaks = NULL, alpha = 1,
-  alpha.min = min(0.1, x[x >= 0], na.rm = TRUE), to = c(0, 1),
-  from = range(x, na.rm = TRUE))
+col_scaler(
+  x,
+  colors,
+  na.color = NA,
+  breaks = NULL,
+  alpha = 1,
+  alpha.min = min(0.1, x[x >= 0], na.rm = TRUE),
+  to = c(0, 1),
+  from = range(x, na.rm = TRUE)
+)
 }
 \arguments{
 \item{x}{a numeric or integer vector}

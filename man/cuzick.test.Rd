@@ -8,8 +8,15 @@
 \usage{
 cuzick.test(x, ...)
 
-\method{cuzick.test}{default}(x, g, details = wilcox.test,
-  correct = TRUE, ..., simulate.p.value = FALSE, B = 2000L)
+\method{cuzick.test}{default}(
+  x,
+  g,
+  details = wilcox.test,
+  correct = TRUE,
+  ...,
+  simulate.p.value = FALSE,
+  B = 2000L
+)
 
 \method{cuzick.test}{formula}(formula, data, ...)
 }

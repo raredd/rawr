@@ -4,8 +4,17 @@
 \alias{landmark}
 \title{Landmark}
 \usage{
-landmark(s, times = NULL, col = 2L, plot = TRUE, plot.main = plot,
-  lr_test = TRUE, adjust_start = FALSE, ..., single = FALSE)
+landmark(
+  s,
+  times = NULL,
+  col = 2L,
+  plot = TRUE,
+  plot.main = plot,
+  lr_test = TRUE,
+  adjust_start = FALSE,
+  ...,
+  single = FALSE
+)
 }
 \arguments{
 \item{s}{a \code{\link[survival]{survfit}} object}

@@ -4,9 +4,17 @@
 \alias{waterfall}
 \title{Waterall plot}
 \usage{
-waterfall(x, type = 1L, col = c("red", "blue"), ..., arrows = type ==
-  2L, rev = FALSE, plot = TRUE, panel.first = NULL,
-  panel.last = NULL)
+waterfall(
+  x,
+  type = 1L,
+  col = c("red", "blue"),
+  ...,
+  arrows = type == 2L,
+  rev = FALSE,
+  plot = TRUE,
+  panel.first = NULL,
+  panel.last = NULL
+)
 }
 \arguments{
 \item{x}{a numeric vector}

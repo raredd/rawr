@@ -4,9 +4,19 @@
 \alias{waffle}
 \title{waffle}
 \usage{
-waffle(mat, xpad = 0, ypad = 0, heights = NULL, widths = NULL,
-  colpad = 0, rowpad = 0, invert = "", ..., reset_par = TRUE,
-  add = FALSE)
+waffle(
+  mat,
+  xpad = 0,
+  ypad = 0,
+  heights = NULL,
+  widths = NULL,
+  colpad = 0,
+  rowpad = 0,
+  invert = "",
+  ...,
+  reset_par = TRUE,
+  add = FALSE
+)
 }
 \arguments{
 \item{mat}{a matrix of integers or character strings of color names; if

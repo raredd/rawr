@@ -4,8 +4,12 @@
 \alias{sas_catalog}
 \title{\code{SAS} catalog}
 \usage{
-sas_catalog(path, libpath = dirname(path), saspath = sas_path(),
-  log = "_temp_formats_.log")
+sas_catalog(
+  path,
+  libpath = dirname(path),
+  saspath = sas_path(),
+  log = "_temp_formats_.log"
+)
 }
 \arguments{
 \item{path}{file path to a \code{.sas} file}
@@ -37,7 +41,7 @@ since this name is required by \code{\link[Hmisc]{sas.get}}.
 \examples{
 \dontrun{
 p <- system.file('testfiles', 'formats.sas', package = 'rawr')
-cat(readLines(p), sep = '\\n')
+cat(readLines(p), sep = '\n')
 sas_catalog(p, getwd())
 }
 

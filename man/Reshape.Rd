@@ -6,8 +6,13 @@
 \alias{melt}
 \title{Reshape data}
 \usage{
-cast(data, idvar = list(1), timevar = list(2),
-  v.names = list(3:ncol(data)), ...)
+cast(
+  data,
+  idvar = list(1),
+  timevar = list(2),
+  v.names = list(3:ncol(data)),
+  ...
+)
 
 melt(data, varying = list(1:ncol(data)), ...)
 }

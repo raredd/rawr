@@ -4,8 +4,7 @@
 \alias{sort_matrix}
 \title{Sort matrix}
 \usage{
-sort_matrix(m, margin = 1L, order = NULL, na.last = TRUE,
-  index.return = FALSE)
+sort_matrix(m, margin = 1L, order = NULL, na.last = TRUE, index.return = FALSE)
 }
 \arguments{
 \item{m}{a matrix, usually an integer matrix}

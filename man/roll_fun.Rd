@@ -4,8 +4,7 @@
 \alias{roll_fun}
 \title{Rolling functions}
 \usage{
-roll_fun(x, n = 5L, FUN = mean, ..., fromLast = FALSE,
-  keep = FALSE)
+roll_fun(x, n = 5L, FUN = mean, ..., fromLast = FALSE, keep = FALSE)
 }
 \arguments{
 \item{x}{a vector}

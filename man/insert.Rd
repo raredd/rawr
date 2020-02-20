@@ -7,8 +7,7 @@
 \usage{
 insert(x, row = NULL, col = NULL, repl = NA)
 
-insert_matrix(x, rowsep = NULL, colsep = NULL, rowrep = NA,
-  colrep = rowrep)
+insert_matrix(x, rowsep = NULL, colsep = NULL, rowrep = NA, colrep = rowrep)
 }
 \arguments{
 \item{x}{a matrix}

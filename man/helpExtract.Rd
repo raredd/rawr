@@ -4,8 +4,13 @@
 \alias{helpExtract}
 \title{Extract \code{R} help files}
 \usage{
-helpExtract(FUN, show.sections = FALSE, section = "Usage",
-  type = c("text", "md_code", "md_text", "sw_code", "sw_text"), ...)
+helpExtract(
+  FUN,
+  show.sections = FALSE,
+  section = "Usage",
+  type = c("text", "md_code", "md_text", "sw_code", "sw_text"),
+  ...
+)
 }
 \arguments{
 \item{FUN}{a function as name or character string}
@@ -63,10 +68,10 @@ To insert a (highlighted) chunk into a Sweave document:
 }
 \examples{
 helpExtract(print)
-cat(helpExtract(print, section = 'ex'), sep = '\\n')
+cat(helpExtract(print, section = 'ex'), sep = '\n')
 cat(helpExtract(print, type = 'md_text', section = 'description'))
 
 ## selecting multiple sections prints section names
-cat(helpExtract(print, section = c('references', 'see also')), sep = '\\n')
+cat(helpExtract(print, section = c('references', 'see also')), sep = '\n')
 
 }

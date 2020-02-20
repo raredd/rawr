@@ -9,21 +9,62 @@
 \usage{
 tplot(x, ...)
 
-\method{tplot}{default}(x, g, ..., type = "db", jit = NULL,
-  dist = NULL, dist.n = Inf, main = NULL, sub = NULL,
-  xlab = NULL, ylab = NULL, xlim = NULL, ylim = NULL, names, col,
-  group.col = TRUE, boxcol = "grey90", bordercol = par("fg"),
-  pch = par("pch"), group.pch = TRUE, cex = par("cex"),
-  group.cex = FALSE, median.line = FALSE, mean.line = FALSE,
-  median.pars = list(), mean.pars = list(), boxplot.pars = list(),
-  quantiles = NULL, show.n = TRUE, show.na = show.n, cex.n = cex,
-  text.na = "missing", n.at = NULL, test = FALSE,
-  args.test = list(), format_pval = TRUE, ann = par("ann"),
-  axes = TRUE, frame.plot = axes, add = FALSE, at,
-  horizontal = FALSE, panel.first = NULL, panel.last = NULL)
+\method{tplot}{default}(
+  x,
+  g,
+  ...,
+  type = "db",
+  jit = NULL,
+  dist = NULL,
+  dist.n = Inf,
+  main = NULL,
+  sub = NULL,
+  xlab = NULL,
+  ylab = NULL,
+  xlim = NULL,
+  ylim = NULL,
+  names,
+  col,
+  group.col = TRUE,
+  boxcol = "grey90",
+  bordercol = par("fg"),
+  pch = par("pch"),
+  group.pch = TRUE,
+  cex = par("cex"),
+  group.cex = FALSE,
+  median.line = FALSE,
+  mean.line = FALSE,
+  median.pars = list(),
+  mean.pars = list(),
+  boxplot.pars = list(),
+  quantiles = NULL,
+  show.n = TRUE,
+  show.na = show.n,
+  cex.n = cex,
+  text.na = "missing",
+  n.at = NULL,
+  test = FALSE,
+  args.test = list(),
+  format_pval = TRUE,
+  ann = par("ann"),
+  axes = TRUE,
+  frame.plot = axes,
+  add = FALSE,
+  at,
+  horizontal = FALSE,
+  panel.first = NULL,
+  panel.last = NULL
+)
 
-\method{tplot}{formula}(formula, data = NULL, ..., subset,
-  na.action = NULL, panel.first = NULL, panel.last = NULL)
+\method{tplot}{formula}(
+  formula,
+  data = NULL,
+  ...,
+  subset,
+  na.action = NULL,
+  panel.first = NULL,
+  panel.last = NULL
+)
 }
 \arguments{
 \item{x}{a numeric vector or a single list containing such vectors}

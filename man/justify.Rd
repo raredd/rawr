@@ -4,8 +4,11 @@
 \alias{justify}
 \title{Justify text}
 \usage{
-justify(string, width = getOption("width") - 10L, fill = c("random",
-  "right", "left"))
+justify(
+  string,
+  width = getOption("width") - 10L,
+  fill = c("random", "right", "left")
+)
 }
 \arguments{
 \item{string}{a character string}

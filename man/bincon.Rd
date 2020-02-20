@@ -4,9 +4,14 @@
 \alias{bincon}
 \title{Binomial probability confidence intervals}
 \usage{
-bincon(r, n, alpha = 0.05, digits = getOption("digits"),
+bincon(
+  r,
+  n,
+  alpha = 0.05,
+  digits = getOption("digits"),
   method = c("exact", "wilson", "asymptotic", "all", "two-stage"),
-  dp = 1)
+  dp = 1
+)
 }
 \arguments{
 \item{r}{number of responses (successes); if \code{method = 'two-stage'},

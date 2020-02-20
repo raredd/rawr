@@ -4,26 +4,62 @@
 \alias{kmplot}
 \title{Survival curves}
 \usage{
-kmplot(s, lty.surv = par("lty"), lwd.surv = par("lwd"),
-  col.surv = seq_along(s$n), mark = 3L, lwd.mark = lwd.surv,
-  lty.ci = 0, lwd.ci = lwd.surv, col.ci = col.surv,
-  col.band = FALSE, atrisk.table = TRUE, atrisk.lab = NULL,
-  atrisk.type = c("atrisk", "events", "atrisk-events", "survival",
-  "survival-ci", "percent", "percent-ci"), atrisk.digits = 2L,
-  atrisk.lines = TRUE, atrisk.col = !atrisk.lines, strata.lab = NULL,
-  strata.expr = NULL, strata.order = seq_along(s$n),
-  extra.margin = 5, mar = NULL, median = FALSE, digits.median = 0L,
-  ci.median = TRUE, xaxs = "s", xlim = NULL, ylim = NULL,
-  xaxis.at = pretty(xlim), xaxis.lab = xaxis.at,
-  atrisk.at = xaxis.at, yaxis.at = pretty(0:1), yaxis.lab = yaxis.at,
-  xlab = "Time", ylab = "Probability", main = NULL,
-  cex.axis = par("cex.axis"), legend = !atrisk.table &&
-  !is.null(s$strata), args.legend = list(), lr_test = TRUE,
-  tt_test = FALSE, test_details = TRUE, args.test = list(),
-  hr_text = FALSE, args.hr = list(), pw_test = FALSE,
-  args.pw = list(), format_pval = TRUE, stratify = NULL,
-  fun = c("S", "F"), add = FALSE, panel.first = NULL,
-  panel.last = NULL, ...)
+kmplot(
+  s,
+  lty.surv = par("lty"),
+  lwd.surv = par("lwd"),
+  col.surv = seq_along(s$n),
+  mark = 3L,
+  lwd.mark = lwd.surv,
+  lty.ci = 0,
+  lwd.ci = lwd.surv,
+  col.ci = col.surv,
+  col.band = FALSE,
+  atrisk.table = TRUE,
+  atrisk.lab = NULL,
+  atrisk.type = c("atrisk", "events", "atrisk-events", "survival", "survival-ci",
+    "percent", "percent-ci"),
+  atrisk.digits = 2L,
+  atrisk.lines = TRUE,
+  atrisk.col = !atrisk.lines,
+  strata.lab = NULL,
+  strata.expr = NULL,
+  strata.order = seq_along(s$n),
+  extra.margin = 5,
+  mar = NULL,
+  median = FALSE,
+  digits.median = 0L,
+  ci.median = TRUE,
+  xaxs = "s",
+  xlim = NULL,
+  ylim = NULL,
+  xaxis.at = pretty(xlim),
+  xaxis.lab = xaxis.at,
+  atrisk.at = xaxis.at,
+  yaxis.at = pretty(0:1),
+  yaxis.lab = yaxis.at,
+  xlab = "Time",
+  ylab = "Probability",
+  main = NULL,
+  cex.axis = par("cex.axis"),
+  legend = !atrisk.table && !is.null(s$strata),
+  args.legend = list(),
+  lr_test = TRUE,
+  tt_test = FALSE,
+  test_details = TRUE,
+  args.test = list(),
+  hr_text = FALSE,
+  args.hr = list(),
+  pw_test = FALSE,
+  args.pw = list(),
+  format_pval = TRUE,
+  stratify = NULL,
+  fun = c("S", "F"),
+  add = FALSE,
+  panel.first = NULL,
+  panel.last = NULL,
+  ...
+)
 }
 \arguments{
 \item{s}{an object of class \code{\link{survfit}} or \code{survfit.cox}}
@@ -240,8 +276,8 @@ kmplot(survfit(Surv(time, status) ~ rx, data = colon),
        pw_test = TRUE, args.pw = list(text.col = 1:3, x = 'bottomleft'))
 
 ## expressions in at-risk table (strata.expr takes precedence)
-kmplot(km1, strata.lab = c('\\u2640', '\\u2642'))
-kmplot(km1, strata.lab = c('\\u2640', '\\u2642'),
+kmplot(km1, strata.lab = c('\u2640', '\u2642'))
+kmplot(km1, strata.lab = c('\u2640', '\u2642'),
                strata.expr = expression(widetilde(ring(Female)),
                                         phantom() >= Male))
 

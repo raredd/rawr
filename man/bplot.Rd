@@ -5,15 +5,39 @@
 \alias{tabler_bincon}
 \title{Binomial confidence interval plot}
 \usage{
-bplot(data, varname, byvar, varname_label = names(varname),
-  byvar_label = names(byvar), main = byvar_label, xlab = byvar_label,
-  col = c("dodgerblue4", "dodgerblue2"), conf = 0.95, digits = 2L,
-  show_overall = TRUE, show_missing = TRUE, alpha_missing = 1, ...)
+bplot(
+  data,
+  varname,
+  byvar,
+  varname_label = names(varname),
+  byvar_label = names(byvar),
+  main = byvar_label,
+  xlab = byvar_label,
+  col = c("dodgerblue4", "dodgerblue2"),
+  conf = 0.95,
+  digits = 2L,
+  show_overall = TRUE,
+  show_missing = TRUE,
+  alpha_missing = 1,
+  ...
+)
 
-tabler_bincon(data, varname, byvar, varname_label = names(varname),
-  byvar_label = names(byvar), main = byvar_label, xlab = byvar_label,
-  col = c("dodgerblue4", "dodgerblue2"), conf = 0.95, digits = 2L,
-  show_overall = TRUE, show_missing = TRUE, alpha_missing = 1, ...)
+tabler_bincon(
+  data,
+  varname,
+  byvar,
+  varname_label = names(varname),
+  byvar_label = names(byvar),
+  main = byvar_label,
+  xlab = byvar_label,
+  col = c("dodgerblue4", "dodgerblue2"),
+  conf = 0.95,
+  digits = 2L,
+  show_overall = TRUE,
+  show_missing = TRUE,
+  alpha_missing = 1,
+  ...
+)
 }
 \arguments{
 \item{data}{a matrix or data frame with variables \code{varname} and

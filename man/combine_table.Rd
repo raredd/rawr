@@ -7,8 +7,15 @@
 \usage{
 combine_table(l, tspanner, n.tspanner, ...)
 
-combine_table2(l, tspanner, n.tspanner, cgroup, n.cgroup,
-  how = c("rbind", "cbind"), ...)
+combine_table2(
+  l,
+  tspanner,
+  n.tspanner,
+  cgroup,
+  n.cgroup,
+  how = c("rbind", "cbind"),
+  ...
+)
 }
 \arguments{
 \item{l}{a list of matrices or data frames}

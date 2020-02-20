@@ -4,8 +4,14 @@
 \alias{rapply2}
 \title{Recursively apply a function to a list}
 \usage{
-rapply2(l, FUN, classes = "ANY", ..., check.nested = "list" \%in\%
-  classes, skip.null = TRUE)
+rapply2(
+  l,
+  FUN,
+  classes = "ANY",
+  ...,
+  check.nested = "list" \%in\% classes,
+  skip.null = TRUE
+)
 }
 \arguments{
 \item{l}{a list}

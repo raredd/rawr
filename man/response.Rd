@@ -4,10 +4,19 @@
 \alias{response}
 \title{Response data}
 \usage{
-response(date, response, include = "(resp|stable)|([cpm]r|sd)$",
-  default = NA, no_confirm = "stable|sd",
-  progression = "prog|pd|relapse", n_confirm = 1L,
-  n_prog = n_confirm, strict = FALSE, dr = 0, dp = NULL)
+response(
+  date,
+  response,
+  include = "(resp|stable)|([cpm]r|sd)$",
+  default = NA,
+  no_confirm = "stable|sd",
+  progression = "prog|pd|relapse",
+  n_confirm = 1L,
+  n_prog = n_confirm,
+  strict = FALSE,
+  dr = 0,
+  dp = NULL
+)
 }
 \arguments{
 \item{date}{date of assessment}

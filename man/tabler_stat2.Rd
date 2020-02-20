@@ -4,14 +4,34 @@
 \alias{tabler_stat2}
 \title{\code{tabler_stat} wrappers}
 \usage{
-tabler_stat2(data, varname, byvar = NULL,
-  varname_label = names(varname), byvar_label = names(byvar),
-  digits = NULL, FUN = NULL, confint = FALSE, format_pval = TRUE,
-  color_pval = TRUE, correct = FALSE, color_missing = TRUE,
-  dagger = TRUE, group = NULL, color_cell_by = "none",
-  cell_color = palette()[1:2], statArgs = NULL, align = NULL,
-  rgroup = NULL, cgroup = NULL, tfoot = NULL, tfoot2 = NULL,
-  htmlArgs = NULL, zeros = "-", clean_daggers = FALSE)
+tabler_stat2(
+  data,
+  varname,
+  byvar = NULL,
+  varname_label = names(varname),
+  byvar_label = names(byvar),
+  digits = NULL,
+  FUN = NULL,
+  FUN2 = NULL,
+  confint = FALSE,
+  format_pval = TRUE,
+  color_pval = TRUE,
+  correct = FALSE,
+  color_missing = TRUE,
+  dagger = TRUE,
+  group = NULL,
+  color_cell_by = "none",
+  cell_color = palette()[1:2],
+  statArgs = NULL,
+  align = NULL,
+  rgroup = NULL,
+  cgroup = NULL,
+  tfoot = NULL,
+  tfoot2 = NULL,
+  htmlArgs = NULL,
+  zeros = "-",
+  clean_daggers = FALSE
+)
 }
 \arguments{
 \item{data}{a matrix or data frame with variables \code{varname} and
@@ -130,8 +150,10 @@ tabler_stat2(
 
 \code{rawr:::tabler_stat_list}; \code{rawr:::tabler_stat_html}
 
-Other tabler: \code{\link{tabler_by}},
-  \code{\link{tabler_resp}}, \code{\link{tabler_stat}},
-  \code{\link{tabler}}
+Other tabler: 
+\code{\link{tabler_by}()},
+\code{\link{tabler_resp}()},
+\code{\link{tabler_stat}()},
+\code{\link{tabler}()}
 }
 \concept{tabler}

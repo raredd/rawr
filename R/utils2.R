@@ -475,12 +475,12 @@ show_markdown <- function(..., use_viewer = !is.null(getOption('viewer')),
 show_math <- function(..., css = '', use_viewer = !is.null(getOption('viewer'))) {
   mj <- "
   <script>
-    (function () {
-      var script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.src  = 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
-      document.getElementsByTagName('head')[0].appendChild(script);
-    })();
+  (function () {
+    var script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.src  = 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+    document.getElementsByTagName('head')[0].appendChild(script);
+  })();
   </script>
   "
   
@@ -1531,7 +1531,7 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
       drop = FALSE]
     # res <- res[!res[, ln] %in% c('0', as.character(zeros)), , drop = FALSE]
     res <- res[!(grepl('^\\s*0', res[, ln]) |
-                 res[, ln] %in% as.character(zeros)), , drop = FALSE]
+                   res[, ln] %in% as.character(zeros)), , drop = FALSE]
   }
   res <- res[if (!order)
     seq.int(nrow(res)) else {
@@ -1852,7 +1852,7 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
   
   pvc <- if (is.null(pvn) || is.na(pvn))
     NULL else {
-    if (color_pval)
+      if (color_pval)
         color_pval(pvn, cols = colorRampPalette(pcol)(6L),
                    format_pval = format_pval)
       else if (isTRUE(format_pval))
@@ -2668,7 +2668,7 @@ resp1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
               show_conf, pct.sign, 'exact')
     else binconr(c(two[1L], X), two[2:3], conf, digits, TRUE, frac,
                  show_conf, pct.sign, 'two-stage')
-    )
+  )
   
   setNames(res, FUN(r))
 }
@@ -3165,7 +3165,8 @@ case <- function(x, case = c('first', 'upcase', 'downcase', 'camelcase',
       toupper(x) else tolower(x)
   }
   
-  case <- switch(case,
+  case <- switch(
+    case,
     first     = '(^.)',
     upcase    = '(\\b.)',
     downcase  = '(?<=[a-z])(.)',

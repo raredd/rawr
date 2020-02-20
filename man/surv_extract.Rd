@@ -8,12 +8,26 @@
 \usage{
 surv_extract(x, what = "median")
 
-surv_median(x, ci = FALSE, digits = 0L, which = NULL, print = TRUE,
-  na = ifelse(ci, "NR", "not reached"), show_conf = TRUE)
+surv_median(
+  x,
+  ci = FALSE,
+  digits = 0L,
+  which = NULL,
+  print = TRUE,
+  na = ifelse(ci, "NR", "not reached"),
+  show_conf = TRUE
+)
 
-surv_prob(x, times = pretty(x$time), ci = FALSE,
-  digits = ifelse(percent, 0L, 2L), which = 1L, print = TRUE,
-  show_conf = TRUE, percent = FALSE)
+surv_prob(
+  x,
+  times = pretty(x$time),
+  ci = FALSE,
+  digits = ifelse(percent, 0L, 2L),
+  which = 1L,
+  print = TRUE,
+  show_conf = TRUE,
+  percent = FALSE
+)
 }
 \arguments{
 \item{x}{an object of class \code{\link[survival]{survfit}}}

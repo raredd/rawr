@@ -4,8 +4,16 @@
 \alias{simon2}
 \title{Simon two-stage designs}
 \usage{
-simon2(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,
-  del = 1, minimax = FALSE)
+simon2(
+  p0,
+  pa,
+  n1max = 0,
+  ntmax = 1e+05,
+  alpha = 0.1,
+  beta = 0.1,
+  del = 1,
+  minimax = FALSE
+)
 }
 \arguments{
 \item{p0, pa}{null and alternative hypothesis response probability}

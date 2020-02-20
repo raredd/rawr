@@ -23,9 +23,14 @@ rbindfill2(..., use.rownames = FALSE)
 
 rbindlist(..., use.rownames = FALSE, use.names = FALSE)
 
-rbindlist2(data, column, split = "\\\\W+", fixed = FALSE,
-  perl = FALSE, use.rownames = any(rownames(data) !=
-  seq.int(nrow(data))))
+rbindlist2(
+  data,
+  column,
+  split = "\\\\W+",
+  fixed = FALSE,
+  perl = FALSE,
+  use.rownames = any(rownames(data) != seq.int(nrow(data)))
+)
 }
 \arguments{
 \item{...}{for \code{bind_all} and \code{rbindfill}, vectors;

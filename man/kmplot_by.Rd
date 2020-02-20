@@ -4,12 +4,30 @@
 \alias{kmplot_by}
 \title{kmplot_by}
 \usage{
-kmplot_by(strata = "1", event = NULL, data = NULL, by = NULL,
-  time = NULL, single = TRUE, lr_test = TRUE, main = NULL,
-  ylab = NULL, sub = NULL, strata_lab = NULL, fig_lab = NULL,
-  col.surv = NULL, map.col = FALSE, legend = FALSE, add = FALSE,
-  plot = TRUE, args.survfit = list(), stratify = NULL,
-  panel.first = NULL, panel.last = NULL, ...)
+kmplot_by(
+  strata = "1",
+  event = NULL,
+  data = NULL,
+  by = NULL,
+  time = NULL,
+  single = TRUE,
+  lr_test = TRUE,
+  main = NULL,
+  ylab = NULL,
+  sub = NULL,
+  strata_lab = NULL,
+  fig_lab = NULL,
+  col.surv = NULL,
+  map.col = FALSE,
+  legend = FALSE,
+  add = FALSE,
+  plot = TRUE,
+  args.survfit = list(),
+  stratify = NULL,
+  panel.first = NULL,
+  panel.last = NULL,
+  ...
+)
 }
 \arguments{
 \item{strata, event, time, by}{character strings of the strata, event (pfs, os,

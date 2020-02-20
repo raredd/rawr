@@ -4,8 +4,12 @@
 \alias{sort2}
 \title{Sorting or ordering of vectors}
 \usage{
-sort2(x, decreasing = FALSE, index.return = FALSE, method = c("auto",
-  "shell", "radix"))
+sort2(
+  x,
+  decreasing = FALSE,
+  index.return = FALSE,
+  method = c("auto", "shell", "radix")
+)
 }
 \arguments{
 \item{x}{a numeric, complex, or logical vector}

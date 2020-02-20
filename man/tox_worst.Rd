@@ -4,8 +4,7 @@
 \alias{tox_worst}
 \title{Find highest grade toxicities}
 \usage{
-tox_worst(data, id = "id", desc = "desc", grade = "grade", code,
-  version = 4L)
+tox_worst(data, id = "id", desc = "desc", grade = "grade", code, version = 4L)
 }
 \arguments{
 \item{data}{toxicity data frame}

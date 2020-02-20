@@ -4,8 +4,13 @@
 \alias{iprint}
 \title{In-line printing}
 \usage{
-iprint(..., wrap = "", sep = ", ", copula = ", and ", digits = if
-  (is.integer(x)) 0L else 2L)
+iprint(
+  ...,
+  wrap = "",
+  sep = ", ",
+  copula = ", and ",
+  digits = if (is.integer(x)) 0L else 2L
+)
 }
 \arguments{
 \item{...}{one or more numeric or character elements to be converted into

@@ -5,12 +5,19 @@
 \alias{describeDateBy}
 \title{Describe a date}
 \usage{
-describeDate(x, format = "\%b \%d, \%Y", copula = " to ",
-  FUN = range)
+describeDate(x, format = "\%b \%d, \%Y", copula = " to ", FUN = range)
 
-describeDateBy(x, by, format = "\%b \%d, \%Y", copula = " to ",
-  FUN = range, add_total_col = TRUE, useNA = c("ifany", "no",
-  "always"), useNA.digits = 0L, percentage_sign = FALSE)
+describeDateBy(
+  x,
+  by,
+  format = "\%b \%d, \%Y",
+  copula = " to ",
+  FUN = range,
+  add_total_col = TRUE,
+  useNA = c("ifany", "no", "always"),
+  useNA.digits = 0L,
+  percentage_sign = FALSE
+)
 }
 \arguments{
 \item{x, by}{vectors of dates and the variable to split \code{x} by}

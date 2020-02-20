@@ -4,8 +4,15 @@
 \alias{rgene}
 \title{Generate random gene names}
 \usage{
-rgene(n = 1L, alpha = LETTERS[1:5], nalpha = 2:5, num = 0:9,
-  nnum = 1:5, sep = "-", seed = NULL)
+rgene(
+  n = 1L,
+  alpha = LETTERS[1:5],
+  nalpha = 2:5,
+  num = 0:9,
+  nnum = 1:5,
+  sep = "-",
+  seed = NULL
+)
 }
 \arguments{
 \item{n}{number of gene names to return}

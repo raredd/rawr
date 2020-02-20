@@ -7,8 +7,13 @@
 \usage{
 parse_formats(formats, invert = FALSE)
 
-apply_formats(x, formats, invert = FALSE, droplevels = FALSE,
-  format_value = attr(x, "format.sas"))
+apply_formats(
+  x,
+  formats,
+  invert = FALSE,
+  droplevels = FALSE,
+  format_value = attr(x, "format.sas")
+)
 }
 \arguments{
 \item{formats}{for \code{parse_formats} or \code{apply_formats}, a
@@ -48,7 +53,7 @@ corresponding \code{formats}.
 }
 \examples{
 p <- system.file('testfiles', 'formats.sas', package = 'rawr')
-cat(readLines(p), sep = '\\n')
+cat(readLines(p), sep = '\n')
 parse_formats(p)
 
 

@@ -5,13 +5,34 @@
 \alias{tabler_by2}
 \title{tabler_by}
 \usage{
-tabler_by(data, varname, byvar, n, order = FALSE, zeros = TRUE,
-  pct = FALSE, pct.column = FALSE, pct.total = FALSE,
-  pct.sign = FALSE, drop = TRUE)
+tabler_by(
+  data,
+  varname,
+  byvar,
+  n,
+  order = FALSE,
+  zeros = TRUE,
+  pct = FALSE,
+  pct.column = FALSE,
+  pct.total = FALSE,
+  pct.sign = FALSE,
+  drop = TRUE
+)
 
-tabler_by2(data, varname, byvar, n, order = FALSE, stratvar,
-  zeros = TRUE, pct = FALSE, pct.column = FALSE, pct.total = FALSE,
-  pct.sign = TRUE, drop = TRUE)
+tabler_by2(
+  data,
+  varname,
+  byvar,
+  n,
+  order = FALSE,
+  stratvar,
+  zeros = TRUE,
+  pct = FALSE,
+  pct.column = FALSE,
+  pct.total = FALSE,
+  pct.sign = TRUE,
+  drop = TRUE
+)
 }
 \arguments{
 \item{data}{a data frame; variables \code{varname} and \code{byvar} should
@@ -176,8 +197,10 @@ structure(ht, clas = 'htmlTable')
 \seealso{
 \code{\link{tox_worst}}; \code{\link{match_ctc}}
 
-Other tabler: \code{\link{tabler_resp}},
-  \code{\link{tabler_stat2}}, \code{\link{tabler_stat}},
-  \code{\link{tabler}}
+Other tabler: 
+\code{\link{tabler_resp}()},
+\code{\link{tabler_stat2}()},
+\code{\link{tabler_stat}()},
+\code{\link{tabler}()}
 }
 \concept{tabler}
