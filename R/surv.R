@@ -1307,18 +1307,27 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
   sprintf('%s: %s', names(obj), pFUN(obj))
 }
 
-c_text <- function(formula, data, tau = NULL, itr = 1000L,
+#' @rdname surv_test
+c_text <- function(formula, data, tau = NULL, iter = 1000L, seed = 1L,
                    digits = 2L, conf = 0.95, show_conf = TRUE, ...) {
   vv <- all.vars(formula(formula))
-  data <- na.omit(data[, vv])
+  data <- data[, vv]
+  
+  ## remove rows with missing data, indicator functions for factors
+  idx <- complete.cases(data)
+  if (any(!idx)) {
+    message(sum(!idx), ' observations removed due to missingness', domain = NA)
+    data <- data[idx, ]
+  }
+  
   mf <- model.matrix(reformulate(vv[-(1:2)]), data)[, -1L, drop = FALSE]
   data <- cbind(data[, vv[1:2]], mf)
   
   if (is.null(tau))
     tau <- max(data[, 1L], na.rm = TRUE)
-  
   alpha <- abs(0:1 - (1 - conf) / 2)
-  res <- survC1::Inf.Cval(data, tau, itr, seed = 1L)
+  
+  res <- survC1::Inf.Cval(data, tau, iter, seed)
   res <- res$Dhat + res$se * c(0, qnorm(alpha))
   res <- roundr(res, digits)
   res <- sprintf('%s (%s%% CI: %s - %s)', res[1L], conf * 100, res[2L], res[3L])

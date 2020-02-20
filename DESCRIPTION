@@ -29,6 +29,7 @@ Suggests:
     parallel,
     rstudioapi,
     sm,
+    survC1,
     testthat
 License: GPL-2
 LazyData: yes
