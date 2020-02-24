@@ -2214,12 +2214,14 @@ reload <- function(package) {
   if (!is.character(substitute(package)))
     package <- deparse(substitute(package))
   
-  tryCatch(
-    detach(paste0('package:', package), unload = TRUE, character.only = TRUE),
-    error = function(e) NULL
+  # tryCatch(
+  #   detach(paste0('package:', package), unload = TRUE, character.only = TRUE),
+  #   error = function(e) NULL
+  # )
+  ok <- tryCatch(
+    {unloadNamespace(package); library(package, character.only = TRUE); TRUE},
+    error = function(e) {print(e); FALSE}
   )
   
-  # require(package, character.only = TRUE)
-  library(package, character.only = TRUE)
-  invisible(TRUE)
+  invisible(ok)
 }
