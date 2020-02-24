@@ -12,7 +12,6 @@ tabler_stat2(
   byvar_label = names(byvar),
   digits = NULL,
   FUN = NULL,
-  FUN2 = NULL,
   confint = FALSE,
   format_pval = TRUE,
   color_pval = TRUE,

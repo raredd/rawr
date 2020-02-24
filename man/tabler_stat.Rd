@@ -10,7 +10,6 @@ tabler_stat(
   byvar = NULL,
   digits = 0L,
   FUN = NULL,
-  FUN2 = NULL,
   format_pval = TRUE,
   color_pval = TRUE,
   color_missing = TRUE,
