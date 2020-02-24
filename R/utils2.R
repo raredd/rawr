@@ -2455,18 +2455,64 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
     tf <- toString(paste0(new, tf))
   }
   
-  ht <- do.call(
-    htmlTable::htmlTable,
-    c(list(
-      x = res, align = align %||% strrep('c', ncol(res)),
-      rgroup = rgroup %||% l$rgroup, n.rgroup = l$n.rgroup,
-      cgroup = cgroup %||% l$cgroup, n.cgroup = l$n.cgroup,
-      css.cell = 'padding: 0px 5px 0px; white-space: nowrap;',
-      tfoot = tr(tfoot %||% sprintf('<font size=1>%s</font>', tf))),
-      htmlArgs)
+  args <- list(
+    x = res, align = align %||% strrep('c', ncol(res)),
+    rgroup = rgroup %||% l$rgroup, n.rgroup = l$n.rgroup,
+    cgroup = cgroup %||% l$cgroup, n.cgroup = l$n.cgroup,
+    css.cell = 'padding: 0px 5px 0px; white-space: nowrap;',
+    tfoot = tr(tfoot %||% sprintf('<font size=1>%s</font>', tf))
+  )
+  args <- c(args, htmlArgs)
+  ht <- do.call(htmlTable::htmlTable, args)
+  
+  structure(ht, class = 'htmlTable', p.value = pvn, call = args)
+}
+
+combine_tabler_stat2 <- function(..., correct = FALSE, format_pval = TRUE,
+                                 htmlArgs = list()) {
+  lget <- function(l, what, attr = FALSE) {
+    l <- lapply(l, function(x) if (attr)
+      attr(x, what) else x[[what]])
+  }
+  tr <- function(x) {
+    gsub('\\s{2,}', ' ', x)
+  }
+  
+  l <- list(...)
+  p <- unlist(lget(l, 'p.value', TRUE))
+  l <- lget(l, 'call', TRUE)
+  
+  res <- do.call('rbind', lget(l, 'x'))
+  
+  method <- if (isTRUE(correct))
+    'fdr' else if (is.character(correct)) correct else 'none'
+  if (!identical(correct, FALSE)) {
+    nc  <- ncol(res)
+    wh  <- nzchar(res[, nc])
+    pvc <- p.adjust(p, method, length(sort(p))) ## only non na pvalues
+    res <- cbind(res, res[, nc])
+    res[, nc + 1L][wh] <- color_pval(pvc, format_pval = format_pval)
+    colnames(res)[nc + 1L] <-
+      gsub('(?=p)', paste(method, ''), colnames(res)[nc], perl = TRUE)
+    l[[1L]]$n.cgroup[length(l[[1L]]$n.cgroup)] <-
+      l[[1L]]$n.cgroup[length(l[[1L]]$n.cgroup)] + 1L
+  }
+  
+  tf <- gsub('</?font[^>]+>', '', unlist(lget(l, 'tfoot')))
+  tf <- unique(unlist(strsplit(tf, ', ')))
+  
+  args <- list(
+    x = res, align = l[[1L]]$align,
+    rgroup = do.call('c', lget(l, 'rgroup')),
+    n.rgroup = do.call('c', lget(l, 'n.rgroup')),
+    cgroup = l[[1L]]$cgroup, n.cgroup = l[[1L]]$n.cgroup,
+    css.cell = 'padding: 0px 5px 0px; white-space: nowrap;',
+    tfoot = sprintf('<font size=1>%s</font>', toString(tf))
   )
   
-  structure(ht, class = 'htmlTable', p.value = pvn)
+  ht <- do.call(htmlTable::htmlTable, c(args, htmlArgs))
+  
+  structure(ht, class = 'htmlTable', p.value = p, call = args)
 }
 
 guess_digits <- function(x, default = 0L) {
