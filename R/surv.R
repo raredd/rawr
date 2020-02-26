@@ -1075,7 +1075,7 @@ kmplot_data_ <- function(s, strata.lab) {
 #' f1 <- Surv(time, delta) ~ stage
 #' f2 <- Surv(time, delta) ~ stage + age
 #' rawr:::c_text(f1, larynx)
-#' rawr:::c_text(f2, larynx)
+#' rawr:::c_text(f2, larynx, details = TRUE)
 #' rawr:::cc_text(f1, f2, larynx)
 #' rawr:::cc_pval(f1, f2, larynx)
 #' 
@@ -1324,7 +1324,7 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
 
 #' @rdname surv_test
 c_text <- function(formula, data, tau = NULL, iter = 1000L, seed = 1L,
-                   digits = 2L, conf = 0.95, show_conf = TRUE, model = FALSE) {
+                   digits = 2L, conf = 0.95, show_conf = TRUE, details = FALSE) {
   vv <- all.vars(formula(formula))
   data <- data[, vv]
   
@@ -1339,10 +1339,14 @@ c_text <- function(formula, data, tau = NULL, iter = 1000L, seed = 1L,
   data <- cbind(data[, vv[1:2]], mf)
   
   if (is.null(tau))
-    tau <- max(data[, 1L], na.rm = TRUE)
+    tau <- tail(pretty(data[, 1L]), 2L)[1L]
+  
   alpha <- abs(0:1 - (1 - conf) / 2)
   
-  res <- survC1::Inf.Cval(data, tau, iter, seed)
+  res <- c(survC1::Inf.Cval(data, tau, iter, seed), tau = tau)
+  if (details)
+    return(res)
+  
   res <- res$Dhat + res$se * c(0, qnorm(alpha))
   res <- roundr(res, digits)
   res <- sprintf('%s (%s%% CI: %s - %s)', res[1L], conf * 100, res[2L], res[3L])
@@ -1368,14 +1372,14 @@ cc_pval <- function(formula1, formula2, data, tau = NULL, iter = 1000L, seed = 1
   mf2 <- model.matrix(reformulate(vv2[-(1:2)]), data)[, -1L, drop = FALSE]
   
   if (is.null(tau))
-    tau <- max(data[, 1L], na.rm = TRUE)
+    tau <- tail(pretty(data[, 1L]), 2L)[1L]
   
   res <- survC1::Inf.Cval.Delta(data[, 1:2], mf1, mf2, tau, iter, seed)
   
   z <- abs(res[3L, 1L] / res[3L, 2L])
   p <- pnorm(z, lower.tail = FALSE) * 2
   
-  cbind(res, p.value = c(NA, NA, p))
+  cbind(res, p.value = c(NA, NA, p), tau = tau)
 }
 
 #' @rdname surv_test

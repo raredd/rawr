@@ -40,7 +40,7 @@ c_text(
   digits = 2L,
   conf = 0.95,
   show_conf = TRUE,
-  model = FALSE
+  details = FALSE
 )
 
 cc_pval(formula1, formula2, data, tau = NULL, iter = 1000L, seed = 1L)
@@ -144,7 +144,7 @@ rawr:::hr_text(Surv(time, delta) ~ stage, larynx)
 f1 <- Surv(time, delta) ~ stage
 f2 <- Surv(time, delta) ~ stage + age
 rawr:::c_text(f1, larynx)
-rawr:::c_text(f2, larynx)
+rawr:::c_text(f2, larynx, details = TRUE)
 rawr:::cc_text(f1, f2, larynx)
 rawr:::cc_pval(f1, f2, larynx)
 
