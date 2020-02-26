@@ -6,7 +6,8 @@
 # stratify_formula, points.kmplot, kmplot_data_, terms.inner
 # 
 # surv_test (unexported):
-# lr_text, lr_pval, tt_text, tt_pval, hr_text, hr_pval
+# lr_text, lr_pval, tt_text, tt_pval, hr_text, hr_pval, pw_pval, pw_text,
+# c_text, cc_pval, cc_text
 ###
 
 
@@ -1022,6 +1023,10 @@ kmplot_data_ <- function(s, strata.lab) {
 #' 
 #' \url{https://stat.ethz.ch/pipermail/r-help/2008-April/160209.html}
 #' 
+#' Uno, Hajime, et al. On the C-statistics for Evaluating Overall Adequacy of
+#' Risk Prediction Procedures with Censored Survival Data. \emph{Statistics
+#' in Medicine} \strong{30} vol. 10 (May 2011), 1105-17.
+#' 
 #' @seealso
 #' \code{\link{survdiff_pairs}}
 #' 
@@ -1064,6 +1069,16 @@ kmplot_data_ <- function(s, strata.lab) {
 #' rawr:::hr_pval(sf)
 #' rawr:::hr_pval(sd, TRUE)
 #' rawr:::hr_text(Surv(time, delta) ~ stage, larynx)
+#' 
+#' 
+#' ## c-statistics for censored data (uno, 2011)
+#' f1 <- Surv(time, delta) ~ stage
+#' f2 <- Surv(time, delta) ~ stage + age
+#' rawr:::c_text(f1, larynx)
+#' rawr:::c_text(f2, larynx)
+#' rawr:::cc_text(f1, f2, larynx)
+#' rawr:::cc_pval(f1, f2, larynx)
+#' 
 #' }
 #' 
 #' @name surv_test
@@ -1309,7 +1324,7 @@ pw_text <- function(formula, data, ..., details = TRUE, pFUN = NULL,
 
 #' @rdname surv_test
 c_text <- function(formula, data, tau = NULL, iter = 1000L, seed = 1L,
-                   digits = 2L, conf = 0.95, show_conf = TRUE, ...) {
+                   digits = 2L, conf = 0.95, show_conf = TRUE, model = FALSE) {
   vv <- all.vars(formula(formula))
   data <- data[, vv]
   
@@ -1334,6 +1349,53 @@ c_text <- function(formula, data, tau = NULL, iter = 1000L, seed = 1L,
   
   if (show_conf)
     res else gsub(' .*', '', res)
+}
+
+#' @rdname surv_test
+cc_pval <- function(formula1, formula2, data, tau = NULL, iter = 1000L, seed = 1L) {
+  vv1 <- all.vars(formula(formula1))
+  vv2 <- all.vars(formula(formula2))
+  data <- data[, unique(c(vv1, vv2))]
+  
+  ## remove rows with missing data, indicator functions for factors
+  idx <- complete.cases(data)
+  if (any(!idx)) {
+    message(sum(!idx), ' observations removed due to missingness', domain = NA)
+    data <- data[idx, ]
+  }
+  
+  mf1 <- model.matrix(reformulate(vv1[-(1:2)]), data)[, -1L, drop = FALSE]
+  mf2 <- model.matrix(reformulate(vv2[-(1:2)]), data)[, -1L, drop = FALSE]
+  
+  if (is.null(tau))
+    tau <- max(data[, 1L], na.rm = TRUE)
+  
+  res <- survC1::Inf.Cval.Delta(data[, 1:2], mf1, mf2, tau, iter, seed)
+  
+  z <- abs(res[3L, 1L] / res[3L, 2L])
+  p <- pnorm(z, lower.tail = FALSE) * 2
+  
+  cbind(res, p.value = c(NA, NA, p))
+}
+
+#' @rdname surv_test
+cc_text <- function(formula1, formula2, data, tau = NULL, iter = 1000L, seed = 1L,
+                    digits = 2L, conf = 0.95, show_conf = TRUE, details = TRUE) {
+  com <- cc_pval(formula1, formula2, data, tau, iter, seed)
+  del <- com[3L, ]
+  
+  alpha <- abs(0:1 - (1 - conf) / 2)
+  
+  res <- del[1L] + del[2L] * c(0, qnorm(alpha))
+  res <- roundr(res, digits)
+  res <- sprintf('%s (%s%% CI: %s - %s), %s',
+                 res[1L], conf * 100, res[2L], res[3L],
+                 pvalr(del[5L], show.p = TRUE))
+  if (!details)
+    return(unname(pvalr(del[5L], show.p = TRUE)))
+  
+  if (show_conf)
+    res else gsub(' .*, ', ', ', res)
 }
 
 #' kmplot_by

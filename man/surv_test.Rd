@@ -11,6 +11,8 @@
 \alias{pw_pval}
 \alias{pw_text}
 \alias{c_text}
+\alias{cc_pval}
+\alias{cc_text}
 \title{Survival curve tests}
 \usage{
 lr_pval(object, details = FALSE, data = NULL, ...)
@@ -38,7 +40,22 @@ c_text(
   digits = 2L,
   conf = 0.95,
   show_conf = TRUE,
-  ...
+  model = FALSE
+)
+
+cc_pval(formula1, formula2, data, tau = NULL, iter = 1000L, seed = 1L)
+
+cc_text(
+  formula1,
+  formula2,
+  data,
+  tau = NULL,
+  iter = 1000L,
+  seed = 1L,
+  digits = 2L,
+  conf = 0.95,
+  show_conf = TRUE,
+  details = TRUE
 )
 }
 \arguments{
@@ -121,6 +138,16 @@ list(chi = chi, p.value = pchisq(chi, 1, lower.tail = FALSE))
 rawr:::hr_pval(sf)
 rawr:::hr_pval(sd, TRUE)
 rawr:::hr_text(Surv(time, delta) ~ stage, larynx)
+
+
+## c-statistics for censored data (uno, 2011)
+f1 <- Surv(time, delta) ~ stage
+f2 <- Surv(time, delta) ~ stage + age
+rawr:::c_text(f1, larynx)
+rawr:::c_text(f2, larynx)
+rawr:::cc_text(f1, f2, larynx)
+rawr:::cc_pval(f1, f2, larynx)
+
 }
 
 }
@@ -129,6 +156,10 @@ Tarone, Robert E. Tests for Trend in Life Table Analysis. \emph{Biometrika}
 \strong{62} vol. 62 (Dec 1975), 679-82.
 
 \url{https://stat.ethz.ch/pipermail/r-help/2008-April/160209.html}
+
+Uno, Hajime, et al. On the C-statistics for Evaluating Overall Adequacy of
+Risk Prediction Procedures with Censored Survival Data. \emph{Statistics
+in Medicine} \strong{30} vol. 10 (May 2011), 1105-17.
 }
 \seealso{
 \code{\link{survdiff_pairs}}
