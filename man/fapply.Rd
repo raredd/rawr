@@ -2,42 +2,58 @@
 % Please edit documentation in R/zxx.R
 \name{fapply}
 \alias{fapply}
-\title{Apply list of functions over list or vector}
+\alias{fapply_by}
+\title{Apply summary functions over list or vector}
 \usage{
-fapply(X, FUN, ...)
+fapply(data, ...)
+
+fapply_by(formula, data, ...)
 }
 \arguments{
-\item{X}{a vector (atomic or list) or an \code{\link{expression}} object; 
-other objects (including classed objects) will be coerced by
-\code{base::\link{as.list}}.}
+\item{data}{for \code{fapply}, a vector, list, or data frame to operate on;
+for \code{fapply_by}, a data frame containing the variables in \code{formula}}
 
-\item{FUN}{a list of functions to be applied to each element of \code{X}; 
-see \code{\link{lapply}}:"Details"}
+\item{...}{summary function(s) such as \code{length(.)} or
+\code{mean(., na.rm = TRUE)} to apply; names are not required but strongly
+recommended}
 
-\item{...}{additional arguments passed to \code{FUN}; note that these must
-be defined arguments for each function in \code{FUN}; otherwise, you will
-need to define a function before passing to \code{FUN}; see examples}
-}
-\value{
-A data frame where \code{nrow} equals the length of \code{X} and
-\code{ncol} equals the length of \code{FUN}.
+\item{formula}{a formula such as \code{y ~ x} or \code{cbind(y1, y2) ~ x1 + x2}
+where the \code{y} variables are numeric data to be split into groups
+according to the grouping \code{x} variables (usually factors)}
 }
 \description{
-A simple modification to the \code{*apply} functions which allows a list of
-functions to be passed simultaneously.
+\code{fapply} applies summary function(s) over a vector, list, or data
+frame, and \code{fapply_by} applies summary function(s) over subsets of
+a data frame.
 }
 \examples{
 tmp <- recoder(mtcars, 6, NA)
-fapply(tmp, list(mean, median))
-fapply(tmp, list(mean, median), na.rm = TRUE)
+fapply(tmp, mean = mean(.), median = median(., na.rm = TRUE))
+fapply(mtcars$mpg, mean = mean(.))
 
 ## define a new function
-`95\% CI` <- function(x)
-  sprintf('(\%s)', paste0(quantile(x, c(.025, .975)), collapse = ', '))
-fapply(mtcars, list(median, `95\% CI`))
+ci <- function(x) {
+  q <- quantile(x, c(0.025, 0.975), na.rm = TRUE)
+  sprintf('\%.0f (\%.2f, \%.2f)', median(x), q[1], q[2] )
+}
+fapply(mtcars, median(.), '95\% CI' = ci(.))
 
 ## compare: 
-t(fapply(mtcars, list(min, mean, max, length)))
+t(fapply(mtcars, min(.), mean(.), max(.), length(.)))
 summary(mtcars)
+
+
+fapply_by(mpg ~ vs + am, mtcars, mean(.), median(.), length(.))
+fapply_by(as.matrix(mtcars) ~ vs, mtcars, mean = mean(.))
+
+## one ~ one, one ~ many, many ~ one, and many ~ many
+fapply_by(disp ~ cyl, mtcars, mean = mean(.))
+fapply_by(disp ~ cyl + vs, mtcars, mean = mean(.))
+fapply_by(cbind(disp, wt) ~ cyl, mtcars, mean = mean(.))
+fapply_by(cbind(disp, wt) ~ cyl + vs, mtcars, mean = mean(.), n = length(.))
+
+## compare
+aggregate(cbind(disp, wt) ~ cyl + vs, mtcars, function(x)
+  c(mean(x), length(x)))
 
 }

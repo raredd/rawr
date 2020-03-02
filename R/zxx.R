@@ -184,7 +184,7 @@ progress <- function(value, max.value, textbar = FALSE) {
 #' \code{\link{combine_levels}}
 #' 
 #' @examples
-#' recoder(mtcars$carb, c(1, 2), c('A','B'))
+#' recoder(mtcars$carb, c(1, 2), c('A', 'B'))
 #' recoder(mtcars, c(1, 2), c('A', 'B'))
 #' 
 #' mtcars <- within(mtcars, carb1 <- factor(carb))
@@ -202,7 +202,6 @@ progress <- function(value, max.value, textbar = FALSE) {
 #' @export
 
 recoder <- function(object, pattern, replacement, ...) {
-  
   ## to do:
   # add swapping option
   # add expression option, eg, if object[i, j] > 0, use replacement
@@ -469,43 +468,99 @@ search_hist <- function (x, ...) {
     grep(x, readLines('.Rhistory'), value = TRUE, ...)
 }
 
-#' Apply list of functions over list or vector
+#' Apply summary functions over list or vector
 #' 
-#' A simple modification to the \code{*apply} functions which allows a list of
-#' functions to be passed simultaneously.
+#' \code{fapply} applies summary function(s) over a vector, list, or data
+#' frame, and \code{fapply_by} applies summary function(s) over subsets of
+#' a data frame.
 #' 
-#' @param X a vector (atomic or list) or an \code{\link{expression}} object; 
-#' other objects (including classed objects) will be coerced by
-#' \code{base::\link{as.list}}.
-#' @param FUN a list of functions to be applied to each element of \code{X}; 
-#' see \code{\link{lapply}}:"Details"
-#' @param ... additional arguments passed to \code{FUN}; note that these must
-#' be defined arguments for each function in \code{FUN}; otherwise, you will
-#' need to define a function before passing to \code{FUN}; see examples
-#' 
-#' @return A data frame where \code{nrow} equals the length of \code{X} and
-#' \code{ncol} equals the length of \code{FUN}.
+#' @param data for \code{fapply}, a vector, list, or data frame to operate on;
+#' for \code{fapply_by}, a data frame containing the variables in \code{formula}
+#' @param ... summary function(s) such as \code{length(.)} or
+#' \code{mean(., na.rm = TRUE)} to apply; names are not required but strongly
+#' recommended
+#' @param formula a formula such as \code{y ~ x} or \code{cbind(y1, y2) ~ x1 + x2}
+#' where the \code{y} variables are numeric data to be split into groups
+#' according to the grouping \code{x} variables (usually factors)
 #' 
 #' @examples
 #' tmp <- recoder(mtcars, 6, NA)
-#' fapply(tmp, list(mean, median))
-#' fapply(tmp, list(mean, median), na.rm = TRUE)
+#' fapply(tmp, mean = mean(.), median = median(., na.rm = TRUE))
+#' fapply(mtcars$mpg, mean = mean(.))
 #' 
 #' ## define a new function
-#' `95% CI` <- function(x)
-#'   sprintf('(%s)', paste0(quantile(x, c(.025, .975)), collapse = ', '))
-#' fapply(mtcars, list(median, `95% CI`))
+#' ci <- function(x) {
+#'   q <- quantile(x, c(0.025, 0.975), na.rm = TRUE)
+#'   sprintf('%.0f (%.2f, %.2f)', median(x), q[1], q[2] )
+#' }
+#' fapply(mtcars, median(.), '95% CI' = ci(.))
 #' 
 #' ## compare: 
-#' t(fapply(mtcars, list(min, mean, max, length)))
+#' t(fapply(mtcars, min(.), mean(.), max(.), length(.)))
 #' summary(mtcars)
+#' 
+#' 
+#' fapply_by(mpg ~ vs + am, mtcars, mean(.), median(.), length(.))
+#' fapply_by(as.matrix(mtcars) ~ vs, mtcars, mean = mean(.))
+#' 
+#' ## one ~ one, one ~ many, many ~ one, and many ~ many
+#' fapply_by(disp ~ cyl, mtcars, mean = mean(.))
+#' fapply_by(disp ~ cyl + vs, mtcars, mean = mean(.))
+#' fapply_by(cbind(disp, wt) ~ cyl, mtcars, mean = mean(.))
+#' fapply_by(cbind(disp, wt) ~ cyl + vs, mtcars, mean = mean(.), n = length(.))
+#' 
+#' ## compare
+#' aggregate(cbind(disp, wt) ~ cyl + vs, mtcars, function(x)
+#'   c(mean(x), length(x)))
 #' 
 #' @export
 
-fapply <- function(X, FUN, ...) {
-  fn <- as.character(match.call()$FUN)[-1L]
-  res <- sapply(FUN, mapply, X, ...)
-  setNames(as.data.frame(res), fn)
+fapply <- function(data, ...) {
+  cl <- match.call(expand.dots = FALSE)$`...`
+  if (is.null(cl))
+    stop('no methods given')
+  cl <- c(alist(i = NULL), cl)
+  if (any(nn <- !nzchar(names(cl))))
+    names(cl)[nn] <- sapply(cl, deparse)[nn]
+  
+  if (!is.list(data))
+    data <- list(data)
+  
+  res <- lapply(cl[-1L], function(fn)
+    mapply(function(.) eval(fn, NULL), data))
+  
+  setNames(data.frame(res, stringsAsFactors = FALSE), names(cl)[-1L])
+}
+
+#' @rdname fapply
+#' @export
+fapply_by <- function(formula, data, ...) {
+  cl <- match.call(expand.dots = FALSE)$`...`
+  if (is.null(cl))
+    stop('no methods given')
+  cl <- c(alist(i = NULL), cl)
+  if (any(nn <- !nzchar(names(cl))))
+    names(cl)[nn] <- sapply(cl, deparse)[nn]
+  
+  nt <- length(all.vars(formula[[3L]]))
+  ag <- aggregate(formula, data, function(.)
+    lapply(cl, function(fn) eval(fn, NULL)))
+  ag <- unclass(ag)
+  
+  ll <- lapply(tail(ag, -nt), function(x) {
+    x <- data.frame(x, check.names = FALSE)[, -1L, drop = FALSE]
+    data.frame(lapply(x, unlist), check.names = FALSE)
+  })
+  
+  ## useful names if >1 lhs variable
+  # if (length(all.vars(formula[[2L]])) > 1L)
+  ll <- if (length(ag) > (nt + 1L))
+    lapply(seq_along(ll), function(ii) {
+      names(ll[[ii]]) <- paste(names(ll)[ii], names(ll[[ii]]), sep = '.')
+      ll[[ii]]
+    }) else ll[[length(ll)]]
+  
+  cbind(data.frame(head(ag, nt), check.names = FALSE), ll)
 }
 
 #' Quietly try to require a package
