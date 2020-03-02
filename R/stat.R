@@ -2,10 +2,11 @@
 # bincon, bintest, dlt_table, pr_table, power_cv, simon2, moods_test, fakeglm,
 # gcd, install.bioc, lm.beta, cuzick.test, cuzick.test.default,
 # cuzick.test.formula, jt.test, hl_est, rcor, rsum, kw.test, kw.test.default,
-# kw.test.formula, lspline, winsorize
+# kw.test.formula, lspline, winsorize, perm.t.test, perm.t.test.default,
+# perm.t.test.formula
 # 
 # S3 methods:
-# cuzick.test, kw.test
+# cuzick.test, kw.test, perm.t.test
 # 
 # desmon (unexported):
 # twocon, simon, bin1samp
@@ -2435,4 +2436,157 @@ winsorize <- function(x, probs = 1e-3, type = 7L) {
   x[nx & x > qn[2L]] <- qn[2L]
   
   x
+}
+
+#' Permutation t-test
+#' 
+#' Performs paired and two-sample t-tests based on Monte Carlo permutation.
+#' 
+#' @param x,y vectors of numeric data
+#' @param alternative a character string specifying the alternative hypothesis,
+#' one of \code{"two.sided"} (default), \code{"greater"}, or \code{"less"}
+#' @param paired logical; if \code{TRUE}, \code{x} and \code{y} are assumed
+#' to be paired (\code{NA}s will remove data in pairs); if \code{FALSE},
+#' \code{x} and \code{y} are assumed to be independent samples (\code{NA}s
+#' are removed from each sample independently)
+#' @param var.equal logical; if \code{TRUE}, two-sample variances are treated
+#' equally; otherwise, variances are estimated separately for both samples
+#' (default)
+#' @param conf.level confidence level in \code{(0, 1)} for the p-value
+#' @param midp logical; if \code{TRUE} (default), the mid p-value is used,
+#' i.e., half the conditional probability of the observed statistic plus the
+#' conditional probability of more extreme values
+#' @param B an integer specifying the number of permutations
+#' @param ... additional arguments passed to or from methods
+#' 
+#' @seealso
+#' \code{\link{t.test}}
+#' 
+#' \code{perm.t.test} from the \pkg{Deducer} package
+#' 
+#' \code{independence_test} and \code{symmetry_test} from the \pkg{coin} package
+#' 
+#' \code{paired.perm.test} and \code{perm.test} from the \pkg{broman} package
+#' 
+#' @examples
+#' x <- rnorm(10, 0, 0.5)
+#' y <- rnorm(10, 0.5, 1)
+#' dat <- data.frame(value = c(x, y), group = rep(1:2, each = 10))
+#' 
+#' 
+#' t.test(x, y)
+#' 
+#' ## equivalent ways to call perm.t.test for two samples
+#' perm.t.test(x, y)
+#' perm.t.test(value ~ group, dat)
+#' 
+#' 
+#' t.test(x - y)
+#' t.test(x, y, paired = TRUE)
+#' 
+#' ## equivalent ways to call perm.t.test for paired data
+#' perm.t.test(x, y, paired = TRUE)
+#' perm.t.test(value ~ group, dat, paired = TRUE)
+#' perm.t.test(x - y)
+#' 
+#' @export
+
+perm.t.test <- function(x, ...) {
+  UseMethod('perm.t.test')
+}
+
+#' @rdname perm.t.test
+#' @export
+perm.t.test.default <- function(x, y = NULL,
+                                alternative = c('two.sided', 'less', 'greater'),
+                                paired = FALSE, var.equal = FALSE,
+                                conf.level = 0.95, midp = TRUE, B = 10000L, ...) {
+  y0 <- y
+  if (is.null(y)) {
+    y0 <- x
+    paired <- TRUE
+  }
+  
+  data.name <- paste(deparse(substitute(x)), 'and', deparse(substitute(y)))
+  alternative <- match.arg(alternative)
+  
+  method <- t.test(x, y0, alternative = alternative,
+                   var.equal = var.equal, paired = paired)$method
+  method <- gsub('(?=t-test)', 'permutation ', method, perl = TRUE)
+  method <- sprintf('%s (based on %s replicates)', trimws(method), B)
+  
+  if (is.null(y))
+    paired <- TRUE
+  
+  lx <- length(x)
+  ly <- length(y)
+  nn <- length(c(x, y))
+  
+  if (paired) {
+    d0 <- sort(if (is.null(y)) x else x - y)
+    m0 <- st <- c(t = mean(d0))
+    m1 <- replicate(B, mean(d0 * sign(runif(length(d0), -1, 1))))
+  } else {
+    d0 <- c(x, y)
+    
+    if (var.equal) {
+      m0 <- sum(y)
+      st <- c('Mean difference' = mean(x) - mean(y))
+      m1 <- replicate(B, sum(sample(d0, ly)))
+    } else {
+      m0 <- st <- c(t = (mean(x) - mean(y)) / sqrt(var(x) / lx + var(y) / ly))
+      m1 <- replicate(B, sample(d0, nn))
+      sx <- apply(head(m1, lx), 2L, function(x) c(sum(x), var(x)))
+      sy <- apply(tail(m1, ly), 2L, function(x) c(sum(x), var(x)))
+      m1 <- (sx[1L, ] / lx - sy[1L, ] / ly) / sqrt(sx[2L, ] / lx + sy[2L,] / ly)
+    }
+  }
+  
+  lo <- sum(m1 < m0) / (B + 1)
+  up <- sum(m1 > m0) / (B + 1)
+  eq <- sum(m1 == m0) / (B + 1)
+  mp <- if (isTRUE(midp)) 0.5 else 1
+  
+  pv <- switch(
+    alternative,
+    two.sided = 2 * min(lo, up) + 2 * mp * eq,
+    less = lo + mp * eq,
+    greater = up + mp * eq
+  )
+  
+  pv <- pmin(pv, 1)
+  ci <- qnorm(conf.level) * c(-1, 1) * sqrt(pv * (1 - pv) / B)
+  ci <- structure(pmin(1, pmax(0, pv + ci)), conf.level = conf.level)
+  
+  res <- list(
+    statistic = st, p.value = pv, method = method, data.name = data.name,
+    alternative = alternative, B = B, conf.int = ci
+  )
+  structure(res, class = 'htest')
+}
+
+#' @rdname perm.t.test
+#' @export
+perm.t.test.formula <- function(formula, data, ...) {
+  ## adapted from stats:::t.test.formula
+  if (missing(formula) || (length(formula) != 3L) ||
+      (length(attr(terms(formula[-2L]), 'term.labels')) != 1L))
+    stop('\'formula\' missing or incorrect')
+  
+  m <- match.call(expand.dots = FALSE)
+  if (is.matrix(eval(m$data, parent.frame())))
+    m$data <- as.data.frame(data)
+  m[[1L]] <- quote(stats::model.frame)
+  m$... <- NULL
+  mf <- eval(m, parent.frame())
+  data.name <- paste(names(mf), collapse = ' by ')
+  names(mf) <- NULL
+  response <- attr(attr(mf, 'terms'), 'response')
+  g <- factor(mf[[-response]])
+  if (nlevels(g) != 2L)
+    stop('grouping factor must have exactly 2 levels')
+  DATA <- setNames(split(mf[[response]], g), c('x', 'y'))
+  y <- do.call('perm.t.test', c(DATA, list(...)))
+  y$data.name <- data.name
+  y
 }
