@@ -36,7 +36,7 @@ occurrences of \code{b} with \code{a} resulting in the \code{object} with
 no \code{b} occurrences; see examples. I will (may) fix this eventually.
 }
 \examples{
-recoder(mtcars$carb, c(1, 2), c('A','B'))
+recoder(mtcars$carb, c(1, 2), c('A', 'B'))
 recoder(mtcars, c(1, 2), c('A', 'B'))
 
 mtcars <- within(mtcars, carb1 <- factor(carb))
