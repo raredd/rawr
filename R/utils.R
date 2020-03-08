@@ -315,30 +315,29 @@ lss <- function(pos = 1L, pattern, by = NULL, all.names = FALSE,
   if (!length(ls(envir = as.environment(pos))))
     return(character(0L))
   
-  napply <- function(names, fn, ..., simplify = TRUE)
-    sapply(names, function(x) fn(get(x, pos = pos), ...), simplify = simplify)
-  names <- ls(pos = pos, pattern = pattern, all.names = all.names)
+  lso <- ls(pos = pos, pattern = pattern, all.names = all.names)
+  res <- lapply(lso, function(name) {
+    obj <- get(name, pos = pos)
+    
+    type <- mode(obj)
+    type <- ifelse(is.na(type), type, as.character(class(obj))[1L])
+    size <- object.size(obj)
+    
+    data.frame(
+      object = name, type = type, size = as.numeric(size),
+      sizef = format(size, units = 'auto'),
+      nrow = ifelse('function' %in% type, NA, NROW(obj)),
+      ncol = ncol(obj) %||% NA, stringsAsFactors = FALSE
+    )
+  })
   
-  cl <- napply(names, function(x) as.character(class(x))[1L])
-  mo <- napply(names, mode)
+  res <- do.call('rbind', res)
+  res$` ` <- symnum(unlist(res$size), corr = FALSE, na = FALSE,
+                    cutpoints = c(-Inf, 0.001, 0.1, 0.5, 1, Inf) * 1024 ^ 3,
+                    symbols = c(' ', '.', '*', '**', '***'))
   
-  type  <- ifelse(is.na(mo), mo, cl)
-  size  <- napply(names, object.size, simplify = FALSE)
-  sizef <- sapply(size, format, units = 'auto')
-  dims  <- t(napply(names, function(x) as.numeric(dim(x))[1:2]))
-  idx   <- is.na(dims)[, 1L] & (type != 'function')
-  dims[idx, 1L] <- napply(names, length)[idx]
-  
-  res <- data.frame(
-    type, size = unlist(size), sizef, nrow = dims[, 1L], ncol = dims[, 2L],
-    ' ' = symnum(unlist(size), corr = FALSE, na = FALSE,
-                 cutpoints = c(-Inf, 0.001, 0.1, 0.5, 1, Inf) * 1024 ^ 3,
-                 symbols = c(' ', '.', '*', '**', '***')),
-    stringsAsFactors = FALSE, check.names = FALSE
-  )
-  
-  if ((mb <- sum(napply(names, object.size)) / (1024 ^ 2)) > 1)
-    on.exit(message(sprintf('Total size: %s Mb', roundr(mb, 1L))))
+  if ((mb <- sum(res$size) / (1024 ^ 2)) > 1)
+    on.exit(message(sprintf('Total size: %.1f Mb', mb)))
   
   if (!is.null(by))
     res <- res[order(res[, by], decreasing = decreasing), ]
@@ -1184,13 +1183,16 @@ merge2 <- function(l, ...) {
 #' a list of single elements can be used for mixed data types; see examples
 #' 
 #' @examples
-#' x <- c('','','a','','b','','','','c')
+#' x <- c('', '', 'a', '', 'b', '', '', '', 'c')
 #' locf(x)
 #' locf(x, c(FALSE, TRUE))
 #' locf(x, TRUE)
 #' 
-#' dd <- data.frame(V1 = c('Bob', NA, NA, 'Joe', NA, NA),
-#'                  V2 = c(NA, 1, NA, NA, 2, NA), stringsAsFactors = FALSE)
+#' dd <- data.frame(
+#'   V1 = c('Bob', NA, NA, 'Joe', NA, NA),
+#'   V2 = c(NA, 1, NA, NA, 2, NA),
+#'   stringsAsFactors = FALSE
+#' )
 #' 
 #' locf(dd)
 #' locf(dd, c(FALSE, TRUE))
@@ -1266,7 +1268,7 @@ locf <- function(x, fromLast = FALSE, na.strings = '') {
 #' cbind(1:10, roll_fun(1:10, 2, keep = TRUE))
 #' cbind(rep(1, 10), roll_fun(rep(1, 10), 5, sum))
 #' 
-#' dat <- data.frame(x = c(1,1,2,2,2,3,4,5,5,5),
+#' dat <- data.frame(x = c(1, 1, 2, 2, 2, 3, 4, 5, 5, 5),
 #'                   y = 1:10)
 #' ## compare:
 #' within(dat,
