@@ -35,7 +35,7 @@ Apply rolling functions
 cbind(1:10, roll_fun(1:10, 2, keep = TRUE))
 cbind(rep(1, 10), roll_fun(rep(1, 10), 5, sum))
 
-dat <- data.frame(x = c(1,1,2,2,2,3,4,5,5,5),
+dat <- data.frame(x = c(1, 1, 2, 2, 2, 3, 4, 5, 5, 5),
                   y = 1:10)
 ## compare:
 within(dat,

@@ -22,13 +22,16 @@ Replaces \code{NA} in vectors, data frames, or matrices with most recent
 non-\code{NA} value.
 }
 \examples{
-x <- c('','','a','','b','','','','c')
+x <- c('', '', 'a', '', 'b', '', '', '', 'c')
 locf(x)
 locf(x, c(FALSE, TRUE))
 locf(x, TRUE)
 
-dd <- data.frame(V1 = c('Bob', NA, NA, 'Joe', NA, NA),
-                 V2 = c(NA, 1, NA, NA, 2, NA), stringsAsFactors = FALSE)
+dd <- data.frame(
+  V1 = c('Bob', NA, NA, 'Joe', NA, NA),
+  V2 = c(NA, 1, NA, NA, 2, NA),
+  stringsAsFactors = FALSE
+)
 
 locf(dd)
 locf(dd, c(FALSE, TRUE))
