@@ -270,10 +270,7 @@ NULL
 #' returns a vector of character strings.
 #' 
 #' @seealso
-#' \code{\link{parse_yaml}}, \code{\link{parse_index}},
-#' \code{\link{parse_news}}, \code{\link{parse_namespace}}; \code{\link{ls}},
-#' \code{lss} adapted from \url{http://stackoverflow.com/q/1358003/2994949};
-#' \code{\link{search}}
+#' \code{\link{ls}}; \code{\link{search}}; \code{\link{rawr_parse}}
 #' 
 #' @examples
 #' ## lss: use like ls
@@ -311,7 +308,7 @@ NULL
 #' @rdname rawr_ls
 #' @export
 lss <- function(pos = 1L, pattern, by = NULL, all.names = FALSE,
-                decreasing = TRUE, n = 40L) {
+                decreasing = TRUE, n = Inf) {
   if (!length(ls(envir = as.environment(pos))))
     return(character(0L))
   
@@ -336,8 +333,8 @@ lss <- function(pos = 1L, pattern, by = NULL, all.names = FALSE,
                     cutpoints = c(-Inf, 0.001, 0.1, 0.5, 1, Inf) * 1024 ^ 3,
                     symbols = c(' ', '.', '*', '**', '***'))
   
-  if ((mb <- sum(res$size) / (1024 ^ 2)) > 1)
-    on.exit(message(sprintf('Total size: %.1f Mb', mb)))
+  if ((mb <- sum(res$size) / (1024 ^ 2)) > 100)
+    on.exit(message(sprintf('Total size: %.0f Mb', mb)))
   
   if (!is.null(by))
     res <- res[order(res[, by], decreasing = decreasing), ]
@@ -496,19 +493,20 @@ parse_namespace <- function(
     wh)
 }
 
-#' Pairwise sum
+#' Pairwise binary functions
 #' 
-#' Compute the pairwise sum of two or more vectors.
+#' Perform binary operations on vectors, matrices, or data frames.
 #' 
-#' @param ... numeric vectors equal in length
+#' @param ... numeric vectors, matrices, or data frames with equal dimensions
 #' @param na.rm logical; if \code{TRUE}, omits missing values (including
 #' \code{\link{NaN}}) from calculations
+#' @param FUN a binary function
 #' 
 #' @return
-#' A single vector of element-wise sums.
+#' An object similar to input objects after successively combining elements
+#' with \code{FUN.
 #' 
 #' @seealso
-#' Adapted from \url{https://stackoverflow.com/a/13123779/2994949};
 #' \code{\link{pmin}}; \code{\link{pmax}}
 #' 
 #' @examples
@@ -517,16 +515,35 @@ parse_namespace <- function(
 #' psum(x, y)
 #' psum(x, y, na.rm = TRUE)
 #' 
+#' x <- matrix(x, 4, 4)
+#' y <- matrix(y, 4, 4)
+#' psum(x, y)
+#' psum(x, y, na.rm = TRUE)
+#' 
+#' pfun(x, y, x, FUN = `-`)
+#' pfun(x, y, x, FUN = `-`, na.rm = TRUE)
+#' x - y - x
+#' 
 #' @export
 
-psum <- function(..., na.rm = FALSE) {
-  dat <- do.call('cbind', list(...))
-  res <- rowSums(dat, na.rm = na.rm)
+pfun <- function(..., na.rm = FALSE, FUN = `+`) {
+  l <- list(...)
+  na <- lapply(l, is.na)
+  na <- Reduce(`+`, na) == length(l)
   
-  idx <- !rowSums(!is.na(dat))
-  res[idx] <- NA
+  if (na.rm)
+    l <- lapply(l, function(x) {x[is.na(x)] <- 0; x})
+  
+  res <- Reduce(FUN, l)
+  res[na] <- NA
   
   res
+}
+
+#' @rdname pfun
+#' @export
+psum <- function(..., na.rm = FALSE) {
+  pfun(..., na.rm = na.rm, FUN = `+`)
 }
 
 #' Rescale numeric vector
