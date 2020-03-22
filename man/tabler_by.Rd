@@ -185,14 +185,14 @@ cgroup <- c('', '',
             sprintf('Phase I<br /><font size=1>n = \%s</font>', n[1]),
             sprintf('Phase II<br /><font size=1>n = \%s</font>', n[2])
 )
-            
+
 ht <- htmlTable::htmlTable(
   out2, align = 'lc', cgroup = cgroup, n.cgroup = c(1,1,4,4),
   caption = 'Table 1: Toxicities<sup>&dagger;</sup> by category, phase,
   grade.'
 )
 structure(ht, clas = 'htmlTable')
-            
+
 }
 \seealso{
 \code{\link{tox_worst}}; \code{\link{match_ctc}}

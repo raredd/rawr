@@ -19,7 +19,7 @@ Convert a number to its word equivalent.
 }
 \details{
 Whole numbers twenty-one through ninety-nine are hyphenated when they are
-written out whether used alone or as part of a larger number; for example: 
+written out whether used alone or as part of a larger number; for example:
 "twenty-one" or "one million twenty-one."
 
 Whole numbers in this range are \emph{not} hyphenated for other orders of

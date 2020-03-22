@@ -79,7 +79,7 @@ bincon(c(2, 11), c(10, 20), method = 'two-stage') ## PRs
 ## one-stage methods should not be used
 bincon(c(4, 11), 30, method = 'exact')
 
- 
+
 ## typical usage
 ht <- htmlTable::htmlTable(
   rbind(

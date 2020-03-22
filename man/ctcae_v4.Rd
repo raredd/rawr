@@ -4,7 +4,8 @@
 \name{ctcae_v4}
 \alias{ctcae_v4}
 \title{Common Terminology Criteria for Adverse Events, v4}
-\format{A data frame with 790 rows and 5 variables:
+\format{
+A data frame with 790 rows and 5 variables:
 \tabular{lll}{
 \tab \code{tox_code} \tab alphanumeric toxicity code (\code{AB123}) \cr
 \tab \code{tox_desc} \tab description \cr
@@ -12,7 +13,8 @@
 \tab \code{ctc_version} \tab version number \cr
 \tab \code{MedDRA_code_v12} \tab Medical Dictionary for Regulatory 
 Activities codes, v12 \cr
-}}
+}
+}
 \source{
 \url{https://ctep.cancer.gov/protocoldevelopment/electronic_applications/docs/ctcae_4_with_lay_terms.pdf}
 
