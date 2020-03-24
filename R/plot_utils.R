@@ -2,7 +2,7 @@
 # imgpal, rawr_palettes, rawr_pal, show_pal
 # 
 # unexported:
-# %|%, do_sub_, dodge_, grouping_, jit_, do_rect_, do_seg_
+# %|%, do_sub_, dodge_, grouping_, jit_, do_rect_, do_seg_, coords
 ###
 
 
@@ -295,4 +295,29 @@ do_seg_ <- function(n, x, y, arrow, single = FALSE, ...) {
            angle = 30, length = 0.15, ...)
   else segments(x, n, y, n, ...)
   invisible(NULL)
+}
+
+coords <- function(x = 0:1, y = x, to = 'user', line, side) {
+  ## plotr::coords
+  xy <- cbind(x, y)
+  x  <- xy[, 1L]
+  y  <- xy[, 2L]
+  
+  if (!missing(line) | !missing(side)) {
+    lh <- par('cin')[2L] * par('cex') * par('lheight')
+    
+    sapply(line, function(li) {
+      li <- li + 0.5
+      x  <- diff(grconvertX(x, 'in', 'user')) * lh * li
+      y  <- diff(grconvertY(y, 'in', 'user')) * lh * li
+      
+      (par('usr')[c(3, 1, 4, 2)] + c(-y, -x, y, x))[match(side, 1:4)]
+    })
+  } else
+    list(
+      plot   = list(x = grconvertX(x, 'npc', to), y = grconvertY(y, 'npc', to)),
+      figure = list(x = grconvertX(x, 'nfc', to), y = grconvertY(y, 'nfc', to)),
+      inner  = list(x = grconvertX(x, 'nic', to), y = grconvertY(y, 'nic', to)),
+      device = list(x = grconvertX(x, 'ndc', to), y = grconvertY(y, 'ndc', to))
+    )
 }

@@ -1,6 +1,6 @@
 ### plot misc, extra, random
 # dodge, dodge.default, dodge.formula, dodge2, dodge2.default, dodge2.formula,
-# show_colors, show_pch, tcol, col_scaler
+# show_colors, show_pch, tcol, col_scaler, bp.test
 # 
 # S3 methods:
 # dodge, dodge2
@@ -555,4 +555,86 @@ col_scaler2 <- function(x, colors, breaks = 0, ...) {
   }
   
   res
+}
+
+#' Box plot tests
+#' 
+#' Add pairwise tests to box plots with three or more groups. Using
+#' \code{\link{cuzick.test}} under-the-hood, performs \code{test} for all
+#' pairs of groups and draws results on an existing plot.
+#' 
+#' @param formula a formula of the form \code{response ~ group} where
+#' \code{response} is a numeric variable and \code{group} is a factor-like
+#' variable with three or more unique values (groups)
+#' @param data an optional matrix or data frame (or similar: see
+#' \code{\link{model.frame}}) containing the variables in \code{formula}; by
+#' default, the variables are taken from \code{environment(formula)}
+#' @param which an index vector of p-values to display
+#' @param at numeric vector giving the locations where box plots were drawn
+#' @param line lines at which to plot \code{test} results
+#' @param test the test to use for pairwise comparisons
+#' @param ... additional graphical parameters passed to \code{link{par}}
+#' 
+#' @seealso
+#' \code{\link{cuzick.test}}; \code{\link{boxplot}}; \code{\link{tplot}};
+#' \code{rawr:::coords}
+#' 
+#' @examples
+#' boxplot(mpg ~ gear, mtcars)
+#' bp.test(mpg ~ gear, mtcars)
+#' 
+#' boxplot(mpg ~ gear, mtcars, at = c(1, 3, 4))
+#' bp.test(mpg ~ gear, mtcars, at = c(1, 3, 4), line = c(0, 1.5, 3))
+#' 
+#' op <- par(mar = par('mar') + c(0, 0, 3, 0))
+#' tplot(mpg ~ interaction(vs, am), mtcars, show.n = FALSE)
+#' bp.test(mpg ~ interaction(vs, am), mtcars)
+#' 
+#' tplot(mpg ~ interaction(vs, am), mtcars, show.n = FALSE)
+#' bp.test(mpg ~ interaction(vs, am), mtcars, which = c(1, 3, 5))
+#' 
+#' bp.test(mpg ~ interaction(vs, am), mtcars, which = 6, line = 4,
+#'         col = 'red', fg = 'red', lty = 2, font = 2, test = t.test)
+#' par(op)
+#' 
+#' @export
+
+bp.test <- function(formula, data, which = NULL, at = NULL, line = NULL,
+                    test = wilcox.test, ...) {
+  op <- par(..., no.readonly = TRUE)
+  on.exit(par(op))
+  
+  bp <- boxplot(formula, data, plot = FALSE)
+  cz <- cuzick.test(formula, data, details = test)
+  pv <- pvalr(cz$details$pairs$p.value, show.p = TRUE)
+  
+  which <- if (is.null(which))
+    seq_along(pv) else which[which %in% seq_along(pv)]
+  at <- if (is.null(at))
+    seq_along(bp$n) else at
+  line <- if (is.null(line))
+    seq_along(which) - 1L else line
+  
+  seg <- function(x1, y, x2) {
+    pad <- diff(par('usr')[3:4]) / 100
+    col <- par('fg')
+    
+    segments(x1, y, x2, y,       col = col, xpd = NA)
+    segments(x1, y, x1, y - pad, col = col, xpd = NA)
+    segments(x2, y, x2, y - pad, col = col, xpd = NA)
+    
+    c(x = x1 + (x2 - x1) / 2, y = y + pad * 2.5)
+  }
+  
+  yat <- coords(line = line, side = 3L)
+  cbn <- combn(at, 2L)
+  
+  res <- sapply(seq_along(which), function(ii) {
+    xat <- cbn[, which[ii]]
+    xat <- seg(xat[1L], yat[ii], xat[2L])
+    text(xat[1L], xat[2L], pv[which[ii]], xpd = NA)
+    xat
+  })
+  
+  invisible(res)
 }
