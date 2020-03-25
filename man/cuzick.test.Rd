@@ -47,12 +47,12 @@ by Monte Carlo simulation}
 Carlo test}
 
 \item{formula}{a formula of the form \code{response ~ group} where
-\code{response} gives the data values and \code{group} a vector or factor
-of the corresponding groups}
+\code{response} is a numeric variable and \code{group} is a factor-like
+variable with three or more unique values (groups)}
 
 \item{data}{an optional matrix or data frame (or similar: see
 \code{\link{model.frame}}) containing the variables in \code{formula}; by
-default the variables are taken from \code{environment(formula)}}
+default, the variables are taken from \code{environment(formula)}}
 }
 \value{
 A list with class "\code{htest}" containing the following elements:
@@ -116,6 +116,7 @@ cuzick.test(x ~ g, data.frame(x = unlist(x), g = rep(1:3, lengths(x))))
 cuzick.test(x)$details
 cuzick.test(x, alternative = 'less', correct = FALSE)$details
 cuzick.test(x, details = kruskal.test)$details
+cuzick.test(x, details = t.test)$details
 cuzick.test(x, details = coin::wilcox_test)$details
 
 

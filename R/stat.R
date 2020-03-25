@@ -1233,11 +1233,11 @@ lm.beta <- function (x, weights = 1) {
 #' @param correct logical; if \code{TRUE}, a correction is applied to the
 #' standard error of the test statistic (default)
 #' @param formula a formula of the form \code{response ~ group} where
-#' \code{response} gives the data values and \code{group} a vector or factor
-#' of the corresponding groups
+#' \code{response} is a numeric variable and \code{group} is a factor-like
+#' variable with three or more unique values (groups)
 #' @param data an optional matrix or data frame (or similar: see
 #' \code{\link{model.frame}}) containing the variables in \code{formula}; by
-#' default the variables are taken from \code{environment(formula)}
+#' default, the variables are taken from \code{environment(formula)}
 #' @param simulate.p.value logical; if \code{TRUE}, p-value is computed using
 #' by Monte Carlo simulation
 #' @param B an integer specifying the number of replicates used in the Monte
@@ -1295,6 +1295,7 @@ lm.beta <- function (x, weights = 1) {
 #' cuzick.test(x)$details
 #' cuzick.test(x, alternative = 'less', correct = FALSE)$details
 #' cuzick.test(x, details = kruskal.test)$details
+#' cuzick.test(x, details = t.test)$details
 #' cuzick.test(x, details = coin::wilcox_test)$details
 #' 
 #' 
@@ -1414,27 +1415,29 @@ cuzick.test.default <- function(x, g, details = wilcox.test, correct = TRUE,
   
   ## pairwise details
   if (!identical(details, FALSE)) {
-    l2df <- function(l)
+    l2df <- function(l) {
       data.frame(unlist(l), factor(rep(seq_along(l), lengths(l))))
-    tidy <- function(l)
-      data.frame(Filter(length, unclass(l)), stringsAsFactors = FALSE)
+    }
+    tidy <- function(l) {
+      n <- lengths(l) == 1L
+      data.frame(Filter(length, unclass(l)[n]), stringsAsFactors = FALSE)
+    }
     
     sp  <- split(x, g)
-    idx <- as.list(data.frame(combn(length(sp), 2)))
+    idx <- as.list(data.frame(combn(length(sp), 2L)))
     ids <- apply(combn(names(ni), 2L), 2L, paste, collapse = ' vs ')
     sp  <- lapply(idx, function(x) setNames(l2df(sp[x]), c('x', 'g')))
     names(sp) <- ids
     
-    # pw <- lapply(sp, function(X) suppressWarnings(details(x ~ g, X, ...)))
+    nul <- structure(
+      list(statistic = NA, parameter = NULL, p.value = NA, null.value = NA,
+           alternative = NA, method = NA, data.name = NA),
+      class = 'htest'
+    )
+    
     pw <- lapply(sp, function(X) {
       suppressWarnings({
-        tryCatch(
-          details(x ~ g, X, ...),
-          error = function(e)
-            structure(list(statistic = NA, parameter = NULL, p.value = NA,
-                           null.value = NA, alternative = NA, method = NA,
-                           data.name = NA), class = 'htest')
-        )
+        tryCatch(details(x ~ g, X, ...), error = function(e) nul)
       })
     })
     PW <- tryCatch(lapply(pw, tidy), error = function(e) NULL)
