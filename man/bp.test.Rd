@@ -2,9 +2,13 @@
 % Please edit documentation in R/plot_extra.R
 \name{bp.test}
 \alias{bp.test}
+\alias{bp.test.formula}
+\alias{bp.test.default}
 \title{Box plot tests}
 \usage{
-bp.test(
+bp.test(x, ...)
+
+\method{bp.test}{formula}(
   formula,
   data,
   which = NULL,
@@ -13,8 +17,15 @@ bp.test(
   test = wilcox.test,
   ...
 )
+
+\method{bp.test}{default}(x, which = NULL, at = NULL, line = NULL, test = wilcox.test, ...)
 }
 \arguments{
+\item{x}{a vector of text to be drawn above each pair of groups}
+
+\item{...}{arguments passed to or from other methods or additional
+graphical parameters passed to \code{link{par}}}
+
 \item{formula}{a formula of the form \code{response ~ group} where
 \code{response} is a numeric variable and \code{group} is a factor-like
 variable with three or more unique values (groups)}
@@ -23,15 +34,16 @@ variable with three or more unique values (groups)}
 \code{\link{model.frame}}) containing the variables in \code{formula}; by
 default, the variables are taken from \code{environment(formula)}}
 
-\item{which}{an index vector of p-values to display}
+\item{which}{an index vector of the values to display}
 
-\item{at}{numeric vector giving the locations where box plots were drawn}
+\item{at}{numeric vector giving the x-axis locations of each group having
+the same length as \code{x} or the number of pairs}
 
-\item{line}{lines at which to plot \code{test} results}
+\item{line}{lines at which to plot \code{test} results; if \code{NULL},
+these will be calculated; if length 1, the calculated lines will be shifted
+by \code{line}}
 
 \item{test}{the test to use for pairwise comparisons}
-
-\item{...}{additional graphical parameters passed to \code{link{par}}}
 }
 \value{
 A matrix of user coordinates where p-values are drawn.
@@ -66,6 +78,14 @@ par(op)
 ## also works for barplots
 bp <- barplot(with(mtcars, tapply(mpg, gear, mean)), ylim = c(0, 30))
 bp.test(mpg ~ gear, mtcars, at = bp, line = -1, test = t.test)
+
+
+## use default method for more control
+boxplot(mpg ~ am + vs, mtcars, axes = FALSE, ylim = c(10, 55))
+axis(2, las = 1)
+box(bty = 'l')
+at <- bp.test(letters[1:6], at = 1:4, line = -7)
+points(at, cex = 3, col = 1:6, xpd = NA)
 
 }
 \seealso{

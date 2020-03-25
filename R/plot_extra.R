@@ -1,9 +1,10 @@
 ### plot misc, extra, random
 # dodge, dodge.default, dodge.formula, dodge2, dodge2.default, dodge2.formula,
-# show_colors, show_pch, tcol, col_scaler, bp.test
+# show_colors, show_pch, tcol, col_scaler, bp.test, bp.test.default,
+# bp.test.formula
 # 
 # S3 methods:
-# dodge, dodge2
+# dodge, dodge2, bp.test
 # 
 # unexported:
 # col_scaler2
@@ -563,17 +564,22 @@ col_scaler2 <- function(x, colors, breaks = 0, ...) {
 #' \code{\link{cuzick.test}} under-the-hood, performs \code{test} for all
 #' pairs of groups and draws results on an existing plot.
 #' 
+#' @param x a vector of text to be drawn above each pair of groups
+#' @param ... arguments passed to or from other methods or additional
+#' graphical parameters passed to \code{link{par}}
 #' @param formula a formula of the form \code{response ~ group} where
 #' \code{response} is a numeric variable and \code{group} is a factor-like
 #' variable with three or more unique values (groups)
 #' @param data an optional matrix or data frame (or similar: see
 #' \code{\link{model.frame}}) containing the variables in \code{formula}; by
 #' default, the variables are taken from \code{environment(formula)}
-#' @param which an index vector of p-values to display
-#' @param at numeric vector giving the locations where box plots were drawn
-#' @param line lines at which to plot \code{test} results
+#' @param which an index vector of the values to display
+#' @param at numeric vector giving the x-axis locations of each group having
+#' the same length as \code{x} or the number of pairs
+#' @param line lines at which to plot \code{test} results; if \code{NULL},
+#' these will be calculated; if length 1, the calculated lines will be shifted
+#' by \code{line}
 #' @param test the test to use for pairwise comparisons
-#' @param ... additional graphical parameters passed to \code{link{par}}
 #' 
 #' @return
 #' A matrix of user coordinates where p-values are drawn.
@@ -608,13 +614,24 @@ col_scaler2 <- function(x, colors, breaks = 0, ...) {
 #' bp <- barplot(with(mtcars, tapply(mpg, gear, mean)), ylim = c(0, 30))
 #' bp.test(mpg ~ gear, mtcars, at = bp, line = -1, test = t.test)
 #' 
+#' 
+#' ## use default method for more control
+#' boxplot(mpg ~ am + vs, mtcars, axes = FALSE, ylim = c(10, 55))
+#' axis(2, las = 1)
+#' box(bty = 'l')
+#' at <- bp.test(letters[1:6], at = 1:4, line = -7)
+#' points(at, cex = 3, col = 1:6, xpd = NA)
+#' 
 #' @export
 
-bp.test <- function(formula, data, which = NULL, at = NULL, line = NULL,
+bp.test <- function(x, ...) {
+  UseMethod('bp.test')
+}
+
+#' @rdname bp.test
+#' @export
+bp.test.formula <- function(formula, data, which = NULL, at = NULL, line = NULL,
                     test = wilcox.test, ...) {
-  op <- par(..., no.readonly = TRUE)
-  on.exit(par(op))
-  
   bp <- boxplot(formula, data, plot = FALSE)
   ng <- length(bp$n)
   if (ng == 1L) {
@@ -629,6 +646,29 @@ bp.test <- function(formula, data, which = NULL, at = NULL, line = NULL,
   
   which <- if (is.null(which))
     seq_along(pv) else which[which %in% seq_along(pv)]
+  at <- if (is.null(at))
+    seq.int(ng) else at
+  line <- if (is.null(line) || length(line) == 1L)
+    1.25 * (seq_along(which) - 1) + line %||% 0 else line
+  
+  bp.test(pv, which, at, line, test, ...)
+}
+
+#' @rdname bp.test
+#' @export
+bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
+                            test = wilcox.test, ...) {
+  op <- par(..., no.readonly = TRUE)
+  on.exit(par(op))
+  
+  ng <- length(x) + 1L
+  if (ng == 1L) {
+    message('only one group -- no test performed')
+    return(invisible(NULL))
+  }
+  
+  which <- if (is.null(which))
+    seq_along(x) else which[which %in% seq_along(x)]
   at <- if (is.null(at))
     seq.int(ng) else at
   line <- if (is.null(line) || length(line) == 1L)
@@ -651,7 +691,7 @@ bp.test <- function(formula, data, which = NULL, at = NULL, line = NULL,
   res <- sapply(seq_along(which), function(ii) {
     xat <- cbn[, which[ii]]
     xat <- seg(xat[1L], yat[ii], xat[2L])
-    text(xat[1L], xat[2L], pv[which[ii]], xpd = NA)
+    text(xat[1L], xat[2L], x[which[ii]], xpd = NA)
     xat
   })
   
