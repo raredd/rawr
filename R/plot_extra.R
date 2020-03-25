@@ -575,6 +575,9 @@ col_scaler2 <- function(x, colors, breaks = 0, ...) {
 #' @param test the test to use for pairwise comparisons
 #' @param ... additional graphical parameters passed to \code{link{par}}
 #' 
+#' @return
+#' A matrix of user coordinates where p-values are drawn.
+#' 
 #' @seealso
 #' \code{\link{cuzick.test}}; \code{\link{boxplot}}; \code{\link{tplot}};
 #' \code{rawr:::coords}
@@ -583,8 +586,10 @@ col_scaler2 <- function(x, colors, breaks = 0, ...) {
 #' boxplot(mpg ~ gear, mtcars)
 #' bp.test(mpg ~ gear, mtcars)
 #' 
-#' boxplot(mpg ~ gear, mtcars, at = c(1, 3, 4))
-#' bp.test(mpg ~ gear, mtcars, at = c(1, 3, 4), line = c(0, 1.5, 3))
+#' 
+#' boxplot(mpg ~ gear, mtcars, at = c(1, 3, 4), ylim = c(10, 55))
+#' bp.test(mpg ~ gear, mtcars, at = c(1, 3, 4), which = c(1, 3, 2), line = -5)
+#' 
 #' 
 #' op <- par(mar = par('mar') + c(0, 0, 3, 0))
 #' tplot(mpg ~ interaction(vs, am), mtcars, show.n = FALSE)
@@ -594,8 +599,14 @@ col_scaler2 <- function(x, colors, breaks = 0, ...) {
 #' bp.test(mpg ~ interaction(vs, am), mtcars, which = c(1, 3, 5))
 #' 
 #' bp.test(mpg ~ interaction(vs, am), mtcars, which = 6, line = 4,
-#'         col = 'red', fg = 'red', lty = 2, font = 2, test = t.test)
+#'         col = 'red', fg = 'red', lty = 2, font = 2, test = t.test) -> at
+#' points(at[1], at[2], pch = 1, cex = 5, col = 'red', xpd = NA)
 #' par(op)
+#' 
+#' 
+#' ## also works for barplots
+#' bp <- barplot(with(mtcars, tapply(mpg, gear, mean)), ylim = c(0, 30))
+#' bp.test(mpg ~ gear, mtcars, at = bp, line = -1, test = t.test)
 #' 
 #' @export
 
@@ -605,15 +616,23 @@ bp.test <- function(formula, data, which = NULL, at = NULL, line = NULL,
   on.exit(par(op))
   
   bp <- boxplot(formula, data, plot = FALSE)
-  cz <- cuzick.test(formula, data, details = test)
-  pv <- pvalr(cz$details$pairs$p.value, show.p = TRUE)
+  ng <- length(bp$n)
+  if (ng == 1L) {
+    message('only one group -- no test performed')
+    return(invisible(NULL))
+  }
+  
+  pv <- if (ng == 2L)
+    test(formula, data)
+  else cuzick.test(formula, data, details = test)$details$pairs
+  pv <- pvalr(pv$p.value, show.p = TRUE)
   
   which <- if (is.null(which))
     seq_along(pv) else which[which %in% seq_along(pv)]
   at <- if (is.null(at))
-    seq_along(bp$n) else at
-  line <- if (is.null(line))
-    seq_along(which) - 1L else line
+    seq.int(ng) else at
+  line <- if (is.null(line) || length(line) == 1L)
+    1.25 * (seq_along(which) - 1) + line %||% 0 else line
   
   seg <- function(x1, y, x2) {
     pad <- diff(par('usr')[3:4]) / 100
@@ -623,7 +642,7 @@ bp.test <- function(formula, data, which = NULL, at = NULL, line = NULL,
     segments(x1, y, x1, y - pad, col = col, xpd = NA)
     segments(x2, y, x2, y - pad, col = col, xpd = NA)
     
-    c(x = x1 + (x2 - x1) / 2, y = y + pad * 2.5)
+    c(x = x1 + (x2 - x1) / 2, y = y + pad * 3)
   }
   
   yat <- coords(line = line, side = 3L)
@@ -636,5 +655,5 @@ bp.test <- function(formula, data, which = NULL, at = NULL, line = NULL,
     xat
   })
   
-  invisible(res)
+  invisible(t(res))
 }

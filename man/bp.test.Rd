@@ -33,6 +33,9 @@ default, the variables are taken from \code{environment(formula)}}
 
 \item{...}{additional graphical parameters passed to \code{link{par}}}
 }
+\value{
+A matrix of user coordinates where p-values are drawn.
+}
 \description{
 Add pairwise tests to box plots with three or more groups. Using
 \code{\link{cuzick.test}} under-the-hood, performs \code{test} for all
@@ -42,8 +45,10 @@ pairs of groups and draws results on an existing plot.
 boxplot(mpg ~ gear, mtcars)
 bp.test(mpg ~ gear, mtcars)
 
-boxplot(mpg ~ gear, mtcars, at = c(1, 3, 4))
-bp.test(mpg ~ gear, mtcars, at = c(1, 3, 4), line = c(0, 1.5, 3))
+
+boxplot(mpg ~ gear, mtcars, at = c(1, 3, 4), ylim = c(10, 55))
+bp.test(mpg ~ gear, mtcars, at = c(1, 3, 4), which = c(1, 3, 2), line = -5)
+
 
 op <- par(mar = par('mar') + c(0, 0, 3, 0))
 tplot(mpg ~ interaction(vs, am), mtcars, show.n = FALSE)
@@ -53,8 +58,14 @@ tplot(mpg ~ interaction(vs, am), mtcars, show.n = FALSE)
 bp.test(mpg ~ interaction(vs, am), mtcars, which = c(1, 3, 5))
 
 bp.test(mpg ~ interaction(vs, am), mtcars, which = 6, line = 4,
-        col = 'red', fg = 'red', lty = 2, font = 2, test = t.test)
+        col = 'red', fg = 'red', lty = 2, font = 2, test = t.test) -> at
+points(at[1], at[2], pch = 1, cex = 5, col = 'red', xpd = NA)
 par(op)
+
+
+## also works for barplots
+bp <- barplot(with(mtcars, tapply(mpg, gear, mean)), ylim = c(0, 30))
+bp.test(mpg ~ gear, mtcars, at = bp, line = -1, test = t.test)
 
 }
 \seealso{
