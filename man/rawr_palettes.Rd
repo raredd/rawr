@@ -19,7 +19,7 @@ show_pal(x, fullrange = FALSE, counts = TRUE)
 \arguments{
 \item{name}{the palette name to be used}
 
-\item{n}{the number of colors from the palette to use}
+\item{n}{the first \code{n} colors from the palette to use}
 
 \item{z}{for \code{type = 'continuous'}, the number of colors desired}
 
@@ -44,13 +44,17 @@ rawr palettes
 ## some built-in palettes
 rawr_palettes
 
-## use or generate new palettees from existing
+## use or generate new palettes from existing
 p <- rawr_pal('dfci')
 show_pal(p)
 p <- rawr_pal('dfci', 4)
 show_pal(p)
 p <- rawr_pal('dfci', 4, 100, type = 'continuous')
 show_pal(p)
+
+## view palettes from other sources
+show_pal(nord::nord_palettes$afternoon_prarie)
+show_pal(rainbow(8))
 
 filled.contour(volcano, col = rawr_pal('dfci', 4, 21, type = 'c'))
 filled.contour(volcano, col = rawr_pal('dfci', z = 21, type = 'c'))

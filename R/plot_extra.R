@@ -706,25 +706,31 @@ bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
 #' @param path full file path to image
 #' @param n maximum number of colors to extract, result will be <= \code{n},
 #' and the calculated number of unique colors will also be provided
-#' @param x an object of class \code{"imgpal"}
-#' @param fullrange logical; if \code{TRUE}, all <=\code{n} colors will be
-#' displayed
-#' @param ... ignored
+#' @param options a (optional) character string of additional options passed
+#' to \href{https://www.imagemagick.org/script/command-line-options.php}{\code{convert}}
 #' 
 #' @return
 #' A list of class \code{"imgpal"} with the following elements:
 #' \item{filename}{the image file name}
 #' \item{n_unique}{the calculated number of unique colors}
-#' \item{col}{a vector of colors}
+#' \item{col}{a vector of colors (does not return transparent or white colors)}
 #' \item{counts}{frequency counts for each \code{col}}
 #' \item{call}{the call made to \code{convert}}
 #' \item{convert}{the result of \code{call}}
 #' 
+#' @seealso
+#' \code{\link{show_pal}}
+#' 
 #' @examples
 #' \dontrun{
-#' ip <- imgpal('https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png')
+#' go <- 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png'
+#' ip <- imgpal(go)
 #' show_pal(ip)
 #' 
+#' ip <- imgpal(go, options = '-colorize 0,0,50')
+#' show_pal(ip)
+#' 
+#' ## rawr::rawr_palettes
 #' img <- system.file('fig', package = 'rawr')
 #' img <- list.files(img, full.names = TRUE, pattern = 'g$')
 #' op <- par(mfrow = n2mfrow(length(img)))
@@ -734,11 +740,13 @@ bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
 #' 
 #' @export
 
-imgpal <- function(path, n = 10L) {
+imgpal <- function(path, n = 10L, options = '') {
   cmd <- sprintf(
-    'convert %s +dither -colors %s -flatten -define \\
-    histogram:unique-colors=true -format "%%f, n=%%k\n%%c\n" histogram:info:',
-    path, n
+    # https://www.imagemagick.org/script/command-line-options.php
+    'convert %s +dither -colors %s -layers flatten %s \\
+    -define histogram:unique-colors=true \\
+    -format "%%f, n=%%k\n%%c\n" histogram:info:',
+    path, n, options
   )
   co <- capture.output({
     res <- system(cmd, intern = TRUE)
@@ -754,7 +762,7 @@ imgpal <- function(path, n = 10L) {
   )
   dat <- dat[order(dat[, 1L], decreasing = TRUE), ]
   
-  ## remove fully transparent or white-ish
+  ## remove fully transparent or white
   idx <- grepl('(?i)#(.{6}00|ffffff)', dat[, 2L])
   dat <- dat[!idx, ]
   
@@ -771,7 +779,7 @@ imgpal <- function(path, n = 10L) {
 #' rawr palettes
 #' 
 #' @param name the palette name to be used
-#' @param n the number of colors from the palette to use
+#' @param n the first \code{n} colors from the palette to use
 #' @param z for \code{type = 'continuous'}, the number of colors desired
 #' @param type return a discrete or continuous (gradient) of colors
 #' @param rev logical; if \code{TRUE}, the palette is reversed
@@ -792,13 +800,17 @@ imgpal <- function(path, n = 10L) {
 #' ## some built-in palettes
 #' rawr_palettes
 #' 
-#' ## use or generate new palettees from existing
+#' ## use or generate new palettes from existing
 #' p <- rawr_pal('dfci')
 #' show_pal(p)
 #' p <- rawr_pal('dfci', 4)
 #' show_pal(p)
 #' p <- rawr_pal('dfci', 4, 100, type = 'continuous')
 #' show_pal(p)
+#' 
+#' ## view palettes from other sources
+#' show_pal(nord::nord_palettes$afternoon_prarie)
+#' show_pal(rainbow(8))
 #' 
 #' filled.contour(volcano, col = rawr_pal('dfci', 4, 21, type = 'c'))
 #' filled.contour(volcano, col = rawr_pal('dfci', z = 21, type = 'c'))
@@ -836,7 +848,7 @@ rawr_palettes <- list(
 rawr_pal <- function(name, n, z = n, type = c('discrete', 'continuous'),
                      rev = FALSE) {
   type <- match.arg(type)
-  pal <- rawr::rawr_palettes[[tolower(name)]]
+  pal <- rawr_palettes[[tolower(name)]]
   
   if (rev)
     pal <- rev(pal)
@@ -871,17 +883,17 @@ show_pal <- function(x, fullrange = FALSE, counts = TRUE) {
     name <- attr(x, 'name')
     pal <- x
   } else if (length(x) == 1L) {
-    pal <- rawr::rawr_palettes
-    idx <- match(tolower(x), tolower(names(pal)), nomatch = 0L)
+    idx <- match(tolower(x), names(rawr_palettes), nomatch = 0L)
     if (idx == 0L)
       stop(sprintf('palette %s not found', shQuote(x)), call. = FALSE)
-    pal <- pal[[idx]]
+    pal <- rawr_palettes[[idx]]
     name <- x
   } else if (imgpal) {
     obj <- x
     pal <- obj$col
+    len <- length(pal)
     name <- obj$filename
-    pal <- pal[seq.int(if (fullrange) length(pal) else obj$n_unique)]
+    pal <- pal[seq.int(if (fullrange) len else pmin(obj$n_unique, len))]
   } else {
     pal <- x
     name <- deparse(substitute(x))
@@ -907,5 +919,5 @@ show_pal <- function(x, fullrange = FALSE, counts = TRUE) {
   rect(0, 0.9, n + 1, 1.1, col = adjustcolor('white', 0.8), border = NA)
   text((n + 1) / 2, 1, labels = name)
   
-  invisible(pal)
+  pal
 }

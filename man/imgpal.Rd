@@ -4,7 +4,7 @@
 \alias{imgpal}
 \title{Image palettes}
 \usage{
-imgpal(path, n = 10L)
+imgpal(path, n = 10L, options = "")
 }
 \arguments{
 \item{path}{full file path to image}
@@ -12,18 +12,14 @@ imgpal(path, n = 10L)
 \item{n}{maximum number of colors to extract, result will be <= \code{n},
 and the calculated number of unique colors will also be provided}
 
-\item{x}{an object of class \code{"imgpal"}}
-
-\item{fullrange}{logical; if \code{TRUE}, all <=\code{n} colors will be
-displayed}
-
-\item{...}{ignored}
+\item{options}{a (optional) character string of additional options passed
+to \href{https://www.imagemagick.org/script/command-line-options.php}{\code{convert}}}
 }
 \value{
 A list of class \code{"imgpal"} with the following elements:
 \item{filename}{the image file name}
 \item{n_unique}{the calculated number of unique colors}
-\item{col}{a vector of colors}
+\item{col}{a vector of colors (does not return transparent or white colors)}
 \item{counts}{frequency counts for each \code{col}}
 \item{call}{the call made to \code{convert}}
 \item{convert}{the result of \code{call}}
@@ -34,9 +30,14 @@ Extract unique and most commonly-used unique colors from an image file
 }
 \examples{
 \dontrun{
-ip <- imgpal('https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png')
+go <- 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png'
+ip <- imgpal(go)
 show_pal(ip)
 
+ip <- imgpal(go, options = '-colorize 0,0,50')
+show_pal(ip)
+
+## rawr::rawr_palettes
 img <- system.file('fig', package = 'rawr')
 img <- list.files(img, full.names = TRUE, pattern = 'g$')
 op <- par(mfrow = n2mfrow(length(img)))
@@ -44,4 +45,7 @@ sapply(img, function(x) show_pal(imgpal(x), fullrange = TRUE))
 par(op)
 }
 
+}
+\seealso{
+\code{\link{show_pal}}
 }
