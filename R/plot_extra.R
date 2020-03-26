@@ -1,7 +1,7 @@
 ### plot misc, extra, random
 # dodge, dodge.default, dodge.formula, dodge2, dodge2.default, dodge2.formula,
 # show_colors, show_pch, tcol, col_scaler, bp.test, bp.test.default,
-# bp.test.formula
+# bp.test.formula, imgpal, rawr_palettes, rawr_pal, show_pal
 # 
 # S3 methods:
 # dodge, dodge2, bp.test
@@ -696,4 +696,216 @@ bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
   })
   
   invisible(t(res))
+}
+
+#' Image palettes
+#' 
+#' Extract unique and most commonly-used unique colors from an image file
+#' (requires \href{https://imagemagick.org/index.php}{ImageMagick}).
+#' 
+#' @param path full file path to image
+#' @param n maximum number of colors to extract, result will be <= \code{n},
+#' and the calculated number of unique colors will also be provided
+#' @param x an object of class \code{"imgpal"}
+#' @param fullrange logical; if \code{TRUE}, all <=\code{n} colors will be
+#' displayed
+#' @param ... ignored
+#' 
+#' @return
+#' A list of class \code{"imgpal"} with the following elements:
+#' \item{filename}{the image file name}
+#' \item{n_unique}{the calculated number of unique colors}
+#' \item{col}{a vector of colors}
+#' \item{counts}{frequency counts for each \code{col}}
+#' \item{call}{the call made to \code{convert}}
+#' \item{convert}{the result of \code{call}}
+#' 
+#' @examples
+#' \dontrun{
+#' ip <- imgpal('https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png')
+#' show_pal(ip)
+#' 
+#' img <- system.file('fig', package = 'rawr')
+#' img <- list.files(img, full.names = TRUE, pattern = 'g$')
+#' op <- par(mfrow = n2mfrow(length(img)))
+#' sapply(img, function(x) show_pal(imgpal(x), fullrange = TRUE))
+#' par(op)
+#' }
+#' 
+#' @export
+
+imgpal <- function(path, n = 10L) {
+  cmd <- sprintf(
+    'convert %s +dither -colors %s -flatten -define \\
+    histogram:unique-colors=true -format "%%f, n=%%k\n%%c\n" histogram:info:',
+    path, n
+  )
+  co <- capture.output({
+    res <- system(cmd, intern = TRUE)
+  })
+  if (!is.null(attr(res, 'status')))
+    stop(res, call. = FALSE)
+  
+  res <- trimws(res[nzchar(res)])
+  
+  dat <- read.table(
+    comment.char = '', stringsAsFactors = FALSE,
+    text = gsub('\\s*(\\d+):.*(#\\S+).*', '\\1 \\2', res[-1L])
+  )
+  dat <- dat[order(dat[, 1L], decreasing = TRUE), ]
+  
+  ## remove fully transparent or white-ish
+  idx <- grepl('(?i)#(.{6}00|ffffff)', dat[, 2L])
+  dat <- dat[!idx, ]
+  
+  res <- list(
+    filename = gsub(', n.*', '', res[1L]),
+    n_unique = type.convert(gsub('n=(\\d+)$|.', '\\1', res[1L])),
+    col = gsub('(#.{6})|.', '\\1', dat[, 2L]), counts = dat[, 1L],
+    call = cmd, convert = res
+  )
+  
+  structure(res, class = 'imgpal')
+}
+
+#' rawr palettes
+#' 
+#' @param name the palette name to be used
+#' @param n the number of colors from the palette to use
+#' @param z for \code{type = 'continuous'}, the number of colors desired
+#' @param type return a discrete or continuous (gradient) of colors
+#' @param rev logical; if \code{TRUE}, the palette is reversed
+#' @param x one of 1) a \code{rawr_palette} name; 2) a vector of two or more
+#' colors; 3) an \code{\link{imgpal}} object
+#' @param fullrange logical; for \code{\link{imgpal}} objects, if \code{TRUE},
+#' the entire palette is shown; otherwise, only the calculated number of
+#' unique colors
+#' @param counts logical; for \code{\link{imgpal}} objects, if \code{TRUE},
+#' the color frequencies are shown for each
+#' 
+#' @seealso
+#' \code{\link{imgpal}}; \code{\link{palette}}; \code{\link{colorRampPalette}};
+#' \code{wesanderson::wes_palettes}; \code{nord::nord_palettes}
+#' 
+#' 
+#' @examples
+#' ## some built-in palettes
+#' rawr_palettes
+#' 
+#' ## use or generate new palettees from existing
+#' p <- rawr_pal('dfci')
+#' show_pal(p)
+#' p <- rawr_pal('dfci', 4)
+#' show_pal(p)
+#' p <- rawr_pal('dfci', 4, 100, type = 'continuous')
+#' show_pal(p)
+#' 
+#' filled.contour(volcano, col = rawr_pal('dfci', 4, 21, type = 'c'))
+#' filled.contour(volcano, col = rawr_pal('dfci', z = 21, type = 'c'))
+#' filled.contour(volcano, col = rawr_pal('pokrie', 4, 21, type = 'c'))
+#'
+#' @export
+
+# img <- system.file('fig', package = 'rawr')
+# img <- list.files(img, full.names = TRUE, pattern = 'g$')
+# pal <- sapply(img, function(x) imgpal(x)$col)
+# names(pal) <- gsub('.*/|\\..*', '', names(pal))
+# dput(pal)
+
+rawr_palettes <- list(
+  bidmc =
+    c('#171F69', '#181661', '#D4D5E3', '#7B7CA7',
+      '#A9AAC6', '#414380', '#5E6194'),
+  dfci =
+    c('#63666B', '#0F699B', '#3CC5F1', '#F39625',
+      '#9FA2A6', '#D5D7D9', '#847F5F', '#40A0C9'),
+  harvard =
+    c('#C5112E', '#231F20', '#0B0808', '#CDABB1',
+      '#E4D5D7', '#BA263E',  '#9F9F9F', '#79575C'),
+  mgh =
+    c('#007DA2', '#374249', '#B5C1C6',  '#6E8189',
+      '#DAE2E5', '#1C8BAC', '#8FC6D6', '#3D9CB8'),
+  pokrie =
+    c('#612D13',  '#E1A863', '#245967', '#232324',
+      '#C49E67', '#57503E', '#975A2E',  '#DFC597',
+      '#257589', '#4F8B93')
+)
+
+#' @rdname rawr_palettes
+#' @export
+rawr_pal <- function(name, n, z = n, type = c('discrete', 'continuous'),
+                     rev = FALSE) {
+  type <- match.arg(type)
+  pal <- rawr::rawr_palettes[[tolower(name)]]
+  
+  if (rev)
+    pal <- rev(pal)
+  
+  if (missing(n))
+    n <- length(pal)
+  
+  if (is.null(pal))
+    stop(sprintf('palette %s not found', shQuote(name)), call. = FALSE)
+  
+  if (type == 'discrete' & n > length(pal)) {
+    warning(sprintf('palette %s has max %s colors, try type = \'continuous\'',
+                    shQuote(name), length(pal)))
+    n <- length(pal)
+  }
+  
+  res <- switch(
+    type,
+    continuous = grDevices::colorRampPalette(pal[seq.int(n)])(z),
+    discrete = pal[seq.int(n)]
+  )
+  
+  structure(res, class = 'rawr_pal', name = name)
+}
+
+#' @rdname rawr_palettes
+#' @export
+show_pal <- function(x, fullrange = FALSE, counts = TRUE) {
+  imgpal <- inherits(x, 'imgpal')
+  
+  if (inherits(x, 'rawr_pal')) {
+    name <- attr(x, 'name')
+    pal <- x
+  } else if (length(x) == 1L) {
+    pal <- rawr::rawr_palettes
+    idx <- match(tolower(x), tolower(names(pal)), nomatch = 0L)
+    if (idx == 0L)
+      stop(sprintf('palette %s not found', shQuote(x)), call. = FALSE)
+    pal <- pal[[idx]]
+    name <- x
+  } else if (imgpal) {
+    obj <- x
+    pal <- obj$col
+    name <- obj$filename
+    pal <- pal[seq.int(if (fullrange) length(pal) else obj$n_unique)]
+  } else {
+    pal <- x
+    name <- deparse(substitute(x))
+  }
+  
+  n <- length(pal)
+  
+  op <- par(mar = rep_len(1, 4L))
+  on.exit(par(op))
+  image(seq.int(n), 1, matrix(seq.int(n)), col = pal, ann = FALSE, axes = FALSE)
+  abline(v = seq.int(n) + 0.5, col = 'white')
+  
+  ## add bars of color frequencies
+  if (imgpal && counts) {
+    ht <- obj$counts[seq.int(n)]
+    ht <- rescaler(ht, par('usr')[3:4], c(0, max(ht)))
+    rect(seq.int(n) - 0.5, par('usr')[3L], seq.int(n) + 0.25, ht,
+         col = 'white', density = 10, angle = 45)
+    rect(seq.int(n) - 0.5, par('usr')[3L], seq.int(n) + 0.25, ht,
+         col = 'white', density = 10, angle = -45)
+  }
+  
+  rect(0, 0.9, n + 1, 1.1, col = adjustcolor('white', 0.8), border = NA)
+  text((n + 1) / 2, 1, labels = name)
+  
+  invisible(pal)
 }
