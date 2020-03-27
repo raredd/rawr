@@ -2883,62 +2883,63 @@ tox_worst <- function(data, id = 'id', desc = 'desc', grade = 'grade',
 #'
 #' Formats and prints a \emph{named} vector of counts with percents.
 #'
-#' @param top named vector of counts (a summary or table) or a long vector of
-#' character strings or factors
+#' @param x named vector of counts (a summary or table) or a long vector
+#' of character strings or factors
 #' @param n total number of observations; if not given, the length of
-#' \code{top} is used
+#' \code{x} is used
 #' @param lowcase logical; names will be lowercase if \code{TRUE}, upper
 #' case if \code{FALSE}, and unchanged for any other value
-#' @param frac logical; if \code{TRUE}, the numbers are shown as fractions
+#' @param frac logical; if \code{TRUE}, counts are shown as fractions of
+#' \code{n}
 #' @param digits number of digits past the decimal point to keep
 #' @param which optional integer or character vector to select or re-order
 #' the output; note that this does not change the counts or percentages
 #'
 #' @examples
-#' top <- setNames(3:1, c('Gold','Silver','Bronze'))
+#' x <- setNames(3:1, c('Gold', 'Silver', 'Bronze'))
+#' countr(x)
+#' countr(x, n = 10, frac = TRUE)
+#' countr(x, n = 10, frac = TRUE, which = 2)
 #'
-#' countr(names(top))
-#' countr(names(top), which = 1)
-#' countr(names(top), which = c(3, 1))
-#' countr(names(top), which = 'Silver')
+#' countr(names(x))
+#' countr(names(x), which = 1)
+#' countr(names(x), which = c(3, 1))
+#' countr(names(x), which = 'Silver')
 #'
-#' countr(names(top), lowcase = NA)
-#' countr(names(top), frac = TRUE)
-#'
-#' countr(top, n = 10, frac = TRUE)
-#' countr(top, n = 10, frac = TRUE, which = 2)
+#' countr(names(x), lowcase = TRUE)
+#' countr(names(x), frac = TRUE)
 #'
 #' @export
 
-countr <- function(top, n, lowcase = NA, frac = FALSE, digits = 0L,
-                   which = seq_along(top)) {
-  if (inherits(top, 'table')) {
-    ## if top is a table, get n
+countr <- function(x, n, lowcase = NA, frac = FALSE, digits = 0L,
+                   which = seq_along(x)) {
+  if (inherits(x, 'table') || !is.null(names(x))) {
+    ## if x is a table or a _named_ vector (of counts)
     n <- if (missing(n))
-      sum(top) else n
+      sum(x) else n
+    x <- as.table(x)
   } else {
-    ## if top is a vector, get table
     n <- if (missing(n))
-      length(top) else n
-    top <- table(top)
+      length(x) else n
+    x <- table(x)
   }
 
   if (is.na(lowcase) || !is.logical(lowcase))
     lowcase <- NULL
 
-  top <- top[which]
+  x <- x[which]
 
   iprint(
     sprintf(
       '%s (n = %s%s, %s%%)',
       if (isTRUE(lowcase))
-        tolower(names(top))
+        tolower(names(x))
       else if (identical(lowcase, FALSE))
-        toupper(names(top)) else names(top),
-      top,
+        toupper(names(x)) else names(x),
+      x,
       if (frac)
         paste0('/', n) else '',
-      roundr(as.numeric(top) / n * 100, digits)
+      roundr(as.numeric(x) / n * 100, digits)
     )
   )
 }
