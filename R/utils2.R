@@ -2913,7 +2913,7 @@ tox_worst <- function(data, id = 'id', desc = 'desc', grade = 'grade',
 
 countr <- function(x, n, lowcase = NA, frac = FALSE, digits = 0L,
                    which = seq_along(x)) {
-  if (inherits(x, 'table') || !is.null(names(x))) {
+  if (inherits(x, 'table') || (!is.null(names(x)) & is.numeric(x))) {
     ## if x is a table or a _named_ vector (of counts)
     n <- if (missing(n))
       sum(x) else n
