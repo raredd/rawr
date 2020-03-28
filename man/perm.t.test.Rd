@@ -51,18 +51,19 @@ conditional probability of more extreme values}
 Performs paired and two-sample t-tests based on Monte Carlo permutation.
 }
 \examples{
+set.seed(1)
 x <- rnorm(10, 0, 0.5)
 y <- rnorm(10, 0.5, 1)
 dat <- data.frame(value = c(x, y), group = rep(1:2, each = 10))
 
-
+## two-sample data
 t.test(x, y)
 
-## equivalent ways to call perm.t.test for two samples
+## equivalent ways to call perm.t.test for two-sample data
 perm.t.test(x, y)
 perm.t.test(value ~ group, dat)
 
-
+## paired data
 t.test(x - y)
 t.test(x, y, paired = TRUE)
 

@@ -2472,18 +2472,19 @@ winsorize <- function(x, probs = 1e-3, type = 7L) {
 #' \code{paired.perm.test} and \code{perm.test} from the \pkg{broman} package
 #' 
 #' @examples
+#' set.seed(1)
 #' x <- rnorm(10, 0, 0.5)
 #' y <- rnorm(10, 0.5, 1)
 #' dat <- data.frame(value = c(x, y), group = rep(1:2, each = 10))
 #' 
-#' 
+#' ## two-sample data
 #' t.test(x, y)
 #' 
-#' ## equivalent ways to call perm.t.test for two samples
+#' ## equivalent ways to call perm.t.test for two-sample data
 #' perm.t.test(x, y)
 #' perm.t.test(value ~ group, dat)
 #' 
-#' 
+#' ## paired data
 #' t.test(x - y)
 #' t.test(x, y, paired = TRUE)
 #' 
@@ -2518,8 +2519,10 @@ perm.t.test.default <- function(x, y = NULL,
   method <- gsub('(?=t-test)', 'permutation ', method, perl = TRUE)
   method <- sprintf('%s (based on %s replicates)', trimws(method), B)
   
-  if (is.null(y))
+  if (is.null(y)) {
+    method <- gsub('Paired', 'One-sample', method)
     paired <- TRUE
+  }
   
   lx <- length(x)
   ly <- length(y)
@@ -2565,6 +2568,7 @@ perm.t.test.default <- function(x, y = NULL,
     statistic = st, p.value = pv, method = method, data.name = data.name,
     alternative = alternative, B = B, conf.int = ci
   )
+  
   structure(res, class = 'htest')
 }
 
@@ -2582,14 +2586,20 @@ perm.t.test.formula <- function(formula, data, ...) {
   m[[1L]] <- quote(stats::model.frame)
   m$... <- NULL
   mf <- eval(m, parent.frame())
+  
   data.name <- paste(names(mf), collapse = ' by ')
   names(mf) <- NULL
   response <- attr(attr(mf, 'terms'), 'response')
+  
   g <- factor(mf[[-response]])
   if (nlevels(g) != 2L)
     stop('grouping factor must have exactly 2 levels')
-  DATA <- setNames(split(mf[[response]], g), c('x', 'y'))
-  y <- do.call('perm.t.test', c(DATA, list(...)))
+  
+  y <- do.call(
+    'perm.t.test',
+    c(setNames(split(mf[[response]], g), c('x', 'y')), list(...))
+  )
   y$data.name <- data.name
+  
   y
 }
