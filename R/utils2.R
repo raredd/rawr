@@ -2250,10 +2250,13 @@ tabler_stat2 <- function(data, varname, byvar = NULL,
       nv == length(FUN)
   )
 
-  if (is.character(group))
-    group <- na.omit(
-      setNames(match(group, c(varname), nomatch = NA), names(group))
-    )
+  if (is.character(group)) {
+    ## need to shift group indices up for duplicated/combined varnames
+    dup <- which(duplicated(varname_label))
+    grp <- match(group, varname, nomatch = NA)
+    grp <- sapply(grp, function(x) x - sum(dup < x))
+    group <- na.omit(setNames(grp, names(group)))
+  }
 
   l <- tabler_stat_list(
     data, varname, byvar, varname_label, byvar_label, digits, FUN,
