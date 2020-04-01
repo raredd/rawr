@@ -265,21 +265,22 @@ NULL
 #' and non exported functions in \code{package}; see details for more
 #' 
 #' @return
-#' \code{lss} (invisibly) returns a data frame of the printed output.
-#' \code{lsf} (invisibly) returns the contents of \code{file}. \code{lsp}
+#' \code{lss} returns a data frame with each object from the workspace with
+#' type, object size, and dimensions for each. \code{lsf} (invisibly) returns
+#' the contents of \code{file} after being printed to the console. \code{lsp}
 #' returns a vector of character strings.
 #' 
 #' @seealso
 #' \code{\link{ls}}; \code{\link{search}}; \code{\link{rawr_parse}}
 #' 
 #' @examples
-#' ## lss: use like ls
+#' ## lss(): use like ls()
 #' lss()
 #' a <- rnorm(100000)
 #' b <- matrix(1, 1000, 100)
 #' lss()
 #' 
-#' ## lsf: these are equivalent ways to use
+#' ## lsf(): these are equivalent ways to use
 #' lsf(rawr)
 #' lsf(rawr, 'DESCRIPTION')
 #' lsf('rawr', 'des')
@@ -287,7 +288,7 @@ NULL
 #' ## lsp: see the contents of a package
 #' lsp(rawr)
 #' 
-#' ## return all one or two character functions from base package
+#' ## return all one- or two-character functions from base package
 #' lsp(base, pat = '^.{1,2}$')
 #' 
 #' ## for "what" options
@@ -295,6 +296,7 @@ NULL
 #' 
 #' ## library path
 #' lsp('rawr', 'path')
+#' system.file(package = 'rawr')
 #' 
 #' ## to return everything
 #' lsp('rawr')
@@ -329,9 +331,11 @@ lss <- function(pos = 1L, pattern, by = NULL, all.names = FALSE,
   })
   
   res <- do.call('rbind', res)
-  res$` ` <- symnum(unlist(res$size), corr = FALSE, na = FALSE,
-                    cutpoints = c(-Inf, 0.001, 0.1, 0.5, 1, Inf) * 1024 ^ 3,
-                    symbols = c(' ', '.', '*', '**', '***'))
+  res <- within(res, {
+    ` ` <- symnum(unlist(res$size), corr = FALSE, na = FALSE,
+                  cutpoints = c(-Inf, 0.001, 0.1, 0.5, 1, Inf) * 1024 ^ 3,
+                  symbols = c(' ', '.', '*', '**', '***'))
+  })
   
   if ((mb <- sum(res$size) / (1024 ^ 2)) > 100)
     on.exit(message(sprintf('Total size: %.0f Mb', mb)))
@@ -504,7 +508,7 @@ parse_namespace <- function(
 #' 
 #' @return
 #' An object similar to input objects after successively combining elements
-#' with \code{FUN.
+#' with \code{FUN}.
 #' 
 #' @seealso
 #' \code{\link{pmin}}; \code{\link{pmax}}

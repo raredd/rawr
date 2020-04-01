@@ -18,7 +18,8 @@ psum(..., na.rm = FALSE)
 \item{FUN}{a binary function}
 }
 \value{
-
+An object similar to input objects after successively combining elements
+with \code{FUN}.
 }
 \description{
 Perform binary operations on vectors, matrices, or data frames.

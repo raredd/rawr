@@ -77,6 +77,15 @@ and return a character string (or a value to be coerced) for printing}
 \item{method}{for \code{pw_*}, the method used to adjust p-values for
 multiple comparisons (default is \code{"none"}); see
 \code{\link{p.adjust.methods}}}
+
+\item{tau, iter, seed}{arguments passed to \code{\link[survC1]{Inf.Cval}} or
+\code{\link[survC1]{Inf.Cval.Delta}}}
+
+\item{digits, conf, show_conf}{for \code{c_text} and \code{cc_text}, options
+to control the text output}
+
+\item{formula1, formula2}{for \code{cc_pva} and \code{cc_text}, the formulas
+of the two models to compare}
 }
 \description{
 Internal functions for \code{\link{survdiff}} and \code{\link{survfit}}
@@ -98,6 +107,12 @@ with more than one predictor, e.g., \code{y ~ a + b}. An equivalent
 formula is acceptable, e.g., \code{y ~ x} where \code{x} is the
 \code{interaction(a, b)} or similar. See \code{\link{survdiff_pairs}}
 for more details and examples.
+
+\code{c_text}, \code{cc_pval}, and \code{cc_text} are convenience functions
+for \code{\link[survC1]{Inf.Cval}} and \code{\link[survC1]{Inf.Cval.Delta}}
+to compute and compare c-statistics on censored data. \code{c_text} shows
+c for a single model where \code{cc_text} and \code{cc_pval} compare two
+models.
 }
 \examples{
 \dontrun{
@@ -147,7 +162,6 @@ rawr:::c_text(f1, larynx)
 rawr:::c_text(f2, larynx, details = TRUE)
 rawr:::cc_text(f1, f2, larynx)
 rawr:::cc_pval(f1, f2, larynx)
-
 }
 
 }

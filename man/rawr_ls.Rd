@@ -52,8 +52,9 @@ partial matching is supported and case is ignored}
 and non exported functions in \code{package}; see details for more}
 }
 \value{
-\code{lss} (invisibly) returns a data frame of the printed output.
-\code{lsf} (invisibly) returns the contents of \code{file}. \code{lsp}
+\code{lss} returns a data frame with each object from the workspace with
+type, object size, and dimensions for each. \code{lsf} (invisibly) returns
+the contents of \code{file} after being printed to the console. \code{lsp}
 returns a vector of character strings.
 }
 \description{
@@ -88,13 +89,13 @@ the package.
 \code{lsp(packagename, NULL)} to return all information in a list.
 }
 \examples{
-## lss: use like ls
+## lss(): use like ls()
 lss()
 a <- rnorm(100000)
 b <- matrix(1, 1000, 100)
 lss()
 
-## lsf: these are equivalent ways to use
+## lsf(): these are equivalent ways to use
 lsf(rawr)
 lsf(rawr, 'DESCRIPTION')
 lsf('rawr', 'des')
@@ -102,7 +103,7 @@ lsf('rawr', 'des')
 ## lsp: see the contents of a package
 lsp(rawr)
 
-## return all one or two character functions from base package
+## return all one- or two-character functions from base package
 lsp(base, pat = '^.{1,2}$')
 
 ## for "what" options
@@ -110,6 +111,7 @@ lsp('rawr', '?')
 
 ## library path
 lsp('rawr', 'path')
+system.file(package = 'rawr')
 
 ## to return everything
 lsp('rawr')

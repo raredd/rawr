@@ -2461,6 +2461,12 @@ winsorize <- function(x, probs = 1e-3, type = 7L) {
 #' conditional probability of more extreme values
 #' @param B an integer specifying the number of permutations
 #' @param ... additional arguments passed to or from methods
+#' @param formula a formula of the form \code{lhs ~ rhs} where \code{lhs} is a
+#' numeric variable giving the data values and \code{rhs} a factor-like
+#' variable with two levels giving the corresponding groups
+#' @param data an optional matrix or data frame (or similar: see
+#' \code{\link{model.frame}}) containing the variables in \code{formula}; by
+#' default the variables are taken from \code{environment(formula)}
 #' 
 #' @seealso
 #' \code{\link{t.test}}

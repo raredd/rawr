@@ -1002,6 +1002,12 @@ kmplot_data_ <- function(s, strata.lab) {
 #' \code{interaction(a, b)} or similar. See \code{\link{survdiff_pairs}}
 #' for more details and examples.
 #' 
+#' \code{c_text}, \code{cc_pval}, and \code{cc_text} are convenience functions
+#' for \code{\link[survC1]{Inf.Cval}} and \code{\link[survC1]{Inf.Cval.Delta}}
+#' to compute and compare c-statistics on censored data. \code{c_text} shows
+#' c for a single model where \code{cc_text} and \code{cc_pval} compare two
+#' models.
+#' 
 #' @param formula,data,rho,... passed to \code{\link{survdiff}} or
 #' \code{\link{coxph}}
 #' @param object a \code{\link{survfit}}, \code{\link{survdiff}}, or
@@ -1016,6 +1022,12 @@ kmplot_data_ <- function(s, strata.lab) {
 #' @param method for \code{pw_*}, the method used to adjust p-values for
 #' multiple comparisons (default is \code{"none"}); see
 #' \code{\link{p.adjust.methods}}
+#' @param tau,iter,seed arguments passed to \code{\link[survC1]{Inf.Cval}} or
+#' \code{\link[survC1]{Inf.Cval.Delta}}
+#' @param digits,conf,show_conf for \code{c_text} and \code{cc_text}, options
+#' to control the text output
+#' @param formula1,formula2 for \code{cc_pva} and \code{cc_text}, the formulas
+#' of the two models to compare
 #' 
 #' @references
 #' Tarone, Robert E. Tests for Trend in Life Table Analysis. \emph{Biometrika}
@@ -1078,7 +1090,6 @@ kmplot_data_ <- function(s, strata.lab) {
 #' rawr:::c_text(f2, larynx, details = TRUE)
 #' rawr:::cc_text(f1, f2, larynx)
 #' rawr:::cc_pval(f1, f2, larynx)
-#' 
 #' }
 #' 
 #' @name surv_test
