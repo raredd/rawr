@@ -1327,7 +1327,7 @@ waffle <- function(mat, xpad = 0, ypad = 0,
 #' )
 #' 
 #' river(dd, bd, stagger = FALSE, rev = TRUE, col = 2:6,
-#'       legend = list(x = 'bottom', title = 'Response', horiz = TRUE))
+#'       args.legend = list(x = 'bottom', title = 'Response', horiz = TRUE))
 #' 
 #' ## same data with single observations per id
 #' bd1 <- data.frame(
