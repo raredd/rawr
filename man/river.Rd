@@ -86,7 +86,7 @@ may be shown rather than with an arrow; see examples.
 \details{
 \code{data}, \code{bar_data}, and \code{bar_data2} data frames need to have
 a minimum number of variables in a specific order, some of which should be
-\code{\link{Date}} formats.
+\code{\link{Date}} formats (or can be coerced to dates, e.g., integers).
 
 \code{check_river_format()} without any arguments will give a summary of
 the required formats.
@@ -94,7 +94,8 @@ the required formats.
 Note that date columns can also be given as integers to be coerced to dates
 as seen in the examples. In this case, \code{check_river_format} will do
 the coersion to date before plotting. However, these two methods are
-interchangeable as long as all values are relative to a starting time.
+interchangeable, but using integers rather than dates assume the data have
+a common starting time.
 
 \code{data} should have 10 columns (any additional will be ignored) in the
 following order: ID; dates of registration, start of treatment, end of
@@ -144,18 +145,30 @@ bd <- data.frame(
                 levels = c('PD', 'SD', 'MR', 'PR', 'CR'))
 )
 
-river(dd, bd, stagger = FALSE, rev = TRUE, col = 2:6,
-      args.legend = list(x = 'bottom', title = 'Response', horiz = TRUE))
+## basic usage
+river(dd, bd)
+river(
+  dd, bd, stagger = FALSE, rev = TRUE, col = 2:6,
+  args.legend = list(x = 'bottom', title = 'Response', horiz = TRUE)
+)
+
+
+## using NA will suppress data from being plotted
+river(dd, within(bd, resp <- NA))
+river(within(dd, dt_txst <- NA), within(bd, resp <- NA))
+river(within(dd, dt_txst <- NA), within(bd, {resp <- NA; dt_assess <- NA}))
+
 
 ## same data with single observations per id
 bd1 <- data.frame(
   id = 3:4, dt_assesss = 9:10,
-  resp = factor(c('PR','CR'), levels = c('PD','SD','MR','PR','CR')))
+  resp = factor(c('PR','CR'), levels = c('PD','SD','MR','PR','CR'))
+)
 
 river(dd, bd1)
 
 ## id and at parameters control the positions of the timelines
-river(dd, bd1, id = c(1,2,5,3,4), at = c(1:2, 4, 6:7), legend = FALSE)
+river(dd, bd1, id = c(1, 2, 5, 3, 4), at = c(1:2, 4, 6:7), legend = FALSE)
 
 
 ## additional data for river2

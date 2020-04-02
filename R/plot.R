@@ -1248,7 +1248,7 @@ waffle <- function(mat, xpad = 0, ypad = 0,
 #' @details
 #' \code{data}, \code{bar_data}, and \code{bar_data2} data frames need to have
 #' a minimum number of variables in a specific order, some of which should be
-#' \code{\link{Date}} formats.
+#' \code{\link{Date}} formats (or can be coerced to dates, e.g., integers).
 #' 
 #' \code{check_river_format()} without any arguments will give a summary of
 #' the required formats.
@@ -1256,7 +1256,8 @@ waffle <- function(mat, xpad = 0, ypad = 0,
 #' Note that date columns can also be given as integers to be coerced to dates
 #' as seen in the examples. In this case, \code{check_river_format} will do
 #' the coersion to date before plotting. However, these two methods are
-#' interchangeable as long as all values are relative to a starting time.
+#' interchangeable, but using integers rather than dates assume the data have
+#' a common starting time.
 #' 
 #' \code{data} should have 10 columns (any additional will be ignored) in the
 #' following order: ID; dates of registration, start of treatment, end of
@@ -1326,18 +1327,30 @@ waffle <- function(mat, xpad = 0, ypad = 0,
 #'                 levels = c('PD', 'SD', 'MR', 'PR', 'CR'))
 #' )
 #' 
-#' river(dd, bd, stagger = FALSE, rev = TRUE, col = 2:6,
-#'       args.legend = list(x = 'bottom', title = 'Response', horiz = TRUE))
+#' ## basic usage
+#' river(dd, bd)
+#' river(
+#'   dd, bd, stagger = FALSE, rev = TRUE, col = 2:6,
+#'   args.legend = list(x = 'bottom', title = 'Response', horiz = TRUE)
+#' )
+#' 
+#' 
+#' ## using NA will suppress data from being plotted
+#' river(dd, within(bd, resp <- NA))
+#' river(within(dd, dt_txst <- NA), within(bd, resp <- NA))
+#' river(within(dd, dt_txst <- NA), within(bd, {resp <- NA; dt_assess <- NA}))
+#' 
 #' 
 #' ## same data with single observations per id
 #' bd1 <- data.frame(
 #'   id = 3:4, dt_assesss = 9:10,
-#'   resp = factor(c('PR','CR'), levels = c('PD','SD','MR','PR','CR')))
+#'   resp = factor(c('PR','CR'), levels = c('PD','SD','MR','PR','CR'))
+#' )
 #' 
 #' river(dd, bd1)
 #' 
 #' ## id and at parameters control the positions of the timelines
-#' river(dd, bd1, id = c(1,2,5,3,4), at = c(1:2, 4, 6:7), legend = FALSE)
+#' river(dd, bd1, id = c(1, 2, 5, 3, 4), at = c(1:2, 4, 6:7), legend = FALSE)
 #' 
 #' 
 #' ## additional data for river2
@@ -1441,7 +1454,7 @@ river <- function(data, bar_data, id, at,
     )
   }
   
-  if (isTRUE(legend)) {
+  if (isTRUE(legend) & !all(is.na(cols)) & !all(is.na(dd$assess))) {
     largs <- list(
       x = 'topleft', fill = cols, legend = levels(dd$assess),
       horiz = FALSE, cex = 0.8, bty = 'n'
@@ -1465,7 +1478,7 @@ river <- function(data, bar_data, id, at,
               single = TRUE, col = 1L)
       ## thicker line and arrow for continuing
       do_seg_(jj, dd_txstart, dd_txend %|% end_day, arrow = FALSE,
-              single = TRUE, lty = 1, lwd = 4, col = 'green4')
+              single = TRUE, lty = 1L, lwd = 4, col = 'green4')
       
       ## rects - assessments
       do_rect_(jj, dd_assess_start, dd_assess_end %|% end_day,
