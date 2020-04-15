@@ -255,9 +255,11 @@ jmplot <- function(x, y, z,
 #' @param panel.last an expression to be evaluated after plotting has taken
 #' place but before the axes, title, and box are added; see the comments about
 #' \code{panel.first}
+#' @param return_coords logical; if \code{TRUE}, the function returns x- and
+#' y-coordinates for data points
 #'
 #' @return
-#' A list with the following elements (see \code{\link{boxplot}}:
+#' By default, a list with the following elements (see \code{\link{boxplot}}:
 #' 
 #' \item{\code{$stats}}{a matrix, each column contains the extreme of the lower
 #' whisker, the lower hinge, the median, the upper hinge and the extreme of the
@@ -271,6 +273,10 @@ jmplot <- function(x, y, z,
 #' \item{\code{$group}}{a vector of the same length as \code{out} whose
 #' elements indicate to which group the outlier belongs.}
 #' \item{\code{$names}}{a vector of names for the groups.}
+#' 
+#' Alternatively, if \code{return_coords = TRUE}, a list of data frames for
+#' each group containing the x- and y-coordinates of the points (x-values)
+#' are affected by \code{jit}, \code{dist}, and \code{dist.n}.
 #'
 #' @aliases vioplot
 #' 
@@ -288,6 +294,12 @@ jmplot <- function(x, y, z,
 #' tplot(split(x, g))
 #' tplot(x ~ g)
 #' tplot(mpg ~ gear + vs, mtcars)
+#' 
+#' 
+#' ## use of return_coords
+#' co <- tplot(mpg ~ vs, mtcars, return_coords = TRUE)
+#' sapply(co, function(x)
+#'   points(x, pch = 16L, col = findInterval(x$y, fivenum(x$y)) + 1L))
 #' 
 #' 
 #' ## options for box, violin, dots
@@ -384,7 +396,8 @@ tplot.default <- function(x, g, ..., type = 'db',
                           test = FALSE, args.test = list(), format_pval = TRUE,
                           ann = par('ann'), axes = TRUE, frame.plot = axes,
                           add = FALSE, at, horizontal = FALSE,
-                          panel.first = NULL, panel.last = NULL) {
+                          panel.first = NULL, panel.last = NULL,
+                          return_coords = FALSE) {
   ## helpers
   localAxis   <- function(..., bg, cex, log, lty, lwd,       pos      )
     axis(...)
@@ -392,10 +405,10 @@ tplot.default <- function(x, g, ..., type = 'db',
     box(...)
   localMtext  <- function(..., bg, cex, log, lty, lwd, tick, pos, padj)
     mtext(..., cex = cex.n)
-  localText   <- function(..., bg, cex, log, lty, lwd, tick,      padj)
-    text(..., cex = cex.n)
   localPoints <- function(...,          log, lty, lwd, tick, pos, padj)
     points(...)
+  localText   <- function(..., bg, cex, log, lty, lwd, tick,      padj)
+    text(..., cex = cex.n)
   localTitle  <- function(..., bg, cex, log, lty, lwd, tick, pos, padj)
     title(...)
   localVplot  <- function(..., outline)
@@ -560,6 +573,7 @@ tplot.default <- function(x, g, ..., type = 'db',
   
   panel.first
   
+  coords <- setNames(vector('list', ng), names)
   Lme <- 0.2 * c(-1, 1)
   
   for (i in seq.int(ng)) {
@@ -568,6 +582,8 @@ tplot.default <- function(x, g, ..., type = 'db',
       next
     y <- ave(p$vs, p$g.id, FUN = sym_sort)
     x <- rep_len(at[i], nrow(p)) + jit_(p$g.si, p$hmsf) * jit[i]
+    
+    coords[[i]] <- data.frame(x = x, y = y)
     
     boxFUN <- ifelse(grepl('v', type[i]), 'localVplot', 'boxplot')
     
@@ -789,7 +805,7 @@ tplot.default <- function(x, g, ..., type = 'db',
     )
   }
   
-  invisible(res)
+  invisible(if (return_coords) coords else res)
 }
 
 #' @rdname tplot

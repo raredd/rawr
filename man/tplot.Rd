@@ -53,7 +53,8 @@ tplot(x, ...)
   at,
   horizontal = FALSE,
   panel.first = NULL,
-  panel.last = NULL
+  panel.last = NULL,
+  return_coords = FALSE
 )
 
 \method{tplot}{formula}(
@@ -176,6 +177,9 @@ since it may be evaluated too early; see also \code{\link{plot.default}}}
 place but before the axes, title, and box are added; see the comments about
 \code{panel.first}}
 
+\item{return_coords}{logical; if \code{TRUE}, the function returns x- and
+y-coordinates for data points}
+
 \item{formula}{a \code{\link{formula}}, such as \code{y ~ grp}, where y is
 a numeric vector of data values to be split into groups according to the
 grouping variable \code{grp} (usually a factor)}
@@ -191,7 +195,7 @@ contain \code{\link{NA}}s; the default is to ignore missing values in either
 the response or the group}
 }
 \value{
-A list with the following elements (see \code{\link{boxplot}}:
+By default, a list with the following elements (see \code{\link{boxplot}}:
 
 \item{\code{$stats}}{a matrix, each column contains the extreme of the lower
 whisker, the lower hinge, the median, the upper hinge and the extreme of the
@@ -205,6 +209,10 @@ extremes of the whiskers.}
 \item{\code{$group}}{a vector of the same length as \code{out} whose
 elements indicate to which group the outlier belongs.}
 \item{\code{$names}}{a vector of names for the groups.}
+
+Alternatively, if \code{return_coords = TRUE}, a list of data frames for
+each group containing the x- and y-coordinates of the points (x-values)
+are affected by \code{jit}, \code{dist}, and \code{dist.n}.
 }
 \description{
 An alternative to \code{\link{boxplot}} with additional annotations,
@@ -221,6 +229,12 @@ tplot(x, g)
 tplot(split(x, g))
 tplot(x ~ g)
 tplot(mpg ~ gear + vs, mtcars)
+
+
+## use of return_coords
+co <- tplot(mpg ~ vs, mtcars, return_coords = TRUE)
+sapply(co, function(x)
+  points(x, pch = 16L, col = findInterval(x$y, fivenum(x$y)) + 1L))
 
 
 ## options for box, violin, dots
