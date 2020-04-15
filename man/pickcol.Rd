@@ -9,12 +9,12 @@ pickcol(data, ind = 1L, value = FALSE)
 \arguments{
 \item{data}{a data frame or matrix}
 
-\item{ind}{if \code{value = FALSE}, a vector (usually a single value)
-which, for each row, will return the corresponding column name; if
-\code{value = FALSE} (default), a vector of values to be \emph{ignored}}
+\item{ind}{if \code{value = FALSE} (default), a vector (usually a single
+value) to match and return column name(s) of \code{data} where \code{ind}
+is found; if \code{value = TRUE}, a vector of values to be \emph{ignored}}
 
-\item{value}{logical; if \code{TRUE}, returns column value; otherwise,
-returns column names (default)}
+\item{value}{logical; if \code{TRUE}, returns column value(s); otherwise,
+returns column name(s) (default)}
 }
 \value{
 If \code{value} is \code{FALSE} (default), the column names of \code{data}
@@ -39,8 +39,14 @@ dd[dd == 1] <- rn
 all(pickcol(dd, value = TRUE, ind = 0) == rowSums(dd))
 
 
-dd <- data.frame(x = c(1,0,0), y = c(0,0,1), z = c(0,1,0),
-                 a = c('one','',''), b = c('','','three'), c = c('','two',''))
+dd <- data.frame(
+  x = c(1, 0, 0),
+  y = c(0, 0, 1),
+  z = c(0, 1, 0),
+  a = c('one', '', ''),
+  b = c('', '', 'three'),
+  c = c('', 'two', '')
+)
 
 pickcol(dd[1:2])
 pickcol(dd[1:2], 0)

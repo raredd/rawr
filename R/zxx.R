@@ -1993,11 +1993,11 @@ sample_each <- function(x, n = 1L) {
 #' \code{value = TRUE}) for "indicator-like" matrices or data frames.
 #' 
 #' @param data a data frame or matrix
-#' @param ind if \code{value = FALSE}, a vector (usually a single value)
-#' which, for each row, will return the corresponding column name; if
-#' \code{value = FALSE} (default), a vector of values to be \emph{ignored}
-#' @param value logical; if \code{TRUE}, returns column value; otherwise,
-#' returns column names (default)
+#' @param ind if \code{value = FALSE} (default), a vector (usually a single
+#' value) to match and return column name(s) of \code{data} where \code{ind}
+#' is found; if \code{value = TRUE}, a vector of values to be \emph{ignored}
+#' @param value logical; if \code{TRUE}, returns column value(s); otherwise,
+#' returns column name(s) (default)
 #' 
 #' @return
 #' If \code{value} is \code{FALSE} (default), the column names of \code{data}
@@ -2018,8 +2018,14 @@ sample_each <- function(x, n = 1L) {
 #' all(pickcol(dd, value = TRUE, ind = 0) == rowSums(dd))
 #' 
 #' 
-#' dd <- data.frame(x = c(1,0,0), y = c(0,0,1), z = c(0,1,0),
-#'                  a = c('one','',''), b = c('','','three'), c = c('','two',''))
+#' dd <- data.frame(
+#'   x = c(1, 0, 0),
+#'   y = c(0, 0, 1),
+#'   z = c(0, 1, 0),
+#'   a = c('one', '', ''),
+#'   b = c('', '', 'three'),
+#'   c = c('', 'two', '')
+#' )
 #' 
 #' pickcol(dd[1:2])
 #' pickcol(dd[1:2], 0)
@@ -2037,7 +2043,7 @@ pickcol <- function(data, ind = 1L, value = FALSE) {
   res <- apply(data, 1L, function(x) {
     if (value) {
       x[x %in% ind] <- NA
-      if  (length(x <- x[!is.na(x)]) > 1L)
+      if (length(x <- x[!is.na(x)]) > 1L)
         toString(x) else x
     } else {
       idx <- x %in% ind
@@ -2196,9 +2202,9 @@ render_sparkDT <- function(data, variables, type, range, options, ...) {
     box  <- "type: 'box' , lineColor: 'black', whiskerColor: 'black' ,    outlierFillColor: 'black' ,   outlierLineColor: 'black',  medianColor: 'black', boxFillColor: 'orange', boxLineColor: 'black'"
     
     r <- range[[ii]]
-    line_range <- sprintf("%s , chartRangeMin: %s , chartRangeMax: %s",
+    line_range <- sprintf('%s , chartRangeMin: %s , chartRangeMax: %s',
                           line, r[1L], r[2L])
-    box_range  <- sprintf("%s , chartRangeMin: %s , chartRangeMax: %s",
+    box_range  <- sprintf('%s , chartRangeMin: %s , chartRangeMax: %s',
                           box, r[1L], r[2L])
     
     types <- list(bar = bar, line = line_range, box1 = box_range, box2 = box)
@@ -2210,15 +2216,17 @@ render_sparkDT <- function(data, variables, type, range, options, ...) {
     "$('.spark%s:not(:has(canvas))').sparkline('html', { %s }); \n",
     variables[ii], type[[ii]])
   )
-  js <- sprintf("function (oSettings, json) {\n %s }\n",
-                paste(js, collapse = '\n'))
+  js <- sprintf(
+    'function (oSettings, json) {\n %s }\n', paste(js, collapse = '\n')
+  )
   
   oo <- list(columnDefs = columnDefs, fnDrawCallback = DT::JS(js))
-  dt <- do.call(DT::datatable, c(
-    list(data = data, options = modifyList(options, oo)), dots)
+  dt <- do.call(
+    DT::datatable,
+    c(list(data = data, options = modifyList(options, oo)), dots)
   )
-  dt$dependencies <- c(dt$dependencies,
-                       htmlwidgets::getDependency('sparkline'))
+  dt$dependencies <-
+    c(dt$dependencies, htmlwidgets::getDependency('sparkline'))
   
   dt
 }
