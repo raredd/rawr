@@ -575,14 +575,15 @@ col_scaler2 <- function(x, colors, breaks = 0, ...) {
 #' default, the variables are taken from \code{environment(formula)}
 #' @param which an index vector of the values to display
 #' @param at numeric vector giving the x-axis locations of each group having
-#' the same length as \code{x} or the number of pairs
+#' the same length as \code{x} or the number of pairs; alternatively, a list
+#' of pairs of x-axis locations for each \code{x}; see examples
 #' @param line lines at which to plot \code{test} results; if \code{NULL},
 #' these will be calculated; if length 1, the calculated lines will be shifted
 #' by \code{line}
 #' @param test the test to use for pairwise comparisons
 #' 
 #' @return
-#' A matrix of user coordinates where p-values are drawn.
+#' A list of user coordinates where each \code{x} is drawn.
 #' 
 #' @seealso
 #' \code{\link{cuzick.test}}; \code{\link{boxplot}}; \code{\link{tplot}};
@@ -590,7 +591,11 @@ col_scaler2 <- function(x, colors, breaks = 0, ...) {
 #' 
 #' @examples
 #' boxplot(mpg ~ gear, mtcars)
-#' bp.test(mpg ~ gear, mtcars)
+#' bp.test(mpg ~ gear, mtcars) -> x
+#' 
+#' boxplot(mpg ~ gear, mtcars)
+#' bp.test(x$text[c(1, 3)], at = list(1:2, 2:3))
+#' bp.test(x$text[c(1, 3)], at = list(1:2, 2:3), line = 0:1)
 #' 
 #' 
 #' boxplot(mpg ~ gear, mtcars, at = c(1, 3, 4), ylim = c(10, 55))
@@ -622,6 +627,21 @@ col_scaler2 <- function(x, colors, breaks = 0, ...) {
 #' at <- bp.test(letters[1:6], at = 1:4, line = -7)
 #' points(at, cex = 3, col = 1:6, xpd = NA)
 #' 
+#' 
+#' ## special cases
+#' sp <- split(mtcars$mpg, interaction(mtcars$cyl, mtcars$am))
+#' pv <- sapply(sp[-1], function(x) pvalr(t.test(sp[[1]], x)$p.value))
+#' op <- par(mar = c(5, 5, 8, 2))
+#' tplot(sp, show.n = FALSE)
+#' bp.test(pv, 1:6)
+#' 
+#' pairs <- list(1:2, 3:4, 5:6)
+#' pv <- sapply(pairs, function(ii)
+#'   pvalr(t.test(sp[[ii[1]]], sp[[ii[2]]])$p.value))
+#' tplot(sp, show.n = FALSE)
+#' bp.test(pv, at = pairs)
+#' par(op)
+#' 
 #' @export
 
 bp.test <- function(x, ...) {
@@ -630,8 +650,8 @@ bp.test <- function(x, ...) {
 
 #' @rdname bp.test
 #' @export
-bp.test.formula <- function(formula, data, which = NULL, at = NULL, line = NULL,
-                    test = wilcox.test, ...) {
+bp.test.formula <- function(formula, data, which = NULL, at = NULL,
+                            line = NULL, test = wilcox.test, ...) {
   bp <- boxplot(formula, data, plot = FALSE)
   ng <- length(bp$n)
   if (ng == 1L) {
@@ -656,8 +676,8 @@ bp.test.formula <- function(formula, data, which = NULL, at = NULL, line = NULL,
 
 #' @rdname bp.test
 #' @export
-bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
-                            test = wilcox.test, ...) {
+bp.test.default <- function(x, which = NULL, at = NULL,
+                            line = NULL, test = wilcox.test, ...) {
   op <- par(..., no.readonly = TRUE)
   on.exit(par(op))
   
@@ -671,7 +691,9 @@ bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
     seq_along(x) else which[which %in% seq_along(x)]
   at <- if (is.null(at))
     seq.int(ng) else at
-  line <- if (is.null(line) || length(line) == 1L)
+  line <- if (is.list(at))
+    rep(line %||% 0, length(at))
+  else if (is.null(line) || length(line) == 1L)
     1.25 * (seq_along(which) - 1) + line %||% 0 else line
   
   seg <- function(x1, y, x2) {
@@ -682,11 +704,12 @@ bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
     segments(x1, y, x1, y - pad, col = col, xpd = NA)
     segments(x2, y, x2, y - pad, col = col, xpd = NA)
     
-    c(x = x1 + (x2 - x1) / 2, y = y + pad * 3)
+    c(x1 + (x2 - x1) / 2, y + pad * 3)
   }
   
   yat <- coords(line = line, side = 3L)
-  cbn <- combn(at, 2L)
+  cbn <- if (is.list(at))
+    do.call('cbind', at) else combn(at, 2L)
   
   res <- sapply(seq_along(which), function(ii) {
     xat <- cbn[, which[ii]]
@@ -695,7 +718,7 @@ bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
     xat
   })
   
-  invisible(t(res))
+  invisible(list(x = res[1L, ], y = res[2L, ], text = x[which]))
 }
 
 #' Image palettes
