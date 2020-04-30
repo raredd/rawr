@@ -1773,13 +1773,16 @@ clist <- function (x, y, how = c('cbind', 'rbind', 'cbindx', 'rbindx')) {
   nn <- unique(c(names(x), names(y)))
   z  <- setNames(vector('list', length(nn)), nn)
   
-  bind <- function(x, y)
-    switch(class(x %||% y),
-           matrix = match.fun(how),
-           data.frame = function(x, y)
-             do.call(sprintf('%s.data.frame', how),
-                     Filter(Negate(is.null), list(x, y))),
-           factor = function(...) unlist(list(...)), c)
+  bind <- function(x, y) {
+    switch(
+      class(x %||% y)[1L], ## class(matrix()) is length 2
+      matrix = match.fun(how),
+      data.frame = function(x, y)
+        do.call(sprintf('%s.data.frame', how),
+                Filter(Negate(is.null), list(x, y))),
+      factor = function(...) unlist(list(...)), c
+    )
+  }
   
   for (ii in nn)
     z[[ii]] <- if (islist(x[[ii]]) && islist(y[[ii]]))
