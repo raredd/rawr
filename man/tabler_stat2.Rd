@@ -141,6 +141,15 @@ tabler_stat2(
   # digits = c('3' = 2) ## equivalently
 )
 
+\dontrun{
+h1 <- tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs')
+h2 <- tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'am')
+h3 <- tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'gear')
+
+rawr:::combine_tabler_stat2(h1, h2, how = 'rbind')
+rawr:::combine_tabler_stat2(h1, h2, h3, how = 'cbind')
+}
+
 }
 \seealso{
 \code{\link{tabler_stat}}; \code{rawr:::get_tabler_stat_n}

@@ -2214,6 +2214,15 @@ describeConfInt <- function(x, y, include_NA = TRUE, percent = TRUE,
 #'   digits = c(wt = 2)
 #'   # digits = c('3' = 2) ## equivalently
 #' )
+#' 
+#' \dontrun{
+#' h1 <- tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs')
+#' h2 <- tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'am')
+#' h3 <- tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'gear')
+#' 
+#' rawr:::combine_tabler_stat2(h1, h2, how = 'rbind')
+#' rawr:::combine_tabler_stat2(h1, h2, h3, how = 'cbind')
+#' }
 #'
 #' @export
 
@@ -2472,20 +2481,21 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
 }
 
 combine_tabler_stat2 <- function(..., correct = FALSE, format_pval = TRUE,
-                                 htmlArgs = list()) {
+                                 how = c('rbind', 'cbind'), htmlArgs = list()) {
   lget <- function(l, what, attr = FALSE) {
-    l <- lapply(l, function(x) if (attr)
+    lapply(l, function(x) if (attr)
       attr(x, what) else x[[what]])
   }
   tr <- function(x) {
     gsub('\\s{2,}', ' ', x)
   }
-
+  
   l <- list(...)
   p <- unlist(lget(l, 'p.value', TRUE))
   l <- lget(l, 'call', TRUE)
-
-  res <- do.call('rbind', lget(l, 'x'))
+  
+  how <- match.arg(how)
+  res <- do.call(how, lget(l, 'x'))
 
   method <- if (isTRUE(correct))
     'fdr' else if (is.character(correct)) correct else 'none'
@@ -2501,7 +2511,7 @@ combine_tabler_stat2 <- function(..., correct = FALSE, format_pval = TRUE,
       l[[1L]]$n.cgroup[length(l[[1L]]$n.cgroup)] + 1L
   }
 
-  tf <- gsub('</?font[^>]+>', '', unlist(lget(l, 'tfoot')))
+  tf <- gsub('</?font[^>]*?>', '', unlist(lget(l, 'tfoot')))
   tf <- unique(unlist(strsplit(tf, ', ')))
 
   args <- list(
@@ -2512,7 +2522,15 @@ combine_tabler_stat2 <- function(..., correct = FALSE, format_pval = TRUE,
     css.cell = 'padding: 0px 5px 0px; white-space: nowrap;',
     tfoot = sprintf('<font size=1>%s</font>', toString(tf))
   )
-
+  
+  if (how == 'cbind') {
+    args$align <- paste(lget(l, 'align'), collapse = '')
+    args$rgroup <- lget(l, 'rgroup')[[1L]]
+    args$n.rgroup <- lget(l, 'n.rgroup')[[1L]]
+    args$cgroup <- do.call('c', lget(l, 'cgroup'))
+    args$n.cgroup <- do.call('c', lget(l, 'n.cgroup'))
+  }
+  
   ht <- do.call(htmlTable::htmlTable, c(args, htmlArgs))
 
   structure(ht, class = 'htmlTable', p.value = p, call = args)
