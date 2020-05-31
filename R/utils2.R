@@ -2220,8 +2220,11 @@ describeConfInt <- function(x, y, include_NA = TRUE, percent = TRUE,
 #' h2 <- tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'am')
 #' h3 <- tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'gear')
 #' 
-#' rawr:::combine_tabler_stat2(h1, h2, how = 'rbind')
-#' rawr:::combine_tabler_stat2(h1, h2, h3, how = 'cbind')
+#' rawr:::combine_tabler_stat2(list(h1, h2), how = 'rbind')
+#' rawr:::combine_tabler_stat2(list(table1 = h1, table2 = h2), how = 'rbind')
+#' 
+#' rawr:::combine_tabler_stat2(list(h1, h2, h3), how = 'cbind')
+#' rawr:::combine_tabler_stat2(list(t1 = h1, t2 = h2, t3 = h3), how = 'cbind')
 #' }
 #'
 #' @export
@@ -2480,8 +2483,9 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
   structure(ht, class = 'htmlTable', p.value = pvn, call = args)
 }
 
-combine_tabler_stat2 <- function(..., correct = FALSE, format_pval = TRUE,
-                                 how = c('rbind', 'cbind'), htmlArgs = list()) {
+combine_tabler_stat2 <- function(l, correct = FALSE, format_pval = TRUE,
+                                 how = c('rbind', 'cbind'), headers = names(l),
+                                 htmlArgs = list()) {
   lget <- function(l, what, attr = FALSE) {
     lapply(l, function(x) if (attr)
       attr(x, what) else x[[what]])
@@ -2490,7 +2494,6 @@ combine_tabler_stat2 <- function(..., correct = FALSE, format_pval = TRUE,
     gsub('\\s{2,}', ' ', x)
   }
   
-  l <- list(...)
   p <- unlist(lget(l, 'p.value', TRUE))
   l <- lget(l, 'call', TRUE)
   
@@ -2529,6 +2532,19 @@ combine_tabler_stat2 <- function(..., correct = FALSE, format_pval = TRUE,
     args$n.rgroup <- lget(l, 'n.rgroup')[[1L]]
     args$cgroup <- do.call('c', lget(l, 'cgroup'))
     args$n.cgroup <- do.call('c', lget(l, 'n.cgroup'))
+    
+    if (!is.null(headers)) {
+      ncg <- sapply(lget(l, 'x'), ncol)
+      lcg <- headers
+      length(ncg) <- length(lcg) <- length(args$cgroup)
+      args$n.cgroup <- rbind(ncg, args$n.cgroup)
+      args$cgroup <- rbind(lcg, args$cgroup)
+    }
+  }
+  
+  if (how == 'rbind' && !is.null(headers)) {
+    args$tspanner <- headers
+    args$n.tspanner <- sapply(lget(l, 'x'), nrow)
   }
   
   ht <- do.call(htmlTable::htmlTable, c(args, htmlArgs))

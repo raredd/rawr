@@ -146,8 +146,11 @@ h1 <- tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs')
 h2 <- tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'am')
 h3 <- tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'gear')
 
-rawr:::combine_tabler_stat2(h1, h2, how = 'rbind')
-rawr:::combine_tabler_stat2(h1, h2, h3, how = 'cbind')
+rawr:::combine_tabler_stat2(list(h1, h2), how = 'rbind')
+rawr:::combine_tabler_stat2(list(table1 = h1, table2 = h2), how = 'rbind')
+
+rawr:::combine_tabler_stat2(list(h1, h2, h3), how = 'cbind')
+rawr:::combine_tabler_stat2(list(t1 = h1, t2 = h2, t3 = h3), how = 'cbind')
 }
 
 }
