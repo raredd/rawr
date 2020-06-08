@@ -1430,8 +1430,8 @@ cuzick.test.default <- function(x, g, details = wilcox.test, correct = TRUE,
     names(sp) <- ids
     
     nul <- structure(
-      list(statistic = NA, parameter = NULL, p.value = NA, null.value = NA,
-           alternative = NA, method = NA, data.name = NA),
+      list(statistic = NA, parameter = NA, p.value = NA, null.value = NA,
+           stderr = NA, alternative = NA, method = NA, data.name = NA),
       class = 'htest'
     )
     
