@@ -49,10 +49,12 @@ Cycles through possible designs constrained by \code{alpha}, \code{beta},
 and \code{n.max} arguments for specified ranges of \code{p0} and \code{p1}.
 }
 \examples{
-bintest(p0low = .2, p1low = .5, n.max = 25)
+bintest(p0low = 0.2, p1low = 0.5, n.max = 25)
+## compare
+rawr:::bin1samp(0.2, 0.5)
 
 ## example in sas macro
-bintest(.1, .15, .2, .2, n.max = 80, alpha = .08, beta = .24)
+bintest(0.1, 0.15, 0.2, 0.2, n.max = 80, alpha = 0.08, beta = 0.24)
 
 }
 \references{

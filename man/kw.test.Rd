@@ -50,7 +50,7 @@ A list with class "\code{htest}" containing the following elements:
 \item{\code{statistic}}{the Kruskal-Wallis test statistic}
 \item{\code{parameter}}{the degrees of freedom of the approximate chi-
 squared distribution of the test statistic}
-\item{\code{p.value}}{the pvalue of the test}
+\item{\code{p.value}}{the p-value of the test (two-sided)}
 \item{\code{method}}{a character string "\code{Kruskal-Wallis test for
 count data}" and, optionally, the number of Monte Carlo replications, if
 applicable}
@@ -77,11 +77,13 @@ dat$response2 <- factor(dat$response, c('NR', 'PR', 'CR'))
 kw.test(dat$regimen, dat$response)   ## incorrect
 kw.test(dat$regimen, dat$response2)  ## correct
 
+
 ## the following are equivalent to the above
 kw.test(dat$regimen ~ dat$response2)
 kw.test(regimen ~ response2, dat)
 kw.test(split(dat$regimen, dat$response2))
 kw.test(table(dat$regimen, dat$response2))
+
 
 ## compare (note formula is reversed)
 kruskal.test(response2 ~ regimen, dat)
@@ -95,5 +97,6 @@ kw.test(regimen ~ response2, dat, simulate.p.value = TRUE, B = 10000)
 }
 \seealso{
 \code{\link{kruskal.test}}; \code{\link{jt.test}} for doubly-ordered
-tables; \code{\link{cuzick.test}}; \code{DescTools::CochranArmitageTest}
+tables; \code{\link{cuzick.test}}; \code{DescTools::CochranArmitageTest};
+\code{\link{prop.trend.test}}
 }

@@ -57,13 +57,13 @@ possible two-stage sampling designs to find those that minimize the
 expected number of subjects, subject to specified constraints.
 }
 \examples{
-simon2(.2, c(.4, .5))
-simon2(p0 = seq(.55, .6, by = .01), pa = .75, ntmax = 60)
+simon2(0.2, c(0.4, 0.5))
+simon2(p0 = seq(0.55, 0.6, by = 0.01), pa = 0.75, ntmax = 60)
 
 ## compare this function to results from desmon::simon
-simon2(.4, .6)
+simon2(0.4, 0.6)
 ## from desmon package
-rawr:::simon(.4, .6)
+rawr:::simon(0.4, 0.6)
 
 }
 \references{

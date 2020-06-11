@@ -16,7 +16,8 @@ factor object}
 A list with class "\code{htest}" containing the following elements:
 
 \item{statistic}{the value of the test statistic with a name describing it}
-\item{p.value}{the p-value for the test (two-sided, corrected for ties)}
+\item{p.value}{the p-value for the test (asymptotic, two-sided, corrected
+for ties)}
 \item{method}{a character string describing the test used}
 \item{data.name}{a character string giving the names of the data}
 }
@@ -25,10 +26,21 @@ An implementation of Jonckheere's trend test for \emph{ordered} independent
 samples.
 }
 \examples{
+## example from Exact Test (Mehta), figure 12.2
+dat <- matrix(
+  c(100, 18, 50, 50, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1), 4,
+  dimnames = list(dose = 1:4 * 100,
+                  toxicity = c('Mild', 'Moderate', 'Severe', 'Death'))
+)
+jt.test(dat)
+
+
 tbl <- table(mtcars$gear, mtcars$cyl)
 jt.test(tbl)
-cor.test(mtcars$gear, mtcars$cyl, method = 'kendall')
+## compare
+cor.test(mtcars$gear, mtcars$cyl, method = 'kendall', exact = FALSE)
 # clinfun::jonckheere.test(mtcars$gear, mtcars$cyl)
+
 
 ## from stats::cor.test
 x <- c(44.4, 45.9, 41.9, 53.3, 44.7, 44.1, 50.7, 45.2, 60.1)

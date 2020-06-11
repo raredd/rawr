@@ -2,8 +2,7 @@
 % Please edit documentation in R/stat.R
 \name{power_cv}
 \alias{power_cv}
-\title{Power calculations for one- and two-sample t-tests using ratio of means and
-coefficients of variation}
+\title{Power calculations for coefficient of variation}
 \usage{
 power_cv(
   n = NULL,
@@ -27,7 +26,8 @@ power_cv(
 
 \item{power}{power of test (1 - type-II error probability)}
 
-\item{type}{type of t test}
+\item{type}{type of t test, \code{"two-sample"} or \code{"one-sample"}/
+\code{"paired"}}
 
 \item{alternative}{one- or two-sided test}
 
@@ -38,8 +38,9 @@ Object of class \code{power.htest}, a list of the arguments (including
 the computed) augmented with method and note elements.
 }
 \description{
-Compute power of test using mean ratios and coefficients of variation or
-determine other parameters to obtain target power.
+Compute power of one- and two-sample t-test using ratio of means and
+coefficient of variation. Alternatively, determine the other parameters
+to obtain a target power.
 }
 \details{
 Exactly one of \code{n}, \code{f}, \code{cv}, \code{sig.level}, and
@@ -51,17 +52,17 @@ may see errors from it, notably about inability to bracket the root when
 invalid arguments are given.
 }
 \examples{
-power_cv(n = NULL, 1.25, .2, .05, .8, distribution = 'normal')
-power_cv(13, 1.25, .2, .05, power = NULL, distribution = 't')
-power_cv(13, 1.25, .2, .05, power = NULL, distribution = 'log.normal')
+power_cv(n = NULL, 1.25, 0.2, 0.05, 0.8, distribution = 'normal')
+power_cv(13, 1.25, 0.2, 0.05, power = NULL, distribution = 't')
+power_cv(13, 1.25, 0.2, 0.05, power = NULL, distribution = 'log.normal')
 
 }
 \references{
-Van Belle, G., Martin, D. Sample size as a function of
-coefficient of variation and ratio of means. Am Statistician, Vol. 47, No. 3
-(Aug., 1993), pp. 165-7.
+Van Belle, G., Martin, D. Sample size as a function of coefficient of
+variation and ratio of means. Am Statistician, Vol. 47, No. 3 (Aug., 1993),
+pp. 165-7.
 
-Martin, D.C., and van Belle, G. Approximations for Power and
-Sample Size for Student's t-Test. Technical Report 125 (1991), University of
-Washington, Dept. of Biostatistics.
+Martin, D.C., and van Belle, G. Approximations for Power and Sample Size
+for Student's t-Test. Technical Report 125 (1991), University of Washington,
+Dept. of Biostatistics.
 }

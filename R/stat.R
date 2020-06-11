@@ -156,10 +156,11 @@ bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
       stop('\'r\' and \'n\' should be length 2')
     
     mat <- twocon(n[1L], n[2L], r[1L], r[2L], 1 - alpha, dp)
-    mat <- cbind(Responses = r[2L], Trials = sum(n),
-                 PointEst = r[2L] / sum(n),
-                 Lower = mat['lower'], Upper = mat['upper'],
-                 Width = diff(mat[c('lower', 'upper')]))
+    mat <- cbind(
+      Responses = r[2L], Trials = sum(n), PointEst = r[2L] / sum(n),
+      Lower = mat['lower'], Upper = mat['upper'],
+      Width = diff(mat[c('lower', 'upper')])
+    )
     return(`rownames<-`(mat, NULL))
   }
   
@@ -191,11 +192,14 @@ bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
       sqrt(((r / n) * (1 - r / n)) / n)
     res <- rbind(c(ll, ul), cl, c(asymp.lcl, asymp.ucl))
     res <- cbind(rep(r / n, 3), res)
-    switch(method,
-           exact      = res[1L, ],
-           wilson     = res[2L, ],
-           asymptotic = res[3L, ],
-           all        = res)
+    
+    switch(
+      method,
+      exact      = res[1L, ],
+      wilson     = res[2L, ],
+      asymptotic = res[3L, ],
+      all        = res
+    )
   }
   
   if ((lr != ln) & lr == 1L)
@@ -219,7 +223,7 @@ bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
   }
   
   mat <- matrix(ncol = 3L, nrow = lr)
-  for (i in 1:lr)
+  for (i in seq.int(lr))
     mat[i, ] <- bc(r[i], n[i], alpha = alpha, method = method)
   mat <- `colnames<-`(cbind(mat, mat[, 3L] - mat[, 2L]),
                       c('PointEst', 'Lower', 'Upper', 'Width'))
@@ -254,25 +258,25 @@ twocon <- function(n1, n2, r1, r, conf = 0.95, dp = 1) {
   }
   n <- n1 + n2
   mle <- if (r > r1) 
-    r/n else r/n1
-  mm <- c((0:r1)/n1, (r1 + 1):n/n)
+    r / n else r / n1
+  mm <- c((0:r1)/n1, (r1 + 1):n / n)
   ff <- function(p, x1, x2, u1, n1, n2, r1, mm, dbin2, mle)
     sum(dbin2(p, x1, x2, u1, n1, n2, r1) * mm) - mle
-  pm <- if (r <= 0) 
+  pm <- if (r <= 0)
     0
   else if (r >= n) 
     1
   else uniroot(ff, c(1e-08, 1 - 1e-08), x1 = x1, x2 = x2, u1 = u1,
                n1 = n1, n2 = n2, r1 = r1, mm = mm, dbin2 = dbin2, mle = mle)$root
   if (r1 >= r) {
-    ube <- r/n1
+    ube <- r / n1
   } else {
     aa <- dhyper((r1 + 1):r, n1, n2, r)
     ube <- sum(((r1 + 1):r) * aa)/(n1 * sum(aa))
   }
   mm <- if (r > r1) 
-    c((n/n1)^dp * (0:r1), (r1 + 1):n)
-  else c(0:r1, (n1/n)^dp * ((r1 + 1):n))
+    c((n / n1) ^ dp * (0:r1), (r1 + 1):n)
+  else c(0:r1, (n1 / n) ^ dp * ((r1 + 1):n))
   s1 <- mm >= r
   s2 <- mm <= r
   ff2 <- function(p, x1, x2, u1, n1, n2, r1, s, dbin2, alpha)
@@ -331,53 +335,53 @@ twocon <- function(n1, n2, r1, r, conf = 0.95, dp = 1) {
 #' \href{https://github.com/raredd/sascros/blob/master/bintest.sas}{SAS macro}
 #' 
 #' @examples
-#' bintest(p0low = .2, p1low = .5, n.max = 25)
+#' bintest(p0low = 0.2, p1low = 0.5, n.max = 25)
+#' ## compare
+#' rawr:::bin1samp(0.2, 0.5)
 #' 
 #' ## example in sas macro
-#' bintest(.1, .15, .2, .2, n.max = 80, alpha = .08, beta = .24)
+#' bintest(0.1, 0.15, 0.2, 0.2, n.max = 80, alpha = 0.08, beta = 0.24)
 #' 
 #' @export
 
 bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
-                     r = n.max, alpha = .1, beta = .1) {
-  
+                     r = n.max, alpha = 0.1, beta = 0.1) {
   stopifnot(
     alpha %inside% c(0, 1),
-    beta %inside% c(0, 1)
+    beta %inside% c(0, 1),
+    r > 0
   )
-  if (r < 1)
-    stop('Number of responders must be >1')
   
   mat <- expand.grid(
     seq(p0low, p0high, by = .01),
     seq(p1low, p1high, .01),
-    1:n.max,
-    1:r
+    seq.int(n.max),
+    seq.int(r)
   )
   
   ## require > r responders out of n and remove where p1 <= p0 or r >= n
-  mat <- `colnames<-`(as.matrix(within(mat, r2 <- mat[, 4] + 1)),
-                      c('p0','p1','n','r','r2'))
-  mat <- mat[!(mat[, 2] <= mat[, 1] | mat[, 4] >= mat[, 3]), ]
+  mat <- `colnames<-`(as.matrix(within(mat, r2 <- mat[, 4L] + 1L)),
+                      c('p0', 'p1', 'n', 'r', 'r2'))
+  mat <- mat[!(mat[, 2L] <= mat[, 1L] | mat[, 4L] >= mat[, 3L]), ]
   
   ## Pr(<r2 responders|p0 true): pbinom(r2, n, p0)
   ## Pr(>r2 responders for p0): type-I error = 1 - y
-  y <- pbinom(mat[, 5], mat[, 3], mat[, 1])
+  y <- pbinom(mat[, 5L], mat[, 3L], mat[, 1L])
   
   ## Pr(<r2 responders | p1 true): pbinom(r2, n, p1): type-II error
   ## Pr(>r2 responders for p1): 1 - type-II error
-  z <- pbinom(mat[, 5], mat[, 3], mat[, 2])
+  z <- pbinom(mat[, 5L], mat[, 3L], mat[, 2L])
   
   ## signal: p1 - p0
-  signal <- mat[, 2] - mat[, 1]
+  signal <- mat[, 2L] - mat[, 1L]
   
   mat <- cbind(mat, y, type1 = 1 - y, z, power = 1 - z, signal)
-  alpha <- rep(alpha, times = dim(mat)[1])
-  beta  <- rep(beta, times = dim(mat)[1])
+  alpha <- rep(alpha, nrow(mat))
+  beta  <- rep(beta, nrow(mat))
   
   ## keep ones that fit type-I/II error constraints
-  mat <- mat[mat[, 9] > (1 - beta) & mat[, 7] < alpha, ]
-  mat <- unique(as.data.frame(mat[, c(1:3,5,7,9:10)]))
+  mat <- mat[mat[, 9L] > (1 - beta) & mat[, 7L] < alpha, , drop = FALSE]
+  mat <- unique(as.data.frame(mat[, c(1:3, 5L, 7L, 9:10), drop = FALSE]))
   mat <- mat[order(mat$n), ]
   
   list(
@@ -479,11 +483,11 @@ pr_table <- function(prob, n, crit, greater = FALSE, digits = NULL) {
     res else roundr(res, digits)
 }
 
-#' Power calculations for one- and two-sample t-tests using ratio of means and
-#' coefficients of variation
+#' Power calculations for coefficient of variation
 #' 
-#' Compute power of test using mean ratios and coefficients of variation or
-#' determine other parameters to obtain target power.
+#' Compute power of one- and two-sample t-test using ratio of means and
+#' coefficient of variation. Alternatively, determine the other parameters
+#' to obtain a target power.
 #' 
 #' Exactly one of \code{n}, \code{f}, \code{cv}, \code{sig.level}, and
 #' \code{power} must be \code{NULL}.
@@ -493,7 +497,8 @@ pr_table <- function(prob, n, crit, greater = FALSE, digits = NULL) {
 #' @param cv coefficient of variation
 #' @param sig.level significance level (type-I error probability)
 #' @param power power of test (1 - type-II error probability)
-#' @param type type of t test
+#' @param type type of t test, \code{"two-sample"} or \code{"one-sample"}/
+#' \code{"paired"}
 #' @param alternative one- or two-sided test
 #' @param distribution underlying distribution assumption
 #' 
@@ -506,17 +511,19 @@ pr_table <- function(prob, n, crit, greater = FALSE, digits = NULL) {
 #' may see errors from it, notably about inability to bracket the root when
 #' invalid arguments are given.
 #' 
-#' @references Van Belle, G., Martin, D. Sample size as a function of
-#' coefficient of variation and ratio of means. Am Statistician, Vol. 47, No. 3
-#' (Aug., 1993), pp. 165-7.
-#' @references Martin, D.C., and van Belle, G. Approximations for Power and
-#' Sample Size for Student's t-Test. Technical Report 125 (1991), University of
-#' Washington, Dept. of Biostatistics.
+#' @references
+#' Van Belle, G., Martin, D. Sample size as a function of coefficient of
+#' variation and ratio of means. Am Statistician, Vol. 47, No. 3 (Aug., 1993),
+#' pp. 165-7.
+#' @references
+#' Martin, D.C., and van Belle, G. Approximations for Power and Sample Size
+#' for Student's t-Test. Technical Report 125 (1991), University of Washington,
+#' Dept. of Biostatistics.
 #' 
 #' @examples
-#' power_cv(n = NULL, 1.25, .2, .05, .8, distribution = 'normal')
-#' power_cv(13, 1.25, .2, .05, power = NULL, distribution = 't')
-#' power_cv(13, 1.25, .2, .05, power = NULL, distribution = 'log.normal')
+#' power_cv(n = NULL, 1.25, 0.2, 0.05, 0.8, distribution = 'normal')
+#' power_cv(13, 1.25, 0.2, 0.05, power = NULL, distribution = 't')
+#' power_cv(13, 1.25, 0.2, 0.05, power = NULL, distribution = 'log.normal')
 #' 
 #' @export
 
@@ -544,12 +551,13 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
     stop('cannot use desired significance level: ',
          'use 5% or 10% type-I error probability')
   
-  tsample <- switch(type, one.sample = 1, two.sample = 2, paired = 1)
-  ttside  <- switch(alternative, less = 1, two.sided = 2, greater = 3)
-  tside   <- switch(alternative, less = 1, two.sided = 2, greater = 1)
+  tsample <- switch(type, one.sample = 1L, two.sample = 2L, paired = 1L)
+  ttside  <- switch(alternative, less = 1L, two.sided = 2L, greater = 3L)
+  tside   <- switch(alternative, less = 1L, two.sided = 2L, greater = 1L)
   
   ## assuming underlying t distribution
-  if (ttside == 1) { # one-sided, less
+  # one-sided, less
+  if (ttside == 1L) {
     p.body <- quote({
       df <- (n - 1) * tsample
       qt <- qt(sig.level/tside, df, lower.tail = TRUE)
@@ -558,21 +566,23 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
     })
   }
   
-  if (ttside == 2) { # two-sided
+  # two-sided
+  if (ttside == 2L) {
     p.body <- quote({
       df <- (n - 1) * tsample
-      qt <- qt(sig.level/tside, df, lower.tail = FALSE)
+      qt <- qt(sig.level / tside, df, lower.tail = FALSE)
       pt(-qt + (sqrt(n) * (f - 1)) / (cv * (f ^ 2 + 1) ^ 0.5), df,
-         lower.tail = TRUE)/2 +
+         lower.tail = TRUE) / 2 +
         pt(-(-qt + (sqrt(n) * (f - 1)) / (cv * (f ^ 2 + 1) ^ 0.5)), df,
            lower.tail = FALSE) / 2
     })
   }
   
-  if (ttside == 3) { # one-sided, greater
+  # one-sided, greater
+  if (ttside == 3L) {
     p.body <- quote({
       df <- (n - 1) * tsample
-      qt <- qt(sig.level/tside, df, lower.tail = FALSE)
+      qt <- qt(sig.level / tside, df, lower.tail = FALSE)
       pt(-(-qt + (sqrt(n) * (f - 1)) / (cv * (f ^ 2 + 1) ^ 0.5)), df,
          lower.tail = FALSE)
     })
@@ -590,10 +600,10 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
   ## assuming underlying lognormal distribution with unknown variance
   if (dist == 'log.normal') {
     mat <- matrix(
-      c(.005, -2.57583, -2.203837, .6699734, -.0524065, -.0059258,
-        .010, -2.32635, -1.821394, .5380802, .0181774, -.0584748,
-        .025, -1.95996, -1.145521, .2370261, .0392020, -.0670915,
-        .050, -1.64485, -.8455414, .1745865, .0774911, -.0865455),
+      c(0.005, -2.57583, -2.203837,  0.6699734, -0.0524065, -0.0059258,
+        0.010, -2.32635, -1.821394,  0.5380802,  0.0181774, -0.0584748,
+        0.025, -1.95996, -1.145521,  0.2370261,  0.0392020, -0.0670915,
+        0.050, -1.64485, -0.8455414, 0.1745865,  0.0774911, -0.0865455),
       ncol = 6L, byrow = TRUE,
       dimnames = list(NULL, c('alpha', 'z', 'a', 'b', 'c', 'd'))
     )
@@ -604,7 +614,7 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
       delta <- ifelse(cv < 0.5, sqrt(n / 2) * log(f) / cv,
                       sqrt(n / 2) * log(f) / sqrt(log(cv ^ 2 + 1)))
       v <- 2 * n - 2
-      pnorm(mat[alpha - +(tside == 2), 'z'] + delta *
+      pnorm(mat[alpha - (tside == 2L), 'z'] + delta *
               (1 + mat[alpha, 'a'] / v + mat[alpha, 'b'] / (v - 1) +
                  delta * (mat[alpha, 'c'] / v + mat[alpha, 'd'] / (v - 1))))
     })
@@ -613,32 +623,28 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
   ## calculate missing parameter
   if (is.null(power))
     power <- eval(p.body)
-  
   else if (is.null(n))
     n <- ifelse(dist == 'log.normal', ceiling(uniroot(function(n)
       eval(p.body) - power, c(2, 1e+07))$root), uniroot(function(n)
         eval(p.body) - power, c(2, 1e+07))$root)
-  
   else if (is.null(cv)) {
-    cv <- if (ttside == 2)
+    cv <- if (ttside == 2L)
       uniroot(function(cv) eval(p.body) - power, f * c(1e-07, 10))$root
-    else if (ttside == 1)
+    else if (ttside == 1L)
       uniroot(function(cv) eval(p.body) - power, f * c(-10, 5))$root
-    else if (ttside == 3)
+    else if (ttside == 3L)
       uniroot(function(cv) eval(p.body) - power, f * c(-5, 10))$root
   } else if (is.null(f)) {
-    f <- if (ttside == 2)
+    f <- if (ttside == 2L)
       uniroot(function(f) eval(p.body) - power, cv * c(1e-07, 10))$root
-    else if (ttside == 1)
+    else if (ttside == 1L)
       uniroot(function(f) eval(p.body) - power, cv * c(-10, 5))$root
-    else if (ttside == 3)
+    else if (ttside == 3L)
       uniroot(function(f) eval(p.body) - power, cv * c(-5, 10))$root
   } else if (is.null(sig.level))
     sig.level <- uniroot(function(sig.level) eval(p.body) - power,
                          c(1e-10, 1 - 1e-10))$root
-  
-  else
-    stop('internal error - solve for null value')
+  else stop('internal error - solve for null value')
   
   NOTE <- switch(
     type,
@@ -708,13 +714,13 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
 #' \emph{Controlled Clinical Trials}, 10:1-10.
 #' 
 #' @examples
-#' simon2(.2, c(.4, .5))
-#' simon2(p0 = seq(.55, .6, by = .01), pa = .75, ntmax = 60)
+#' simon2(0.2, c(0.4, 0.5))
+#' simon2(p0 = seq(0.55, 0.6, by = 0.01), pa = 0.75, ntmax = 60)
 #' 
 #' ## compare this function to results from desmon::simon
-#' simon2(.4, .6)
+#' simon2(0.4, 0.6)
 #' ## from desmon package
-#' rawr:::simon(.4, .6)
+#' rawr:::simon(0.4, 0.6)
 #' 
 #' @export
 
@@ -725,7 +731,7 @@ simon2 <- function(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,
   sim <- Map('simon', p0 = args[['p0']], pa = args[['pa']],
              n1max = n1max, alpha = alpha, beta = beta,
              del = del, minimax = minimax)
-  sim <- lapply(sim, '[[', 1)
+  sim <- lapply(sim, '[[', 1L)
   sim <- setNames(sim, sapply(seq_len(nrow(args)), function(x)
     catlist(args[x, ])))
   
@@ -738,8 +744,7 @@ simon2 <- function(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,
   )
 }
 
-simon <- function(p0, pa, n1max = 0, ntmax = 1e5,
-                  alpha = 0.1, beta = 0.1,
+simon <- function(p0, pa, n1max = 0, ntmax = 1e5, alpha = 0.1, beta = 0.1,
                   del = 1, minimax = FALSE) {
   ## desmon::simon
   # 
@@ -758,7 +763,7 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5,
   # minimax	If TRUE, only searches for designs with the total sample size equal
   #         to the minimum possible value
   
-  if (alpha > .5 | alpha <= 0 | 1 - beta <= alpha |
+  if (alpha > 0.5 | alpha <= 0 | 1 - beta <= alpha |
       beta <= 0 | p0 <= 0 | p0 >= pa |
       pa >= 1 | n1max > ntmax)
     stop('invalid arguments')
@@ -782,10 +787,9 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5,
       if (n1max > 0)
         n1max <- min(n1max, u1[1L])
       else n1max <- u1[1L]
-    } else
-      stop('no valid designs')
-  n1max <- min(n1max, ntmax)
+    } else stop('no valid designs')
   
+  n1max <- min(n1max, ntmax)
   n1max <- min(n1max, ntmax)
   
   ## determine min total sample size
@@ -795,12 +799,11 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5,
   while (b <= beta) {
     n <- n - 1
     u <- c(1, 1 - pbinom(0:(u1[2L] + 1), n, p0))
-    index <- min((1:(u1[2] + 3))[u <= alpha])
-    pi <- (alpha - u[index]) / (u[index - 1] - u[index])
-    if (index > 2L) {
-      u <- 1 - pbinom((index - 3):(index - 2), n, pa)
-    } else
-      u <- c(1, 1 - pbinom(0, n, pa))
+    index <- min((1:(u1[2L] + 3))[u <= alpha])
+    pi <- (alpha - u[index]) / (u[index - 1L] - u[index])
+    u <- if (index > 2L)
+      1 - pbinom((index - 3L):(index - 2L), n, pa)
+    else c(1, 1 - pbinom(0, n, pa))
     b <- 1 - u[2L] - pi * (u[1L] - u[2L])
   }
   
@@ -909,7 +912,6 @@ bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20L) {
     }
   } else
     if (pa < p0) {
-      
       while (b > beta) {
         n <- n + 1L
         l <- x:0
@@ -1583,7 +1585,8 @@ cuzick.test.pvalue <- function(x, g, correct, B = 2000L,
 #' A list with class "\code{htest}" containing the following elements:
 #' 
 #' \item{statistic}{the value of the test statistic with a name describing it}
-#' \item{p.value}{the p-value for the test (two-sided, corrected for ties)}
+#' \item{p.value}{the p-value for the test (asymptotic, two-sided, corrected
+#' for ties)}
 #' \item{method}{a character string describing the test used}
 #' \item{data.name}{a character string giving the names of the data}
 #' 
@@ -1599,10 +1602,21 @@ cuzick.test.pvalue <- function(x, g, correct, B = 2000L,
 #' \code{\link[stats]{cor.test}}; \code{clinfin::jonckheere.test}
 #' 
 #' @examples
+#' ## example from Exact Test (Mehta), figure 12.2
+#' dat <- matrix(
+#'   c(100, 18, 50, 50, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1), 4,
+#'   dimnames = list(dose = 1:4 * 100,
+#'                   toxicity = c('Mild', 'Moderate', 'Severe', 'Death'))
+#' )
+#' jt.test(dat)
+#' 
+#' 
 #' tbl <- table(mtcars$gear, mtcars$cyl)
 #' jt.test(tbl)
-#' cor.test(mtcars$gear, mtcars$cyl, method = 'kendall')
+#' ## compare
+#' cor.test(mtcars$gear, mtcars$cyl, method = 'kendall', exact = FALSE)
 #' # clinfun::jonckheere.test(mtcars$gear, mtcars$cyl)
+#' 
 #' 
 #' ## from stats::cor.test
 #' x <- c(44.4, 45.9, 41.9, 53.3, 44.7, 44.1, 50.7, 45.2, 60.1)
@@ -2037,8 +2051,7 @@ rsum <- function(a, b, n, k, unique = FALSE, iterations = 100L) {
   }
   
   if (!unique || length(unique(res)) == n)
-    res
-  else Recall(a, b, n, k, TRUE, iterations)
+    res else Recall(a, b, n, k, TRUE, iterations)
 }
 
 #' Kruskal-Wallis test for count data
@@ -2077,7 +2090,7 @@ rsum <- function(a, b, n, k, unique = FALSE, iterations = 100L) {
 #' \item{\code{statistic}}{the Kruskal-Wallis test statistic}
 #' \item{\code{parameter}}{the degrees of freedom of the approximate chi-
 #' squared distribution of the test statistic}
-#' \item{\code{p.value}}{the pvalue of the test}
+#' \item{\code{p.value}}{the p-value of the test (two-sided)}
 #' \item{\code{method}}{a character string "\code{Kruskal-Wallis test for
 #' count data}" and, optionally, the number of Monte Carlo replications, if
 #' applicable}
@@ -2089,7 +2102,8 @@ rsum <- function(a, b, n, k, unique = FALSE, iterations = 100L) {
 #' 
 #' @seealso
 #' \code{\link{kruskal.test}}; \code{\link{jt.test}} for doubly-ordered
-#' tables; \code{\link{cuzick.test}}; \code{DescTools::CochranArmitageTest}
+#' tables; \code{\link{cuzick.test}}; \code{DescTools::CochranArmitageTest};
+#' \code{\link{prop.trend.test}}
 #' 
 #' @examples
 #' ## example from Exact Test (Mehta), figure 11.1
@@ -2104,11 +2118,13 @@ rsum <- function(a, b, n, k, unique = FALSE, iterations = 100L) {
 #' kw.test(dat$regimen, dat$response)   ## incorrect
 #' kw.test(dat$regimen, dat$response2)  ## correct
 #' 
+#' 
 #' ## the following are equivalent to the above
 #' kw.test(dat$regimen ~ dat$response2)
 #' kw.test(regimen ~ response2, dat)
 #' kw.test(split(dat$regimen, dat$response2))
 #' kw.test(table(dat$regimen, dat$response2))
+#' 
 #' 
 #' ## compare (note formula is reversed)
 #' kruskal.test(response2 ~ regimen, dat)
