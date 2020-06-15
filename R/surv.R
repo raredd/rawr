@@ -127,7 +127,8 @@ stratify_formula <- function(formula, vars = NULL) {
 #' (test statistic, degrees of freedom, p-value) are shown; if \code{FALSE},
 #' only the p-value is shown
 #' @param args.test an optional \emph{named} list of \code{\link{mtext}}
-#' arguments controlling the \code{*_test} text
+#' arguments controlling the \code{*_test} text; additional text can be
+#' appended with \code{list(.prefix = '')} or \code{list(.suffix = '')}
 #' @param hr_text logical; if \code{TRUE}, a \code{\link{coxph}} model is fit,
 #' and a summary (hazard ratios, confidence intervals, and Wald p-values)
 #' is shown
@@ -169,8 +170,8 @@ stratify_formula <- function(formula, vars = NULL) {
 #' ## basic usage
 #' kmplot(km1)
 #' kmplot(km1, fun = 'F')
-#' kmplot(km1, atrisk.col = c('grey50','tomato'),
-#'        args.test = list(col = 'red', cex = 1.5, line = 0))
+#' kmplot(km1, atrisk.col = c('grey50','tomato'), test_details = FALSE,
+#'        args.test = list(col = 'red', cex = 1.5, .prefix = 'Log-rank: '))
 #' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
 #' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3700)
 #' kmplot(km2, atrisk.table = FALSE, lwd.surv = 2, lwd.mark = .5,
@@ -758,6 +759,13 @@ kmplot <- function(s,
     if (identical(txt, FALSE))
       message('There is only one group for ', svar, ' -- no test performed')
     else {
+      txt <- if (inherits(txt, 'call')) {
+        txt <- as.list(txt)
+        as.call(c(txt[1L], args.test$.prefix, txt[-1L], args.test$.suffix))
+      } else paste0(args.test$.prefix, txt, args.test$.suffix)
+      
+      args.test$.prefix <- args.test$.suffix <- NULL
+      
       largs <- alist(
         text = txt, side = 3L, at = par('usr')[2L], adj = 1, line = 0.25
       )

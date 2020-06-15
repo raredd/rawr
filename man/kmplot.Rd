@@ -170,7 +170,8 @@ that this will override \code{lr_test}}
 only the p-value is shown}
 
 \item{args.test}{an optional \emph{named} list of \code{\link{mtext}}
-arguments controlling the \code{*_test} text}
+arguments controlling the \code{*_test} text; additional text can be
+appended with \code{list(.prefix = '')} or \code{list(.suffix = '')}}
 
 \item{hr_text}{logical; if \code{TRUE}, a \code{\link{coxph}} model is fit,
 and a summary (hazard ratios, confidence intervals, and Wald p-values)
@@ -244,8 +245,8 @@ km2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 ## basic usage
 kmplot(km1)
 kmplot(km1, fun = 'F')
-kmplot(km1, atrisk.col = c('grey50','tomato'),
-       args.test = list(col = 'red', cex = 1.5, line = 0))
+kmplot(km1, atrisk.col = c('grey50','tomato'), test_details = FALSE,
+       args.test = list(col = 'red', cex = 1.5, .prefix = 'Log-rank: '))
 kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
 kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3700)
 kmplot(km2, atrisk.table = FALSE, lwd.surv = 2, lwd.mark = .5,
