@@ -742,7 +742,7 @@ bp.test.default <- function(x, which = NULL, at = NULL,
 #' \item{convert}{the result of \code{call}}
 #' 
 #' @seealso
-#' \code{\link{show_pal}}
+#' \code{\link{show_pal}}; \pkg{\code{magick}} package
 #' 
 #' @examples
 #' \dontrun{

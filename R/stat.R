@@ -2056,8 +2056,8 @@ rsum <- function(a, b, n, k, unique = FALSE, iterations = 100L) {
 
 #' Kruskal-Wallis test for count data
 #' 
-#' Performs a Kruskal-Wallis test for an \code{r x c} contingency table in
-#' which the rows (r > 1) are un-ordered but the columns (c > 2) are ordered.
+#' Performs a Kruskal-Wallis test for an \code{r x c} contingency table with
+#' one nominal (rows, r > 1) and one ordinal (columns, c > 2) variable.
 #' 
 #' @param x a factor-like vector giving the (unordered) variable (equivalently
 #' the row variable of a contingency table); if \code{x} is also ordered,
@@ -2107,6 +2107,7 @@ rsum <- function(a, b, n, k, unique = FALSE, iterations = 100L) {
 #' 
 #' @examples
 #' ## example from Exact Test (Mehta), figure 11.1
+#' ## system.file('docs', 'PASW_Exact_Tests.pdf', package = 'rawr')
 #' dat <- data.frame(
 #'   regimen  = rep(c('CTMX', 'CCNU', 'MTX', 'CTX+CCNU', 'CTX+CCNU+MTX'),
 #'                  times = c(2, 2, 3, 4, 6)),
