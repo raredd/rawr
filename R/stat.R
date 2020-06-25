@@ -1443,6 +1443,8 @@ cuzick.test.default <- function(x, g, details = wilcox.test, correct = TRUE,
       })
     })
     PW <- tryCatch(lapply(pw, tidy), error = function(e) NULL)
+    nn <- Reduce(intersect, lapply(PW, names))
+    PW <- lapply(PW, function(x) x[, nn])
     
     pw <- list(pairs = if (is.null(PW)) pw else
       `rownames<-`(cbind(pairs = ids, do.call('rbind', PW)), NULL),

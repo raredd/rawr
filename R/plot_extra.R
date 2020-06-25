@@ -696,13 +696,15 @@ bp.test.default <- function(x, which = NULL, at = NULL,
   else if (is.null(line) || length(line) == 1L)
     1.25 * (seq_along(which) - 1) + line %||% 0 else line
   
-  seg <- function(x1, y, x2) {
+  seg <- function(x1, y, x2, plot = TRUE) {
     pad <- diff(par('usr')[3:4]) / 100
     col <- par('fg')
     
-    segments(x1, y, x2, y,       col = col, xpd = NA)
-    segments(x1, y, x1, y - pad, col = col, xpd = NA)
-    segments(x2, y, x2, y - pad, col = col, xpd = NA)
+    if (plot) {
+      segments(x1, y, x2, y,       col = col, xpd = NA)
+      segments(x1, y, x1, y - pad, col = col, xpd = NA)
+      segments(x2, y, x2, y - pad, col = col, xpd = NA)
+    }
     
     c(x1 + (x2 - x1) / 2, y + pad * 3)
   }
@@ -713,7 +715,7 @@ bp.test.default <- function(x, which = NULL, at = NULL,
   
   res <- sapply(seq_along(which), function(ii) {
     xat <- cbn[, which[ii]]
-    xat <- seg(xat[1L], yat[ii], xat[2L])
+    xat <- seg(xat[1L], yat[ii], xat[2L], !is.na(x[which[ii]]))
     text(xat[1L], xat[2L], x[which[ii]], xpd = NA)
     xat
   })
