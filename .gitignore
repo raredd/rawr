@@ -3,4 +3,7 @@
 .RData
 .DS_Store
 TODO
+inst/deprecated
 inst/docs
+inst/todo
+inst/vignette

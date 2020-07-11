@@ -1,5 +1,7 @@
 context('stat_pval')
 
+## see test-guess_test for more tests
+
 ## singly-ordered (y - column)
 ##   x - categorical
 ##   x - continuous
@@ -33,19 +35,19 @@ test_that('correct test is used based on input - contingency table', {
   
   ## both ordered
   expect_true(guess(ox2, oy2, 'fisher'))
-  expect_true(guess(ox2, oy3, 'kw'))
-  expect_true(guess(ox3, oy2, 'kw'))
+  expect_true(guess(ox2, oy3, 'ca'))
+  expect_true(guess(ox3, oy2, 'ca'))
   expect_true(guess(ox3, oy3, 'jt'))
   
   ## one ordered
   expect_true(guess(ux2, oy2, 'fisher'))
-  expect_true(guess(ux2, oy3, 'kw'))
+  expect_true(guess(ux2, oy3, 'ca'))
   expect_true(guess(ux3, oy2, 'fisher'))
   expect_true(guess(ux3, oy3, 'kw'))
   
   expect_true(guess(ox2, uy2, 'fisher'))
   expect_true(guess(ox2, uy3, 'fisher'))
-  expect_true(guess(ox3, uy2, 'kw'))
+  expect_true(guess(ox3, uy2, 'ca'))
   expect_true(guess(ox3, uy3, 'kw'))
   
   ## both unordered

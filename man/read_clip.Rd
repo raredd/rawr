@@ -30,6 +30,5 @@ Reads data (comma-, tab-, or fixed-width separated) data from clipboard and
 returns as a data frame.
 }
 \seealso{
-\code{\link[psych]{read.clipboard}}; \code{\link{read.table}};
-\code{\link{read.fwf}}
+\code{\link{read.table}}; \code{\link{read.fwf}}
 }

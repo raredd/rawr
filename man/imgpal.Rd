@@ -47,5 +47,5 @@ par(op)
 
 }
 \seealso{
-\code{\link{show_pal}}
+\code{\link{show_pal}}; \pkg{\code{magick}} package
 }

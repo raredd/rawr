@@ -931,8 +931,7 @@ updateR <- function(update = TRUE) {
 #' @param ... additional arguments passed to \code{\link{read.table}}
 #' 
 #' @seealso
-#' \code{\link[psych]{read.clipboard}}; \code{\link{read.table}};
-#' \code{\link{read.fwf}}
+#' \code{\link{read.table}}; \code{\link{read.fwf}}
 #' 
 #' @export
 
