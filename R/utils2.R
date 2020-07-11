@@ -10,12 +10,12 @@
 # roundr, tabler
 #
 ## in-line stats
-# anova, chisq, cuzick, fisher, jt, kruskal, kw, t, wilcox, logrank
+# anova, chisq, cuzick, fisher, jt, kruskal, ca, kw, t, wilcox, logrank
 #
 # unexported:
-# js, getPvalCuzick, getPvalJTtest, getPvalKruskal, getPvalKWtest, getPvalTtest,
-# getPval_, guess_test, tabler_stat_list, tabler_stat_html, guess_digits,
-# get_tabler_stat_n, resp1, r_or_better1, inject_
+# js, getPvalCAtest, getPvalCuzick, getPvalJTtest, getPvalKruskal, getPvalKWtest,
+# getPvalTtest, getPval_, guess_test, tabler_stat_list, tabler_stat_html,
+# guess_digits, get_tabler_stat_n, resp1, r_or_better1, inject_
 ###
 
 
@@ -39,7 +39,7 @@ js <- function() {
 #' \code{TRUE}, additional details, such as the test statistic, degrees of
 #' freedom depending on the test, are printed
 #' @param digits number of digits past the decimal point to keep
-#' @param object for \code{inl_logrank}, a \code{\link[survfit]{survdiff}}
+#' @param object for \code{inl_logrank}, a \code{\link[survival]{survdiff}}
 #' object or formula to be passed to \code{survdiff}
 #'
 #' @examples
@@ -69,10 +69,14 @@ js <- function() {
 #' jt.test(table(mtcars$gear, mtcars$cyl))
 #' inl_jt(mtcars$gear, mtcars$cyl)
 #' inl_jt(table(mtcars$gear, mtcars$cyl))
-#'
-#' kw.test(table(mtcars$vs, mtcars$cyl))
-#' inl_kw(mtcars$vs, mtcars$cyl)
-#' inl_kw(table(mtcars$vs, mtcars$cyl))
+#' 
+#' ca.test(table(mtcars$vs, mtcars$cyl))
+#' inl_ca(mtcars$vs, mtcars$cyl)
+#' inl_ca(table(mtcars$vs, mtcars$cyl))
+#' 
+#' kw.test(table(mtcars$gear, mtcars$cyl))
+#' inl_kw(mtcars$gear, mtcars$cyl)
+#' inl_kw(table(mtcars$gear, mtcars$cyl))
 #'
 #' library('survival')
 #' s1 <- survdiff(Surv(time, status) ~ sex, colon)
@@ -196,6 +200,26 @@ inl_kruskal <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
 
 #' @rdname inline_stats
 #' @export
+inl_ca <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
+  tbl <- if (!is.null(dim(x)))
+    x else table(x, y)
+  
+  suppressWarnings({
+    res <- ca.test(tbl, ...)
+  })
+  
+  if (!details)
+    pvalr(res$p.value, show.p = TRUE)
+  else {
+    sprintf(
+      '&chi;<sup>2</sup>: %s (%s df), Cochran-Armitage p-value: %s',
+      roundr(res$statistic, digits), res$parameter, pvalr(res$p.value)
+    )
+  }
+}
+
+#' @rdname inline_stats
+#' @export
 inl_kw <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
   tbl <- if (!is.null(dim(x)))
     x else table(x, y)
@@ -208,7 +232,7 @@ inl_kw <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
     pvalr(res$p.value, show.p = TRUE)
   else {
     sprintf(
-      '&chi;<sup>2</sup>: %s (%s df), Kruskal-Wallis p-value: %s',
+      '&chi;<sup>2</sup>: %s (%s df), test for trend in proportions p-value: %s',
       roundr(res$statistic, digits), res$parameter, pvalr(res$p.value)
     )
   }
@@ -1564,7 +1588,7 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' not appropriate). One of the default tests can be given explicitly with a
 #' character string, one of \code{"fisher"}, \code{"wilcoxon"}, \code{"ttest"},
 #' \code{"kruskal"}, \code{"chisq"}, \code{"anova"}, \code{"cuzick"},
-#' \code{"jt"}, or \code{"kw"} (can be abbreviated).
+#' \code{"jt"}, \code{"ca"}, or \code{"kw"} (can be abbreviated).
 #'
 #' If \code{FUN} is a function, it must take two vector arguments: the row
 #' variable vector, \code{data$varname}, and the column variable vector,
@@ -1620,7 +1644,8 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' @seealso
 #' \code{\link{fisher.test}}; \code{\link{wilcox.test}}; \code{\link{t.test}};
 #' \code{\link{kruskal.test}}; \code{\link{chisq.test}}; \code{\link{anova}};
-#' \code{\link{cuzick.test}}; \code{\link{jt.test}}; \code{\link{kw.test}}
+#' \code{\link{cuzick.test}}; \code{\link{jt.test}}; \code{\link{kw.test}};
+#' \code{\link{ca.test}}
 #'
 #' @examples
 #' tabler_stat(mtcars, 'mpg', 'cyl') ## picks kruskal-wallis
@@ -1642,7 +1667,7 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' ## typical usage
 #' mt <- within(mtcars, {
 #'   mpg[1:5] <- carb[1:5] <- drat[1:20] <- NA
-#'   carb <- factor(carb)
+#'   carb <- factor(carb, ordered = TRUE)
 #'   cyl  <- factor(cyl)
 #' })
 #'
@@ -1655,7 +1680,8 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #'   do.call('rbind', tbl),
 #'   cgroup = c('', 'Gear', ''), n.cgroup = c(1, 3, 1),
 #'   rgroup = names(mt)[-10L], n.rgroup = sapply(tbl, nrow),
-#'   tfoot = attr(tbl[[1L]], 'tfoot')
+#'   tfoot = toString(unique(unlist(strsplit(sapply(seq_along(tbl), function(ii)
+#'     attr(tbl[[ii]], 'tfoot')), ', '))))
 #' )
 #' structure(ht, class = 'htmlTable')
 #'
@@ -1786,8 +1812,8 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
 
   dags  <- c('&dagger;', '&Dagger;', '&#94;', '&sect;', 'v')
   dags1 <- dags[c(1, 3, 2)]
-  dags2 <- dags[c(4, 4, 1)]
-  dags3 <- dags[c(2, 2, 5)]
+  dags2 <- dags[c(3, 4, 1)]
+  dags3 <- dags[c(1, 1, 5)]
   fname <- attr(pvn, 'FUN') %||% fun
   attr(fname, 'tnames') <- attr(pvn, 'name')
 
@@ -1798,8 +1824,8 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
                  'Fisher\'s exact test')
     ),
     ordered1 = structure(
-      setNames(paste0(c('kw', 'kw', 'cuzick'), '.test'), dags2),
-      tnames = c('Kruskal-Wallis trend test', 'Kruskal-Wallis trend test',
+      setNames(paste0(c('ca', 'kw', 'cuzick'), '.test'), dags2),
+      tnames = c('Cochran-Armitage test', 'Test for trend in proportions',
                  'Cuzick\'s trend test')
     ),
     ordered2 = structure(
@@ -1841,13 +1867,15 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
     fnames <- setNames(attr(fnames, 'tnames'), names(fnames))
     fnames <- fnames[!duplicated(fnames)]
 
-    ## only return one of wilcox/kruskal based on byvar
-    idx <- gsub('^kw\\.$', 'krus', substr(tolower(fname), 1L, 3L))
-    idx <- pmatch(c(idx, 'fish'), unique(tolower(fnames)))
-    if (anyNA(idx))
-      idx <- c((n > 2L) + 1L, na.omit(idx))
-    fnames <- fnames[sort(idx)]
-    fnames <- fnames[!duplicated(fnames)]
+    ## for fnamel$unordered, only return one of wilcox/kruskal based on byvar
+    if (!oy & !ox) {
+      idx <- gsub('^kw\\.$', 'krus', substr(tolower(fname), 1L, 3L))
+      idx <- pmatch(c(idx, 'fish'), unique(tolower(fnames)))
+      if (anyNA(idx))
+        idx <- c((n > 2L) + 1L, na.omit(idx))
+      fnames <- fnames[sort(idx)]
+      fnames <- fnames[!duplicated(fnames)]
+    }
   }
 
   pvc <- if (is.null(pvn) || is.na(pvn))
@@ -1870,6 +1898,10 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
     tfoot = if (nof)
       '' else toString(sprintf('<sup>%s</sup>%s', names(fnames), fnames))
   )
+}
+
+getPvalCAtest <- function(x, by) {
+  ca.test(x, by)$p.value
 }
 
 getPvalCuzick <- function(x, by) {
@@ -1907,8 +1939,8 @@ getPval_ <- function(x, y, FUN, n_unique_x = 10L) {
     )
 
   sFUN <- tryCatch(
-    match.arg(FUN, c('anova', 'chisq', 'cuzick', 'fisher', 'jt',
-                     'kw', 'kruskal', 'ttest', 'wilcoxon')),
+    match.arg(FUN, c('anova', 'ca', 'chisq', 'cuzick', 'fisher',
+                     'jt', 'kruskal', 'kw', 'ttest', 'wilcoxon')),
     error = function(e)
       if (grepl('one of', e$message))
         TRUE else stop(e$message)
@@ -1924,6 +1956,9 @@ getPval_ <- function(x, y, FUN, n_unique_x = 10L) {
         anova    = structure(
           Gmisc::getPvalAnova(x, y),  FUN = 'anova',
           name = 'ANOVA F-test'),
+        ca       = structure(
+          getPvalCAtest(x, y),        FUN = 'ca.test',
+          name = 'Cochran-Armitage test for trend'),
         chisq    = structure(
           Gmisc::getPvalChiSq(x, y),  FUN = 'chisq.test',
           name = 'Pearson\'s chi-squared test'),
@@ -1941,7 +1976,7 @@ getPval_ <- function(x, y, FUN, n_unique_x = 10L) {
           name = 'Kruskal-Wallis rank-sum test'),
         kw       = structure(
           getPvalKWtest(x, y),        FUN = 'kw.test',
-          name = 'Kruskal-Wallis trend test for count data'),
+          name = 'Chi-squared test for trend in proportions'),
         ttest    = structure(
           getPvalTtest(x, y),         FUN = 't.test',
           name = 'Unpaired T-test'),
@@ -1982,12 +2017,21 @@ guess_test <- function(x, y, n_unique_x = 10L) {
     if (ox & oy & nx > 2L & ny > 2L)
       structure(getPvalJTtest(x, y), FUN = 'jt.test',
                 name = 'Jonckheere-Terpstra test')
-    else if (oy & ny > 2L)
-      structure(getPvalKWtest(x, y), FUN = 'kw.test',
-                name = 'Kruskal-Wallis trend test for count data')
-    else if (ox & nx > 2L)
-      structure(getPvalKWtest(y, x), FUN = 'kw.test',
-                name = 'Kruskal-Wallis trend test for count data')
+    else if ((nx == 2L & oy & ny > 2L) || (ny == 2L & ox & nx > 2L)) {
+      if (ny > 2L)
+        structure(getPvalCAtest(x, y), FUN = 'ca.test',
+                  name = 'Cochran-Armitage Test for Trend')
+      else
+        structure(getPvalCAtest(x, y), FUN = 'ca.test',
+                  name = 'Cochran-Armitage Test for Trend')
+    } else if ((nx > 2L & !ox & oy & ny > 2L) || (ny > 2L & !oy & ox & nx > 2L)) {
+      if (ny > 2L)
+        structure(getPvalKWtest(x, y), FUN = 'kw.test',
+                  name = 'Chi-squared test for trend in proportions')
+      else
+        structure(getPvalKWtest(y, x), FUN = 'kw.test',
+                  name = 'Chi-squared test for trend in proportions')
+    }
     else
       structure(Gmisc::getPvalFisher(x, y), FUN = 'fisher.test',
                 name = 'Fisher\'s exact test')
@@ -3094,7 +3138,7 @@ combine_table2 <- function(l, tspanner, n.tspanner, cgroup, n.cgroup,
     list(l) else l
   how <- switch(match.arg(how), rbind = 'rbindx', cbind = 'cbindx')
 
-  if (how %in% 'rbindx') {
+  if (how %in% 'rbind') {
     n.tspanner <- if (missing(n.tspanner))
       sapply(l, function(x) nrow(x) %||% 1L) else n.tspanner
     tspanner   <- if (missing(tspanner))
@@ -3104,6 +3148,10 @@ combine_table2 <- function(l, tspanner, n.tspanner, cgroup, n.cgroup,
       sapply(l, function(x) ncol(x) %||% 1L) else n.cgroup
     cgroup   <- if (missing(cgroup))
       names(l) %||% rep(' ', each = length(n.cgroup)) else cgroup
+    if (missing(tspanner))
+      tspanner <- NULL
+    if (missing(n.tspanner))
+      n.tspanner <- NULL
   }
 
   ht <- htmlTable::htmlTable(
