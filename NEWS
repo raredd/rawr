@@ -1,3 +1,19 @@
+rawr 0.9.2 - in progress
+--------
+  * add ca.test, inl_ca
+  * guess_test testing, kw.test gives warning for nr=2
+  * kw.test.pvalue -> sim.test.pvalue (generalized for other use)
+
+rawr 0.9.1
+--------
+  * add tabler_bincon/bplot, inline_stats, points.lspline, lines.lspline,
+    response, c_text, cc_pval, cc_text, perm.t.test, pfun, bp.test, coords,
+    imgpal, rawr_palettes, rawr_pal, show_pal
+  * tabler_stat2 - add correct argument, p.value attribute
+  * tabler_stat - byvar=NULL returns totals instead of error/requiring byvar
+  * tplot - add violin option, better point dodging, add dist.n arg
+  * pvalr/color_pval - set default journal = TRUE
+
 rawr 0.9.0
 --------
   * tox_worst - change list return to single data frame with attributes; this
