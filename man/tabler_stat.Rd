@@ -99,7 +99,7 @@ the row data contains few unique values, a Fisher test may be used where
 not appropriate). One of the default tests can be given explicitly with a
 character string, one of \code{"fisher"}, \code{"wilcoxon"}, \code{"ttest"},
 \code{"kruskal"}, \code{"chisq"}, \code{"anova"}, \code{"cuzick"},
-\code{"jt"}, or \code{"kw"} (can be abbreviated).
+\code{"jt"}, \code{"ca"}, or \code{"kw"} (can be abbreviated).
 
 If \code{FUN} is a function, it must take two vector arguments: the row
 variable vector, \code{data$varname}, and the column variable vector,
@@ -125,7 +125,7 @@ tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'cuzick')
 ## typical usage
 mt <- within(mtcars, {
   mpg[1:5] <- carb[1:5] <- drat[1:20] <- NA
-  carb <- factor(carb)
+  carb <- factor(carb, ordered = TRUE)
   cyl  <- factor(cyl)
 })
 
@@ -138,7 +138,8 @@ ht <- htmlTable::htmlTable(
   do.call('rbind', tbl),
   cgroup = c('', 'Gear', ''), n.cgroup = c(1, 3, 1),
   rgroup = names(mt)[-10L], n.rgroup = sapply(tbl, nrow),
-  tfoot = attr(tbl[[1L]], 'tfoot')
+  tfoot = toString(unique(unlist(strsplit(sapply(seq_along(tbl), function(ii)
+    attr(tbl[[ii]], 'tfoot')), ', '))))
 )
 structure(ht, class = 'htmlTable')
 
@@ -156,7 +157,8 @@ tabler_stat2(mt, names(mt)[-10L], 'gear',
 \seealso{
 \code{\link{fisher.test}}; \code{\link{wilcox.test}}; \code{\link{t.test}};
 \code{\link{kruskal.test}}; \code{\link{chisq.test}}; \code{\link{anova}};
-\code{\link{cuzick.test}}; \code{\link{jt.test}}; \code{\link{kw.test}}
+\code{\link{cuzick.test}}; \code{\link{jt.test}}; \code{\link{kw.test}};
+\code{\link{ca.test}}
 
 Other tabler: 
 \code{\link{tabler_by}()},

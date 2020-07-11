@@ -4,7 +4,7 @@
 \alias{cuzick.test}
 \alias{cuzick.test.default}
 \alias{cuzick.test.formula}
-\title{Wilcoxon rank-sum test for trend of ordered groups}
+\title{Rank-sum test for trend of ordered groups}
 \usage{
 cuzick.test(x, ...)
 

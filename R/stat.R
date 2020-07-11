@@ -2,11 +2,11 @@
 # bincon, bintest, dlt_table, pr_table, power_cv, simon2, moods_test, fakeglm,
 # gcd, install.bioc, lm.beta, cuzick.test, cuzick.test.default,
 # cuzick.test.formula, jt.test, hl_est, rcor, rsum, kw.test, kw.test.default,
-# kw.test.formula, lspline, winsorize, perm.t.test, perm.t.test.default,
-# perm.t.test.formula
+# kw.test.formula, ca.test, ca.test.default, ca.test.formula, lspline,
+# winsorize, perm.t.test, perm.t.test.default, perm.t.test.formula
 # 
 # S3 methods:
-# cuzick.test, kw.test, perm.t.test
+# cuzick.test, kw.test, ca.test, perm.t.test
 # 
 # desmon (unexported):
 # twocon, simon, bin1samp
@@ -16,7 +16,7 @@
 # 
 # unexported:
 # cuzick.test.stat, cuzick.test.pvalue, jt.test.stat, combn_fun, rcor1, rcorn,
-# kw.test.pvalue
+# sim.test.pvalue
 ###
 
 
@@ -1197,7 +1197,7 @@ lm.beta <- function (x, weights = 1) {
   b * sx / sy * weights
 }
 
-#' Wilcoxon rank-sum test for trend of ordered groups
+#' Rank-sum test for trend of ordered groups
 #' 
 #' An implementation of Cuzick's extension of the Wilcoxon rank-sum test to
 #' assess trend in data with three or more \emph{ordinal} groups.
@@ -2056,10 +2056,10 @@ rsum <- function(a, b, n, k, unique = FALSE, iterations = 100L) {
     res else Recall(a, b, n, k, TRUE, iterations)
 }
 
-#' Kruskal-Wallis test for count data
+#' Test for trend in proportions
 #' 
-#' Performs a Kruskal-Wallis test for an \code{r x c} contingency table with
-#' one nominal (rows, r > 1) and one ordinal (columns, c > 2) variable.
+#' Performs a test for trend in an \code{r x c} contingency table with
+#' one nominal (rows, r > 2) and one ordinal (columns, c > 2) variable.
 #' 
 #' @param x a factor-like vector giving the (unordered) variable (equivalently
 #' the row variable of a contingency table); if \code{x} is also ordered,
@@ -2069,7 +2069,7 @@ rsum <- function(a, b, n, k, unique = FALSE, iterations = 100L) {
 #' least two rows (unordered) and three columns (ordered); \code{x} may also
 #' be a list of the row variable split by the ordered column variable in
 #' which case the list is assumed to be ordered, i.e., \code{x[[1]]} <
-#' \code{x[[2]]} < ...
+#' \code{x[[2]] < ... < x[[c]]}; see examples
 #' @param ... further arguments to be passed to or from methods
 #' @param g a factor-like vector giving the \emph{ordered} group for each
 #' corresponding element of \code{x}, ignored with a warning if \code{x} is a
@@ -2089,13 +2089,12 @@ rsum <- function(a, b, n, k, unique = FALSE, iterations = 100L) {
 #' @return
 #' A list with class "\code{htest}" containing the following elements:
 #' 
-#' \item{\code{statistic}}{the Kruskal-Wallis test statistic}
+#' \item{\code{statistic}}{the chi-squared test statistic}
 #' \item{\code{parameter}}{the degrees of freedom of the approximate chi-
 #' squared distribution of the test statistic}
 #' \item{\code{p.value}}{the p-value of the test (two-sided)}
-#' \item{\code{method}}{a character string "\code{Kruskal-Wallis test for
-#' count data}" and, optionally, the number of Monte Carlo replications, if
-#' applicable}
+#' \item{\code{method}}{a character string describing the test, and,
+#' optionally, the number of Monte Carlo replications, if applicable}
 #' \item{\code{data.name}}{a character string giving the names of the data}
 #' \item{\code{conf.int}}{optionally (if \code{simulate.p.value = TRUE}),
 #' the 99\% confidence interval of the Monte Carlo p-value}
@@ -2103,8 +2102,8 @@ rsum <- function(a, b, n, k, unique = FALSE, iterations = 100L) {
 #' a summary of the simulated test statistics}
 #' 
 #' @seealso
-#' \code{\link{kruskal.test}}; \code{\link{jt.test}} for doubly-ordered
-#' tables; \code{\link{cuzick.test}}; \code{DescTools::CochranArmitageTest};
+#' \code{\link{jt.test}} for doubly-ordered tables; \code{\link{cuzick.test}};
+#' \code{\link{ca.test}}; \code{DescTools::CochranArmitageTest};
 #' \code{\link{prop.trend.test}}
 #' 
 #' @examples
@@ -2133,9 +2132,9 @@ rsum <- function(a, b, n, k, unique = FALSE, iterations = 100L) {
 #' kruskal.test(response2 ~ regimen, dat)
 #' 
 #' \dontrun{
-#' ## simulate p-value with 10k replicates
+#' ## simulate p-value with 5k replicates
 #' set.seed(1)
-#' kw.test(regimen ~ response2, dat, simulate.p.value = TRUE, B = 10000)
+#' kw.test(regimen ~ response2, dat, simulate.p.value = TRUE, B = 5000)
 #' }
 #' 
 #' @export
@@ -2182,6 +2181,9 @@ kw.test.default <- function(x, g, ..., simulate.p.value = FALSE, B = 2000L) {
   if (!length(unique(g)) >= 3L) {
     warning('Fewer than 3 groups')
   }
+  if (!length(unique(x)) >= 3L) {
+    warning('Only 2 groups -- use rawr::ca.test or stats::prop.trend.test')
+  }
   
   if (any(table(x, g) < 5L) & !simulate.p.value)
     warning(
@@ -2190,11 +2192,12 @@ kw.test.default <- function(x, g, ..., simulate.p.value = FALSE, B = 2000L) {
       '\tConsider using simulate.p.value = TRUE for Monte Carlo p-value'
     )
   
-  method <- 'Kruskal-Wallis test for count data'
+  method <- 'Test for equality of proportions without continuity correction'
+    
   res <- kruskal.test(g ~ x)
   
   if (simulate.p.value) {
-    p <- kw.test.pvalue(x, g, TRUE, B, TRUE)
+    p <- sim.test.pvalue(x, g, kruskal.test, TRUE, B, TRUE, 0.99)
     res$p.value <- unname(p[1L])
     method <- sprintf('%s with simulated p-value (based on %s replicates)',
                       method, B)
@@ -2233,8 +2236,8 @@ kw.test.formula <- function (formula, data, ...) {
   y
 }
 
-kw.test.pvalue <- function(x, g, ordered = FALSE, B = 2000L,
-                           ci = FALSE, alpha = 0.99) {
+sim.test.pvalue <- function(x, g, FUN, ordered = FALSE, B = 2000L,
+                            ci = FALSE, alpha = 0.99) {
   stopifnot(
     is.logical(ordered),
     alpha %inside% 0:1
@@ -2244,14 +2247,15 @@ kw.test.pvalue <- function(x, g, ordered = FALSE, B = 2000L,
   f <- function() {
     g <- sample(g)
     k <- if (ordered)
-      kruskal.test(g ~ x) else kruskal.test(x ~ g)
+      FUN(g ~ x) else FUN(x ~ g)
     k$statistic
   }
   
   Z <- if (ordered)
-    kruskal.test(g ~ x)$statistic
-  else kruskal.test(x ~ g)$statistic
-  r <- unname(replicate(B, f()))
+    FUN(g ~ x)$statistic else FUN(x ~ g)$statistic
+  r <- suppressWarnings({
+    unname(replicate(B, f()))
+  })
   z <- r >= Z
   p <- mean(z, na.rm = TRUE)
   
@@ -2277,6 +2281,177 @@ kw.test.pvalue <- function(x, g, ordered = FALSE, B = 2000L,
     conf.level = alpha,
     simulate = summary(r)
   )
+}
+
+#' Cochran-Armitage Test for Trend
+#' 
+#' Performs a Cochran-Armitage chi-squared test for trend in proportions for
+#' a \code{2 x c} contingency table with a nominal row (r == 2) and ordinal
+#' column (c > 2) variable.
+#' 
+#' @param x a factor-like vector giving the (unordered) variable (equivalently
+#' the row variable of a contingency table)
+#' 
+#' alternatively, \code{x} can be a \code{2 x c} table or matrix with exactly
+#' two rows and at least three ordered columns; \code{x} may also be a list
+#' of the row variable split by the ordered column variable in which case the
+#' list is assumed to be ordered, i.e., \code{x[[1]] < x[[2]] < ... < x[[c]]};
+#' see examples
+#' @param ... further arguments to be passed to or from methods
+#' @param g a factor-like vector giving the \emph{ordered} group for each
+#' corresponding element of \code{x}, ignored with a warning if \code{x} is a
+#' list or table; if \code{g} is not a factor, it will be coerced, and groups
+#' will be ordered as sort(unique(g)); see \code{\link{factor}}
+#' @param score group score for each column, default is \code{1:ncol}
+#' @param simulate.p.value logical; if \code{TRUE}, p-value is computed using
+#' by Monte Carlo simulation
+#' @param B an integer specifying the number of replicates used in the Monte
+#' Carlo test
+#' @param formula a formula of the form \code{row ~ column} where \code{row}
+#' gives the row variable having two unique values and \code{column} gives
+#' the \emph{ordered} column variable
+#' @param data an optional matrix or data frame (or similar: see
+#' \code{\link{model.frame}}) containing the variables in \code{formula}; by
+#' default the variables are taken from \code{environment(formula)}
+#' 
+#' @return
+#' A list with class "\code{htest}" containing the following elements:
+#' 
+#' \item{\code{statistic}}{the chi-squared test statistic}
+#' \item{\code{parameter}}{the degrees of freedom of the approximate chi-
+#' squared distribution of the test statistic}
+#' \item{\code{p.value}}{the p-value of the test (two-sided)}
+#' \item{\code{method}}{a character string describing the test, and,
+#' optionally, the number of Monte Carlo replications, if applicable}
+#' \item{\code{data.name}}{a character string giving the names of the data}
+#' \item{\code{conf.int}}{optionally (if \code{simulate.p.value = TRUE}),
+#' the 99\% confidence interval of the Monte Carlo p-value}
+#' \item{\code{summary}}{optionally (if \code{simulate.p.value = TRUE}),
+#' a summary of the simulated test statistics}
+#' 
+#' @seealso
+#' \code{\link{prop.trend.test}}; \code{\link{jt.test}} for doubly-ordered tables;
+#' \code{\link{cuzick.test}}; \code{DescTools::CochranArmitageTest}
+#' 
+#' @examples
+#' ## example from stats::prop.trend.test
+#' smokers  <- c(83, 90, 129, 70)
+#' patients <- c(86, 93, 136, 82)
+#' prop.test(smokers, patients)
+#' prop.trend.test(smokers, patients)
+#' 
+#' # DescTools::CochranArmitageTest(rbind(smokers, patients - smokers))
+#' ca.test(rbind(smokers, patients - smokers))
+#' ca.test(rbind(smokers, patients - smokers), score = c(0, 0, 1, 2))
+#' 
+#' ## the following are equivalent to call ca.test
+#' dat <- data.frame(x = mtcars$vs, y = mtcars$gear)
+#' ca.test(dat$x, dat$y)
+#' ca.test(x ~ y, dat)
+#' ca.test(split(dat$x, dat$y))
+#' ca.test(table(dat$x, dat$y))
+#' 
+#' 
+#' \dontrun{
+#' ## simulate p-value with 10k replicates
+#' set.seed(1)
+#' ca.test(rbind(smokers, patients - smokers), simulate.p.value = TRUE, B = 1000)
+#' }
+#' 
+#' @export
+
+ca.test <- function(x, ...) {
+  UseMethod('ca.test')
+}
+
+#' @rdname ca.test
+#' @export
+ca.test.default <- function(x, g, ..., score = NULL,
+                            simulate.p.value = FALSE, B = 2000L) {
+  dname <- deparse(substitute(x))
+  if (is.list(x)) {
+    if (length(x) < 3L)
+      stop('\'x\' must be a list with at least 3 elements')
+    if (!missing(g))
+      warning('\'x\' is a list - ignoring \'g\'')
+    g <- as.factor(rep(seq_along(x), lengths(x)))
+    x <- as.factor(unlist(x))
+  } else if (inherits(x, 'table') || is.matrix(x)) {
+    if (nrow(x) != 2L | ncol(x) < 3L)
+      stop('\'x\' must have 2 rows and at least 3 (ordered) columns')
+    if (!is.numeric(x) || any(x < 0) || anyNA(x))
+      stop('all entries of \'x\' must be nonnegative and finite')
+    if (!missing(g))
+      warning('\'x\' is a matrix - ignoring \'g\'')
+    names(dimnames(x)) <- NULL
+    x <- data.frame(as.table(x))
+    g <- rep(x$Var2, times = x$Freq)
+    x <- rep(x$Var1, times = x$Freq)
+  } else {
+    dname <- paste(deparse(substitute(x)), 'and', deparse(substitute(g)))
+    g <- as.factor(g)
+    x <- as.factor(x)
+  }
+  
+  ok <- complete.cases(x, g)
+  x <- x[ok]
+  g <- g[ok]
+  
+  if (!length(unique(g)) >= 3L) {
+    warning('Fewer than 3 groups')
+  }
+  
+  if (any(table(x, g) < 5L) & !simulate.p.value)
+    warning(
+      'Chi-squared approximation may be incorrect - ',
+      'cells with < 5 observations\n',
+      '\tConsider using simulate.p.value = TRUE for Monte Carlo p-value'
+    )
+  
+  method <- 'Cochran-Armitage test for trend in %sx%s table'
+  tbl <- table(x, g)
+  score <- score %||% seq.int(ncol(tbl))
+  dname <- sprintf('%s\n\tusing scores: %s', dname, toString(score))
+  res <- prop.trend.test(tbl[1L, ], colSums(tbl), score)
+  
+  if (simulate.p.value) {
+    p <- sim.test.pvalue(x, g, ca.test, FALSE, B, TRUE, 0.99)
+    res$p.value <- unname(p[1L])
+    method <- sprintf('%s with simulated p-value (based on %s replicates)',
+                      method, B)
+    res$conf.int <- structure(p[2:3], conf.level = attr(p, 'conf.level'))
+    res$simulate <- attr(p, 'simulate')
+  }
+  
+  res$data.name <- dname
+  res$method <- method
+  
+  res
+}
+
+#' @rdname ca.test
+#' @export
+ca.test.formula <- function (formula, data, ...) {
+  ## adapted from stats:::kruskal.test.formula
+  if (missing(formula) || (length(formula) != 3L))
+    stop('\'formula\' missing or incorrect')
+  
+  m <- match.call(expand.dots = FALSE)
+  if (is.matrix(eval(m$data, parent.frame(1L))))
+    m$data <- as.data.frame(data)
+  m$... <- NULL
+  m[[1L]] <- quote(stats::model.frame)
+  mf <- eval(m, parent.frame(1L))
+  
+  if (length(mf) > 2L)
+    stop('\'formula\' should be of the form response ~ ordered group')
+  
+  dname <- paste(names(mf), collapse = ' by ')
+  names(mf) <- NULL
+  y <- do.call('ca.test', list(x = mf[, 1L], g = mf[, 2L], ...))
+  y$data.name <- dname
+  
+  y
 }
 
 #' Linear spline

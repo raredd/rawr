@@ -8,6 +8,7 @@
 \alias{inl_fisher}
 \alias{inl_jt}
 \alias{inl_kruskal}
+\alias{inl_ca}
 \alias{inl_kw}
 \alias{inl_logrank}
 \alias{inl_t}
@@ -25,6 +26,8 @@ inl_fisher(x, y = NULL, ..., details = TRUE, digits = 2L)
 inl_jt(x, y = NULL, ..., details = TRUE, digits = 2L)
 
 inl_kruskal(x, y = NULL, ..., details = TRUE, digits = 2L)
+
+inl_ca(x, y = NULL, ..., details = TRUE, digits = 2L)
 
 inl_kw(x, y = NULL, ..., details = TRUE, digits = 2L)
 
@@ -48,7 +51,7 @@ freedom depending on the test, are printed}
 
 \item{digits}{number of digits past the decimal point to keep}
 
-\item{object}{for \code{inl_logrank}, a \code{\link[survfit]{survdiff}}
+\item{object}{for \code{inl_logrank}, a \code{\link[survival]{survdiff}}
 object or formula to be passed to \code{survdiff}}
 }
 \description{
@@ -82,9 +85,13 @@ jt.test(table(mtcars$gear, mtcars$cyl))
 inl_jt(mtcars$gear, mtcars$cyl)
 inl_jt(table(mtcars$gear, mtcars$cyl))
 
-kw.test(table(mtcars$vs, mtcars$cyl))
-inl_kw(mtcars$vs, mtcars$cyl)
-inl_kw(table(mtcars$vs, mtcars$cyl))
+ca.test(table(mtcars$vs, mtcars$cyl))
+inl_ca(mtcars$vs, mtcars$cyl)
+inl_ca(table(mtcars$vs, mtcars$cyl))
+
+kw.test(table(mtcars$gear, mtcars$cyl))
+inl_kw(mtcars$gear, mtcars$cyl)
+inl_kw(table(mtcars$gear, mtcars$cyl))
 
 library('survival')
 s1 <- survdiff(Surv(time, status) ~ sex, colon)
