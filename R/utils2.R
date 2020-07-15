@@ -3138,11 +3138,15 @@ combine_table2 <- function(l, tspanner, n.tspanner, cgroup, n.cgroup,
     list(l) else l
   how <- switch(match.arg(how), rbind = 'rbindx', cbind = 'cbindx')
 
-  if (how %in% 'rbind') {
+  if (how %in% c('rbind', 'rbindx')) {
     n.tspanner <- if (missing(n.tspanner))
       sapply(l, function(x) nrow(x) %||% 1L) else n.tspanner
     tspanner   <- if (missing(tspanner))
       names(l) %||% rep(' ', each = length(n.tspanner)) else tspanner
+    if (missing(cgroup))
+      cgroup <- NULL
+    if (missing(n.cgroup))
+      n.cgroup <- NULL
   } else {
     n.cgroup <- if (missing(n.cgroup))
       sapply(l, function(x) ncol(x) %||% 1L) else n.cgroup
