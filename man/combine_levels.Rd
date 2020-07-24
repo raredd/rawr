@@ -5,9 +5,23 @@
 \alias{combine_regex}
 \title{Combine values}
 \usage{
-combine_levels(x, levels, labels = NULL, regex = FALSE, ...)
+combine_levels(
+  x,
+  levels,
+  labels = NULL,
+  ordered = is.ordered(x),
+  regex = FALSE,
+  ...
+)
 
-combine_regex(x, levels, labels, keep.original = FALSE, ...)
+combine_regex(
+  x,
+  levels,
+  labels,
+  ordered = is.ordered(x),
+  keep.original = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{a vector}
@@ -31,6 +45,8 @@ have one value for each list element of \code{levels}
 
 for \code{combine_regex}, if \code{keep.original = FALSE}, one additional
 label should be given for values that do not match any of \code{levels}}
+
+\item{ordered}{logical; if \code{TRUE}, returns an ordered factor}
 
 \item{regex}{logical; if \code{TRUE}, \code{levels} is assumed to be
 regular expressions, and inputs are passed to \code{combine_regex}}
@@ -66,7 +82,7 @@ combine_levels(x, list(1:2, 3), c('a', 'b'))
 combine_levels(x, list(a = 1:2, b = 3))
 
 ## use NULL list to combine others
-combine_levels(x, list(others = NULL, b = 3))
+combine_levels(x, list(b = 3, others = NULL))
 
 
 ## characters and factors
@@ -81,7 +97,7 @@ combine_regex(x, 'a')
 combine_regex(x, c('a', 'b'))
 combine_regex(x, c('a', 'b|c|e'))
 
-## character labels return a character vector
+## character labels return a labeled factor
 combine_regex(x, 'a', c('a', 'b'))
 combine_regex(x, '[a-c]', c('ABC', 'Others'))
 combine_regex(x, '[a-c]', c('ABC', 'Others'), keep.original = TRUE)

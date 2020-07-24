@@ -4,7 +4,7 @@
 # getMethods, regcaptures, regcaptures2, cast, melt, View2, view, clist,
 # rapply2, sort_matrix, insert, insert_matrix, tryCatch2, rleid, droplevels2,
 # combine_levels, combine_regex, rownames_to_column, column_to_rownames,
-# split_nth, sort2, response
+# split_nth, sort2, response, dapply
 # 
 # rawr_ops:
 # %ni%, %==%, %||%, %sinside%, %winside%, %inside%, %:%
@@ -2199,6 +2199,7 @@ droplevels2 <- function(x, min_level = min(as.integer(x), na.rm = TRUE),
 #' 
 #' for \code{combine_regex}, if \code{keep.original = FALSE}, one additional
 #' label should be given for values that do not match any of \code{levels}
+#' @param ordered logical; if \code{TRUE}, returns an ordered factor
 #' @param regex logical; if \code{TRUE}, \code{levels} is assumed to be
 #' regular expressions, and inputs are passed to \code{combine_regex}
 #' @param ... additional arguments passed to \code{combine_regex} or further
@@ -2228,7 +2229,7 @@ droplevels2 <- function(x, min_level = min(as.integer(x), na.rm = TRUE),
 #' combine_levels(x, list(a = 1:2, b = 3))
 #' 
 #' ## use NULL list to combine others
-#' combine_levels(x, list(others = NULL, b = 3))
+#' combine_levels(x, list(b = 3, others = NULL))
 #' 
 #' 
 #' ## characters and factors
@@ -2243,7 +2244,7 @@ droplevels2 <- function(x, min_level = min(as.integer(x), na.rm = TRUE),
 #' combine_regex(x, c('a', 'b'))
 #' combine_regex(x, c('a', 'b|c|e'))
 #' 
-#' ## character labels return a character vector
+#' ## character labels return a labeled factor
 #' combine_regex(x, 'a', c('a', 'b'))
 #' combine_regex(x, '[a-c]', c('ABC', 'Others'))
 #' combine_regex(x, '[a-c]', c('ABC', 'Others'), keep.original = TRUE)
@@ -2261,12 +2262,12 @@ droplevels2 <- function(x, min_level = min(as.integer(x), na.rm = TRUE),
 #' 
 #' @export
 
-combine_levels <- function(x, levels, labels = NULL, regex = FALSE, ...) {
+combine_levels <- function(x, levels, labels = NULL, ordered = is.ordered(x),
+                           regex = FALSE, ...) {
   if (regex) {
     levels <- unlist(sapply(levels, paste0, collapse = '|'))
     labels <- unlist(labels %||% seq.int(length(levels) + 1L))
-    
-    return(combine_regex(x, levels, labels, ...))
+    return(combine_regex(x, levels, labels, ordered, ...))
   }
   
   levels <- if (islist(levels))
@@ -2299,32 +2300,19 @@ combine_levels <- function(x, levels, labels = NULL, regex = FALSE, ...) {
   
   ## convert unique label back to desired
   xc <- c(ol, labels)[match(xc, c(ol, unlist(ul)))]
-  xf <- factor(xc, nl, nl, NA, is.ordered(x), NA)
   
-  # if (is.numeric(x))
-  #   type.convert(as.character(xf)) else xf
-  
-  ## add order arg?
-  # if (!is.null(order))
-  #   factor(xf, order) else xf
-  
-  xf
+  factor(xc, nl, nl, NA, ordered, NA)
 }
 
 #' @rdname combine_levels
 #' @export
-combine_regex <- function(x, levels, labels, keep.original = FALSE, ...) {
+combine_regex <- function(x, levels, labels, ordered = is.ordered(x),
+                          keep.original = TRUE, ...) {
   if (islist(levels)) {
-    stopifnot(
-      (ok <- sum(nul <- sapply(levels, is.null))) <= 1
-    )
+    stopifnot((ok <- sum(nul <- sapply(levels, is.null))) <= 1)
     levels <- c(lapply(levels[!nul], paste, collapse = '|'), levels[nul])
     labels <- names(levels) %||% seq.int(length(levels))
-    
-    return(
-      Recall(x, unlist(levels), labels,
-             keep.original = keep.original, ...)
-    )
+    return(Recall(x, unlist(levels), labels, ordered, keep.original, ...))
   }
 
   labels <- if (missing(labels))
@@ -2345,7 +2333,9 @@ combine_regex <- function(x, levels, labels, keep.original = FALSE, ...) {
   for (ii in seq_along(levels))
     res[grep(pattern = levels[ii], x = x, ...)] <- labels[ii]
   
-  res
+  nl <- c(labels, unique(res))
+  
+  factor(res, nl, nl, NA, ordered, NA)
 }
 
 #' Rowname tools
@@ -2810,4 +2800,49 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
     unconfirmed = rsp, confirmed = rsp_confirm,
     bsf_unconfirmed = bsf, bsf_confirmed = bsf_confirm
   )
+}
+
+#' Diagonal apply
+#' 
+#' Apply a function on all diagonal slices of a matrix starting from one
+#' of the corners.
+#' 
+#' @param X a matrix or an object to be coerced
+#' @param MARGIN the corner to slice from to the opposite corner: \code{1} for
+#' lower left, \code{2} for top left, \code{3} for top right, or \code{4} for
+#' lower right
+#' @param FUN a function to apply to each slice
+#' @param ... additional arguments passed to \code{FUN}
+#' @param SIMPLIFY logical or character string; attempt to reduce the result to
+#' a vector or matrix; see the \code{simplify} argument of \code{\link{sapply}}
+#' 
+#' @seealso
+#' \code{\link{apply}}; \code{\link{simplify2array}}
+#' 
+#' @examples
+#' mat <- matrix(1:12, 3)
+#' dapply(mat, 2, identity)
+#' 
+#' dapply(mat, 1, range)
+#' dapply(mat, 1, range, SIMPLIFY = FALSE)
+#' 
+#' @export
+
+dapply <- function(X, MARGIN, FUN, ..., SIMPLIFY = TRUE) {
+  X <- as.matrix(X)
+  
+  idx <- switch(
+    MARGIN,
+    col(X) - row(X),
+    row(X) + col(X),
+    (col(X) - row(X)) * -1L,
+    (row(X) + col(X)) * -1L,
+    stop('\'MARGIN\' should be 1, 2, 3, or 4')
+  )
+  
+  res <- unname(lapply(split(X, idx), FUN, ...))
+  
+  if (!isFALSE(SIMPLIFY) && length(res)) 
+    simplify2array(res, higher = (SIMPLIFY == 'array'))
+  else res
 }
