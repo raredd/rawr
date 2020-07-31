@@ -2022,9 +2022,10 @@ guess_test <- function(x, y, n_unique_x = 10L) {
         structure(getPvalCAtest(x, y), FUN = 'ca.test',
                   name = 'Cochran-Armitage test for trend')
       else
-        structure(getPvalCAtest(x, y), FUN = 'ca.test',
+        structure(getPvalCAtest(y, x), FUN = 'ca.test',
                   name = 'Cochran-Armitage test for trend')
-    } else if ((nx > 2L & !ox & oy & ny > 2L) || (ny > 2L & !oy & ox & nx > 2L)) {
+    } else if ((nx > 2L & !ox & oy & ny > 2L) ||
+               (ny > 2L & !oy & ox & nx > 2L)) {
       if (ny > 2L)
         structure(getPvalKWtest(x, y), FUN = 'kw.test',
                   name = 'Chi-squared test for trend in proportions')
