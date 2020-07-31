@@ -4,7 +4,7 @@
 \alias{ca.test}
 \alias{ca.test.default}
 \alias{ca.test.formula}
-\title{Cochran-Armitage Test for Trend}
+\title{Cochran-Armitage test for trend}
 \usage{
 ca.test(x, ...)
 

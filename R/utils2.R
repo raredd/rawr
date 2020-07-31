@@ -2020,10 +2020,10 @@ guess_test <- function(x, y, n_unique_x = 10L) {
     else if ((nx == 2L & oy & ny > 2L) || (ny == 2L & ox & nx > 2L)) {
       if (ny > 2L)
         structure(getPvalCAtest(x, y), FUN = 'ca.test',
-                  name = 'Cochran-Armitage Test for Trend')
+                  name = 'Cochran-Armitage test for trend')
       else
         structure(getPvalCAtest(x, y), FUN = 'ca.test',
-                  name = 'Cochran-Armitage Test for Trend')
+                  name = 'Cochran-Armitage test for trend')
     } else if ((nx > 2L & !ox & oy & ny > 2L) || (ny > 2L & !oy & ox & nx > 2L)) {
       if (ny > 2L)
         structure(getPvalKWtest(x, y), FUN = 'kw.test',

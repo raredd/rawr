@@ -2283,7 +2283,7 @@ sim.test.pvalue <- function(x, g, FUN, ordered = FALSE, B = 2000L,
   )
 }
 
-#' Cochran-Armitage Test for Trend
+#' Cochran-Armitage test for trend
 #' 
 #' Performs a Cochran-Armitage chi-squared test for trend in proportions for
 #' a \code{2 x c} contingency table with a nominal row (r == 2) and ordinal
