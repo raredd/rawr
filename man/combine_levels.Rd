@@ -17,7 +17,7 @@ combine_levels(
 combine_regex(
   x,
   levels,
-  labels,
+  labels = NULL,
   ordered = is.ordered(x),
   keep.original = TRUE,
   ...
@@ -100,12 +100,10 @@ combine_regex(x, c('a', 'b|c|e'))
 ## character labels return a labeled factor
 combine_regex(x, 'a', c('a', 'b'))
 combine_regex(x, '[a-c]', c('ABC', 'Others'))
-combine_regex(x, '[a-c]', c('ABC', 'Others'), keep.original = TRUE)
 
 ## levels passed as a list
 combine_regex(x, list(ABC = c('a', 'b', 'c')))
 combine_regex(x, list(ABC = '[a-c]', Others = NULL))
-combine_regex(x, list(ABC = c('a', 'b', 'c'), Others = NULL))
 
 
 ## combine_levels(..., regex = TRUE) returns the same as above

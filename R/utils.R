@@ -4,7 +4,7 @@
 # getMethods, regcaptures, regcaptures2, cast, melt, View2, view, clist,
 # rapply2, sort_matrix, insert, insert_matrix, tryCatch2, rleid, droplevels2,
 # combine_levels, combine_regex, rownames_to_column, column_to_rownames,
-# split_nth, sort2, response, dapply
+# split_nth, sort2, response, dapply, xtable
 # 
 # rawr_ops:
 # %ni%, %==%, %||%, %sinside%, %winside%, %inside%, %:%
@@ -2247,12 +2247,10 @@ droplevels2 <- function(x, min_level = min(as.integer(x), na.rm = TRUE),
 #' ## character labels return a labeled factor
 #' combine_regex(x, 'a', c('a', 'b'))
 #' combine_regex(x, '[a-c]', c('ABC', 'Others'))
-#' combine_regex(x, '[a-c]', c('ABC', 'Others'), keep.original = TRUE)
 #' 
 #' ## levels passed as a list
 #' combine_regex(x, list(ABC = c('a', 'b', 'c')))
 #' combine_regex(x, list(ABC = '[a-c]', Others = NULL))
-#' combine_regex(x, list(ABC = c('a', 'b', 'c'), Others = NULL))
 #' 
 #' 
 #' ## combine_levels(..., regex = TRUE) returns the same as above
@@ -2280,7 +2278,7 @@ combine_levels <- function(x, levels, labels = NULL, ordered = is.ordered(x),
   labels  <- lapply(as.list(labels %||% names(levels)), as.character)
   set.seed(1)
   ul <- lapply(labels, function(x)
-    as.character(runif(length(x))))
+    format(runif(length(x)), digits = 22L))
   labels <- unlist(labels)
   
   stopifnot(length(levels) == length(labels))
@@ -2292,6 +2290,7 @@ combine_levels <- function(x, levels, labels = NULL, ordered = is.ordered(x),
   ## new levels, ie, original minus replaced plus new
   nl <- c(setdiff(ol, c(unlist(levels), labels)), labels)
   nl <- as.character(sort(factor(nl, unique(c(ol, nl)))))
+  nl <- na.omit(nl)
 
   for (ii in seq_along(levels)) {
     xl[xl %in% unlist(levels[[ii]])] <- unlist(ul[[ii]])
@@ -2306,36 +2305,22 @@ combine_levels <- function(x, levels, labels = NULL, ordered = is.ordered(x),
 
 #' @rdname combine_levels
 #' @export
-combine_regex <- function(x, levels, labels, ordered = is.ordered(x),
+combine_regex <- function(x, levels, labels = NULL, ordered = is.ordered(x),
                           keep.original = TRUE, ...) {
-  if (islist(levels)) {
-    stopifnot((ok <- sum(nul <- sapply(levels, is.null))) <= 1)
-    levels <- c(lapply(levels[!nul], paste, collapse = '|'), levels[nul])
-    labels <- names(levels) %||% seq.int(length(levels))
-    return(Recall(x, unlist(levels), labels, ordered, keep.original, ...))
-  }
-
-  labels <- if (missing(labels))
-    seq.int(length(levels) + 1L)
-  else if (length(levels) == length(labels))
-    c(labels, length(labels) + 1L)
-  else labels
+  if (length(labels) == (length(levels) + 1L))
+    levels <- c(as.list(levels), list(NULL))
   
-  stopifnot(
-    is.vector(levels),
-    is.vector(labels),
-    length(levels) == length(na.omit(unique(levels))),
-    keep.original || length(labels) %in% (length(levels) + 0:1)
-  )
+  names(levels) <- labels %||% names(levels) %||% seq_along(levels)
+  levels <- lapply(levels, function(p) {
+    unique(grep(paste0(p, collapse = '|'), x, value = TRUE, ...))
+  })
   
-  res <- if (keep.original)
-    as.character(x) else rep_len(tail(labels, 1L), length(x))
-  for (ii in seq_along(levels))
-    res[grep(pattern = levels[ii], x = x, ...)] <- labels[ii]
+  # if (keep.original) {
+  #   ol <- setdiff(unlist(x), unlist(levels))
+  #   levels <- c(levels, setNames(as.list(ol), ol))
+  # }
   
-  nl <- c(labels, unique(res))
-  
-  factor(res, nl, nl, NA, ordered, NA)
+  combine_levels(x, levels, NULL, ordered, FALSE, ...)
 }
 
 #' Rowname tools
@@ -2845,4 +2830,61 @@ dapply <- function(X, MARGIN, FUN, ..., SIMPLIFY = TRUE) {
   if (!isFALSE(SIMPLIFY) && length(res)) 
     simplify2array(res, higher = (SIMPLIFY == 'array'))
   else res
+}
+
+#' Cross table
+#' 
+#' Create a contingency table with totals, percents, and test.
+#' 
+#' @param x,by row and column variables, respectively; should be factor-like
+#' and will be coerced; missing values in \code{by} will be removed with the
+#' corresponding values in \code{x}
+#' @param digits for percents, number of digits past the decimal to keep
+#' @param total logical; if \code{TRUE}, the row totals will be added as a
+#' separate column
+#' @param pct.sign logical; if \code{FALSE} (default), no percentage signs
+#' will be shown
+#' @param test logical; if \code{TRUE}, a test and p-value will be added as
+#' a separate column; see \code{rawr:::guess_test}
+#' @param ... additional arguments passed to \code{\link[Gmisc]{getDescriptionStatsBy}}
+#' 
+#' @seealso
+#' \code{\link{tabler_stat2}}; \code{rawr:::guess_test}
+#' 
+#' @examples
+#' x <- mtcars$gear
+#' y <- mtcars$cyl
+#' z <- mtcars$vs
+#' 
+#' table(x, y)
+#' xtable(x, y)
+#' 
+#' xtable(ordered(x), y)
+#' xtable(ordered(x), ordered(y))
+#' xtable(ordered(x), z)
+#' xtable(z, ordered(x))
+#' 
+#' @export
+
+xtable <- function(x, by, digits = 0L, total = TRUE, pct.sign = FALSE,
+                   test = TRUE, ...) {
+  x <- as.factor(x)
+  by <- as.factor(by)
+  
+  res <- Gmisc::getDescriptionStatsBy(
+    x, by, digits = digits, add_total_col = total, ...,
+    percentage_sign = pct.sign, show_all_values = TRUE
+  )
+  class(res) <- NULL
+  attr(res, 'label') <- NULL
+  
+  if (test) {
+    suppressWarnings({
+      test <- guess_test(x, by)
+    })
+    res <- cbind(res, c(pvalr(test), rep_len('', nrow(res) - 1L)))
+    colnames(res)[ncol(res)] <- attr(test, 'name')
+  }
+  
+  res
 }
