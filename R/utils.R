@@ -2808,8 +2808,8 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
 #' mat <- matrix(1:12, 3)
 #' dapply(mat, 2, identity)
 #' 
-#' dapply(mat, 1, range)
-#' dapply(mat, 1, range, SIMPLIFY = FALSE)
+#' dapply(mat, 2, range)
+#' dapply(mat, 2, range, SIMPLIFY = FALSE)
 #' 
 #' @export
 
@@ -2828,28 +2828,33 @@ dapply <- function(X, MARGIN, FUN, ..., SIMPLIFY = TRUE) {
   res <- unname(lapply(split(X, idx), FUN, ...))
   
   if (!isFALSE(SIMPLIFY) && length(res)) 
-    simplify2array(res, higher = (SIMPLIFY == 'array'))
-  else res
+    simplify2array(res, SIMPLIFY == 'array') else res
 }
 
 #' Cross table
 #' 
-#' Create a contingency table with totals, percents, and test.
+#' Create a contingency table with totals, percentages, and statistical test.
 #' 
 #' @param x,by row and column variables, respectively; should be factor-like
 #' and will be coerced; missing values in \code{by} will be removed with the
 #' corresponding values in \code{x}
-#' @param digits for percents, number of digits past the decimal to keep
+#' @param digits for percentages, number of digits past the decimal to keep
 #' @param total logical; if \code{TRUE}, the row totals will be added as a
 #' separate column
 #' @param pct.sign logical; if \code{FALSE} (default), no percentage signs
 #' will be shown
 #' @param test logical; if \code{TRUE}, a test and p-value will be added as
 #' a separate column; see \code{rawr:::guess_test}
+#' 
+#' alternatively, a user-defined test function which takes two arguments,
+#' \code{x} and \code{by}, and returns a numeric p-value with an optional
+#' attribute, \code{"name"}, which will be used as a test label; see
+#' examples
 #' @param ... additional arguments passed to \code{\link[Gmisc]{getDescriptionStatsBy}}
 #' 
 #' @seealso
-#' \code{\link{tabler_stat2}}; \code{rawr:::guess_test}
+#' \code{\link[Gmisc]{getDescriptionStatsBy}}; \code{\link{tabler_stat2}};
+#' \code{rawr:::guess_test}
 #' 
 #' @examples
 #' x <- mtcars$gear
@@ -2859,15 +2864,30 @@ dapply <- function(X, MARGIN, FUN, ..., SIMPLIFY = TRUE) {
 #' table(x, y)
 #' xtable(x, y)
 #' 
+#' xtable(ordered(x), z)
 #' xtable(ordered(x), y)
 #' xtable(ordered(x), ordered(y))
-#' xtable(ordered(x), z)
-#' xtable(z, ordered(x))
+#' 
+#' 
+#' ## user-defined test function
+#' test <- function(x, by) {
+#'   structure(chisq.test(table(x, by))$p.value, name = '<i>p-value</i>')
+#' }
+#' res <- xtable(x, y, test = test)
+#' res
+#' 
+#' names(dimnames(res)) <- c('Gears', 'Cylinders')
+#' htmlTable::htmlTable(
+#'   res, n.cgroup = c(1, 3, 1), cgroup = c('', 'Cylinders', '')
+#' )
 #' 
 #' @export
 
 xtable <- function(x, by, digits = 0L, total = TRUE, pct.sign = FALSE,
                    test = TRUE, ...) {
+  xn <- deparse(substitute(x))
+  bn <- deparse(substitute(by))
+  
   x <- as.factor(x)
   by <- as.factor(by)
   
@@ -2875,16 +2895,15 @@ xtable <- function(x, by, digits = 0L, total = TRUE, pct.sign = FALSE,
     x, by, digits = digits, add_total_col = total, ...,
     percentage_sign = pct.sign, show_all_values = TRUE
   )
-  class(res) <- NULL
-  attr(res, 'label') <- NULL
+  class(res) <- attr(res, 'label') <- NULL
   
-  if (test) {
-    suppressWarnings({
-      test <- guess_test(x, by)
-    })
+  if (!isFALSE(test)) {
+    test <- if (isTRUE(test))
+      guess_test(x, by) else match.fun(test)(x, by)
     res <- cbind(res, c(pvalr(test), rep_len('', nrow(res) - 1L)))
-    colnames(res)[ncol(res)] <- attr(test, 'name')
+    colnames(res)[ncol(res)] <- attr(test, 'name') %||% 'test'
   }
+  names(dimnames(res)) <- c(xn, bn)
   
   res
 }

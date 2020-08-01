@@ -28,8 +28,8 @@ of the corners.
 mat <- matrix(1:12, 3)
 dapply(mat, 2, identity)
 
-dapply(mat, 1, range)
-dapply(mat, 1, range, SIMPLIFY = FALSE)
+dapply(mat, 2, range)
+dapply(mat, 2, range, SIMPLIFY = FALSE)
 
 }
 \seealso{
