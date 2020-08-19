@@ -61,7 +61,7 @@ cc_text(
 \arguments{
 \item{object}{a \code{\link{survfit}}, \code{\link{survdiff}}, or
 \code{\link{coxph}} object; alternatively a \code{\link[=Surv]{survival
-formula}} (\code{data} must be given)}
+formula}} in which case \code{data} must be given}
 
 \item{details}{logical; \code{TRUE} returns statistic, degrees of freedom,
 and p-value where \code{FALSE} returns only a pvalue}
