@@ -6,6 +6,7 @@
 \usage{
 kmplot(
   s,
+  data = NULL,
   lty.surv = par("lty"),
   lwd.surv = par("lwd"),
   col.surv = seq_along(s$n),
@@ -18,8 +19,9 @@ kmplot(
   atrisk.table = TRUE,
   atrisk.lab = NULL,
   atrisk.type = c("atrisk", "events", "atrisk-events", "survival", "survival-ci",
-    "percent", "percent-ci"),
-  atrisk.digits = 2L,
+    "percent", "percent-ci", "cuminc", "percent-cuminc", "cuminc-ci",
+    "percent-cuminc-ci"),
+  atrisk.digits = (!grepl("percent", atrisk.type)) * 2,
   atrisk.lines = TRUE,
   atrisk.col = !atrisk.lines,
   strata.lab = NULL,
@@ -50,11 +52,19 @@ kmplot(
   args.test = list(),
   hr_text = FALSE,
   args.hr = list(),
+  events = FALSE,
   pw_test = FALSE,
   args.pw = list(),
   format_pval = TRUE,
   stratify = NULL,
   fun = c("S", "F"),
+  times = NULL,
+  times.lab = NULL,
+  times.type = c("atrisk", "events", "atrisk-events", "survival", "survival-ci",
+    "percent", "percent-ci", "cuminc", "percent-cuminc", "cuminc-ci",
+    "percent-cuminc-ci"),
+  times.digits = (!grepl("percent", times.type)) * 2,
+  args.times = list(),
   add = FALSE,
   panel.first = NULL,
   panel.last = NULL,
@@ -63,6 +73,10 @@ kmplot(
 }
 \arguments{
 \item{s}{an object of class \code{\link{survfit}} or \code{survfit.cox}}
+
+\item{data}{(optional) the data frame used to create \code{s}, used to
+obtain some data not available in \code{survfit} objects; if not given,
+\code{s$call$data} will be searched for in the \code{\link{sys.frames}}}
 
 \item{lty.surv, lwd.surv, col.surv}{line type, width, and color for survival
 curve(s); colors may be either numeric, color names as character string(s),
@@ -92,14 +106,16 @@ see details}
 
 \item{atrisk.lab}{heading for at-risk table}
 
-\item{atrisk.type}{a character string giving the type of at-risk table to
+\item{atrisk.type}{a character string giving the type of "at-risk" table to
 show; one of \code{"atrisk"} (number at-risk), \code{"events"} (cumulative
 number of events), \code{"atrisk-events"} (both), \code{"survival"}
-(survival estimate), or \code{"percent"} (percent); \code{"survival-ci"}
-and \code{"percent-ci"} are similar but add confidence intervals}
+(survival probability), \code{"percent"} (survival percent), or
+\code{"cuminc"} (cumulative incidence); \code{"survival-ci"},
+\code{"percent-ci"}, \code{"percent-cuminc"}, \code{"cuminc-ci"}, and
+\code{"percent-cuminc-ci"} are similar but add confidence intervals}
 
-\item{atrisk.digits}{when survival estimates are shown in at-risk table
-(see \code{atrisk.type}), number of digits past the decimal to show}
+\item{atrisk.digits}{when survival probabilities are shown in at-risk table
+(see \code{atrisk.type}), number of digits past the decimal to keep}
 
 \item{atrisk.lines}{logical; draw lines next to strata in at-risk table}
 
@@ -180,6 +196,9 @@ is shown}
 \item{args.hr}{an optional \emph{named} list of \code{\link{legend}}
 arguments controlling the \code{hr_text} legend}
 
+\item{events}{logical; if \code{TRUE} and \code{hr_text = TRUE}, the total
+events by group is shown}
+
 \item{pw_test}{logical; if \code{TRUE}, all pairwise tests of survival
 curves are performed, and p-valuees are shown}
 
@@ -196,6 +215,19 @@ and return a character string (or a value to be coerced) for printing}
 \item{fun}{survival curve transformation, one of \code{"S"} or \code{"F"}
 for the usual survival curve or empirical CDF, respectively}
 
+\item{times}{time points to show additional summaries in a table added to
+the plot (requires \href{https://github.com/raredd/plotr}{\pkg{plotr}})}
+
+\item{times.lab}{heading for the \code{times} table}
+
+\item{times.type}{see \code{atrisk.type}}
+
+\item{times.digits}{when survival probabilities are shown in times table
+(see \code{times.type}), number of digits past the decimal to keep}
+
+\item{args.times}{an optional \emph{named} list of \code{plotr::tableplot}
+arguments controlling the table appearance and/or location}
+
 \item{add}{logical; if \code{TRUE}, \code{par}s are not reset; allows for
 multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}}
 
@@ -210,7 +242,8 @@ returning from the function}
 }
 \description{
 Plot Kaplan-Meier or Cox regression models with optional at-risk table,
-median survival summary, and other features.
+median survival summary, confidence bands/intervals, pairwise tests,
+hazard ratios, cumulative incidences, and other features.
 }
 \details{
 Line specifications (e.g., \code{lty.surv}, \code{lwd.surv}, etc) will be
@@ -245,12 +278,16 @@ km2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 ## basic usage
 kmplot(km1)
 kmplot(km1, fun = 'F')
-kmplot(km1, atrisk.col = c('grey50','tomato'), test_details = FALSE,
+kmplot(km1, atrisk.col = c('grey50', 'tomato'), test_details = FALSE,
        args.test = list(col = 'red', cex = 1.5, .prefix = 'Log-rank: '))
 kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
 kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3700)
-kmplot(km2, atrisk.table = FALSE, lwd.surv = 2, lwd.mark = .5,
-       col.surv = 1:4, col.band = c(1,0,0,4))
+kmplot(km2, atrisk.table = FALSE, lwd.surv = 2, lwd.mark = 0.5,
+       col.surv = 1:4, col.band = c(1, 0, 0, 4))
+
+
+## small table of additional stats
+kmplot(km1, times = 1:3 * 1000, times.type = 'percent-ci')
 
 
 ## use stratified models

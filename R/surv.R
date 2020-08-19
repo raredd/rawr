@@ -1,9 +1,10 @@
 ### survival
 # kmplot, kmplot_by, kmplot_ticks, local_coxph_test, surv_cp, surv_summary,
-# surv_table, survdiff_pairs, landmark, surv_extract, surv_median, surv_prob
+# surv_table, survdiff_pairs, landmark, surv_extract, surv_median, surv_prob,
+# kmdiff
 #
 # unexported:
-# stratify_formula, points.kmplot, kmplot_data_, terms.inner
+# stratify_formula, points.kmplot, kmplot_data_, atrisk_data_, terms.inner
 # 
 # surv_test (unexported):
 # lr_text, lr_pval, tt_text, tt_pval, hr_text, hr_pval, pw_pval, pw_text,
@@ -25,7 +26,8 @@ stratify_formula <- function(formula, vars = NULL) {
 #' Survival curves
 #' 
 #' Plot Kaplan-Meier or Cox regression models with optional at-risk table,
-#' median survival summary, and other features.
+#' median survival summary, confidence bands/intervals, pairwise tests,
+#' hazard ratios, cumulative incidences, and other features.
 #' 
 #' Line specifications (e.g., \code{lty.surv}, \code{lwd.surv}, etc) will be
 #' recycled as needed.
@@ -52,6 +54,9 @@ stratify_formula <- function(formula, vars = NULL) {
 #' legend to be mis-aligned.
 #' 
 #' @param s an object of class \code{\link{survfit}} or \code{survfit.cox}
+#' @param data (optional) the data frame used to create \code{s}, used to
+#' obtain some data not available in \code{survfit} objects; if not given,
+#' \code{s$call$data} will be searched for in the \code{\link{sys.frames}}
 #' @param lty.surv,lwd.surv,col.surv line type, width, and color for survival
 #' curve(s); colors may be either numeric, color names as character string(s),
 #' or hexadecimal string(s)
@@ -73,13 +78,15 @@ stratify_formula <- function(formula, vars = NULL) {
 #' bands will be plotted; also note that this is not a true confidence band;
 #' see details
 #' @param atrisk.table logical; if \code{TRUE} (default), draws at-risk table
-#' @param atrisk.type a character string giving the type of at-risk table to
+#' @param atrisk.type a character string giving the type of "at-risk" table to
 #' show; one of \code{"atrisk"} (number at-risk), \code{"events"} (cumulative
 #' number of events), \code{"atrisk-events"} (both), \code{"survival"}
-#' (survival estimate), or \code{"percent"} (percent); \code{"survival-ci"}
-#' and \code{"percent-ci"} are similar but add confidence intervals
-#' @param atrisk.digits when survival estimates are shown in at-risk table
-#' (see \code{atrisk.type}), number of digits past the decimal to show
+#' (survival probability), \code{"percent"} (survival percent), or
+#' \code{"cuminc"} (cumulative incidence); \code{"survival-ci"},
+#' \code{"percent-ci"}, \code{"percent-cuminc"}, \code{"cuminc-ci"}, and
+#' \code{"percent-cuminc-ci"} are similar but add confidence intervals
+#' @param atrisk.digits when survival probabilities are shown in at-risk table
+#' (see \code{atrisk.type}), number of digits past the decimal to keep
 #' @param atrisk.lab heading for at-risk table
 #' @param atrisk.lines logical; draw lines next to strata in at-risk table
 #' @param atrisk.col logical or a vector with colors for at-risk table text;
@@ -134,6 +141,8 @@ stratify_formula <- function(formula, vars = NULL) {
 #' is shown
 #' @param args.hr an optional \emph{named} list of \code{\link{legend}}
 #' arguments controlling the \code{hr_text} legend
+#' @param events logical; if \code{TRUE} and \code{hr_text = TRUE}, the total
+#' events by group is shown
 #' @param pw_test logical; if \code{TRUE}, all pairwise tests of survival
 #' curves are performed, and p-valuees are shown
 #' @param args.pw an optional \emph{named} list of \code{\link{legend}}
@@ -145,6 +154,14 @@ stratify_formula <- function(formula, vars = NULL) {
 #' @param stratify (dev) \code{\link[survival]{strata}} variables
 #' @param fun survival curve transformation, one of \code{"S"} or \code{"F"}
 #' for the usual survival curve or empirical CDF, respectively
+#' @param times time points to show additional summaries in a table added to
+#' the plot (requires \href{https://github.com/raredd/plotr}{\pkg{plotr}})
+#' @param times.lab heading for the \code{times} table
+#' @param times.type see \code{atrisk.type}
+#' @param times.digits when survival probabilities are shown in times table
+#' (see \code{times.type}), number of digits past the decimal to keep
+#' @param args.times an optional \emph{named} list of \code{plotr::tableplot}
+#' arguments controlling the table appearance and/or location
 #' @param add logical; if \code{TRUE}, \code{par}s are not reset; allows for
 #' multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}
 #' @param panel.first an expression to be evaluated after the plot axes are
@@ -170,12 +187,16 @@ stratify_formula <- function(formula, vars = NULL) {
 #' ## basic usage
 #' kmplot(km1)
 #' kmplot(km1, fun = 'F')
-#' kmplot(km1, atrisk.col = c('grey50','tomato'), test_details = FALSE,
+#' kmplot(km1, atrisk.col = c('grey50', 'tomato'), test_details = FALSE,
 #'        args.test = list(col = 'red', cex = 1.5, .prefix = 'Log-rank: '))
 #' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
 #' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3700)
-#' kmplot(km2, atrisk.table = FALSE, lwd.surv = 2, lwd.mark = .5,
-#'        col.surv = 1:4, col.band = c(1,0,0,4))
+#' kmplot(km2, atrisk.table = FALSE, lwd.surv = 2, lwd.mark = 0.5,
+#'        col.surv = 1:4, col.band = c(1, 0, 0, 4))
+#' 
+#' 
+#' ## small table of additional stats
+#' kmplot(km1, times = 1:3 * 1000, times.type = 'percent-ci')
 #' 
 #' 
 #' ## use stratified models
@@ -256,7 +277,7 @@ stratify_formula <- function(formula, vars = NULL) {
 #' 
 #' @export
 
-kmplot <- function(s,
+kmplot <- function(s, data = NULL,
                    ## basic plot options
                    lty.surv = par('lty'), lwd.surv = par('lwd'),
                    col.surv = seq_along(s$n), mark = 3L, lwd.mark = lwd.surv,
@@ -269,8 +290,10 @@ kmplot <- function(s,
                    atrisk.table = TRUE, atrisk.lab = NULL,
                    atrisk.type = c('atrisk', 'events', 'atrisk-events',
                                    'survival', 'survival-ci',
-                                   'percent', 'percent-ci'),
-                   atrisk.digits = 2L,
+                                   'percent', 'percent-ci',
+                                   'cuminc', 'percent-cuminc',
+                                   'cuminc-ci', 'percent-cuminc-ci'),
+                   atrisk.digits = (!grepl('percent', atrisk.type)) * 2,
                    atrisk.lines = TRUE, atrisk.col = !atrisk.lines,
                    strata.lab = NULL,
                    strata.expr = NULL, strata.order = seq_along(s$n),
@@ -290,12 +313,20 @@ kmplot <- function(s,
                    ## test/hazard ratio options
                    lr_test = TRUE, tt_test = FALSE, test_details = TRUE,
                    args.test = list(),
-                   hr_text = FALSE, args.hr = list(),
+                   hr_text = FALSE, args.hr = list(), events = FALSE,
                    pw_test = FALSE, args.pw = list(),
                    format_pval = TRUE,
                    
                    ## other options
                    stratify = NULL, fun = c('S', 'F'),
+                   times = NULL, times.lab = NULL,
+                   times.type = c('atrisk', 'events', 'atrisk-events',
+                                  'survival', 'survival-ci',
+                                  'percent', 'percent-ci',
+                                  'cuminc', 'percent-cuminc',
+                                  'cuminc-ci', 'percent-cuminc-ci'),
+                   times.digits = (!grepl('percent', times.type)) * 2,
+                   args.times = list(),
                    add = FALSE, panel.first = NULL, panel.last = NULL, ...) {
   if (!inherits(s, 'survfit'))
     stop('\'s\' must be a \'survfit\' object')
@@ -328,6 +359,7 @@ kmplot <- function(s,
       get(sdat, where(sname)) else eval(parse(text = sdat), where(sname)),
       error = function(e) NULL)
   }
+  sdat <- data %||% sdat
   ## remove missing here for special case: all NA for one strata level
   ## drops level in s$strata but not in table(sdat[, svar])
   if (!is.null(sdat))
@@ -520,53 +552,20 @@ kmplot <- function(s,
       atrisk.type,
       atrisk = 'n.risk',
       events = 'events',
-      'atrisk-events' = 'atrisk-events',
+      'atrisk-events' = 'atrisk.events',
       survival = 'survival',
       'survival-ci' = 'survival.ci',
       percent = 'percent',
-      'percent-ci' = 'percent.ci'
+      'percent-ci' = 'percent.ci',
+      cuminc = 'cuminc',
+      'cuminc-ci' = 'cuminc.ci',
+      'percent-cuminc' = 'percent.cuminc',
+      'percent-cuminc-ci' = 'percent.cuminc.ci'
     )
     
-    ss <- summary(s, times = atrisk.at)
-    if (is.null(ss$strata))
-      ss$strata <- rep_len(1L, length(ss$time))
-    d1 <- data.frame(
-      time = ss$time, n.risk = ss$n.risk, n.event = ss$n.event,
-      strata = c(ss$strata), surv = ss$surv, lci = ss$lower, uci = ss$upper
-    )
-    
-    mi <- missing(atrisk.digits)
-    d2 <- split(d1, d1$strata)
-    d2 <- lapply(d2, function(x) {
-      if (fun == 'F')
-        x$surv <- 1 - x$surv
-      
-      x$atrisk <- x$n.risk
-      x$events <- cumsum(x$n.event)
-      x[, 'atrisk-events'] <- sprintf('%s (%s)', x$atrisk, x$events)
-      
-      x$survival <- roundr(x$surv, atrisk.digits)
-      x$survival.ci <- sprintf(
-        '%s (%s, %s)', x$survival,
-        roundr(x$lci, atrisk.digits),
-        roundr(x$uci, atrisk.digits)
-      )
-      
-      x$percent  <- roundr(x$surv * 100, ifelse(mi, 0L, atrisk.digits))
-      x$percent.ci <- sprintf(
-        '%s (%s, %s)', x$percent,
-        roundr(x$lci * 100, ifelse(mi, 0L, atrisk.digits)),
-        roundr(x$uci * 100, ifelse(mi, 0L, atrisk.digits))
-      )
-      
-      if (0 %in% atrisk.at) {
-        zeros <- x[x$time %in% 0, c('survival.ci', 'percent.ci')]
-        x[x$time %in% 0, c('survival.ci', 'percent.ci')] <-
-          gsub('\\s+.*', '', zeros)
-      }
-      
-      x
-    })
+    ar <- atrisk_data_(s, atrisk.at, atrisk.digits)
+    ss <- ar$summary
+    d2 <- ar$data
     
     ## right-justify numbers
     ndigits <- lapply(d2, function(x) nchar(x[, 2L]))
@@ -602,7 +601,11 @@ kmplot <- function(s,
         survival = 'Probability',
         'survival-ci' = sprintf('Probability (%s%% CI)', ss$conf.int * 100),
         percent = 'Percent',
-        'percent-ci' = sprintf('Percent (%s%% CI)', ss$conf.int * 100)
+        'percent-ci' = sprintf('Percent (%s%% CI)', ss$conf.int * 100),
+        cuminc = 'Cuminc',
+        'cuminc-ci' = sprintf('Cuminc (%s%% CI)', ss$conf.int * 100),
+        'percent-cuminc' = '% cuminc',
+        'percent-cuminc-ci' = sprintf('%% cuminc (%s%% CI)', ss$conf.int * 100)
       )
     
     if (!(identical(atrisk.lab, FALSE)))
@@ -640,6 +643,56 @@ kmplot <- function(s,
     }
   }
   
+  ## summary by strata at specified times
+  if ('plotr' %in% rownames(installed.packages()) && !is.null(times)) {
+    times.type <- match.arg(times.type)
+    wh <- switch(
+      times.type,
+      atrisk = 'n.risk',
+      events = 'events',
+      'atrisk-events' = 'atrisk.events',
+      survival = 'survival',
+      'survival-ci' = 'survival.ci',
+      percent = 'percent',
+      'percent-ci' = 'percent.ci',
+      cuminc = 'cuminc',
+      'cuminc-ci' = 'cuminc.ci',
+      'percent-cuminc' = 'percent.cuminc',
+      'percent-cuminc-ci' = 'percent.cuminc.ci'
+    )
+    
+    if (is.null(times.lab))
+      times.lab <- switch(
+        times.type,
+        atrisk = 'Number at risk',
+        events = 'Cumulative events',
+        'atrisk-events' = 'At risk (Events)',
+        survival = 'Probability',
+        'survival-ci' = sprintf('Probability (%s%% CI)', ss$conf.int * 100),
+        percent = 'Percent',
+        'percent-ci' = sprintf('Percent (%s%% CI)', ss$conf.int * 100),
+        cuminc = 'Cuminc',
+        'cuminc-ci' = sprintf('Cuminc (%s%% CI)', ss$conf.int * 100),
+        'percent-cuminc' = '% cuminc',
+        'percent-cuminc-ci' = sprintf('%% cuminc (%s%% CI)', ss$conf.int * 100)
+      )
+    
+    ar <- atrisk_data_(s, times, times.digits)
+    ss <- ar$summary
+    d2 <- ar$data
+    d3 <- lapply(d2, function(x) x[, c('time', wh)])
+    d3 <- setNames(merge2(d3, by = 'time', all = TRUE), c('Time', strata.lab))
+    
+    largs <- list(
+      x = diff(par('usr')[1:2]) * 0.025, y = 0,
+      table = d3[, c(1, strata.order + 1L)], title = times.lab,
+      frame.colnames = TRUE, frame.type = 'line', font.title = 1L
+    )
+    if (!islist(args.times))
+      args.times <- list()
+    do.call(plotr::tableplot, modifyList(largs, args.times))
+  }
+  
   ## legend
   if (!identical(legend, FALSE)) {
     ## defaults passed to legend
@@ -673,6 +726,10 @@ kmplot <- function(s,
         '\tthe strata levels (eg, see ?interaction)',
         call. = FALSE
       )
+    
+    tot <- tapply(s$n.event, rep(seq_along(s$strata), s$strata), sum)
+    if (events)
+      txt <- paste(txt, sprintf('(%s events)', tot))
     
     largs <- list(
       x = 'bottomleft', y = NULL, bty = 'n',
@@ -719,10 +776,8 @@ kmplot <- function(s,
       L[naL] <- L[naL - 1L]
       U[naL] <- U[naL - 1L]
       
-      lines(x, L, type = 's', col = col.ci[ii],
-            lty = lty.ci[ii], lwd = lwd.ci[ii])
-      lines(x, U, type = 's', col = col.ci[ii],
-            lty = lty.ci[ii], lwd = lwd.ci[ii])
+      lines(x, L, type = 's', col = col.ci[ii], lty = lty.ci[ii], lwd = lwd.ci[ii])
+      lines(x, U, type = 's', col = col.ci[ii], lty = lty.ci[ii], lwd = lwd.ci[ii])
       
       ## confidence bands
       if (any(!is.na(col.band))) {
@@ -987,6 +1042,72 @@ kmplot_data_ <- function(s, strata.lab) {
   })
 }
 
+#' Create a list of data frames for at-risk tables
+#' 
+#' @param s a \code{\link{survfit}} object
+#' @param times time points
+#' @param digits digits
+#' @seealso \code{\link{kmplot}}; \code{\link{kmplot_by}}
+
+atrisk_data_ <- function(s, times, digits) {
+  ss <- summary(s, times = times)
+  if (is.null(ss$strata))
+    ss$strata <- rep_len(1L, length(ss$time))
+  
+  d1 <- data.frame(
+    time = ss$time, n.risk = ss$n.risk, n.event = ss$n.event,
+    strata = c(ss$strata), surv = ss$surv, lci = ss$lower, uci = ss$upper
+  )
+  
+  d2 <- split(d1, d1$strata)
+  d2 <- lapply(d2, function(x) {
+    # if (fun == 'F')
+    #   x$surv <- 1 - x$surv
+    
+    x$atrisk <- x$n.risk
+    x$events <- cumsum(x$n.event)
+    x$atrisk.events <- sprintf('%s (%s)', x$atrisk, x$events)
+    
+    x$survival <- roundr(x$surv, digits)
+    x$survival.ci <- sprintf(
+      '%s (%s, %s)', x$survival,
+      roundr(x$lci, digits),
+      roundr(x$uci, digits)
+    )
+    
+    x$percent <- roundr(x$surv * 100, digits)
+    x$percent.ci <- sprintf(
+      '%s (%s, %s)', x$percent,
+      roundr(x$lci * 100, digits),
+      roundr(x$uci * 100, digits)
+    )
+    
+    x$cuminc <- roundr(1 - x$surv, digits)
+    x$cuminc.ci <- sprintf(
+      '%s (%s, %s)', x$cuminc,
+      roundr(1 - x$uci, digits),
+      roundr(1 - x$lci, digits)
+    )
+    
+    x$percent.cuminc <- roundr(100 - x$surv * 100, digits)
+    x$percent.cuminc.ci <- sprintf(
+      '%s (%s, %s)', x$percent.cuminc,
+      roundr(100 - x$uci * 100, digits),
+      roundr(100 - x$lci * 100, digits)
+    )
+    
+    if (0 %in% times) {
+      vars <- c('survival.ci', 'percent.ci', 'cuminc.ci', 'percent.cuminc.ci')
+      zeros <- x[x$time %in% 0, vars]
+      x[x$time %in% 0, vars] <- gsub('\\s+.*', '', zeros)
+    }
+    
+    x
+  })
+  
+  list(summary = ss, data = d2)
+}
+
 #' Survival curve tests
 #' 
 #' @description
@@ -1020,7 +1141,7 @@ kmplot_data_ <- function(s, strata.lab) {
 #' \code{\link{coxph}}
 #' @param object a \code{\link{survfit}}, \code{\link{survdiff}}, or
 #' \code{\link{coxph}} object; alternatively a \code{\link[=Surv]{survival
-#' formula}} (\code{data} must be given)
+#' formula}} in which case \code{data} must be given
 #' @param details logical; \code{TRUE} returns statistic, degrees of freedom,
 #' and p-value where \code{FALSE} returns only a pvalue
 #' @param pFUN logical; if \code{TRUE}, p-values are formatted with
@@ -2514,4 +2635,96 @@ surv_prob <- function(x, times = pretty(x$time), ci = FALSE,
     res[[which]]
   else if (print & length(times) == 1L)
     iprint(res) else res
+}
+
+#' Difference in two Kaplan-Meier estimates
+#' 
+#' Draw a confidence band for comparing two survival curves. The shaded region
+#' is centered at the midpoint of the two survival estimates, and the height
+#' is half the width of the approximate \code{conf.int} pointwise confidence
+#' region. Curves not overlapping the shaded area are approximately
+#' significantly different at the \code{1 - conf.int} level.
+#' 
+#' @param s an object of class \code{\link[survival]{survfit}}
+#' @param col color used for the band
+#' @param conf.int the level of the two-sided confidence interval
+#' 
+#' @seealso
+#' Adapted from \code{rms::survdiffplot}
+#' 
+#' @examples
+#' library('survival')
+#' fit <- survfit(Surv(time, status) ~ sex, lung)
+#' kmplot(fit, add = TRUE)
+#' kmdiff(fit)
+#' 
+#' @export
+
+kmdiff <- function(s, col = adjustcolor('grey', 0.5), conf.int = 0.95) {
+  strata <- names(s$strata)
+  
+  if (length(strata) != 2L) {
+    warning('\'kmdiff\' requires exactly two levels in s$strata')
+    return(invisible(NULL))
+  }
+  
+  f <- function(level, times, object) {
+    strata <- object$strata
+    ii <- strata == level
+    time <- object$time[ii]
+    jj <- match(times, time)
+    surv <- object$surv[ii]
+    nrisk <- object$n.risk[ii]
+    se <- object$std.err[ii]
+    list(time = times, surv = surv[jj], se = se[jj], nrisk = nrisk[jj])
+  }
+  
+  dostep <- function(x, y) {
+    # survival:::plot.survfit
+    keep <- is.finite(x) & is.finite(y)
+    if (!any(keep))
+      return(invisible(NULL))
+    if (!all(keep)) {
+      x <- x[keep]
+      y <- y[keep]
+    }
+    n <- length(x)
+    if (n == 1L)
+      list(x = x, y = y)
+    else if (n == 2L)
+      list(x = x[c(1L, 2L, 2L)], y = y[c(1L, 1L, 2L)])
+    else {
+      temp <- rle(y)$lengths
+      drops <- 1 + cumsum(temp[-length(temp)])
+      if (n %in% drops) {
+        xrep <- c(x[1L], rep(x[drops], each = 2L))
+        yrep <- rep(y[c(1, drops)], c(rep(2L, length(drops)), 1L))
+      }
+      else {
+        xrep <- c(x[1L], rep(x[drops], each = 2L), x[n])
+        yrep <- c(rep(y[c(1, drops)], each = 2L))
+      }
+      list(x = xrep, y = yrep)
+    }
+  }
+  
+  st <- s$time
+  st <- c(st, seq(min(st), max(st), length.out = length(st) * 10))
+  st <- unique(sort(st))
+  ss <- summary(s, times = st)
+  
+  a <- f(strata[1L], st, ss)
+  b <- f(strata[2L], st, ss)
+  surv <- (a$surv + b$surv) / 2
+  
+  z <- qnorm((1 + conf.int) / 2)
+  se <- sqrt(a$se ^ 2 + b$se ^ 2)
+  lo <- surv - 0.5 * z * se
+  hi <- surv + 0.5 * z * se
+  ok <- !is.na(st + lo + hi) & st < max(st)
+  
+  x <- dostep(c(st[ok], rev(st[ok])), c(lo[ok], rev(hi[ok])))
+  polygon(x, col = col, border = NA)
+  
+  invisible(x)
 }

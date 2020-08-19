@@ -27,6 +27,7 @@ Suggests:
     markdown,
     notifier,
     parallel,
+    plotr,
     rstudioapi,
     sm,
     survC1,
