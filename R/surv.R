@@ -583,7 +583,7 @@ kmplot <- function(s, data = NULL,
       right <- ''
       
       mtext(
-        tmp[, wh], side = 1L, col = col.atrisk[ii],
+        format(tmp[, wh], big.mark = ',') side = 1L, col = col.atrisk[ii],
         las = 1L, line = line.pos[ii], cex = cex.axis,
         # at = tmp$time + w.adj, adj = 1,
         # at = tmp$time + w.adj * atrisk.type %ni% right,
