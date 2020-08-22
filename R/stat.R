@@ -2175,9 +2175,6 @@ kw.test.default <- function(x, g, ..., simulate.p.value = FALSE, B = 2000L) {
   x <- x[ok]
   g <- g[ok]
   
-  # stopifnot(
-  #   length(unique(g)) >= 3L
-  # )
   if (!length(unique(g)) >= 3L) {
     warning('Fewer than 3 groups')
   }

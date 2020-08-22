@@ -315,7 +315,7 @@ kw.test(tbl, simulate.p.value = TRUE)
 
 ```
 ## 
-## 	Kruskal-Wallis test for count data with simulated p-value (based on 2000 replicates)
+## 	Test for equality of proportions without continuity correction with simulated p-value (based on 2000 replicates)
 ## 
 ## data:  tbl
 ## Kruskal-Wallis chi-squared = 16.722, df = 2, p-value < 2.2e-16
@@ -389,78 +389,78 @@ Table 1.</td></tr>
 </tr>
 <tr>
 <th style='border-bottom: 1px solid grey;'> </th>
-<th style='border-bottom: 1px solid grey; text-align: center;'>Total<br /><font weight=normal; size=1>n = 32 (%)</font></th>
-<th style='border-bottom: 1px solid grey;' colspan='1'>&nbsp;</th>
-<th style='border-bottom: 1px solid grey; text-align: center;'>3<br /><font weight=normal; size=1>n = 15 (47)</font></th>
-<th style='border-bottom: 1px solid grey; text-align: center;'>4<br /><font weight=normal; size=1>n = 12 (38)</font></th>
-<th style='border-bottom: 1px solid grey; text-align: center;'>5<br /><font weight=normal; size=1>n = 5 (16)</font></th>
-<th style='border-bottom: 1px solid grey;' colspan='1'>&nbsp;</th>
-<th style='border-bottom: 1px solid grey; text-align: center;'><i>p-value</i></th>
-<th style='border-bottom: 1px solid grey; text-align: center;'><i>BH p-value</i></th>
+<th style='font-weight: 900; border-bottom: 1px solid grey; text-align: center;'>Total<br /><font weight=normal; size=1>n = 32 (%)</font></th>
+<th style='font-weight: 900; border-bottom: 1px solid grey; text-align: center;' colspan='1'>&nbsp;</th>
+<th style='font-weight: 900; border-bottom: 1px solid grey; text-align: center;'>3<br /><font weight=normal; size=1>n = 15 (47)</font></th>
+<th style='font-weight: 900; border-bottom: 1px solid grey; text-align: center;'>4<br /><font weight=normal; size=1>n = 12 (38)</font></th>
+<th style='font-weight: 900; border-bottom: 1px solid grey; text-align: center;'>5<br /><font weight=normal; size=1>n =  5 (16)</font></th>
+<th style='font-weight: 900; border-bottom: 1px solid grey; text-align: center;' colspan='1'>&nbsp;</th>
+<th style='font-weight: 900; border-bottom: 1px solid grey; text-align: center;'><em>p-value</em></th>
+<th style='font-weight: 900; border-bottom: 1px solid grey; text-align: center;'><em>BH p-value</em></th>
 </tr>
 </thead>
 <tbody> 
-<tr><td colspan='9' style='font-weight: 900;'>Miles/gal</td></tr>
+<tr><td colspan='9' style='padding: 0px 5px 0px; white-space: nowrap; font-weight: 900;'>Miles/gal</td></tr>
 <tr>
-<td style='text-align: left;'>&nbsp;&nbsp;Median (range)</td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: left;'>&nbsp;&nbsp;Median (range)</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'>19.2 (10.4 - 33.9)</td>
-<td style='' colspan='1'>&nbsp;</td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;' colspan='1'>&nbsp;</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'>15.5 (10.4 - 21.5)</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'>22.8 (17.8 - 33.9)</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'>19.7 (15.0 - 30.4)</td>
-<td style='' colspan='1'>&nbsp;</td>
-<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'><i><font color="#FF0000">&lt; 0.001</font></i><sup>&dagger;</sup></td>
-<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'><font color="#FF0000">0.001</font></td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;' colspan='1'>&nbsp;</td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'><em><font color="#DF536B">&lt; 0.001</font></em><sup>&#94;</sup></td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'><font color="#DF536B">0.002</font></td>
 </tr> 
-<tr><td colspan='9' style='font-weight: 900;'>Engine (V/S)</td></tr>
+<tr><td colspan='9' style='padding: 0px 5px 0px; white-space: nowrap; font-weight: 900;'>Engine (V/S)</td></tr>
 <tr>
-<td style='text-align: left;'>&nbsp;&nbsp;Median (range)</td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: left;'>&nbsp;&nbsp;Median (range)</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'>0 (0 - 1)</td>
-<td style='' colspan='1'>&nbsp;</td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;' colspan='1'>&nbsp;</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'>0 (0 - 1)</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'>1 (0 - 1)</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'>0 (0 - 1)</td>
-<td style='' colspan='1'>&nbsp;</td>
-<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'><i><font color="#FF0000">0.001</font></i><sup>&Dagger;</sup></td>
-<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'><font color="#FF0000">0.001</font></td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;' colspan='1'>&nbsp;</td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'><em><font color="#DF536B">0.001</font></em><sup>&Dagger;</sup></td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'><font color="#DF536B">0.002</font></td>
 </tr> 
-<tr><td colspan='9' style='font-weight: 900;'>Cylinders</td></tr>
+<tr><td colspan='9' style='padding: 0px 5px 0px; white-space: nowrap; font-weight: 900;'>Cylinders</td></tr>
 <tr>
-<td style='text-align: left;'>&nbsp;&nbsp;4</td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: left;'>&nbsp;&nbsp;4</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'>11 (34)</td>
-<td style='' colspan='1'>&nbsp;</td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;' colspan='1'>&nbsp;</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'>1 (7)</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'>8 (67)</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'>2 (40)</td>
-<td style='' colspan='1'>&nbsp;</td>
-<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'><i><font color="#FF0000">&lt; 0.001</font></i><sup>&#94;</sup></td>
-<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'><font color="#FF0000">&lt; 0.001</font></td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;' colspan='1'>&nbsp;</td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'><em><font color="#DF536B">0.006</font></em><sup>&sect;</sup></td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'><font color="#DF536B">0.006</font></td>
 </tr>
 <tr>
-<td style='text-align: left;'>&nbsp;&nbsp;6</td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: left;'>&nbsp;&nbsp;6</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'>7 (22)</td>
-<td style='' colspan='1'>&nbsp;</td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;' colspan='1'>&nbsp;</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'>2 (13)</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'>4 (33)</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'>1 (20)</td>
-<td style='' colspan='1'>&nbsp;</td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;' colspan='1'>&nbsp;</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'></td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; text-align: center;'></td>
 </tr>
 <tr>
-<td style='border-bottom: 2px solid grey; text-align: left;'>&nbsp;&nbsp;8</td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; border-bottom: 2px solid grey; text-align: left;'>&nbsp;&nbsp;8</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; border-bottom: 2px solid grey; text-align: center;'>14 (44)</td>
-<td style='border-bottom: 2px solid grey;' colspan='1'>&nbsp;</td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; border-bottom: 2px solid grey; text-align: center;' colspan='1'>&nbsp;</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; border-bottom: 2px solid grey; text-align: center;'>12 (80)</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; border-bottom: 2px solid grey; text-align: center;'>-</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; border-bottom: 2px solid grey; text-align: center;'>2 (40)</td>
-<td style='border-bottom: 2px solid grey;' colspan='1'>&nbsp;</td>
+<td style='padding: 0px 5px 0px; white-space: nowrap; border-bottom: 2px solid grey; text-align: center;' colspan='1'>&nbsp;</td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; border-bottom: 2px solid grey; text-align: center;'></td>
 <td style='padding: 0px 5px 0px; white-space: nowrap; border-bottom: 2px solid grey; text-align: center;'></td>
 </tr>
 </tbody>
 <tfoot><tr><td colspan='9'>
-<font size=1><sup>&dagger;</sup>Kruskal-Wallis rank-sum test, <sup>&Dagger;</sup>Fisher's exact test, <sup>&#94;</sup>Kruskal-Wallis trend test</font></td></tr></tfoot>
+<font size=1><sup>&#94;</sup>Kruskal-Wallis rank-sum test, <sup>&Dagger;</sup>Fisher's exact test, <sup>&sect;</sup>Test for trend in proportions</font></td></tr></tfoot>
 </table>
 
 **a table, basically**
@@ -598,8 +598,8 @@ inl_cuzick(mtcars$mpg, mtcars$gear)
 # jt.test(table(mtcars$gear, mtcars$cyl))
 inl_jt(mtcars$gear, mtcars$cyl)
 
-# kw.test(table(mtcars$vs, mtcars$cyl))
-inl_kw(mtcars$vs, mtcars$cyl)
+# ca.test(table(mtcars$vs, mtcars$cyl))
+inl_ca(mtcars$vs, mtcars$cyl)
 ```
 
 ```
@@ -610,7 +610,7 @@ inl_kw(mtcars$vs, mtcars$cyl)
 ## [1] "w: 42.00, Wilcoxon rank-sum p-value: 0.002"
 ## [1] "z: 2.69 (3 ordered groups), Cuzick trend p-value: 0.007"
 ## [1] "z: -3.16, Jonckheere-Terpstra p-value: 0.002"
-## [1] "&chi;<sup>2</sup>: 20.53 (1 df), Kruskal-Wallis p-value: < 0.001"
+## [1] "&chi;<sup>2</sup>: 21.04 (1 df), Cochran-Armitage p-value: < 0.001"
 ```
 
 etc
