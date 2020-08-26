@@ -2655,8 +2655,18 @@ surv_prob <- function(x, times = pretty(x$time), ci = FALSE,
 #' @examples
 #' library('survival')
 #' fit <- survfit(Surv(time, status) ~ sex, lung)
+#' 
+#' ## survival:::plot.survfit
+#' plot(fit, mark.time = TRUE, col = 1:2)
+#' kmdiff(fit)
+#' 
+#' ## rawr::kmplot (add = TRUE to add to plot before resetting par)
 #' kmplot(fit, add = TRUE)
 #' kmdiff(fit)
+#' legend(
+#'   'topright', fill = adjustcolor('grey', 0.5),
+#'   legend = sprintf('Difference\n1/2 %s CL', fit$conf.int)
+#' )
 #' 
 #' @export
 
@@ -2699,8 +2709,7 @@ kmdiff <- function(s, col = adjustcolor('grey', 0.5), conf.int = 0.95) {
       if (n %in% drops) {
         xrep <- c(x[1L], rep(x[drops], each = 2L))
         yrep <- rep(y[c(1, drops)], c(rep(2L, length(drops)), 1L))
-      }
-      else {
+      } else {
         xrep <- c(x[1L], rep(x[drops], each = 2L), x[n])
         yrep <- c(rep(y[c(1, drops)], each = 2L))
       }

@@ -23,8 +23,18 @@ significantly different at the \code{1 - conf.int} level.
 \examples{
 library('survival')
 fit <- survfit(Surv(time, status) ~ sex, lung)
+
+## survival:::plot.survfit
+plot(fit, mark.time = TRUE, col = 1:2)
+kmdiff(fit)
+
+## rawr::kmplot (add = TRUE to add to plot before resetting par)
 kmplot(fit, add = TRUE)
 kmdiff(fit)
+legend(
+  'topright', fill = adjustcolor('grey', 0.5),
+  legend = sprintf('Difference\n1/2 \%s CL', fit$conf.int)
+)
 
 }
 \seealso{
