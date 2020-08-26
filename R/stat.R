@@ -2800,3 +2800,101 @@ perm.t.test.formula <- function(formula, data, ...) {
   
   y
 }
+
+#' Random forest variable selection
+#' 
+#' Drop least relevant variables from a \code{\link[randomForestSRC]{rfsrc}}
+#' model with optional diagnostics.
+#' 
+#' @param formula,data see \code{\link[randomForestSRC]{rfsrc}}
+#' @param nvar number of variables desired in final model (if positive) or
+#' the number of variables to drop (if negative)
+#' @param depth logical or a numeric value (if \code{NULL}, variables will
+#' be selected via \code{nvar}); if \code{TRUE}, variables will be selected
+#' using first-order depths and the \code{threshold} value returned by
+#' \code{\link[randomForestSRC]{max.subtree}}; alternatively, a numeric
+#' value to be used as the threshold
+#' @param verbose,plot logical; if \code{TRUE}, an updated \code{formula}
+#' and/or variable importance figures are printed after each step
+#' @param refit logical; if \code{TRUE} (default), model is re-fit after each
+#' variable is dropped; otherwise, all variables to be dropped will be done
+#' in one step which could give significant performance gains for some models
+#' such as survival models (note the final model may be different than if
+#' \code{refit = TRUE})
+#' @param ... additional parameters passed to \code{\link[randomForestSRC]{rfsrc}}
+#' 
+#' @return
+#' The \code{formula} of the final model.
+#' 
+#' @examples
+#' f <- formula(rev(iris))
+#' 
+#' ## select variables based on first-order depth
+#' rfvar(f, iris, depth = TRUE, verbose = TRUE, plot = FALSE, ntree = 10)
+#' 
+#' 
+#' ## keep only most relevant 2 variables
+#' rfvar(f, iris, nvar = 2)
+#' ## drop 2 least relevant variables
+#' rfvar(f, iris, nvar = -2)
+#' rfvar(f, iris, nvar = -2, refit = FALSE)
+#' 
+#' 
+#' library('survival')
+#' f <- Surv(time, status == 0) ~ rx + sex + age + obstruct + adhere + nodes
+#' rfvar(f, colon, nvar = 4, ntree = 5)
+#' rfvar(f, colon, nvar = -2, ntree = 5)
+#' 
+#' ## for slower models, refit = FALSE may improve performance
+#' rfvar(f, colon, nvar = 4, ntree = 5, refit = FALSE, plot = TRUE)
+#' 
+#' @export
+
+rfvar <- function(formula, data, nvar = -1L, depth = NULL,
+                  verbose = FALSE, plot = verbose, refit = TRUE, ...) {
+  tt <- rownames(attr(terms(formula), 'factors'))
+  yy <- tt[1L]
+  xx <- tt[-1L]
+  
+  co <- complete.cases(data[, all.vars(formula)])
+  if (any(!co)) {
+    message(sum(!co), ' observations removed due to missingness')
+    data <- data[co, ]
+  }
+  
+  if (nvar < 0)
+    nvar <- pmax(1L, length(xx) + nvar)
+  
+  if (nvar == 0 || length(xx) == nvar)
+    return(print(formula, showEnv = FALSE))
+  
+  rf <- randomForestSRC::rfsrc(formula, data = data, importance = TRUE, ...)
+  
+  if (verbose)
+    print(rf$call)
+  if (plot)
+    randomForestSRC::plot.rfsrc(rf, verbose = FALSE)
+  
+  if (!is.null(depth) & !isFALSE(depth)) {
+    ## first and second order depths
+    vm <- randomForestSRC::max.subtree(rf, conservative = FALSE)
+    vo <- vm$order[order(vm$order[, 1L]), ]
+    ## variables with min depth <= threshold
+    threshold <- if (isTRUE(depth))
+      vm$threshold else depth
+    vo <- rownames(vo[vo[, 1L] <= threshold, ])
+    if (verbose)
+      message('threshold used: ', threshold)
+    return(print(reformulate(vo, yy), showEnv = FALSE))
+  }
+  
+  ## remove least relevant variable(s)
+  ri <- rf$importance
+  if (length(dim(ri)))
+    ri <- ri[, 'all']
+  ex <- if (refit)
+    names(which.min(ri)) else head(names(ri)[order(ri)], -nvar)
+  formula <- reformulate(setdiff(xx, ex), yy)
+  
+  Recall(formula, data, nvar, verbose, plot, ...)
+}
