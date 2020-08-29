@@ -28,11 +28,13 @@ Calculate summary statistic with range or confidence interval.
 intr(1:10)
 intr(1:10, conf = 0.95)
 
-# inner quartile range
-`colnames<-`(cbind(lapply(mtcars, intr, conf = .5),
-                   lapply(mtcars, intr, fun = mean)),
-             c('median (IQR)','mean (range)'))
-# compare to
+## inner quartile range
+cbind(
+  'median (IQR)' = lapply(mtcars, intr, conf = 0.5, digits = 2),
+  'mean (range)' = lapply(mtcars, intr, fun = mean, digits = 2)
+)
+
+## compare to
 summary(mtcars)
 
 }
