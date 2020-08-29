@@ -18,6 +18,7 @@ kmplot(
   col.band = FALSE,
   atrisk.table = TRUE,
   atrisk.lab = NULL,
+  atrisk.pad = 0.5,
   atrisk.type = c("atrisk", "events", "atrisk-events", "survival", "survival-ci",
     "percent", "percent-ci", "cuminc", "percent-cuminc", "cuminc-ci",
     "percent-cuminc-ci"),
@@ -44,6 +45,7 @@ kmplot(
   ylab = "Probability",
   main = NULL,
   cex.axis = par("cex.axis"),
+  cex.atrisk = cex.axis,
   legend = !atrisk.table && !is.null(s$strata),
   args.legend = list(),
   lr_test = TRUE,
@@ -106,6 +108,8 @@ see details}
 
 \item{atrisk.lab}{heading for at-risk table}
 
+\item{atrisk.pad}{extra padding between plot and at-risk table}
+
 \item{atrisk.type}{a character string giving the type of "at-risk" table to
 show; one of \code{"atrisk"} (number at-risk), \code{"events"} (cumulative
 number of events), \code{"atrisk-events"} (both), \code{"survival"}
@@ -163,7 +167,7 @@ are shown}
 
 \item{main}{title of plot}
 
-\item{cex.axis}{text size for axes labels, legend, at-risk table}
+\item{cex.axis, cex.atrisk}{text size for axes labels, legend, at-risk table}
 
 \item{legend}{logical, a vector of x/y coordinates, or a keyword (see
 \code{\link{legend}}); if \code{TRUE}, the default position is
@@ -368,10 +372,11 @@ unlink(tf)
 
 }
 \references{
-\url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
+Adapted from \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
 }
 \seealso{
 \code{\link{kmplot_by}}; \code{survival:::plot.survfit};
-\code{\link[plotr]{ggsurv}}; \code{\link{kmplot_data_}};
-\code{\link{lr_text}}; \code{\link{lr_pval}}; \code{\link{points.kmplot}}
+\code{\link{kmplot_data_}}; \code{\link{atrisk_data_}};
+\code{\link{lr_text}}; \code{\link{lr_pval}}; \code{\link{points.kmplot}};
+\code{\link{kmdiff}}; \code{\link[plotr]{ggsurv}}
 }

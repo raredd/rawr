@@ -88,6 +88,7 @@ stratify_formula <- function(formula, vars = NULL) {
 #' @param atrisk.digits when survival probabilities are shown in at-risk table
 #' (see \code{atrisk.type}), number of digits past the decimal to keep
 #' @param atrisk.lab heading for at-risk table
+#' @param atrisk.pad extra padding between plot and at-risk table
 #' @param atrisk.lines logical; draw lines next to strata in at-risk table
 #' @param atrisk.col logical or a vector with colors for at-risk table text;
 #' if \code{TRUE}, \code{col.surv} will be used
@@ -117,7 +118,7 @@ stratify_formula <- function(formula, vars = NULL) {
 #' @param xaxis.lab,yaxis.lab x- and y-axis tick labels
 #' @param xlab,ylab x- and y-axis labels
 #' @param main title of plot
-#' @param cex.axis text size for axes labels, legend, at-risk table
+#' @param cex.axis,cex.atrisk text size for axes labels, legend, at-risk table
 #' @param legend logical, a vector of x/y coordinates, or a keyword (see
 #' \code{\link{legend}}); if \code{TRUE}, the default position is
 #' \code{"bottomleft"}
@@ -172,12 +173,13 @@ stratify_formula <- function(formula, vars = NULL) {
 #' \code{tcl}, \code{cex.lab}, etc) passed to \code{par}
 #' 
 #' @references
-#' \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
+#' Adapted from \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
 #' 
 #' @seealso
 #' \code{\link{kmplot_by}}; \code{survival:::plot.survfit};
-#' \code{\link[plotr]{ggsurv}}; \code{\link{kmplot_data_}};
-#' \code{\link{lr_text}}; \code{\link{lr_pval}}; \code{\link{points.kmplot}}
+#' \code{\link{kmplot_data_}}; \code{\link{atrisk_data_}};
+#' \code{\link{lr_text}}; \code{\link{lr_pval}}; \code{\link{points.kmplot}};
+#' \code{\link{kmdiff}}; \code{\link[plotr]{ggsurv}}
 #' 
 #' @examples
 #' library('survival')
@@ -287,7 +289,7 @@ kmplot <- function(s, data = NULL,
                    col.ci = col.surv, col.band = FALSE,
                    
                    ## at-risk table options
-                   atrisk.table = TRUE, atrisk.lab = NULL,
+                   atrisk.table = TRUE, atrisk.lab = NULL, atrisk.pad = 0.5,
                    atrisk.type = c('atrisk', 'events', 'atrisk-events',
                                    'survival', 'survival-ci',
                                    'percent', 'percent-ci',
@@ -307,6 +309,7 @@ kmplot <- function(s, data = NULL,
                    yaxis.at = pretty(0:1), yaxis.lab = yaxis.at,
                    xlab = 'Time', ylab = 'Probability',
                    main = NULL, cex.axis = par('cex.axis'),
+                   cex.atrisk = cex.axis,
                    legend = !atrisk.table && !is.null(s$strata),
                    args.legend = list(),
                    
@@ -466,7 +469,7 @@ kmplot <- function(s, data = NULL,
     on.exit(par(op))
 
   ## guess margins based on atrisk table options
-  par(mar = c(4 + ng * atrisk.table,
+  par(mar = c(4 + ng * atrisk.table + atrisk.pad,
               4 + pmax(4, extra.margin) - 3 * !atrisk.table,
               2,
               2 + 6 * (median & atrisk.table)))
@@ -524,7 +527,7 @@ kmplot <- function(s, data = NULL,
     ## labels for each row in at-risk table
     group.name.pos <- diff(usr[1:2]) / -8
     padding  <- abs(group.name.pos / 8)
-    line.pos <- seq.int(ng)[order(strata.order)] + 2L
+    line.pos <- seq.int(ng)[order(strata.order)] + 2L + atrisk.pad
     
     if (!identical(unique(strata.lab), FALSE)) {
       if (!is.null(strata.expr)) {
@@ -533,9 +536,9 @@ kmplot <- function(s, data = NULL,
         sapply(seq.int(length(strata.expr)), function(x)
           mtext(strata.expr[[x]], side = 1L, line = line.pos[x], adj = 1,
                 at = group.name.pos, col = col.atrisk[x], las = 1L,
-                cex = cex.axis))
+                cex = cex.atrisk))
       } else mtext(strata.lab, side = 1L, line = line.pos, adj = 1, las = 1L,
-                   col = col.atrisk, at = group.name.pos, cex = cex.axis)
+                   col = col.atrisk, at = group.name.pos, cex = cex.atrisk)
     }
     
     ## draw matching lines for n at risk  
@@ -550,7 +553,7 @@ kmplot <- function(s, data = NULL,
     atrisk.type <- match.arg(atrisk.type)
     wh <- switch(
       atrisk.type,
-      atrisk = 'n.risk',
+      atrisk = 'atrisk',
       events = 'events',
       'atrisk-events' = 'atrisk.events',
       survival = 'survival',
@@ -583,11 +586,9 @@ kmplot <- function(s, data = NULL,
       right <- ''
       
       mtext(
-        format(tmp[, wh], big.mark = ','), side = 1L, col = col.atrisk[ii],
-        las = 1L, line = line.pos[ii], cex = cex.axis,
-        # at = tmp$time + w.adj, adj = 1,
+        tmp[, wh], side = 1L, col = col.atrisk[ii],
+        las = 1L, line = line.pos[ii], cex = cex.atrisk,
         # at = tmp$time + w.adj * atrisk.type %ni% right,
-        # adj = 1 - 0.5 * atrisk.type %in% right
         at = tmp$time, adj = if (atrisk.type %in% right) 1 else 0.5
       )
     }
@@ -609,8 +610,8 @@ kmplot <- function(s, data = NULL,
       )
     
     if (!(identical(atrisk.lab, FALSE)))
-      mtext(atrisk.lab, side = 1L, at = usr[1L], # at = group.name.pos,
-            line = 1.5, adj = 1, col = 1L, las = 1L, cex = cex.axis)
+      mtext(atrisk.lab, side = 1L, at = usr[1L], cex = cex.atrisk,
+            line = 1.5 + atrisk.pad, adj = 1, col = 1L, las = 1L)
     
     ## median (ci) text on right of at-risk
     if (median) {
@@ -635,8 +636,8 @@ kmplot <- function(s, data = NULL,
       at <- if (isTRUE(median.at))
         usr[2L] + diff(usr[1:2]) / 8 else median.at
       mtext(if (!is.null(s$conf.int))
-        sprintf('Median (%s%% CI)', s$conf.int * 100) else 'Median',
-        side = 1L, at = at, adj = .5, line = 1.5, col = 1L, las = 1L
+        sprintf('Median (%s%% CI)', s$conf.int * 100) else 'Median', las = 1L,
+        side = 1L, at = at, adj = 0.5, line = 1.5 + atrisk.pad, col = 1L
       )
       mtext(tt, side = 1L, line = line.pos, las = 1L,
             at = at, adj = 0.5, col = col.atrisk)
@@ -648,7 +649,7 @@ kmplot <- function(s, data = NULL,
     times.type <- match.arg(times.type)
     wh <- switch(
       times.type,
-      atrisk = 'n.risk',
+      atrisk = 'atrisk',
       events = 'events',
       'atrisk-events' = 'atrisk.events',
       survival = 'survival',
@@ -1021,6 +1022,7 @@ points.kmplot <- function(x, xscale, xmax, fun,
 #' @param s a \code{\link{survfit}} object
 #' @param strata.lab character vector of strata labels; must be same length
 #' as \code{s$n}
+#' 
 #' @seealso \code{\link{kmplot}}; \code{\link{kmplot_by}}
 
 kmplot_data_ <- function(s, strata.lab) {
@@ -1047,6 +1049,7 @@ kmplot_data_ <- function(s, strata.lab) {
 #' @param s a \code{\link{survfit}} object
 #' @param times time points
 #' @param digits digits
+#' 
 #' @seealso \code{\link{kmplot}}; \code{\link{kmplot_by}}
 
 atrisk_data_ <- function(s, times, digits) {
@@ -1064,8 +1067,8 @@ atrisk_data_ <- function(s, times, digits) {
     # if (fun == 'F')
     #   x$surv <- 1 - x$surv
     
-    x$atrisk <- x$n.risk
-    x$events <- cumsum(x$n.event)
+    x$atrisk <- roundr(x$n.risk, 0)
+    x$events <- roundr(cumsum(x$n.event), 0)
     x$atrisk.events <- sprintf('%s (%s)', x$atrisk, x$events)
     
     x$survival <- roundr(x$surv, digits)
@@ -2266,6 +2269,7 @@ surv_table <- function(s, digits = ifelse(percent, 0L, 3L),
   }
   
   f <- function(x, d = digits, vars = vars) {
+    ox <- x
     vars <- colnames(x)
     
     g <- function(wh, x = x, cn = vars) {
@@ -2274,6 +2278,8 @@ surv_table <- function(s, digits = ifelse(percent, 0L, 3L),
     
     tmpvar <- g('survival|std.err|lower|upper')
     x[, tmpvar] <- roundr(x[, tmpvar], digits = d)
+    x[, 'n.risk'] <- format(ox[, 'n.risk'], big.mark = ',')
+    x[, 'n.event'] <- format(ox[, 'n.event'], big.mark = ',')
     surv <- sprintf('%s (%s, %s)',
                     x[, g('survival')], x[, g('lower')], x[, g('upper')])
     cn <- c('Time', 'No. at risk', 'No. event', 'Std.Error',
