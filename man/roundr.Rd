@@ -7,18 +7,21 @@
 \alias{roundr.data.frame}
 \title{roundr}
 \usage{
-roundr(x, digits = 1L)
+roundr(x, digits = 1L, format = TRUE)
 
-\method{roundr}{default}(x, digits = 1L)
+\method{roundr}{default}(x, digits = 1L, format = TRUE)
 
-\method{roundr}{matrix}(x, digits = 1L)
+\method{roundr}{matrix}(x, digits = 1L, format = TRUE)
 
-\method{roundr}{data.frame}(x, digits = 1L)
+\method{roundr}{data.frame}(x, digits = 1L, format = TRUE)
 }
 \arguments{
 \item{x}{numeric vector, matrix, or data frame}
 
 \item{digits}{number of digits past the decimal point to keep}
+
+\item{format}{logical; if \code{TRUE}, large numbers will be formatted
+with commas}
 }
 \value{
 An object having the same class as \code{x}.
@@ -36,7 +39,7 @@ round(0.199, 2)
 roundr(0.199, 2)
 
 ## drops negative when x rounds to 0, eg, case 1:
-roundr(c(-0.0002, 0.0002, 0.5, -0.5, -0.002), digits = 3)
+roundr(c(1000, 1, -0.0002, 0.0002, 0.5, -0.5, -0.002), digits = 3)
 
 ## for matrices or data frames (including factors and/or characters)
 roundr(matrix(1:9, 3))

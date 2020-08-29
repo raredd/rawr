@@ -116,7 +116,7 @@ progress <- function(value, max.value, textbar = FALSE) {
   
   if (textbar) {
     # m <- getOption('width')
-    # r <- floor(as.numeric(value) / as.numeric(max.value) * m)
+    # r <- trunc(as.numeric(value) / as.numeric(max.value) * m)
     # backspaces <- f(rep('\b', m * 2))
     #
     # if (erase.only) message <- ''
@@ -127,7 +127,7 @@ progress <- function(value, max.value, textbar = FALSE) {
     # }
     m <- getOption('width') - 5L
     pct <- as.numeric(value) / as.numeric(max.value)
-    r <- floor(pct * m)
+    r <- trunc(pct * m)
     backspaces <- f(rep('\b', m * 2))
     
     message <- if (erase.only)

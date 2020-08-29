@@ -533,6 +533,8 @@ show_math <- function(..., css = '', use_viewer = !is.null(getOption('viewer')))
 #'
 #' @param x numeric vector, matrix, or data frame
 #' @param digits number of digits past the decimal point to keep
+#' @param format logical; if \code{TRUE}, large numbers will be formatted
+#' with commas
 #'
 #' @return
 #' An object having the same class as \code{x}.
@@ -547,7 +549,7 @@ show_math <- function(..., css = '', use_viewer = !is.null(getOption('viewer')))
 #' roundr(0.199, 2)
 #'
 #' ## drops negative when x rounds to 0, eg, case 1:
-#' roundr(c(-0.0002, 0.0002, 0.5, -0.5, -0.002), digits = 3)
+#' roundr(c(1000, 1, -0.0002, 0.0002, 0.5, -0.5, -0.002), digits = 3)
 #'
 #' ## for matrices or data frames (including factors and/or characters)
 #' roundr(matrix(1:9, 3))
@@ -561,18 +563,28 @@ show_math <- function(..., css = '', use_viewer = !is.null(getOption('viewer')))
 #'
 #' @export
 
-roundr <- function(x, digits = 1L) {
+roundr <- function(x, digits = 1L, format = TRUE) {
   UseMethod('roundr')
 }
 
 #' @rdname roundr
 #' @export
-roundr.default <- function(x, digits = 1L) {
+roundr.default <- function(x, digits = 1L, format = TRUE) {
   if (!is.numeric(x) || is.complex(x))
     stop('non-numeric argument to mathematical function')
 
   fmt <- paste0('%.', digits, 'f')
   res <- sprintf(fmt, x)
+  
+  if (format) {
+    res[is.na(x)] <- NA
+    res <- sapply(res, function(xx) {
+      int <- trunc(as.numeric(xx))
+      if (grepl('\\.', xx))
+        gsub('[0-9]+(?=\\.)', format(int, big.mark = ','), xx, perl = TRUE)
+      else format(int, big.mark = ',')
+    })
+  }
 
   ## drop leading '-' if value is 0.00...
   zero <- sprintf(fmt, 0)
@@ -585,21 +597,19 @@ roundr.default <- function(x, digits = 1L) {
 
 #' @rdname roundr
 #' @export
-roundr.matrix <- function(x, digits = 1L) {
+roundr.matrix <- function(x, digits = 1L, format = TRUE) {
   if (!is.numeric(x) || is.complex(x))
     stop(deparse(substitute(x)), ' is not numeric')
-  else x[] <- roundr.default(x, digits)
-
+  x[] <- roundr.default(x, digits, format)
   x
 }
 
 #' @rdname roundr
 #' @export
-roundr.data.frame <- function(x, digits = 1L) {
+roundr.data.frame <- function(x, digits = 1L, format = TRUE) {
   x[] <- lapply(x, function(xx)
     if (is.numeric(xx) || is.complex(xx))
-      roundr.default(xx, digits = digits) else xx)
-
+      roundr.default(xx, digits, format) else xx)
   x
 }
 
@@ -624,11 +634,13 @@ roundr.data.frame <- function(x, digits = 1L) {
 #' intr(1:10)
 #' intr(1:10, conf = 0.95)
 #'
-#' # inner quartile range
-#' `colnames<-`(cbind(lapply(mtcars, intr, conf = .5),
-#'                    lapply(mtcars, intr, fun = mean)),
-#'              c('median (IQR)','mean (range)'))
-#' # compare to
+#' ## inner quartile range
+#' cbind(
+#'   'median (IQR)' = lapply(mtcars, intr, conf = 0.5, digits = 2),
+#'   'mean (range)' = lapply(mtcars, intr, fun = mean, digits = 2)
+#' )
+#' 
+#' ## compare to
 #' summary(mtcars)
 #'
 #' @export
@@ -2620,7 +2632,7 @@ get_tabler_stat_n <- function(x, pct = TRUE, use_labels = TRUE) {
   l <- if (use_labels)
     levels(x) else rep_len('Total', nlevels(x))
   t <- table(x)
-  n <- format(c(sum(t), t), big.mark = ',', scientific = FALSE)
+  n <- roundr(c(sum(t), t), 0)
   p <- roundr(prop.table(t) * 100, 0)
   o <- Vectorize('sprintf')(c('Total', l), n, c('%', p), fmt = fmt)
 
@@ -3013,12 +3025,12 @@ countr <- function(x, n, lowcase = NA, frac = FALSE, digits = 0L,
 
   iprint(
     sprintf(
-      '%s (n = %s%s, %s%%)',
+      '%s (n = %s%s; %s%%)',
       if (isTRUE(lowcase))
         tolower(names(x))
       else if (identical(lowcase, FALSE))
         toupper(names(x)) else names(x),
-      x,
+      roundr(x, 0),
       if (frac)
         paste0('/', n) else '',
       roundr(as.numeric(x) / n * 100, digits)
