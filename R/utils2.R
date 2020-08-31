@@ -535,12 +535,14 @@ show_math <- function(..., css = '', use_viewer = !is.null(getOption('viewer')))
 #' @param digits number of digits past the decimal point to keep
 #' @param format logical; if \code{TRUE}, large numbers will be formatted
 #' with commas
+#' @param check logical; if \code{TRUE}, formatted strings are checked for
+#' consistency with \code{\link[base]{round}} and warned if not identical
 #'
 #' @return
 #' An object having the same class as \code{x}.
 #'
 #' @seealso
-#' \code{\link[base]{round}}; \code{\link[base]{sprintf}};
+#' \code{\link[base]{round}}; \code{\link{Round}}; \code{\link[base]{sprintf}};
 #' \code{\link{round_to}}; \code{\link{pvalr}}
 #'
 #' @examples
@@ -563,13 +565,13 @@ show_math <- function(..., css = '', use_viewer = !is.null(getOption('viewer')))
 #'
 #' @export
 
-roundr <- function(x, digits = 1L, format = TRUE) {
+roundr <- function(x, digits = 1L, format = TRUE, check = TRUE) {
   UseMethod('roundr')
 }
 
 #' @rdname roundr
 #' @export
-roundr.default <- function(x, digits = 1L, format = TRUE) {
+roundr.default <- function(x, digits = 1L, format = TRUE, check = TRUE) {
   if (!is.numeric(x) || is.complex(x))
     stop('non-numeric argument to mathematical function')
 
@@ -591,13 +593,23 @@ roundr.default <- function(x, digits = 1L, format = TRUE) {
   res[res == paste0('-', zero)] <- zero
 
   res[is.na(x)] <- NA
+  
+  if (check) {
+    current <- type.convert(gsub(',', '', res))
+    target <- round(x, digits)
+    if (any(current != target))
+      warning(
+        'current != target\ncurrent: ', toString(current),
+        '\ntarget: ', toString(target)
+      )
+  }
 
   setNames(res, names(x))
 }
 
 #' @rdname roundr
 #' @export
-roundr.matrix <- function(x, digits = 1L, format = TRUE) {
+roundr.matrix <- function(x, digits = 1L, format = TRUE, check = TRUE) {
   if (!is.numeric(x) || is.complex(x))
     stop(deparse(substitute(x)), ' is not numeric')
   x[] <- roundr.default(x, digits, format)
@@ -606,7 +618,7 @@ roundr.matrix <- function(x, digits = 1L, format = TRUE) {
 
 #' @rdname roundr
 #' @export
-roundr.data.frame <- function(x, digits = 1L, format = TRUE) {
+roundr.data.frame <- function(x, digits = 1L, format = TRUE, check = TRUE) {
   x[] <- lapply(x, function(xx)
     if (is.numeric(xx) || is.complex(xx))
       roundr.default(xx, digits, format) else xx)
@@ -3061,10 +3073,12 @@ countr <- function(x, n, lowcase = NA, frac = FALSE, digits = 0L,
 #' dmy(NA, NA, 2000:2009)
 #'
 #' set.seed(1)
-#' dd <- data.frame(id = 1:10,
-#'                  day = sample(1:31, 10),
-#'                  month = sample(1:12, 10),
-#'                  year = sample(1000:2500, 10))
+#' dd <- data.frame(
+#'   id = 1:10,
+#'   day = sample(1:31, 10),
+#'   month = sample(1:12, 10),
+#'   year = sample(1000:2500, 10)
+#' )
 #'
 #' cbind(dd, dt = with(dd, dmy(day, month, year)))
 #'

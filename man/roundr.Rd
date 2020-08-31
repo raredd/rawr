@@ -7,13 +7,13 @@
 \alias{roundr.data.frame}
 \title{roundr}
 \usage{
-roundr(x, digits = 1L, format = TRUE)
+roundr(x, digits = 1L, format = TRUE, check = TRUE)
 
-\method{roundr}{default}(x, digits = 1L, format = TRUE)
+\method{roundr}{default}(x, digits = 1L, format = TRUE, check = TRUE)
 
-\method{roundr}{matrix}(x, digits = 1L, format = TRUE)
+\method{roundr}{matrix}(x, digits = 1L, format = TRUE, check = TRUE)
 
-\method{roundr}{data.frame}(x, digits = 1L, format = TRUE)
+\method{roundr}{data.frame}(x, digits = 1L, format = TRUE, check = TRUE)
 }
 \arguments{
 \item{x}{numeric vector, matrix, or data frame}
@@ -22,6 +22,9 @@ roundr(x, digits = 1L, format = TRUE)
 
 \item{format}{logical; if \code{TRUE}, large numbers will be formatted
 with commas}
+
+\item{check}{logical; if \code{TRUE}, formatted strings are checked for
+consistency with \code{\link[base]{round}} and warned if not identical}
 }
 \value{
 An object having the same class as \code{x}.
@@ -53,6 +56,6 @@ roundr(dd)
 
 }
 \seealso{
-\code{\link[base]{round}}; \code{\link[base]{sprintf}};
+\code{\link[base]{round}}; \code{\link{Round}}; \code{\link[base]{sprintf}};
 \code{\link{round_to}}; \code{\link{pvalr}}
 }
