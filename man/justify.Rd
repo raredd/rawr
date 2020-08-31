@@ -15,7 +15,8 @@ justify(
 
 \item{width}{desired width text in characters given as a positive integer}
 
-\item{fill}{method of adding whitespace}
+\item{fill}{method of adding whitespace, i.e., by starting with the
+\code{"right"}- or \code{"left"}-most whitespace or \code{"random"}}
 }
 \description{
 Add whitespace to (monospaced) text for justified or block-style spacing.
@@ -25,12 +26,11 @@ x <- paste(rownames(mtcars), collapse = ' ')
 cat(justify(x))
 
 ## slight differences in whitespace for fill methods
-op <- par(no.readonly = TRUE)
-par(cex = .8, xpd = NA, family = 'mono', mar = c(2,2,2,2))
+op <- par(xpd = NA, family = 'mono', cex = 0.8)
 plot(0, ann = FALSE, axes = FALSE, type = 'n')
-text(1, 0, justify(x, fill = 'random'))
+text(1, 1, justify(x, fill = 'random'))
 text(1, 0, justify(x, fill = 'right'), col = 2)
-text(1, 0, justify(x, fill = 'left'), col = 3)
+text(1, -1, justify(x, fill = 'left'), col = 3)
 par(op)
 
 }

@@ -31,10 +31,12 @@ dmy(25, 7, 2013)
 dmy(NA, NA, 2000:2009)
 
 set.seed(1)
-dd <- data.frame(id = 1:10,
-                 day = sample(1:31, 10),
-                 month = sample(1:12, 10),
-                 year = sample(1000:2500, 10))
+dd <- data.frame(
+  id = 1:10,
+  day = sample(1:31, 10),
+  month = sample(1:12, 10),
+  year = sample(1000:2500, 10)
+)
 
 cbind(dd, dt = with(dd, dmy(day, month, year)))
 

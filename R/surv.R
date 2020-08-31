@@ -13,7 +13,7 @@
 
 
 stratify_formula <- function(formula, vars = NULL) {
-  # stratify_formula(Surv(a, b) ~ x, c('y', 'z'))
+  # rawr:::stratify_formula(Surv(a, b) ~ x, c('y', 'z'))
   if (is.null(vars))
     return(as.formula(formula))
   

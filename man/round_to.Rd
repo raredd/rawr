@@ -9,7 +9,9 @@ round_to(x, to = 1)
 \arguments{
 \item{x}{a numeric vector}
 
-\item{to}{nearest fraction or integer}
+\item{to}{nearest fraction or integer
+
+\code{\link{roundr}}; \code{\link{Round}}}
 }
 \description{
 Round numerics to nearest multiple of \code{to}.

@@ -4,7 +4,7 @@
 \alias{Round}
 \title{Round vector to target sum}
 \usage{
-Round(x, target)
+Round(x, target = NULL)
 }
 \arguments{
 \item{x}{numeric values}
@@ -15,13 +15,18 @@ Round(x, target)
 Rounds a numeric vector constrained to sum to a \code{target} value.
 }
 \examples{
-pcts <- data.frame(pct1 = c(33.3, 21.5, 45.51),
-                   pct2 = c(33.3,33.3,33.3))
+pcts <- data.frame(
+  pct1 = c(33.3, 21.5, 45.51),
+  pct2 = c(33.3, 33.3, 33.3)
+)
 
 ## base round                                     
-Map(round, pcts); sapply(.Last.value, sum)
+colSums(mapply(round, pcts))
 
 ## round to target
-Map(Round, pcts, 100); sapply(.Last.value, sum)
+colSums(mapply(Round, pcts, 100))
 
+}
+\seealso{
+\code{\link{roundr}}; \code{\link{round_to}}
 }

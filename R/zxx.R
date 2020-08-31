@@ -217,7 +217,7 @@ recoder <- function(object, pattern, replacement, ...) {
     lvl <- setdiff(replacement, levels(object))
     if (length(lvl))
       cat('level(s)', levels(factor(levels = lvl)),
-          'added to factor variable', deparse(m$object),'\n')
+          'added to factor variable', deparse(m$object), '\n')
     levels(object) <- c(levels(object), replacement)
     # object <- droplevels(object)
   }
@@ -225,26 +225,32 @@ recoder <- function(object, pattern, replacement, ...) {
     replacement <- rep(replacement, length(pattern))
   
   ## helper functions
-  splitter <- function(df) setNames(split(t(df), 1:ncol(df)), names(df))
+  splitter <- function(df) {
+    setNames(split(t(df), seq.int(ncol(df))), names(df))
+  }
+  
   switcher <- function(f, g, h) {
     if (is.na(g))
-      f[is.na(f)] <- h else f[f == g] <- h
+      f[is.na(f)] <- h
+    else
+      f[f == g] <- h
     f
   }
-  superswitcher <- function(x, y, z){
+  
+  superswitcher <- function(x, y, z) {
     DF <- data.frame(y, z, stringsAsFactors = FALSE)
     z <- x
-    if (class(DF[, 2]) %in% c('character', 'factor')) {
-      lapply(1:nrow(DF), function(i) {
+    if (class(DF[, 2L]) %in% c('character', 'factor')) {
+      lapply(seq.int(nrow(DF)), function(i) {
         if (sum(z %in% DF[i, 1]) == 0) {
           z <<- z
         } else {
-          z <<- switcher(z, DF[i, 1], as.character(DF[i, 2]))
+          z <<- switcher(z, DF[i, 1L], as.character(DF[i, 2L]))
         }
       })
     } else {
-      lapply(1:nrow(DF), function(i) {
-        z <<- switcher(z, DF[i, 1], DF[i, 2])
+      lapply(seq.int(nrow(DF)), function(i) {
+        z <<- switcher(z, DF[i, 1L], DF[i, 2L])
       })
     }
     z
@@ -256,7 +262,7 @@ recoder <- function(object, pattern, replacement, ...) {
   } else {
     if (is.data.frame(object)) {
       tmp <- do.call('data.frame',
-                     lapply(unclass(object)[1:ncol(object)],
+                     lapply(unclass(object)[seq.int(ncol(object))],
                             superswitcher, pattern, replacement))
       rownames(tmp) <- attr(object, 'row.names')
       return(tmp)
@@ -335,7 +341,7 @@ identical2 <- function(..., num.eq = TRUE, single.NA = TRUE,
   if (length(l <- list(...)) < 2L)
     stop('must provide at least two objects')
   
-  l <- sapply(1:(length(l) - 1L), function(ii)
+  l <- sapply(seq.int((length(l) - 1L)), function(ii)
     identical(l[ii], l[ii + 1L], num.eq = num.eq, single.NA = single.NA,
               attrib.as.set = attrib.as.set, ignore.bytecode = ignore.bytecode,
               ignore.environment = ignore.environment))
@@ -387,7 +393,7 @@ all_equal2 <- function(..., tolerance = .Machine$double.eps ^ 0.5,
   if (length(l <- list(...)) < 2L)
     stop('must provide at least two objects')
   
-  l <- lapply(1:(length(l) - 1L), function(x)
+  l <- lapply(seq.int((length(l) - 1L)), function(x)
     do.call('all.equal', list(
       target = l[[x]], current = l[[x + 1L]],
       tolerance = tolerance, check.attributes = check.attributes,
@@ -833,35 +839,41 @@ helpExtract_ <- function(FUN, ...) {
 #' @param x numeric values
 #' @param target desired sum of \code{x} after rounding
 #' 
+#' @seealso
+#' \code{\link{roundr}}; \code{\link{round_to}}
+#' 
 #' @examples
-#' pcts <- data.frame(pct1 = c(33.3, 21.5, 45.51),
-#'                    pct2 = c(33.3,33.3,33.3))
+#' pcts <- data.frame(
+#'   pct1 = c(33.3, 21.5, 45.51),
+#'   pct2 = c(33.3, 33.3, 33.3)
+#' )
 #' 
 #' ## base round                                     
-#' Map(round, pcts); sapply(.Last.value, sum)
+#' colSums(mapply(round, pcts))
 #' 
 #' ## round to target
-#' Map(Round, pcts, 100); sapply(.Last.value, sum)
+#' colSums(mapply(Round, pcts, 100))
 #' 
 #' @export
 
-Round <- function(x, target) {
+Round <- function(x, target = NULL) {
   r.x <- round(x)
   diff.x <- r.x - x
   
-  if ((s <- sum(r.x)) == target)
+  if (is.null(target) || (s <- sum(r.x)) == target)
     return(r.x)
-  else if (s > target) {
+  
+  if (s > target) {
     select <- seq_along(x)[diff.x != 0]
     wh <- which.max(diff.x[select])
     x[select[wh]] <- r.x[select[wh]] - 1
-    Recall(x, target)
   } else {
     select <- seq_along(x)[diff.x != 0]
     wh <- which.min(diff.x[select])
     x[select[wh]] <- r.x[select[wh]] + 1
-    Recall(x, target)
   }
+  
+  Recall(x, target)
 }
 
 #' Round to
@@ -871,6 +883,8 @@ Round <- function(x, target) {
 #' @param x a numeric vector
 #' @param to nearest fraction or integer
 #' 
+#' \code{\link{roundr}}; \code{\link{Round}}
+#' 
 #' @examples
 #' x <- 1:20 / 10
 #' round_to(x, 1)
@@ -879,6 +893,7 @@ Round <- function(x, target) {
 #' @export
 
 round_to <- function(x, to = 1) {
+  to <- abs(to)
   round(x / to) * to
 }
 
@@ -982,7 +997,8 @@ read_clip.fwf <- function(header = TRUE, widths, ...) {
 #' @export
 
 icols <- function(x, pattern, keep, ...) {
-  keep <- if (missing(keep)) NULL else which(colnames(x) %in% keep)
+  keep <- if (missing(keep))
+    NULL else which(colnames(x) %in% keep)
   x[, c(keep, grep(pattern, colnames(x), perl = TRUE, ...)), drop = FALSE]
 }
 
@@ -1387,12 +1403,14 @@ nestedmerge <- function(x, y) {
 #' \code{\link{dirname}}
 #' 
 #' @examples
-#' l <- list('~/desktop/tmp.csv',               ## normal file with directory
-#'           '.dotfile.txt',                    ## dotfile with extension
-#'           '.vimrc',                          ## dotfile with no extension
-#'           '~/file.',                         ## file name ending in .
-#'           '~/DESCRIPTION',                   ## no extension
-#'           '~/desktop/tmp/a.filename.tar.gz') ## compound extension fails
+#' l <- list(
+#'   '~/desktop/tmp.csv',               ## normal file with directory
+#'   '.dotfile.txt',                    ## dotfile with extension
+#'   '.vimrc',                          ## dotfile with no extension
+#'   '~/file.',                         ## file name ending in .
+#'   '~/DESCRIPTION',                   ## no extension
+#'   '~/desktop/tmp/a.filename.tar.gz'  ## compound extension fails
+#' )
 #' 
 #' setNames(lapply(l, path_extract), l)
 #' setNames(lapply(l, fname), l)
@@ -1404,9 +1422,11 @@ nestedmerge <- function(x, y) {
 path_extract <- function(path) {
   p <- normalizePath(path, mustWork = FALSE)
   m <- cbind(dirname = dirname(p), basename = basename(p), fname(p))
-  mm <- file.path(m[, 'dirname'],
-                  paste(m[, 'filename'], m[, 'extension'],
-                        sep = ifelse(nzchar(m[, 'extension']), '.', '')))
+  mm <- file.path(
+    m[, 'dirname'],
+    paste(m[, 'filename'], m[, 'extension'],
+          sep = ifelse(nzchar(m[, 'extension']), '.', ''))
+  )
   
   if (gsub('\\./', '', mm) != p || !nzchar(m[, 'filename']))
     warning('Results could not be validated', domain = NA)
@@ -1787,9 +1807,7 @@ cummin_na <- function(x, useNA = TRUE) {
 #' @rdname cumfuns
 #' @export
 cum_mid <- function(x, adj = 0.5) {
-  stopifnot(
-    adj %inside% 0:1
-  )
+  stopifnot(adj %inside% 0:1)
   
   mat <- as.matrix(x)
   res <- rbind(0, mat[-nrow(mat), , drop = FALSE])
@@ -1841,7 +1859,6 @@ vgrep <- function(pattern, x) {
 
 #' @rdname vgrep
 #' @export
-
 vgrepl <- function(pattern, x) {
   m  <- vgrep(pattern, x)
   lp <- length(pattern)
@@ -1860,7 +1877,8 @@ vgrepl <- function(pattern, x) {
 #' 
 #' @param string a character string
 #' @param width desired width text in characters given as a positive integer
-#' @param fill method of adding whitespace
+#' @param fill method of adding whitespace, i.e., by starting with the
+#' \code{"right"}- or \code{"left"}-most whitespace or \code{"random"}
 #' 
 #' @seealso
 #' \code{\link{strwrap}}
@@ -1873,12 +1891,11 @@ vgrepl <- function(pattern, x) {
 #' cat(justify(x))
 #' 
 #' ## slight differences in whitespace for fill methods
-#' op <- par(no.readonly = TRUE)
-#' par(cex = .8, xpd = NA, family = 'mono', mar = c(2,2,2,2))
+#' op <- par(xpd = NA, family = 'mono', cex = 0.8)
 #' plot(0, ann = FALSE, axes = FALSE, type = 'n')
-#' text(1, 0, justify(x, fill = 'random'))
+#' text(1, 1, justify(x, fill = 'random'))
 #' text(1, 0, justify(x, fill = 'right'), col = 2)
-#' text(1, 0, justify(x, fill = 'left'), col = 3)
+#' text(1, -1, justify(x, fill = 'left'), col = 3)
 #' par(op)
 #' 
 #' @export
@@ -1903,7 +1920,7 @@ fill_spaces_ <- function(lines, width, fill) {
     
     if (extra > 0L) {
       if (fill == 'right')
-        times[1:extra] <- times[1:extra] + 1L
+        times[seq.int(extra)] <- times[seq.int(extra)] + 1L
       else if (fill == 'left')
         times[(nspace - extra + 1L):nspace] <-
           times[(nspace - extra + 1L):nspace] + 1L

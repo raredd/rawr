@@ -39,12 +39,14 @@ Known examples where this function fails:
 }
 }
 \examples{
-l <- list('~/desktop/tmp.csv',               ## normal file with directory
-          '.dotfile.txt',                    ## dotfile with extension
-          '.vimrc',                          ## dotfile with no extension
-          '~/file.',                         ## file name ending in .
-          '~/DESCRIPTION',                   ## no extension
-          '~/desktop/tmp/a.filename.tar.gz') ## compound extension fails
+l <- list(
+  '~/desktop/tmp.csv',               ## normal file with directory
+  '.dotfile.txt',                    ## dotfile with extension
+  '.vimrc',                          ## dotfile with no extension
+  '~/file.',                         ## file name ending in .
+  '~/DESCRIPTION',                   ## no extension
+  '~/desktop/tmp/a.filename.tar.gz'  ## compound extension fails
+)
 
 setNames(lapply(l, path_extract), l)
 setNames(lapply(l, fname), l)
