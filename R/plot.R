@@ -758,11 +758,11 @@ tplot.default <- function(x, g, ..., type = 'db',
   if (show.n | show.na) {
     txt <- sprintf('%s%s\n%s%s', 
                    ifelse(rep_len(show.n, ng), 'n = ', ''),
-                   ifelse(rep_len(show.n, ng), lg - l2, ''),
+                   ifelse(rep_len(show.n, ng), roundr(lg - l2, 0L), ''),
                    if (show.na)
                      ifelse(l2 > 0L, paste0(text.na, ' = '), '') else '',
                    if (show.na)
-                     ifelse(l2 > 0L, l2, '') else ''
+                     ifelse(l2 > 0L, roundr(l2, 0L), '') else ''
     )
     txt <- trimws(txt)
     
