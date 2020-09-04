@@ -77,6 +77,10 @@ stratify_formula <- function(formula, vars = NULL) {
 #' values will be used; if \code{FALSE}, \code{NA}, or \code{NULL}, no
 #' bands will be plotted; also note that this is not a true confidence band;
 #' see details
+#' @param kmdiff logical; if \code{TRUE}, a confidence band for the difference
+#' between two curves is shown; see \code{\link{kmdiff}} (note that the color
+#' can be passed via \code{col.ci} and the confidence interval is taken from
+#' \code{s$conf.int})
 #' @param atrisk.table logical; if \code{TRUE} (default), draws at-risk table
 #' @param atrisk.type a character string giving the type of "at-risk" table to
 #' show; one of \code{"atrisk"} (number at-risk), \code{"events"} (cumulative
@@ -286,7 +290,7 @@ kmplot <- function(s, data = NULL,
                    
                    ## confidence options
                    lty.ci = 0, lwd.ci = lwd.surv,
-                   col.ci = col.surv, col.band = FALSE,
+                   col.ci = col.surv, col.band = FALSE, kmdiff = FALSE,
                    
                    ## at-risk table options
                    atrisk.table = TRUE, atrisk.lab = NULL, atrisk.pad = 0.5,
@@ -797,6 +801,12 @@ kmplot <- function(s, data = NULL,
         s[ii], col = col.surv[ii], pch = mark[ii], censor = TRUE, plot = TRUE,
         event = FALSE, bump = mark[ii] == 'bump', lwd = lwd.mark[ii], fun = fun
       )
+  }
+  
+  if (isTRUE(kmdiff)) {
+    col.diff <- if (identical(col.surv, tcol(col.ci)))
+      adjustcolor('grey', 0.5) else col.ci[1L]
+    kmdiff(s, col.diff, s$conf.int)
   }
   
   do.call('clip', as.list(u0))

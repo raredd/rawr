@@ -16,6 +16,7 @@ kmplot(
   lwd.ci = lwd.surv,
   col.ci = col.surv,
   col.band = FALSE,
+  kmdiff = FALSE,
   atrisk.table = TRUE,
   atrisk.lab = NULL,
   atrisk.pad = 0.5,
@@ -103,6 +104,11 @@ string(s), or hexadecimal string(s); if \code{TRUE}, \code{col.surv}
 values will be used; if \code{FALSE}, \code{NA}, or \code{NULL}, no
 bands will be plotted; also note that this is not a true confidence band;
 see details}
+
+\item{kmdiff}{logical; if \code{TRUE}, a confidence band for the difference
+between two curves is shown; see \code{\link{kmdiff}} (note that the color
+can be passed via \code{col.ci} and the confidence interval is taken from
+\code{s$conf.int})}
 
 \item{atrisk.table}{logical; if \code{TRUE} (default), draws at-risk table}
 
