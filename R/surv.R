@@ -639,12 +639,16 @@ kmplot <- function(s, data = NULL,
       }
       at <- if (isTRUE(median.at))
         usr[2L] + diff(usr[1:2]) / 8 else median.at
-      mtext(if (!is.null(s$conf.int))
-        sprintf('Median (%s%% CI)', s$conf.int * 100) else 'Median', las = 1L,
-        side = 1L, at = at, adj = 0.5, line = 1.5 + atrisk.pad, col = 1L
+      mtext(
+        if (!is.null(s$conf.int))
+          sprintf('Median (%s%% CI)', s$conf.int * 100) else 'Median',
+        las = 1L, side = 1L, col = 1L, at = at, adj = 0.5,
+        line = 1.5 + atrisk.pad, cex = cex.atrisk
       )
-      mtext(tt, side = 1L, line = line.pos, las = 1L,
-            at = at, adj = 0.5, col = col.atrisk)
+      mtext(
+        tt, side = 1L, line = line.pos, las = 1L, at = at,
+        adj = 0.5, col = col.atrisk, cex = cex.atrisk
+      )
     }
   }
   
@@ -751,7 +755,7 @@ kmplot <- function(s, data = NULL,
   if (!identical(pw_test, FALSE)) {
     txt <- pw_text(sform, sdat, pFUN = format_pval)
     
-    largs <- list(x = 'topright', legend = txt, bty = 'n')
+    largs <- list(x = 'topright', legend = txt, bty = 'n', xpd = NA)
     
     if (!islist(args.pw))
       args.pw <- list()
