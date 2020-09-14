@@ -34,6 +34,7 @@ kmplot(
   median = FALSE,
   digits.median = 0L,
   ci.median = TRUE,
+  args.median = list(),
   xaxs = "s",
   xlim = NULL,
   ylim = NULL,
@@ -157,6 +158,9 @@ median(s)}
 
 \item{ci.median}{logical; if \code{TRUE}, confidence interval for medians
 are shown}
+
+\item{args.median}{an optional \emph{named} list of \code{\link{mtext}}
+arguments controlling the \code{median} text}
 
 \item{xaxs}{style of axis; see details or \code{\link{par}}}
 

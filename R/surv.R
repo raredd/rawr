@@ -114,6 +114,8 @@ stratify_formula <- function(formula, vars = NULL) {
 #' median(s)
 #' @param ci.median logical; if \code{TRUE}, confidence interval for medians
 #' are shown
+#' @param args.median an optional \emph{named} list of \code{\link{mtext}}
+#' arguments controlling the \code{median} text
 #' @param xaxs style of axis; see details or \code{\link{par}}
 #' @param xlim,ylim x- and y-axis limits
 #' @param xaxis.at,yaxis.at positions for x- and y-axis labels and ticks
@@ -305,6 +307,7 @@ kmplot <- function(s, data = NULL,
                    strata.expr = NULL, strata.order = seq_along(s$n),
                    extra.margin = 5, mar = NULL,
                    median = FALSE, digits.median = 0L, ci.median = TRUE,
+                   args.median = list(),
                    
                    ## aesthetics
                    xaxs = 's', xlim = NULL, ylim = NULL,
@@ -529,8 +532,8 @@ kmplot <- function(s, data = NULL,
         atrisk.col else rep_len(1L, ng)
     
     ## labels for each row in at-risk table
-    group.name.pos <- diff(usr[1:2]) / -8
-    padding  <- abs(group.name.pos / 8)
+    group.name.pos <- diff(usr[1:2]) / ifelse(atrisk.lines, -8, -16)
+    padding <- abs(group.name.pos / 8)
     line.pos <- seq.int(ng)[order(strata.order)] + 2L + atrisk.pad
     
     if (!identical(unique(strata.lab), FALSE)) {
@@ -639,16 +642,17 @@ kmplot <- function(s, data = NULL,
       }
       at <- if (isTRUE(median.at))
         usr[2L] + diff(usr[1:2]) / 8 else median.at
-      mtext(
-        if (!is.null(s$conf.int))
-          sprintf('Median (%s%% CI)', s$conf.int * 100) else 'Median',
-        las = 1L, side = 1L, col = 1L, at = at, adj = 0.5,
-        line = 1.5 + atrisk.pad, cex = cex.atrisk
+      
+      largs <- list(
+        text = c(if (!is.null(s$conf.int))
+          sprintf('Median (%s%% CI)', s$conf.int * 100) else 'Median', tt),
+        side = 1L, col = c(palette()[1L], col.atrisk), at = at, las = 1L,
+        adj = 0.5, cex = cex.atrisk, line = c(1.5 + atrisk.pad, line.pos)
       )
-      mtext(
-        tt, side = 1L, line = line.pos, las = 1L, at = at,
-        adj = 0.5, col = col.atrisk, cex = cex.atrisk
-      )
+      
+      if (!islist(args.median))
+        args.median <- list()
+      do.call('mtext', modifyList(largs, args.median))
     }
   }
   
@@ -2635,7 +2639,7 @@ surv_median <- function(x, ci = FALSE, digits = 0L, which = NULL,
 surv_prob <- function(x, times = pretty(x$time), ci = FALSE,
                       digits = ifelse(percent, 0L, 2L), which = 1L,
                       print = TRUE, show_conf = TRUE, percent = FALSE) {
-  res <- surv_table(x, digits, times, FALSE, percent = percent)
+  res <- surv_table(x, digits, times, FALSE, percent = percent, extend = TRUE)
   if (!islist(res))
     res <- list(res)
   
