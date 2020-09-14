@@ -576,11 +576,13 @@ roundr.default <- function(x, digits = 1L, format = TRUE, check = TRUE) {
     stop('non-numeric argument to mathematical function')
 
   fmt <- paste0('%.', digits, 'f')
-  res <- sprintf(fmt, x)
+  res <- sprintf(fmt, round(x, digits))
   
   if (format) {
     res[is.na(x)] <- NA
     res <- sapply(res, function(xx) {
+      if (is.na(xx) || as.numeric(xx) < 1e3)
+        return(xx)
       int <- trunc(as.numeric(xx))
       if (grepl('\\.', xx))
         gsub('[0-9]+(?=\\.)', format(int, big.mark = ','), xx, perl = TRUE)
@@ -596,8 +598,8 @@ roundr.default <- function(x, digits = 1L, format = TRUE, check = TRUE) {
   
   if (check) {
     current <- type.convert(gsub(',', '', res))
-    target <- round(x, digits)
-    if (any(current != target))
+    target <- c(round(x, digits))
+    if (any(current != target, na.rm = TRUE))
       warning(
         'current != target\ncurrent: ', toString(current),
         '\ntarget: ', toString(target)
