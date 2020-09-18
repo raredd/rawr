@@ -745,7 +745,7 @@ kmplot <- function(s, data = NULL,
       txt <- paste(txt, sprintf('(%s events)', tot))
     
     largs <- list(
-      x = 'bottomleft', y = NULL, bty = 'n',
+      x = 'bottomleft', y = NULL, bty = 'n', xpd = NA,
       legend = txt[strata.order], col = col.surv[strata.order],
       lty = lty.surv[strata.order], lwd = lwd.surv[strata.order]
     )

@@ -8,11 +8,12 @@
 \usage{
 pvalr(
   pv,
-  sig.limit = 1e-03,
+  sig.limit = 10^-digits,
   digits = 3L,
   html = FALSE,
   show.p = FALSE,
   journal = TRUE,
+  breaks = c(0.1, 0.5),
   ...
 )
 
@@ -48,15 +49,27 @@ and \code{>}}
 \item{journal}{logical; if \code{TRUE}, p-values greater than
 \code{sig.limit} are rounded to \code{digits}}
 
+\item{breaks}{a vector controlling the number of digits used in p-values
+
+if \code{journal = TRUE}, \code{breaks} should be length one, and p-values
+will be rounded to two digits for values greater than \code{breaks} or
+\code{digits} for values between \code{sig.limit} and \code{breaks}
+
+if \code{journal = FALSE}, \code{breaks} should be length two, and p-values
+will be rounded to one digit for values greater than \code{breaks[2L]},
+two digits for values between \code{breaks[1L]} and \code{breaks[2L]},
+and \code{digits} for values between \code{sig.limit} and
+\code{breaks[1L]}}
+
 \item{...}{additional arguments passed to \code{\link{format.pval}} or
 further to \code{\link{format}}}
-
-\item{breaks, cols}{a numeric vector defining breaks in \code{(0,1)} (passed
-to \code{\link{findInterval}}) and the corresponding colors}
 
 \item{format_pval}{logical; if \code{TRUE}, p-values will be formatted
 using \code{\link{pvalr}}; alternatively, a function may by used which will
 be applied to each p-value}
+
+\item{breaks, cols}{a numeric vector defining breaks in \code{(0,1)} (passed
+to \code{\link{findInterval}}) and the corresponding colors}
 }
 \description{
 Formats several cases of p-values; see details.
@@ -74,10 +87,12 @@ keep any trailing 0s.
 not ideal (0.000, 1.00, etc) and will leave others unchanged.
 }
 \examples{
-pv <- c(-1, .00001, .004233, .060123, .13354, .4999, .51, .89, .9, 1)
+pv <- c(-1, 0.00001, 0.0042, 0.0601, 0.1335, 0.4999, 0.51, 0.89, 0.9, 1)
+format.pval(pv, eps = 0.001)
 
 pvalr(pv)
-pvalr(pv, journal = TRUE)
+pvalr(pv, journal = FALSE)
+pvalr(pv, breaks = 0.01)
 pvalr(pv, show.p = TRUE, html = TRUE)
 
 pv <- c('0.00000', '< 0.001', '0.0', '0.123', '0.6', '1', '1.0', '1.000')
