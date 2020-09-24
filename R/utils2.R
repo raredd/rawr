@@ -730,13 +730,13 @@ intr <- function(..., fun = median, conf = NULL,
 #'
 #' pvalr(pv)
 #' pvalr(pv, journal = FALSE)
-#' pvalr(pv, breaks = 0.01)
+#' pvalr(pv, breaks = 0.1)
 #' pvalr(pv, show.p = TRUE, html = TRUE)
 #'
 #' @export
 
 pvalr <- function(pv, sig.limit = 10 ^ -digits, digits = 3L, html = FALSE,
-                  show.p = FALSE, journal = TRUE, breaks = c(0.1, 0.5), ...) {
+                  show.p = FALSE, journal = TRUE, breaks = c(0.01, 0.5), ...) {
   stopifnot(
     sig.limit > 0,
     sig.limit < 1,

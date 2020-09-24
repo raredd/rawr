@@ -13,7 +13,7 @@ pvalr(
   html = FALSE,
   show.p = FALSE,
   journal = TRUE,
-  breaks = c(0.1, 0.5),
+  breaks = c(0.01, 0.5),
   ...
 )
 
@@ -92,7 +92,7 @@ format.pval(pv, eps = 0.001)
 
 pvalr(pv)
 pvalr(pv, journal = FALSE)
-pvalr(pv, breaks = 0.01)
+pvalr(pv, breaks = 0.1)
 pvalr(pv, show.p = TRUE, html = TRUE)
 
 pv <- c('0.00000', '< 0.001', '0.0', '0.123', '0.6', '1', '1.0', '1.000')
