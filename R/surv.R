@@ -96,6 +96,10 @@ stratify_formula <- function(formula, vars = NULL) {
 #' @param atrisk.lines logical; draw lines next to strata in at-risk table
 #' @param atrisk.col logical or a vector with colors for at-risk table text;
 #' if \code{TRUE}, \code{col.surv} will be used
+#' @param atrisk.min optional integer to replace any at-risk counts
+#' \code{< atrisk.min} with \code{"---"} by default; note that if
+#' \code{atrisk.min} is \emph{named}, then \code{names(atrisk.min)} will be
+#' the replacement string
 #' @param strata.lab labels used in legend and at-risk table for strata; if
 #' \code{NULL} (default), labels created in \code{survfit} are used; if only
 #' one strata is present, "All" is used by default; if \code{FALSE}, labels
@@ -303,7 +307,7 @@ kmplot <- function(s, data = NULL,
                                    'cuminc-ci', 'percent-cuminc-ci'),
                    atrisk.digits = (!grepl('percent', atrisk.type)) * 2,
                    atrisk.lines = TRUE, atrisk.col = !atrisk.lines,
-                   strata.lab = NULL,
+                   atrisk.min = NULL, strata.lab = NULL,
                    strata.expr = NULL, strata.order = seq_along(s$n),
                    extra.margin = 5, mar = NULL,
                    median = FALSE, digits.median = 0L, ci.median = TRUE,
@@ -592,8 +596,14 @@ kmplot <- function(s, data = NULL,
       right <- c('atrisk', 'events', 'atrisk-events')
       right <- ''
       
+      ## replace counts < atrisk.min with string
+      rpl <- names(atrisk.min) %||% '---'
+      idx <- as.integer(gsub(',', '', tmp[, wh])) < atrisk.min
+      
       mtext(
-        tmp[, wh], side = 1L, col = col.atrisk[ii],
+        if (is.null(atrisk.min))
+          tmp[, wh] else replace(tmp[, wh], idx, rpl),
+        side = 1L, col = col.atrisk[ii],
         las = 1L, line = line.pos[ii], cex = cex.atrisk,
         # at = tmp$time + w.adj * atrisk.type %ni% right,
         at = tmp$time, adj = if (atrisk.type %in% right) 1 else 0.5

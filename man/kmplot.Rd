@@ -26,6 +26,7 @@ kmplot(
   atrisk.digits = (!grepl("percent", atrisk.type)) * 2,
   atrisk.lines = TRUE,
   atrisk.col = !atrisk.lines,
+  atrisk.min = NULL,
   strata.lab = NULL,
   strata.expr = NULL,
   strata.order = seq_along(s$n),
@@ -132,6 +133,11 @@ number of events), \code{"atrisk-events"} (both), \code{"survival"}
 
 \item{atrisk.col}{logical or a vector with colors for at-risk table text;
 if \code{TRUE}, \code{col.surv} will be used}
+
+\item{atrisk.min}{optional integer to replace any at-risk counts
+\code{< atrisk.min} with \code{"---"} by default; note that if
+\code{atrisk.min} is \emph{named}, then \code{names(atrisk.min)} will be
+the replacement string}
 
 \item{strata.lab}{labels used in legend and at-risk table for strata; if
 \code{NULL} (default), labels created in \code{survfit} are used; if only
