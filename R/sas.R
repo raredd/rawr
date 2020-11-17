@@ -667,7 +667,7 @@ parse_formats_file <- function(x, invert) {
   ## integer or quoted string = quoted anything or unquoted non whitespace
   p <- '.*?([0-9-]+|[\"\'].*?[\"\'])\\s*=\\s*([\"\'].*?[\"\']|\\S+).*?'
   defs <- regcaptures2(x, p)
-  idx  <- !!sapply(defs, length) & grepl('value', names(defs))
+  idx  <- !!sapply(defs, length) & grepl('(?i)value', names(defs))
   defs <- setNames(lapply(defs[idx], trimwsq), name)
   
   lapply(defs, function(x)
