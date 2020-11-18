@@ -1156,11 +1156,13 @@ writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
 #' p-values, etc. from model fits.
 #'
 #' @param x an object of class \code{\link{lm}}, \code{\link{glm}},
-#' \code{\link{survfit}}
+#' \code{\link[survival]{survfit}}, \code{\link[survival]{coxph}}
 #' @param digits number of digits printed
 #' @param level confidence level; default is \code{0.95}
 #' @param exp logical; if \code{TRUE}, estimates and confidence intervals are
 #' exponentiated (for \code{glm} or \code{coxph} methods only)
+#' @param add_reference logical; if \code{TRUE}, adds row for each reference
+#' group if applicable
 #' @param ... additional arguments passed to or from other methods
 #'
 #' @family tabler
@@ -1169,19 +1171,21 @@ writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
 #' \code{\link{surv_table}}
 #'
 #' @examples
-#' lmfit <- lm(mpg ~ hp + disp + wt, data = mtcars)
+#' lmfit <- lm(mpg ~ hp + disp + wt, mtcars)
 #' tabler(lmfit)
 #'
-#' glmfit <- glm(vs ~ drat + factor(gear), data = mtcars, family = 'binomial')
+#' glmfit <- glm(vs ~ drat + factor(gear), mtcars, family = 'binomial')
 #' tabler(glmfit)
+#' tabler(glmfit, add_reference = TRUE)
 #' tabler(glmfit, exp = FALSE)
 #'
 #' library('survival')
-#' sfit <- survfit(Surv(time, status) ~ 1, data = cancer, conf.int = 0.9)
+#' sfit <- survfit(Surv(time, status) ~ 1, cancer, conf.int = 0.9)
 #' tabler(sfit)
 #'
 #' cphfit <- coxph(Surv(time, status) ~ factor(sex) + age, cancer)
 #' tabler(cphfit)
+#' tabler(cphfit, add_reference = TRUE)
 #'
 #' @export
 
@@ -1197,32 +1201,33 @@ tabler.default <- function(x, ...) {
 
 #' @rdname tabler
 #' @export
-tabler.lm <- function(x, digits = 3L, ...) {
+tabler.lm <- function(x, digits = 3L, add_reference, ...) {
   res <- data.frame(summary(x, ...)$coefficients, check.names = FALSE)
-  res[, ncol(res)] <- pvalr(res[, ncol(res)], ...)
-  res[, -ncol(res)] <- lapply(res[, -ncol(res)], round, digits = digits)
+  pv <- grep('^Pr', names(res))
+  res[, pv] <- pvalr(res[, pv], ...)
+  res[, -pv] <- lapply(res[, -pv], round, digits = digits)
 
   res
 }
 
 #' @rdname tabler
 #' @export
-tabler.glm <- function(x, digits = 3L, level = 0.95, exp = TRUE, ...) {
+tabler.glm <- function(x, digits = 3L, level = 0.95, exp = TRUE,
+                       add_reference = FALSE, ...) {
   res <- data.frame(summary(x, ...)$coefficients, check.names = FALSE)
-  res[, ncol(res)] <- pvalr(res[, ncol(res)], ...)
+  pv <- grep('^Pr', names(res))
+  res[, pv] <- pvalr(res[, pv], ...)
 
   suppressMessages(
     res <-
       data.frame(
-        exp(cbind(coef(x), confint(x, level = level))), res[, 4L],
+        exp(cbind(coef(x), confint(x, level = level))), res[, pv],
         stringsAsFactors = FALSE
       )
   )
 
   if (!exp)
     res[, 1:3] <- log(res[, 1:3])
-
-  level <- level * 100
 
   fmt <- sprintf('%%.0%1$sf (%%.0%1$sf, %%.0%1$sf)', digits)
   res <- data.frame(
@@ -1234,38 +1239,48 @@ tabler.glm <- function(x, digits = 3L, level = 0.95, exp = TRUE, ...) {
   res <- setNames(
     res,
     c(if (exp) 'OR' else 'Est',
-      paste0(c('L', 'U'), level), 'Pr(>|z|)',
-      sprintf('OR (%s%% CI)', level))
+      paste0(c('L', 'U'), level * 100), 'Pr(>|z|)',
+      sprintf('OR (%s%% CI)', level * 100))
   )
   res[, 1:3] <- lapply(res[, 1:3], round, digits = digits)
+  
+  if (!is.null(xl <- x$xlevels) && add_reference) {
+    for (ii in seq_along(xl)) {
+      lev <- paste0(names(xl)[ii], xl[[ii]])
+      idx <- which(rownames(res) %in% lev)[1L] - 1L
+      res <- if (idx == 0L)
+        rbind(NA, res) else rbind(head(res, idx), NA, tail(res, -idx))
+      rownames(res)[idx + 1L] <- lev[1L]
+    }
+  }
 
   res
 }
 
 #' @rdname tabler
 #' @export
-tabler.survfit <- function(x, ...) {
+tabler.survfit <- function(x, add_reference, ...) {
   surv_table(x, ...)
 }
 
 #' @rdname tabler
 #' @export
-tabler.coxph <- function(x, digits = 3L, level = 0.95, exp = TRUE, ...) {
+tabler.coxph <- function(x, digits = 3L, level = 0.95, exp = TRUE,
+                         add_reference = FALSE, ...) {
   res <- data.frame(summary(x, ...)$coefficients, check.names = FALSE)
-  res[, ncol(res)] <- pvalr(res[, ncol(res)], ...)
+  pv <- grep('^Pr', names(res))
+  res[, pv] <- pvalr(res[, pv], ...)
 
   suppressMessages(
     res <-
       data.frame(
-        exp(cbind(coef(x), confint(x, level = level))), res[, 4L],
+        exp(cbind(coef(x), confint(x, level = level))), res[, pv],
         stringsAsFactors = FALSE
       )
   )
 
   if (!exp)
     res[, 1:3] <- log(res[, 1:3])
-
-  level <- level * 100
 
   fmt <- sprintf('%%.0%1$sf (%%.0%1$sf, %%.0%1$sf)', digits)
   res <- data.frame(
@@ -1277,11 +1292,21 @@ tabler.coxph <- function(x, digits = 3L, level = 0.95, exp = TRUE, ...) {
   res <- setNames(
     res,
     c(ifelse(exp, 'HR', 'Est'),
-      paste0(c('L', 'U'), level), 'Pr(>|z|)',
-      sprintf('%s (%s%% CI)', ifelse(exp, 'HR', 'Est'), level))
+      paste0(c('L', 'U'), level * 100), 'Pr(>|z|)',
+      sprintf('%s (%s%% CI)', ifelse(exp, 'HR', 'Est'), level * 100))
   )
   res[, 1:3] <- lapply(res[, 1:3], round, digits = digits)
-
+  
+  if (!is.null(xl <- x$xlevels) && add_reference) {
+    for (ii in seq_along(xl)) {
+      lev <- paste0(names(xl)[ii], xl[[ii]])
+      idx <- which(rownames(res) %in% lev)[1L] - 1L
+      res <- if (idx == 0L)
+        rbind(NA, res) else rbind(head(res, idx), NA, tail(res, -idx))
+      rownames(res)[idx + 1L] <- lev[1L]
+    }
+  }
+  
   res
 }
 

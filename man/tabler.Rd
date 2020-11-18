@@ -13,21 +13,24 @@ tabler(x, ...)
 
 \method{tabler}{default}(x, ...)
 
-\method{tabler}{lm}(x, digits = 3L, ...)
+\method{tabler}{lm}(x, digits = 3L, add_reference, ...)
 
-\method{tabler}{glm}(x, digits = 3L, level = 0.95, exp = TRUE, ...)
+\method{tabler}{glm}(x, digits = 3L, level = 0.95, exp = TRUE, add_reference = FALSE, ...)
 
-\method{tabler}{survfit}(x, ...)
+\method{tabler}{survfit}(x, add_reference, ...)
 
-\method{tabler}{coxph}(x, digits = 3L, level = 0.95, exp = TRUE, ...)
+\method{tabler}{coxph}(x, digits = 3L, level = 0.95, exp = TRUE, add_reference = FALSE, ...)
 }
 \arguments{
 \item{x}{an object of class \code{\link{lm}}, \code{\link{glm}},
-\code{\link{survfit}}}
+\code{\link[survival]{survfit}}, \code{\link[survival]{coxph}}}
 
 \item{...}{additional arguments passed to or from other methods}
 
 \item{digits}{number of digits printed}
+
+\item{add_reference}{logical; if \code{TRUE}, adds row for each reference
+group if applicable}
 
 \item{level}{confidence level; default is \code{0.95}}
 
@@ -39,19 +42,21 @@ Extracts coefficients, standard errors, odds ratios, confidence intervals,
 p-values, etc. from model fits.
 }
 \examples{
-lmfit <- lm(mpg ~ hp + disp + wt, data = mtcars)
+lmfit <- lm(mpg ~ hp + disp + wt, mtcars)
 tabler(lmfit)
 
-glmfit <- glm(vs ~ drat + factor(gear), data = mtcars, family = 'binomial')
+glmfit <- glm(vs ~ drat + factor(gear), mtcars, family = 'binomial')
 tabler(glmfit)
+tabler(glmfit, add_reference = TRUE)
 tabler(glmfit, exp = FALSE)
 
 library('survival')
-sfit <- survfit(Surv(time, status) ~ 1, data = cancer, conf.int = 0.9)
+sfit <- survfit(Surv(time, status) ~ 1, cancer, conf.int = 0.9)
 tabler(sfit)
 
 cphfit <- coxph(Surv(time, status) ~ factor(sex) + age, cancer)
 tabler(cphfit)
+tabler(cphfit, add_reference = TRUE)
 
 }
 \seealso{
