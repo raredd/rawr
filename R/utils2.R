@@ -707,17 +707,17 @@ intr <- function(..., fun = median, conf = NULL,
 #' \code{p > } where appropriate
 #' @param journal logical; if \code{TRUE}, p-values greater than
 #' \code{sig.limit} are rounded to \code{digits}
-#' @param breaks a vector controlling the number of digits used in p-values
+#' @param limits a vector controlling the number of digits used in p-values
 #' 
-#' if \code{journal = TRUE}, \code{breaks} should be length one, and p-values
-#' will be rounded to two digits for values greater than \code{breaks} or
-#' \code{digits} for values between \code{sig.limit} and \code{breaks}
+#' if \code{journal = TRUE}, \code{limits} should be length one, and p-values
+#' will be rounded to two digits for values greater than \code{limits} or
+#' \code{digits} for values between \code{sig.limit} and \code{limits}
 #' 
-#' if \code{journal = FALSE}, \code{breaks} should be length two, and p-values
-#' will be rounded to one digit for values greater than \code{breaks[2L]},
-#' two digits for values between \code{breaks[1L]} and \code{breaks[2L]},
+#' if \code{journal = FALSE}, \code{limits} should be length two, and p-values
+#' will be rounded to one digit for values greater than \code{limits[2L]},
+#' two digits for values between \code{limits[1L]} and \code{limits[2L]},
 #' and \code{digits} for values between \code{sig.limit} and
-#' \code{breaks[1L]}
+#' \code{limits[1L]}
 #' @param ... additional arguments passed to \code{\link{format.pval}} or
 #' further to \code{\link{format}}
 #'
@@ -730,23 +730,23 @@ intr <- function(..., fun = median, conf = NULL,
 #'
 #' pvalr(pv)
 #' pvalr(pv, journal = FALSE)
-#' pvalr(pv, breaks = 0.1)
+#' pvalr(pv, limits = 0.1)
 #' pvalr(pv, show.p = TRUE, html = TRUE)
 #'
 #' @export
 
 pvalr <- function(pv, sig.limit = 10 ^ -digits, digits = 3L, html = FALSE,
-                  show.p = FALSE, journal = TRUE, breaks = c(0.01, 0.5), ...) {
+                  show.p = FALSE, journal = TRUE, limits = c(0.01, 0.5), ...) {
   stopifnot(
     sig.limit > 0,
     sig.limit < 1,
-    (journal & length(breaks) > 0L) |
-      (!journal & length(breaks) > 1L)
+    (journal & length(limits) > 0L) |
+      (!journal & length(limits) > 1L)
   )
 
   show.p <- show.p + 1L
   html <- html + 1L
-  breaks <- sort(breaks)
+  limits <- sort(limits)
 
   sapply(pv, function(x) {
     if (is.na(x) | !nzchar(x))
@@ -760,8 +760,8 @@ pvalr <- function(pv, sig.limit = 10 ^ -digits, digits = 3L, html = FALSE,
              format.pval(sig.limit, ...))
     } else {
       nd <- if (journal)
-        c(digits, 2L)[findInterval(x, c(-Inf, breaks[1L], Inf))]
-      else c(digits, 2L, 1L)[findInterval(x, c(-Inf, breaks[1:2], Inf))]
+        c(digits, 2L)[findInterval(x, c(-Inf, limits[1L], Inf))]
+      else c(digits, 2L, 1L)[findInterval(x, c(-Inf, limits[1:2], Inf))]
       paste0(c('', 'p = ')[show.p], roundr(x, nd))
     }
   })
@@ -807,7 +807,7 @@ pvalr2 <- function(pv, html = FALSE, show.p = FALSE) {
 #'
 #' @export
 
-color_pval <- function(pv, breaks = c(0, .01, .05, .1, .5, 1),
+color_pval <- function(pv, breaks = c(0, 0.01, 0.05, 0.1, 0.5, 1),
                        cols = colorRampPalette(2:1)(length(breaks)),
                        sig.limit = 0.001, digits = 3L, show.p = FALSE,
                        format_pval = TRUE, journal = TRUE, ...) {
@@ -1715,11 +1715,11 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' \code{\link{ca.test}}
 #'
 #' @examples
-#' tabler_stat(mtcars, 'mpg', 'cyl') ## picks kruskal-wallis
-#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = NA)    ## no test, no p-value column
-#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE) ## no test, p-value column
-#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'fisher') ## force fisher test
-#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'anova')  ## force anova test
+#' tabler_stat(mtcars, 'mpg', 'cyl')                 # picks kruskal-wallis
+#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = NA)       # no test, no p-value column
+#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE)    # no test, p-value column
+#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'fisher') # force fisher test
+#' tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'anova')  # force anova test
 #'
 #' ## use of a custom function - see ?rawr::cuzick.test
 #' tabler_stat(mtcars, 'mpg', 'cyl',

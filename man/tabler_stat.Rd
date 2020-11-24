@@ -106,11 +106,11 @@ variable vector, \code{data$varname}, and the column variable vector,
 \code{data$byvar}, in this order and return a numeric p-value only.
 }
 \examples{
-tabler_stat(mtcars, 'mpg', 'cyl') ## picks kruskal-wallis
-tabler_stat(mtcars, 'mpg', 'cyl', FUN = NA)    ## no test, no p-value column
-tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE) ## no test, p-value column
-tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'fisher') ## force fisher test
-tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'anova')  ## force anova test
+tabler_stat(mtcars, 'mpg', 'cyl')                 # picks kruskal-wallis
+tabler_stat(mtcars, 'mpg', 'cyl', FUN = NA)       # no test, no p-value column
+tabler_stat(mtcars, 'mpg', 'cyl', FUN = FALSE)    # no test, p-value column
+tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'fisher') # force fisher test
+tabler_stat(mtcars, 'mpg', 'cyl', FUN = 'anova')  # force anova test
 
 ## use of a custom function - see ?rawr::cuzick.test
 tabler_stat(mtcars, 'mpg', 'cyl',
