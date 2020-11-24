@@ -3,7 +3,8 @@
 # gcd, install.bioc, lm.beta, cuzick.test, cuzick.test.default,
 # cuzick.test.formula, jt.test, hl_est, rcor, rsum, kw.test, kw.test.default,
 # kw.test.formula, ca.test, ca.test.default, ca.test.formula, lspline,
-# winsorize, perm.t.test, perm.t.test.default, perm.t.test.formula
+# winsorize, perm.t.test, perm.t.test.default, perm.t.test.formula, rfvar,
+# ransch, ranschtbl
 # 
 # S3 methods:
 # cuzick.test, kw.test, ca.test, perm.t.test
@@ -16,7 +17,7 @@
 # 
 # unexported:
 # cuzick.test.stat, cuzick.test.pvalue, jt.test.stat, combn_fun, rcor1, rcorn,
-# sim.test.pvalue
+# sim.test.pvalue, ransch_
 ###
 
 
@@ -2897,4 +2898,105 @@ rfvar <- function(formula, data, nvar = -1L, depth = NULL,
   formula <- reformulate(setdiff(xx, ex), yy)
   
   Recall(formula, data, nvar, verbose, plot, ...)
+}
+
+#' ransch
+#' 
+#' Generate block randomization schedule tables.
+#' 
+#' @param n sample size of study or each stratum
+#' @param block block size; note if \code{block} is not a factor of \code{n},
+#' \code{n} will be increased to accommodate a full block
+#' @param arms names of the treatment arms
+#' @param r randomization ratio; see examples
+#' @param strata an optional named list of vectors for each stratum
+#' @param write a file path to write a directory with csv files for each
+#' randomization table
+#' 
+#' @examples
+#' ## no strata, 2-3 treatments with varying randomization ratios
+#' ransch(24, 4, 1:2) ## 1:1
+#' ransch(24, 6, 1:3) ## 1:1:1
+#' ransch(24, 8, 1:3, c(1, 2, 1)) ## 1:2:1
+#' 
+#' ## one two-level stratum
+#' ransch(24, 4, 1:2, strata = list(Age = c('<65', '>=65')))
+#' 
+#' ## multiple strata
+#' strata <- list(Site = LETTERS[1:3], Age = c('<65', '>=65'))
+#' ransch(24, 4, 1:2, strata = strata)
+#' 
+#' 
+#' ## tables for printing
+#' ranschtbl(24, 4, c('Pbo', 'Trt'))
+#' 
+#' ranschtbl(24, 4, c('Pbo', 'Trt'), c(1, 3), strata)
+#' 
+#' \dontrun{
+#' ranschtbl(24, 4, c('Pbo', 'Trt'), strata = strata, write = '~/desktop')
+#' }
+#' 
+#' @export
+
+ransch <- function(n, block, arms, r = 1L, strata = NULL) {
+  if (!is.null(strata)) {
+    if (is.null(names(strata)))
+      names(strata) <- paste0('Stratum', seq_along(strata))
+    
+    strata <- Map(paste, names(strata), strata)
+    strata <- apply(expand.grid(strata), 1L, toString)
+  }
+  
+  res <- replicate(pmax(1L, length(strata)), simplify = FALSE, {
+    ransch_(n, block, arms, rep_len(r, length(arms)))
+  })
+  
+  setNames(res, strata %||% 'ransch')
+}
+
+#' @rdname ransch
+#' @export
+ranschtbl <- function(n, block, arms, r = 1L, strata = NULL, write = NULL) {
+  res <- ransch(n, block, arms, r, strata)
+  
+  res[] <- lapply(seq_along(res), function(ii) {
+    within(res[[ii]], {
+      Stratum <- names(res)[ii]
+      Name <- ID <- Date <- NA
+    })
+  })
+  
+  if (is.null(names(res)))
+    names(res) <- 'ransch'
+  
+  if (is.character(write) && dir.exists(write)) {
+    path <- sprintf('%s/ransch-%s', write, format(Sys.time(), '%Y%m%d%H%M'))
+    dir.create(path, showWarnings = FALSE, recursive = TRUE)
+    
+    for (ii in seq_along(res))
+      write.csv(res[[ii]], sprintf('%s/%s.csv', path, names(res)[ii]),
+                na = '', row.names = FALSE)
+    
+    invisible(res)
+  } else res
+}
+
+ransch_ <- function(n, block, arms, r) {
+  # ransch_(36, 6, c('Pbo', 'Trt'))
+  stopifnot(
+    length(arms) == length(r),
+    block %% sum(r) == 0L
+  )
+  
+  arms <- rep_len(rep(arms, r), block)
+  n <- if (n %% block == 0)
+    n else n + block
+  b <- n %/% block
+  x <- c(replicate(b, sample(seq.int(block))))
+  
+  data.frame(
+    Number = seq_along(x),
+    Block = rep(seq.int(b), each = block),
+    Assignment = arms[x]
+  )
 }
