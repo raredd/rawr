@@ -2929,7 +2929,6 @@ rfvar <- function(formula, data, nvar = -1L, depth = NULL,
 #' 
 #' ## tables for printing
 #' ranschtbl(24, 4, c('Pbo', 'Trt'))
-#' 
 #' ranschtbl(24, 4, c('Pbo', 'Trt'), c(1, 3), strata)
 #' 
 #' \dontrun{
@@ -2982,7 +2981,8 @@ ranschtbl <- function(n, block, arms, r = 1L, strata = NULL, write = NULL) {
 }
 
 ransch_ <- function(n, block, arms, r) {
-  # ransch_(36, 6, c('Pbo', 'Trt'))
+  # table(rawr:::ransch_(12, 6, c('Pbo', 'Trt'), c(1, 1))[, -1])
+  # table(rawr:::ransch_(15, 5, c('Pbo', 'Ex1', 'Ex2'), c(1, 2, 2))[, -1])
   stopifnot(
     length(arms) == length(r),
     block %% sum(r) == 0L

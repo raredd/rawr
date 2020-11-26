@@ -43,7 +43,6 @@ ransch(24, 4, 1:2, strata = strata)
 
 ## tables for printing
 ranschtbl(24, 4, c('Pbo', 'Trt'))
-
 ranschtbl(24, 4, c('Pbo', 'Trt'), c(1, 3), strata)
 
 \dontrun{
