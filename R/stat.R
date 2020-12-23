@@ -1983,8 +1983,8 @@ rcorn <- function(y, x, rho) {
   if (sigma2 >= 0)
     c(yd %*% rho + sqrt(sigma2) * re)
   else {
-    warning('Joint correlations not possible', call. = FALSE)
-    rep(0, nr)
+    warning('joint correlations not possible', call. = FALSE)
+    NULL
   }
 }
 
@@ -2032,8 +2032,8 @@ rsum <- function(a, b, n, k, unique = FALSE, iterations = 100L) {
   for (ii in seq.int(iterations + 1L)) {
     if (ii > iterations) {
       message(
-        sprintf('Note: maximum of %s iterations attempted:\n\t', iterations),
-        'Try increasing the number of iterations; otherwise\n\t',
+        sprintf('%s iterations performed with no solution:\n  ', iterations),
+        'Try increasing the number of iterations; otherwise,\n  ',
         'n or k may be too large, b - a is too small, or no solution exists'
       )
       return(invisible(NULL))

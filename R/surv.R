@@ -599,6 +599,8 @@ kmplot <- function(s, data = NULL,
       ## replace counts < atrisk.min with string
       rpl <- names(atrisk.min) %||% '---'
       idx <- as.integer(gsub(',', '', tmp[, wh])) < atrisk.min
+      # idx <- idx |
+      #   c(FALSE, abs(diff(as.integer(gsub(',', '', tmp[, wh])))) < atrisk.min)
       
       mtext(
         if (is.null(atrisk.min))
@@ -1722,7 +1724,12 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
                       col.surv = NULL, map.col = FALSE, legend = FALSE,
                       add = FALSE, plot = TRUE, args.survfit = list(),
                       stratify = NULL, panel.first = NULL, panel.last = NULL, ...) {
-  op <- par(no.readonly = TRUE)
+  ## defaults
+  type      <- args.survfit$type      %||% 'kaplan-meier'
+  error     <- args.survfit$error     %||% 'greenwood'
+  conf.int  <- args.survfit$conf.int  %||% 0.95
+  conf.type <- args.survfit$conf.type %||% 'log'
+  se.fit    <- args.survfit$se.fit    %||% TRUE
   
   if (is.logical(lr_test)) {
     rho <- 0
@@ -1731,13 +1738,6 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
     lr_test else 0
     lr_test <- TRUE
   }
-  
-  ## defaults
-  type      <- args.survfit$type      %||% 'kaplan-meier'
-  error     <- args.survfit$error     %||% 'greenwood'
-  conf.int  <- args.survfit$conf.int  %||% 0.95
-  conf.type <- args.survfit$conf.type %||% 'log'
-  se.fit    <- args.survfit$se.fit    %||% TRUE
   
   if (length(event) > 1L) {
     data <- data.frame(
@@ -1782,6 +1782,7 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
     data[, ev] <- as.integer(data[, ev])
   }
   
+  op <- par(no.readonly = TRUE)
   if (plot & (!add | !single))
     on.exit(par(op))
   if (add)
@@ -1796,7 +1797,7 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
       par(mfrow = c(1L,1L))
     } else {
       add <- TRUE
-      if (identical(par('mfrow'), c(1L,1L)))
+      if (identical(as.integer(par('mfrow')), c(1L, 1L)))
         par(mfrow = n2mfrow(lunique(data[, by], na.rm = TRUE)))
     }
     sp <- split(data, droplevels(data[, by]))
@@ -1896,25 +1897,31 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
           strata_lab else ns
       names(s$strata) <- trimws(ns)
     }
+    
     if (!plot)
       return(s0)
     
-    kmplot(s, add = add, legend = legend, main = names(sp)[x], ylab = ylab,
-           lr_test = lr_test, ..., panel.last = panel.last, stratify = stratify,
-           col.surv = if (map.col) unname(col.surv)[x] else col.surv,
-           panel.first = {
-             ## sub label - top left margin (default: strata var)
-             mtxt <- if (!msub)
-               rep_len(sub, length(sp))[x] else strata
-             mtext(mtxt, side = 3L, line = 0.25, outer = FALSE,
-                   at = 0, adj = 0, font = 3L)
-             
-             ## figure label - top left outer margin (eg, A, B, C)
-             mtext(fig[x], side = 3L, line = 0.25, outer = FALSE,
-                   at = 0 - par('usr')[2L] * .05, font = 2, cex = 1.2)
-             
-             panel.first
-           })
+    kmplot(
+      s, add = add, ...,
+      legend = legend, main = names(sp)[x], ylab = ylab,
+      lr_test = lr_test, stratify = stratify,
+      col.surv = if (map.col) unname(col.surv)[x] else col.surv,
+      
+      panel.last = panel.last,
+      
+      panel.first = {
+        ## sub label - top left margin (default: strata var)
+        mtxt <- if (!msub)
+          rep_len(sub, length(sp))[x] else strata
+        mtext(mtxt, side = 3L, line = 0.25, outer = FALSE,
+              at = 0, adj = 0, font = 3L)
+        
+        ## figure label - top left outer margin (eg, A, B, C)
+        mtext(fig[x], side = 3L, line = 0.25, outer = FALSE,
+              at = 0 - par('usr')[2L] * 0.05, font = 2, cex = 1.2)
+        panel.first
+      }
+    )
     s0
   })
   names(l) <- names(sp) %||% strata
@@ -2057,10 +2064,10 @@ local_coxph_test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
     C <- matrix(0, n, n)
     diag(C) <- 1
   } else if (dim(C)[1L] != n)
-      stop('C has improper dimensions\n')
+    stop('C has improper dimensions\n')
   
   if (is.null(d))
-    d <- matrix(0, n, 1)
+    d <- matrix(0, n, 1L)
   if (dim(d)[1L] != dim(C)[1L])
     stop('C and d do not have appropriate dimensions')
   
@@ -2069,7 +2076,7 @@ local_coxph_test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
   chisq <- as.numeric(t(C %*% est - d) %*% solve(t(C) %*% I. %*% C ) %*%
                         (C %*% est - d))
   df <- dim(C)[1L]
-  p.value <- signif(1 - pchisq(chisq, df), digits)
+  p.value <- signif(pchisq(chisq, df, lower.tail = FALSE), digits)
   
   list(est = est, chisq = chisq, df = df, p.value = p.value)
 }
@@ -2103,7 +2110,6 @@ local_coxph_test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
 
 surv_cp <- function(data, time.var, status.var,
                     covars = setdiff(names(data), c(time.var, status.var))) {
-  
   ## sorted times, append to 0
   t.sort <- c(0, sort(unique(data[[time.var]])))
   
@@ -2113,22 +2119,26 @@ surv_cp <- function(data, time.var, status.var,
   ## create list of datasets with covariates and all relevant start/stop times
   ## remove one from end of x, stop by removing first of x
   ## include the status variable and covariates in the dataframe
-  f <- function(i)
-    data.frame(start = head(t.list[[i]], -1L),
-               stop = tail(t.list[[i]], -1L),
-               data[i, c(status.var, covars)],
-               row.names = NULL)
+  f <- function(i) {
+    data.frame(
+      start = head(t.list[[i]], -1L),
+      stop = tail(t.list[[i]], -1L),
+      data[i, c(status.var, covars)],
+      row.names = NULL
+    )
+  }
   data <- do.call('rbind', Map('f', seq_along(t.list)))
   
   ## create the correct status need last time for each
   ## subject with status=1 to to be status=1 but all others status=0
   
   ## lapply creates vectors 0,0,0,...,1 based on length of t.list
-  ## substract 2 because the lag takes one away, then need one for the 1 at end
+  ## subtract 2 since the lag takes one away, then need one for the 1 at end
   ## this is then multiplied by status to correct it
   keep.status <- do.call('c', lapply(t.list, function(x)
     c(rep(0L, length(x) - 2L), 1L)))
-  data[status.var] <- data[status.var] * keep.status
+  data[, status.var] <- data[, status.var] * keep.status
+  
   data
 }
 
