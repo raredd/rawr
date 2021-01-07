@@ -581,9 +581,11 @@ col_scaler2 <- function(x, colors, breaks = 0, ...) {
 #' these will be calculated; if length 1, the calculated lines will be shifted
 #' by \code{line}
 #' @param test the test to use for pairwise comparisons
+#' @param plot logical; if \code{TRUE}, an existing figure will be annotated
+#' with the tests; if \code{FALSE}, all tests will be returned but not plotted
 #' 
 #' @return
-#' A list of user coordinates where each \code{x} is drawn.
+#' A list of user coordinates and text where each \code{x} is drawn.
 #' 
 #' @seealso
 #' \code{\link{cuzick.test}}; \code{\link{boxplot}}; \code{\link{tplot}};
@@ -650,8 +652,8 @@ bp.test <- function(x, ...) {
 
 #' @rdname bp.test
 #' @export
-bp.test.formula <- function(formula, data, which = NULL, at = NULL,
-                            line = NULL, test = wilcox.test, ...) {
+bp.test.formula <- function(formula, data, which = NULL, at = NULL, line = NULL,
+                            test = wilcox.test, plot = TRUE, ...) {
   bp <- boxplot(formula, data, plot = FALSE)
   ng <- length(bp$n)
   if (ng == 1L) {
@@ -671,16 +673,13 @@ bp.test.formula <- function(formula, data, which = NULL, at = NULL,
   line <- if (is.null(line) || length(line) == 1L)
     1.25 * (seq_along(which) - 1) + line %||% 0 else line
   
-  bp.test(pv, which, at, line, test, ...)
+  bp.test(pv, which, at, line, test, plot, ...)
 }
 
 #' @rdname bp.test
 #' @export
-bp.test.default <- function(x, which = NULL, at = NULL,
-                            line = NULL, test = wilcox.test, ...) {
-  op <- par(..., no.readonly = TRUE)
-  on.exit(par(op))
-  
+bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
+                            test = wilcox.test, plot = TRUE, ...) {
   ng <- length(x) + 1L
   if (ng == 1L) {
     message('only one group -- no test performed')
@@ -715,12 +714,15 @@ bp.test.default <- function(x, which = NULL, at = NULL,
   
   res <- sapply(seq_along(which), function(ii) {
     xat <- cbn[, which[ii]]
-    xat <- seg(xat[1L], yat[ii], xat[2L], !is.na(x[which[ii]]))
-    text(xat[1L], xat[2L], x[which[ii]], xpd = NA)
+    xat <- seg(xat[1L], yat[ii], xat[2L], plot && !is.na(x[which[ii]]))
+    if (plot)
+      text(xat[1L], xat[2L], x[which[ii]], xpd = NA)
     xat
   })
+  res <- list(x = res[1L, ], y = res[2L, ], text = x[which])
   
-  invisible(list(x = res[1L, ], y = res[2L, ], text = x[which]))
+  if (plot)
+    invisible(res) else res
 }
 
 #' Image palettes

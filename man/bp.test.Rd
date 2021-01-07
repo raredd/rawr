@@ -15,10 +15,19 @@ bp.test(x, ...)
   at = NULL,
   line = NULL,
   test = wilcox.test,
+  plot = TRUE,
   ...
 )
 
-\method{bp.test}{default}(x, which = NULL, at = NULL, line = NULL, test = wilcox.test, ...)
+\method{bp.test}{default}(
+  x,
+  which = NULL,
+  at = NULL,
+  line = NULL,
+  test = wilcox.test,
+  plot = TRUE,
+  ...
+)
 }
 \arguments{
 \item{x}{a vector of text to be drawn above each pair of groups}
@@ -45,9 +54,12 @@ these will be calculated; if length 1, the calculated lines will be shifted
 by \code{line}}
 
 \item{test}{the test to use for pairwise comparisons}
+
+\item{plot}{logical; if \code{TRUE}, an existing figure will be annotated
+with the tests; if \code{FALSE}, all tests will be returned but not plotted}
 }
 \value{
-A list of user coordinates where each \code{x} is drawn.
+A list of user coordinates and text where each \code{x} is drawn.
 }
 \description{
 Add pairwise tests to box plots with three or more groups. Using
