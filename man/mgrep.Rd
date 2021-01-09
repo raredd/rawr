@@ -7,9 +7,9 @@
 \alias{mgsub}
 \title{Multiple pattern matching and replacement}
 \usage{
-mgrepl(pattern, x, ..., parallel = length(pattern) > 1e+04)
+mgrepl(pattern, x, ..., parallel = length(pattern) > 10000L)
 
-mgrep(pattern, x, ..., parallel = length(pattern) > 1e+04)
+mgrep(pattern, x, ..., parallel = length(pattern) > 10000L)
 
 msub(pattern, replacement, x, ...)
 

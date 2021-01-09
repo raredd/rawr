@@ -140,8 +140,7 @@
 #' @export
 
 bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
-                   method = c('exact', 'wilson', 'asymptotic', 'all',
-                              'two-stage'),
+                   method = c('exact', 'wilson', 'asymptotic', 'all', 'two-stage'),
                    dp = 1) {
   if (alpha >= 1 | alpha <= 0)
     stop('\'alpha\' must be between 0 and 1')

@@ -10,8 +10,7 @@ rgene(
   nalpha = 2:5,
   num = 0:9,
   nnum = 1:5,
-  sep = "-",
-  seed = NULL
+  sep = "-"
 )
 }
 \arguments{
@@ -26,8 +25,6 @@ rgene(
 \item{nnum}{range of possible number of \code{num} to select}
 
 \item{sep}{character to separate \code{alpha} and \code{num}}
-
-\item{seed}{seed; integer or \code{NULL}}
 }
 \description{
 Generate random character strings from pools of letters and digits.

@@ -206,10 +206,7 @@ dodge2.default <- function(x, y, jit = NULL, dist = NULL, ...) {
     gi
   })
   
-  list(
-    x = unlist(lapply(gr, '[[', 'x')),
-    y = unlist(sp)
-  )
+  list(x = unlist(lapply(gr, '[[', 'x')), y = unlist(sp))
 }
 
 #' @rdname dodge2
@@ -308,9 +305,8 @@ show_colors <- function(..., plot = FALSE) {
   } else if (length(dots))
     warning('... should be missing, %in% 1:657, or a color name')
   
-  op <- par(no.readonly = TRUE)
+  op <- par(mfrow = c(1, 1), mar = c(1, 4, 1, 2), cex = 1)
   on.exit(par(op))
-  par(mfrow = c(1,1), mar = c(1,4,1,2), cex = 1)
   
   if (!is.null(dots)) {
     if (plot) {
@@ -321,14 +317,14 @@ show_colors <- function(..., plot = FALSE) {
       y <- c(row(m))[seq_along(cols)]
       plot(y, x, pch = 16L, cex = 3, col = cc,
            axes = FALSE, ann = FALSE, xpd = NA)
-      text(y, x, pos = 3L, col = 1, xpd = NA, labels = cn)
-      text(y, x, pos = 1L, col = 1, xpd = NA, labels = cc)
+      text(y, x, pos = 3L, col = 1L, xpd = NA, labels = cn)
+      text(y, x, pos = 1L, col = 1L, xpd = NA, labels = cc)
     }
     return(cols)
   }
   
   ## default plot of all colors with indices
-  par(mfrow = c(1,1), mar = c(2,3,4,3), cex = 0.7)
+  par(mfrow = c(1, 1), mar = c(2, 3, 4, 3), cex = 0.7)
   suppressWarnings({
     cc <- matrix(colors(), 30L)
     cc[duplicated(c(cc))] <- NA
@@ -366,16 +362,14 @@ show_colors <- function(..., plot = FALSE) {
 #' @export
 
 show_pch <- function(...) {
-  op <- par(xpd = NA, mar = c(1,1,1,2))
+  op <- par(xpd = NA, mar = c(1, 1, 1, 2))
   on.exit(par(op))
   
   x <- rep(1:5, 6L)[1:26]
   y <- c(rep(5:1, each = 5L)[1:25], 0L)
   
-  plot(
-    x, y, pch = 0:25, axes = FALSE, ann = FALSE,
-    bg = 'gray', cex = 2, col = 'red'
-  )
+  plot(x, y, pch = 0:25, axes = FALSE, ann = FALSE,
+       bg = 'gray', cex = 2, col = 'red')
   text(x, y, 0:25, pos = 4L, cex = 1.5, offset = 1)
   text(par('usr')[2L], 0, 'plotting characters 0:25', cex = 1.5, adj = 1)
   
@@ -417,8 +411,8 @@ tcol <- function(col, alpha = 1) {
   
   x <- t(col2rgb(dat$col))
   x <- rgb(x, alpha = dat$alpha * 255, maxColorValue = 255)
-  
   x <- replace(x, nas, NA)
+  
   tolower(replace(x, dat$col %in% 'transparent', 'transparent'))
 }
 
@@ -932,6 +926,7 @@ show_pal <- function(x, fullrange = FALSE, counts = TRUE) {
   
   op <- par(mar = rep_len(1, 4L))
   on.exit(par(op))
+  
   image(seq.int(n), 1, matrix(seq.int(n)), col = pal, ann = FALSE, axes = FALSE)
   abline(v = seq.int(n) + 0.5, col = 'white')
   

@@ -468,6 +468,7 @@ search_hist <- function (x, ...) {
                    warning = function(w) message('No history found'),
                    finally = return(invisible(NULL)))
   lhist <- length(hist)
+  
   if (is.numeric(x))
     hist[lhist:(lhist - x + 1L)]
   else if (is.character(x))
@@ -770,12 +771,13 @@ helpExtract <- function(FUN, show.sections = FALSE, section = 'Usage',
       break
   }
   
-  switch(type,
-         text = res,
-         md_code = c('```r', res, '```'),
-         sw_code = c('<<>>=', res, '@'),
-         md_text = paste('    ', res, collapse = '\n'),
-         sw_text = c('\\begin{verbatim}', res, '\\end{verbatim}')
+  switch(
+    type,
+    text    = res,
+    md_code = c('```r', res, '```'),
+    sw_code = c('<<>>=', res, '@'),
+    md_text = paste('    ', res, collapse = '\n'),
+    sw_text = c('\\begin{verbatim}', res, '\\end{verbatim}')
   )
 }
 
@@ -1227,10 +1229,8 @@ sym_sort <- function(x, rev = FALSE, index.return = FALSE) {
   names(res) <- nn
   
   if (index.return)
-    as.integer(nn)
-  else res
+    as.integer(nn) else res
 }
-
 
 #' Generate random gene names
 #' 
@@ -1242,7 +1242,6 @@ sym_sort <- function(x, rev = FALSE, index.return = FALSE) {
 #' @param num numerics to select from
 #' @param nnum range of possible number of \code{num} to select
 #' @param sep character to separate \code{alpha} and \code{num}
-#' @param seed seed; integer or \code{NULL}
 #' 
 #' @examples
 #' rgene()
@@ -1252,13 +1251,17 @@ sym_sort <- function(x, rev = FALSE, index.return = FALSE) {
 #' @export
 
 rgene <- function(n = 1L, alpha = LETTERS[1:5], nalpha = 2:5,
-                  num = 0:9, nnum = 1:5, sep = '-', seed = NULL) {
-  ## helpers
-  p0 <- function(...) paste0(..., collapse = '')
-  alphas   <- function() sample(alpha, sample(nalpha, 1), TRUE)
-  numerics <- function() sample(num, sample(nnum, 1), TRUE)
+                  num = 0:9, nnum = 1:5, sep = '-') {
+  p0 <- function(...) {
+    paste0(..., collapse = '')
+  }
+  alphas <- function() {
+    sample(alpha, sample(nalpha, 1L), TRUE)
+  }
+  numerics <- function() {
+    sample(num, sample(nnum, 1L), TRUE)
+  }
   
-  set.seed(seed)
   replicate(n, p0(p0(alphas()), sep, p0(numerics())))
 }
 
@@ -1294,7 +1297,7 @@ install_temp <- function(pkgs, lib, ...) {
   utils::install.packages(pkgs = pkgs, lib = lib, ...)
   
   for (ii in pkgs)
-    require(ii, character.only = TRUE)
+    try(require(ii, character.only = TRUE))
   
   invisible(NULL)
 }
@@ -1361,6 +1364,7 @@ nestedMerge <- function(x, y) {
 nestedmerge <- function(x, y) {
   if (missing(y))
     return(x)
+  
   if (islist(x) & islist(y)) {
     res <- list()
     if (!is.null(names(x))) {
@@ -1439,8 +1443,9 @@ path_extract <- function(path) {
 fname <- function(path) {
   xx <- basename(path)
   pp <- '(^\\.[^ .]+$|[^:\\/]*?[.$]?)(?:\\.([^ :\\/.]*))?$'
-  
-  `colnames<-`(regcaptures2(xx, pp)[[1L]], c('filename', 'extension'))
+  xx <- regcaptures2(xx, pp)[[1L]]
+  colnames(xx) <- c('filename', 'extension')
+  xx
 }
 
 #' @rdname path_extract
@@ -1528,14 +1533,14 @@ mgrep_ <- function(parallel, FUN, vlist, ...) {
 
 #' @rdname mgrep
 #' @export
-mgrepl <- function(pattern, x, ..., parallel = length(pattern) > 1e4) {
+mgrepl <- function(pattern, x, ..., parallel = length(pattern) > 1e4L) {
   mgrep_(parallel = parallel, FUN = base::grepl, ...,
          vlist = list(pattern = pattern, x = x))
 }
 
 #' @rdname mgrep
 #' @export
-mgrep <- function(pattern, x, ..., parallel = length(pattern) > 1e4) {
+mgrep <- function(pattern, x, ..., parallel = length(pattern) > 1e4L) {
   mgrep_(parallel = parallel, FUN = base::grep, ...,
          vlist = list(pattern = pattern, x = x))
 }
@@ -1615,7 +1620,6 @@ flatten <- function(l) {
 #' @export
 
 tree <- function(path = '.', full.names = FALSE, ndirs = 5L, nfiles = 5L) {
-  ## helper
   tree_ <- function(path = '.', full.names, n) {
     isdir <- file.info(path)$isdir
     n <- as.integer(n)
@@ -1904,8 +1908,7 @@ justify <- function(string, width = getOption('width') - 10L,
                     fill = c('random', 'right', 'left')) {
   fill <- match.arg(fill)
   string <- gsub('\n', '\n\n', string, fixed = TRUE)
-  strs   <- strwrap(string, width = width)
-  
+  strs <- strwrap(string, width = width)
   paste(fill_spaces_(strs, width, fill), collapse = '\n')
 }
 
@@ -1957,8 +1960,7 @@ factors <- function(...) {
     y[x %% y == 0L]
   }
   
-  l <- lapply(list(...), factors_)
-  Reduce(intersect, l)
+  Reduce(intersect, lapply(list(...), factors_))
 }
 
 #' Sample each

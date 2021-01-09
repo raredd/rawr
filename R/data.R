@@ -25,7 +25,6 @@
 #' @seealso
 #' \code{\link{ctcae_v4}}; \code{\link{ctcae_v5}}; \code{\link{match_ctc}};
 #' \code{\link{tox_worst}}
-
 'ctcae_v3'
 
 #' Common Terminology Criteria for Adverse Events, v4
@@ -52,7 +51,6 @@
 #' @seealso
 #' \code{\link{ctcae_v3}}; \code{\link{ctcae_v5}}; \code{\link{match_ctc}};
 #' \code{\link{tox_worst}}
-
 'ctcae_v4'
 
 #' Common Terminology Criteria for Adverse Events, v5
@@ -78,5 +76,4 @@
 #' @seealso
 #' \code{\link{ctcae_v3}}; \code{\link{ctcae_v4}}; \code{\link{match_ctc}};
 #' \code{\link{tox_worst}}
-
 'ctcae_v5'

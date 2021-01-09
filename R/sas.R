@@ -51,9 +51,11 @@ trimwsq <- function(x) {
 
 sas_path <- function(saspath, sashome, version) {
   sashome <- file.path('c:', 'program files', 'sashome', 'sasfoundation')
+  
   version <- if (missing(version))
     c(9.3, list.files(sashome)) else as.character(version)
   version <- numeric_version(version)
+  
   if (missing(saspath)) {
     saspath <- if (.Platform$OS.type %in% 'windows') {
       saspath <- file.path(sashome, max(version, na.rm = TRUE), 'sas.exe')
@@ -63,9 +65,11 @@ sas_path <- function(saspath, sashome, version) {
                   '9.2', 'sas.exe') else saspath
     } else suppressWarnings(system2('which', 'sas', stdout = TRUE))
   }
+  
   if (!length(saspath) || !file.exists(saspath))
     stop('\'saspath\' is invalid -- give full path to the sas executable',
          domain = NA)
+  
   saspath
 }
 
@@ -160,7 +164,7 @@ r2sas <- function(code, saspath, force, out) {
   if (interactive() && !force) {
     cat(code, '\n\n\n', sep = '\n')
     check <- readline('... will be run. Continue? (y/n): ')
-    if (tolower(substr(check, 1, 1)) != 'y')
+    if (tolower(substr(check, 1L, 1L)) != 'y')
       return(invisible(NULL))
   }
   
@@ -170,7 +174,7 @@ r2sas <- function(code, saspath, force, out) {
   logpath <- tempfile('_r2sas_', fileext = '.log')
   
   ## run sas
-  if (force || !interactive() || tolower(substr(check, 1, 1)) == 'y') {
+  if (force || !interactive() || tolower(substr(check, 1L, 1L)) == 'y') {
     cat(code, sep = '\n', file = sasin, append = TRUE)
     sys_args <- paste(sasin, '-log', logpath, '-print', lstpath)
     status <- system2(saspath, sys_args)
@@ -354,8 +358,8 @@ get_margs <- function(path, name, text) {
                            perl = TRUE))))
   mnames <- gsub('%macro|;|(?<=\\().*?(?=\\))|\\(|\\)|\\s*', '',
                  mcall, perl = TRUE)
-  args <- gsub(' ', '', regmatches(mcall, gregexpr('(?<=\\().*?(?=\\))',
-                                                   mcall, perl = TRUE)))
+  args <- regmatches(mcall, gregexpr('(?<=\\().*?(?=\\))', mcall, perl = TRUE))
+  args <- gsub(' ', '', args)
   
   if (length(mnames) < 1L)
     stop(sprintf('no valid macros found in %s\n', path))
@@ -429,15 +433,17 @@ get_margs <- function(path, name, text) {
 sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
                      fmtpath = NULL, catalog = length(dcf) == 1L,
                      log.file = '_temp_.log', ..., force = FALSE, write = FALSE) {
-  dsn <- list.files(libpath, pattern = '\\.sas7bdat$')
-  dcf <- list.files(libpath, pattern = '\\.sas7bcat$')
+  dsn  <- list.files(libpath, pattern = '\\.sas7bdat$')
+  dcf  <- list.files(libpath, pattern = '\\.sas7bcat$')
   wdir <- file.path(libpath, '_sas_mget_')
+  
   dsn <- rm_ext(dsf <- dsn)
   if (!length(dsn)) {
     message(sprintf('No sas data sets found in %s\n', shQuote(libpath)),
             domain = NA)
     return(invisible(NULL))
   }
+  
   dsi <- `colnames<-`(round(file.info(list.files(
     libpath, full.names = TRUE, pattern = '\\.sas7bdat$'))['size'] / 1000),
     'size (Kb)')
@@ -471,19 +477,19 @@ sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
   ## final warning for reading all dsn
   if (interactive() && !force) {
     cat(sprintf('\n!!! %s data set%s will be read%s \n\n',
-                num2char(length(dsn)), ifelse(length(dsn) > 1, 's', ''),
+                num2char(length(dsn)), ifelse(length(dsn) > 1L, 's', ''),
                 ifelse(write, paste(' and written to\n!!! ', wdir), '')))
     dd <- dsi[which(rm_ext(rownames(dsi)) %in%
                       gsub('\\/+','/', file.path(libpath, dsn))), , drop = FALSE]
     print(`rownames<-`(dd, dsn))
     cat('\n\n\n\n\n')
     check <- readline('Do you want to continue? (y/n): ')
-    if (tolower(substr(check, 1, 1)) != 'y')
+    if (tolower(substr(check, 1L, 1L)) != 'y')
       return(invisible(NULL))
   }
   
   ## sas.get wrapper
-  if (force || !interactive() || tolower(substr(check, 1, 1)) == 'y') {
+  if (force || !interactive() || tolower(substr(check, 1L, 1L)) == 'y') {
     res <- setNames(lapply(dsn, function(x)
       tryCatch(
         Hmisc::sas.get(libraryName = libpath, member = x, sasprog = saspath,
@@ -501,11 +507,13 @@ sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
     print(`rownames<-`(dims, c('rows','columns')))
     message(sprintf('Log file created: \'%s\'\n', file.path(libpath, log.file)),
             domain = NA)
+    
     if (write) {
       dir.create(wdir)
       f <- function(x, file) write.csv(x, file, row.names = FALSE)
       mapply(f, x = res, file = file.path(wdir, paste0(names(res), '.csv')))
     }
+    
     res
   } else invisible(NULL)
 }
@@ -542,7 +550,6 @@ sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
 source_sas <- function(path, ...) {
   sas <- readLines(con <- file(path), warn = FALSE)
   close(con)
-  
   r2sas(code = paste(sas, sep = '\n'), ...)
 }
 
