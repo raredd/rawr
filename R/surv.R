@@ -1097,8 +1097,8 @@ atrisk_data_ <- function(s, times, digits) {
     # if (fun == 'F')
     #   x$surv <- 1 - x$surv
     
-    x$atrisk <- roundr(x$n.risk, 0)
-    x$events <- roundr(cumsum(x$n.event), 0)
+    x$atrisk <- roundr(x$n.risk, 0L)
+    x$events <- roundr(cumsum(x$n.event), 0L)
     x$atrisk.events <- sprintf('%s (%s)', x$atrisk, x$events)
     
     x$survival <- roundr(x$surv, digits)
@@ -1267,17 +1267,14 @@ lr_pval <- function(object, details = FALSE, data = NULL, ...) {
     survdiff(object, data, ...)
   else object
   
-  stopifnot(
-    inherits(object, 'survdiff')
-  )
+  stopifnot(inherits(object, 'survdiff'))
   
   chi <- object$chisq
   df  <- length(object$n) - 1L
   pv  <- pchisq(chi, df, lower.tail = FALSE)
   
   if (details)
-    list(chisq = chi, df = df, p.value = pv)
-  else pv
+    list(chisq = chi, df = df, p.value = pv) else pv
 }
 
 #' @rdname surv_test
@@ -1323,8 +1320,7 @@ lr_text <- function(formula, data, rho = 0, ..., details = TRUE, pFUN = NULL) {
   txt <- sprintf('%s (%s df), %s', roundr(sd$chisq, 1L), df, pFUN(pv))
   
   if (details)
-    bquote(paste(chi^2, ' = ', .(txt)))
-  else pFUN(pv)
+    bquote(paste(chi^2, ' = ', .(txt))) else pFUN(pv)
 }
 
 #' @rdname surv_test
@@ -1338,16 +1334,13 @@ tt_pval <- function(object, details = FALSE, data = NULL, ...) {
     coxph(object, data, ...)
   else object
   
-  stopifnot(
-    inherits(object, 'coxph')
-  )
+  stopifnot(inherits(object, 'coxph'))
   
   chi <- object$score
   pv <- pchisq(chi, 1L, lower.tail = FALSE)
   
   if (details)
-    list(chisq = chi, df = 1L, p.value = pv)
-  else pv
+    list(chisq = chi, df = 1L, p.value = pv) else pv
 }
 
 #' @rdname surv_test
@@ -1383,8 +1376,7 @@ tt_text <- function(formula, data, ..., details = TRUE, pFUN = NULL) {
   txt <- sprintf('%s (1 df), %s', roundr(chi, 1L), pFUN(pv))
   
   if (details)
-    bquote(paste(chi^2, ' = ', .(txt)))
-  else pFUN(pv)
+    bquote(paste(chi^2, ' = ', .(txt))) else pFUN(pv)
 }
 
 #' @rdname surv_test
@@ -1398,17 +1390,14 @@ hr_pval <- function(object, details = FALSE, data = NULL, ...) {
     coxph(object, data, ...)
   else object
   
-  stopifnot(
-    inherits(object, 'coxph')
-  )
+  stopifnot(inherits(object, 'coxph'))
   
   obj <- summary(object)
   obj <- cbind(obj$conf.int[, -2L, drop = FALSE],
                p.value = obj$coefficients[, 'Pr(>|z|)'])
   
   if (details)
-    obj
-  else obj[, 'p.value']
+    obj else obj[, 'p.value']
 }
 
 #' @rdname surv_test
@@ -1451,8 +1440,7 @@ hr_text <- function(formula, data, ..., details = TRUE, pFUN = NULL) {
                c('Reference', txt), sep = ': ')
   
   if (is.null(cph$xlevels))
-    c(NA, gsub('^.*: ', '', txt)[-1L])
-  else txt
+    c(NA, gsub('^.*: ', '', txt)[-1L]) else txt
 }
 
 #' @rdname surv_test
@@ -1469,9 +1457,7 @@ pw_pval <- function(object, details = FALSE, data = NULL, ...,
     survdiff_pairs(object)
   } else stop('pw_pval - Invalid object', call. = FALSE)
   
-  stopifnot(
-    inherits(object, 'survdiff_pairs')
-  )
+  stopifnot(inherits(object, 'survdiff_pairs'))
   
   m <- object$p.value
   p <- m[lower.tri(m)]
@@ -2073,8 +2059,8 @@ local_coxph_test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
   
   I. <- s$var[pos, pos]
   est <- matrix(as.vector(s$coeff[pos]), dim(C)[2L])
-  chisq <- as.numeric(t(C %*% est - d) %*% solve(t(C) %*% I. %*% C ) %*%
-                        (C %*% est - d))
+  chisq <- t(C %*% est - d) %*% solve(t(C) %*% I. %*% C ) %*% (C %*% est - d)
+  chisq <- as.numeric(chisq)
   df <- dim(C)[1L]
   p.value <- signif(pchisq(chisq, df, lower.tail = FALSE), digits)
   
@@ -2322,8 +2308,9 @@ surv_table <- function(s, digits = ifelse(percent, 0L, 3L),
                     x[, g('survival')], x[, g('lower')], x[, g('upper')])
     cn <- c('Time', 'No. at risk', 'No. event', 'Std.Error',
             sprintf('Surv (%s%% CI)', s$conf.int * 100))
-    `colnames<-`(cbind(x[, c(setdiff(vars, tmpvar), 'std.err'),
-                         drop = FALSE], surv), cn)
+    x <- cbind(x[, c(setdiff(vars, tmpvar), 'std.err'), drop = FALSE], surv)
+    colnames(x) <- cn
+    x
   }
   
   if (is.list(ss))
@@ -2598,9 +2585,7 @@ landmark <- function(s, times = NULL, col = 2L, plot = TRUE, plot.main = plot,
 #' @export
 
 surv_extract <- function(x, what = 'median') {
-  stopifnot(
-    inherits(x, 'survfit')
-  )
+  stopifnot(inherits(x, 'survfit'))
   
   oo <- options(survfit.rmean = 'individual')
   on.exit(options(oo))

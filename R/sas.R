@@ -444,9 +444,9 @@ sas_mget <- function(libpath = getwd(), dsn = dsn, saspath = sas_path(),
     return(invisible(NULL))
   }
   
-  dsi <- `colnames<-`(round(file.info(list.files(
-    libpath, full.names = TRUE, pattern = '\\.sas7bdat$'))['size'] / 1000),
-    'size (Kb)')
+  dsi <- list.files(libpath, full.names = TRUE, pattern = '\\.sas7bdat$')
+  dsi <- round(file.info(dsi['size'] / 1000))
+  colnames(dsi) <- 'size (Kb)'
   
   if (!is.character(fmtpath) & !catalog) {
     no.format <- TRUE

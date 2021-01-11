@@ -435,7 +435,6 @@ show_markdown <- function(..., use_viewer = !is.null(getOption('viewer')),
                           markArgs = list()) {
   txt <- list(text = c(...))
   mdk <- do.call(markdown::markdownToHTML, c(txt, markArgs))
-
   show_html(mdk, use_viewer = use_viewer)
 }
 
@@ -667,17 +666,14 @@ intr <- function(..., fun = median, conf = NULL,
     conf <- 1L
 
   sapply(lst, function(x) {
-    bounds <- quantile(x, c((1 - conf) / 2 * c(1,-1) + 0:1),
-                       na.rm = na.rm)
+    bounds <- quantile(x, c((1 - conf) / 2 * c(1, -1) + 0:1), na.rm = na.rm)
     bounds <- roundr(bounds, digits)
     val <- roundr(fun(x, na.rm = na.rm), digits)
 
     if (!conf %in% 0:1)
       sprintf('%s (%s%% CI: %s - %s)', val, conf * 100,
               bounds[1L], bounds[2L])
-    else
-      sprintf('%s (range: %s - %s)', val,
-              bounds[1L], bounds[2L])
+    else sprintf('%s (range: %s - %s)', val, bounds[1L], bounds[2L])
   })
 }
 
@@ -815,15 +811,12 @@ color_pval <- function(pv, breaks = c(0, 0.01, 0.05, 0.1, 0.5, 1),
     return(pv)
   pvn <- pv
 
-  stopifnot(
-    length(breaks) == length(cols)
-  )
+  stopifnot(length(breaks) == length(cols))
 
   pv <- if (isTRUE(format_pval))
     pvalr(pvn, sig.limit, digits, TRUE, show.p, journal, ...)
   else if (identical(format_pval, FALSE))
-    pv
-  else format_pval(pv)
+    pv else format_pval(pv)
 
   pvc <- cols[findInterval(pvn, breaks)]
   res <- sprintf('<font color=\"%s\">%s</font>', pvc, pv)
@@ -920,9 +913,7 @@ binconr <- function(r, n, conf = 0.95, digits = 0L, est = TRUE, frac = FALSE,
     }
 
   bc <- bincon(r, n, alpha = 1 - conf, method = method)
-  stopifnot(
-    nrow(bc) == 1L
-  )
+  stopifnot(nrow(bc) == 1L)
 
   tmp <- roundr(bc * xx, digits)
   res <- sprintf('%s%% CI: %s - %s%%', conf * 100, tmp[4L], tmp[5L])
@@ -1087,9 +1078,11 @@ iprint <- function (..., wrap = '', sep = ', ', copula = ', and ',
                     digits = if (is.integer(x)) 0L else 2L) {
   x <- c(...)
   if (!(len <- length(x)))
-    return('')
+    return(character(1L))
 
-  f <- function(x, wrap = '"') sprintf('%s%s%s', wrap, x, wrap)
+  f <- function(x, wrap = '"') {
+    sprintf('%s%s%s', wrap, x, wrap)
+  }
 
   if (len == 2L)
     copula <- sub(',', '', copula)
@@ -1100,9 +1093,8 @@ iprint <- function (..., wrap = '', sep = ', ', copula = ', and ',
     f(x, wrap)
   else if (len == 2L)
     paste(f(x, wrap), collapse = copula)
-  else
-    paste0(paste(f(head(x, -1L), wrap = wrap), collapse = sep),
-           copula, f(tail(x, 1L), wrap = wrap))
+  else paste0(paste(f(head(x, -1L), wrap = wrap), collapse = sep),
+              copula, f(tail(x, 1L), wrap = wrap))
 }
 
 #' Write ftable
@@ -1131,9 +1123,7 @@ iprint <- function (..., wrap = '', sep = ', ', copula = ', and ',
 #' @export
 
 writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
-  stopifnot(
-    inherits(x, 'ftable')
-  )
+  stopifnot(inherits(x, 'ftable'))
 
   ## add row/col names if blank (ie, if vectors used in ftable)
   rn <- names(attr(x, 'row.vars'))
@@ -1143,11 +1133,10 @@ writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
 
   mat <- as.matrix(format(x, quote = quote, digits = digits, ...))
   mat[] <- trimws(mat)
-
-  `colnames<-`(
-    mat[-(1:2), , drop = FALSE],
-    gsub('$$$', '', Filter(nzchar, mat[1:2, ]), fixed = TRUE)
-  )
+  mat <- mat[-(1:2), , drop = FALSE]
+  colnames(mat) <- gsub('$$$', '', Filter(nzchar, mat[1:2, ]), fixed = TRUE)
+  
+  mat
 }
 
 #' Tabler
@@ -1218,13 +1207,12 @@ tabler.glm <- function(x, digits = 3L, level = 0.95, exp = TRUE,
   pv <- grep('^Pr', names(res))
   res[, pv] <- pvalr(res[, pv], ...)
 
-  suppressMessages(
-    res <-
-      data.frame(
-        exp(cbind(coef(x), confint(x, level = level))), res[, pv],
-        stringsAsFactors = FALSE
-      )
-  )
+  suppressMessages({
+    res <- data.frame(
+      exp(cbind(coef(x), confint(x, level = level))), res[, pv],
+      stringsAsFactors = FALSE
+    )
+  })
 
   if (!exp)
     res[, 1:3] <- log(res[, 1:3])
@@ -1271,13 +1259,12 @@ tabler.coxph <- function(x, digits = 3L, level = 0.95, exp = TRUE,
   pv <- grep('^Pr', names(res))
   res[, pv] <- pvalr(res[, pv], ...)
 
-  suppressMessages(
-    res <-
-      data.frame(
-        exp(cbind(coef(x), confint(x, level = level))), res[, pv],
-        stringsAsFactors = FALSE
-      )
-  )
+  suppressMessages({
+    res <- data.frame(
+      exp(cbind(coef(x), confint(x, level = level))), res[, pv],
+      stringsAsFactors = FALSE
+    )
+  })
 
   if (!exp)
     res[, 1:3] <- log(res[, 1:3])
@@ -1475,8 +1462,12 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
   )
 
   ## helpers
-  rm_p <- function(x) gsub(' \\(.*\\)$', '', x)
-  ord  <- function(...) order(..., decreasing = TRUE)
+  rm_p <- function(x) {
+    gsub(' \\(.*\\)$', '', x)
+  }
+  ord <- function(...) {
+    order(..., decreasing = TRUE)
+  }
 
   if (!all(wh <- sapply(data[, c(varname, byvar)], is.factor))) {
     warning(sprintf('coercing %s to factor',
@@ -1545,9 +1536,9 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
 
   ## column that separates labels from counts
   ftbl[is.na(ftbl)] <- ''
-  idx  <- which(colSums(apply(ftbl, 2L, Negate(nzchar))) == nr)
-
-  res  <- cbind(ftbl[, -(idx:ncol(ftbl)), drop = FALSE], `colnames<-`(res, cn))
+  idx <- which(colSums(apply(ftbl, 2L, Negate(nzchar))) == nr)
+  colnames(res) <- cn
+  res <- cbind(ftbl[, -(idx:ncol(ftbl)), drop = FALSE], res)
 
   ## order by group variable (if given) and total
   o <- if (order) {
@@ -1570,8 +1561,10 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
     idx <- idx:ncol(res)
     res[, idx] <- `[<-`(res[, idx], gsub('^0.*', zeros, res[, idx]))
   }
-
-  `rownames<-`(res[, -1L], res[, 1L])
+  
+  rownames(res) <- res[, 1L]
+  
+  res[, -1L]
 }
 
 #' @rdname tabler_by
@@ -1811,7 +1804,6 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
 
   confint <- if (isTRUE(confint))
     varname else if (identical(confint, FALSE)) NULL else confint
-
 
   res <- if (inherits(x, c('Date', 'POSIXct', 'POSIXt'))) {
     color_cell_by <- 'none'
@@ -2054,8 +2046,7 @@ getPval_ <- function(x, y, FUN, n_unique_x = 10L) {
     )
 
   if (is.null(FUN))
-    guess_test(x, y, n_unique_x)
-  else NULL
+    guess_test(x, y, n_unique_x) else NULL
 }
 
 guess_test <- function(x, y, n_unique_x = 10L) {
@@ -2449,7 +2440,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
     list(format_pval), color_pval, color_missing, dagger,
     color_cell_by, cell_color, list(confint %||% '')), statArgs)
   )
-
+  
   tbl <- lapply(l, function(x)
     x[!(duplicated(x, fromLast = TRUE) &
           duplicated(rownames(x), fromLast = TRUE)), , drop = FALSE]
@@ -2491,9 +2482,7 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
                              tfoot = NULL, tfoot2 = NULL, htmlArgs = NULL, zeros = NULL,
                              group = NULL, correct = FALSE, format_pval = TRUE,
                              clean_daggers = FALSE) {
-  stopifnot(
-    inherits(l, 'htmlStat')
-  )
+  stopifnot(inherits(l, 'htmlStat'))
 
   tr <- function(x) {
     gsub('\\s{2,}', ' ', x)
@@ -2659,9 +2648,10 @@ combine_tabler_stat2 <- function(l, correct = FALSE, format_pval = TRUE,
     args$n.tspanner <- sapply(lget(l, 'x'), nrow)
   }
   
-  ht <- do.call(htmlTable::htmlTable, c(args, htmlArgs))
-
-  structure(ht, class = 'htmlTable', p.value = p, call = args)
+  structure(
+    do.call(htmlTable::htmlTable, c(args, htmlArgs)),
+    class = 'htmlTable', p.value = p, call = args
+  )
 }
 
 guess_digits <- function(x, default = 0L) {
@@ -2934,11 +2924,11 @@ match_ctc <- function(..., version = 4L) {
       'try version = ', ifelse(version == 4, 3, 4),
       call. = FALSE
     )
-
-  structure(
-    `rownames<-`(ctc[idx, ], NULL),
-    version = sprintf('CTCAE v%s', version)
-  )
+  
+  ctc <- ctc[idx, ]
+  rownames(ctc) <- NULL
+  
+  structure(ctc, version = sprintf('CTCAE v%s', version))
 }
 
 #' Find highest grade toxicities
@@ -3085,7 +3075,7 @@ countr <- function(x, n, lowcase = NA, frac = FALSE, digits = 0L,
         tolower(names(x))
       else if (identical(lowcase, FALSE))
         toupper(names(x)) else names(x),
-      roundr(x, 0),
+      roundr(x, 0L),
       if (frac)
         paste0('/', n) else '',
       roundr(as.numeric(x) / n * 100, digits)
@@ -3472,9 +3462,7 @@ write_htmlTable <- function(x, file = '', attributes = TRUE) {
 #' @export
 
 html_align <- function(x, sep = '&nbsp;', where = '&&', min_width = '35px') {
-  stopifnot(
-    inherits(x, 'htmlTable')
-  )
+  stopifnot(inherits(x, 'htmlTable'))
   ok <- identical(where, '&&')
 
   css <- sprintf(
@@ -3496,9 +3484,8 @@ html_align <- function(x, sep = '&nbsp;', where = '&&', min_width = '35px') {
   co <- capture.output(print(x, useViewer = FALSE))
   at <- grepl(where, co, perl = TRUE)
 
-  pat  <- if (ok)
-    sprintf('(?<=>)(.*?)%s(.*?)(?=<)', where)
-  else where
+  pat <- if (ok)
+    sprintf('(?<=>)(.*?)%s(.*?)(?=<)', where) else where
   repl <- sprintf(
     '<div class="charalign"><span>\\1</span>%s<span>\\2</span></div>',
     sep

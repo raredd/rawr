@@ -1236,9 +1236,12 @@ waffle <- function(mat, xpad = 0, ypad = 0,
     col = c(omat), ...
   )
   
+  o <- o[, 2:1]
+  colnames(o) <- c('x', 'y')
+  
   res <- list(
     matrix  = mat,
-    origin  = `colnames<-`(o[, 2:1], c('x', 'y')),
+    origin  = o,
     centers = cbind(x = psum(xl, xr) / 2, y = psum(yb, yt) / 2),
     rect    = cbind(xleft = xl, ybottom = yb, xright = xr, ytop = yt)
   )

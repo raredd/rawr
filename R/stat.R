@@ -161,7 +161,8 @@ bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
       Lower = mat['lower'], Upper = mat['upper'],
       Width = diff(mat[c('lower', 'upper')])
     )
-    return(`rownames<-`(mat, NULL))
+    rownames(mat) <- NULL
+    return(mat)
   }
   
   if (any(r < 0) | any(r > n))
@@ -225,8 +226,8 @@ bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
   mat <- matrix(ncol = 3L, nrow = lr)
   for (i in seq.int(lr))
     mat[i, ] <- bc(r[i], n[i], alpha = alpha, method = method)
-  mat <- `colnames<-`(cbind(mat, mat[, 3L] - mat[, 2L]),
-                      c('PointEst', 'Lower', 'Upper', 'Width'))
+  mat <- cbind(mat, mat[, 3L] - mat[, 2L])
+  colnames(mat) <- c('PointEst', 'Lower', 'Upper', 'Width')
   mat[, 2:4] <- round(mat[, 2:4], digits = digits)
   
   cbind(Responses = r, Trials = n, mat)
@@ -283,14 +284,14 @@ twocon <- function(n1, n2, r1, r, conf = 0.95, dp = 1) {
     sum(dbin2(p, x1, x2, u1, n1, n2, r1)[s]) - alpha
   pl <- if (r <= 0) 
     0
-  else uniroot(ff2, c(1e-08, 1 - 1e-08), x1 = x1, x2 = x2, 
-               u1 = u1, n1 = n1, n2 = n2, r1 = r1, s = s1, dbin2 = dbin2, 
-               alpha = alpha)$root
+  else
+    uniroot(ff2, c(1e-08, 1 - 1e-08), x1 = x1, x2 = x2, u1 = u1, n1 = n1,
+            n2 = n2, r1 = r1, s = s1, dbin2 = dbin2, alpha = alpha)$root
   pu <- if (r >= n) 
     1
-  else uniroot(ff2, c(1e-08, 1 - 1e-08), x1 = x1, x2 = x2, 
-               u1 = u1, n1 = n1, n2 = n2, r1 = r1, s = s2, dbin2 = dbin2, 
-               alpha = alpha)$root
+  else
+    uniroot(ff2, c(1e-08, 1 - 1e-08), x1 = x1, x2 = x2, u1 = u1, n1 = n1,
+            n2 = n2, r1 = r1, s = s2, dbin2 = dbin2, alpha = alpha)$root
   
   c(lower = pl, upper = pu, bcmle = pm, mle = mle, unbiased = ube)
 }
@@ -360,8 +361,8 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
   )
   
   ## require > r responders out of n and remove where p1 <= p0 or r >= n
-  mat <- `colnames<-`(as.matrix(within(mat, r2 <- mat[, 4L] + 1L)),
-                      c('p0', 'p1', 'n', 'r', 'r2'))
+  mat <- as.matrix(within(mat, r2 <- mat[, 4L] + 1L))
+  colnames(mat) <- c('p0', 'p1', 'n', 'r', 'r2')
   mat <- mat[!(mat[, 2L] <= mat[, 1L] | mat[, 4L] >= mat[, 3L]), ]
   
   ## Pr(<r2 responders|p0 true): pbinom(r2, n, p0)
@@ -382,10 +383,11 @@ bintest <- function (p0low, p0high = p0low, p1low, p1high = p1low, n.max,
   ## keep ones that fit type-I/II error constraints
   mat <- mat[mat[, 9L] > (1 - beta) & mat[, 7L] < alpha, , drop = FALSE]
   mat <- unique(as.data.frame(mat[, c(1:3, 5L, 7L, 9:10), drop = FALSE]))
-  mat <- mat[order(mat$n), ]
+  mat <- as.matrix(mat[order(mat$n), ])
+  rownames(mat) <- NULL
   
   list(
-    designs = `rownames<-`(as.matrix(mat), NULL),
+    designs = mat,
     call = match.call(),
     description = c(
       'n = overall sample size',
@@ -872,8 +874,10 @@ simon <- function(p0, pa, n1max = 0, ntmax = 1e5, alpha = 0.1, beta = 0.1,
     }
   }
   
-  dimnames(z) <- list(NULL, c('n1', 'r1', 'n2', 'r2', 'Pstop1.H0',
-                              'size', 'type2', 'E.tot.n.H0'))
+  dimnames(z) <- list(
+    NULL,
+    c('n1', 'r1', 'n2', 'r2', 'Pstop1.H0', 'size', 'type2', 'E.tot.n.H0')
+  )
   z <- z[z[, 1L] + z[, 3L] <= ntmax, , drop = FALSE]
   z <- z[z[, 8L] <= e0 + del, , drop = FALSE]
   
@@ -1184,9 +1188,7 @@ install.bioc <- function(pkgs, upgrade = FALSE) {
 #' @export
 
 lm.beta <- function (x, weights = 1) {
-  stopifnot(
-    inherits(x, 'lm')
-  )
+  stopifnot(inherits(x, 'lm'))
   
   b  <- coef(x)[-1L]
   mf <- x$model
@@ -1446,9 +1448,15 @@ cuzick.test.default <- function(x, g, details = wilcox.test, correct = TRUE,
     nn <- Reduce(intersect, lapply(PW, names))
     PW <- lapply(PW, function(x) x[, nn])
     
-    pw <- list(pairs = if (is.null(PW)) pw else
-      `rownames<-`(cbind(pairs = ids, do.call('rbind', PW)), NULL),
-      overall = tidy(kruskal.test(x ~ g)))
+    pw <- list(
+      pairs = if (is.null(PW))
+        pw else {
+          pww <- cbind(pairs = ids, do.call('rbind', PW))
+          rownames(pww) <- NULL
+          pww
+        },
+      overall = tidy(kruskal.test(x ~ g))
+    )
     
     res$details <- pw
   }
@@ -1467,7 +1475,7 @@ cuzick.test.formula <- function (formula, data, ...) {
   if (is.matrix(eval(m$data, parent.frame(1L))))
     m$data <- as.data.frame(data)
   m[[1L]] <- quote(stats::model.frame)
-  m$`...` <- NULL
+  m$... <- NULL
   mf <- eval(m, parent.frame(1L))
   
   if (length(mf) > 2L)
@@ -1517,7 +1525,7 @@ cuzick.test.stat <- function(x, g, correct) {
   L  <- sum(li * ni)
   
   ## T statistic, expected value, variance
-  T  <- sum(li * Ri, na.rm = TRUE)
+  Ts <- sum(li * Ri, na.rm = TRUE)
   eT <- (N + 1) * L / 2
   vT <- (N + 1) / 12 * (N * sum(li ^ 2 * ni) - L ^ 2)
   
@@ -1528,7 +1536,7 @@ cuzick.test.stat <- function(x, g, correct) {
   a  <- c(1, sqrt(1 - a))[correct + 1L]
   
   ## (un)corrected test statistic: (T - expected) / se
-  (T - eT) / (a * sqrt(vT))
+  (Ts - eT) / (a * sqrt(vT))
 }
 
 cuzick.test.pvalue <- function(x, g, correct, B = 2000L,
@@ -1757,16 +1765,13 @@ hl_est <- function(x, na.rm = FALSE) {
   stopifnot(is.numeric(x) | is.logical(x))
   if (na.rm)
     x <- x[!is.na(x)]
-  pmeans <- combn_fun(x, mean.default, 2L)
-  
-  median(c(pmeans, x))
+  median(c(combn_fun(x, mean.default, 2L), x))
 }
 
 combn_fun <- function(x, FUN, n = 2L, ...) {
   FUN <- match.fun(FUN)
-  n   <- as.integer(n)
-  x   <- combn(x, n)
-  
+  n <- as.integer(n)
+  x <- combn(x, n)
   apply(x, 2L, FUN, ...)
 }
 
@@ -1867,7 +1872,7 @@ NULL
 rpart_parent <- function(node = 1L) {
   node <- as.integer(node)
   if (node[1L] == 1L)
-    1L else sort(c(node, Recall(node %/% 2)))
+    1L else sort(c(node, Recall(node %/% 2L)))
 }
 
 #' @rdname rpart_utils
@@ -2896,7 +2901,7 @@ rfvar <- function(formula, data, nvar = -1L, depth = NULL,
     names(which.min(ri)) else head(names(ri)[order(ri)], -nvar)
   formula <- reformulate(setdiff(xx, ex), yy)
   
-  Recall(formula, data, nvar, verbose, plot, ...)
+  Recall(formula, data, nvar, depth, verbose, plot, refit, ...)
 }
 
 #' ransch

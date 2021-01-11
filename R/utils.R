@@ -331,11 +331,11 @@ lss <- function(pos = 1L, pattern, by = NULL, all.names = FALSE,
   })
   
   res <- do.call('rbind', res)
-  res <- within(res, {
-    ` ` <- symnum(unlist(res$size), corr = FALSE, na = FALSE,
-                  cutpoints = c(-Inf, 0.001, 0.1, 0.5, 1, Inf) * 1024 ^ 3,
-                  symbols = c(' ', '.', '*', '**', '***'))
-  })
+  res$` ` <- symnum(
+    unlist(res$size), corr = FALSE, na = FALSE,
+    cutpoints = c(-Inf, 0.001, 0.1, 0.5, 1, Inf) * 1024 ^ 3,
+    symbols = c(' ', '.', '*', '**', '***')
+  )
   
   if ((mb <- sum(res$size) / (1024 ^ 2)) > 100)
     on.exit(message(sprintf('Total size: %.0f Mb', mb)))
@@ -352,8 +352,8 @@ lsf <- function(package, file = 'DESCRIPTION') {
   ## DESCRIPTION, INDEX, NEWS, NAMESPACE
   package <- as.character(substitute(package))
   
-  p  <- do.call('lsp', list(package = package, what = 'path'))
-  lf <- list.files(p)
+  fp <- do.call('lsp', list(package = package, what = 'path'))
+  lf <- list.files(fp)
   ff <- lf[grepl(sprintf('(?i)^%s.*$', file), lf, perl = TRUE)]
   
   if (!length(ff)) {
@@ -361,7 +361,7 @@ lsf <- function(package, file = 'DESCRIPTION') {
     return(invisible(NULL))
   }
   
-  f <- readLines(con <- file(fp <- file.path(p, ff)))
+  f <- readLines(con <- file(fp <- file.path(fp, ff)))
   on.exit(close(con))
   message(sprintf('Showing file:\n%s\n', fp))
   cat(f, sep = '\n')
@@ -428,7 +428,7 @@ lsp <- function(package, what, pattern) {
 #' not a requirememnt on the structure of \code{NEWS} files.
 #' 
 #' @param x a vector of character strings
-#' @param wh for \code{parse_namespace}, which types to parse and return
+#' @param what for \code{parse_namespace}, what types to parse and return
 #' 
 #' @return
 #' A named list for each section type.
@@ -460,7 +460,6 @@ parse_index <- function(x) {
   x <- strsplit(gsub('\\$\\$\\s+', ' ', paste0(x, collapse = '$$')),
                 split = '\\$\\$')[[1L]]
   x <- strsplit(x, '\\s{2,}')
-  
   as.list(sapply(x, function(xx) setNames(xx[2L], xx[1L])))
 }
 
@@ -479,22 +478,22 @@ parse_news <- function(x) {
 
 #' @rdname rawr_parse
 #' @export
-parse_namespace <- function(
-  x, wh = c('import', 'export', 'exportPattern', 'importClass',
-            'importMethod', 'exportClass', 'exportMethod',
-            'exportClassPattern', 'useDynLib', 'nativeRoutine', 'S3method')
-  ) {
+parse_namespace <- function(x,
+                            what = c('import', 'export', 'exportPattern',
+                                     'importClass', 'importMethod', 'exportClass',
+                                     'exportMethod', 'exportClassPattern', 'useDynLib',
+                                     'nativeRoutine', 'S3method')) {
   ## remove comments and collapse
   x <- paste0(gsub('#.*$', '', x), collapse = '')
   
-  mm <- lapply(wh, function(xx)
+  mm <- lapply(what, function(xx)
     gregexpr(sprintf('(?i)%s\\((.*?)\\)', xx), x, perl = TRUE))
   
   setNames(
     lapply(mm, function(xx)
       gsub('^\\s+|\\s+$|\\s{2,}', '',
            unlist(strsplit(unlist(regcaptures(x, xx)), ',')))),
-    wh)
+    what)
 }
 
 #' Pairwise binary functions
@@ -564,8 +563,8 @@ psum <- function(..., na.rm = FALSE) {
 #' \code{\link[scales]{rescale}}; \code{\link[scales]{zero_range}}
 #' 
 #' @examples
-#' rescaler(1:100)
-#' rescaler(runif(10), c(0.5, 1))
+#' rescaler(1:5)
+#' rescaler(runif(5), c(0.5, 1))
 #' rescaler(1)
 #' 
 #' @export
@@ -996,7 +995,10 @@ rbindfill <- function(...) {
   for (ii in seq_along(ll))
     res[[ii]] <- unname(l[[ii]])[match(un, nn[[ii]])]
   
-  `colnames<-`(do.call('rbind', res), un)
+  res <- do.call('rbind', res)
+  colnames(res) <- un
+  
+  res
 }
 
 #' @rdname bindx
@@ -1022,8 +1024,10 @@ rbindfill2 <- function(..., use.rownames = FALSE) {
   })
   res <- do.call('rbind', res)
   
-  if (use.rownames)
-    res else `rownames<-`(res, NULL)
+  if (!use.rownames)
+    rownames(res) <- NULL
+  
+  res
 }
 
 #' @rdname bindx
@@ -1050,8 +1054,10 @@ rbindlist <- function(..., use.rownames = FALSE, use.names = FALSE) {
     res <- cbind(res, names = unlist(lapply(l, function(x)
       if (is.null(nn <- names(x))) rep(NA, length(x)) else nn)))
   
-  if (use.rownames)
-    res else `rownames<-`(res, NULL)
+  if (!use.rownames)
+    rownames(res) <- NULL
+  
+  res
 }
 
 #' @rdname bindx
@@ -1078,8 +1084,10 @@ rbindlist2 <- function(data, column, split = '\\W+', fixed = FALSE, perl = FALSE
   data[, column] <- as.character(data[, column])
   data[, column] <- l[, 2L]
   
-  if (use.rownames)
-    data else `rownames<-`(data, NULL)
+  if (!use.rownames)
+    rownames(data) <- NULL
+  
+  data
 }
 
 #' Interleave rows or columns
@@ -1157,7 +1165,7 @@ outer2 <- function(..., FUN) {
     Reduce(function(x, y) outer(x, y, vf), l)
   
   args <- f(list(...))
-  res <- apply(args, 1:length(dim(args)), function(x)
+  res <- apply(args, seq.int(length(dim(args))), function(x)
     do.call(FUN, x[[1L]]))
   
   array(res, dim = dim(res), dimnames = list(...))
@@ -1308,7 +1316,7 @@ roll_fun <- function(x, n = 5L, FUN = mean, ...,
   })
   
   if (keep)
-    l[1:n] <- lapply(1:n, function(x) l[[n]])
+    l[seq.int(n)] <- lapply(seq.int(n), function(x) l[[n]])
   
   sapply(if (fromLast) rev(l) else l, FUN, ...)
 }
@@ -1378,7 +1386,9 @@ genericMethods <- function(object, generic) {
   generic <- if (is.character(generic))
     generic else deparse(substitute(generic))
   
-  f <- X <- function(x, object) UseMethod('X')
+  f <- X <- function(x, object) {
+    UseMethod('X')
+  }
   
   for (m in methods(generic))
     assign(sub(generic, 'X', m), `body<-`(f, value = m))
@@ -1606,8 +1616,9 @@ cast <- function(data, idvar = list(1), timevar = list(2),
   # l <- l[!duplicated(names(l), fromLast = TRUE)]
   l <- modifyList(l, list(...))
   res <- do.call('reshape', l)
+  rownames(res) <- NULL
   
-  `rownames<-`(res, NULL)
+  res
 }
 
 #' @rdname Reshape
@@ -1636,8 +1647,9 @@ melt <- function(data, varying = list(1:ncol(data)), ...) {
   l <- modifyList(l, list(...))
   res <- do.call('reshape', l)
   res$'_id_' <- NULL
+  rownames(res) <- NULL
   
-  `rownames<-`(res, NULL)
+  res
 }
 
 #' View data
@@ -1936,11 +1948,9 @@ sort_matrix <- function(m, margin = 1L, order = NULL, na.last = TRUE,
     t(m) else m
   order <- order %||% sort(unique(c(m)), decreasing = TRUE, na.last = na.last)
   
-  stopifnot(
-    length(order) == length(unique(c(m)))
-  )
+  stopifnot(length(order) == length(unique(c(m))))
   
-  dd   <- data.frame(m)
+  dd <- data.frame(m)
   rownames(dd) <- names(dd) <- NULL
   dd[] <- lapply(dd, factor, levels = order)
   

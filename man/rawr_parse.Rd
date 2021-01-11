@@ -16,7 +16,7 @@ parse_news(x)
 
 parse_namespace(
   x,
-  wh = c("import", "export", "exportPattern", "importClass", "importMethod",
+  what = c("import", "export", "exportPattern", "importClass", "importMethod",
     "exportClass", "exportMethod", "exportClassPattern", "useDynLib", "nativeRoutine",
     "S3method")
 )
@@ -24,7 +24,7 @@ parse_namespace(
 \arguments{
 \item{x}{a vector of character strings}
 
-\item{wh}{for \code{parse_namespace}, which types to parse and return}
+\item{what}{for \code{parse_namespace}, what types to parse and return}
 }
 \value{
 A named list for each section type.
