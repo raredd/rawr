@@ -1097,12 +1097,9 @@ iprint <- function (..., wrap = '', sep = ', ', copula = ', and ',
               copula, f(tail(x, 1L), wrap = wrap))
 }
 
-#' Write ftable
+#' Write \code{ftable}
 #'
-#' \code{\link{ftable}}s can look nice, but are only \code{\link{cat}}'d to
-#' the console and, thus, not easily used (or manipulated).
-#' \code{\link{write.ftable}} does not write \code{ftable}s as they print,
-#' so here we are.
+#' Write an \code{\link{ftable}} as a matrix.
 #'
 #' @param x an object of class \code{ftable}
 #' @param quote logical; if \code{TRUE}, strings will be surrounded by double
@@ -1133,8 +1130,8 @@ writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
 
   mat <- as.matrix(format(x, quote = quote, digits = digits, ...))
   mat[] <- trimws(mat)
-  mat <- mat[-(1:2), , drop = FALSE]
   colnames(mat) <- gsub('$$$', '', Filter(nzchar, mat[1:2, ]), fixed = TRUE)
+  mat <- mat[-(1:2), , drop = FALSE]
   
   mat
 }
@@ -1355,7 +1352,7 @@ tabler.coxph <- function(x, digits = 3L, level = 0.95, exp = TRUE,
 #' mt <- within(mtcars, {
 #'   am   <- factor(am)
 #'   gear <- factor(gear)
-#'   vs   <- factor(vs, levels = 0:2)
+#'   vs   <- factor(vs, 0:2)
 #'   carb <- factor(carb)
 #' })
 #'

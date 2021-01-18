@@ -97,7 +97,7 @@ entire data set is given as \code{data} and will use the corresponding
 mt <- within(mtcars, {
   am   <- factor(am)
   gear <- factor(gear)
-  vs   <- factor(vs, levels = 0:2)
+  vs   <- factor(vs, 0:2)
   carb <- factor(carb)
 })
 
