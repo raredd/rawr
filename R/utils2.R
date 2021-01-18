@@ -1074,8 +1074,8 @@ num2char <- function(x, informal = FALSE, cap = TRUE) {
 #'
 #' @export
 
-iprint <- function (..., wrap = '', sep = ', ', copula = ', and ',
-                    digits = if (is.integer(x)) 0L else 2L) {
+iprint <- function(..., wrap = '', sep = ', ', copula = ', and ',
+                   digits = if (is.integer(x)) 0L else 2L) {
   x <- c(...)
   if (!(len <- length(x)))
     return(character(1L))
@@ -1102,38 +1102,25 @@ iprint <- function (..., wrap = '', sep = ', ', copula = ', and ',
 #' Write an \code{\link{ftable}} as a matrix.
 #'
 #' @param x an object of class \code{ftable}
-#' @param quote logical; if \code{TRUE}, strings will be surrounded by double
-#' quotes
-#' @param digits integer giving the number of significant digits to use for
-#' the cell entries of \code{x}
-#' @param ... additional parameters passed to \code{\link{format.ftable}}
-#'
-#' @return
-#' A matrix formatted as \code{ftable} would print.
+#' @param quote,digits see \code{\link{format.ftable}}
 #'
 #' @examples
-#' x <- ftable(Titanic, row.vars = 1:3)
-#' writeftable(x)
-#'
-#' writeftable(ftable(mtcars$vs, mtcars$gear))
+#' ## basic usage
+#' writeftable(ftable(1))
+#' writeftable(ftable(mtcars$gear))
+#' 
+#' ## tables write nicer with names
+#' writeftable(ftable(gear = mtcars$gear))
+#' writeftable(ftable(Titanic, row.vars = 1:3))
 #'
 #' @export
 
-writeftable <- function (x, quote = FALSE, digits = getOption('digits'), ...) {
+writeftable <- function(x, quote = FALSE, digits = getOption('digits')) {
   stopifnot(inherits(x, 'ftable'))
-
-  ## add row/col names if blank (ie, if vectors used in ftable)
-  rn <- names(attr(x, 'row.vars'))
-  names(attr(x, 'row.vars')) <- ifelse(!nzchar(rn), '$$$', rn)
-  cn <- names(attr(x, 'col.vars'))
-  names(attr(x, 'col.vars')) <- ifelse(!nzchar(cn), '$$$', cn)
-
-  mat <- as.matrix(format(x, quote = quote, digits = digits, ...))
-  mat[] <- trimws(mat)
-  colnames(mat) <- gsub('$$$', '', Filter(nzchar, mat[1:2, ]), fixed = TRUE)
-  mat <- mat[-(1:2), , drop = FALSE]
-  
-  mat
+  xx <- trimws(format(x, quote, digits))
+  cn <- locf(xx)[2L, ]
+  colnames(xx) <- replace(cn, is.na(cn), '')
+  xx[-(1:2), , drop = FALSE]
 }
 
 #' Tabler
@@ -1392,12 +1379,12 @@ tabler.coxph <- function(x, digits = 3L, level = 0.95, exp = TRUE,
 #'
 #' ## example workflow
 #' set.seed(1)
-#'
 #' f <- function(x, ...) sample(x, 100, replace = TRUE, ...)
-#' tox <- data.frame(id = rep(1:10, 10), phase = 1:2,
-#'                   code = f(rawr::ctcae_v4$tox_code[1:100]),
-#'                   grade = f(1:3, prob = c(.6, .3, .1)),
-#'                   stringsAsFactors = FALSE)
+#' tox <- data.frame(
+#'   id = rep(1:10, 10), phase = 1:2,
+#'   code = f(rawr::ctcae_v4$tox_code[1:100]),
+#'   grade = f(1:3, prob = c(0.6, 0.3, 0.1))
+#' )
 #'
 #' tox <- cbind(tox, match_ctc(tox$code)[, c('tox_cat', 'tox_desc')])
 #'
@@ -1408,9 +1395,11 @@ tabler.coxph <- function(x, digits = 3L, level = 0.95, exp = TRUE,
 #'
 #' out <- tabler_by2(tox, 'tox_desc', 'grade', stratvar = 'phase', zeros = '-')
 #' colnames(out)[1] <- sprintf('Total<br /><font size=1>n = %s</font>', sum(n))
-#' cgroup <- c('',
-#'             sprintf('Phase I<br /><font size=1>n = %s</font>', n[1]),
-#'             sprintf('Phase II<br /><font size=1>n = %s</font>', n[2]))
+#' cgroup <- c(
+#'   '',
+#'   sprintf('Phase I<br /><font size=1>n = %s</font>', n[1]),
+#'   sprintf('Phase II<br /><font size=1>n = %s</font>', n[2])
+#' )
 #'
 #' ht <- htmlTable::htmlTable(
 #'   out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
@@ -1436,9 +1425,10 @@ tabler.coxph <- function(x, digits = 3L, level = 0.95, exp = TRUE,
 #'   'Description', sprintf('Total<br /><font size=1>n = %s</font>', sum(n))
 #' )
 #'
-#' cgroup <- c('', '',
-#'             sprintf('Phase I<br /><font size=1>n = %s</font>', n[1]),
-#'             sprintf('Phase II<br /><font size=1>n = %s</font>', n[2])
+#' cgroup <- c(
+#'   '', '',
+#'   sprintf('Phase I<br /><font size=1>n = %s</font>', n[1]),
+#'   sprintf('Phase II<br /><font size=1>n = %s</font>', n[2])
 #' )
 #'
 #' ht <- htmlTable::htmlTable(

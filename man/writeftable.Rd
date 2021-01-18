@@ -2,34 +2,25 @@
 % Please edit documentation in R/utils2.R
 \name{writeftable}
 \alias{writeftable}
-\title{Write ftable}
+\title{Write \code{ftable}}
 \usage{
-writeftable(x, quote = FALSE, digits = getOption("digits"), ...)
+writeftable(x, quote = FALSE, digits = getOption("digits"))
 }
 \arguments{
 \item{x}{an object of class \code{ftable}}
 
-\item{quote}{logical; if \code{TRUE}, strings will be surrounded by double
-quotes}
-
-\item{digits}{integer giving the number of significant digits to use for
-the cell entries of \code{x}}
-
-\item{...}{additional parameters passed to \code{\link{format.ftable}}}
-}
-\value{
-A matrix formatted as \code{ftable} would print.
+\item{quote, digits}{see \code{\link{format.ftable}}}
 }
 \description{
-\code{\link{ftable}}s can look nice, but are only \code{\link{cat}}'d to
-the console and, thus, not easily used (or manipulated).
-\code{\link{write.ftable}} does not write \code{ftable}s as they print,
-so here we are.
+Write an \code{\link{ftable}} as a matrix.
 }
 \examples{
-x <- ftable(Titanic, row.vars = 1:3)
-writeftable(x)
+## basic usage
+writeftable(ftable(1))
+writeftable(ftable(mtcars$gear))
 
-writeftable(ftable(mtcars$vs, mtcars$gear))
+## tables write nicer with names
+writeftable(ftable(gear = mtcars$gear))
+writeftable(ftable(Titanic, row.vars = 1:3))
 
 }

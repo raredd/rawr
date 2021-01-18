@@ -137,12 +137,12 @@ stopifnot(identical(t1, t2))
 
 ## example workflow
 set.seed(1)
-
 f <- function(x, ...) sample(x, 100, replace = TRUE, ...)
-tox <- data.frame(id = rep(1:10, 10), phase = 1:2,
-                  code = f(rawr::ctcae_v4$tox_code[1:100]),
-                  grade = f(1:3, prob = c(.6, .3, .1)),
-                  stringsAsFactors = FALSE)
+tox <- data.frame(
+  id = rep(1:10, 10), phase = 1:2,
+  code = f(rawr::ctcae_v4$tox_code[1:100]),
+  grade = f(1:3, prob = c(0.6, 0.3, 0.1))
+)
 
 tox <- cbind(tox, match_ctc(tox$code)[, c('tox_cat', 'tox_desc')])
 
@@ -153,9 +153,11 @@ tox <- tox_worst(tox, desc = 'tox_desc')
 
 out <- tabler_by2(tox, 'tox_desc', 'grade', stratvar = 'phase', zeros = '-')
 colnames(out)[1] <- sprintf('Total<br /><font size=1>n = \%s</font>', sum(n))
-cgroup <- c('',
-            sprintf('Phase I<br /><font size=1>n = \%s</font>', n[1]),
-            sprintf('Phase II<br /><font size=1>n = \%s</font>', n[2]))
+cgroup <- c(
+  '',
+  sprintf('Phase I<br /><font size=1>n = \%s</font>', n[1]),
+  sprintf('Phase II<br /><font size=1>n = \%s</font>', n[2])
+)
 
 ht <- htmlTable::htmlTable(
   out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
@@ -181,9 +183,10 @@ colnames(out2)[1:2] <- c(
   'Description', sprintf('Total<br /><font size=1>n = \%s</font>', sum(n))
 )
 
-cgroup <- c('', '',
-            sprintf('Phase I<br /><font size=1>n = \%s</font>', n[1]),
-            sprintf('Phase II<br /><font size=1>n = \%s</font>', n[2])
+cgroup <- c(
+  '', '',
+  sprintf('Phase I<br /><font size=1>n = \%s</font>', n[1]),
+  sprintf('Phase II<br /><font size=1>n = \%s</font>', n[2])
 )
 
 ht <- htmlTable::htmlTable(
