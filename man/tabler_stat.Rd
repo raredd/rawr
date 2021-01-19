@@ -17,7 +17,9 @@ tabler_stat(
   color_cell_by = c("none", "value", "pct"),
   cell_color = palette()[1:2],
   confint = FALSE,
-  continuous_fn = function(...) Gmisc::describeMedian(..., iqr = FALSE),
+  include_na_in_prop = TRUE,
+  iqr = FALSE,
+  continuous_fn = function(...) Gmisc::describeMedian(..., iqr = iqr),
   ...
 )
 }
@@ -59,6 +61,13 @@ proportions (e.g., for factors)}
 
 \item{confint}{logical or \code{varname}; if \code{TRUE} (or \code{varname})
 rows will be formatted as confidence intervals; see \code{\link{binconr}}}
+
+\item{include_na_in_prop}{logical; if \code{TRUE} (default), the number of
+missing values is included when calculating proportions for factor levels;
+if \code{FALSE}, only non-missing levels count towards proportions}
+
+\item{iqr}{logical; if \code{TRUE}, the interquartile range is used
+instead of the full range (default) for continuous variables}
 
 \item{continuous_fn}{a function to describe continuous variables (default
 is to show median and range); see \code{\link[Gmisc]{getDescriptionStatsBy}}}

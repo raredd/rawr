@@ -2,9 +2,9 @@
 # show_html, show_markdown, show_math, roundr, roundr.default, roundr.matrix,
 # roundr.data.frame, intr, pvalr, pvalr2, color_pval, catlist, binconr,
 # num2char, iprint, writeftable, tabler, tabler.default, tabler.lm, tabler.glm,
-# tabler.survfit, tabler_by, tabler_by2, tabler_stat, tabler_stat2, tabler_resp,
-# match_ctc, tox_worst, countr, dmy, combine_table, combine_table2, inject_div,
-# case, write_htmlTable, html_align
+# tabler.survfit, tabler_by, tabler_by2, tabler_stat, describeDate,
+# describeDateBy, tabler_stat2, tabler_resp, match_ctc, tox_worst, countr, dmy,
+# combine_table, combine_table2, inject_div, case, write_htmlTable, html_align
 #
 # S3 methods:
 # roundr, tabler
@@ -14,8 +14,9 @@
 #
 # unexported:
 # js, getPvalCAtest, getPvalCuzick, getPvalJTtest, getPvalKruskal, getPvalKWtest,
-# getPvalTtest, getPval_, guess_test, tabler_stat_list, tabler_stat_html,
-# guess_digits, get_tabler_stat_n, resp1, r_or_better1, inject_
+# getPvalTtest, getPval_, guess_test, describeConfint, describeFactors,
+# tabler_stat_list, tabler_stat_html, guess_digits, get_tabler_stat_n, resp1,
+# r_or_better1, inject_
 ###
 
 
@@ -1668,6 +1669,11 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' @param cell_color a vector of colors used for \code{color_cell_by}
 #' @param confint logical or \code{varname}; if \code{TRUE} (or \code{varname})
 #' rows will be formatted as confidence intervals; see \code{\link{binconr}}
+#' @param include_na_in_prop logical; if \code{TRUE} (default), the number of
+#' missing values is included when calculating proportions for factor levels;
+#' if \code{FALSE}, only non-missing levels count towards proportions
+#' @param iqr logical; if \code{TRUE}, the interquartile range is used
+#' instead of the full range (default) for continuous variables
 #' @param continuous_fn a function to describe continuous variables (default
 #' is to show median and range); see \code{\link[Gmisc]{getDescriptionStatsBy}}
 #' @param ... additional arguments passed to
@@ -1749,8 +1755,9 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
                         color_missing = TRUE, dagger = TRUE,
                         color_cell_by = c('none', 'value', 'pct'),
                         cell_color = palette()[1:2], confint = FALSE,
+                        include_na_in_prop = TRUE, iqr = FALSE,
                         continuous_fn = function(...)
-                          Gmisc::describeMedian(..., iqr = FALSE), ...) {
+                          Gmisc::describeMedian(..., iqr = iqr), ...) {
   fun <- deparse(substitute(FUN))
   nof <- identical(FUN, FALSE)
   color_missing <- if (isTRUE(color_missing))
@@ -1798,12 +1805,14 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
       NA else FALSE
     describeDateBy(x, y, ...)
   } else if (varname %in% confint) {
-    describeConfInt(x, y, ...)
+    describeConfint(x, y, ...)
   } else {
     Gmisc::getDescriptionStatsBy(
-      x, y, digits = digits, html = TRUE, add_total_col = TRUE,
+      x, y, digits = digits, html = TRUE, add_total_col = TRUE, ...,
       show_all_values = TRUE, statistics = FALSE, useNA.digits = 0L,
-      continuous_fn = continuous_fn, ...
+      continuous_fn = continuous_fn,
+      factor_fn = if (!include_na_in_prop)
+        describeFactors else Gmisc::describeFactors
     )
   }
   class(res) <- 'matrix'
@@ -2175,7 +2184,7 @@ describeDateBy <- function(x, by, format = '%b %d, %Y', copula = ' to ',
   res
 }
 
-describeConfInt <- function(x, y, include_NA = TRUE, percent = TRUE,
+describeConfint <- function(x, y, include_NA = TRUE, percent = TRUE,
                             digits = ifelse(percent, 0L, 2L),
                             add_total_col = TRUE, useNA.digits = 0L,
                             conf = 0.95, frac = TRUE, ...) {
@@ -2202,6 +2211,18 @@ describeConfInt <- function(x, y, include_NA = TRUE, percent = TRUE,
 
   if (add_total_col)
     res else res[, -1L, drop = FALSE]
+}
+
+describeFactors <- function(..., useNA, exclude_na_prop = TRUE) {
+  res <- Gmisc::describeFactors(..., useNA = 'always')
+  nr <- nrow(Gmisc::describeFactors(..., useNA = 'ifany'))
+  
+  if (exclude_na_prop) {
+    tmp <- rbind(Gmisc::describeFactors(..., useNA = 'no'), '')
+    res[] <- trimws(paste(gsub(' .*', '', res), gsub('.* ', '', tmp)))
+  }
+  
+  res[seq.int(nr), , drop = FALSE]
 }
 
 #' \code{tabler_stat} wrappers
@@ -2233,6 +2254,11 @@ describeConfInt <- function(x, y, include_NA = TRUE, percent = TRUE,
 #' \code{\link{tabler_stat}}
 #' @param confint optional vector of \code{varname}(s) to summarize as
 #' confidence intervals
+#' @param include_na_in_prop logical; if \code{TRUE} (default), the number of
+#' missing values is included when calculating proportions for factor levels;
+#' if \code{FALSE}, only non-missing levels count towards proportions
+#' @param iqr logical; if \code{TRUE}, the interquartile range is used
+#' instead of the full range (default) for continuous variables
 #' @param format_pval logical; if \code{TRUE}, p-values will be formatted
 #' using \code{\link{pvalr}}; alternatively, a function may by used which
 #' will be applied to each p-value
@@ -2322,6 +2348,7 @@ describeConfInt <- function(x, y, include_NA = TRUE, percent = TRUE,
 tabler_stat2 <- function(data, varname, byvar = NULL,
                          varname_label = names(varname), byvar_label = names(byvar),
                          digits = NULL, FUN = NULL, confint = FALSE,
+                         include_na_in_prop = TRUE, iqr = FALSE,
                          format_pval = TRUE, color_pval = TRUE, correct = FALSE,
                          color_missing = TRUE, dagger = TRUE,
                          group = NULL, color_cell_by = 'none',
@@ -2363,7 +2390,7 @@ tabler_stat2 <- function(data, varname, byvar = NULL,
   l <- tabler_stat_list(
     data, varname, byvar, varname_label, byvar_label, digits, FUN,
     format_pval, color_pval, color_missing, dagger, color_cell_by,
-    cell_color, confint, statArgs
+    cell_color, confint, include_na_in_prop, iqr, statArgs
   )
 
   tabler_stat_html(
@@ -2377,7 +2404,8 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
                              format_pval = TRUE, color_pval = TRUE,
                              color_missing = TRUE, dagger = TRUE,
                              color_cell_by = 'none', cell_color = NULL,
-                             confint = NULL, statArgs = NULL) {
+                             confint = NULL, include_na_in_prop = TRUE,
+                             iqr = FALSE, statArgs = NULL) {
   if (is.null(byvar)) {
     FUN   <- NA
     byvar <- '_by_var_'
@@ -2425,7 +2453,8 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
   l <- do.call('Map', c(list(
     f = tabler_stat, data, varname, byvar, digits, FUN,
     list(format_pval), color_pval, color_missing, dagger,
-    color_cell_by, cell_color, list(confint %||% '')), statArgs)
+    color_cell_by, cell_color, list(confint %||% '')),
+    include_na_in_prop, iqr, statArgs)
   )
   
   tbl <- lapply(l, function(x)

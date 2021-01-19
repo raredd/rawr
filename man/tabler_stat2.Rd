@@ -13,6 +13,8 @@ tabler_stat2(
   digits = NULL,
   FUN = NULL,
   confint = FALSE,
+  include_na_in_prop = TRUE,
+  iqr = FALSE,
   format_pval = TRUE,
   color_pval = TRUE,
   correct = FALSE,
@@ -64,6 +66,13 @@ association between each \code{varname} and \code{byvar}; see
 
 \item{confint}{optional vector of \code{varname}(s) to summarize as
 confidence intervals}
+
+\item{include_na_in_prop}{logical; if \code{TRUE} (default), the number of
+missing values is included when calculating proportions for factor levels;
+if \code{FALSE}, only non-missing levels count towards proportions}
+
+\item{iqr}{logical; if \code{TRUE}, the interquartile range is used
+instead of the full range (default) for continuous variables}
 
 \item{format_pval}{logical; if \code{TRUE}, p-values will be formatted
 using \code{\link{pvalr}}; alternatively, a function may by used which
