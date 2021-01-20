@@ -1,5 +1,5 @@
 ### statistical functions
-# bincon, bintest, dlt_table, pr_table, power_cv, simon2, moods_test, fakeglm,
+# bincon, bintest, dlt_table, pr_table, power_cv, simon2, moods.test, fakeglm,
 # gcd, install.bioc, lm.beta, cuzick.test, cuzick.test.default,
 # cuzick.test.formula, jt.test, hl_est, rcor, rsum, kw.test, kw.test.default,
 # kw.test.formula, ca.test, ca.test.default, ca.test.formula, lspline,
@@ -961,8 +961,8 @@ bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20L) {
 #' @examples
 #' set.seed(1)
 #' X <- list(rnorm(10), rnorm(10, 1), rnorm(20, 2))
-#' moods_test(X)
-#' moods_test(X[1:2], exact = FALSE, correct = TRUE)
+#' moods.test(X)
+#' moods.test(X[1:2], exact = FALSE, correct = TRUE)
 #' 
 #' plot(density(X[[1]]), xlim = range(unlist(X)), ylim = c(0, .5), main = '')
 #' for (x in 2:3)
@@ -970,7 +970,7 @@ bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20L) {
 #' 
 #' @export
 
-moods_test <- function(X, ..., exact = TRUE) {
+moods.test <- function(X, ..., exact = TRUE) {
   x <- unlist(X)
   g <- rep(ng <- seq_len(length(X)), times = sapply(X, length))
   m <- median(x)
@@ -3003,4 +3003,52 @@ ransch_ <- function(n, block, arms, r) {
     Block = rep(seq.int(b), each = block),
     Assignment = arms[x]
   )
+}
+
+#' Two-stage trials
+#' 
+#' Calculate confidence intervals, estimators, and p-value from a two-stage
+#' trial.
+#' 
+#' @param r,r1 total observed responses and maximum number of responses in
+#' first stage to declare treatment inactive
+#' @param n1,n2 sample size of the first and second stage
+#' @param p0 (optional) null hypothesis
+#' @param conf confidence level
+#' @param dp affects the ordering of outcomes within the sample space, see
+#' \code{\link[desmon]{twocon}}
+#' 
+#' @seealso
+#' \code{\link[desmon]{twocon}}; \code{\link[clinfun]{twostage.inference}}
+#' 
+#' @examples
+#' desmon::simon(0.1, 0.3)
+#' 
+#' # $designs
+#' #      n1 r1 n2 r2 Pstop1.H0       size      type2 E.tot.n.H0
+#' # [1,] 12  1 23  5 0.6590023 0.09771828 0.09855051   19.84295
+#' # [2,] 18  2  8  4 0.7337960 0.09946260 0.09634685   20.12963
+#' # [3,] 13  1 19  5 0.6213450 0.07929261 0.09487900   20.19445
+#' # [4,] 16  1  9  4 0.5147278 0.09508405 0.09696090   20.36745
+#' # [5,] 11  0 14  4 0.3138106 0.09509708 0.09869362   20.60665
+#' # [6,] 17  2 16  5 0.7617972 0.08104780 0.09532656   20.81124
+#' # 
+#' # $call
+#' # rawr:::simon(p0 = 0.1, pa = 0.3)
+#' # 
+#' # $description
+#' # [1] "n1, n2 = cases 1st stage and additional # in 2nd"                    
+#' # [2] "r1, r2 = max # responses 1st stage and total to declare trt inactive"
+#' 
+#' twostg.test(5, 1, 12, 23)
+#' twostg.test(5, 1, 12, 23, 0.1)
+#' twostg.test(8, 1, 12, 23, 0.1)$p.value
+#' 
+#' @export
+
+twostg.test <- function(r, r1, n1, n2, p0 = NULL, conf = 0.95, dp = 1) {
+  tc <- desmon::twocon(n1, n2, r1, r, conf, dp)
+  ti <- if (!is.null(p0))
+    clinfun::twostage.inference(r, r1, n1, n1 + n2, p0, 1 - conf) else NULL
+  list(confint = tc, inference = ti, p.value = ti[[2L]])
 }
