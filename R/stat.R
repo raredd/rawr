@@ -2398,26 +2398,28 @@ ca.test.default <- function(x, g, ..., score = NULL,
   ok <- complete.cases(x, g)
   x <- x[ok]
   g <- g[ok]
+  tbl <- table(x, g)
   
-  if (!length(unique(g)) >= 3L) {
-    warning('Fewer than 3 groups')
-  }
+  if (ncol(tbl) < 3L)
+    warning('Fewer than 3 groups - column variable is not ordinal')
   
-  if (any(table(x, g) < 5L) & !simulate.p.value)
+  if (any(tbl < 5L) & !simulate.p.value)
     warning(
       'Chi-squared approximation may be incorrect - ',
       'cells with < 5 observations\n',
       '\tConsider using simulate.p.value = TRUE for Monte Carlo p-value'
     )
   
-  method <- 'Cochran-Armitage test for trend in %sx%s table'
-  tbl <- table(x, g)
+  method <- sprintf('Cochran-Armitage test for trend in %sx%s table',
+                    nrow(tbl), ncol(tbl))
   score <- score %||% seq.int(ncol(tbl))
   dname <- sprintf('%s\n\tusing scores: %s', dname, toString(score))
   res <- prop.trend.test(tbl[1L, ], colSums(tbl), score)
   
   if (simulate.p.value) {
-    p <- sim.test.pvalue(x, g, ca.test, FALSE, B, TRUE, 0.99)
+    suppressWarnings({
+      p <- sim.test.pvalue(x, g, ca.test, FALSE, B, TRUE, 0.99)
+    })
     res$p.value <- unname(p[1L])
     method <- sprintf('%s with simulated p-value (based on %s replicates)',
                       method, B)
