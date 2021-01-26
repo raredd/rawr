@@ -98,11 +98,12 @@ pvalr(pv, show.p = TRUE, html = TRUE)
 pv <- c('0.00000', '< 0.001', '0.0', '0.123', '0.6', '1', '1.0', '1.000')
 pvalr2(pv)
 
+\dontrun{
 pv <- c(0, 0.00001, 0.03, .06, .11, .49, .51, .89, .9, 1)
-
 show_html(color_pval(pv))
 show_html(color_pval(pv, format_pval = format.pval))
 show_html(iprint(color_pval(pv, show.p = TRUE)))
+}
 
 }
 \seealso{

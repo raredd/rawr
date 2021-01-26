@@ -796,11 +796,12 @@ pvalr2 <- function(pv, html = FALSE, show.p = FALSE) {
 #' be applied to each p-value
 #'
 #' @examples
+#' \dontrun{
 #' pv <- c(0, 0.00001, 0.03, .06, .11, .49, .51, .89, .9, 1)
-#'
 #' show_html(color_pval(pv))
 #' show_html(color_pval(pv, format_pval = format.pval))
 #' show_html(iprint(color_pval(pv, show.p = TRUE)))
+#' }
 #'
 #' @export
 
@@ -1180,7 +1181,6 @@ tabler.lm <- function(x, digits = 3L, add_reference, ...) {
   pv <- grep('^Pr', names(res))
   res[, pv] <- pvalr(res[, pv], ...)
   res[, -pv] <- lapply(res[, -pv], round, digits = digits)
-
   res
 }
 
@@ -3309,8 +3309,8 @@ inject_ <- function(x, where, what) {
 
   what <- rep_len(what, nrow(where))
   mat  <- matrix('', nrow(x), ncol(x))
-
   mat[where] <- what
+  
   mat
 }
 
