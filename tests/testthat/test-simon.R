@@ -1,11 +1,14 @@
 context('simon two-stage')
 
 test_that('simon and simon2 give equivalent results', {
+  ## only testing the first 8 columns since simon2 produces extra info
   
   ## design matrix is stored differently in simon2
   ## but should have identical results:
-  expect_equivalent(rawr:::simon(.2, .4)[[1]],
-                    simon2(.2, .4)[[1]][[1]])
+  expect_equivalent(
+    rawr:::simon(0.2, 0.4)[[1]],
+    simon2(0.2, 0.4)[[1]][[1]][, 1:8]
+  )
   
   ## more complex test:
   ## currently, the p0 is expanded first and then pa:
@@ -16,6 +19,8 @@ test_that('simon and simon2 give equivalent results', {
   #   3 0.1 0.4
   #   4 0.2 0.4
   ## so we choose the fourth combination
-  expect_equivalent(rawr:::simon(.2, .4)[[1]],
-                    simon2(c(.1, .2), c(.3, .4))[[1]][[4]])
+  expect_equivalent(
+    rawr:::simon(0.2, 0.4)[[1]],
+    simon2(c(0.1, 0.2), c(0.3, 0.4))[[1]][[4]][, 1:8]
+  )
 })

@@ -13,7 +13,7 @@ test_that('assuming categorical data, all types give same results', {
   cat_test <- function(x, y, ox = FALSE, oy = FALSE) {
     x <- factor(x, ordered = ox)
     y <- factor(y, ordered = oy)
-    attr(rawr:::guess_test(x, y), 'FUN')
+    suppressWarnings(attr(rawr:::guess_test(x, y), 'FUN'))
   }
   
   con_test <- function(x, y, ox = FALSE, oy = FALSE) {
@@ -21,7 +21,7 @@ test_that('assuming categorical data, all types give same results', {
       x <- factor(x, ordered = TRUE)
     if (oy)
       y <- factor(y, ordered = TRUE)
-    attr(rawr:::guess_test(x, y), 'FUN')
+    suppressWarnings(attr(rawr:::guess_test(x, y), 'FUN'))
   }
   
   ## categorical
