@@ -4,7 +4,7 @@
 # cuzick.test.formula, jt.test, hl_est, rcor, rsum, kw.test, kw.test.default,
 # kw.test.formula, ca.test, ca.test.default, ca.test.formula, lspline,
 # winsorize, perm.t.test, perm.t.test.default, perm.t.test.formula, rfvar,
-# ransch, ranschtbl, twostg.test
+# ransch, ranschtbl, twostg.test, cor.n, cor.ci
 # 
 # S3 methods:
 # cuzick.test, kw.test, ca.test, perm.t.test
@@ -3091,4 +3091,97 @@ twostg.test <- function(r, r1, n1, n2, p0 = NULL, conf = 0.95, dp = 1) {
   ti <- if (!is.null(p0))
     clinfun::twostage.inference(r, r1, n1, n1 + n2, p0, 1 - conf) else NULL
   list(confint = tc, inference = ti, p.value = ti[[2L]])
+}
+
+#' Sample size calculation for correlation
+#' 
+#' Compute the sample size for a given correlation coefficient, alpha level,
+#' and confidence interval width. Alternatively, solve for the coefficient,
+#' interval width, or alpha level given fixed parameters. \code{cor.ci}
+#' calculated the confidence interval for a fixed correlation coefficient
+#' and sample size.
+#' 
+#' @param rho correlation coefficient
+#' @param n sample size
+#' @param width the width of the \code{1 - alpha} confidence interval
+#' @param alpha type I error probability
+#' @param two.sided logical; if \code{TRUE}, a two-sided \code{alpha} is used
+#' @param method the method used to calculate the standard deviation, one of
+#' \code{"bonett"} or \code{"fieller"} (can be (unambiguously) abbreviated)
+#' @param tol numerical tolerance used in root finding, the default providing
+#' (at least) four significant digits
+#' 
+#' @references
+#' \url{https://www.researchgate.net/profile/Douglas_Bonett/publication/279926406_Sample_size_requirements_for_estimating_Pearson_Kendall_and_Spearman_correlations/links/575de23908aed88462166f2e/Sample-size-requirements-for-estimating-Pearson-Kendall-and-Spearman-correlations.pdf}
+#' 
+#' \url{http://solarmuri.ssl.berkeley.edu/~schuck/public/manuscripts/Fieller1.pdf}
+#' 
+#' \url{https://ncss-wpengine.netdna-ssl.com/wp-content/themes/ncss/pdf/Procedures/PASS/Confidence_Intervals_for_Spearmans_Rank_Correlation.pdf}
+#' 
+#' \url{https://stats.stackexchange.com/a/18904}
+#' 
+#' @examples
+#' ## table 1, bonett (spearman) -- solving for n
+#' args <- data.frame(
+#'   rho = 0.9,
+#'   width = rep(1:3, each = 2) / 10,
+#'   alpha = c(0.05, 0.01)
+#' )
+#' 
+#' apply(args, 1L, function(x)
+#'   ceiling(cor.n(x['rho'], NULL, x['width'], x['alpha'])))
+#' 
+#' 
+#' ## table 1, bonett (spearman)
+#' cor.ci(0.1, 290, 0.01)
+#' ceiling(cor.n(0.1, NULL, 0.3, 0.01))
+#' 
+#' cor.ci(0.5, 111, 0.05)
+#' ceiling(cor.n(0.5, NULL, 0.3, 0.05))
+#' 
+#' @export
+
+cor.n <- function(rho = NULL, n = NULL, width = NULL, alpha = 0.05,
+                  two.sided = TRUE, method = c('bonett', 'fieller'),
+                  tol = .Machine$double.eps ^ 0.25) {
+  if (sum(sapply(list(rho, n, width, alpha), is.null)) != 1)
+    stop('exactly one of \'rho\', \'n\', \'width\', or \'alpha\' must be NULL')
+  
+  b <- quote(cor.ci(rho, n, alpha, two.sided, 'bonett')$width)
+  f <- quote(cor.ci(rho, n, alpha, two.sided, 'fieller')$width)
+  
+  if (is.null(width)) {
+    b <- eval(b)
+    f <- eval(f)
+  } else if (is.null(n)) {
+    b <- uniroot(function(n) eval(b) - width, c(5, 1e7), tol = tol)$root
+    f <- uniroot(function(n) eval(f) - width, c(5, 1e7), tol = tol)$root
+  } else if (is.null(rho)) {
+    b <- uniroot(function(rho) eval(b) - width, c(0, 1), tol = tol)$root
+    f <- uniroot(function(rho) eval(f) - width, c(0, 1), tol = tol)$root
+  } else if (is.null(alpha)) {
+    b <- uniroot(function(alpha) eval(b) - width, c(0, 1), tol = tol)$root
+    f <- uniroot(function(alpha) eval(f) - width, c(0, 1), tol = tol)$root
+  }
+  
+  c(bonett = b, fieller = f)[match.arg(method, several.ok = TRUE)]
+}
+
+#' @rdname cor.n
+#' @export
+cor.ci <- function(rho, n, alpha = 0.05, two.sided = TRUE,
+                   method = c('bonett', 'fieller')) {
+  method <- match.arg(method)
+  sd <- switch(
+    method,
+    bonett = sqrt((1 + rho ^ 2 / 2) / (n - 3)),
+    fieller = sqrt(1.06 / (n - 3))
+  )
+  pr <- 1 - alpha / (two.sided + 1L)
+  ci <- tanh(atanh(rho) + c(-1, 1) * qnorm(pr) * sd)
+  
+  data.frame(
+    rho = rho, lower = ci[1L], upper = ci[2L], width = diff(ci),
+    conf.int = 1 - alpha, sides = two.sided + 1L, method = method
+  )
 }
