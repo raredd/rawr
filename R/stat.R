@@ -4,13 +4,13 @@
 # cuzick.test.formula, jt.test, hl_est, rcor, rsum, kw.test, kw.test.default,
 # kw.test.formula, ca.test, ca.test.default, ca.test.formula, lspline,
 # winsorize, perm.t.test, perm.t.test.default, perm.t.test.formula, rfvar,
-# ransch, ranschtbl
+# ransch, ranschtbl, twostg.test
 # 
 # S3 methods:
 # cuzick.test, kw.test, ca.test, perm.t.test
 # 
 # desmon (unexported):
-# twocon, simon, bin1samp
+# twocon, twostg, simon, bin1samp
 # 
 # rpart_utils:
 # rpart_parent, rpart_subset, rpart_nodes
@@ -294,6 +294,32 @@ twocon <- function(n1, n2, r1, r, conf = 0.95, dp = 1) {
             n2 = n2, r1 = r1, s = s2, dbin2 = dbin2, alpha = alpha)$root
   
   c(lower = pl, upper = pu, bcmle = pm, mle = mle, unbiased = ube)
+}
+
+twostg <- function(n1, n2, p1, r1, r2) {
+  ## desmon::twostg
+  # 
+  # n1	  Number of cases accrued in the first stage
+  # n2	  Number of additional cases accrued in the second stage
+  # p1	  Response probability
+  # r1	  max number responses in first stage where drug would still be
+  #       declared ineffective
+  # r2	  max number of total responses for drug to be declared ineffective
+  if (n1 < 1 | n2 < 1 | r1 < 0 | r2 < 0 | p1 <= 0 | r1 > n1 |
+      r2 > n2 + n1 | p1 >= 1)
+    stop('invalid arguments')
+  x1 <- 0:n1
+  x2 <- 0:n2
+  w1 <- dbinom(x1, n1, p1)
+  w3 <- dbinom(x2, n2, p1)
+  u1 <- c(outer(x1[-(1:(r1 + 1))], x2, `+`))
+  u2 <- c(outer(w1[-(1:(r1 + 1))], w3))
+  b1 <- c(w1[1:(r1 + 1)], tapply(u2, u1, sum))
+  structure(
+    list(inputs = c(n1 = n1, n2 = n2, p1 = p1, r1 = r1, r2 = r2),
+         prob.inactive = c(total = sum(b1[1:(r2 + 1)]), sum(b1[1:(r1 + 1)]))),
+    class = 'twostg'
+  )
 }
 
 #' Single-stage designs
@@ -691,15 +717,17 @@ power_cv <- function(n = NULL, f = NULL, cv = NULL,
 #' A list with the following elements:
 #' 
 #' \item{\code{$designs}}{a matrix with a row giving a summary of each
-#' design which meets the criteria. The columns are: \code{n1}, the number of
-#' subjects entered in the first stage; \code{r1}, the cutoff for stopping at
-#' the first stage (continue if the number of responses is > \code{r1});
-#' \code{n2}, the additional number of subjects enrolled in the second stage; 
-#' \code{r2}, the cutoff for inactivity after the second stage (reject the null
-#' if the number of responses is > \code{r2}); \code{Pstop1.H0}, the
+#' design which meets the criteria. The columns are: \code{n1}, the number
+#' of subjects entered in the first stage; \code{r1}, the cutoff for stopping
+#' at the first stage (continue if the number of responses is > \code{r1});
+#' \code{n2}, the additional number of subjects enrolled in the second stage;
+#' \code{r2}, the cutoff for inactivity after the second stage (reject the
+#' null if the number of responses is > \code{r2}); \code{Pstop1.H0}, the
 #' probability of stopping after the first stage under H0 (\code{p0});
 #' \code{size}, the actual type-I error; \code{type2}, the actual type-II
-#' error; \code{E.tot.n.H0}, the expected number of subjects under H0}
+#' error; \code{E.tot.n.H0}, the expected number of subjects under H0;
+#' \code{Pstop1.H1}, the probability of stopping after the first stage under
+#' H1; and \code{E.tot.n.H1}, the expected number of subjects under H1.}
 #' \item{\code{$call}}{the call to \code{simon2}}
 #' \item{\code{$description}}{a text string giving a brief description of
 #' the columns in \code{$designs}}
@@ -730,10 +758,26 @@ simon2 <- function(p0, pa, n1max = 0, ntmax = 1e+05, alpha = 0.1, beta = 0.1,
                    del = 1, minimax = FALSE) {
   args <- expand.grid(p0 = p0, pa = pa)
   
-  sim <- Map('simon', p0 = args[['p0']], pa = args[['pa']],
-             n1max = n1max, alpha = alpha, beta = beta,
-             del = del, minimax = minimax)
-  sim <- lapply(sim, '[[', 1L)
+  sim <- Map(
+    'simon',
+    p0 = args[['p0']],
+    pa = args[['pa']],
+    n1max = n1max,
+    alpha = alpha,
+    beta = beta,
+    del = del,
+    minimax = minimax
+  )
+  sim <- lapply(seq_along(sim), function(ii) {
+    x <- sim[[ii]][[1L]]
+    a <- apply(x, 1L, function(a)
+      twostg(a['n1'], a['n2'], args$pa[ii], a['r1'], a['r2'])$prob)
+    cbind(
+      x,
+      Pstop1.H1 = a[2L, ],
+      E.tot.n.H1 = x[, 'n1'] + x[, 'n2'] * (1 - a[2L, ])
+    )
+  })
   sim <- setNames(sim, sapply(seq_len(nrow(args)), function(x)
     catlist(args[x, ])))
   
@@ -3024,19 +3068,13 @@ ransch_ <- function(n, block, arms, r) {
 #' \code{\link[desmon]{twocon}}; \code{\link[clinfun]{twostage.inference}}
 #' 
 #' @examples
-#' desmon::simon(0.1, 0.3)
+#' simon2(0.1, 0.3)
 #' 
-#' # $designs
-#' #      n1 r1 n2 r2 Pstop1.H0       size      type2 E.tot.n.H0
-#' # [1,] 12  1 23  5 0.6590023 0.09771828 0.09855051   19.84295
-#' # [2,] 18  2  8  4 0.7337960 0.09946260 0.09634685   20.12963
-#' # [3,] 13  1 19  5 0.6213450 0.07929261 0.09487900   20.19445
-#' # [4,] 16  1  9  4 0.5147278 0.09508405 0.09696090   20.36745
-#' # [5,] 11  0 14  4 0.3138106 0.09509708 0.09869362   20.60665
-#' # [6,] 17  2 16  5 0.7617972 0.08104780 0.09532656   20.81124
+#' # $designs$`p0 = 0.1, pa = 0.3`
+#' #      n1 r1 n2 r2 Pstop1.H0       size      type2 E.tot.n.H0  Pstop1.H1 E.tot.n.H1
+#' # [1,] 12  1 23  5 0.6590023 0.09771828 0.09855051   19.84295 0.08502505   33.04442
 #' # 
-#' # $call
-#' # rawr:::simon(p0 = 0.1, pa = 0.3)
+#' # ...
 #' # 
 #' # $description
 #' # [1] "n1, n2 = cases 1st stage and additional # in 2nd"                    
@@ -3049,7 +3087,7 @@ ransch_ <- function(n, block, arms, r) {
 #' @export
 
 twostg.test <- function(r, r1, n1, n2, p0 = NULL, conf = 0.95, dp = 1) {
-  tc <- desmon::twocon(n1, n2, r1, r, conf, dp)
+  tc <- twocon(n1, n2, r1, r, conf, dp)
   ti <- if (!is.null(p0))
     clinfun::twostage.inference(r, r1, n1, n1 + n2, p0, 1 - conf) else NULL
   list(confint = tc, inference = ti, p.value = ti[[2L]])

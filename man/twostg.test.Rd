@@ -24,19 +24,13 @@ Calculate confidence intervals, estimators, and p-value from a two-stage
 trial.
 }
 \examples{
-desmon::simon(0.1, 0.3)
+simon2(0.1, 0.3)
 
-# $designs
-#      n1 r1 n2 r2 Pstop1.H0       size      type2 E.tot.n.H0
-# [1,] 12  1 23  5 0.6590023 0.09771828 0.09855051   19.84295
-# [2,] 18  2  8  4 0.7337960 0.09946260 0.09634685   20.12963
-# [3,] 13  1 19  5 0.6213450 0.07929261 0.09487900   20.19445
-# [4,] 16  1  9  4 0.5147278 0.09508405 0.09696090   20.36745
-# [5,] 11  0 14  4 0.3138106 0.09509708 0.09869362   20.60665
-# [6,] 17  2 16  5 0.7617972 0.08104780 0.09532656   20.81124
+# $designs$`p0 = 0.1, pa = 0.3`
+#      n1 r1 n2 r2 Pstop1.H0       size      type2 E.tot.n.H0  Pstop1.H1 E.tot.n.H1
+# [1,] 12  1 23  5 0.6590023 0.09771828 0.09855051   19.84295 0.08502505   33.04442
 # 
-# $call
-# rawr:::simon(p0 = 0.1, pa = 0.3)
+# ...
 # 
 # $description
 # [1] "n1, n2 = cases 1st stage and additional # in 2nd"                    
