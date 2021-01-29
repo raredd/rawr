@@ -598,7 +598,7 @@ kmplot <- function(s, data = NULL,
       
       ## replace counts < atrisk.min with string
       rpl <- names(atrisk.min) %||% '---'
-      idx <- as.integer(gsub(',', '', tmp[, wh])) < atrisk.min
+      idx <- as.integer(gsub(' .*|,', '', tmp[, wh])) < atrisk.min
       # idx <- idx |
       #   c(FALSE, abs(diff(as.integer(gsub(',', '', tmp[, wh])))) < atrisk.min)
       
@@ -1083,7 +1083,7 @@ kmplot_data_ <- function(s, strata.lab) {
 #' @seealso \code{\link{kmplot}}; \code{\link{kmplot_by}}
 
 atrisk_data_ <- function(s, times, digits) {
-  ss <- summary(s, times = times)
+  ss <- summary(s, times = times, extend = TRUE)
   if (is.null(ss$strata))
     ss$strata <- rep_len(1L, length(ss$time))
   
