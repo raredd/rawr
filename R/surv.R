@@ -604,7 +604,7 @@ kmplot <- function(s, data = NULL,
       
       mtext(
         if (is.null(atrisk.min))
-          tmp[, wh] else replace(tmp[, wh], idx, rpl),
+          gsub('^0.*', '', tmp[, wh]) else replace(tmp[, wh], idx, rpl),
         side = 1L, col = col.atrisk[ii],
         las = 1L, line = line.pos[ii], cex = cex.atrisk,
         # at = tmp$time + w.adj * atrisk.type %ni% right,
