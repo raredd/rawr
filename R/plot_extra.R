@@ -816,7 +816,6 @@ imgpal <- function(path, n = 10L, options = '') {
 #' \code{\link{imgpal}}; \code{\link{palette}}; \code{\link{colorRampPalette}};
 #' \code{wesanderson::wes_palettes}; \code{nord::nord_palettes}
 #' 
-#' 
 #' @examples
 #' ## some built-in palettes
 #' rawr_palettes
@@ -900,6 +899,8 @@ rawr_pal <- function(name, n = NULL, z = n, type = c('discrete', 'continuous'),
 #' @rdname rawr_palettes
 #' @export
 show_pal <- function(x, fullrange = FALSE, counts = TRUE) {
+  imgpal <- inherits(x, 'imgpal')
+  
   if (inherits(x, 'rawr_pal')) {
     name <- attr(x, 'name')
     pal <- x
@@ -909,7 +910,7 @@ show_pal <- function(x, fullrange = FALSE, counts = TRUE) {
       stop(sprintf('palette %s not found', shQuote(x)), call. = FALSE)
     pal <- rawr_palettes[[idx]]
     name <- x
-  } else if (imgpal <- inherits(x, 'imgpal')) {
+  } else if (imgpal) {
     obj <- x
     pal <- obj$col
     len <- length(pal)
