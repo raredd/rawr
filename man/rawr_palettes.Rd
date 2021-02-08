@@ -12,7 +12,13 @@ An object of class \code{list} of length 5.
 \usage{
 rawr_palettes
 
-rawr_pal(name, n, z = n, type = c("discrete", "continuous"), rev = FALSE)
+rawr_pal(
+  name,
+  n = NULL,
+  z = n,
+  type = c("discrete", "continuous"),
+  rev = FALSE
+)
 
 show_pal(x, fullrange = FALSE, counts = TRUE)
 }

@@ -868,7 +868,7 @@ rawr_palettes <- list(
 
 #' @rdname rawr_palettes
 #' @export
-rawr_pal <- function(name, n, z = n, type = c('discrete', 'continuous'),
+rawr_pal <- function(name, n = NULL, z = n, type = c('discrete', 'continuous'),
                      rev = FALSE) {
   type <- match.arg(type)
   pal <- rawr_palettes[[tolower(name)]]
@@ -876,7 +876,7 @@ rawr_pal <- function(name, n, z = n, type = c('discrete', 'continuous'),
   if (rev)
     pal <- rev(pal)
   
-  if (missing(n))
+  if (is.null(n))
     n <- length(pal)
   
   if (is.null(pal))
@@ -900,8 +900,6 @@ rawr_pal <- function(name, n, z = n, type = c('discrete', 'continuous'),
 #' @rdname rawr_palettes
 #' @export
 show_pal <- function(x, fullrange = FALSE, counts = TRUE) {
-  imgpal <- inherits(x, 'imgpal')
-  
   if (inherits(x, 'rawr_pal')) {
     name <- attr(x, 'name')
     pal <- x
@@ -911,7 +909,7 @@ show_pal <- function(x, fullrange = FALSE, counts = TRUE) {
       stop(sprintf('palette %s not found', shQuote(x)), call. = FALSE)
     pal <- rawr_palettes[[idx]]
     name <- x
-  } else if (imgpal) {
+  } else if (imgpal <- inherits(x, 'imgpal')) {
     obj <- x
     pal <- obj$col
     len <- length(pal)
