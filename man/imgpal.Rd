@@ -13,7 +13,7 @@ imgpal(path, n = 10L, options = "")
 and the calculated number of unique colors will also be provided}
 
 \item{options}{a (optional) character string of additional options passed
-to \href{https://www.imagemagick.org/script/command-line-options.php}{\code{convert}}}
+to \href{https://www.imagemagick.org/script/command-line-options.php}{\code{magick}}}
 }
 \value{
 A list of class \code{"imgpal"} with the following elements:
@@ -21,18 +21,17 @@ A list of class \code{"imgpal"} with the following elements:
 \item{n_unique}{the calculated number of unique colors}
 \item{col}{a vector of colors (does not return transparent or white colors)}
 \item{counts}{frequency counts for each \code{col}}
-\item{call}{the call made to \code{convert}}
-\item{convert}{the result of \code{call}}
+\item{call}{the call made to \code{magick}}
+\item{magick}{the result of \code{call}}
 }
 \description{
 Extract unique and most commonly-used unique colors from an image file
 (requires \href{https://imagemagick.org/index.php}{ImageMagick}).
 }
 \examples{
-\dontrun{
 go <- 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png'
 ip <- imgpal(go)
-show_pal(ip)
+show_pal(ip, n = 4)
 
 ip <- imgpal(go, options = '-colorize 0,0,50')
 show_pal(ip)
@@ -43,7 +42,6 @@ img <- list.files(img, full.names = TRUE, pattern = 'g$')
 op <- par(mfrow = n2mfrow(length(img)))
 sapply(img, function(x) show_pal(imgpal(x), fullrange = TRUE))
 par(op)
-}
 
 }
 \seealso{

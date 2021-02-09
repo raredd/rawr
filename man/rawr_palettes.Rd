@@ -20,7 +20,7 @@ rawr_pal(
   rev = FALSE
 )
 
-show_pal(x, fullrange = FALSE, counts = TRUE)
+show_pal(x, n = Inf, fullrange = FALSE, counts = inherits(x, "imgpal"))
 }
 \arguments{
 \item{name}{the palette name to be used}
@@ -37,11 +37,11 @@ show_pal(x, fullrange = FALSE, counts = TRUE)
 colors; 3) an \code{\link{imgpal}} object}
 
 \item{fullrange}{logical; for \code{\link{imgpal}} objects, if \code{TRUE},
-the entire palette is shown; otherwise, only the calculated number of
-unique colors}
+the entire palette is shown; otherwise, only the unique colors (estimated
+from ImageMagick) are shown}
 
 \item{counts}{logical; for \code{\link{imgpal}} objects, if \code{TRUE},
-the color frequencies are shown for each}
+the frequencies are shown for each color}
 }
 \description{
 rawr palettes
@@ -62,11 +62,9 @@ show_pal(p)
 # show_pal(nord::nord_palettes$afternoon_prarie)
 show_pal(rainbow(8))
 
-\dontrun{
 filled.contour(volcano, col = rawr_pal('dfci', 4, 21, type = 'c'))
 filled.contour(volcano, col = rawr_pal('dfci', z = 21, type = 'c'))
 filled.contour(volcano, col = rawr_pal('pokrie', 4, 21, type = 'c'))
-}
 
 }
 \seealso{

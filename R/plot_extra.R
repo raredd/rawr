@@ -728,7 +728,7 @@ bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
 #' @param n maximum number of colors to extract, result will be <= \code{n},
 #' and the calculated number of unique colors will also be provided
 #' @param options a (optional) character string of additional options passed
-#' to \href{https://www.imagemagick.org/script/command-line-options.php}{\code{convert}}
+#' to \href{https://www.imagemagick.org/script/command-line-options.php}{\code{magick}}
 #' 
 #' @return
 #' A list of class \code{"imgpal"} with the following elements:
@@ -736,17 +736,16 @@ bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
 #' \item{n_unique}{the calculated number of unique colors}
 #' \item{col}{a vector of colors (does not return transparent or white colors)}
 #' \item{counts}{frequency counts for each \code{col}}
-#' \item{call}{the call made to \code{convert}}
-#' \item{convert}{the result of \code{call}}
+#' \item{call}{the call made to \code{magick}}
+#' \item{magick}{the result of \code{call}}
 #' 
 #' @seealso
 #' \code{\link{show_pal}}; \pkg{\code{magick}} package
 #' 
 #' @examples
-#' \dontrun{
 #' go <- 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png'
 #' ip <- imgpal(go)
-#' show_pal(ip)
+#' show_pal(ip, n = 4)
 #' 
 #' ip <- imgpal(go, options = '-colorize 0,0,50')
 #' show_pal(ip)
@@ -757,14 +756,13 @@ bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
 #' op <- par(mfrow = n2mfrow(length(img)))
 #' sapply(img, function(x) show_pal(imgpal(x), fullrange = TRUE))
 #' par(op)
-#' }
 #' 
 #' @export
 
 imgpal <- function(path, n = 10L, options = '') {
   cmd <- sprintf(
     # https://www.imagemagick.org/script/command-line-options.php
-    'convert %s +dither -colors %s -layers flatten %s \\
+    'magick %s +dither -colors %s -layers flatten %s \\
     -define histogram:unique-colors=true \\
     -format "%%f, n=%%k\n%%c\n" histogram:info:',
     path, n, options
@@ -783,7 +781,7 @@ imgpal <- function(path, n = 10L, options = '') {
   )
   dat <- dat[order(dat[, 1L], decreasing = TRUE), ]
   
-  ## remove fully transparent or white
+  ## remove fully transparent or white colors
   idx <- grepl('(?i)#(.{6}00|ffffff)', dat[, 2L])
   dat <- dat[!idx, ]
   
@@ -791,7 +789,7 @@ imgpal <- function(path, n = 10L, options = '') {
     filename = gsub(', n.*', '', res[1L]),
     n_unique = type.convert(gsub('n=(\\d+)$|.', '\\1', res[1L])),
     col = gsub('(#.{6})|.', '\\1', dat[, 2L]), counts = dat[, 1L],
-    call = cmd, convert = res
+    call = cmd, magick = res
   )
   
   structure(res, class = 'imgpal')
@@ -807,10 +805,10 @@ imgpal <- function(path, n = 10L, options = '') {
 #' @param x one of 1) a \code{rawr_palette} name; 2) a vector of two or more
 #' colors; 3) an \code{\link{imgpal}} object
 #' @param fullrange logical; for \code{\link{imgpal}} objects, if \code{TRUE},
-#' the entire palette is shown; otherwise, only the calculated number of
-#' unique colors
+#' the entire palette is shown; otherwise, only the unique colors (estimated
+#' from ImageMagick) are shown
 #' @param counts logical; for \code{\link{imgpal}} objects, if \code{TRUE},
-#' the color frequencies are shown for each
+#' the frequencies are shown for each color
 #' 
 #' @seealso
 #' \code{\link{imgpal}}; \code{\link{palette}}; \code{\link{colorRampPalette}};
@@ -832,18 +830,16 @@ imgpal <- function(path, n = 10L, options = '') {
 #' # show_pal(nord::nord_palettes$afternoon_prarie)
 #' show_pal(rainbow(8))
 #' 
-#' \dontrun{
 #' filled.contour(volcano, col = rawr_pal('dfci', 4, 21, type = 'c'))
 #' filled.contour(volcano, col = rawr_pal('dfci', z = 21, type = 'c'))
 #' filled.contour(volcano, col = rawr_pal('pokrie', 4, 21, type = 'c'))
-#' }
 #'
 #' @export
 
 # img <- system.file('fig', package = 'rawr')
 # img <- list.files(img, full.names = TRUE, pattern = 'g$')
-# pal <- sapply(img, function(x) imgpal(x)$col)
-# names(pal) <- gsub('.*/|\\..*', '', names(pal))
+# pal <- lapply(img, function(x) imgpal(x)$col)
+# names(pal) <- gsub('.*/|\\..*', '', img)
 # dput(pal)
 
 rawr_palettes <- list(
@@ -860,7 +856,7 @@ rawr_palettes <- list(
     c('#007DA2', '#374249', '#B5C1C6',  '#6E8189',
       '#DAE2E5', '#1C8BAC', '#8FC6D6', '#3D9CB8'),
   pokrie =
-    c('#612D13',  '#E1A863', '#245967', '#232324',
+    c('#612D13', '#E1A863', '#245967', '#232324',
       '#C49E67', '#57503E', '#975A2E',  '#DFC597',
       '#257589', '#4F8B93')
 )
@@ -881,11 +877,9 @@ rawr_pal <- function(name, n = NULL, z = n, type = c('discrete', 'continuous'),
   if (is.null(pal))
     stop(sprintf('palette %s not found', shQuote(name)), call. = FALSE)
   
-  if (type == 'discrete' & n > length(pal)) {
-    warning(sprintf('palette %s has max %s colors, try type = \'continuous\'',
-                    shQuote(name), length(pal)))
-    n <- length(pal)
-  }
+  if (type == 'discrete' & n > length(pal))
+    stop(sprintf('palette %s has max %s colors, try type = \'continuous\'',
+                 shQuote(name), length(pal)))
   
   res <- switch(
     type,
@@ -898,7 +892,8 @@ rawr_pal <- function(name, n = NULL, z = n, type = c('discrete', 'continuous'),
 
 #' @rdname rawr_palettes
 #' @export
-show_pal <- function(x, fullrange = FALSE, counts = TRUE) {
+show_pal <- function(x, n = Inf, fullrange = FALSE,
+                     counts = inherits(x, 'imgpal')) {
   imgpal <- inherits(x, 'imgpal')
   
   if (inherits(x, 'rawr_pal')) {
@@ -921,26 +916,32 @@ show_pal <- function(x, fullrange = FALSE, counts = TRUE) {
     name <- deparse(substitute(x))
   }
   
-  n <- length(pal)
+  n <- if (is.null(n))
+    length(pal) else pmin(length(pal), n)
+  i <- seq.int(n)
+  pal <- pal[seq.int(n)]
   
   op <- par(mar = rep_len(1, 4L))
   on.exit(par(op))
   
-  image(seq.int(n), 1, matrix(seq.int(n)), col = pal, ann = FALSE, axes = FALSE)
-  abline(v = seq.int(n) + 0.5, col = 'white')
+  image(i, 1, matrix(i), col = pal, ann = FALSE, axes = FALSE)
+  abline(v = i + 0.5, col = 'white')
   
   ## add bars of color frequencies
   if (imgpal && counts) {
-    ht <- obj$counts[seq.int(n)]
-    ht <- rescaler(ht, par('usr')[3:4], c(0, max(ht)))
-    rect(seq.int(n) - 0.5, par('usr')[3L], seq.int(n) + 0.25, ht,
+    ht <- obj$counts[i]
+    ht <- rescaler(ht, par('usr')[3:4], c(0, sum(ht)))
+    rect(i - 0.5, par('usr')[3L], i + 0.25, ht,
          col = 'white', density = 10, angle = 45)
-    rect(seq.int(n) - 0.5, par('usr')[3L], seq.int(n) + 0.25, ht,
+    rect(i - 0.5, par('usr')[3L], i + 0.25, ht,
          col = 'white', density = 10, angle = -45)
   }
   
-  rect(0, 0.9, n + 1, 1.1, col = adjustcolor('white', 0.8), border = NA)
-  text((n + 1) / 2, 1, labels = name)
+  col <- adjustcolor('white', 0.8)
+  rect(0, 0.9, n + 1, 1.1, col = col, border = NA)
+  text((n + 1) / 2, 1, name)
+  if (n <= 20L)
+    text(i + 0.5, par('usr')[4L], i, col = col, adj = c(2, 2))
   
   pal
 }
