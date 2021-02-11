@@ -62,9 +62,11 @@ show_pal(p)
 # show_pal(nord::nord_palettes$afternoon_prarie)
 show_pal(rainbow(8))
 
+\dontrun{
 filled.contour(volcano, col = rawr_pal('dfci', 4, 21, type = 'c'))
 filled.contour(volcano, col = rawr_pal('dfci', z = 21, type = 'c'))
 filled.contour(volcano, col = rawr_pal('pokrie', 4, 21, type = 'c'))
+}
 
 }
 \seealso{

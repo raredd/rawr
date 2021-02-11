@@ -32,8 +32,9 @@ bp.test(x, ...)
 \arguments{
 \item{x}{a vector of text to be drawn above each pair of groups}
 
-\item{...}{arguments passed to or from other methods or additional
-graphical parameters passed to \code{link{par}}}
+\item{...}{additional arguments or graphical parameters passed to
+\code{\link{segments}} (e.g., \code{col.line}, \code{lty}, \code{lwd})
+or \code{\link{text}} (e.g., \code{col.text}, \code{cex}, \code{font})}
 
 \item{formula}{a formula of the form \code{response ~ group} where
 \code{response} is a numeric variable and \code{group} is a factor-like
@@ -67,16 +68,29 @@ Add pairwise tests to box plots with three or more groups. Using
 pairs of groups and draws results on an existing plot.
 }
 \examples{
+## basic usage
 boxplot(mpg ~ gear, mtcars)
-bp.test(mpg ~ gear, mtcars) -> x
+x <- bp.test(mpg ~ gear, mtcars)
 
+## select which tests to show
 boxplot(mpg ~ gear, mtcars)
-bp.test(x$text[c(1, 3)], at = list(1:2, 2:3))
 bp.test(x$text[c(1, 3)], at = list(1:2, 2:3), line = 0:1)
 
-
+## re-order and adjust alignment of tests
 boxplot(mpg ~ gear, mtcars, at = c(1, 3, 4), ylim = c(10, 55))
 bp.test(mpg ~ gear, mtcars, at = c(1, 3, 4), which = c(1, 3, 2), line = -5)
+
+## customize with graphical parameters passed to segments and/or text
+op <- par(mar = par('mar') + c(0, 0, 5, 0))
+boxplot(mpg ~ gear, mtcars)
+bp.test(
+  mpg ~ gear, mtcars, line = 0:2 * 3,
+  ## passed to text
+  col.text = c(2, 1, 1), cex = 1.5, font = c(4, 1, 1), pos = 3,
+  ## passed to segments
+  col.line = 'red', lwd = 2, lty = 2
+)
+par(op)
 
 
 op <- par(mar = par('mar') + c(0, 0, 3, 0))
@@ -86,8 +100,10 @@ bp.test(mpg ~ interaction(vs, am), mtcars)
 tplot(mpg ~ interaction(vs, am), mtcars, show.n = FALSE)
 bp.test(mpg ~ interaction(vs, am), mtcars, which = c(1, 3, 5))
 
-bp.test(mpg ~ interaction(vs, am), mtcars, which = 6, line = 4,
-        col = 'red', fg = 'red', lty = 2, font = 2, test = t.test) -> at
+at <- bp.test(
+  mpg ~ interaction(vs, am), mtcars, which = 6, line = 4,
+  col = 'red', fg = 'red', lty = 2, font = 2, test = t.test
+)
 points(at[1], at[2], pch = 1, cex = 5, col = 'red', xpd = NA)
 par(op)
 

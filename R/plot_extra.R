@@ -559,8 +559,9 @@ col_scaler2 <- function(x, colors, breaks = 0, ...) {
 #' pairs of groups and draws results on an existing plot.
 #' 
 #' @param x a vector of text to be drawn above each pair of groups
-#' @param ... arguments passed to or from other methods or additional
-#' graphical parameters passed to \code{link{par}}
+#' @param ... additional arguments or graphical parameters passed to
+#' \code{\link{segments}} (e.g., \code{col.line}, \code{lty}, \code{lwd})
+#' or \code{\link{text}} (e.g., \code{col.text}, \code{cex}, \code{font})
 #' @param formula a formula of the form \code{response ~ group} where
 #' \code{response} is a numeric variable and \code{group} is a factor-like
 #' variable with three or more unique values (groups)
@@ -586,16 +587,29 @@ col_scaler2 <- function(x, colors, breaks = 0, ...) {
 #' \code{rawr:::coords}
 #' 
 #' @examples
+#' ## basic usage
 #' boxplot(mpg ~ gear, mtcars)
-#' bp.test(mpg ~ gear, mtcars) -> x
+#' x <- bp.test(mpg ~ gear, mtcars)
 #' 
+#' ## select which tests to show
 #' boxplot(mpg ~ gear, mtcars)
-#' bp.test(x$text[c(1, 3)], at = list(1:2, 2:3))
 #' bp.test(x$text[c(1, 3)], at = list(1:2, 2:3), line = 0:1)
 #' 
-#' 
+#' ## re-order and adjust alignment of tests
 #' boxplot(mpg ~ gear, mtcars, at = c(1, 3, 4), ylim = c(10, 55))
 #' bp.test(mpg ~ gear, mtcars, at = c(1, 3, 4), which = c(1, 3, 2), line = -5)
+#' 
+#' ## customize with graphical parameters passed to segments and/or text
+#' op <- par(mar = par('mar') + c(0, 0, 5, 0))
+#' boxplot(mpg ~ gear, mtcars)
+#' bp.test(
+#'   mpg ~ gear, mtcars, line = 0:2 * 3,
+#'   ## passed to text
+#'   col.text = c(2, 1, 1), cex = 1.5, font = c(4, 1, 1), pos = 3,
+#'   ## passed to segments
+#'   col.line = 'red', lwd = 2, lty = 2
+#' )
+#' par(op)
 #' 
 #' 
 #' op <- par(mar = par('mar') + c(0, 0, 3, 0))
@@ -605,8 +619,10 @@ col_scaler2 <- function(x, colors, breaks = 0, ...) {
 #' tplot(mpg ~ interaction(vs, am), mtcars, show.n = FALSE)
 #' bp.test(mpg ~ interaction(vs, am), mtcars, which = c(1, 3, 5))
 #' 
-#' bp.test(mpg ~ interaction(vs, am), mtcars, which = 6, line = 4,
-#'         col = 'red', fg = 'red', lty = 2, font = 2, test = t.test) -> at
+#' at <- bp.test(
+#'   mpg ~ interaction(vs, am), mtcars, which = 6, line = 4,
+#'   col = 'red', fg = 'red', lty = 2, font = 2, test = t.test
+#' )
 #' points(at[1], at[2], pch = 1, cex = 5, col = 'red', xpd = NA)
 #' par(op)
 #' 
@@ -648,16 +664,20 @@ bp.test <- function(x, ...) {
 #' @export
 bp.test.formula <- function(formula, data, which = NULL, at = NULL, line = NULL,
                             test = wilcox.test, plot = TRUE, ...) {
+  m <- match.call(expand.dots = FALSE)
+  dots <- lapply(m$`...`, eval, data, parent.frame(1L))
+  
   bp <- boxplot(formula, data, plot = FALSE)
   ng <- length(bp$n)
   if (ng == 1L) {
-    message('only one group -- no test performed')
+    warning('only one group -- no test performed')
     return(invisible(NULL))
   }
   
-  pv <- if (ng == 2L)
-    test(formula, data)
-  else cuzick.test(formula, data, details = test)$details$pairs
+  pv <- if (ng > 2L) {
+    ## use cuzick to get pairwise tests
+    cuzick.test(formula, data, details = test)$details$pairs
+  } else test(formula, data)
   pv <- pvalr(pv$p.value, show.p = TRUE)
   
   which <- if (is.null(which))
@@ -667,13 +687,27 @@ bp.test.formula <- function(formula, data, which = NULL, at = NULL, line = NULL,
   line <- if (is.null(line) || length(line) == 1L)
     1.25 * (seq_along(which) - 1) + line %||% 0 else line
   
-  bp.test(pv, which, at, line, test, plot, ...)
+  args <- list(
+    x = pv, which = which, at = at, line = line, test = test, plot = plot
+  )
+  
+  do.call('bp.test', c(args, dots))
 }
 
 #' @rdname bp.test
 #' @export
 bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
                             test = wilcox.test, plot = TRUE, ...) {
+  m <- match.call()
+  segments2 <- function(..., col, labels, adj, pos, offset, vfont, cex, font,
+                        xpd, col.line, col.text) {
+    segments(..., col = eval(m$col.line) %||% par('fg'), xpd = NA)
+  }
+  text2 <- function(..., col, lty, lwd, lend, ljoin, lmitre, xpd, col.line,
+                    col.text) {
+    text(..., col = eval(m$col.text), xpd = NA)
+  }
+  
   ng <- length(x) + 1L
   if (ng == 1L) {
     message('only one group -- no test performed')
@@ -694,9 +728,9 @@ bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
     col <- par('fg')
     
     if (plot) {
-      segments(x1, y, x2, y,       col = col, xpd = NA)
-      segments(x1, y, x1, y - pad, col = col, xpd = NA)
-      segments(x2, y, x2, y - pad, col = col, xpd = NA)
+      segments2(x1, y, x2, y, ...)
+      segments2(x1, y, x1, y - pad, ...)
+      segments2(x2, y, x2, y - pad, ...)
     }
     
     c(x1 + (x2 - x1) / 2, y + pad * 3)
@@ -706,14 +740,14 @@ bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
   cbn <- if (is.list(at))
     do.call('cbind', at) else combn(at, 2L)
   
-  res <- sapply(seq_along(which), function(ii) {
+  coords <- sapply(seq_along(which), function(ii) {
     xat <- cbn[, which[ii]]
-    xat <- seg(xat[1L], yat[ii], xat[2L], plot && !is.na(x[which[ii]]))
-    if (plot)
-      text(xat[1L], xat[2L], x[which[ii]], xpd = NA)
-    xat
+    seg(xat[1L], yat[ii], xat[2L], plot && !is.na(x[which[ii]]))
   })
-  res <- list(x = res[1L, ], y = res[2L, ], text = x[which])
+  if (plot)
+    text2(coords[1L, ], coords[2L, ], x[which], ...)
+  
+  res <- list(x = coords[1L, ], y = coords[2L, ], text = x[which])
   
   if (plot)
     invisible(res) else res
@@ -762,12 +796,12 @@ bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
 imgpal <- function(path, n = 10L, options = '') {
   cmd <- sprintf(
     # https://www.imagemagick.org/script/command-line-options.php
-    'magick %s +dither -colors %s -layers flatten %s \\
+    "magick %s +dither -colors %s -layers flatten %s \\
     -define histogram:unique-colors=true \\
-    -format "%%f, n=%%k\n%%c\n" histogram:info:',
+    -format '%%f, n=%%k\n%%c\n' histogram:info:",
     path, n, options
   )
-  co <- capture.output({
+  capture.output({
     res <- system(cmd, intern = TRUE)
   })
   if (!is.null(attr(res, 'status')))
@@ -789,7 +823,8 @@ imgpal <- function(path, n = 10L, options = '') {
     filename = gsub(', n.*', '', res[1L]),
     n_unique = type.convert(gsub('n=(\\d+)$|.', '\\1', res[1L])),
     col = gsub('(#.{6})|.', '\\1', dat[, 2L]), counts = dat[, 1L],
-    call = cmd, magick = res
+    call = gsub('\\s{2,}', ' ', gsub('\\\n', ' ', cmd, fixed = TRUE)),
+    magick = res
   )
   
   structure(res, class = 'imgpal')
@@ -830,9 +865,11 @@ imgpal <- function(path, n = 10L, options = '') {
 #' # show_pal(nord::nord_palettes$afternoon_prarie)
 #' show_pal(rainbow(8))
 #' 
+#' \dontrun{
 #' filled.contour(volcano, col = rawr_pal('dfci', 4, 21, type = 'c'))
 #' filled.contour(volcano, col = rawr_pal('dfci', z = 21, type = 'c'))
 #' filled.contour(volcano, col = rawr_pal('pokrie', 4, 21, type = 'c'))
+#' }
 #'
 #' @export
 
@@ -851,13 +888,13 @@ rawr_palettes <- list(
       '#9FA2A6', '#D5D7D9', '#847F5F', '#40A0C9'),
   harvard =
     c('#C5112E', '#231F20', '#0B0808', '#CDABB1',
-      '#E4D5D7', '#BA263E',  '#9F9F9F', '#79575C'),
+      '#E4D5D7', '#BA263E', '#9F9F9F', '#79575C'),
   mgh =
-    c('#007DA2', '#374249', '#B5C1C6',  '#6E8189',
+    c('#007DA2', '#374249', '#B5C1C6', '#6E8189',
       '#DAE2E5', '#1C8BAC', '#8FC6D6', '#3D9CB8'),
   pokrie =
     c('#612D13', '#E1A863', '#245967', '#232324',
-      '#C49E67', '#57503E', '#975A2E',  '#DFC597',
+      '#C49E67', '#57503E', '#975A2E', '#DFC597',
       '#257589', '#4F8B93')
 )
 
