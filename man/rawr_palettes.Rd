@@ -23,11 +23,13 @@ rawr_pal(
 show_pal(x, n = Inf, fullrange = FALSE, counts = inherits(x, "imgpal"))
 }
 \arguments{
-\item{name}{the palette name to be used}
+\item{name}{the palette name, one of \code{names(rawr_palettes)} or an
+unambiguous abbreviation}
 
 \item{n}{the first \code{n} colors from the palette to use}
 
-\item{z}{for \code{type = 'continuous'}, the number of colors desired}
+\item{z}{for \code{type = 'continuous'}, the number of colors to
+interpolate from the sequence of \code{n} palette colors}
 
 \item{type}{return a discrete or continuous (gradient) of colors}
 
@@ -44,19 +46,16 @@ from ImageMagick) are shown}
 the frequencies are shown for each color}
 }
 \description{
-rawr palettes
+Functions for generating and viewing color palettes.
 }
 \examples{
 ## some built-in palettes
 rawr_palettes
 
 ## use or generate new palettes from existing
-p <- rawr_pal('dfci')
-show_pal(p)
-p <- rawr_pal('dfci', 4)
-show_pal(p)
-p <- rawr_pal('dfci', 4, 100, type = 'continuous')
-show_pal(p)
+show_pal(rawr_pal('dfci'))
+show_pal(rawr_pal('dfci', 4))
+show_pal(rawr_pal('dfci', 4, 100, type = 'continuous'))
 
 ## view palettes from other sources
 # show_pal(nord::nord_palettes$afternoon_prarie)
@@ -71,6 +70,7 @@ filled.contour(volcano, col = rawr_pal('pokrie', 4, 21, type = 'c'))
 }
 \seealso{
 \code{\link{imgpal}}; \code{\link{palette}}; \code{\link{colorRampPalette}};
-\code{wesanderson::wes_palettes}; \code{nord::nord_palettes}
+\code{wesanderson::wes_palettes}; \code{nord::nord_palettes};
+\code{faulkner::faulkners}
 }
 \keyword{datasets}
