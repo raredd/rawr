@@ -1,7 +1,7 @@
 ### plot misc, extra, random
 # dodge, dodge.default, dodge.formula, dodge2, dodge2.default, dodge2.formula,
 # show_colors, show_pch, tcol, col_scaler, bp.test, bp.test.default,
-# bp.test.formula, imgpal, rawr_palettes, rawr_pal, show_pal
+# bp.test.formula, imgpal, rawr_palettes, rawr_pal, show_pal, rgbdiff
 #
 # S3 methods:
 # dodge, dodge2, bp.test
@@ -987,4 +987,69 @@ show_pal <- function(x, n = Inf, fullrange = FALSE,
     text(i + 0.5, par('usr')[4L], i, col = col, adj = c(2, 2))
 
   pal
+}
+
+#' Color similarity
+#' 
+#' A naive approach to compare two colors quantitatively. Converts colors
+#' to RGB and calculates the absolute percent differences for red, green,
+#' and blue plus the average of the three.
+#' 
+#' @param col a vector of colors; see \code{\link{col2rgb}}; note that all
+#' \code{choose(length(col), 2)} pairs of colors will be compared
+#' @param col2 an optional vector of colors to compare 1:1 with \code{col}
+#' 
+#' @return
+#' A matrix of red, green, blue, and average overall percent differences as
+#' rows and each pair of colors as columns.
+#' 
+#' @examples
+#' rgbdiff(1:4)
+#' ## same
+#' rgbdiff(palette()[1:4])
+#' 
+#' rgbdiff(paste0('red', 1:4))
+#' rgbdiff(paste0('red', 1:4), paste0('red', 1:4))
+#' 
+#' \dontrun{
+#' ## google colors from imagemagick
+#' go <- 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png'
+#' ip <- imgpal(go)
+#' 
+#' ## google colors, https://www.schemecolor.com/google-logo-colors.php
+#' go <- c('#4285F4', '#EA4335', '#FBBC05', '#34A853')
+#' 
+#' show_pal(go)
+#' show_pal(ip, n = 4)
+#' 
+#' rgbdiff(ip$col[1:4], go)
+#' }
+#' 
+#' @export
+
+rgbdiff <- function(col, col2 = NULL) {
+  if (!is.null(col2))
+    stopifnot(length(col) == length(col2))
+  
+  cols <- c(col, col2)
+  rgbs <- col2rgb(cols)
+  
+  if (length(cols) == 1L)
+    return(matrix(0, 4L, dimnames = list(c(rownames(rgbs), 'rgb'), col)))
+  
+  res <- combn(length(cols), 2L, function(ii) {
+    x <- rgbs[, ii]
+    x <- abs(x[, 1L] - x[, 2L]) / 255
+    c(x, mean(x)) * 100
+  })
+  
+  dimnames(res) <- list(
+    c(rownames(rgbs), 'rgb'),
+    combn(cols, 2L, toString)
+  )
+  
+  if (!is.null(col2)) {
+    p <- paste0(sprintf('%s.*%s', col, col2), collapse = '|')
+    res[, grep(p, colnames(res))]
+  } else res
 }
