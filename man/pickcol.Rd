@@ -4,17 +4,21 @@
 \alias{pickcol}
 \title{Pick elements from columns}
 \usage{
-pickcol(data, ind = 1L, value = FALSE)
+pickcol(data, ind = 1L, value = FALSE, default = NA)
 }
 \arguments{
 \item{data}{a data frame or matrix}
 
 \item{ind}{if \code{value = FALSE} (default), a vector (usually a single
 value) to match and return column name(s) of \code{data} where \code{ind}
-is found; if \code{value = TRUE}, a vector of values to be \emph{ignored}}
+is found; if \code{value = TRUE}, a vector of values to be \emph{ignored},
+e.g., \code{NA}s or empty strings}
 
 \item{value}{logical; if \code{TRUE}, returns column value(s); otherwise,
 returns column name(s) (default)}
+
+\item{default}{for \code{value = FALSE}, the default value returned if
+a row of \code{data} contains no \code{ind} in any column}
 }
 \value{
 If \code{value} is \code{FALSE} (default), the column names of \code{data}

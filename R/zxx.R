@@ -2013,9 +2013,12 @@ sample_each <- function(x, n = 1L) {
 #' @param data a data frame or matrix
 #' @param ind if \code{value = FALSE} (default), a vector (usually a single
 #' value) to match and return column name(s) of \code{data} where \code{ind}
-#' is found; if \code{value = TRUE}, a vector of values to be \emph{ignored}
+#' is found; if \code{value = TRUE}, a vector of values to be \emph{ignored},
+#' e.g., \code{NA}s or empty strings
 #' @param value logical; if \code{TRUE}, returns column value(s); otherwise,
 #' returns column name(s) (default)
+#' @param default for \code{value = FALSE}, the default value returned if
+#' a row of \code{data} contains no \code{ind} in any column
 #' 
 #' @return
 #' If \code{value} is \code{FALSE} (default), the column names of \code{data}
@@ -2057,7 +2060,7 @@ sample_each <- function(x, n = 1L) {
 #' 
 #' @export
 
-pickcol <- function(data, ind = 1L, value = FALSE) {
+pickcol <- function(data, ind = 1L, value = FALSE, default = NA) {
   res <- apply(data, 1L, function(x) {
     if (value) {
       x[x %in% ind] <- NA
@@ -2066,7 +2069,7 @@ pickcol <- function(data, ind = 1L, value = FALSE) {
     } else {
       idx <- x %in% ind
       if (sum(idx))
-        toString(names(x[idx])) else NA
+        toString(names(x[idx])) else default
     }
   })
   
