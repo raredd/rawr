@@ -45,10 +45,9 @@ dodge(mtcars[, c('gear', 'vs')], mtcars$mpg)
 
 
 ## compare to overlapping points and jittering
-op <- par(no.readonly = TRUE)
 sp <- split(mtcars$mpg, do.call(interaction, mtcars[, c('gear','vs')]))
 plot.new()
-par(mar = c(0,0,0,0), cex = 2)
+po <- par(mar = c(0, 0, 0, 0), cex = 2)
 plot.window(c(.5,6.5),c(10,35))
 box()
 for (ii in seq_along(sp))

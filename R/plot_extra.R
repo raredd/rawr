@@ -42,10 +42,9 @@
 #'
 #'
 #' ## compare to overlapping points and jittering
-#' op <- par(no.readonly = TRUE)
 #' sp <- split(mtcars$mpg, do.call(interaction, mtcars[, c('gear','vs')]))
 #' plot.new()
-#' par(mar = c(0,0,0,0), cex = 2)
+#' po <- par(mar = c(0, 0, 0, 0), cex = 2)
 #' plot.window(c(.5,6.5),c(10,35))
 #' box()
 #' for (ii in seq_along(sp))
@@ -147,10 +146,9 @@ dodge.formula <- function(formula, data = NULL, ...) {
 #'
 #'
 #' ## compare to overlapping points and jittering
-#' op <- par(no.readonly = TRUE)
 #' sp <- split(mtcars$mpg, do.call(interaction, mtcars[, c('gear','vs')]))
 #' plot.new()
-#' par(mar = c(0,0,0,0), cex = 2)
+#' op <- par(mar = c(0,0,0,0), cex = 2)
 #' plot.window(c(.5,6.5),c(10,35))
 #' box()
 #' for (ii in seq_along(sp))
@@ -476,11 +474,10 @@ tcol <- function(col, alpha = 1) {
 #' p(-4, col_scaler(x, colorRampPalette(c('tomato', 'white', 'blue4'))))
 #'
 #'
-#' op <- par(no.readonly = TRUE)
 #' set.seed(1)
 #' x <- runif(1000)
 #' y <- c('red', 'black', 'red')
-#' par(mfrow = c(2, 2), mar = c(3,3,1,1))
+#' op <- par(mfrow = c(2, 2), mar = c(3, 3, 1, 1))
 #' plot(x, col = col_scaler(x, y), pch = 16)
 #' plot(x, col = col_scaler(x, y, breaks = 0.5), pch = 16)
 #' plot(x, col = col_scaler(x, y, breaks = 0.9), pch = 16)
@@ -1008,7 +1005,9 @@ show_pal <- function(x, n = Inf, fullrange = FALSE,
 #' ## same
 #' rgbdiff(palette()[1:4])
 #' 
+#' ## compare all combinations
 #' rgbdiff(paste0('red', 1:4))
+#' ## only compare 1:1
 #' rgbdiff(paste0('red', 1:4), paste0('red', 1:4))
 #' 
 #' \dontrun{

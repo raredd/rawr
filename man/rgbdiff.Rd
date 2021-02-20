@@ -26,7 +26,9 @@ rgbdiff(1:4)
 ## same
 rgbdiff(palette()[1:4])
 
+## compare all combinations
 rgbdiff(paste0('red', 1:4))
+## only compare 1:1
 rgbdiff(paste0('red', 1:4), paste0('red', 1:4))
 
 \dontrun{

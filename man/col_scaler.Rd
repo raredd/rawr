@@ -81,11 +81,10 @@ p(-3, col_scaler(x, rainbow, alpha = 0.1))
 p(-4, col_scaler(x, colorRampPalette(c('tomato', 'white', 'blue4'))))
 
 
-op <- par(no.readonly = TRUE)
 set.seed(1)
 x <- runif(1000)
 y <- c('red', 'black', 'red')
-par(mfrow = c(2, 2), mar = c(3,3,1,1))
+op <- par(mfrow = c(2, 2), mar = c(3, 3, 1, 1))
 plot(x, col = col_scaler(x, y), pch = 16)
 plot(x, col = col_scaler(x, y, breaks = 0.5), pch = 16)
 plot(x, col = col_scaler(x, y, breaks = 0.9), pch = 16)

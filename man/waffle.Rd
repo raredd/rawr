@@ -59,7 +59,6 @@ A list of four matrices:
 A waffle chart.
 }
 \examples{
-op <- par(no.readonly = TRUE)
 waffle(matrix(1:9, 3))
 waffle(matrix(1:9, 3), invert = 'x')
 waffle(matrix(1:9, 3), heights = c(.25, .95, .5), border = NA)
@@ -91,25 +90,25 @@ cols <- c('beige', 'dodgerblue2', 'green', 'orange')
 x <- sample(cols, n * ng, replace = TRUE, prob = c(.05,.31,.32,.32))
 x <- kinda_sort(x, n = 20)
 
-par(fig = c(0,1,.2,.9), mar = c(0,5,0,1))
+op <- par(fig = c(0, 1, 0.2, 0.9), mar = c(0, 5, 0, 1))
 plot(cumsum(rnorm(n)), type = 'l', ann = FALSE, xaxt = 'n')
 
-par(fig = c(0,1,0,.2), mar = c(1,5,0,1), new = TRUE)
+par(fig = c(0, 1, 0, 0.2), mar = c(1, 5, 0, 1), new = TRUE)
 waffle(matrix(x, ng), heights = c(0.95, 0.5, 0.95), border = 'white',
        reset_par = FALSE) -> wf
 text(0, rev(unique(wf$centers[, 'y'])), paste('Feature', 1:3),
      xpd = NA, pos = 2L)
 
-par(fig = c(0,1,.9,1), mar = c(.5,5,.5,1), new = TRUE)
+par(fig = c(0, 1, 0.9, 1), mar = c(0.5, 5, 0.5, 1), new = TRUE)
 waffle(matrix(x, ng)[1L, , drop = FALSE], heights = 0.5,
        border = 'white', reset_par = FALSE)
 box()
 box('outer')
+par(op)
 
 
 ## waffle conveniently returns the centers of the rects
 ## be sure _not_ to reset pars for proper alignment
-par(op)
 w <- waffle(matrix(1:8, 2), reset_par = FALSE, invert = 'xy')
 text(w$c[, 'x'], w$c[, 'y'], labels = palette(), col = 'white')
 
