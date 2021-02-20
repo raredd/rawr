@@ -14,13 +14,17 @@
 
 stratify_formula <- function(formula, vars = NULL) {
   # rawr:::stratify_formula(Surv(a, b) ~ x, c('y', 'z'))
+  # rawr:::stratify_formula(Surv(a, b) ~ x + y, c('y', 'z'))
   if (is.null(vars))
     return(as.formula(formula))
   
   st <- paste(sprintf('strata(%s)', vars), collapse = ' + ')
   ff <- as.character(formula)
   
-  as.formula(sprintf('%s ~ %s + %s', ff[2L], ff[3L], st))
+  update(
+    as.formula(sprintf('%s ~ %s + %s', ff[2L], ff[3L], st)),
+    as.formula(sprintf('. ~ . %s', paste(sprintf('- %s', vars), collapse = '')))
+  )
 }
 
 #' Survival curves
@@ -479,7 +483,7 @@ kmplot <- function(s, data = NULL,
   if (!add)
     on.exit(par(op))
 
-  ## guess margins based on atrisk table options
+  ## guess margins based on at-risk table options
   par(mar = c(4 + ng * atrisk.table + atrisk.pad,
               4 + pmax(4, extra.margin) - 3 * !atrisk.table,
               2,
