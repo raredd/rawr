@@ -98,11 +98,13 @@ mt <- within(mtcars, {
   am   <- factor(am)
   gear <- factor(gear)
   vs   <- factor(vs, 0:2)
+  vs2  <- factor(vs, 2:0)
   carb <- factor(carb)
 })
 
 tabler_by(mt, 'vs', 'gear')
-tabler_by(mt, c('vs', 'carb'), 'gear', order = TRUE)
+tabler_by(mt, c('vs2', 'carb'), 'gear', order = FALSE)
+tabler_by(mt, c('vs2', 'carb'), 'gear', order = TRUE)
 
 
 ## when length(n) > 1, each column uses a different n for percents
@@ -163,7 +165,7 @@ ht <- htmlTable::htmlTable(
   out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
   caption = 'Table 1: Toxicities<sup>&dagger;</sup> by phase and grade,
             sorted by total.',
-  col.columns = rep(c('grey97','none','grey97'), times = c(1,4,4)),
+  col.columns = rep(c('grey97', 'none', 'grey97'), times = c(1, 4, 4)),
   col.rgroup = rep(rep(c('none', 'grey97'), each = 5), 10),
   tfoot = paste0('<font size=1><sup>&dagger;</sup>Percents represent ',
            'proportion of patients out of respective phase total.</font>')
@@ -190,7 +192,7 @@ cgroup <- c(
 )
 
 ht <- htmlTable::htmlTable(
-  out2, align = 'lc', cgroup = cgroup, n.cgroup = c(1,1,4,4),
+  out2, align = 'lc', cgroup = cgroup, n.cgroup = c(1, 1, 4, 4),
   caption = 'Table 1: Toxicities<sup>&dagger;</sup> by category, phase,
   grade.'
 )
