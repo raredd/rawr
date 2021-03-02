@@ -27,17 +27,20 @@ Perform binary operations on vectors, matrices, or data frames.
 \examples{
 x <- c(-1, NA, 4, 15)
 y <- c(NA, NA, 6, -1)
+
+x + y
 psum(x, y)
 psum(x, y, na.rm = TRUE)
 
 x <- matrix(x, 4, 4)
 y <- matrix(y, 4, 4)
+x + y
 psum(x, y)
 psum(x, y, na.rm = TRUE)
 
+x - y - x
 pfun(x, y, x, FUN = `-`)
 pfun(x, y, x, FUN = `-`, na.rm = TRUE)
-x - y - x
 
 }
 \seealso{

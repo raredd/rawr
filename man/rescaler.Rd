@@ -19,9 +19,9 @@ Rescale a numeric vector to have specified maximum and minimum; modified
 from the \pkg{scales} package.
 }
 \examples{
-rescaler(1:5)
-rescaler(runif(5), c(0.5, 1))
-rescaler(1)
+rescaler(1:5, to = c(0, 1))
+rescaler(1:5, to = c(0, 100))
+rescaler(5, to = c(0, 100), from = c(0, 25))
 
 }
 \seealso{

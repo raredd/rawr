@@ -12,7 +12,7 @@ jmplot(
   sub = "",
   xlab = NULL,
   ylab = NULL,
-  names,
+  names = NULL,
   xlim = NULL,
   ylim = NULL,
   axes = TRUE,

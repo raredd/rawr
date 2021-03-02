@@ -6,23 +6,20 @@
 \usage{
 rgene(
   n = 1L,
-  alpha = LETTERS[1:5],
-  nalpha = 2:5,
+  alpha = LETTERS,
+  nalpha = 1:5,
   num = 0:9,
-  nnum = 1:5,
+  nnum = nalpha,
   sep = "-"
 )
 }
 \arguments{
 \item{n}{number of gene names to return}
 
-\item{alpha}{vector of letters to select from}
+\item{alpha, num}{vectors of letters or numerics to select from}
 
-\item{nalpha}{range of possible number of \code{alpha} to select}
-
-\item{num}{numerics to select from}
-
-\item{nnum}{range of possible number of \code{num} to select}
+\item{nalpha, nnum}{range of possible number of \code{alpha} or \code{num}
+to select}
 
 \item{sep}{character to separate \code{alpha} and \code{num}}
 }
@@ -31,7 +28,11 @@ Generate random character strings from pools of letters and digits.
 }
 \examples{
 rgene()
-rgene(5, alpha = 'ABCD', nalpha = 1, nnum = 5:6)
-rgene(5, alpha = c('A','T','C','G'), num = '', sep = '')
+
+## letters only
+rgene(5, alpha = c('A', 'T', 'C', 'G'), nalpha = 10, num = NULL)
+
+## fixed prefix (or suffix)
+rgene(5, alpha = 'ABCD', nalpha = 1, nnum = 5)
 
 }

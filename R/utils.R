@@ -16,7 +16,7 @@
 # parse_yaml, parse_index, parse_news, parse_namespace
 # 
 # unexported:
-# islist, done, where_, where, dots, name_or_index, insert_
+# islist, done, where_, where, dots, name_or_index, rm_na_dimnames, insert_
 ###
 
 
@@ -41,14 +41,8 @@ done <- function(type = c('notifier', 'beep')) {
 }
 
 where_ <- function(x, env = environment(NULL)) {
-  ## recursively find env where x is defined
-  stopifnot(
-    is.character(x),
-    length(x) == 1L
-  )
-  if (identical(env, emptyenv())) {
+  if (identical(env, emptyenv()))
     stop(x, ' not found', call. = FALSE)
-  }
   
   if (exists(x, env, inherits = FALSE))
     env else Recall(x, parent.env(env))
@@ -515,17 +509,20 @@ parse_namespace <- function(x,
 #' @examples
 #' x <- c(-1, NA, 4, 15)
 #' y <- c(NA, NA, 6, -1)
+#' 
+#' x + y
 #' psum(x, y)
 #' psum(x, y, na.rm = TRUE)
 #' 
 #' x <- matrix(x, 4, 4)
 #' y <- matrix(y, 4, 4)
+#' x + y
 #' psum(x, y)
 #' psum(x, y, na.rm = TRUE)
 #' 
+#' x - y - x
 #' pfun(x, y, x, FUN = `-`)
 #' pfun(x, y, x, FUN = `-`, na.rm = TRUE)
-#' x - y - x
 #' 
 #' @export
 
@@ -563,28 +560,33 @@ psum <- function(..., na.rm = FALSE) {
 #' \code{\link[scales]{rescale}}; \code{\link[scales]{zero_range}}
 #' 
 #' @examples
-#' rescaler(1:5)
-#' rescaler(runif(5), c(0.5, 1))
-#' rescaler(1)
+#' rescaler(1:5, to = c(0, 1))
+#' rescaler(1:5, to = c(0, 100))
+#' rescaler(5, to = c(0, 100), from = c(0, 25))
 #' 
 #' @export
 
 rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
   zero_range <- function(x, tol = .Machine$double.eps * 100) {
-    if (length(x) == 1L)  return(TRUE)
-    if (length(x) != 2L)  stop('\'x\' must be length one or two')
-    if (any(is.na(x)))    return(NA)
-    if (x[1L] == x[2L])   return(TRUE)
-    if (all(is.infinite(x))) return(FALSE)
+    if (length(x) == 1L)
+      return(TRUE)
+    if (length(x) != 2L)
+      stop('\'x\' must be length one or two')
+    if (any(is.na(x)))
+      return(NA)
+    if (x[1L] == x[2L])
+      return(TRUE)
+    if (all(is.infinite(x)))
+      return(FALSE)
     m <- min(abs(x))
-    if (m == 0) return(FALSE)
+    if (m == 0)
+      return(FALSE)
     abs((x[1L] - x[2L]) / m) < tol
   }
   
   if (zero_range(from) || zero_range(to))
-    return(rep(mean(to), length(x)))
-  
-  (x - from[1L]) / diff(from) * diff(to) + to[1L]
+    rep_len(mean(to), length(x))
+  else (x - from[1L]) / diff(from) * diff(to) + to[1L]
 }
 
 #' Bind objects
@@ -1511,8 +1513,8 @@ regcaptures2 <- function(x, pattern, use.names = TRUE) {
 #' is \code{"long"} (\code{melt}) or \code{"wide"} (\code{cast}).
 #' 
 #' These functions set defaults for reshaping data; any defaults may be
-#' overwritten by simply passing arguments to \dots (names must match exactly
-#' and no partial matching is allowed or they will be ignored).
+#' overwritten by simply passing arguments to \code{...} (names must match
+#' exactly and no partial matching is allowed or they will be ignored).
 #' 
 #' By default, \code{cast} assumes \code{data} is a data frame with at least
 #' three columns representing id, time point, and value variables (any

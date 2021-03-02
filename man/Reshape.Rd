@@ -39,8 +39,8 @@ is \code{"long"} (\code{melt}) or \code{"wide"} (\code{cast}).
 }
 \details{
 These functions set defaults for reshaping data; any defaults may be
-overwritten by simply passing arguments to \dots (names must match exactly
-and no partial matching is allowed or they will be ignored).
+overwritten by simply passing arguments to \code{...} (names must match
+exactly and no partial matching is allowed or they will be ignored).
 
 By default, \code{cast} assumes \code{data} is a data frame with at least
 three columns representing id, time point, and value variables (any

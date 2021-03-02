@@ -69,7 +69,7 @@
 
 jmplot <- function(x, y, z,
                    ## labels/aesthetics
-                   main = '', sub = '', xlab = NULL, ylab = NULL, names,
+                   main = '', sub = '', xlab = NULL, ylab = NULL, names = NULL,
                    
                    ## additional aesthetics
                    xlim = NULL, ylim = NULL, axes = TRUE, frame.plot = axes,
@@ -104,26 +104,23 @@ jmplot <- function(x, y, z,
   
   ## calculate xlim, ylim
   lim <- function(z) {
-    r <- range(z, na.rm = TRUE, finite = TRUE)
-    # pm <- diff(r) / 20
-    # r <- r + pm * c(-1,1)
-    r
+    range(z, na.rm = TRUE, finite = TRUE)
   }
   
   z  <- as.factor(z)
   xy <- xy.coords(x, y, deparse(substitute(x)), deparse(substitute(y)), log)
   
   ## defaults
-  if (missing(names)) names <- levels(z)
-  if (is.null(xlab))   xlab <- xy$xlab
-  if (is.null(ylab))   ylab <- xy$ylab
-  if (is.null(xlim))   xlim <- lim(xy$x)
-  if (is.null(ylim))   ylim <- lim(xy$y)
+  names <- names %||% levels(z)
+  xlab <- xlab %||% xy$xlab
+  ylab <- ylab %||% xy$ylab
+  xlim <- xlim %||% lim(xy$x)
+  ylim <- ylim %||% lim(xy$y)
   
   op <- par(no.readonly = TRUE)
   mar <- op$mar
   ## set the layout
-  layout(matrix(c(1,3,0,2), 2L), widths = c(xratio, 1 - xratio),
+  layout(matrix(c(1, 3, 0, 2), 2L), widths = c(xratio, 1 - xratio),
          heights = c(1 - yratio, yratio))
   par(mar = c(0, 0, 0, 0), oma = c(0, 0, mar[3L], mar[4L]) + op$oma)
   
