@@ -1,12 +1,12 @@
-### some random shit
+### some random things
 # ht, progress, recoder, identical2, all_equal2, search_df, search_hist,
 # fapply, try_require, list2file, Restart, helpExtract, Round, round_to,
 # updateR, read_clip, read_clip.csv, read_clip.tab, read_clip.fwf, icols,
-# fill_df, kinda_sort, sym_sort, rgene, install_temp, nestedMerge, nestedmerge,
-# path_extract, fname, file_name, file_ext, rm_ext, mgrepl, mgrep, msub, mgsub,
-# flatten, tree, rm_null, cum_reset, cum_na, cumsum_na, cumprod_na, cummax_na,
-# cummin_na, cum_mid, vgrep, vgrepl, justify, factors, sample_each, pickcol,
-# lunique, rm_nonascii, sparkDT, clc, clear
+# fill_df, kinda_sort, sym_sort, rgene, kmer, install_temp, nestedMerge,
+# nestedmerge, path_extract, fname, file_name, file_ext, rm_ext, mgrepl,
+# mgrep, msub, mgsub, flatten, tree, rm_null, cum_reset, cum_na, cumsum_na,
+# cumprod_na, cummax_na, cummin_na, cum_mid, vgrep, vgrepl, justify,
+# factors, sample_each, pickcol, lunique, rm_nonascii, sparkDT, clc, clear
 # 
 # unexported:
 # helpExtract_, mgrep_, msub_, fill_spaces_, render_sparkDT
@@ -1237,32 +1237,65 @@ sym_sort <- function(x, rev = FALSE, index.return = FALSE) {
 #' Generate random character strings from pools of letters and digits.
 #' 
 #' @param n number of gene names to return
-#' @param alpha vector of letters to select from
-#' @param nalpha range of possible number of \code{alpha} to select
-#' @param num numerics to select from
-#' @param nnum range of possible number of \code{num} to select
+#' @param alpha,num vectors of letters or numerics to select from
+#' @param nalpha,nnum range of possible number of \code{alpha} or \code{num}
+#' to select
 #' @param sep character to separate \code{alpha} and \code{num}
 #' 
 #' @examples
 #' rgene()
-#' rgene(5, alpha = 'ABCD', nalpha = 1, nnum = 5:6)
-#' rgene(5, alpha = c('A','T','C','G'), num = '', sep = '')
+#' 
+#' ## letters only
+#' rgene(5, alpha = c('A', 'T', 'C', 'G'), nalpha = 10, num = NULL)
+#' 
+#' ## fixed prefix (or suffix)
+#' rgene(5, alpha = 'ABCD', nalpha = 1, nnum = 5)
 #' 
 #' @export
 
-rgene <- function(n = 1L, alpha = LETTERS[1:5], nalpha = 2:5,
-                  num = 0:9, nnum = 1:5, sep = '-') {
-  p0 <- function(...) {
+rgene <- function(n = 1L, alpha = LETTERS, nalpha = 1:5,
+                  num = 0:9, nnum = nalpha, sep = '-') {
+  s <- function(x, n) {
+    if (is.null(x))
+      NULL else sample(x, n[sample.int(length(n), 1)], TRUE)
+  }
+  p <- function(...) {
     paste0(..., collapse = '')
   }
-  alphas <- function() {
-    sample(alpha, sample(nalpha, 1L), TRUE)
-  }
-  numerics <- function() {
-    sample(num, sample(nnum, 1L), TRUE)
+  
+  if (is.null(alpha) || is.null(num) ||
+      identical(alpha, '') || identical(num, ''))
+    sep <- ''
+  
+  replicate(n, p(p(s(alpha, nalpha)), sep, p(s(num, nnum))))
+}
+
+#' k-mers
+#' 
+#' Generate all k-mers from a sequence of characters.
+#' 
+#' @param x a vector of character string(s)
+#' @param k length(s) of sub-sequences
+#' 
+#' @examples
+#' x <- 'AATTGCGCGCTGT'
+#' kmer(x, 3)
+#' kmer(x, 3:4)
+#' 
+#' @export
+
+kmer <- function(x, k) {
+  kmerl <- function(x, k) {
+    i <- seq.int(nchar(x) - k + 1)
+    substring(x, i, i + k - 1)
   }
   
-  replicate(n, p0(p0(alphas()), sep, p0(numerics())))
+  l <- max(length(x), length(k))
+  res <- Map(kmerl, rep_len(x, l), rep_len(k, l))
+  names(res) <- sprintf('%s, k=%s', x, k)
+  
+  if (length(res) == 1L)
+    res[[1L]] else res
 }
 
 #' Install packages temporarily
