@@ -710,7 +710,12 @@ kmplot <- function(s, data = NULL,
     ss <- ar$summary
     d2 <- ar$data
     d3 <- lapply(d2, function(x) x[, c('time', wh)])
-    d3 <- setNames(merge2(d3, by = 'time', all = TRUE), c('Time', strata.lab))
+    suppressWarnings({
+      d3 <- setNames(
+        merge2(d3, by = 'time', all = TRUE),
+        c('Time', strata.lab)
+      )
+    })
     
     largs <- list(
       x = diff(par('usr')[1:2]) * 0.025, y = 0,
