@@ -3,11 +3,21 @@
 \name{tplot}
 \alias{tplot}
 \alias{vioplot}
-\alias{tplot.default}
 \alias{tplot.formula}
+\alias{tplot.default}
 \title{tplot}
 \usage{
 tplot(x, ...)
+
+\method{tplot}{formula}(
+  formula,
+  data = NULL,
+  ...,
+  subset,
+  na.action = NULL,
+  panel.first = NULL,
+  panel.last = NULL
+)
 
 \method{tplot}{default}(
   x,
@@ -17,6 +27,7 @@ tplot(x, ...)
   jit = NULL,
   dist = NULL,
   dist.n = Inf,
+  args.beeswarm = list(),
   main = NULL,
   sub = NULL,
   xlab = NULL,
@@ -50,19 +61,8 @@ tplot(x, ...)
   axes = TRUE,
   frame.plot = axes,
   add = FALSE,
-  at,
+  at = NULL,
   horizontal = FALSE,
-  panel.first = NULL,
-  panel.last = NULL,
-  return_coords = FALSE
-)
-
-\method{tplot}{formula}(
-  formula,
-  data = NULL,
-  ...,
-  subset,
-  na.action = NULL,
   panel.first = NULL,
   panel.last = NULL
 )
@@ -70,7 +70,34 @@ tplot(x, ...)
 \arguments{
 \item{x}{a numeric vector or a single list containing such vectors}
 
-\item{...}{additional graphical parameters passed to \code{\link{par}}}
+\item{...}{for the \code{formula} method, named arguments to be passed to
+the default method
+
+for the default method, graphical parameters passed to \code{\link{par}}}
+
+\item{formula}{a \code{\link{formula}}, such as \code{y ~ grp}, where y is
+a numeric vector of data values to be split into groups according to the
+grouping variable \code{grp} (usually a factor)}
+
+\item{data}{a data frame (or list) from which the variables in
+\code{formula} should be taken}
+
+\item{subset}{an optional vector specifying a subset of observations to be
+used for plotting}
+
+\item{na.action}{a function which indicates what should happen when the data
+contain \code{\link{NA}}s; the default is to ignore missing values in either
+the response or the group}
+
+\item{panel.first}{an "expression" to be evaluated after the plot axes are
+set up but before any plotting takes place; this can be useful for drawing
+background grids or scatterplot smooths; note that this works by lazy
+evaluation: passing this argument from other plot methods may well not work
+since it may be evaluated too early; see also \code{\link{plot.default}}}
+
+\item{panel.last}{an expression to be evaluated after plotting has taken
+place but before the axes, title, and box are added; see the comments about
+\code{panel.first}}
 
 \item{g}{a vector or factor object giving the group for the corresponding
 elements of \code{x}, ignored with a warning if \code{x} is a list}
@@ -92,6 +119,11 @@ points, i.e., a group of sequential points that are no more than
 
 \code{dist.n} is the maximum number of points allowed in each group of
 neighboring points, useful for limiting the spread of points}
+
+\item{args.beeswarm}{logical or a \emph{named} list of arguments passed to
+\code{\link[beeswarm]{beeswarm}}; if \code{NULL} or \code{FALSE} (default),
+\code{beeswarm} is not used; if \code{TRUE}, \code{beeswarm} is used with
+pre-set defaults; passing a list of arguments will add or override defaults}
 
 \item{main, sub}{overall title and sub-title (below x-axis) for the plot}
 
@@ -163,56 +195,30 @@ and return a character string (or a value to be coerced) for printing}
 
 \item{add}{logical; add to an existing plot}
 
-\item{at}{group positions on axis}
+\item{at}{the x-axis group positions}
 
 \item{horizontal}{logical; flip axes}
-
-\item{panel.first}{an "expression" to be evaluated after the plot axes are
-set up but before any plotting takes place; this can be useful for drawing
-background grids or scatterplot smooths; note that this works by lazy
-evaluation: passing this argument from other plot methods may well not work
-since it may be evaluated too early; see also \code{\link{plot.default}}}
-
-\item{panel.last}{an expression to be evaluated after plotting has taken
-place but before the axes, title, and box are added; see the comments about
-\code{panel.first}}
-
-\item{return_coords}{logical; if \code{TRUE}, the function returns x- and
-y-coordinates for data points}
-
-\item{formula}{a \code{\link{formula}}, such as \code{y ~ grp}, where y is
-a numeric vector of data values to be split into groups according to the
-grouping variable \code{grp} (usually a factor)}
-
-\item{data}{a data frame (or list) from which the variables in
-\code{formula} should be taken}
-
-\item{subset}{an optional vector specifying a subset of observations to be
-used for plotting}
-
-\item{na.action}{a function which indicates what should happen when the data
-contain \code{\link{NA}}s; the default is to ignore missing values in either
-the response or the group}
 }
 \value{
-By default, a list with the following elements (see \code{\link{boxplot}}:
+A list with the following elements (see \code{\link{boxplot}}:
 
 \item{\code{$stats}}{a matrix, each column contains the extreme of the lower
 whisker, the lower hinge, the median, the upper hinge and the extreme of the
 upper whisker for one group/plot. If all the inputs have the same class
-attribute, so will this component.}
+attribute, so will this component}
 \item{\code{$n}}{a vector with the number of observations in each group.}
 \item{\code{$conf}}{a matrix where each column contains the lower and upper
-extremes of the notch.}
+extremes of the notch}
 \item{\code{$out}}{the values of any data points which lie beyond the
-extremes of the whiskers.}
+extremes of the whiskers}
 \item{\code{$group}}{a vector of the same length as \code{out} whose
-elements indicate to which group the outlier belongs.}
-\item{\code{$names}}{a vector of names for the groups.}
+elements indicate to which group the outlier belongs}
+\item{\code{$names}}{a vector of names for the groups}
 
-Alternatively, if \code{return_coords = TRUE}, a list of data frames for
-each group containing the x- and y-coordinates of the points (x-values)
-are affected by \code{jit}, \code{dist}, and \code{dist.n}.
+additionally, \code{tplot} returns the following:
+\item{\code{$test}}{the object returned by the \code{test} function}
+\item{\code{$coords}}{a list for each group of data frames containing the
+x- and y-coordinates of the points}
 }
 \description{
 An alternative to \code{\link{boxplot}} with additional annotations,
@@ -231,9 +237,9 @@ tplot(x ~ g)
 tplot(mpg ~ gear + vs, mtcars)
 
 
-## use of return_coords
-co <- tplot(mpg ~ vs, mtcars, return_coords = TRUE)
-sapply(co, function(x)
+## use of point coordinates
+co <- tplot(mpg ~ vs, mtcars)
+sapply(co$coords, function(x)
   points(x, pch = 16L, col = findInterval(x$y, fivenum(x$y)) + 1L))
 
 
@@ -265,18 +271,36 @@ tplot(mtcars$mpg, 1:2, test = function(x, g)
   args.test = list(col = 2, at = 1.5, adj = 0.5, line = -3, cex = 2))
 
 
-## tplot has the same return value as boxplot
-identical(tplot(mtcars$mpg), boxplot(mtcars$mpg))
+## tplot has the same return value as boxplot with addition elements
+## for the test/coordinates if applicable
+identical(
+  within(tplot(mtcars$mpg), {test <- coords <- NULL}),
+  within(boxplot(mtcars$mpg), {test <- coords <- NULL})
+)
 
 
 ## use panel.first/panel.last like in `plot` (unavailable in `boxplot`)
-tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd', show.na = FALSE,
-      cex = c(1,5)[(mtcars$mpg > 30) + 1L],
-      panel.last = legend('topleft', legend = 3:5, col = 1:3, pch = 1),
-      panel.first = {
-        abline(h = mean(mtcars$mpg))
-        abline(h = 1:6 * 5 + 5, lty = 'dotted', col = 'grey70')
-      })
+tplot(
+  mpg ~ gear, data = mtcars, col = 1:3, type = 'd', show.na = FALSE,
+  cex = c(1, 5)[(mtcars$mpg > 30) + 1L],
+  panel.last = legend('topleft', legend = 3:5, col = 1:3, pch = 1),
+    panel.first = {
+      rect(1.5, par('usr')[3], 2.5, par('usr')[4], col = 'cyan', border = NA)
+      abline(h = mean(mtcars$mpg))
+      abline(h = 1:6 * 5 + 5, lty = 'dotted', col = 'grey70')
+    }
+)
+
+
+## beeswarm options
+x <- rnorm(1000)
+tplot(
+  x, type = 'd',
+  args.beeswarm = list(method = 'square', corral = 'gutter', corralWidth = 0.25)
+)
+
+## compare (note that tplot **does not** change the original data values)
+beeswarm::beeswarm(x, method = 'square', corral = 'gutter', corralWidth = 0.25)
 
 
 ## example with missing data
@@ -288,16 +312,20 @@ dat <- data.frame(
                                   replace = TRUE))
 )
 
-tplot(age ~ group, data = dat, las = 1, cex.axis = 1, bty = 'L',
-      type = c('db', 'dv', 'dbv', 'bv'), names = LETTERS[1:4],
-      quantiles = c(0.25, 0.5, 0.75), lwd = c(.5, 2, .5),
-      text.na = 'n/a', ## default is 'missing'
-      group.pch = TRUE, pch = c(15, 17, 19, 8),
-      group.col = FALSE, col = c('darkred', 'darkblue')[sex],
-      boxcol = c('lightsteelblue1', 'lightyellow1', grey(.9)),
-      boxplot.pars = list(notch = TRUE, boxwex = .5))
-legend(par('usr')[1], par('usr')[3], xpd = NA, bty = 'n',
-       legend = levels(dat$sex), col = c('darkred', 'darkblue'), pch = 19)
+tplot(
+  age ~ group, data = dat, las = 1, cex.axis = 1, bty = 'L',
+  type = c('db', 'dv', 'dbv', 'bv'), names = LETTERS[1:4],
+  quantiles = c(0.25, 0.5, 0.75), lwd = c(0.5, 2, 0.5),
+  text.na = 'n/a', ## default is 'missing'
+  group.pch = TRUE, pch = c(15, 17, 19, 8),
+  group.col = FALSE, col = c('darkred', 'darkblue')[sex],
+  boxcol = c('lightsteelblue1', 'lightyellow1', grey(0.9)),
+  boxplot.pars = list(notch = TRUE, boxwex = 0.5)
+)
+legend(
+  par('usr')[1], par('usr')[3], xpd = NA, bty = 'n',
+  legend = levels(dat$sex), col = c('darkred', 'darkblue'), pch = 19
+)
 
 }
 \seealso{

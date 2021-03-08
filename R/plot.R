@@ -1,10 +1,11 @@
 ### plot functions
 # jmplot, tplot, tplot.default, tplot.formula, dsplot, dsplot.default,
 # dsplot.formula, waffle, river, river2, check_river_format, plothc,
-# waterfall, heatmap.3, bplot, tabler_bincon
+# waterfall, heatmap.3, bplot, tabler_bincon, pplot, pplot.default,
+# pplot.formula
 # 
 # S3 methods:
-# tplot, dsplot
+# tplot, dsplot, pplot
 # 
 # unexported:
 # vioplot, bars_, binconr_
@@ -56,14 +57,16 @@
 #'
 #' @examples
 #' set.seed(1)
-#' dat <- data.frame(x = rnorm(100, 20, 5),
-#'                   y = rexp(100),
-#'                   z = c('M','F'),
-#'                   zz = c(LETTERS[1:4]))
-#' with(dat,
-#'   jmplot(x, y, zz, type = 'db', jit = .02, col = 1:4, las = 1, cex.n = .5,
-#'          group.col = TRUE, pch = 1:4, group.pch = TRUE, boxcol = grey(.9))
+#' dat <- data.frame(
+#'   x = rnorm(100, 20, 5),
+#'   y = rexp(100),
+#'   z = c('M', 'F'),
+#'   zz = c(LETTERS[1:4])
 #' )
+#' with(dat, {
+#'   jmplot(x, y, zz, type = 'db', jit = 0.02, col = 1:4, las = 1, cex.n = 0.5,
+#'          group.col = TRUE, pch = 1:4, group.pch = TRUE, boxcol = grey(0.9))
+#' })
 #'
 #' @export
 
@@ -73,7 +76,7 @@ jmplot <- function(x, y, z,
                    
                    ## additional aesthetics
                    xlim = NULL, ylim = NULL, axes = TRUE, frame.plot = axes,
-                   log = '', xratio = .8, yratio = xratio,
+                   log = '', xratio = 0.8, yratio = xratio,
                    
                    ## n/missing for each group
                    show.n = TRUE, show.na = show.n, cex.n = 1,
@@ -171,7 +174,10 @@ jmplot <- function(x, y, z,
 #' @param x a numeric vector or a single list containing such vectors
 #' @param g a vector or factor object giving the group for the corresponding
 #' elements of \code{x}, ignored with a warning if \code{x} is a list
-#' @param ... additional graphical parameters passed to \code{\link{par}}
+#' @param ... for the \code{formula} method, named arguments to be passed to
+#' the default method
+#' 
+#' for the default method, graphical parameters passed to \code{\link{par}}
 #' @param formula a \code{\link{formula}}, such as \code{y ~ grp}, where y is
 #' a numeric vector of data values to be split into groups according to the
 #' grouping variable \code{grp} (usually a factor)
@@ -191,7 +197,7 @@ jmplot <- function(x, y, z,
 #' @param names group labels
 #' @param axes logical; draw axes
 #' @param frame.plot logical; draw box around \code{x-y} plot
-#' @param at group positions on axis
+#' @param at the x-axis group positions
 #' @param horizontal logical; flip axes
 #' @param jit,dist,dist.n jitter parameters for overlapping points (use
 #' \code{0} for no jitter (i.e., points may overlap) and values > 0 for more
@@ -206,6 +212,10 @@ jmplot <- function(x, y, z,
 #' 
 #' \code{dist.n} is the maximum number of points allowed in each group of
 #' neighboring points, useful for limiting the spread of points
+#' @param args.beeswarm logical or a \emph{named} list of arguments passed to
+#' \code{\link[beeswarm]{beeswarm}}; if \code{NULL} or \code{FALSE} (default),
+#' \code{beeswarm} is not used; if \code{TRUE}, \code{beeswarm} is used with
+#' pre-set defaults; passing a list of arguments will add or override defaults
 #' @param boxplot.pars additional list of graphical parameters for box plots
 #' (or violin plots)
 #' @param quantiles for violin plots, probabilities for quantile lines (as an
@@ -252,28 +262,27 @@ jmplot <- function(x, y, z,
 #' @param panel.last an expression to be evaluated after plotting has taken
 #' place but before the axes, title, and box are added; see the comments about
 #' \code{panel.first}
-#' @param return_coords logical; if \code{TRUE}, the function returns x- and
-#' y-coordinates for data points
 #'
 #' @return
-#' By default, a list with the following elements (see \code{\link{boxplot}}:
+#' A list with the following elements (see \code{\link{boxplot}}:
 #' 
 #' \item{\code{$stats}}{a matrix, each column contains the extreme of the lower
 #' whisker, the lower hinge, the median, the upper hinge and the extreme of the
 #' upper whisker for one group/plot. If all the inputs have the same class
-#' attribute, so will this component.}
+#' attribute, so will this component}
 #' \item{\code{$n}}{a vector with the number of observations in each group.}
 #' \item{\code{$conf}}{a matrix where each column contains the lower and upper
-#' extremes of the notch.}
+#' extremes of the notch}
 #' \item{\code{$out}}{the values of any data points which lie beyond the
-#' extremes of the whiskers.}
+#' extremes of the whiskers}
 #' \item{\code{$group}}{a vector of the same length as \code{out} whose
-#' elements indicate to which group the outlier belongs.}
-#' \item{\code{$names}}{a vector of names for the groups.}
+#' elements indicate to which group the outlier belongs}
+#' \item{\code{$names}}{a vector of names for the groups}
 #' 
-#' Alternatively, if \code{return_coords = TRUE}, a list of data frames for
-#' each group containing the x- and y-coordinates of the points (x-values)
-#' are affected by \code{jit}, \code{dist}, and \code{dist.n}.
+#' additionally, \code{tplot} returns the following:
+#' \item{\code{$test}}{the object returned by the \code{test} function}
+#' \item{\code{$coords}}{a list for each group of data frames containing the
+#' x- and y-coordinates of the points}
 #'
 #' @aliases vioplot
 #' 
@@ -293,9 +302,9 @@ jmplot <- function(x, y, z,
 #' tplot(mpg ~ gear + vs, mtcars)
 #' 
 #' 
-#' ## use of return_coords
-#' co <- tplot(mpg ~ vs, mtcars, return_coords = TRUE)
-#' sapply(co, function(x)
+#' ## use of point coordinates
+#' co <- tplot(mpg ~ vs, mtcars)
+#' sapply(co$coords, function(x)
 #'   points(x, pch = 16L, col = findInterval(x$y, fivenum(x$y)) + 1L))
 #' 
 #' 
@@ -327,18 +336,36 @@ jmplot <- function(x, y, z,
 #'   args.test = list(col = 2, at = 1.5, adj = 0.5, line = -3, cex = 2))
 #' 
 #' 
-#' ## tplot has the same return value as boxplot
-#' identical(tplot(mtcars$mpg), boxplot(mtcars$mpg))
+#' ## tplot has the same return value as boxplot with addition elements
+#' ## for the test/coordinates if applicable
+#' identical(
+#'   within(tplot(mtcars$mpg), {test <- coords <- NULL}),
+#'   within(boxplot(mtcars$mpg), {test <- coords <- NULL})
+#' )
 #' 
 #' 
 #' ## use panel.first/panel.last like in `plot` (unavailable in `boxplot`)
-#' tplot(mpg ~ gear, data = mtcars, col = 1:3, type = 'd', show.na = FALSE,
-#'       cex = c(1,5)[(mtcars$mpg > 30) + 1L],
-#'       panel.last = legend('topleft', legend = 3:5, col = 1:3, pch = 1),
-#'       panel.first = {
-#'         abline(h = mean(mtcars$mpg))
-#'         abline(h = 1:6 * 5 + 5, lty = 'dotted', col = 'grey70')
-#'       })
+#' tplot(
+#'   mpg ~ gear, data = mtcars, col = 1:3, type = 'd', show.na = FALSE,
+#'   cex = c(1, 5)[(mtcars$mpg > 30) + 1L],
+#'   panel.last = legend('topleft', legend = 3:5, col = 1:3, pch = 1),
+#'     panel.first = {
+#'       rect(1.5, par('usr')[3], 2.5, par('usr')[4], col = 'cyan', border = NA)
+#'       abline(h = mean(mtcars$mpg))
+#'       abline(h = 1:6 * 5 + 5, lty = 'dotted', col = 'grey70')
+#'     }
+#' )
+#' 
+#' 
+#' ## beeswarm options
+#' x <- rnorm(1000)
+#' tplot(
+#'   x, type = 'd',
+#'   args.beeswarm = list(method = 'square', corral = 'gutter', corralWidth = 0.25)
+#' )
+#' 
+#' ## compare (note that tplot **does not** change the original data values)
+#' beeswarm::beeswarm(x, method = 'square', corral = 'gutter', corralWidth = 0.25)
 #' 
 #' 
 #' ## example with missing data
@@ -350,16 +377,20 @@ jmplot <- function(x, y, z,
 #'                                   replace = TRUE))
 #' )
 #' 
-#' tplot(age ~ group, data = dat, las = 1, cex.axis = 1, bty = 'L',
-#'       type = c('db', 'dv', 'dbv', 'bv'), names = LETTERS[1:4],
-#'       quantiles = c(0.25, 0.5, 0.75), lwd = c(.5, 2, .5),
-#'       text.na = 'n/a', ## default is 'missing'
-#'       group.pch = TRUE, pch = c(15, 17, 19, 8),
-#'       group.col = FALSE, col = c('darkred', 'darkblue')[sex],
-#'       boxcol = c('lightsteelblue1', 'lightyellow1', grey(.9)),
-#'       boxplot.pars = list(notch = TRUE, boxwex = .5))
-#' legend(par('usr')[1], par('usr')[3], xpd = NA, bty = 'n',
-#'        legend = levels(dat$sex), col = c('darkred', 'darkblue'), pch = 19)
+#' tplot(
+#'   age ~ group, data = dat, las = 1, cex.axis = 1, bty = 'L',
+#'   type = c('db', 'dv', 'dbv', 'bv'), names = LETTERS[1:4],
+#'   quantiles = c(0.25, 0.5, 0.75), lwd = c(0.5, 2, 0.5),
+#'   text.na = 'n/a', ## default is 'missing'
+#'   group.pch = TRUE, pch = c(15, 17, 19, 8),
+#'   group.col = FALSE, col = c('darkred', 'darkblue')[sex],
+#'   boxcol = c('lightsteelblue1', 'lightyellow1', grey(0.9)),
+#'   boxplot.pars = list(notch = TRUE, boxwex = 0.5)
+#' )
+#' legend(
+#'   par('usr')[1], par('usr')[3], xpd = NA, bty = 'n',
+#'   legend = levels(dat$sex), col = c('darkred', 'darkblue'), pch = 19
+#' )
 #'
 #' @export
 
@@ -369,8 +400,69 @@ tplot <- function(x, ...) {
 
 #' @rdname tplot
 #' @export
+tplot.formula <- function(formula, data = NULL, ...,
+                          subset, na.action = NULL,
+                          panel.first = NULL, panel.last = NULL) {
+  
+  if (missing(formula) || (length(formula) !=  3))
+    stop("\'formula\' missing or incorrect")
+  
+  m <- match.call(expand.dots = FALSE)
+  if (is.matrix(eval(m$data, parent.frame(1L))))
+    m$data <- as.data.frame(data)
+  
+  args <- lapply(m$..., eval, data, parent.frame(1L))
+  nmargs <- names(args)
+  
+  form <- as.character(formula)
+  args <- modifyList(list(xlab = form[3], ylab = form[2]), args)
+  
+  if ('main' %in% nmargs) args[['main']] <- enquote(args[['main']])
+  if ('sub' %in% nmargs)  args[['sub']]  <- enquote(args[['sub']])
+  if ('xlab' %in% nmargs) args[['xlab']] <- enquote(args[['xlab']])
+  if ('ylab' %in% nmargs) args[['ylab']] <- enquote(args[['ylab']])
+  
+  ## hacky way to pass panel.first/panel.last to tplot.default
+  args[['panel.first']] <- substitute(panel.first)
+  args[['panel.last']]  <- substitute(panel.last)
+  
+  m$... <- m$subset <- m$panel.first <- m$panel.last <- NULL
+  m$na.action <- na.pass
+  subset.expr <- m$subset
+  
+  m[[1L]] <- as.name('model.frame')
+  mf <- eval(m, parent.frame(1L))
+  n <- nrow(mf)
+  response <- attr(attr(mf, 'terms'), 'response')
+  
+  ## special handling of col and pch for grouping
+  group.col <- if ('group.col' %in% names(args)) args$group.col else FALSE
+  group.pch <- if ('group.pch' %in% names(args)) args$group.pch else FALSE
+  group.cex <- if ('group.cex' %in% names(args)) args$group.cex else FALSE
+  
+  ## reorder if necessary
+  if ('col' %in% names(args) && !group.col)
+    args$col <- unlist(split(rep_len(args$col, n), mf[-response]))
+  if ('pch' %in% names(args) && !group.pch)
+    args$pch <- unlist(split(rep_len(args$pch, n), mf[-response]))
+  if ('cex' %in% names(args) && !group.cex)
+    args$cex <- unlist(split(rep_len(args$cex, n), mf[-response]))
+  
+  if (!missing(subset)) {
+    s <- eval(subset.expr, data, parent.frame(1L))
+    ## rawr:::do_sub_
+    args <- lapply(args, do_sub_, x, n, s)
+    mf <- mf[s, ]
+  }
+  
+  do.call('tplot', c(list(split(mf[[response]], mf[-response])), args))
+}
+
+#' @rdname tplot
+#' @export
 tplot.default <- function(x, g, ..., type = 'db',
                           jit = NULL, dist = NULL, dist.n = Inf,
+                          args.beeswarm = list(),
                           
                           ## labels/aesthetics
                           main = NULL, sub = NULL, xlab = NULL, ylab = NULL,
@@ -392,9 +484,8 @@ tplot.default <- function(x, g, ..., type = 'db',
                           ## extra stuff
                           test = FALSE, args.test = list(), format_pval = TRUE,
                           ann = par('ann'), axes = TRUE, frame.plot = axes,
-                          add = FALSE, at, horizontal = FALSE,
-                          panel.first = NULL, panel.last = NULL,
-                          return_coords = FALSE) {
+                          add = FALSE, at = NULL, horizontal = FALSE,
+                          panel.first = NULL, panel.last = NULL) {
   ## helpers
   localAxis   <- function(..., bg, cex, log, lty, lwd,       pos      )
     axis(...)
@@ -529,7 +620,7 @@ tplot.default <- function(x, g, ..., type = 'db',
   mean.line   <- rep_len(mean.line, ng)
   median.line <- rep_len(median.line, ng)
   
-  if (missing(at))
+  if (is.null(at))
     at <- seq.int(ng)
   if (length(at) !=  ng) {
     warning('\'at\' must have same length as the number of groups')
@@ -573,18 +664,32 @@ tplot.default <- function(x, g, ..., type = 'db',
   coords <- setNames(vector('list', ng), names)
   Lme <- 0.2 * c(-1, 1)
   
-  for (i in seq.int(ng)) {
-    p <- groups[[i]]
+  for (ii in seq.int(ng)) {
+    p <- groups[[ii]]
     if (!nrow(p))
       next
-    y <- ave(p$vs, p$g.id, FUN = sym_sort)
-    x <- rep_len(at[i], nrow(p)) + jit_(p$g.si, p$hmsf) * jit[i]
+    if (isTRUE(args.beeswarm) ||
+        (is.list(args.beeswarm) & length(args.beeswarm) > 0L)) {
+      args <- list(method = 'center', horizontal = horizontal)
+      if (isTRUE(args.beeswarm))
+        args.beeswarm <- args
+      args <- modifyList(args, args.beeswarm)
+      bs <- do.call(
+        beeswarm::beeswarm,
+        modifyList(args, list(do.plot = FALSE, x = p$vs, at = at[ii]))
+      )
+      x <- bs$x
+      y <- bs$y.orig
+    } else {
+      y <- ave(p$vs, p$g.id, FUN = sym_sort)
+      x <- rep_len(at[ii], nrow(p)) + jit_(p$g.si, p$hmsf) * jit[ii]
+    }
     
-    coords[[i]] <- data.frame(x = x, y = y)
+    coords[[ii]] <- data.frame(x = x, y = y)
     
-    boxFUN <- ifelse(grepl('v', type[i]), 'localVplot', 'boxplot')
+    boxFUN <- ifelse(grepl('v', type[ii]), 'localVplot', 'boxplot')
     
-    if (grepl('v', type[i])) {
+    if (grepl('v', type[ii])) {
       boxplot.pars <- modifyList(
         boxplot.pars,
         list(
@@ -594,118 +699,119 @@ tplot.default <- function(x, g, ..., type = 'db',
         )
       )
       
-      if (grepl('b', type[i]))
+      if (grepl('b', type[ii]))
         boxplot.pars <- modifyList(boxplot.pars, list(boxplot = TRUE))
-      if (grepl('v', type[i]))
-        boxplot.pars <- modifyList(boxplot.pars, list(viocol = boxcol[i]))
+      if (grepl('v', type[ii]))
+        boxplot.pars <- modifyList(boxplot.pars, list(viocol = boxcol[ii]))
     }
     
     ## switch to points if not enough data for density estimation
-    if (nrow(p) == 1L && grepl('v', type[i])) {
+    if (nrow(p) == 1L && grepl('v', type[ii])) {
       boxFUN <- 'boxplot'
-      type[i] <- gsub('v', ifelse(grepl('d', type[i]), '', 'd'), type[i])
+      type[ii] <- gsub('v', ifelse(grepl('d', type[ii]), '', 'd'), type[ii])
     }
     
     ## dots behind
-    if (type[i] %in% c('bd', 'n', 'vd')) {
+    if (type[ii] %in% c('bd', 'n', 'vd')) {
       bp <- do.call(
         boxFUN,
-        c(list(x = y, at = at[i], plot = FALSE, add = FALSE,
-               axes = FALSE, col = boxcol[i], border = boxborder[i],
+        c(list(x = y, at = at[ii], plot = FALSE, add = FALSE,
+               axes = FALSE, col = boxcol[ii], border = boxborder[ii],
                outline = FALSE, horizontal = horizontal),
           boxplot.pars)
       )
-      if (type[i] == 'n')
+      if (type[ii] == 'n')
         next
       
       notoplot <- (y <= bp$stats[5L, ]) & (y >= bp$stats[1L, ])
       
       if (sum(notoplot) > 0)
-        col[[i]][notoplot] <- '#bfbfbf'
+        col[[ii]][notoplot] <- '#bfbfbf'
       do.call(
         'localPoints',
         if (horizontal)
-          c(list(x = y, y = x, pch = pch[[i]],
-                 col = col[[i]], cex = cex[[i]]),
+          c(list(x = y, y = x, pch = pch[[ii]],
+                 col = col[[ii]], cex = cex[[ii]]),
             pars)
         else
-          c(list(x = x, y = y, pch = pch[[i]],
-                 col = col[[i]], cex = cex[[i]]),
+          c(list(x = x, y = y, pch = pch[[ii]],
+                 col = col[[ii]], cex = cex[[ii]]),
             pars)
       )
     }
     
     ## box in front
-    if (type[i] %in% c('bd', 'b', 'v', 'vd', 'bv')) {
+    if (type[ii] %in% c('bd', 'b', 'v', 'vd', 'bv')) {
       bp <- do.call(
         boxFUN,
-        c(list(x = y, at = at[i], add = TRUE, axes = FALSE,
-               col = boxcol[i], border = boxborder[i],
+        c(list(x = y, at = at[ii], add = TRUE, axes = FALSE,
+               col = boxcol[ii], border = boxborder[ii],
                outline = FALSE, horizontal = horizontal),
           boxplot.pars)
       )
       
-      toplot <- if (type[i] %in% c('bd', 'v', 'vd', 'bv'))
+      toplot <- if (type[ii] %in% c('bd', 'v', 'vd', 'bv'))
         0 else (y > bp$stats[5L, ]) | (y < bp$stats[1L, ])
       
       if (sum(toplot) > 0)
-        if (col[[i]][toplot][1] == '#bfbfbf')
-          col[[i]][toplot] <- 1L
+        if (col[[ii]][toplot][1] == '#bfbfbf')
+          col[[ii]][toplot] <- 1L
       do.call(
         'localPoints',
         if (horizontal)
-          c(list(x = y[toplot], y = x[toplot], pch = pch[[i]][toplot],
-                 col = col[[i]][toplot], cex = cex[[i]][toplot]), pars)
+          c(list(x = y[toplot], y = x[toplot], pch = pch[[ii]][toplot],
+                 col = col[[ii]][toplot], cex = cex[[ii]][toplot]), pars)
         else
-          c(list(x = x[toplot], y = y[toplot], pch = pch[[i]][toplot],
-                 col = col[[i]][toplot], cex = cex[[i]][toplot]), pars)
+          c(list(x = x[toplot], y = y[toplot], pch = pch[[ii]][toplot],
+                 col = col[[ii]][toplot], cex = cex[[ii]][toplot]), pars)
       )
     }
     
     ## box behind
-    if (type[i] %in% c('db', 'dv', 'dbv'))
+    if (type[ii] %in% c('db', 'dv', 'dbv'))
       bp <- do.call(
         boxFUN,
-        c(list(x = y, at = at[i], add = TRUE, axes = FALSE,
-               col = boxcol[i], border = boxborder[i],
+        c(list(x = y, at = at[ii], add = TRUE, axes = FALSE,
+               col = boxcol[ii], border = boxborder[ii],
                outline = FALSE, horizontal = horizontal),
           boxplot.pars)
       )
     
     ## dots in front
-    if (type[i] %in% c('db', 'd', 'dv', 'dbv')) {
+    if (type[ii] %in% c('db', 'd', 'dv', 'dbv')) {
       do.call(
         'localPoints',
         if (horizontal)
-          c(list(x = y, y = x, pch = pch[[i]],
-                 col = col[[i]], cex = cex[[i]]), pars)
+          c(list(x = y, y = x, pch = pch[[ii]],
+                 col = col[[ii]], cex = cex[[ii]]), pars)
         else
-          c(list(x = x, y = y, pch = pch[[i]],
-                 col = col[[i]], cex = cex[[i]]), pars)
+          c(list(x = x, y = y, pch = pch[[ii]],
+                 col = col[[ii]], cex = cex[[ii]]), pars)
       )
     }
     
     ## mean and median lines
-    if (mean.line[i])
+    if (mean.line[ii])
       do.call(
         'lines',
         if (horizontal)
-          c(list(rep(mean(y), 2L), at[i] + Lme), mean.pars)
+          c(list(rep(mean(y), 2L), at[ii] + Lme), mean.pars)
         else
-          c(list(at[i] + Lme, rep(mean(y), 2)), mean.pars)
+          c(list(at[ii] + Lme, rep(mean(y), 2)), mean.pars)
       )
       
-    if (median.line[i])
+    if (median.line[ii])
       do.call(
         'lines',
         if (horizontal)
-          c(list(rep_len(median(y), 2L), at[i] + Lme), median.pars)
+          c(list(rep_len(median(y), 2L), at[ii] + Lme), median.pars)
         else
-          c(list(at[i] + Lme, rep_len(median(y), 2L)), median.pars)
+          c(list(at[ii] + Lme, rep_len(median(y), 2L)), median.pars)
       )
   }
   
   ## p-value for wilcoxon/kw test in upper-right corner
+  pv <- NULL
   if (!identical(test, FALSE)) {
     tFUN <- if (ng == 2L)
       function(x, g) wilcox.test(x ~ g, data.frame(x = x, g = g)) else
@@ -729,7 +835,7 @@ tplot.default <- function(x, g, ..., type = 'db',
       else if (identical(format_pval, FALSE))
         pv$p.value
       else format_pval(pv$p.value),
-      side = 3L, line = 0.5, cex = 1.2,
+      side = 3L, line = 0.5, cex = par('cex.main'),
       at = par('usr')[2L], font = 3L, adj = 1
     )
     
@@ -802,67 +908,12 @@ tplot.default <- function(x, g, ..., type = 'db',
     )
   }
   
-  invisible(if (return_coords) coords else res)
-}
-
-#' @rdname tplot
-#' @export
-tplot.formula <- function(formula, data = NULL, ...,
-                          subset, na.action = NULL,
-                          panel.first = NULL, panel.last = NULL) {
+  res <- within.list(res, {
+    coords <- coords
+    test <- pv
+  })
   
-  if (missing(formula) || (length(formula) !=  3))
-    stop("\'formula\' missing or incorrect")
-  
-  m <- match.call(expand.dots = FALSE)
-  if (is.matrix(eval(m$data, parent.frame(1L))))
-    m$data <- as.data.frame(data)
-  
-  args <- lapply(m$..., eval, data, parent.frame(1L))
-  nmargs <- names(args)
-  
-  form <- as.character(formula)
-  args <- modifyList(list(xlab = form[3], ylab = form[2]), args)
-  
-  if ('main' %in% nmargs) args[['main']] <- enquote(args[['main']])
-  if ('sub' %in% nmargs)  args[['sub']]  <- enquote(args[['sub']])
-  if ('xlab' %in% nmargs) args[['xlab']] <- enquote(args[['xlab']])
-  if ('ylab' %in% nmargs) args[['ylab']] <- enquote(args[['ylab']])
-  
-  ## hacky way to pass panel.first/panel.last to tplot.default
-  args[['panel.first']] <- substitute(panel.first)
-  args[['panel.last']]  <- substitute(panel.last)
-  
-  m$... <- m$subset <- m$panel.first <- m$panel.last <- NULL
-  m$na.action <- na.pass
-  subset.expr <- m$subset
-  
-  m[[1L]] <- as.name('model.frame')
-  mf <- eval(m, parent.frame(1L))
-  n <- nrow(mf)
-  response <- attr(attr(mf, 'terms'), 'response')
-  
-  ## special handling of col and pch for grouping
-  group.col <- if ('group.col' %in% names(args)) args$group.col else FALSE
-  group.pch <- if ('group.pch' %in% names(args)) args$group.pch else FALSE
-  group.cex <- if ('group.cex' %in% names(args)) args$group.cex else FALSE
-  
-  ## reorder if necessary
-  if ('col' %in% names(args) && !group.col)
-    args$col <- unlist(split(rep_len(args$col, n), mf[-response]))
-  if ('pch' %in% names(args) && !group.pch)
-    args$pch <- unlist(split(rep_len(args$pch, n), mf[-response]))
-  if ('cex' %in% names(args) && !group.cex)
-    args$cex <- unlist(split(rep_len(args$cex, n), mf[-response]))
-  
-  if (!missing(subset)) {
-    s <- eval(subset.expr, data, parent.frame(1L))
-    ## rawr:::do_sub_
-    args <- lapply(args, do_sub_, x, n, s)
-    mf <- mf[s, ]
-  }
-  
-  do.call('tplot', c(list(split(mf[[response]], mf[-response])), args))
+  invisible(res)
 }
 
 #' Discrete scatter plot
@@ -2872,4 +2923,188 @@ binconr_ <- function(outcome, variable, addNA = TRUE, lbl = NULL,
     num = setNames(c(pad, num), c(lbl, names(num))),
     txt = setNames(c(pad, txt), c(lbl, names(num)))
   )
+}
+
+#' pplot
+#' 
+#' A grouped paired plot for continuous data.
+#' 
+#' @param formula a \code{\link{formula}}, such as \code{y ~ group1 + group2},
+#' where y is a numeric vector of data values to be split into n groups
+#' (\code{group1}), each group split into at most two groups (\code{group2})
+#' @param data a data frame (or list) from which the variables in
+#' \code{formula} should be taken
+#' @param x for the default method, a list of groups each having a list of
+#' length 2 of data values
+#' @param at the x-axis group positions
+#' @param pad the padding between \code{at} for each group and the points
+#' @param test logical or function; if \code{TRUE}, a \code{\link{wilcox.test}}
+#' p-value is added for each group
+#' 
+#' alternatively, a function (or function name as a character string) can be
+#' used, e.g., \code{test = t.test} or \code{function(x, y)
+#' t.test(x, y)}; note that if \code{test} is a function, it must have
+#' at least two arguments with the two groups of data; see examples
+#' @param args.test a \emph{named} list of arguments passed to \code{test}
+#' @param col,pch,cex color, plotting character, and character expansion
+#' vectors, each may be length 1, 2, or total number of groups to be plotted,
+#' recycled as needed
+#' @param names group labels having the same length as \code{l}
+#' @param quantiles optional probabilities passed to \code{\link{quantile}}
+#' to show for each group
+#' @param pch.quantiles plotting character for each quantile
+#' @param xlab,ylab x- and y-axis labels
+#' @param legend.text group labels of length 2
+#' @param ... for the \code{formula} method, named arguments to be passed to
+#' the default method
+#' 
+#' for the default method, additional arguments passed to \code{\link{tplot}}
+#' or graphical parameters passed to \code{\link{par}}
+#' 
+#' @examples
+#' set.seed(1)
+#' x <- lapply(1:5, function(x) list(rnorm(20, 0, x), rnorm(20, 0, x)))
+#' 
+#' pplot(x)
+#' pplot(x[1], ylim = c(-3, 3))
+#' pplot(x, test = t.test, args.test = list(paired = TRUE))
+#' pplot(x, col = rep(2:6, each = 2), pch = c(1, 16), legend.text = c('+', '-'))
+#' pplot(x, quantiles = 0.5, legend.text = c('+', '-'))
+#' 
+#' 
+#' ## pplot returns the object returned by test
+#' pv <- pplot(
+#'   x, quantiles = c(0.25, 0.5, 0.75), pch.quantiles = c(5, 18, 5),
+#'   legend.text = c('+', '-'), pad = 0.1, pch = 16, bty = 'l',
+#'   names = paste('group', 1:5), las = 1
+#' )
+#' sapply(pv, function(x) x$p.value)
+#' 
+#' 
+#' ## use a custom test function
+#' pplot(x, test = function(x, y) cor.test(x, y, method = 'spearman'))
+#' 
+#' moods <- function(x, y) rawr::moods.test(list(x, y))
+#' sapply(x, function(y) do.call('moods', y)$p.value)
+#' pplot(x, test = moods)
+#' 
+#' 
+#' ## formula method
+#' pplot(mpg ~ gear + am, mtcars)
+#' pplot(mpg ~ gear + vs, mtcars, xlab = 'Gears', legend.text = c('V', 'S'))
+#' 
+#' @export
+
+pplot <- function(x, ...) {
+  UseMethod('pplot')
+}
+
+#' @rdname pplot
+#' @export
+pplot.formula <- function(formula, data, ...) {
+  name <- deparse(substitute(data))
+  vars <- all.vars(formula)
+  data[vars[-1L]] <- lapply(data[vars[-1L]], as.factor)
+  
+  if (!length(vars) %in% 2:3)
+    stop('invalid formula')
+  if (nlevels(data[, tail(vars, 1L)]) != 2L)
+    stop(sprintf('%s[, \'%s\'] must have two unique, nonmissing values',
+                 name, tail(vars, 1L)))
+  
+  sp <- if (length(vars) == 3L) {
+    sp <- split(data, data[, vars[2L]])
+    lapply(sp, function(x) split(x[, vars[1L]], x[, vars[3L]]))
+  } else list(split(data[, vars[1L]], data[, vars[2L]]))
+  
+  pplot(sp, ...)
+}
+
+#' @rdname pplot
+#' @export
+pplot.default <- function(x, at = seq_along(x), pad = 0.05,
+                          test = wilcox.test, args.test = list(),
+                          col = 1:2, pch = par('pch'), cex = par('cex'),
+                          names, quantiles = NULL,
+                          pch.quantiles = rep_len(16L, length(quantiles)),
+                          xlab = NULL, ylab = NULL, legend.text = NULL, ...) {
+  stopifnot(lengths(x) == 2L)
+  
+  ## base plot
+  tplot(
+    lapply(x, unlist), at = at, show.n = FALSE, ...,
+    names = names, type = 'n', xlab = xlab %||% '', ylab = ylab
+  )
+  
+  ul <- unlist(x, recursive = FALSE)
+  ng <- length(x)
+  at <- rep(at, each = 2L)
+  gr <- at + c(-pad, pad)
+  qq <- at + c(-pad, pad) / 3
+  si <- rep(c(-1, 1), ng)
+  
+  col <- rep_len(col, length(ul))
+  pch <- rep_len(pch, length(ul))
+  cex <- rep_len(cex, length(ul))
+  quantile <- length(quantiles) && !identical(quantiles, FALSE)
+  
+  ## each group * 2
+  sapply(seq_along(ul), function(ii) {
+    x <- ul[[ii]]
+    if (!length(x))
+      return(NULL)
+    tplot(
+      x, add = TRUE, ann = FALSE, axes = FALSE, type = 'd', show.n = FALSE,
+      at = gr[ii], col = col[ii], pch = pch[ii], cex = cex[ii],
+      args.beeswarm = list(side = si[ii], method = 'center', corral = 'wrap',
+                           corralWidth = 1 / 2 - pad * 2)
+    )
+    
+    if (quantile) {
+      xx <- rep(qq[ii], length(quantiles))
+      yy <- quantile(x, quantiles, na.rm = TRUE)
+      points(xx, yy, col = col[ii], pch = pch.quantiles)
+    }
+  })
+  
+  legend.text <- legend.text %||% base::names(x[[1L]])
+  if (!is.null(legend.text)) {
+    col <- if (col[1L] == col[2L])
+      1L else col[1:2]
+    legend(
+      'topleft', legend = legend.text, col = col, pch = pch, bty = 'n'
+    )
+  }
+  
+  if (quantile) {
+    legend(
+      'bottomleft', horiz = TRUE, legend = sprintf('%s%%', quantiles * 100),
+      title = sprintf('quantile%s', ifelse(length(quantiles) == 1L, '', 's')),
+      pch = pch.quantiles, col = 1L, bty = 'n'
+    )
+  }
+  
+  res <- NULL
+  if (!identical(test, FALSE) && !is.null(test)) {
+    test <- if (is.function(test) || is.character(test))
+      match.fun(test)
+    else if (isTRUE(test))
+      wilcox.test
+    else test
+    
+    res <- lapply(x, function(x) {
+      y <- x[[2L]]
+      x <- x[[1L]]
+      args <- list(x = quote(x), y = quote(y))
+      tryCatch(
+        do.call('test', modifyList(args, args.test)),
+        error = function(e) list(p.value = NA)
+      )
+    })
+    
+    mtext(sapply(res, function(x) pvalr(x$p.value, show.p = TRUE)),
+          at = unique(at), side = 3L)
+  }
+  
+  invisible(res)
 }

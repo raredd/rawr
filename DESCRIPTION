@@ -15,6 +15,7 @@ Imports:
     utils
 Suggests:
     beepr,
+    beeswarm,
     clinfun,
     coin,
     desmon,
