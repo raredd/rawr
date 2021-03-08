@@ -32,7 +32,8 @@
 #' @param ... additional arguments passed to or from other methods
 #'
 #' @seealso
-#' \code{\link{jitter}}; \code{\link{tplot}}; \code{\link{dodge2}}
+#' \code{\link{jitter}}; \code{\link{tplot}}; \code{\link{dodge2}};
+#' \code{beeswarm::beeswarm}
 #'
 #' @examples
 #' ## these are equivalent ways to call dodge:
@@ -44,22 +45,21 @@
 #' ## compare to overlapping points and jittering
 #' sp <- split(mtcars$mpg, do.call(interaction, mtcars[, c('gear','vs')]))
 #' plot.new()
-#' po <- par(mar = c(0, 0, 0, 0), cex = 2)
-#' plot.window(c(.5,6.5),c(10,35))
-#' box()
+#' op <- par(cex = 2)
+#' plot.window(c(0.5, 6.5), c(10, 35))
 #' for (ii in seq_along(sp))
 #'   points(rep(ii, length(sp[[ii]])), sp[[ii]])
 #' for (ii in seq_along(sp))
 #'   points(jitter(rep(ii, length(sp[[ii]]))), sp[[ii]], col = 4, pch = 1)
 #' points(dodge(mpg ~ gear + vs, mtcars), col = 2, pch = 4)
-#' legend('topleft', pch = c(1,1,4), col = c(1,4,2), cex = .8,
-#'        legend = c('overlapping','random jitter','dodging'))
+#' legend('topleft', pch = c(1, 1, 4), col = c(1, 4, 2), cex = 0.8,
+#'        legend = c('overlapping', 'random jitter', 'dodging'))
 #' par(op)
 #'
 #'
 #' ## practical use
-#' boxplot(mpg ~ vs + gear, data = mtcars)
-#' points(dodge(mpg ~ vs + gear, data = mtcars), col = 2, pch = 19)
+#' boxplot(disp ~ vs + gear, data = mtcars)
+#' points(dodge(disp ~ vs + gear, data = mtcars))
 #'
 #' @export
 
@@ -136,7 +136,8 @@ dodge.formula <- function(formula, data = NULL, ...) {
 #' @param ... additional arguments passed to or from other methods
 #'
 #' @seealso
-#' \code{\link{jitter}}; \code{\link{tplot}}; \code{\link{dodge}}
+#' \code{\link{jitter}}; \code{\link{tplot}}; \code{\link{dodge}};
+#' \code{beeswarm::beeswarm}
 #'
 #' @examples
 #' ## these are equivalent ways to call dodge2:
@@ -148,22 +149,21 @@ dodge.formula <- function(formula, data = NULL, ...) {
 #' ## compare to overlapping points and jittering
 #' sp <- split(mtcars$mpg, do.call(interaction, mtcars[, c('gear','vs')]))
 #' plot.new()
-#' op <- par(mar = c(0,0,0,0), cex = 2)
-#' plot.window(c(.5,6.5),c(10,35))
-#' box()
+#' op <- par(cex = 2)
+#' plot.window(c(0.5, 6.5), c(10, 35))
 #' for (ii in seq_along(sp))
 #'   points(rep(ii, length(sp[[ii]])), sp[[ii]])
 #' for (ii in seq_along(sp))
 #'   points(jitter(rep(ii, length(sp[[ii]]))), sp[[ii]], col = 4, pch = 1)
 #' points(dodge2(mpg ~ gear + vs, mtcars), col = 2, pch = 4)
-#' legend('topleft', pch = c(1,1,4), col = c(1,4,2), cex = .8,
-#'        legend = c('overlapping','random jitter','dodging'))
+#' legend('topleft', pch = c(1, 1, 4), col = c(1, 4, 2), cex = 0.8,
+#'        legend = c('overlapping', 'random jitter', 'dodging'))
 #' par(op)
 #'
 #'
 #' ## practical use
-#' boxplot(mpg ~ vs + gear, data = mtcars)
-#' points(dodge2(mpg ~ vs + gear, data = mtcars), col = 2, pch = 19)
+#' boxplot(disp ~ vs + gear, data = mtcars)
+#' points(dodge2(disp ~ vs + gear, data = mtcars))
 #'
 #' @export
 

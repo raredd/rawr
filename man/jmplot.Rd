@@ -87,14 +87,16 @@ margins.
 }
 \examples{
 set.seed(1)
-dat <- data.frame(x = rnorm(100, 20, 5),
-                  y = rexp(100),
-                  z = c('M','F'),
-                  zz = c(LETTERS[1:4]))
-with(dat,
-  jmplot(x, y, zz, type = 'db', jit = .02, col = 1:4, las = 1, cex.n = .5,
-         group.col = TRUE, pch = 1:4, group.pch = TRUE, boxcol = grey(.9))
+dat <- data.frame(
+  x = rnorm(100, 20, 5),
+  y = rexp(100),
+  z = c('M', 'F'),
+  zz = c(LETTERS[1:4])
 )
+with(dat, {
+  jmplot(x, y, zz, type = 'db', jit = 0.02, col = 1:4, las = 1, cex.n = 0.5,
+         group.col = TRUE, pch = 1:4, group.pch = TRUE, boxcol = grey(0.9))
+})
 
 }
 \references{
