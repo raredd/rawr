@@ -139,8 +139,8 @@ dd <- data.frame(
   dt_off   = c(12, 19, NA, NA, 8)
 )
 bd <- data.frame(
-  id        = c(3,3,3,3,4,4),
-  dt_assess = c(9,13,17,21,10,15),
+  id        = c(3, 3, 3, 3, 4, 4),
+  dt_assess = c(9, 13, 17, 21, 10, 15),
   resp = factor(c('MR', 'PR', 'PR', 'CR', 'PR', 'CR'),
                 levels = c('PD', 'SD', 'MR', 'PR', 'CR'))
 )
