@@ -2145,6 +2145,9 @@ surv_cp <- function(data, time.var, status.var,
 #' 
 #' @param s a \code{\link{survfit}} object
 #' @param digits number of digits to use in printing numbers
+#' @param locf logical; if \code{TRUE}, any \code{NA} probabilities will be
+#' carried forward, e.g., if no events occurred during two consecutive time
+#' intervals
 #' @param ... additional arguments passed to
 #' \code{\link[survival]{summary.survfit}}
 #' 
@@ -2164,7 +2167,7 @@ surv_cp <- function(data, time.var, status.var,
 #' 
 #' @export
 
-surv_summary <- function(s, digits = 3L, ...) {
+surv_summary <- function(s, digits = 3L, locf = FALSE, ...) {
   if (!inherits(s, 'survfit'))
     stop('\'s\' must be a \'survfit\' object')
   oo <- options(digits = digits)
@@ -2216,7 +2219,8 @@ surv_summary <- function(s, digits = 3L, ...) {
     dimnames(mat) <- list(NULL, cnames)
     if (is.null(x$strata)) {
       cat('\n')
-      invisible(prmatrix(mat, rowlab = rep('', nrow(mat))))
+      res <- prmatrix(mat, rowlab = rep('', nrow(mat)))
+      invisible(if (locf) apply(res, 2L, locf) else res)
     } else {
       strata <- x$strata
       if (!is.null(x$start.time))
@@ -2224,9 +2228,12 @@ surv_summary <- function(s, digits = 3L, ...) {
       invisible(setNames(lapply(levels(strata), function(i) {
         who <- strata == i
         cat('\n               ', i, '\n')
-        if (sum(who) == 1L)
+        res <- if (sum(who) == 1L)
           prmatrix(mat[who, , drop = FALSE])
         else prmatrix(mat[who, , drop = FALSE], rowlab = rep('', sum(who)))
+        
+        if (locf)
+          apply(res, 2L, locf) else res
       }), levels(strata)))
     }
   } else stop('There are no events to print. Use the option censored = TRUE ',
@@ -2245,6 +2252,9 @@ surv_summary <- function(s, digits = 3L, ...) {
 #' even occurs; if \code{FALSE}, number of events may not sum to total
 #' @param percent logical; if \code{TRUE}, percentages are shown instead of
 #' probabilities
+#' @param locf logical; if \code{TRUE}, any \code{NA} probabilities will be
+#' carried forward, e.g., if no events occurred during two consecutive time
+#' intervals
 #' 
 #' @return
 #' A matrix (or list of matrices) with formatted summaries for each strata; see
@@ -2275,7 +2285,7 @@ surv_summary <- function(s, digits = 3L, ...) {
 
 surv_table <- function(s, digits = ifelse(percent, 0L, 3L),
                        times = pretty(s$time), maxtime = FALSE,
-                       percent = FALSE, ...) {
+                       percent = FALSE, locf = FALSE, ...) {
   if (maxtime) {
     idx <- s$n.event > 0
     maxtime <- max(s$time[if (any(idx))
@@ -2284,7 +2294,9 @@ surv_table <- function(s, digits = ifelse(percent, 0L, 3L),
   }
   
   capture.output(
-    ss <- surv_summary(s, digits = 7L, times = unique(times), ...)
+    ss <- surv_summary(
+      s, digits = 7L, times = unique(times), locf = locf, ...
+    )
   )
   
   if (percent) {

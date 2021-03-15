@@ -4,12 +4,16 @@
 \alias{surv_summary}
 \title{Summary of a survival curve}
 \usage{
-surv_summary(s, digits = 3L, ...)
+surv_summary(s, digits = 3L, locf = FALSE, ...)
 }
 \arguments{
 \item{s}{a \code{\link{survfit}} object}
 
 \item{digits}{number of digits to use in printing numbers}
+
+\item{locf}{logical; if \code{TRUE}, any \code{NA} probabilities will be
+carried forward, e.g., if no events occurred during two consecutive time
+intervals}
 
 \item{...}{additional arguments passed to
 \code{\link[survival]{summary.survfit}}}

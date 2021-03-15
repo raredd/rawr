@@ -10,6 +10,7 @@ surv_table(
   times = pretty(s$time),
   maxtime = FALSE,
   percent = FALSE,
+  locf = FALSE,
   ...
 )
 }
@@ -25,6 +26,10 @@ even occurs; if \code{FALSE}, number of events may not sum to total}
 
 \item{percent}{logical; if \code{TRUE}, percentages are shown instead of
 probabilities}
+
+\item{locf}{logical; if \code{TRUE}, any \code{NA} probabilities will be
+carried forward, e.g., if no events occurred during two consecutive time
+intervals}
 
 \item{...}{additional arguments passed to \code{\link{summary.survfit}}}
 }
