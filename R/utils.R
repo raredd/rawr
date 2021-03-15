@@ -2624,6 +2624,11 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
   data <- data.frame(date = date, response = response)[order(date), ]
   data$responsei <- as.integer(data$response)
   
+  if (any(idx <- duplicated(data))) {
+    warning('removing duplicated visits')
+    data <- data[!idx, ]
+  }
+  
   lvls <- levels(response)
   ord  <- is.ordered(response)
   include <- if (is.numeric(include))
