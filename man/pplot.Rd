@@ -19,6 +19,7 @@ pplot(x, ...)
   col = 1:2,
   pch = par("pch"),
   cex = par("cex"),
+  args.beeswarm = list(),
   names,
   quantiles = NULL,
   pch.quantiles = rep_len(16L, length(quantiles)),
@@ -63,6 +64,9 @@ at least two arguments with the two groups of data; see examples}
 vectors, each may be length 1, 2, or total number of groups to be plotted,
 recycled as needed}
 
+\item{args.beeswarm}{a \emph{named} list of arguments passed to
+\code{\link[beeswarm]{beeswarm}} to override defaults}
+
 \item{names}{group labels having the same length as \code{l}}
 
 \item{quantiles}{optional probabilities passed to \code{\link{quantile}}
@@ -75,9 +79,21 @@ to show for each group}
 \item{legend.text}{group labels of length 2}
 }
 \description{
-A grouped paired plot for continuous data.
+A paired plot for continuous data. Draws a dot plot with points jittered
+to the left and right about the group position. Jittering is done with
+\code{\link[beeswarm]{beeswarm}}; however, the original data values are
+used instead of using the slight adjustments made by \code{beeswarm}.
+Additionally, a two-sample \code{\link{wilcox.test}} test is performed
+on each pair by default, but the test and assumptions may be controlled
+using \code{test} and \code{args.test} arguments, respectively; see
+examples.
 }
 \examples{
+## basic usage
+pplot(split(mtcars$mpg, mtcars$vs))
+pplot(mpg ~ vs, mtcars)
+
+
 set.seed(1)
 x <- lapply(1:5, function(x) list(rnorm(20, 0, x), rnorm(20, 0, x)))
 
@@ -90,7 +106,7 @@ pplot(x, quantiles = 0.5, legend.text = c('+', '-'))
 
 ## pplot returns the object returned by test
 pv <- pplot(
-  x, quantiles = c(0.25, 0.5, 0.75), pch.quantiles = c(5, 18, 5),
+  x, quantiles = c(0.25, 0.5, 0.75), pch.quantiles = c(6, 18, 2),
   legend.text = c('+', '-'), pad = 0.1, pch = 16, bty = 'l',
   names = paste('group', 1:5), las = 1
 )
@@ -101,8 +117,8 @@ sapply(pv, function(x) x$p.value)
 pplot(x, test = function(x, y) cor.test(x, y, method = 'spearman'))
 
 moods <- function(x, y) rawr::moods.test(list(x, y))
-sapply(x, function(y) do.call('moods', y)$p.value)
 pplot(x, test = moods)
+sapply(x, function(y) do.call('moods', y)$p.value)
 
 
 ## formula method

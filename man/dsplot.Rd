@@ -75,9 +75,10 @@ y <- round(rnorm(400, 200, 4))
 sex <- sample(c('Female', 'Male'), 400, replace = TRUE)
 
 dsplot(x, y, col = (sex \%in\% 'Female') + 1L, bg.col = FALSE)
+dsplot(x, y, col = (sex \%in\% 'Female') + 1L, bg.col = 'tomato')
 
 dsplot(y ~ x, pch = 19, col = (sex \%in\% 'Female') + 1L,
-       cex = .6, bty = 'l', bg.col = 'tomato',
+       cex = 0.6, bty = 'l', bg.col = 'tomato',
        xlab = 'measurement 1', ylab = 'measurement 2')
 legend('bottomright', pch = 19, col = 1:2, bty = 'n',
        legend = c('Male', 'Female'))

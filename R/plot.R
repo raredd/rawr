@@ -963,9 +963,10 @@ tplot.default <- function(x, g, ..., type = 'db',
 #' sex <- sample(c('Female', 'Male'), 400, replace = TRUE)
 #' 
 #' dsplot(x, y, col = (sex %in% 'Female') + 1L, bg.col = FALSE)
+#' dsplot(x, y, col = (sex %in% 'Female') + 1L, bg.col = 'tomato')
 #' 
 #' dsplot(y ~ x, pch = 19, col = (sex %in% 'Female') + 1L,
-#'        cex = .6, bty = 'l', bg.col = 'tomato',
+#'        cex = 0.6, bty = 'l', bg.col = 'tomato',
 #'        xlab = 'measurement 1', ylab = 'measurement 2')
 #' legend('bottomright', pch = 19, col = 1:2, bty = 'n',
 #'        legend = c('Male', 'Female'))
@@ -997,10 +998,10 @@ dsplot.default <- function(x, y, ..., bg.col = TRUE, col = par('col'),
     data.frame(x.c, y.c)
   }
   
-  ## vector 1,n,2,n,3,n, ...,  n, n for x
-  ## vector n,1,n,2,n,3, ..., n-1,n for y
-  every.other.element.x <- function(n) c(rbind(1:n, rep(n, n)))[-(2 * n)]
-  every.other.element.y <- function(n) c(rbind(rep(n, n), 1:n))[-(2 * n)]
+  ## 1, n, 2, n, 3, n, ...,  n, n for x
+  ## n, 1, n, 2, n, 3, ..., n-1, n for y
+  every.other.element.x <- function(n) head(c(rbind(seq.int(n), n)), -1L)
+  every.other.element.y <- function(n) head(c(rbind(n, seq.int(n))), -1L)
   
   xy <- xy.coords(x, y, deparse(substitute(x)), deparse(substitute(y)))
   L <- length(x)
@@ -1029,12 +1030,12 @@ dsplot.default <- function(x, y, ..., bg.col = TRUE, col = par('col'),
        ann = FALSE, xaxt = 'n', yaxt = 'n', ...)
   title(xlab = xlab %||% xy$xlab, ylab = ylab %||% xy$ylab)
   
-  localAxis(1L, pretty(x) + .5, pretty(x), ...)
-  localAxis(2L, pretty(y) + .5, pretty(y), ...)
+  localAxis(1L, pretty(x) + 0.5, pretty(x), ...)
+  localAxis(2L, pretty(y) + 0.5, pretty(y), ...)
   
   if (identical(bg.col, FALSE)) {
-    abline(h = y.levels, col = grey(.9))
-    abline(v = x.levels, col = grey(.9))
+    abline(h = y.levels, col = grey(0.9))
+    abline(v = x.levels, col = grey(0.9))
   }
   
   sc <- square.coordinates(box.size)
@@ -1052,7 +1053,7 @@ dsplot.default <- function(x, y, ..., bg.col = TRUE, col = par('col'),
   
   for (i in within) {
     ## index within category
-    idx <- c(idx, 1:i)
+    idx <- c(idx, seq.int(i))
     hm  <- c(hm, rep(i, i))
   }
   dat$idx <- idx
@@ -1066,24 +1067,27 @@ dsplot.default <- function(x, y, ..., bg.col = TRUE, col = par('col'),
   dat$pch <- pch
   
   if (!identical(bg.col, FALSE)) {
-    for (i in x.levels) {
-      for (j in y.levels) {
-        n <- sum(x == i & y == j)
+    for (ii in x.levels) {
+      for (jj in y.levels) {
+        n <- sum(x == ii & y == jj)
         if (n > 0) {
           col <- adjustcolor(bg.col, alpha[n])
-          rect(i + off.set, j + off.set, i + 1 - off.set, j + 1 - off.set,
+          rect(ii + off.set, jj + off.set, ii + 1 - off.set, jj + 1 - off.set,
                border = col, col = col)
         }
       }
     }
   }
   
-  points(dat$x + coord[sc[dat$idx, 1L]] + dat$lx,
-         dat$y + coord[sc[dat$idx, 2L]] + dat$ly,
-         pch = dat$pch, col = dat$col, cex = cex)
+  points(
+    dat$x + coord[sc[dat$idx, 1L]] + dat$lx,
+    dat$y + coord[sc[dat$idx, 2L]] + dat$ly,
+    pch = dat$pch, col = dat$col, cex = cex
+  )
   
-  invisible(table(factor(y, levels = rev(min(y):max(y))),
-                  factor(x, levels = min(x):max(x))))
+  invisible(
+    table(factor(y, rev(min(y):max(y))), factor(x, min(x):max(x)))
+  )
 }
 
 #' @rdname dsplot
@@ -2927,7 +2931,14 @@ binconr_ <- function(outcome, variable, addNA = TRUE, lbl = NULL,
 
 #' pplot
 #' 
-#' A grouped paired plot for continuous data.
+#' A paired plot for continuous data. Draws a dot plot with points jittered
+#' to the left and right about the group position. Jittering is done with
+#' \code{\link[beeswarm]{beeswarm}}; however, the original data values are
+#' used instead of using the slight adjustments made by \code{beeswarm}.
+#' Additionally, a two-sample \code{\link{wilcox.test}} test is performed
+#' on each pair by default, but the test and assumptions may be controlled
+#' using \code{test} and \code{args.test} arguments, respectively; see
+#' examples.
 #' 
 #' @param formula a \code{\link{formula}}, such as \code{y ~ group1 + group2},
 #' where y is a numeric vector of data values to be split into n groups
@@ -2949,6 +2960,8 @@ binconr_ <- function(outcome, variable, addNA = TRUE, lbl = NULL,
 #' @param col,pch,cex color, plotting character, and character expansion
 #' vectors, each may be length 1, 2, or total number of groups to be plotted,
 #' recycled as needed
+#' @param args.beeswarm a \emph{named} list of arguments passed to
+#' \code{\link[beeswarm]{beeswarm}} to override defaults
 #' @param names group labels having the same length as \code{l}
 #' @param quantiles optional probabilities passed to \code{\link{quantile}}
 #' to show for each group
@@ -2962,6 +2975,11 @@ binconr_ <- function(outcome, variable, addNA = TRUE, lbl = NULL,
 #' or graphical parameters passed to \code{\link{par}}
 #' 
 #' @examples
+#' ## basic usage
+#' pplot(split(mtcars$mpg, mtcars$vs))
+#' pplot(mpg ~ vs, mtcars)
+#' 
+#' 
 #' set.seed(1)
 #' x <- lapply(1:5, function(x) list(rnorm(20, 0, x), rnorm(20, 0, x)))
 #' 
@@ -2974,7 +2992,7 @@ binconr_ <- function(outcome, variable, addNA = TRUE, lbl = NULL,
 #' 
 #' ## pplot returns the object returned by test
 #' pv <- pplot(
-#'   x, quantiles = c(0.25, 0.5, 0.75), pch.quantiles = c(5, 18, 5),
+#'   x, quantiles = c(0.25, 0.5, 0.75), pch.quantiles = c(6, 18, 2),
 #'   legend.text = c('+', '-'), pad = 0.1, pch = 16, bty = 'l',
 #'   names = paste('group', 1:5), las = 1
 #' )
@@ -2985,8 +3003,8 @@ binconr_ <- function(outcome, variable, addNA = TRUE, lbl = NULL,
 #' pplot(x, test = function(x, y) cor.test(x, y, method = 'spearman'))
 #' 
 #' moods <- function(x, y) rawr::moods.test(list(x, y))
-#' sapply(x, function(y) do.call('moods', y)$p.value)
 #' pplot(x, test = moods)
+#' sapply(x, function(y) do.call('moods', y)$p.value)
 #' 
 #' 
 #' ## formula method
@@ -3025,9 +3043,13 @@ pplot.formula <- function(formula, data, ...) {
 pplot.default <- function(x, at = seq_along(x), pad = 0.05,
                           test = wilcox.test, args.test = list(),
                           col = 1:2, pch = par('pch'), cex = par('cex'),
-                          names, quantiles = NULL,
+                          args.beeswarm = list(), names, quantiles = NULL,
                           pch.quantiles = rep_len(16L, length(quantiles)),
                           xlab = NULL, ylab = NULL, legend.text = NULL, ...) {
+  if (length(x) == 2L)
+    if (all(!sapply(x, islist)))
+      x <- list(x)
+  
   stopifnot(lengths(x) == 2L)
   
   ## base plot
@@ -3053,11 +3075,16 @@ pplot.default <- function(x, at = seq_along(x), pad = 0.05,
     x <- ul[[ii]]
     if (!length(x))
       return(NULL)
+    
+    args <- list(side = si[ii], method = 'center', corral = 'wrap',
+                 corralWidth = 1 / 2 - pad * 2)
+    if (!islist(args.beeswarm))
+      args.beeswarm <- list()
+    
     tplot(
       x, add = TRUE, ann = FALSE, axes = FALSE, type = 'd', show.n = FALSE,
       at = gr[ii], col = col[ii], pch = pch[ii], cex = cex[ii],
-      args.beeswarm = list(side = si[ii], method = 'center', corral = 'wrap',
-                           corralWidth = 1 / 2 - pad * 2)
+      args.beeswarm = modifyList(args, args.beeswarm)
     )
     
     if (quantile) {
@@ -3098,7 +3125,10 @@ pplot.default <- function(x, at = seq_along(x), pad = 0.05,
       args <- list(x = quote(x), y = quote(y))
       tryCatch(
         do.call('test', modifyList(args, args.test)),
-        error = function(e) list(p.value = NA)
+        error = function(e) {
+          message('Warning: ', e$message, ' - skipping test')
+          list(p.value = NA)
+        }
       )
     })
     
