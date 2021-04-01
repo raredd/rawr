@@ -435,7 +435,7 @@ lsp <- function(package, what, pattern) {
 #' parse_yaml(lsf(rawr, 'desc'))
 #' parse_index(lsf(rawr, 'index'))
 #' parse_news(lsf(rawr, 'news'))
-#' parse_namespace(lsf(rawr, 'name'))
+#' parse_namespace(lsf(rawr, 'namespace')[1:5], 'S3method')
 #' 
 #' @name rawr_parse
 NULL
@@ -472,13 +472,16 @@ parse_news <- function(x) {
 
 #' @rdname rawr_parse
 #' @export
-parse_namespace <- function(x,
-                            what = c('import', 'export', 'exportPattern',
-                                     'importClass', 'importMethod', 'exportClass',
-                                     'exportMethod', 'exportClassPattern', 'useDynLib',
-                                     'nativeRoutine', 'S3method')) {
+parse_namespace <- function(x, what = NULL) {
   ## remove comments and collapse
   x <- paste0(gsub('#.*$', '', x), collapse = '')
+  y <- c(
+    'import', 'export', 'exportPattern', 'importClass', 'importMethod',
+    'exportClass', 'exportMethod', 'exportClassPattern', 'useDynLib',
+    'nativeRoutine', 'S3method'
+  )
+  what <- if (is.null(what))
+    y else match.arg(what, y, TRUE)
   
   mm <- lapply(what, function(xx)
     gregexpr(sprintf('(?i)%s\\((.*?)\\)', xx), x, perl = TRUE))

@@ -14,12 +14,7 @@ parse_index(x)
 
 parse_news(x)
 
-parse_namespace(
-  x,
-  what = c("import", "export", "exportPattern", "importClass", "importMethod",
-    "exportClass", "exportMethod", "exportClassPattern", "useDynLib", "nativeRoutine",
-    "S3method")
-)
+parse_namespace(x, what = NULL)
 }
 \arguments{
 \item{x}{a vector of character strings}
@@ -41,7 +36,7 @@ not a requirememnt on the structure of \code{NEWS} files.
 parse_yaml(lsf(rawr, 'desc'))
 parse_index(lsf(rawr, 'index'))
 parse_news(lsf(rawr, 'news'))
-parse_namespace(lsf(rawr, 'name'))
+parse_namespace(lsf(rawr, 'namespace')[1:5], 'S3method')
 
 }
 \seealso{

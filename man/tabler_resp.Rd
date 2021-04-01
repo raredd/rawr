@@ -6,7 +6,7 @@
 \usage{
 tabler_resp(
   x,
-  r_or_better = levels(x)[3:1],
+  r_or_better = levels(x)[3:2],
   conf = 0.95,
   digits = 0L,
   frac = TRUE,
@@ -53,15 +53,16 @@ format for easy display.
 }
 \examples{
 set.seed(1)
-r <- c('CR','PR','SD','PD','NE')
+r <- c('CR', 'PR', 'SD', 'PD', 'NE')
 x <- factor(sample(r, 30, replace = TRUE), r)
 
+tabler_resp(x)
 tabler_resp(x, 3)
 tabler_resp(x, 'PR')
 tabler_resp(x, 'PR', total = 50)
 
 ## note NAs are removed
-y <- `[<-`(x, 1:10, value = NA)
+y <- replace(x, 1:10, value = NA)
 tabler_resp(x, FALSE)
 tabler_resp(y, FALSE)
 
@@ -69,6 +70,7 @@ tabler_resp(y, FALSE)
 ## two-stage designs
 ## use two-stage CI in "PR" column
 tabler_resp(x)
+
 two_idx <- 1:2
 two_stage <- c(r1 = 2, n1 = 10, n2 = 20)
 tabler_resp(x, two_stage = c(two_stage, two_idx))

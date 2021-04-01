@@ -53,12 +53,14 @@ inputs, see \code{\link{bincon}}.
 binconr(5, 10)
 binconr(5, 10, percent = FALSE)
 
-binconr(5, 10, .90, est = FALSE)
-binconr(45, 53, digits = 1, conf = .975)
+binconr(5, 10, 0.90, est = FALSE)
+binconr(45, 53, digits = 1, conf = 0.975)
 binconr(45, 53, show_conf = FALSE, frac = TRUE)
 
 ## length 2 vectors assume two-stage confidence intervals
 binconr(c(15, 45), c(20, 33), show_conf = FALSE, frac = TRUE)
+## compare
+rawr:::twocon(20, 33, 15, 45)
 
 }
 \seealso{

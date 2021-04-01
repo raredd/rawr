@@ -93,6 +93,7 @@ dat <- data.frame(
   z = c('M', 'F'),
   zz = c(LETTERS[1:4])
 )
+
 with(dat, {
   jmplot(x, y, zz, type = 'db', jit = 0.02, col = 1:4, las = 1, cex.n = 0.5,
          group.col = TRUE, pch = 1:4, group.pch = TRUE, boxcol = grey(0.9))

@@ -63,6 +63,7 @@
 #'   z = c('M', 'F'),
 #'   zz = c(LETTERS[1:4])
 #' )
+#' 
 #' with(dat, {
 #'   jmplot(x, y, zz, type = 'db', jit = 0.02, col = 1:4, las = 1, cex.n = 0.5,
 #'          group.col = TRUE, pch = 1:4, group.pch = TRUE, boxcol = grey(0.9))
@@ -84,16 +85,14 @@ jmplot <- function(x, y, z,
                    ## extra stuff
                    ann = par('ann'), asp = NA,
                    panel.first = NULL, panel.last = NULL, ...) {
-  
   ## helpers
   localTplot <- function(..., type = 'b', horizontal = FALSE)
     tplot(..., type = type, axes = FALSE, horizontal = horizontal)
-  eliminateTplot <- function(func, ..., type, dist, jit, names, group.col,
+  eliminateTplot <- function(fn, ..., type, dist, jit, names, group.col,
                              boxcol, boxborder, group.pch, median.line,
                              mean.line, median.pars, mean.pars, boxplot.pars,
-                             border.col, axes, frame.plot, add, horizontal) {
-    func(...)
-  }
+                             border.col, axes, frame.plot, add, horizontal)
+    fn(...)
   localPlot   <- function(xy, ...,                         lwd)
     eliminateTplot(plot.xy, xy, 'p', ...)
   localAxis   <- function(    ..., col, bg, pch, cex, lty, lwd)
