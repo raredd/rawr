@@ -4,7 +4,16 @@
 \alias{countr}
 \title{Count formatter}
 \usage{
-countr(x, n, lowcase = NA, frac = FALSE, digits = 0L, which = seq_along(x))
+countr(
+  x,
+  n,
+  lowcase = NA,
+  frac = FALSE,
+  digits = 0L,
+  which = seq_along(x),
+  conf = NULL,
+  show_conf = TRUE
+)
 }
 \arguments{
 \item{x}{named vector of counts (a summary or table) or a long vector
@@ -23,6 +32,9 @@ case if \code{FALSE}, and unchanged for any other value}
 
 \item{which}{optional integer or character vector to select or re-order
 the output; note that this does not change the counts or percentages}
+
+\item{conf, show_conf}{optional arguments controlling binomial confidence
+intervals, passed to \code{\link{binconr}}}
 }
 \description{
 Formats and prints a \emph{named} vector of counts with percents.
@@ -30,6 +42,7 @@ Formats and prints a \emph{named} vector of counts with percents.
 \examples{
 x <- setNames(3:1, c('Gold', 'Silver', 'Bronze'))
 countr(x)
+countr(x, conf = 0.95)
 countr(x, n = 10, frac = TRUE)
 countr(x, n = 10, frac = TRUE, which = 2)
 

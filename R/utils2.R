@@ -888,12 +888,14 @@ catlist <- function(l, sep = ' = ', collapse = ', ') {
 #' binconr(5, 10)
 #' binconr(5, 10, percent = FALSE)
 #'
-#' binconr(5, 10, .90, est = FALSE)
-#' binconr(45, 53, digits = 1, conf = .975)
+#' binconr(5, 10, 0.90, est = FALSE)
+#' binconr(45, 53, digits = 1, conf = 0.975)
 #' binconr(45, 53, show_conf = FALSE, frac = TRUE)
 #'
 #' ## length 2 vectors assume two-stage confidence intervals
 #' binconr(c(15, 45), c(20, 33), show_conf = FALSE, frac = TRUE)
+#' ## compare
+#' rawr:::twocon(20, 33, 15, 45)
 #'
 #' @export
 
@@ -2743,15 +2745,16 @@ get_tabler_stat_n <- function(x, pct = TRUE, use_labels = TRUE) {
 #'
 #' @examples
 #' set.seed(1)
-#' r <- c('CR','PR','SD','PD','NE')
+#' r <- c('CR', 'PR', 'SD', 'PD', 'NE')
 #' x <- factor(sample(r, 30, replace = TRUE), r)
 #'
+#' tabler_resp(x)
 #' tabler_resp(x, 3)
 #' tabler_resp(x, 'PR')
 #' tabler_resp(x, 'PR', total = 50)
 #'
 #' ## note NAs are removed
-#' y <- `[<-`(x, 1:10, value = NA)
+#' y <- replace(x, 1:10, value = NA)
 #' tabler_resp(x, FALSE)
 #' tabler_resp(y, FALSE)
 #'
@@ -2759,6 +2762,7 @@ get_tabler_stat_n <- function(x, pct = TRUE, use_labels = TRUE) {
 #' ## two-stage designs
 #' ## use two-stage CI in "PR" column
 #' tabler_resp(x)
+#' 
 #' two_idx <- 1:2
 #' two_stage <- c(r1 = 2, n1 = 10, n2 = 20)
 #' tabler_resp(x, two_stage = c(two_stage, two_idx))
@@ -2789,7 +2793,7 @@ get_tabler_stat_n <- function(x, pct = TRUE, use_labels = TRUE) {
 #'
 #' @export
 
-tabler_resp <- function(x, r_or_better = levels(x)[3:1], conf = 0.95,
+tabler_resp <- function(x, r_or_better = levels(x)[3:2], conf = 0.95,
                         digits = 0L, frac = TRUE, show_conf = TRUE,
                         pct.sign = TRUE, total = FALSE, two_stage = FALSE) {
   x  <- as.factor(x)
@@ -3055,10 +3059,13 @@ tox_worst <- function(data, id = 'id', desc = 'desc', grade = 'grade',
 #' @param digits number of digits past the decimal point to keep
 #' @param which optional integer or character vector to select or re-order
 #' the output; note that this does not change the counts or percentages
+#' @param conf,show_conf optional arguments controlling binomial confidence
+#' intervals, passed to \code{\link{binconr}}
 #'
 #' @examples
 #' x <- setNames(3:1, c('Gold', 'Silver', 'Bronze'))
 #' countr(x)
+#' countr(x, conf = 0.95)
 #' countr(x, n = 10, frac = TRUE)
 #' countr(x, n = 10, frac = TRUE, which = 2)
 #'
@@ -3073,7 +3080,7 @@ tox_worst <- function(data, id = 'id', desc = 'desc', grade = 'grade',
 #' @export
 
 countr <- function(x, n, lowcase = NA, frac = FALSE, digits = 0L,
-                   which = seq_along(x)) {
+                   which = seq_along(x), conf = NULL, show_conf = TRUE) {
   if (inherits(x, 'table') || (!is.null(names(x)) & is.numeric(x))) {
     ## if x is a table or a _named_ vector (of counts)
     n <- if (missing(n))
@@ -3089,10 +3096,16 @@ countr <- function(x, n, lowcase = NA, frac = FALSE, digits = 0L,
     lowcase <- NULL
 
   x <- x[which]
+  n <- rep_len(n, length(x))[which]
+  
+  if (!is.null(conf)) {
+    conf <- Map(binconr, x, n, conf = conf, show_conf = show_conf, percent = TRUE)
+    conf <- gsub('.*\\(|\\)', '', conf)
+  }
 
   iprint(
     sprintf(
-      '%s (n = %s%s; %s%%)',
+      '%s (n = %s%s; %s%%%s)',
       if (isTRUE(lowcase))
         tolower(names(x))
       else if (identical(lowcase, FALSE))
@@ -3100,7 +3113,10 @@ countr <- function(x, n, lowcase = NA, frac = FALSE, digits = 0L,
       roundr(x, 0L),
       if (frac)
         paste0('/', n) else '',
-      roundr(as.numeric(x) / n * 100, digits)
+      roundr(as.numeric(x) / n * 100, digits),
+      if (is.null(conf))
+        ''
+      else paste(';', conf)
     )
   )
 }
