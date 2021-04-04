@@ -3096,7 +3096,7 @@ countr <- function(x, n, lowcase = NA, frac = FALSE, digits = 0L,
     lowcase <- NULL
 
   x <- x[which]
-  n <- rep_len(n, length(x))[which]
+  n <- setNames(rep_len(n, length(x)), names(x))[which]
   
   if (!is.null(conf)) {
     conf <- Map(binconr, x, n, conf = conf, show_conf = show_conf, percent = TRUE)
