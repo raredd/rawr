@@ -2219,10 +2219,7 @@ droplevels2 <- function(x, min_level = min(as.integer(x), na.rm = TRUE),
 #' regular expressions, and inputs are passed to \code{combine_regex}
 #' @param ... additional arguments passed to \code{combine_regex} or further
 #' to \code{\link{grep}}
-#' @param keep.original logical; for \code{combine_regex}, if \code{FALSE}
-#' (default), all values of \code{x} not matching any patterns in
-#' \code{levels} are returned as \code{labels[1L]}; if \code{TRUE}, values
-#' are returned unchanged
+#' @param keep.original deprecated, will be ignored
 #' 
 #' @return
 #' \code{combine_levels} will always return a factor. The levels will be
@@ -2247,31 +2244,22 @@ droplevels2 <- function(x, min_level = min(as.integer(x), na.rm = TRUE),
 #' combine_levels(x, list(b = 3, others = NULL))
 #' 
 #' 
-#' ## characters and factors
-#' combine_levels(LETTERS[x], list(x = 'C'))
-#' combine_levels(factor(x), 3, 4)
-#' combine_levels(factor(x), list(3, 5), c(4, 9))
-#' 
-#' 
-#' ## combine groups by regular expressions
+#' ## combine by regular expression
 #' x <- letters[1:5]
 #' combine_regex(x, 'a')
 #' combine_regex(x, c('a', 'b'))
 #' combine_regex(x, c('a', 'b|c|e'))
 #' 
 #' ## character labels return a labeled factor
-#' combine_regex(x, 'a', c('a', 'b'))
-#' combine_regex(x, '[a-c]', c('ABC', 'Others'))
+#' combine_regex(x, 'a', c('a', 'b'))            ## a -> a; else -> b
+#' combine_regex(x, '[a-c]', c('ABC', 'Others')) ## a,b,c -> ABC; else Others
 #' 
 #' ## levels passed as a list
-#' combine_regex(x, list(ABC = c('a', 'b', 'c')))
-#' combine_regex(x, list(ABC = '[a-c]', Others = NULL))
-#' 
+#' combine_regex(x, list(ABC = c('a', 'b', 'c')))       ## d,e are unchanged
+#' combine_regex(x, list(ABC = '[a-c]', Others = NULL)) ## d,e are changed
 #' 
 #' ## combine_levels(..., regex = TRUE) returns the same as above
 #' combine_levels(x, '[a-c]', c('ABC', 'Others'), regex = TRUE)
-#' combine_levels(x, '[a-c]', c('ABC', 'Others'), regex = TRUE,
-#'                keep.original = TRUE)
 #' 
 #' @export
 
@@ -2290,7 +2278,7 @@ combine_levels <- function(x, levels, labels = NULL, ordered = is.ordered(x),
       setdiff(x, unlist(levels)) else y)
   
   ## create unique labels (hopefully) distinct from any of levels
-  labels  <- lapply(as.list(labels %||% names(levels)), as.character)
+  labels <- lapply(as.list(labels %||% names(levels)), as.character)
   set.seed(1)
   ul <- lapply(labels, function(x)
     format(runif(length(x)), digits = 22L))

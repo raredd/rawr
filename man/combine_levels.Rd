@@ -54,10 +54,7 @@ regular expressions, and inputs are passed to \code{combine_regex}}
 \item{...}{additional arguments passed to \code{combine_regex} or further
 to \code{\link{grep}}}
 
-\item{keep.original}{logical; for \code{combine_regex}, if \code{FALSE}
-(default), all values of \code{x} not matching any patterns in
-\code{levels} are returned as \code{labels[1L]}; if \code{TRUE}, values
-are returned unchanged}
+\item{keep.original}{deprecated, will be ignored}
 }
 \value{
 \code{combine_levels} will always return a factor. The levels will be
@@ -85,31 +82,22 @@ combine_levels(x, list(a = 1:2, b = 3))
 combine_levels(x, list(b = 3, others = NULL))
 
 
-## characters and factors
-combine_levels(LETTERS[x], list(x = 'C'))
-combine_levels(factor(x), 3, 4)
-combine_levels(factor(x), list(3, 5), c(4, 9))
-
-
-## combine groups by regular expressions
+## combine by regular expression
 x <- letters[1:5]
 combine_regex(x, 'a')
 combine_regex(x, c('a', 'b'))
 combine_regex(x, c('a', 'b|c|e'))
 
 ## character labels return a labeled factor
-combine_regex(x, 'a', c('a', 'b'))
-combine_regex(x, '[a-c]', c('ABC', 'Others'))
+combine_regex(x, 'a', c('a', 'b'))            ## a -> a; else -> b
+combine_regex(x, '[a-c]', c('ABC', 'Others')) ## a,b,c -> ABC; else Others
 
 ## levels passed as a list
-combine_regex(x, list(ABC = c('a', 'b', 'c')))
-combine_regex(x, list(ABC = '[a-c]', Others = NULL))
-
+combine_regex(x, list(ABC = c('a', 'b', 'c')))       ## d,e are unchanged
+combine_regex(x, list(ABC = '[a-c]', Others = NULL)) ## d,e are changed
 
 ## combine_levels(..., regex = TRUE) returns the same as above
 combine_levels(x, '[a-c]', c('ABC', 'Others'), regex = TRUE)
-combine_levels(x, '[a-c]', c('ABC', 'Others'), regex = TRUE,
-               keep.original = TRUE)
 
 }
 \seealso{
