@@ -31,7 +31,7 @@ tmp <- within(cars, {
 })
 
 ht <- htmlTable::htmlTable(
-  rawr::ht(tmp), n.cgroup = 2:3, cgroup = c('raw', 'align'),
+  head(tmp), n.cgroup = 2:3, cgroup = c('raw', 'align'),
   caption = 'caption', rnames = FALSE
 )
 

@@ -24,11 +24,11 @@ Calculate confidence intervals, estimators, and p-value from a two-stage
 trial.
 }
 \examples{
-simon2(0.1, 0.3)
+rawr:::simon(0.1, 0.3)
 
 # $designs$`p0 = 0.1, pa = 0.3`
-#      n1 r1 n2 r2 Pstop1.H0       size      type2 E.tot.n.H0  Pstop1.H1 E.tot.n.H1
-# [1,] 12  1 23  5 0.6590023 0.09771828 0.09855051   19.84295 0.08502505   33.04442
+#      n1 r1 n2 r2 Pstop1.H0       size      type2 E.tot.n.H0
+# [1,] 12  1 23  5 0.6590023 0.09771828 0.09855051   19.84295
 # 
 # ...
 # 

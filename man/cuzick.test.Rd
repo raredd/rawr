@@ -117,7 +117,7 @@ cuzick.test(x)$details
 cuzick.test(x, alternative = 'less', correct = FALSE)$details
 cuzick.test(x, details = kruskal.test)$details
 cuzick.test(x, details = t.test)$details
-cuzick.test(x, details = coin::wilcox_test)$details
+# cuzick.test(x, details = coin::wilcox_test)$details
 
 
 ## Cuzick (1985), 87-90

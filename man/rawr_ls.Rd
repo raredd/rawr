@@ -121,5 +121,5 @@ lsp('rawr', 'lazydata')
 
 }
 \seealso{
-\code{\link{ls}}; \code{\link{search}}; \code{\link{rawr_parse}}
+\code{\link{ls}}; \code{\link{search}}; \code{\link[rawr2]{rawr_parse}}
 }

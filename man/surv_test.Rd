@@ -112,7 +112,7 @@ for more details and examples.
 for \code{\link[survC1]{Inf.Cval}} and \code{\link[survC1]{Inf.Cval.Delta}}
 to compute and compare c-statistics on censored data. \code{c_text} shows
 c for a single model where \code{cc_text} and \code{cc_pval} compare two
-models.
+models; see Uno (2011).
 }
 \examples{
 \dontrun{
@@ -169,6 +169,7 @@ rawr:::cc_pval(f1, f2, larynx)
 Tarone, Robert E. Tests for Trend in Life Table Analysis. \emph{Biometrika}
 \strong{62} vol. 62 (Dec 1975), 679-82.
 
+Tarone, see also:
 \url{https://stat.ethz.ch/pipermail/r-help/2008-April/160209.html}
 
 Uno, Hajime, et al. On the C-statistics for Evaluating Overall Adequacy of

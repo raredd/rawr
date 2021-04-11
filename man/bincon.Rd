@@ -107,12 +107,10 @@ bincon(5, 10, method = 'all')
 bincon(c(3, 4), c(14, 18), method = 'two-stage', dp = 0)
 bincon(c(3, 4), c(14, 18), method = 'two-stage', dp = 1)
 
-\dontrun{
 ## ?desmon::twocon
 ## equivalent to
-desmon::twocon(14, 18, 3, 4, dp = 0)
-desmon::twocon(14, 18, 3, 4, dp = 1)
-}
+rawr:::twocon(14, 18, 3, 4, dp = 0)
+rawr:::twocon(14, 18, 3, 4, dp = 1)
 
 }
 \references{

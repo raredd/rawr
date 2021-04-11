@@ -1,12 +1,14 @@
 Package: rawr
 Type: Package
 Title: rawr miscellaneous
-Version: 0.9.2
+Version: 1.0.0
 Authors@R: person("Robert", "Redd", email = "raredd01@gmail.com",
   role = c("aut", "cre"))
 Author: Robert Redd
 Maintainer: Robert Redd <raredd01@gmail.com>
 Description: Miscellaneous functions.
+Depends:
+    R (>= 3.5)
 Imports:
     graphics,
     methods,
@@ -14,20 +16,13 @@ Imports:
     stats,
     utils
 Suggests:
-    beepr,
     beeswarm,
-    clinfun,
-    coin,
-    desmon,
     DT,
-    Gmisc,
-    Hmisc,
-    htmlTable,
+    Gmisc (>= 1.0),
+    htmlTable (>= 1.0),
     htmlwidgets,
     knitr,
     markdown,
-    notifier,
-    parallel,
     plotr,
     randomForestSRC,
     rstudioapi,

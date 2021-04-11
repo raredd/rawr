@@ -13,20 +13,12 @@
 # anova, chisq, cuzick, fisher, jt, kruskal, ca, kw, t, wilcox, logrank
 #
 # unexported:
-# js, getPvalCAtest, getPvalCuzick, getPvalJTtest, getPvalKruskal, getPvalKWtest,
+# getPvalCAtest, getPvalCuzick, getPvalJTtest, getPvalKruskal, getPvalKWtest,
 # getPvalTtest, getPval_, guess_test, describeConfint, describeFactors,
 # tabler_stat_list, tabler_stat_html, guess_digits, get_tabler_stat_n, resp1,
 # r_or_better1, inject_
 ###
 
-
-js <- function() {
-  # <div class="fold o">
-  # <div class="fold s">
-  # <div class="fold s o">
-  # https://stackoverflow.com/a/37839683/2994949
-  system.file('scripts', 'toggleFold.js', package = 'rawr')
-}
 
 #' In-line stats
 #'
@@ -542,7 +534,7 @@ show_math <- function(..., css = '', use_viewer = !is.null(getOption('viewer')))
 #' An object having the same class as \code{x}.
 #'
 #' @seealso
-#' \code{\link[base]{round}}; \code{\link{Round}}; \code{\link[base]{sprintf}};
+#' \code{\link{round}}; \code{\link{Round}}; \code{\link{sprintf}};
 #' \code{\link{round_to}}; \code{\link{pvalr}}
 #'
 #' @examples
@@ -1499,8 +1491,10 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
     ## pct based on n
     ptbl <- ttbl / matrix(rep(c(sum(n[seq.int(ln)]), n), each = nr), nr) * 100
 
-    ptbl <- tryCatch(apply(ptbl, 2L, Round, 100),
-                     error = function(e) apply(ptbl, 2L, round, 0))
+    ptbl <- tryCatch(
+      apply(ptbl, 2L, Round, 100),
+      error = function(e) apply(ptbl, 2L, round, 0)
+    )
     res <- matrix(sprintf('%s (%s%%)', ttbl, ptbl), nrow = nr, ncol = nc)
     res[] <- gsub('0 (NaN%)', '0 (0%)', res, fixed = TRUE)
 
@@ -2787,7 +2781,7 @@ get_tabler_stat_n <- function(x, pct = TRUE, use_labels = TRUE) {
 #'     two-stage<sup>&dagger;</sup>confidence intervals.',
 #'   css.cell = 'padding: 0 10 0px; white-space: nowrap;',
 #'   cgroup = c('Evaluation', 'Outcome (95% CI)'),
-#'   n.cgroup = c(nlevels(x), 3L)
+#'   n.cgroup = c(nlevels(x), 2L)
 #' )
 #' structure(ht, class = 'htmlTable')
 #'
@@ -3478,7 +3472,7 @@ write_htmlTable <- function(x, file = '', attributes = TRUE) {
 #' })
 #'
 #' ht <- htmlTable::htmlTable(
-#'   rawr::ht(tmp), n.cgroup = 2:3, cgroup = c('raw', 'align'),
+#'   head(tmp), n.cgroup = 2:3, cgroup = c('raw', 'align'),
 #'   caption = 'caption', rnames = FALSE
 #' )
 #'

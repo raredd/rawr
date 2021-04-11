@@ -1,10 +1,10 @@
 ### utilities
 # psum, rescaler, bind_all, cbindx, rbindx, rbindfill, rbindfill2, rbindlist,
-# rbindlist2, interleave, outer2, merge2, locf, roll_fun, classMethods,
-# getMethods, regcaptures, regcaptures2, cast, melt, View2, view, clist,
-# rapply2, sort_matrix, insert, insert_matrix, tryCatch2, rleid, droplevels2,
-# combine_levels, combine_regex, rownames_to_column, column_to_rownames,
-# split_nth, sort2, response, dapply, xtable
+# rbindlist2, interleave, outer2, merge2, locf, roll_fun, regcaptures,
+# regcaptures2, cast, melt, View2, view, rapply2, sort_matrix, insert,
+# insert_matrix, tryCatch2, rleid, droplevels2, combine_levels, combine_regex,
+# rownames_to_column, column_to_rownames, split_nth, sort2, response, xtable,
+# factor2
 # 
 # rawr_ops:
 # %ni%, %==%, %||%, %sinside%, %winside%, %inside%, %:%
@@ -12,32 +12,14 @@
 # rawr_ls:
 # lss, lsf, lsp
 # 
-# rawr_parse:
-# parse_yaml, parse_index, parse_news, parse_namespace
-# 
 # unexported:
-# islist, done, where_, where, dots, name_or_index, rm_na_dimnames, insert_
+# islist, where_, where, dots, name_or_index, rm_na_dimnames, insert_
 ###
 
 
 islist <- function(x) {
   ## is.list(data.frame()); rawr:::islist(data.frame())
   inherits(x, 'list')
-}
-
-done <- function(type = c('notifier', 'beep')) {
-  type <- match.arg(type)
-  switch(type,
-    notifier = notifier::notify(
-      sprintf('R task is complete - %s', format(Sys.time(), '%I:%M %p')),
-      if (nzchar(Sys.getenv('RSTUDIO')))
-        'RStudio' else 'R'
-    ),
-    beep = while (TRUE) {
-      beepr::beep(3)
-      Sys.sleep(3)
-    }
-  )
 }
 
 where_ <- function(x, env = environment(NULL)) {
@@ -265,7 +247,7 @@ NULL
 #' returns a vector of character strings.
 #' 
 #' @seealso
-#' \code{\link{ls}}; \code{\link{search}}; \code{\link{rawr_parse}}
+#' \code{\link{ls}}; \code{\link{search}}; \code{\link[rawr2]{rawr_parse}}
 #' 
 #' @examples
 #' ## lss(): use like ls()
@@ -410,87 +392,6 @@ lsp <- function(package, what, pattern) {
       }
     }
   }
-}
-
-#' Parsers
-#' 
-#' Some (mostly internal) simple parsers. \code{parse_yaml} can process
-#' simple, single-level yaml-like files such as the \code{DESCRIPTION} files
-#' of \code{R} packages; \code{parse_index}, \code{parse_news}, and
-#' \code{parse_namespace} process their respective files. These have not
-#' been tested for every case, particularly \code{parse_news} since there is
-#' not a requirememnt on the structure of \code{NEWS} files.
-#' 
-#' @param x a vector of character strings
-#' @param what for \code{parse_namespace}, what types to parse and return
-#' 
-#' @return
-#' A named list for each section type.
-#' 
-#' @seealso
-#' \code{\link{parseNamespaceFile}}, \code{\link{lss}}, \code{\link{lsf}},
-#' \code{\link{lsp}}
-#' 
-#' @examples
-#' parse_yaml(lsf(rawr, 'desc'))
-#' parse_index(lsf(rawr, 'index'))
-#' parse_news(lsf(rawr, 'news'))
-#' parse_namespace(lsf(rawr, 'namespace')[1:5], 'S3method')
-#' 
-#' @name rawr_parse
-NULL
-
-#' @rdname rawr_parse
-#' @export
-parse_yaml <- function(x) {
-  pattern <- '(^[^:]+):\\s+?(.*)$'
-  setNames(as.list(gsub(pattern, '\\2', x)), gsub(pattern, '\\1', x))
-}
-
-#' @rdname rawr_parse
-#' @export
-parse_index <- function(x) {
-  ## collapse descriptions >1 line
-  x <- strsplit(gsub('\\$\\$\\s+', ' ', paste0(x, collapse = '$$')),
-                split = '\\$\\$')[[1L]]
-  x <- strsplit(x, '\\s{2,}')
-  as.list(sapply(x, function(xx) setNames(xx[2L], xx[1L])))
-}
-
-#' @rdname rawr_parse
-#' @export
-parse_news <- function(x) {
-  ## assume some separator
-  x <- Filter(nzchar, gsub('[-=_]{2,}', '', x))
-  
-  ## assume version updates state with letter, not -, *, etc
-  nn <- x[idx <- grepl('^\\w+', x)]
-  sp <- split(x, cumsum(idx))
-  
-  setNames(lapply(sp, '[', -1L), nn)
-}
-
-#' @rdname rawr_parse
-#' @export
-parse_namespace <- function(x, what = NULL) {
-  ## remove comments and collapse
-  x <- paste0(gsub('#.*$', '', x), collapse = '')
-  y <- c(
-    'import', 'export', 'exportPattern', 'importClass', 'importMethod',
-    'exportClass', 'exportMethod', 'exportClassPattern', 'useDynLib',
-    'nativeRoutine', 'S3method'
-  )
-  what <- if (is.null(what))
-    y else match.arg(what, y, TRUE)
-  
-  mm <- lapply(what, function(xx)
-    gregexpr(sprintf('(?i)%s\\((.*?)\\)', xx), x, perl = TRUE))
-  
-  setNames(
-    lapply(mm, function(xx)
-      gsub('^\\s+|\\s+$|\\s{2,}', '',
-           unlist(strsplit(unlist(regcaptures(x, xx)), ',')))),
-    what)
 }
 
 #' Pairwise binary functions
@@ -652,7 +553,7 @@ rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
 #' 
 #' @seealso
 #' \code{\link{cbind}}; \code{\link{rbind}}; \code{\link{interleave}};
-#' \code{\link{clist}}; \pkg{qpcR}
+#' \code{\link[rawr2]{clist}}; \pkg{qpcR}
 #' 
 #' @examples
 #' bind_all(1:5, 1:3, which = 'cbind')
@@ -1326,81 +1227,6 @@ roll_fun <- function(x, n = 5L, FUN = mean, ...,
   sapply(if (fromLast) rev(l) else l, FUN, ...)
 }
 
-#' Show or get methods
-#' 
-#' List available methods for a given class or identify a specific method
-#' when a \code{generic} is called with \code{object}.
-#' 
-#' @param object an object or character vector of classes
-#' @param generic an S3 generic function like \code{plot} or \code{summary}
-#' 
-#' @seealso
-#' \code{\link{methods}}, \code{\link{S3Methods}}, \code{\link{class}}
-#' 
-#' @references
-#' \url{https://gist.github.com/MrFlick/55ed854eb935e5c21f71};
-#' \url{https://stackoverflow.com/q/42738851/2994949}
-#' 
-#' @examples
-#' fit <- glm(vs ~ mpg, data = mtcars)
-#' classMethods(fit)
-#' classMethods(c('glm', 'lm'))
-#' 
-#' classMethods(1, plot)
-#' classMethods(data.frame(1), plot)
-#' classMethods(density(1:2), plot)
-#' 
-#' classMethods(1, print)
-#' classMethods(ordered(1), print)
-#' classMethods(mtcars, summary)
-#' 
-#' @export
-
-classMethods <- function(object, generic = NULL) {
-  if (!is.null(generic)) {
-    generic <- if (is.character(generic))
-      generic else deparse(substitute(generic))
-    return(genericMethods(object, generic))
-  }
-  
-  class <- if (!is.character(object))
-    class(object) else object
-  message('S3 methods for objects of class ', toString(class), '\n')
-  
-  ml <- lapply(class, function(x) {
-    sname <- gsub('([.[])', '\\\\\\1', paste0('.', x, '$'))
-    m <- methods(class = x)
-    if (length(m)) {
-      data.frame(m = as.vector(m), c = x, n = sub(sname, '', as.vector(m)),
-                 attr(m, 'info'), stringsAsFactors = FALSE)
-    } else NULL
-  })
-  
-  dd <- do.call('rbind', ml)
-  dd <- dd[!duplicated(dd$n), ]
-  
-  structure(
-    dd$m, byclass = FALSE, class = 'MethodsFunction',
-    info = data.frame(visible = dd$visible, from = dd$from,
-                      generic = dd$generic, isS4 = dd$isS4,
-                      row.names = dd$m)
-  )
-}
-
-genericMethods <- function(object, generic) {
-  generic <- if (is.character(generic))
-    generic else deparse(substitute(generic))
-  
-  f <- X <- function(x, object) {
-    UseMethod('X')
-  }
-  
-  for (m in methods(generic))
-    assign(sub(generic, 'X', m), `body<-`(f, value = m))
-  
-  X(object)
-}
-
 #' Extract captured substrings
 #' 
 #' Extract the captured substrings from match data obtained by
@@ -1719,94 +1545,6 @@ view <- function(x, use_viewer = FALSE, ...) {
       }) else browseURL(htmlFile)
   
   invisible(NULL)
-}
-
-#' Concatenate lists
-#' 
-#' Combine lists with mixed data types "horizontally."
-#' 
-#' @param x,y \emph{uniquely-named} lists or nested lists with each pair
-#' of non-\code{NULL} elements having identical classes
-#' @param how the joining method for matrics and data frames, one of
-#' \code{"cbind"} (default) or \code{"rbind"}
-#' 
-#' @return
-#' A lists with all elements from \code{x} and \code{y} joined using
-#' \code{\link{cbind}} for matrices, \code{\link{cbind.data.frame}} for
-#' data frames, lists for factors, and \code{\link{c}} otherwise.
-#' 
-#' @seealso
-#' \code{\link{nestedMerge}}, \code{\link{modifyList}}; \code{\link{bindx}}
-#' 
-#' @examples
-#' ## boxplot stats created from subsets should be identical to
-#' ## the stats generated from a single boxplot
-#' 
-#' f <- function(x) boxplot(mpg ~ vs, data = x, plot = FALSE)
-#' 
-#' bp1 <- f(mtcars[mtcars$vs == 0, ])
-#' bp2 <- f(mtcars[mtcars$vs == 1, ])
-#' bp  <- f(mtcars)
-#' 
-#' identical(clist(bp1, bp2), bp)
-#' # [1] TRUE
-#' 
-#' 
-#' l1 <- list(x = factor(1:5), y = matrix(1:4, 2),
-#'            z = head(cars), l = list(zz = 1:5))
-#' l2 <- list(z = head(cars), x = factor('a'),
-#'            l = list(zz = 6:10))
-#' l3 <- list(x = factor(1:5), y = matrix(1),
-#'            z = head(cars), l = list(zz = 1:5))
-#' 
-#' clist(l1, l2, how = 'rbind')
-#' 
-#' clist(l1, l3, how = 'rbindx')[['y']]
-#' # clist(l1, l3, how = 'rbind')[['y']] ## error
-#' 
-#' clist(l1, l3, how = 'cbindx')[['y']]
-#' # clist(l1, l3, how = 'cbind')[['y']] ## error
-#' 
-#' 
-#' ## elements of y not in x are added to result
-#' clist(l1, l2, how = 'cbind')
-#' clist(l1, list(zzz = data.frame(1), l = list(zz = 5:1)))
-#' 
-#' @export
-
-clist <- function (x, y, how = c('cbind', 'rbind', 'cbindx', 'rbindx')) {
-  if (missing(y))
-    return(x)
-  
-  stopifnot(islist(x), islist(y))
-  how <- match.arg(how)
-  cbindx.data.frame <- cbindx
-  rbindx.data.frame <- rbindx
-  
-  nn <- names(rapply(c(x, y), names, how = 'list'))
-  if (is.null(nn) || any(!nzchar(nn)))
-    stop('All non-NULL list elements should have unique names', domain = NA)
-  
-  nn <- unique(c(names(x), names(y)))
-  z  <- setNames(vector('list', length(nn)), nn)
-  
-  bind <- function(x, y) {
-    switch(
-      class(x %||% y)[1L], ## class(matrix()) is length 2
-      matrix = match.fun(how),
-      data.frame = function(x, y)
-        do.call(sprintf('%s.data.frame', how),
-                Filter(Negate(is.null), list(x, y))),
-      factor = function(...) unlist(list(...)), c
-    )
-  }
-  
-  for (ii in nn)
-    z[[ii]] <- if (islist(x[[ii]]) && islist(y[[ii]]))
-      Recall(x[[ii]], y[[ii]]) else
-        (bind(x[[ii]], y[[ii]]))(x[[ii]], y[[ii]])
-  
-  z
 }
 
 #' Recursively apply a function to a list
@@ -2229,7 +1967,7 @@ droplevels2 <- function(x, min_level = min(as.integer(x), na.rm = TRUE),
 #' are not given; otherwise, a character vector is returned.
 #' 
 #' @seealso
-#' \code{\link{recoder}}
+#' \code{\link{factor2}}; \code{\link[rawr2]{recoder}}
 #' 
 #' @examples
 #' ## combine numeric, character, or factor
@@ -2242,6 +1980,10 @@ droplevels2 <- function(x, min_level = min(as.integer(x), na.rm = TRUE),
 #' 
 #' ## use NULL list to combine others
 #' combine_levels(x, list(b = 3, others = NULL))
+#' 
+#' ## levels may be swapped without losing original distinction
+#' combine_levels(x, list('3' = 1:2, '1' = 3))
+#' combine_levels(x, list('1' = 3, '3' = 1:2))
 #' 
 #' 
 #' ## combine by regular expression
@@ -2277,7 +2019,12 @@ combine_levels <- function(x, levels, labels = NULL, ordered = is.ordered(x),
     if (is.null(y))
       setdiff(x, unlist(levels)) else y)
   
-  ## create unique labels (hopefully) distinct from any of levels
+  if (anyDuplicated(dup <- unlist(levels))) {
+    dup <- unique(dup[duplicated(dup)])
+    warning(sprintf('duplicated levels: %s', toString(dup)))
+  }
+  
+  ## create unique labels to allow for swapping
   labels <- lapply(as.list(labels %||% names(levels)), as.character)
   set.seed(1)
   ul <- lapply(labels, function(x)
@@ -2303,7 +2050,7 @@ combine_levels <- function(x, levels, labels = NULL, ordered = is.ordered(x),
   ## convert unique label back to desired
   xc <- c(ol, labels)[match(xc, c(ol, unlist(ul)))]
   
-  factor(xc, nl, nl, NA, ordered, NA)
+  factor(xc, nl, nl, ordered = ordered)
 }
 
 #' @rdname combine_levels
@@ -2315,15 +2062,11 @@ combine_regex <- function(x, levels, labels = NULL, ordered = is.ordered(x),
   
   names(levels) <- labels %||% names(levels) %||% seq_along(levels)
   levels <- lapply(levels, function(p) {
-    unique(grep(paste0(p, collapse = '|'), x, value = TRUE, ...))
+    if (!is.null(p))
+      unique(grep(paste0(p, collapse = '|'), x, value = TRUE, ...))
   })
   
-  # if (keep.original) {
-  #   ol <- setdiff(unlist(x), unlist(levels))
-  #   levels <- c(levels, setNames(as.list(ol), ol))
-  # }
-  
-  combine_levels(x, levels, NULL, ordered, FALSE, ...)
+  combine_levels(x, levels, ordered = ordered, regex = FALSE)
 }
 
 #' Rowname tools
@@ -2795,50 +2538,6 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
   )
 }
 
-#' Diagonal apply
-#' 
-#' Apply a function on all diagonal slices of a matrix starting from one
-#' of the corners.
-#' 
-#' @param X a matrix or an object to be coerced
-#' @param MARGIN the corner to slice from to the opposite corner: \code{1} for
-#' lower left, \code{2} for top left, \code{3} for top right, or \code{4} for
-#' lower right
-#' @param FUN a function to apply to each slice
-#' @param ... additional arguments passed to \code{FUN}
-#' @param SIMPLIFY logical or character string; attempt to reduce the result to
-#' a vector or matrix; see the \code{simplify} argument of \code{\link{sapply}}
-#' 
-#' @seealso
-#' \code{\link{apply}}; \code{\link{simplify2array}}
-#' 
-#' @examples
-#' mat <- matrix(1:12, 3)
-#' dapply(mat, 2, identity)
-#' 
-#' dapply(mat, 2, range)
-#' dapply(mat, 2, range, SIMPLIFY = FALSE)
-#' 
-#' @export
-
-dapply <- function(X, MARGIN, FUN, ..., SIMPLIFY = TRUE) {
-  X <- as.matrix(X)
-  
-  idx <- switch(
-    MARGIN,
-    col(X) - row(X),
-    row(X) + col(X),
-    (col(X) - row(X)) * -1L,
-    (row(X) + col(X)) * -1L,
-    stop('\'MARGIN\' should be 1, 2, 3, or 4')
-  )
-  
-  res <- unname(lapply(split(X, idx), FUN, ...))
-  
-  if (!isFALSE(SIMPLIFY) && length(res)) 
-    simplify2array(res, SIMPLIFY == 'array') else res
-}
-
 #' Cross table
 #' 
 #' Create a contingency table with totals, percentages, and statistical test.
@@ -2914,4 +2613,91 @@ xtable <- function(x, by, digits = 0L, total = TRUE, pct.sign = FALSE,
   names(dimnames(res)) <- c(xn, bn)
   
   res
+}
+
+#' Combine values to factor levels
+#' 
+#' @description
+#' Convenience function to combine level(s) of a vector into a new or existing
+#' factor level(s) by unique value and/or regular expression.
+#' 
+#' Requires \code{R >= 3.5.0} for duplicated labels in \code{\link{factor}}s.
+#' 
+#' @param x a vector of data, usually taking a small number of distinct values
+#' @param levels a \emph{named} list of unique values or regular expressions
+#' to group elements of \code{x}
+#' 
+#' a \code{NULL} group will collapse all non matches to a single category;
+#' however, if there is no \code{NULL} group, non matches will be unchanged
+#' 
+#' if \code{regex = TRUE} or flagged with \code{(?r)}, matching elements of
+#' \code{x} will be combined
+#' @param exclude,ordered passed to \code{\link{factor}}
+#' @param regex logical; if \code{TRUE}, \code{levels} is treated as a list
+#' of regular expressions or otherwise matched exactly (unless \code{levels}
+#' is flagged with \code{(?r)})
+#' @param ... additional arguments passed to \code{\link{grep}} when using
+#' regular expressions
+#' 
+#' @seealso
+#' \code{\link{combine_levels}}; \code{\link{combine_regex}}
+#' 
+#' @examples
+#' ## combine numeric, character, or factor
+#' x <- rep(1:5, each = 2)
+#' factor2(x, list('1' = 1:2))
+#' factor2(x, list(a = 1:2, b = 3))    ## all non matches unchanged
+#' factor2(x, list(a = 1:2, b = NULL)) ## all non matches grouped to b
+#' 
+#' ## levels may be swapped without losing original distinction
+#' factor2(x, list('3' = 1:2, '1' = 3))
+#' factor2(x, list('1' = 3, '3' = 1:2))
+#' 
+#' ## combine by regular expression
+#' x <- letters[1:5]
+#' factor2(x, list(a = c('a', 'b')), regex = TRUE)
+#' factor2(x, list(a = c('a|b')), regex = TRUE) ## same
+#' factor2(x, list(a = 'a', b = 'b|c|e'), regex = TRUE)
+#' 
+#' ## use regex only when flagged with (?r)
+#' ## note: must use regex = FALSE, otherwise all are treated as regex
+#' x <- c('a', 'aaa', 'abc', 'def')
+#' factor2(x, list(a = 'a', b = '(?r)a.', d = '(?r)d'))
+#' factor2(x, list(a = 'a', b = '(?r)a.', d = 'd'))
+#' 
+#' @export
+
+factor2 <- function(x = character(), levels = NULL, exclude = NA,
+                    ordered = is.ordered(x), regex = FALSE, ...) {
+  if (is.null(levels))
+    return(as.factor(x))
+  
+  stopifnot(
+    islist(levels),
+    !is.null(names(levels))
+  )
+  
+  levels <- lapply(levels, function(p) {
+    if (!is.null(p) && (regex | any(grepl('(?r)', p, fixed = TRUE)))) {
+      p <- gsub('(?r)', '', p, fixed = TRUE)
+      unique(grep(paste0(p, collapse = '|'), x, value = TRUE, ...))
+    } else p
+  })
+  
+  ## if a NULL level is present, group all others into one category
+  levels <- lapply(levels, function(y)
+    if (is.null(y))
+      setdiff(x, unlist(levels)) else y)
+  
+  if (anyDuplicated(dup <- unlist(levels))) {
+    dup <- unique(dup[duplicated(dup)])
+    warning(sprintf('duplicated levels: %s', toString(dup)))
+  }
+  
+  key <- stack(levels)
+  key$ind <- as.character(key$ind)
+  ext <- setdiff(x, key$values)
+  key <- rbind(key, data.frame(values = ext, ind = ext))
+  
+  factor(x, key$values, key$ind, exclude = exclude, ordered = ordered)
 }

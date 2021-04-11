@@ -168,5 +168,5 @@ rbindlist2(dd, 'y', split = '\\\\W+(?![^3]+3)', perl = TRUE)
 }
 \seealso{
 \code{\link{cbind}}; \code{\link{rbind}}; \code{\link{interleave}};
-\code{\link{clist}}; \pkg{qpcR}
+\code{\link[rawr2]{clist}}; \pkg{qpcR}
 }

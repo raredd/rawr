@@ -95,7 +95,7 @@ ht <- htmlTable::htmlTable(
     two-stage<sup>&dagger;</sup>confidence intervals.',
   css.cell = 'padding: 0 10 0px; white-space: nowrap;',
   cgroup = c('Evaluation', 'Outcome (95\% CI)'),
-  n.cgroup = c(nlevels(x), 3L)
+  n.cgroup = c(nlevels(x), 2L)
 )
 structure(ht, class = 'htmlTable')
 

@@ -607,7 +607,7 @@ kmplot <- function(s, data = NULL,
       #   c(FALSE, abs(diff(as.integer(gsub(',', '', tmp[, wh])))) < atrisk.min)
       
       mtext(
-        if (is.null(atrisk.min))
+        if (is.null(atrisk.min) & grepl('atrisk', wh))
           gsub('^0.*', '', tmp[, wh]) else replace(tmp[, wh], idx, rpl),
         side = 1L, col = col.atrisk[ii],
         las = 1L, line = line.pos[ii], cex = cex.atrisk,
@@ -650,12 +650,13 @@ kmplot <- function(s, data = NULL,
       tt <- ifelse(
         # is.na(st$median)
         rowSums(is.na(st)) == ncol(st),
-        '-', gsub('NA', '-', tt, fixed = TRUE)
+        '-', gsub('NA', 'NR', tt, fixed = TRUE)
       )
       if (!ci.median) {
         s$conf.int <- NULL
         tt <- gsub('\\s*\\(.*$', '', tt)
       }
+      
       at <- if (isTRUE(median.at))
         usr[2L] + diff(usr[1:2]) / 8 else median.at
       
@@ -1177,7 +1178,7 @@ atrisk_data_ <- function(s, times, digits) {
 #' for \code{\link[survC1]{Inf.Cval}} and \code{\link[survC1]{Inf.Cval.Delta}}
 #' to compute and compare c-statistics on censored data. \code{c_text} shows
 #' c for a single model where \code{cc_text} and \code{cc_pval} compare two
-#' models.
+#' models; see Uno (2011).
 #' 
 #' @param formula,data,rho,... passed to \code{\link{survdiff}} or
 #' \code{\link{coxph}}
@@ -1204,6 +1205,7 @@ atrisk_data_ <- function(s, times, digits) {
 #' Tarone, Robert E. Tests for Trend in Life Table Analysis. \emph{Biometrika}
 #' \strong{62} vol. 62 (Dec 1975), 679-82.
 #' 
+#' Tarone, see also:
 #' \url{https://stat.ethz.ch/pipermail/r-help/2008-April/160209.html}
 #' 
 #' Uno, Hajime, et al. On the C-statistics for Evaluating Overall Adequacy of
@@ -2341,10 +2343,7 @@ surv_table <- function(s, digits = ifelse(percent, 0L, 3L),
 #' Pairwise \code{survdiff} comparisons
 #' 
 #' Evaluate pairwise group differences in survival curves with
-#' \code{\link[survival]{survdiff}}. This function currently works for
-#' \emph{one} \code{factor}-like variable, and all unique values are treated
-#' as separate groups. To use multiple predictors, create a new variable
-#' as the \code{\link{interaction}} of two or more predictors.
+#' \code{\link[survival]{survdiff}}.
 #' 
 #' @param s an object of class \code{\link[survival]{survdiff}} or
 #' \code{\link[survival]{survfit}}
@@ -2374,9 +2373,7 @@ surv_table <- function(s, digits = ifelse(percent, 0L, 3L),
 #' sdif <- survdiff(Surv(time, status) ~ sex, data = lung)
 #' sfit <- survfit(Surv(time, status) ~ sex, data = lung)
 #' 
-#' stopifnot(
-#'   identical(survdiff_pairs(sdif), survdiff_pairs(sfit))
-#' )
+#' stopifnot(identical(survdiff_pairs(sdif), survdiff_pairs(sfit)))
 #'
 #'  
 #' ## numeric and integer variables will be treated as factor-like
@@ -2393,32 +2390,44 @@ surv_table <- function(s, digits = ifelse(percent, 0L, 3L),
 #' sfit <- survfit(Surv(time, status) ~ int, data = colon)
 #' survdiff_pairs(sfit, rho = 1, method = 'BH')
 #' 
+#' ## rawr >= 1.0.0 allows multiple variables
+#' sfit <- survfit(Surv(time, status) ~ sex + extent, data = colon)
+#' survdiff_pairs(sfit, rho = 1, method = 'BH')
 #' 
-#' ## stratified models are accepted
-#' sdif2 <- survdiff(Surv(time, status) ~ sex + strata(inst), data = lung)
-#' survdiff_pairs(sdif2)
+#' 
+#' ## strata will be ignored
+#' sdif <- survdiff(Surv(time, status) ~ sex + strata(inst), data = lung)
+#' survdiff_pairs(sdif)
 #' 
 #' @export
 
 survdiff_pairs <- function(s, ..., method = p.adjust.methods,
                            digits = getOption('digits')) {
+  stopifnot(inherits(s, c('survdiff', 'survfit')))
+  
   pwchisq <- function(i, j) {
     data <- data[data[, rhs] %in% c(unq[i], unq[j]), ]
     survdiff(as.formula(s$call$formula), data = data, ...)$chisq
   }
-
-  # rhs <- all.vars(s$call$formula)[-(1:2)]
-  rhs <- strsplit(as.character(s$call$formula)[-(1:2)], '\\s*\\+\\s*')[[1L]]
-  rhs <- grep('strata\\(', rhs, value = TRUE, invert = TRUE)
-  
-  stopifnot(
-    inherits(s, c('survdiff', 'survfit')),
-    length(rhs) == 1L
-  )
   
   method <- match.arg(method)
-  data   <- eval(s$call$data, envir = parent.frame(1L))
-  unq    <- as.character(sort(unique(data[, rhs])))
+  data <- eval(s$call$data, envir = parent.frame(1L))
+  # rhs <- tail(all.vars(s$call$formula), -2L) ## fails for strata and s ~ ...
+  rhs <- strsplit(as.character(s$call$formula)[3L], '\\s*\\+\\s*')[[1L]]
+  rhs <- trimws(grep('strata\\s*\\(', rhs, value = TRUE, invert = TRUE))
+  
+  if (any(grepl('factor\\s*\\(', rhs))) {
+    rhs <- trimws(gsub('factor\\s*\\(([^)]+)\\)', '\\1', rhs))
+    # names(data) <- trimws(gsub('factor\\s*\\(([^)]+)\\)', '\\1', names(data)))
+  }
+  
+  if (length(rhs) > 1L) {
+    data[, 'int__'] <- interaction(data[, rhs], drop = TRUE)
+    s <- update(s, . ~ int__, data = data)
+    rhs <- 'int__'
+  }
+  
+  unq <- as.character(sort(unique(data[, rhs])))
   
   nn <- outer(as.character(unq), as.character(unq), Vectorize(function(x, y)
     nrow(data[data[, rhs] %in% c(x, y), ])))

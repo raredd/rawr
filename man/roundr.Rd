@@ -56,6 +56,6 @@ roundr(dd)
 
 }
 \seealso{
-\code{\link[base]{round}}; \code{\link{Round}}; \code{\link[base]{sprintf}};
+\code{\link{round}}; \code{\link{Round}}; \code{\link{sprintf}};
 \code{\link{round_to}}; \code{\link{pvalr}}
 }

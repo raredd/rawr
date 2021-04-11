@@ -3,7 +3,7 @@ context('kw.test')
 
 test_that('assuming categorical data, all types give same results', {
   kw <- function(...) {
-    res <- kw.test(...)
+    res <- suppressWarnings(kw.test(...))
     res$data.name <- NULL
     res
   }

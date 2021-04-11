@@ -27,7 +27,7 @@ frame, and \code{fapply_by} applies summary function(s) over subsets of
 a data frame.
 }
 \examples{
-tmp <- recoder(mtcars, 6, NA)
+tmp <- replace(mtcars, mtcars == 6, NA)
 fapply(tmp, mean = mean(.), median = median(., na.rm = TRUE))
 fapply(mtcars$mpg, mean = mean(.))
 

@@ -81,6 +81,10 @@ combine_levels(x, list(a = 1:2, b = 3))
 ## use NULL list to combine others
 combine_levels(x, list(b = 3, others = NULL))
 
+## levels may be swapped without losing original distinction
+combine_levels(x, list('3' = 1:2, '1' = 3))
+combine_levels(x, list('1' = 3, '3' = 1:2))
+
 
 ## combine by regular expression
 x <- letters[1:5]
@@ -101,5 +105,5 @@ combine_levels(x, '[a-c]', c('ABC', 'Others'), regex = TRUE)
 
 }
 \seealso{
-\code{\link{recoder}}
+\code{\link{factor2}}; \code{\link[rawr2]{recoder}}
 }

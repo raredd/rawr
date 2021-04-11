@@ -6,8 +6,8 @@
 \usage{
 bintest(
   p0low,
-  p0high = p0low,
   p1low,
+  p0high = p0low,
   p1high = p1low,
   n.max,
   r = n.max,
@@ -49,12 +49,12 @@ Cycles through possible designs constrained by \code{alpha}, \code{beta},
 and \code{n.max} arguments for specified ranges of \code{p0} and \code{p1}.
 }
 \examples{
-bintest(p0low = 0.2, p1low = 0.5, n.max = 25)
+bintest(0.2, 0.5, n.max = 25)
 ## compare
 rawr:::bin1samp(0.2, 0.5)
 
 ## example in sas macro
-bintest(0.1, 0.15, 0.2, 0.2, n.max = 80, alpha = 0.08, beta = 0.24)
+bintest(0.1, 0.2, 0.15, 0.2, n.max = 80, alpha = 0.08, beta = 0.24)
 
 }
 \references{
@@ -64,6 +64,6 @@ levels of significance and power. \emph{British J of Cancer} (2012) 107,
 1801-9.
 }
 \seealso{
-\code{\link[clinfun]{ph2single}}; \code{desmon::bin1samp}; bintest,
+\code{\link[clinfun]{ph2single}}; \code{\link[desmon]{bin1samp}}; bintest,
 \href{https://github.com/raredd/sascros/blob/master/bintest.sas}{SAS macro}
 }

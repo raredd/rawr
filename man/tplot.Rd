@@ -331,5 +331,5 @@ legend(
 \seealso{
 \href{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}{Tatsuki
 \code{tplot}}; \href{http://data.vanderbilt.edu/~graywh/dotplot/}{web app
-for Tatsuki \code{tplot}}; \code{\link{boxplot}}; \code{\link{jmplot}}
+for Tatsuki \code{tplot}}; \code{\link{boxplot}}; \code{\link[plotr]{jmplot}}
 }

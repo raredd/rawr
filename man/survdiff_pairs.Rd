@@ -30,19 +30,14 @@ correction, see \code{\link{p.adjust}})}
 }
 \description{
 Evaluate pairwise group differences in survival curves with
-\code{\link[survival]{survdiff}}. This function currently works for
-\emph{one} \code{factor}-like variable, and all unique values are treated
-as separate groups. To use multiple predictors, create a new variable
-as the \code{\link{interaction}} of two or more predictors.
+\code{\link[survival]{survdiff}}.
 }
 \examples{
 library('survival')
 sdif <- survdiff(Surv(time, status) ~ sex, data = lung)
 sfit <- survfit(Surv(time, status) ~ sex, data = lung)
 
-stopifnot(
-  identical(survdiff_pairs(sdif), survdiff_pairs(sfit))
-)
+stopifnot(identical(survdiff_pairs(sdif), survdiff_pairs(sfit)))
 
  
 ## numeric and integer variables will be treated as factor-like
@@ -59,10 +54,14 @@ colon$int <- with(colon, interaction(sex, extent))
 sfit <- survfit(Surv(time, status) ~ int, data = colon)
 survdiff_pairs(sfit, rho = 1, method = 'BH')
 
+## rawr >= 1.0.0 allows multiple variables
+sfit <- survfit(Surv(time, status) ~ sex + extent, data = colon)
+survdiff_pairs(sfit, rho = 1, method = 'BH')
 
-## stratified models are accepted
-sdif2 <- survdiff(Surv(time, status) ~ sex + strata(inst), data = lung)
-survdiff_pairs(sdif2)
+
+## strata will be ignored
+sdif <- survdiff(Surv(time, status) ~ sex + strata(inst), data = lung)
+survdiff_pairs(sdif)
 
 }
 \seealso{

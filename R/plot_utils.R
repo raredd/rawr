@@ -1,15 +1,10 @@
 ### plot utils, helpers for plotting functions
 # unexported:
-# %|%, do_sub_, dodge_, grouping_, jit_, do_rect_, do_seg_, coords
+# %|%, dodge_, grouping_, jit_, do_rect_, do_seg_, coords
 ###
 
 
 `%|%` <- Vectorize(function(x, y) if (is.na(x)) y else x)
-
-do_sub_ <- function(x, n, s) {
-  if (length(x) == n)
-    x[s] else x
-}
 
 dodge_ <- function(x, at, dist, jit) {
   ## add jitter to points in a single group and return adjusted values

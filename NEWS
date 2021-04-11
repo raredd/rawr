@@ -1,6 +1,16 @@
-rawr 0.9.2 - in progress
+rawr 1.0.0
 --------
-  * add ca.test, inl_ca
+  * move some functions to rawr2
+  * add factor2
+  * survdiff_pairs accepts multivariable formulas
+  * fixes to tplot (subset), kmplot (^0.* in atrisk table)
+
+rawr 0.9.2
+--------
+  * add ca.test, inl_ca, options to tabler_stat
+  * add xtable, dapply, combine_{levels,regex}, kmdiff, rfvar, twostg.test
+  * rename moods_test to moods.test for consistency
+  * add twostg, cor.n, cor.ci, rgbdiff, kmer, pplot
   * guess_test testing, kw.test gives warning for nr=2
   * kw.test.pvalue -> sim.test.pvalue (generalized for other use)
 
@@ -202,4 +212,4 @@ rawr 0.2.0
 
 rawr 0.1.0
 --------
-  * initial bullshit commit
+  * initial commit
