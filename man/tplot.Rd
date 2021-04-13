@@ -121,9 +121,12 @@ points, i.e., a group of sequential points that are no more than
 neighboring points, useful for limiting the spread of points}
 
 \item{args.beeswarm}{logical or a \emph{named} list of arguments passed to
-\code{\link[beeswarm]{beeswarm}}; if \code{NULL} or \code{FALSE} (default),
+\code{\link[beeswarm]{beeswarm}}; if \code{NULL} (default) or \code{FALSE},
 \code{beeswarm} is not used; if \code{TRUE}, \code{beeswarm} is used with
-pre-set defaults; passing a list of arguments will add or override defaults}
+pre-set defaults (i.e., \code{method = 'center'} and \code{horizontal} to
+match the \code{tplot} setting); passing a list of arguments will add or
+override arguments except that \code{tplot} \emph{will not} adjust data
+values as \code{beeswarm} methods may}
 
 \item{main, sub}{overall title and sub-title (below x-axis) for the plot}
 

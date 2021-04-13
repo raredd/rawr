@@ -36,12 +36,14 @@ show_pal(ip, n = 4)
 ip <- imgpal(go, options = '-colorize 0,0,50')
 show_pal(ip)
 
+\dontrun{
 ## rawr::rawr_palettes
 img <- system.file('fig', package = 'rawr')
 img <- list.files(img, full.names = TRUE, pattern = 'g$')
 op <- par(mfrow = n2mfrow(length(img)))
 sapply(img, function(x) show_pal(imgpal(x), fullrange = TRUE))
 par(op)
+}
 
 }
 \seealso{

@@ -1878,7 +1878,7 @@ perm.t.test.formula <- function(formula, data, ...) {
 #' library('survival')
 #' f <- Surv(time, status == 0) ~ rx + sex + age + obstruct + adhere + nodes
 #' rfvar(f, colon, nvar = 4, ntree = 5)
-#' rfvar(f, colon, nvar = -2, ntree = 5)
+#' # rfvar(f, colon, nvar = -2, ntree = 5) ## same
 #' 
 #' ## for slower models, refit = FALSE may improve performance
 #' rfvar(f, colon, nvar = 4, ntree = 5, refit = FALSE, plot = TRUE)

@@ -2356,7 +2356,9 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
   }
   
   data <- data.frame(date = date, response = response)[order(date), ]
-  data$responsei <- as.integer(data$response)
+  data <- within(data, {
+    responsei <- as.integer(response)
+  })
   
   if (any(idx <- duplicated(data))) {
     warning('removing duplicated visits')

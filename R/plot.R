@@ -60,9 +60,12 @@
 #' \code{dist.n} is the maximum number of points allowed in each group of
 #' neighboring points, useful for limiting the spread of points
 #' @param args.beeswarm logical or a \emph{named} list of arguments passed to
-#' \code{\link[beeswarm]{beeswarm}}; if \code{NULL} or \code{FALSE} (default),
+#' \code{\link[beeswarm]{beeswarm}}; if \code{NULL} (default) or \code{FALSE},
 #' \code{beeswarm} is not used; if \code{TRUE}, \code{beeswarm} is used with
-#' pre-set defaults; passing a list of arguments will add or override defaults
+#' pre-set defaults (i.e., \code{method = 'center'} and \code{horizontal} to
+#' match the \code{tplot} setting); passing a list of arguments will add or
+#' override arguments except that \code{tplot} \emph{will not} adjust data
+#' values as \code{beeswarm} methods may
 #' @param boxplot.pars additional list of graphical parameters for box plots
 #' (or violin plots)
 #' @param quantiles for violin plots, probabilities for quantile lines (as an
@@ -1113,6 +1116,8 @@ river <- function(data, bar_data, id, at,
   else rep_len(col, nlevels(dd$assess))
   
   ## convert dates to days with origin at first id reg (ie, ref date == 0)
+  dd_reg <- status <- dt_offstudy <- dd_prog <-
+    dd_assess_start <- NULL ## binding note
   dts <- grep('^dt_', names(dd))
   mm  <- setNames(dd[, dts], gsub('dt_', 'dd_', names(dd)[dts]))
   
@@ -1240,6 +1245,7 @@ river2 <- function(data, bar_data, bar_data2, id,
   td <- check_river_format(data, bar_data2)
   
   ## select bd for id, remove rows if NA start AND end, order by date
+  dt_end <- NULL ## binding note
   td <- split(td, td$id, drop = FALSE)[[as.character(id)]]
   td <- td[!(is.na(td$dt_start) & is.na(td$dt_end)), ]
   td <- within(td, {
@@ -1397,6 +1403,7 @@ check_river_format <- function(data, bar_data) {
   dts <- grep('^dt_', names(bar_data))
   bd  <- tryCatch({
     if (one <- length(dts) == 1L) {
+      dt_assess_start <- NULL ## binding note
       bd <- setNames(bar_data[, 1:3], c('id', 'dt_assess_start', 'assess'))
       bd <- within(bd, {
         id <- factor(id, levels = unique(dd$id))
