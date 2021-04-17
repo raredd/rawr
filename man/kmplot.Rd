@@ -166,7 +166,10 @@ median(s)}
 are shown}
 
 \item{args.median}{an optional \emph{named} list of \code{\link{mtext}}
-arguments controlling the \code{median} text}
+arguments controlling the \code{median} text
+
+additionally, \code{list(x = , y = )} may be given for exact placement
+(translated to \code{at} and \code{line}, respectively)}
 
 \item{xaxs}{style of axis; see details or \code{\link{par}}}
 
@@ -297,11 +300,12 @@ km2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 
 ## basic usage
 kmplot(km1)
+kmplot(km1, args.median = list(x = 500, y = 0.2))
 kmplot(km1, fun = 'F')
 kmplot(km1, atrisk.col = c('grey50', 'tomato'), test_details = FALSE,
        args.test = list(col = 'red', cex = 1.5, .prefix = 'Log-rank: '))
 kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
-kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3700)
+kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3500)
 kmplot(km2, atrisk.table = FALSE, lwd.surv = 2, lwd.mark = 0.5,
        col.surv = 1:4, col.band = c(1, 0, 0, 4))
 

@@ -124,6 +124,9 @@ stratify_formula <- function(formula, vars = NULL) {
 #' are shown
 #' @param args.median an optional \emph{named} list of \code{\link{mtext}}
 #' arguments controlling the \code{median} text
+#' 
+#' additionally, \code{list(x = , y = )} may be given for exact placement
+#' (translated to \code{at} and \code{line}, respectively)
 #' @param xaxs style of axis; see details or \code{\link{par}}
 #' @param xlim,ylim x- and y-axis limits
 #' @param xaxis.at,yaxis.at positions for x- and y-axis labels and ticks
@@ -202,11 +205,12 @@ stratify_formula <- function(formula, vars = NULL) {
 #' 
 #' ## basic usage
 #' kmplot(km1)
+#' kmplot(km1, args.median = list(x = 500, y = 0.2))
 #' kmplot(km1, fun = 'F')
 #' kmplot(km1, atrisk.col = c('grey50', 'tomato'), test_details = FALSE,
 #'        args.test = list(col = 'red', cex = 1.5, .prefix = 'Log-rank: '))
 #' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
-#' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3700)
+#' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3500)
 #' kmplot(km2, atrisk.table = FALSE, lwd.surv = 2, lwd.mark = 0.5,
 #'        col.surv = 1:4, col.band = c(1, 0, 0, 4))
 #' 
@@ -474,6 +478,9 @@ kmplot <- function(s, data = NULL,
   if (!any(grepl('(?i)#[a-z0-9]{8}', col.band)))
     col.band <- tcol(col.band)
   
+  median.mar <- c('x', 'at') %in% names(args.median) | is.numeric(median)
+  if (identical(median, FALSE) & length(args.median) > 0L)
+    median <- TRUE
   if (!identical(median, FALSE)) {
     median.at <- median
     median <- TRUE
@@ -487,7 +494,7 @@ kmplot <- function(s, data = NULL,
   par(mar = c(4 + ng * atrisk.table + atrisk.pad,
               4 + pmax(4, extra.margin) - 3 * !atrisk.table,
               2,
-              2 + 6 * (median & atrisk.table)))
+              2 + 6 * (median & atrisk.table & !any(median.mar))))
   par(...)
   if (!is.null(mar))
     par(mar = mar)
@@ -536,8 +543,9 @@ kmplot <- function(s, data = NULL,
     
     ## set colors for lines of text
     col.atrisk <- if (isTRUE(atrisk.col))
-      col.surv else if (!identical(atrisk.col, FALSE) && length(atrisk.col) == ng)
-        atrisk.col else rep_len(1L, ng)
+      col.surv
+    else if (!identical(atrisk.col, FALSE) && length(atrisk.col) == ng)
+      atrisk.col else rep_len(1L, ng)
     
     ## labels for each row in at-risk table
     group.name.pos <- diff(usr[1:2]) / ifelse(atrisk.lines, -8, -16)
@@ -669,12 +677,24 @@ kmplot <- function(s, data = NULL,
       
       if (!islist(args.median))
         args.median <- list()
+      
+      ## convert (x, y) coords to work with mtext
+      if (all(c('x', 'y') %in% names(args.median))) {
+        args.median <- within.list(args.median, {
+          at <- x
+          line <- grconvertY(-args.median$y, 'user', 'line') -
+            par('mar')[1L] + largs$line - min(largs$line) - 1.5
+          text <- c(largs$text[1L], sprintf('%s: %s', strata.lab, largs$text[-1L]))
+          x <- y <- NULL
+        })
+      }
+      
       do.call('mtext', modifyList(largs, args.median))
     }
   }
   
   ## summary by strata at specified times
-  if ('plotr' %in% rownames(installed.packages()) && !is.null(times)) {
+  if (!is.null(times)) {
     times.type <- match.arg(times.type)
     wh <- switch(
       times.type,
@@ -711,8 +731,8 @@ kmplot <- function(s, data = NULL,
     ss <- ar$summary
     d2 <- ar$data
     d3 <- lapply(d2, function(x) x[, c('time', wh)])
-    suppressWarnings({
-      d3 <- setNames(
+    d3 <- suppressWarnings({
+      setNames(
         merge2(d3, by = 'time', all = TRUE),
         c('Time', strata.lab)
       )
@@ -725,7 +745,13 @@ kmplot <- function(s, data = NULL,
     )
     if (!islist(args.times))
       args.times <- list()
-    do.call(plotr::tableplot, modifyList(largs, args.times))
+    
+    if (!requireNamespace('plotr', quietly = TRUE)) {
+      warning(
+        'the \'plotr\' package is required... run:\n\t',
+        'devtools::install_github(\'raredd/plotr\')'
+      )
+    } else do.call(plotr::tableplot, modifyList(largs, args.times))
   }
   
   ## legend
