@@ -656,9 +656,8 @@ kmplot <- function(s, data = NULL,
             fmt = '%s (%s, %s)'), lapply(st, roundr, digits = digits.median))
           )
       tt <- ifelse(
-        # is.na(st$median)
         rowSums(is.na(st)) == ncol(st),
-        '-', gsub('NA', 'NR', tt, fixed = TRUE)
+        'NR', gsub('NA', 'NR', tt, fixed = TRUE)
       )
       if (!ci.median) {
         s$conf.int <- NULL
@@ -681,10 +680,15 @@ kmplot <- function(s, data = NULL,
       ## convert (x, y) coords to work with mtext
       if (all(c('x', 'y') %in% names(args.median))) {
         args.median <- within.list(args.median, {
-          at <- x
-          line <- grconvertY(-args.median$y, 'user', 'line') -
-            par('mar')[1L] + largs$line - min(largs$line) - 1.5
-          text <- c(largs$text[1L], sprintf('%s: %s', strata.lab, largs$text[-1L]))
+          at <- grconvertX(x, 'user', 'ndc')
+          line <- largs$line - min(largs$line) - 0.5 -
+            grconvertY(args.median$y, 'user', 'line')
+          outer <- TRUE
+          side <- 1L
+          
+          text <- c(largs$text[1L],
+                    sprintf('%s: %s', strata.lab, largs$text[-1L]))
+          text <- gsub('^:\\s*', '', trimws(text))
           x <- y <- NULL
         })
       }
