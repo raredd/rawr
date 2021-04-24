@@ -37,7 +37,7 @@ of each bar}
 
 \item{plot}{logical; if \code{FALSE}, nothing is plotted}
 
-\item{panel.first}{an "expression" to be evaluated after the plot axes are
+\item{panel.first}{an expression to be evaluated after the plot axes are
 set up but before any plotting takes place; this can be useful for drawing
 background grids or scatterplot smooths; note that this works by lazy
 evaluation: passing this argument from other plot methods may well not work

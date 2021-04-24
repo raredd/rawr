@@ -104,7 +104,7 @@
 #' and return a character string (or a value to be coerced) for printing
 #' @param ann logical; annotate plot
 #' @param add logical; add to an existing plot
-#' @param panel.first an "expression" to be evaluated after the plot axes are
+#' @param panel.first an expression to be evaluated after the plot axes are
 #' set up but before any plotting takes place; this can be useful for drawing
 #' background grids or scatterplot smooths; note that this works by lazy
 #' evaluation: passing this argument from other plot methods may well not work
@@ -1506,7 +1506,7 @@ plothc <- function(hc, labels = hc$labels, col = as.factor(labels),
 #' of each bar
 #' @param rev logical; if \code{TRUE}, the order along the x-axis is reversed
 #' @param plot logical; if \code{FALSE}, nothing is plotted
-#' @param panel.first an "expression" to be evaluated after the plot axes are
+#' @param panel.first an expression to be evaluated after the plot axes are
 #' set up but before any plotting takes place; this can be useful for drawing
 #' background grids or scatterplot smooths; note that this works by lazy
 #' evaluation: passing this argument from other plot methods may well not work
