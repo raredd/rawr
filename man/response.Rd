@@ -2,6 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{response}
 \alias{response}
+\alias{response2}
 \title{Response data}
 \usage{
 response(
@@ -17,17 +18,29 @@ response(
   dr = 0,
   dp = NULL
 )
+
+response2(
+  id,
+  date,
+  response,
+  ...,
+  type = c("unconfirmed", "confirmed", "bsf_unconfirmed", "bsf_confirmed")
+)
 }
 \arguments{
-\item{date}{date of assessment}
+\item{date}{a vector of assessment dates for a single ID; identical
+\code{date}/\code{response} visits will be removed with a warning}
 
 \item{response}{a factor variable of responses for each \code{date} with
 levels ordered from best response to worst (e.g.,
 \code{factor(., levels = c('CR', 'PR', 'SD', 'PD'))}}
 
-\item{include}{integer vector of levels of \code{response} to include or
-a single regular expression to match levels of \code{response}; useful if
-a minimal response is required}
+\item{include}{integer vector corresponding to the levels of \code{response}
+or a single regular expression to match levels of \code{response}; defines
+assessments that will be treated as a meaningful response, e.g., if
+\code{include} does not match stable disease and/or minimal response,
+these assessments will be ignored in calculating best-so-far and best
+overall responses}
 
 \item{default}{(optional) the default response if no assessments have been
 confirmed, usually stable disease; must be a level of \code{response}}
@@ -35,14 +48,15 @@ confirmed, usually stable disease; must be a level of \code{response}}
 \item{no_confirm}{responses that do not require confirmation assessments,
 usually stable disease (default); must match a level of \code{response}}
 
-\item{progression}{a character string to identify progression events in
-\code{response}; must match a level of \code{response}}
+\item{progression}{a character string or regular expression to identify
+progression events in \code{response}; must match a level of \code{response}}
 
 \item{n_confirm}{to confirm a response, the number of subsequent responses
-equal to or better than required; e.g., if \code{n_confirm = 1} (default),
+equal to or better than previous; e.g., if \code{n_confirm = 1} (default),
 to confirm a response, the next assessment must be at least as good as the
 current; note that this only affects \code{.$confirmed} and
-\code{.$bsf_confirmed} in the return object}
+\code{.$bsf_confirmed} in the return object; if \code{n_confirm = 2}, to
+confirm a response, the next two assessments must be at least as good, etc}
 
 \item{n_prog}{similar to \code{n_confirm} but for progression; if
 \code{nprog = 1}, then a progression must be followed by at least one
@@ -50,20 +64,28 @@ progression to confirm; note that this only affects \code{.$confirmed} and
 \code{.$bsf_confirmed} in the return object}
 
 \item{strict}{logical; if \code{TRUE}, only the first uninterrupted
-sequence of confirmed responses will be evaluated for best response}
+sequence of confirmed responses will be evaluated for best response; e.g.,
+an unconfirmed CR between two confirmed PR sequences will result in the
+later PR sequence being ignored}
 
 \item{dr}{(optional) difference in level required to confirm responses; if
 \code{dr = 0} (default), the next response must be equal to or better to
 confirm; if \code{dr = -1}, the next response must be at least one level
 better; \code{dr = Inf} will be equivalent to unconfirmed responses since
-any subsequent response can confirm}
+any subsequent response can confirm the one previous}
 
 \item{dp}{(optional) difference in level required to show progression; if
 \code{dp = NULL} (default), only responses matching \code{progression}
-pattern show progression; if \code{dp = 0}, any worse response will be
+pattern are progression; if \code{dp = 0}, any worse response will be
 considered progression (e.g., CR followed by PR); \code{dp = 1},
-progression is defined as a drop in response of two or more levels (e.g.,
-CR to PR is not progression but CR to MR is progression)}
+progression is defined as a greater than one level drop in response (e.g.,
+CR to PR is not progression but CR to SD or MR is progression)}
+
+\item{id}{for \code{response2}, a vector of IDs}
+
+\item{...}{additional arguments passed to \code{response}}
+
+\item{type}{see "Value" section}
 }
 \value{
 A list with the following elements:
@@ -80,6 +102,14 @@ responses that have been confirmed}
 \description{
 Get response data (dates, progression, best-so-far, best overall,
 confirmed, etc.) for vectors of dates and response assessments.
+
+\code{response} performs the work for a single ID--data with multiple
+IDs should be split before proceeding; see examples. This function also
+requires that dates are ordered.
+
+\code{response2} is a convenience function that calls \code{response}
+for each unique \code{id}. Data are ordered and split by \code{id},
+and the results are aggregated into a single data frame.
 }
 \examples{
 set.seed(1)
@@ -106,6 +136,22 @@ conf <- do.call(
   'rbind',
   lapply(sp, function(x) response(x$date, x$response, default = 'SD')$confirmed)
 )
+rownames(unconf) <- rownames(conf) <- NULL
+
+data.frame(
+  id = names(sp),
+  unconf = unconf$response_best_first,
+  conf = conf$response_best_first
+)
+## compare
 do.call('cbind', sp)
+
+
+## or simply with response2
+unconf2 <- response2(dat$id, dat$date, dat$response)
+conf2 <- response2(dat$id, dat$date, dat$response, type = 'confirmed')
+
+identical(unconf, unconf2[-1])
+identical(conf, conf2[-1])
 
 }
