@@ -1,7 +1,7 @@
 ### plot misc, extra, random
 # dodge, dodge.default, dodge.formula, dodge2, dodge2.default, dodge2.formula,
 # show_colors, show_pch, tcol, col_scaler, bp.test, bp.test.default,
-# bp.test.formula, imgpal, rawr_palettes, rawr_pal, show_pal, rgbdiff
+# bp.test.formula, imgpal, rawr_palettes, rawr_pal, show_pal, rgbdiff, na.points
 #
 # S3 methods:
 # dodge, dodge2, bp.test
@@ -1053,4 +1053,72 @@ rgbdiff <- function(col, col2 = NULL) {
     p <- paste0(sprintf('%s.*%s', col, col2), collapse = '|')
     res[, grep(p, colnames(res))]
   } else res
+}
+
+#' na.points
+#' 
+#' Add 1-D scatter plot to plot margins for missing values.
+#' 
+#' @param x,y vectors of data to be plotted; if only one is given, all points
+#' will be plotted on the corresponding axis; if both are given, only \code{x}
+#' values where \code{y} is \code{NA} are plotted and vice versa
+#' @param xat,yat the x- and y-axis positions for points
+#' @param label axis label for points; use \code{FALSE} or \code{''} to omit
+#' @param args.beeswarm a \emph{named} list of additional arguments passed to
+#' \code{\link[beeswarm]{beeswarm}} such as \code{corral} or \code{corralWidth}
+#' @param ... additional arguments passed to \code{\link{tplot}} or further
+#' to \code{par} such as \code{col}, \code{cex}, or \code{pch}
+#' 
+#' @examples
+#' op <- par(mar = c(5, 5, 5, 5))
+#' plot(mpg ~ wt, mtcars)
+#' na.points(y = mtcars$mpg, col = 'red')
+#' na.points(x = mtcars$wt, pch = 16, cex = 1.5, col = 'blue')
+#' 
+#' plot(mpg ~ wt, mtcars, bty = 'l')
+#' na.points(x = mtcars$wt, yat = par('usr')[4], label = 'Missing',
+#'           args.beeswarm = list(corral = 'wrap', corralWidth = 1.5))
+#' 
+#' plot(mpg ~ wt, mtcars, col = rep(1:2, each = 10))
+#' na.points(replace(mtcars$wt, 1:10, NA), replace(mtcars$mpg, 11:20, NA), col = 2)
+#' par(op)
+#' 
+#' @export
+
+na.points <- function(x = NULL, y = NULL, xat = NULL, yat = NULL,
+                      label = 'NA', args.beeswarm = list(), ...) {
+  m <- match.call()
+  usr <- par('usr')
+  
+  nay <- sort(if (is.null(x)) y else y[is.na(x)])
+  nax <- sort(if (is.null(y)) x else x[is.na(y)])
+  
+  type <- 'd'
+  args <- list(side = 1L, method = 'swarm')
+  args <- modifyList(args, args.beeswarm)
+  
+  label <- if (is.character(label) && nzchar(label))
+    label else ''
+  
+  if (length(nay)) {
+    xat <- xat %||% (usr[2L] + 0.05 * diff(usr[1:2]))
+    tplot(
+      nay, horizontal = FALSE, add = TRUE, at = xat, xpd = NA, type = type,
+      ann = FALSE, axes = FALSE, show.n = FALSE, args.beeswarm = args, ...
+    )
+    if (nzchar(label))
+      axis(1L, xat, label, xpd = NA, las = m$las %||% 1L)
+  }
+  
+  if (length(nax)) {
+    yat <- yat %||% (usr[4L] + 0.05 * diff(usr[3:4]))
+    tplot(
+      nax, horizontal = TRUE, add = TRUE, at = yat, xpd = NA, type = type,
+      ann = FALSE, axes = FALSE, show.n = FALSE, args.beeswarm = args, ...
+    )
+    if (nzchar(label))
+      axis(2L, yat, label, xpd = NA, las = m$las %||% 1L)
+  }
+  
+  invisible(list(x = nax, y = nay, xat = xat, yat = yat))
 }
