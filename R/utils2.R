@@ -2725,8 +2725,7 @@ get_tabler_stat_n <- function(x, pct = TRUE, use_labels = TRUE) {
 #' @param two_stage \code{FALSE} (default, assumes exact binomial CIs are
 #' desired) or a vector of length 3 with the 1) maximum number responses in
 #' the first stage that can be observed \emph{without} continuing; 2) the
-#' number entered in the first stage; and 3) the additional number entered
-#' in the second stage
+#' sample size in the first stage; and 3) the sample size in the second stage
 #'
 #' if more than three integers are given, the remaining should indicate the
 #' columns which should be calculated as two-stage CIs; usually this is only
@@ -2735,7 +2734,7 @@ get_tabler_stat_n <- function(x, pct = TRUE, use_labels = TRUE) {
 #' @family tabler
 #'
 #' @seealso
-#' \code{\link{bincon}}; \code{\link{binconr}}
+#' \code{\link{bincon}}; \code{\link{binconr}}; \code{\link{response}}
 #'
 #' @examples
 #' set.seed(1)
@@ -2754,28 +2753,28 @@ get_tabler_stat_n <- function(x, pct = TRUE, use_labels = TRUE) {
 #'
 #'
 #' ## two-stage designs
-#' ## use two-stage CI in "PR" column
-#' tabler_resp(x)
-#' 
-#' two_idx <- 1:2
 #' two_stage <- c(r1 = 2, n1 = 10, n2 = 20)
-#' tabler_resp(x, two_stage = c(two_stage, two_idx))
+#' tabler_resp(x, two_stage = c(two_stage))
+#' 
+#' ## two-stage only for SD or better and PR or better
+#' tabler_resp(x, two_stage = c(two_stage, 6:7))
 #'
 #' ## compare
-#' bincon(c(2, 4),  c(10, 20), method = 'two-stage') ## CRs
-#' bincon(c(2, 11), c(10, 20), method = 'two-stage') ## PRs
+#' bincon(c(2, 20), c(10, 20), method = 'two-stage') ## SD or better
+#' bincon(c(2, 16), c(10, 20), method = 'two-stage') ## PR or better
+#' 
 #' ## one-stage methods should not be used
-#' bincon(c(4, 11), 30, method = 'exact')
+#' bincon(c(20, 16), 30, method = 'exact')
 #'
 #'
 #' ## typical usage
 #' ht <- htmlTable::htmlTable(
 #'   rbind(
-#'     tabler_resp(x),
-#'     tabler_resp(x, conf = 0.9),
-#'     tabler_resp(x, frac = FALSE, pct.sign = FALSE,
-#'                 show_conf = FALSE, digits = 1),
-#'     tabler_resp(x, two_stage = c(2, 10, 20, 1))
+#'     '95% CI' = tabler_resp(x),
+#'     '90% CI' = tabler_resp(x, conf = 0.9),
+#'     'Simple' = tabler_resp(x, frac = FALSE, pct.sign = FALSE,
+#'                            show_conf = FALSE, digits = 1),
+#'     'Two-stage' = tabler_resp(x, two_stage = c(2, 10, 20, 6:7))
 #'   ),
 #'   caption = 'Table of responses with exact binomial and
 #'     two-stage<sup>&dagger;</sup>confidence intervals.',
