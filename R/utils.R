@@ -2,9 +2,9 @@
 # psum, rescaler, bind_all, cbindx, rbindx, rbindfill, rbindfill2, rbindlist,
 # rbindlist2, interleave, outer2, merge2, locf, roll_fun, regcaptures,
 # regcaptures2, cast, melt, View2, view, rapply2, sort_matrix, insert,
-# insert_matrix, tryCatch2, rleid, droplevels2, combine_levels, combine_regex,
-# rownames_to_column, column_to_rownames, split_nth, sort2, response,
-# response2, xtable, factor2
+# insert_matrix, tryCatch2, rleid, rleid2, droplevels2, combine_levels,
+# combine_regex, rownames_to_column, column_to_rownames, split_nth, sort2,
+# response, response2, xtable, factor2
 # 
 # rawr_ops:
 # %ni%, %==%, %||%, %sinside%, %winside%, %inside%, %:%
@@ -1868,10 +1868,18 @@ tryCatch2 <- function(expr, ..., simplify = TRUE) {
 
 #' Generate run-length type group id
 #' 
-#' For a vector, \code{x}, \code{rleid} creates a unique group variable for
-#' sequential idenitcal elements of \code{x}.
+#' For a vector, \code{x}, \code{rleid} creates a run-length group identifier
+#' for by grouping sequential identical elements of \code{x}.
 #' 
-#' @param x a vector
+#' \code{rleid2} identifies the nth sequence of each unique value of \code{x}.
+#' 
+#' @param x a logical, character, or numeric vector
+#' @param na.rm for \code{rleid2}, logical; if \code{FALSE} (default),
+#' \code{NA}s are kept in-place
+#' @param ignore.na for \code{rleid2}, logical; if \code{FALSE} (default),
+#' \code{NA}s are treated as a distinct group; if \code{TRUE}, \code{NA}s are
+#' ignored and will not separate runs, e.g., \code{1, 1, NA, 1} would be
+#' treated as a single run
 #' 
 #' @return
 #' An integer vector having the same length as \code{x}.
@@ -1880,14 +1888,39 @@ tryCatch2 <- function(expr, ..., simplify = TRUE) {
 #' \code{\link{rle}}; \code{data.table::rleid}
 #' 
 #' @examples
-#' x <- LETTERS[c(1,1,2,1,1,2,3,3)]
-#' data.frame(id = x, rleid = rleid(x))
+#' x <- LETTERS[c(1, 1, 2, 1, 1, 2, 3, NA, 3, 3, 2, 3, 1, NA)]
+#' data.frame(
+#'   id = x,
+#'   rleid = rleid(x),
+#'   rleid2 = rleid2(x, ignore.na = FALSE),
+#'   rleid2 = rleid2(x, ignore.na = TRUE)
+#' )
 #' 
 #' @export
 
 rleid <- function(x) {
-  cumsum(c(1L, x[-length(x)] != x[-1L]))
+  with(rle(x), rep(seq.int(length(lengths)), lengths))
 }
+
+#' @rdname rleid
+#' @export
+rleid2 <- function(x, na.rm = FALSE, ignore.na = FALSE) {
+  res <- rep_len(1L, length(x))
+  unx <- unique(x)
+  
+  if (ignore.na)
+    unx <- na.omit(unx)
+  
+  for (ux in unx) {
+    idx <- x %in% c(ux, if (ignore.na) NULL else NA)
+    ids <- rleid(idx)
+    res[idx] <- rleid(ids[idx])
+  }
+  
+  if (na.rm)
+    res else replace(res, is.na(x), NA)
+}
+
 
 #' Drop factor levels
 #' 

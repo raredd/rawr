@@ -2,23 +2,42 @@
 % Please edit documentation in R/utils.R
 \name{rleid}
 \alias{rleid}
+\alias{rleid2}
 \title{Generate run-length type group id}
 \usage{
 rleid(x)
+
+rleid2(x, na.rm = FALSE, ignore.na = FALSE)
 }
 \arguments{
-\item{x}{a vector}
+\item{x}{a logical, character, or numeric vector}
+
+\item{na.rm}{for \code{rleid2}, logical; if \code{FALSE} (default),
+\code{NA}s are kept in-place}
+
+\item{ignore.na}{for \code{rleid2}, logical; if \code{FALSE} (default),
+\code{NA}s are treated as a distinct group; if \code{TRUE}, \code{NA}s are
+ignored and will not separate runs, e.g., \code{1, 1, NA, 1} would be
+treated as a single run}
 }
 \value{
 An integer vector having the same length as \code{x}.
 }
 \description{
-For a vector, \code{x}, \code{rleid} creates a unique group variable for
-sequential idenitcal elements of \code{x}.
+For a vector, \code{x}, \code{rleid} creates a run-length group identifier
+for by grouping sequential identical elements of \code{x}.
+}
+\details{
+\code{rleid2} identifies the nth sequence of each unique value of \code{x}.
 }
 \examples{
-x <- LETTERS[c(1,1,2,1,1,2,3,3)]
-data.frame(id = x, rleid = rleid(x))
+x <- LETTERS[c(1, 1, 2, 1, 1, 2, 3, NA, 3, 3, 2, 3, 1, NA)]
+data.frame(
+  id = x,
+  rleid = rleid(x),
+  rleid2 = rleid2(x, ignore.na = FALSE),
+  rleid2 = rleid2(x, ignore.na = TRUE)
+)
 
 }
 \seealso{
