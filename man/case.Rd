@@ -21,10 +21,10 @@ upper- or lowercase \emph{before} \code{case} is applied to ensure that
 the case of all characters of \code{x} is uniform}
 }
 \description{
-Convert a text string to several common types of letter case.
+Convert a text string to several common cases.
 }
 \details{
-This function supports the following letter cases:
+This function supports the following:
 
 \tabular{llllll}{
 \tab \code{first} \tab \tab \tab \tab

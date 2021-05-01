@@ -47,7 +47,7 @@ columns which should be calculated as two-stage CIs; usually this is only
 one value but multiple are accepted}
 }
 \description{
-Convenience function to calculate proportions and confidence invervals and
+Convenience function to calculate proportions and confidence intervals and
 format for easy display.
 }
 \examples{

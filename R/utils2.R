@@ -1493,7 +1493,7 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
 
     ptbl <- tryCatch(
       apply(ptbl, 2L, Round, 100),
-      error = function(e) apply(ptbl, 2L, round, 0)
+      error = function(e) apply(ptbl, 2L, round, digits = 0)
     )
     res <- matrix(sprintf('%s (%s%%)', ttbl, ptbl), nrow = nr, ncol = nc)
     res[] <- gsub('0 (NaN%)', '0 (0%)', res, fixed = TRUE)
@@ -1503,7 +1503,7 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
 
     ## split percents into individual columns
     if (pct.column) {
-      res <- gsub('[^0-9 ]', '', apply(res, 1, paste0, collapse = ' '))
+      res <- gsub('[^0-9 ]', '', apply(res, 1L, paste0, collapse = ' '))
       res <- as.matrix(read.table(text = res, colClasses = 'character'))
       cn <- interleave(cn, rep_len('%', nc))
       if (!pct.total) {
@@ -1563,8 +1563,12 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
                        zeros = TRUE, pct = FALSE, pct.column = FALSE,
                        pct.total = FALSE, pct.sign = TRUE, drop = TRUE) {
   ## helpers
-  rm_p <- function(x) gsub(' \\(.*\\)$', '', x)
-  ord  <- function(...) order(..., decreasing = TRUE)
+  rm_p <- function(x) {
+    gsub(' \\(.*\\)$', '', x)
+  }
+  ord  <- function(...) {
+    order(..., decreasing = TRUE)
+  }
 
   stopifnot(
     length(byvar) == 1L,
@@ -1868,9 +1872,9 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
     nof <- TRUE
 
   dags  <- c('&dagger;', '&Dagger;', '&#94;', '&sect;', 'v')
-  dags1 <- dags[c(1, 3, 2)]
-  dags2 <- dags[c(3, 4, 1)]
-  dags3 <- dags[c(1, 1, 5)]
+  dags1 <- dags[c(1L, 3L, 2L)]
+  dags2 <- dags[c(3L, 4L, 1L)]
+  dags3 <- dags[c(1L, 1L, 5L)]
   fname <- attr(pvn, 'FUN') %||% fun
   attr(fname, 'tnames') <- attr(pvn, 'name')
 
@@ -2687,24 +2691,27 @@ guess_digits <- function(x, default = 0L) {
     dig else default
 }
 
-get_tabler_stat_n <- function(x, pct = TRUE, use_labels = TRUE) {
+get_tabler_stat_n <- function(x, pct = TRUE, use_labels = TRUE,
+                              total = 'Total') {
   fmt <- if (pct)
-    '%s<br /><font weight=normal; size=1>n = %s (%s)</font>' else
-      '%s<br /><font weight=normal; size=1>n = %s</font>'
+    '%s<br /><font weight=normal; size=1>n = %s (%s)</font>'
+  else '%s<br /><font weight=normal; size=1>n = %s</font>'
+  
   x <- as.factor(x)
   l <- if (use_labels)
-    levels(x) else rep_len('Total', nlevels(x))
+    levels(x) else rep_len(total, nlevels(x))
+  
   t <- table(x)
   n <- roundr(c(sum(t), t), 0)
   p <- roundr(prop.table(t) * 100, 0)
-  o <- Vectorize('sprintf')(c('Total', l), n, c('%', p), fmt = fmt)
+  o <- Vectorize('sprintf')(c(total, l), n, c('%', p), fmt = fmt)
 
   drop(o)
 }
 
 #' Response table
 #'
-#' Convenience function to calculate proportions and confidence invervals and
+#' Convenience function to calculate proportions and confidence intervals and
 #' format for easy display.
 #'
 #' @param x a factor variable of responses; responses should be ordered as
@@ -3331,9 +3338,9 @@ inject_ <- function(x, where, what) {
 
 #' Letter case
 #'
-#' Convert a text string to several common types of letter case.
+#' Convert a text string to several common cases.
 #'
-#' This function supports the following letter cases:
+#' This function supports the following:
 #'
 #' \tabular{llllll}{
 #' \tab \code{first} \tab \tab \tab \tab
@@ -3497,8 +3504,7 @@ html_align <- function(x, sep = '&nbsp;', where = '&&', min_width = '35px') {
   ok <- identical(where, '&&')
 
   css <- sprintf(
-    '
-    .charalign {
+    '.charalign {
       text-align: center;
       /* font-size: 5pt; */
     }
