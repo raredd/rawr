@@ -153,6 +153,14 @@ ht <- htmlTable::htmlTable(
 structure(ht, class = 'htmlTable')
 
 
+## survival object (median, 95\% CI, log-rank test)
+library('survival')
+mt <- within(mt, {
+  surv <- Surv(wt, vs)
+})
+tabler_stat(mt, 'surv', 'gear')
+
+
 ## use the tabler_stat2 wrapper for convenience
 tabler_stat2(mt, names(mt)[-10L], 'gear')
 

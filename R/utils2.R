@@ -14,9 +14,9 @@
 #
 # unexported:
 # getPvalCAtest, getPvalCuzick, getPvalJTtest, getPvalKruskal, getPvalKWtest,
-# getPvalTtest, getPval_, guess_test, describeConfint, describeFactors,
-# tabler_stat_list, tabler_stat_html, guess_digits, get_tabler_stat_n, resp1,
-# r_or_better1, inject_
+# getPvalLogrank, getPvalTtest, getPval_, guess_test, describeConfint,
+# describeFactors, describeSurv, tabler_stat_list, tabler_stat_html,
+# guess_digits, get_tabler_stat_n, resp1, r_or_better1, inject_
 ###
 
 
@@ -1743,7 +1743,15 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #'     attr(tbl[[ii]], 'tfoot')), ', '))))
 #' )
 #' structure(ht, class = 'htmlTable')
-#'
+#' 
+#' 
+#' ## survival object (median, 95% CI, log-rank test)
+#' library('survival')
+#' mt <- within(mt, {
+#'   surv <- Surv(wt, vs)
+#' })
+#' tabler_stat(mt, 'surv', 'gear')
+#' 
 #'
 #' ## use the tabler_stat2 wrapper for convenience
 #' tabler_stat2(mt, names(mt)[-10L], 'gear')
@@ -1788,7 +1796,7 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
     as.factor(x) else x
   y <- as.factor(data[, byvar])
   n <- length(unique(na.omit(y)))
-
+  
   oy <- is.ordered(y)
   if (oy & nlevels(y) < 3L) {
     warning(sprintf('%s is ordered has < 3 unique values', shQuote(byvar)))
@@ -1812,6 +1820,8 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
     describeDateBy(x, y, ...)
   } else if (varname %in% confint) {
     describeConfint(x, y, ...)
+  } else if (inherits(x, 'Surv')) {
+    describeSurv(x, y, ...)
   } else {
     Gmisc::getDescriptionStatsBy(
       x, y, digits = digits, html = TRUE, add_total_col = TRUE, ...,
@@ -1921,7 +1931,9 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
       dagger <- names(fname) %||% '&#42;'
     fnames <- setNames(attr(fname, 'tnames'), dagger)
   } else {
-    dagger <- if (isTRUE(dagger))
+    dagger <- if (inherits(x, 'Surv'))
+      '*'
+    else if (isTRUE(dagger))
       names(fnames)[match(fname, fnames, 3L)]
     else if (is.character(dagger))
       dagger else ''
@@ -1950,9 +1962,12 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
         pvn else format_pval(pvn)
     }
 
-  m <- matrix('', nrow(res))
+  m <- matrix('', nrow(res)) 
   m[1L, 1L] <- if (!length(pvc))
     '-' else sprintf('<em>%s</em><sup>%s</sup>', pvc, dagger)
+  
+  if (inherits(x, 'Surv'))
+    fnames <- c(fnames, '*' = 'Log-rank test')
 
   structure(
     cbind(res, m), FUN = unname(fname), p.value = pvn, fnames = fnames,
@@ -1982,6 +1997,11 @@ getPvalKWtest <- function(x, by) {
   kw.test(x, by)$p.value
 }
 
+getPvalLogrank <- function(x, by) {
+  data <- data.frame(x, by)
+  lr_pval(survfit(x ~ by), data = data)
+}
+
 getPvalTtest <- function(x, by) {
   t.test(x ~ by, alternative = 'two.sided')$p.value
 }
@@ -2000,8 +2020,8 @@ getPval_ <- function(x, y, FUN, n_unique_x = 10L) {
     )
 
   sFUN <- tryCatch(
-    match.arg(FUN, c('anova', 'ca', 'chisq', 'cuzick', 'fisher',
-                     'jt', 'kruskal', 'kw', 'ttest', 'wilcoxon')),
+    match.arg(FUN, c('anova', 'ca', 'chisq', 'cuzick', 'fisher', 'jt',
+                     'kruskal', 'kw', 'ttest', 'wilcoxon', 'logrank')),
     error = function(e)
       if (grepl('one of', e$message))
         TRUE else stop(e$message)
@@ -2038,6 +2058,9 @@ getPval_ <- function(x, y, FUN, n_unique_x = 10L) {
         kw       = structure(
           getPvalKWtest(x, y),        FUN = 'kw.test',
           name = 'Chi-squared test for trend in proportions'),
+        logrank  = structure(
+          getPvalLogrank(x, y),       FUN = 'survdiff',
+          name = 'Log-rank test'),
         ttest    = structure(
           getPvalTtest(x, y),         FUN = 't.test',
           name = 'Unpaired T-test'),
@@ -2060,6 +2083,10 @@ guess_test <- function(x, y, n_unique_x = 10L) {
   oy <- is.ordered(y)
   ny <- lunique(y, na.rm = TRUE)
   nx <- lunique(x, na.rm = TRUE)
+  
+  if (inherits(x, 'Surv'))
+    return(structure(getPvalLogrank(x, y), FUN = 'survdiff',
+                     name = 'Log-rank test'))
 
   if (!is.character(x) && !is.factor(x) && nx >= n_unique_x) {
     if (ny > 2L) {
@@ -2194,6 +2221,7 @@ describeConfint <- function(x, y, include_NA = TRUE, percent = TRUE,
                             digits = ifelse(percent, 0L, 2L),
                             add_total_col = TRUE, useNA.digits = 0L,
                             conf = 0.95, frac = TRUE, ...) {
+  # rawr:::describeConfint(mtcars$vs, mtcars$am)
   if (!include_NA) {
     na <- is.na(x) | is.na(y)
     x <- x[!na]
@@ -2229,6 +2257,40 @@ describeFactors <- function(..., useNA, exclude_na_prop = TRUE) {
   }
   
   res[seq.int(nr), , drop = FALSE]
+}
+
+describeSurv <- function(x, y, include_NA = TRUE, percent = TRUE,
+                         digits = ifelse(percent, 0L, 2L),
+                         add_total_col = TRUE, useNA.digits = 0L,
+                         conf = 0.95, conf.type = 'log', show_conf = TRUE,
+                         ...) {
+  # describeSurv(Surv(mtcars$mpg, mtcars$vs), mtcars$gear)
+  s0 <- survfit(x ~ 1, conf.int = conf, conf.type = conf.type)
+  s1 <- survfit(x ~ y, conf.int = conf, conf.type = conf.type)
+  
+  nr <- function(x) {
+    gsub('NA', 'NR', x)
+  }
+  
+  res <- matrix(
+    c(if (add_total_col)
+      surv_median(s0, ci = TRUE, digits = digits, show_conf = FALSE) else NULL,
+      nr(surv_median(s1, ci = TRUE, digits = digits, show_conf = FALSE,
+                     print = FALSE))
+    ),
+    nrow = 1L,
+    dimnames = list(
+      sprintf('Median (%s%% CI)', conf * 100),
+      c(if (add_total_col) 'Total' else NULL, levels(as.factor(y)))
+    )
+  )
+  
+  if (!show_conf) {
+    res <- gsub(' .*', '', res)
+    rownames(res) <- 'Median'
+  }
+  
+  res
 }
 
 #' \code{tabler_stat} wrappers
