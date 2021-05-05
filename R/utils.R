@@ -2791,6 +2791,8 @@ factor2 <- function(x = character(), levels = NULL, exclude = NA,
   key$ind <- as.character(key$ind)
   ext <- setdiff(x, key$values)
   key <- rbind(key, data.frame(values = ext, ind = ext))
+  if (NA %in% exclude)
+    key <- key[!is.na(key$ind), ]
   
   factor(x, key$values, key$ind, exclude = exclude, ordered = ordered)
 }
