@@ -11,15 +11,17 @@ fapply_by(formula, data, ...)
 }
 \arguments{
 \item{data}{for \code{fapply}, a vector, list, or data frame to operate on;
-for \code{fapply_by}, a data frame containing the variables in \code{formula}}
+for \code{fapply_by}, a data frame containing the variables in
+\code{formula}}
 
 \item{...}{summary function(s) such as \code{length(.)} or
-\code{mean(., na.rm = TRUE)} to apply; names are not required but strongly
-recommended}
+\code{mean(., na.rm = TRUE)} to apply; names are not required but
+strongly recommended}
 
-\item{formula}{a formula such as \code{y ~ x} or \code{cbind(y1, y2) ~ x1 + x2}
-where the \code{y} variables are numeric data to be split into groups
-according to the grouping \code{x} variables (usually factors)}
+\item{formula}{a formula such as \code{y ~ x} or
+\code{cbind(y1, y2) ~ x1 + x2} where the \code{y} variables are numeric
+data to be split into groups according to the grouping \code{x} variables,
+usually factors}
 }
 \description{
 \code{fapply} applies summary function(s) over a vector, list, or data

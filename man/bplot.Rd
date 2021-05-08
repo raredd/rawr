@@ -44,11 +44,11 @@ tabler_bincon(
 \code{byvar}}
 
 \item{varname, byvar}{one or more variables in \code{data} to calculate
-binomial confidence intervals by \code{byvar}; the rows variable(s) of
-the table;
+  binomial confidence intervals by \code{byvar}; the rows variable(s) of
+  the table;
 
-note that \code{varname} variables should be factor-like, and \code{byvar}
-should be binary}
+  note that \code{varname} variables should be factor-like, and \code{byvar}
+  should be binary}
 
 \item{varname_label, byvar_label}{optional labels for each \code{varname}
 and \code{byvar}}

@@ -34,10 +34,10 @@ pplot(x, ...)
 length 2 of data values}
 
 \item{...}{for the \code{formula} method, named arguments to be passed to
-the default method
+  the default method
 
-for the default method, additional arguments passed to \code{\link{tplot}}
-or graphical parameters passed to \code{\link{par}}}
+  for the default method, additional arguments passed to \code{\link{tplot}}
+  or graphical parameters passed to \code{\link{par}}}
 
 \item{formula}{a \code{\link{formula}}, such as \code{y ~ group1 + group2},
 where y is a numeric vector of data values to be split into n groups
@@ -51,12 +51,12 @@ where y is a numeric vector of data values to be split into n groups
 \item{pad}{the padding between \code{at} for each group and the points}
 
 \item{test}{logical or function; if \code{TRUE}, a \code{\link{wilcox.test}}
-p-value is added for each group
+  p-value is added for each group
 
-alternatively, a function (or function name as a character string) can be
-used, e.g., \code{test = t.test} or \code{function(x, y)
-t.test(x, y)}; note that if \code{test} is a function, it must have
-at least two arguments with the two groups of data; see examples}
+  alternatively, a function (or function name as a character string) can be
+  used, e.g., \code{test = t.test} or \code{function(x, y)
+  t.test(x, y)}; note that if \code{test} is a function, it must have
+  at least two arguments with the two groups of data; see examples}
 
 \item{args.test}{a \emph{named} list of arguments passed to \code{test}}
 

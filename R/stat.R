@@ -75,23 +75,23 @@
 #' \code{R/(N^dp) <= r/(n^dp)}.
 #' 
 #' @param r number of responses (successes); if \code{method = 'two-stage'},
-#' a vector of length two giving the max number of responses that can be
-#' observed in the first stage without continuing and the total number of
-#' responses observed
+#'   a vector of length two giving the max number of responses that can be
+#'   observed in the first stage without continuing and the total number of
+#'   responses observed
 #' @param n number of observations (trials); if \code{method = 'two-stage'},
-#' a vector of length two giving the number of cases entered during the first
-#' stage and the number of additional cases to be entered during the second
-#' stage
+#'   a vector of length two giving the number of cases entered during the first
+#'   stage and the number of additional cases to be entered during the second
+#'   stage
 #' @param alpha type-I error probability
 #' @param digits integer value specifying number of decimal places
 #' @param method character strings specifying which method to use; can be
-#' (unambiguously) abbreviated; see details
+#'   (unambiguously) abbreviated; see details
 #' @param dp numeric value affecting the ordering of sample space in two-stage
-#' designs when \code{method = "two-stage"}
+#'   designs when \code{method = "two-stage"}
 #' 
-#' \code{dp = 0} will give the Atkinson and Brown procedure, and \code{dp = 1}
-#' (default) will order based on MLE; values such as \code{dp = 0.5} can
-#' also be used; see details
+#'   \code{dp = 0} will give the Atkinson and Brown procedure, and
+#'   \code{dp = 1} (default) will order based on MLE; values such as
+#'   \code{dp = 0.5} can also be used; see details
 #' 
 #' @return
 #' A matrix containing the computed interval(s) and their widths.
@@ -100,16 +100,20 @@
 #' Rollin Brant, Frank Harrell, and Brad Biggerstaff; modifications by Robert
 #' Redd including support for two-stage designs
 #' 
-#' @references Agresti, A. and B.A. Coull. Approximate is better than "exact"
-#' for interval extimation of binomial proportions. \emph{American
-#' Statistician}. \strong{59}:119-126, 1998.
-#' @references Brown, L.D., T.T. Cai, and A. Das Gupta. Inverval estimation
-#' for a binomial proportion (with discussion). \emph{Statistical Science}. 
+#' @references
+#' Agresti, A. and B.A. Coull. Approximate is better than "exact" for interval
+#' estimation of binomial proportions. \emph{American Statistician}.
+#' \strong{59}:119-126, 1998.
+#' 
+#' Brown, L.D., T.T. Cai, and A. Das Gupta. Inverval estimation for a binomial
+#' proportion (with discussion). \emph{Statistical Science}.
 #' \strong{16}:101-133, 2001.
-#' @references Newcombe, R.G. Logit confidence intervals and the inverse sinh
+#' 
+#' Newcombe, R.G. Logit confidence intervals and the inverse sinh
 #' transformation, \emph{American Statistician}. \strong{55}:200-2, 2001.
-#' @references Atkinson E.N. and B.W. Brown. \emph{Biometrics}.
-#' \strong{41(3)}: 741-4, 1985.
+#' 
+#' Atkinson E.N. and B.W. Brown. \emph{Biometrics}. \strong{41(3)}: 741-4,
+#' 1985.
 #' 
 #' @seealso
 #' \code{\link{binconr}}; \code{\link[Hmisc]{binconf}};
@@ -239,8 +243,8 @@ bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
 #' @param p1low,p1high low and high values for p1
 #' @param n.max maximum sample size allowed (or feasible)
 #' @param r cut-off value for responses expected; usually best to leave
-#' \code{r = n.max} (default); useful if the maximum number of responses that
-#' may occur is known
+#'   \code{r = n.max} (default); useful if the maximum number of responses
+#'   that may occur is known
 #' @param alpha,beta type-I and type-II errors
 #' 
 #' @return
@@ -257,9 +261,9 @@ bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
 #' \item{\code{$description}}{help text for \code{$designs}}
 #' 
 #' @references Khan, Sarker, Hackshaw. Smaller sample sizes for phase II trials
-#' based on exact tests with actual error rates by trading-off their nominal
-#' levels of significance and power. \emph{British J of Cancer} (2012) 107,
-#' 1801-9.
+#'   based on exact tests with actual error rates by trading-off their nominal
+#'   levels of significance and power. \emph{British J of Cancer} (2012) 107,
+#'   1801-9.
 #' 
 #' @seealso
 #' \code{\link[clinfun]{ph2single}}; \code{\link[desmon]{bin1samp}}; bintest,
@@ -341,15 +345,15 @@ bintest <- function(p0low, p1low, p0high = p0low, p1high = p1low, n.max,
 #' 
 #' @param prob a vector of probabilities
 #' @param digits number of digits past the decimal point to keep; if
-#' \code{NULL}, then no rounding is done
+#'   \code{NULL}, then no rounding is done
 #' @param n,crit sample size and critical number of events, respectively; note
-#' that the probabilities will always be calculated as weakly less or greater
-#' than \code{crit}, i.e., \code{Pr(>= crit)} or \code{Pr(<= crit)} depending
-#' if \code{greater} is \code{TRUE} or \code{FALSE}
+#'   that the probabilities will always be calculated as weakly less or greater
+#'   than \code{crit}, i.e., \code{Pr(>= crit)} or \code{Pr(<= crit)} depending
+#'   if \code{greater} is \code{TRUE} or \code{FALSE}
 #' @param greater logical; the direction of \code{crit}: if \code{FALSE},
-#' the probabilities are calculated for \code{crit} \emph{or fewer} events;
-#' if \code{TRUE}, the probabilities are calculated for \code{crit} \emph{or
-#' greater} events
+#'   the probabilities are calculated for \code{crit} \emph{or fewer} events;
+#'   if \code{TRUE}, the probabilities are calculated for \code{crit}
+#'   \emph{or greater} events
 #' 
 #' @examples
 #' prob <- c(1, 5, 1:5 * 10) / 100
@@ -430,9 +434,9 @@ pr_table <- function(prob, n, crit, greater = FALSE, digits = NULL) {
 #' 
 #' @param X a list of two or more numeric vectors
 #' @param exact logical; if \code{TRUE} (default), uses Fisher's exact test
-#' and Pearson's chi-squared test otherwise
+#'   and Pearson's chi-squared test otherwise
 #' @param ... additional parameters passed to \code{\link{fisher.test}} or
-#' \code{\link{chisq.test}}
+#'   \code{\link{chisq.test}}
 #' 
 #' @seealso
 #' \code{\link{mood.test}}; \code{\link{fisher.test}};
@@ -491,29 +495,29 @@ moods.test <- function(X, ..., exact = TRUE) {
 #' the \pkg{\link[coin]{coin}} package will work; see examples.
 #' 
 #' @param x a numeric vector of data values or a list of numeric data vectors;
-#' non-numeric elements of a list will be coerced with a warning; if \code{x}
-#' is a list, the list elements are assumed to be groups ordered as
-#' \code{x[[1]], x[[2]], ..., x[[n]]}
+#'   non-numeric elements of a list will be coerced with a warning; if \code{x}
+#'   is a list, the list elements are assumed to be groups ordered as
+#'   \code{x[[1]], x[[2]], ..., x[[n]]}
 #' @param ... additional arguments passed to the function given by
-#' \code{details}
+#'   \code{details}
 #' @param g a vector or factor object giving the group for the corresponding
-#' elements of \code{x}, ignored with a warning if \code{x} is a list; if
-#' \code{g} is \emph{not} a factor, it will be coerced, and groups will be
-#' ordered as \code{sort(unique(g))}; see \code{\link{factor}}
+#'   elements of \code{x}, ignored with a warning if \code{x} is a list; if
+#'   \code{g} is \emph{not} a factor, it will be coerced, and groups will be
+#'   ordered as \code{sort(unique(g))}; see \code{\link{factor}}
 #' @param details \code{FALSE} or a function to compute comparisons between
-#' pairs of groups; see details
+#'   pairs of groups; see details
 #' @param correct logical; if \code{TRUE}, a correction is applied to the
-#' standard error of the test statistic (default)
+#'   standard error of the test statistic (default)
 #' @param formula a formula of the form \code{response ~ group} where
-#' \code{response} is a numeric variable and \code{group} is a factor-like
-#' variable with three or more unique values (groups)
+#'   \code{response} is a numeric variable and \code{group} is a factor-like
+#'   variable with three or more unique values (groups)
 #' @param data an optional matrix or data frame (or similar: see
-#' \code{\link{model.frame}}) containing the variables in \code{formula}; by
-#' default, the variables are taken from \code{environment(formula)}
+#'   \code{\link{model.frame}}) containing the variables in \code{formula}; by
+#'   default, the variables are taken from \code{environment(formula)}
 #' @param simulate.p.value logical; if \code{TRUE}, p-value is computed using
-#' by Monte Carlo simulation
+#'   by Monte Carlo simulation
 #' @param B an integer specifying the number of replicates used in the Monte
-#' Carlo test
+#'   Carlo test
 #' 
 #' @return
 #' A list with class "\code{htest}" containing the following elements:
@@ -856,7 +860,7 @@ cuzick.test.pvalue <- function(x, g, correct, B = 2000L,
 #' samples.
 #' 
 #' @param x either a two-dimensional contingency table in matrix form or a
-#' factor object
+#'   factor object
 #' @param y a factor object; ignored if x is a matrix
 #' 
 #' @return
@@ -1001,9 +1005,9 @@ jt.test.stat <- function(x, y) {
 #' @param node an integer representing the node number
 #' @param tree an object returned from \code{rpart}
 #' @param node_labels a vector of labels having the same length as the number
-#' of terminal nodes or total nodes
+#'   of terminal nodes or total nodes
 #' @param droplevels logical; if \code{TRUE}, only node labels with at least
-#' one observation are used (i.e., only terminal node labels are used)
+#'   one observation are used (i.e., only terminal node labels are used)
 #' 
 #' @return
 #' \code{rpart_parent} returns a vector representing the path from the root to
@@ -1133,29 +1137,29 @@ rpart_nodes <- function(tree, node_labels = FALSE, droplevels = TRUE) {
 #' one nominal (rows, r > 2) and one ordinal (columns, c > 2) variable.
 #' 
 #' @param x a factor-like vector giving the (unordered) variable (equivalently
-#' the row variable of a contingency table); if \code{x} is also ordered,
-#' consider using \code{\link{jt.test}}
+#'   the row variable of a contingency table); if \code{x} is also ordered,
+#'   consider using \code{\link{jt.test}}
 #' 
-#' alternatively, \code{x} can be an \code{r x c} table or matrix with at
-#' least two rows (unordered) and three columns (ordered); \code{x} may also
-#' be a list of the row variable split by the ordered column variable in
-#' which case the list is assumed to be ordered, i.e., \code{x[[1]]} <
-#' \code{x[[2]] < ... < x[[c]]}; see examples
+#'   alternatively, \code{x} can be an \code{r x c} table or matrix with at
+#'   least two rows (unordered) and three columns (ordered); \code{x} may also
+#'   be a list of the row variable split by the ordered column variable in
+#'   which case the list is assumed to be ordered, i.e., \code{x[[1]]} <
+#'   \code{x[[2]] < ... < x[[c]]}; see examples
 #' @param ... further arguments to be passed to or from methods
 #' @param g a factor-like vector giving the \emph{ordered} group for each
-#' corresponding element of \code{x}, ignored with a warning if \code{x} is a
-#' list or table; if \code{g} is not a factor, it will be coerced, and groups
-#' will be ordered as sort(unique(g)); see \code{\link{factor}}
+#'   corresponding element of \code{x}, ignored with a warning if \code{x} is
+#'   a list or table; if \code{g} is not a factor, it will be coerced, and
+#'   groups will be ordered as sort(unique(g)); see \code{\link{factor}}
 #' @param simulate.p.value logical; if \code{TRUE}, p-value is computed using
-#' by Monte Carlo simulation
+#'   by Monte Carlo simulation
 #' @param B an integer specifying the number of replicates used in the Monte
-#' Carlo test
+#'   Carlo test
 #' @param formula a formula of the form \code{row ~ column} where \code{row}
-#' gives the (unordered) row variable and \code{column} gives the
-#' \emph{ordered} column variable
+#'   gives the (unordered) row variable and \code{column} gives the
+#'   \emph{ordered} column variable
 #' @param data an optional matrix or data frame (or similar: see
-#' \code{\link{model.frame}}) containing the variables in \code{formula}; by
-#' default the variables are taken from \code{environment(formula)}
+#'   \code{\link{model.frame}}) containing the variables in \code{formula};
+#'   by default the variables are taken from \code{environment(formula)}
 #' 
 #' @return
 #' A list with class "\code{htest}" containing the following elements:
@@ -1358,29 +1362,29 @@ sim.test.pvalue <- function(x, g, FUN, ordered = FALSE, B = 2000L,
 #' column (c > 2) variable.
 #' 
 #' @param x a factor-like vector giving the (unordered) variable (equivalently
-#' the row variable of a contingency table)
+#'   the row variable of a contingency table)
 #' 
-#' alternatively, \code{x} can be a \code{2 x c} table or matrix with exactly
-#' two rows and at least three ordered columns; \code{x} may also be a list
-#' of the row variable split by the ordered column variable in which case the
-#' list is assumed to be ordered, i.e., \code{x[[1]] < x[[2]] < ... < x[[c]]};
-#' see examples
+#'   alternatively, \code{x} can be a \code{2 x c} table or matrix with
+#'   exactly two rows and at least three ordered columns; \code{x} may also
+#'   be a list of the row variable split by the ordered column variable in
+#'   which case the list is assumed to be ordered, i.e.,
+#'   \code{x[[1]] < x[[2]] < ... < x[[c]]}; see examples
 #' @param ... further arguments to be passed to or from methods
 #' @param g a factor-like vector giving the \emph{ordered} group for each
-#' corresponding element of \code{x}, ignored with a warning if \code{x} is a
-#' list or table; if \code{g} is not a factor, it will be coerced, and groups
-#' will be ordered as sort(unique(g)); see \code{\link{factor}}
+#'   corresponding element of \code{x}, ignored with a warning if \code{x} is
+#'   a list or table; if \code{g} is not a factor, it will be coerced, and
+#'   groups will be ordered as sort(unique(g)); see \code{\link{factor}}
 #' @param score group score for each column, default is \code{1:ncol}
 #' @param simulate.p.value logical; if \code{TRUE}, p-value is computed using
-#' by Monte Carlo simulation
+#'   by Monte Carlo simulation
 #' @param B an integer specifying the number of replicates used in the Monte
-#' Carlo test
+#'   Carlo test
 #' @param formula a formula of the form \code{row ~ column} where \code{row}
-#' gives the row variable having two unique values and \code{column} gives
-#' the \emph{ordered} column variable
+#'   gives the row variable having two unique values and \code{column} gives
+#'   the \emph{ordered} column variable
 #' @param data an optional matrix or data frame (or similar: see
-#' \code{\link{model.frame}}) containing the variables in \code{formula}; by
-#' default the variables are taken from \code{environment(formula)}
+#'   \code{\link{model.frame}}) containing the variables in \code{formula};
+#'   by default the variables are taken from \code{environment(formula)}
 #' 
 #' @return
 #' A list with class "\code{htest}" containing the following elements:
@@ -1543,9 +1547,9 @@ ca.test.formula <- function (formula, data, ...) {
 #' @param col a vector of colors for each spline
 #' @param which an integer vector specifying the plot(s); see details
 #' @param ... additional arguments passed to \code{\link{plot.default}} or
-#' further to \code{\link{par}}
+#'   further to \code{\link{par}}
 #' @param type character indicating the type of plotting; see
-#' \code{\link{plot.default}}
+#'   \code{\link{plot.default}}
 #' 
 #' @return
 #' \code{lspline} returns an \code{\link{lm}} object with class
@@ -1673,26 +1677,26 @@ lines.lspline <- function(x, y = NULL, type = 'l', col = NULL, ...) {
 #' 
 #' @param x,y vectors of numeric data
 #' @param alternative a character string specifying the alternative hypothesis,
-#' one of \code{"two.sided"} (default), \code{"greater"}, or \code{"less"}
+#'   one of \code{"two.sided"} (default), \code{"greater"}, or \code{"less"}
 #' @param paired logical; if \code{TRUE}, \code{x} and \code{y} are assumed
-#' to be paired (\code{NA}s will remove data in pairs); if \code{FALSE},
-#' \code{x} and \code{y} are assumed to be independent samples (\code{NA}s
-#' are removed from each sample independently)
+#'   to be paired (\code{NA}s will remove data in pairs); if \code{FALSE},
+#'   \code{x} and \code{y} are assumed to be independent samples (\code{NA}s
+#'   are removed from each sample independently)
 #' @param var.equal logical; if \code{TRUE}, two-sample variances are treated
-#' equally; otherwise, variances are estimated separately for both samples
-#' (default)
+#'   equally; otherwise, variances are estimated separately for both samples
+#'   (default)
 #' @param conf.level confidence level in \code{(0, 1)} for the p-value
 #' @param midp logical; if \code{TRUE} (default), the mid p-value is used,
-#' i.e., half the conditional probability of the observed statistic plus the
-#' conditional probability of more extreme values
+#'   i.e., half the conditional probability of the observed statistic plus the
+#'   conditional probability of more extreme values
 #' @param B an integer specifying the number of permutations
 #' @param ... additional arguments passed to or from methods
-#' @param formula a formula of the form \code{lhs ~ rhs} where \code{lhs} is a
-#' numeric variable giving the data values and \code{rhs} a factor-like
-#' variable with two levels giving the corresponding groups
+#' @param formula a formula of the form \code{lhs ~ rhs} where \code{lhs} is
+#'   a numeric variable giving the data values and \code{rhs} a factor-like
+#'   variable with two levels giving the corresponding groups
 #' @param data an optional matrix or data frame (or similar: see
-#' \code{\link{model.frame}}) containing the variables in \code{formula}; by
-#' default the variables are taken from \code{environment(formula)}
+#'   \code{\link{model.frame}}) containing the variables in \code{formula};
+#'   by default the variables are taken from \code{environment(formula)}
 #' 
 #' @seealso
 #' \code{\link{t.test}}
@@ -1843,20 +1847,21 @@ perm.t.test.formula <- function(formula, data, ...) {
 #' 
 #' @param formula,data see \code{\link[randomForestSRC]{rfsrc}}
 #' @param nvar number of variables desired in final model (if positive) or
-#' the number of variables to drop (if negative)
+#'   the number of variables to drop (if negative)
 #' @param depth logical or a numeric value (if \code{NULL}, variables will
-#' be selected via \code{nvar}); if \code{TRUE}, variables will be selected
-#' using first-order depths and the \code{threshold} value returned by
-#' \code{\link[randomForestSRC]{max.subtree}}; alternatively, a numeric
-#' value to be used as the threshold
+#'   be selected via \code{nvar}); if \code{TRUE}, variables will be selected
+#'   using first-order depths and the \code{threshold} value returned by
+#'   \code{\link[randomForestSRC]{max.subtree}}; alternatively, a numeric
+#'   value to be used as the threshold
 #' @param verbose,plot logical; if \code{TRUE}, an updated \code{formula}
-#' and/or variable importance figures are printed after each step
+#'   and/or variable importance figures are printed after each step
 #' @param refit logical; if \code{TRUE} (default), model is re-fit after each
-#' variable is dropped; otherwise, all variables to be dropped will be done
-#' in one step which could give significant performance gains for some models
-#' such as survival models (note the final model may be different than if
-#' \code{refit = TRUE})
-#' @param ... additional parameters passed to \code{\link[randomForestSRC]{rfsrc}}
+#'   variable is dropped; otherwise, all variables to be dropped will be done
+#'   in one step which could give significant performance gains for some models
+#'   such as survival models (note the final model may be different than if
+#'   \code{refit = TRUE})
+#' @param ... additional parameters passed to
+#'   \code{\link[randomForestSRC]{rfsrc}}
 #' 
 #' @return
 #' The \code{formula} of the final model.
@@ -1940,12 +1945,12 @@ rfvar <- function(formula, data, nvar = -1L, depth = NULL,
 #' 
 #' @param n sample size of study or each stratum
 #' @param block block size; note if \code{block} is not a factor of \code{n},
-#' \code{n} will be increased to accommodate a full block
+#'   \code{n} will be increased to accommodate a full block
 #' @param arms names of the treatment arms
 #' @param r randomization ratio; see examples
 #' @param strata an optional named list of vectors for each stratum
 #' @param write a file path to write a directory with csv files for each
-#' randomization table
+#'   randomization table
 #' 
 #' @examples
 #' ## no strata, 2-3 treatments with varying randomization ratios
@@ -2041,12 +2046,12 @@ ransch_ <- function(n, block, arms, r) {
 #' trial.
 #' 
 #' @param r,r1 total observed responses and maximum number of responses in
-#' first stage to declare treatment inactive
+#'   first stage to declare treatment inactive
 #' @param n1,n2 sample size of the first and second stage
 #' @param p0 (optional) null hypothesis
 #' @param conf confidence level
 #' @param dp affects the ordering of outcomes within the sample space, see
-#' \code{\link[desmon]{twocon}}
+#'   \code{\link[desmon]{twocon}}
 #' 
 #' @seealso
 #' \code{\link[desmon]{twocon}}; \code{\link[clinfun]{twostage.inference}}
@@ -2151,9 +2156,9 @@ twostage.inference <- function(x, r1, n1, n, pu, alpha = 0.05) {
 #' @param alpha type I error probability
 #' @param two.sided logical; if \code{TRUE}, a two-sided \code{alpha} is used
 #' @param method the method used to calculate the standard deviation, one of
-#' \code{"bonett"} or \code{"fieller"} (can be (unambiguously) abbreviated)
+#'   \code{"bonett"} or \code{"fieller"} (can be (unambiguously) abbreviated)
 #' @param tol numerical tolerance used in root finding, the default providing
-#' (at least) four significant digits
+#'   (at least) four significant digits
 #' 
 #' @references
 #' \url{https://www.researchgate.net/profile/Douglas_Bonett/publication/279926406_Sample_size_requirements_for_estimating_Pearson_Kendall_and_Spearman_correlations/links/575de23908aed88462166f2e/Sample-size-requirements-for-estimating-Pearson-Kendall-and-Spearman-correlations.pdf}

@@ -32,11 +32,11 @@ stage}
 (unambiguously) abbreviated; see details}
 
 \item{dp}{numeric value affecting the ordering of sample space in two-stage
-designs when \code{method = "two-stage"}
+  designs when \code{method = "two-stage"}
 
-\code{dp = 0} will give the Atkinson and Brown procedure, and \code{dp = 1}
-(default) will order based on MLE; values such as \code{dp = 0.5} can
-also be used; see details}
+  \code{dp = 0} will give the Atkinson and Brown procedure, and
+  \code{dp = 1} (default) will order based on MLE; values such as
+  \code{dp = 0.5} can also be used; see details}
 }
 \value{
 A matrix containing the computed interval(s) and their widths.
@@ -114,19 +114,19 @@ rawr:::twocon(14, 18, 3, 4, dp = 1)
 
 }
 \references{
-Agresti, A. and B.A. Coull. Approximate is better than "exact"
-for interval extimation of binomial proportions. \emph{American
-Statistician}. \strong{59}:119-126, 1998.
+Agresti, A. and B.A. Coull. Approximate is better than "exact" for interval
+estimation of binomial proportions. \emph{American Statistician}.
+\strong{59}:119-126, 1998.
 
-Brown, L.D., T.T. Cai, and A. Das Gupta. Inverval estimation
-for a binomial proportion (with discussion). \emph{Statistical Science}. 
+Brown, L.D., T.T. Cai, and A. Das Gupta. Inverval estimation for a binomial
+proportion (with discussion). \emph{Statistical Science}.
 \strong{16}:101-133, 2001.
 
 Newcombe, R.G. Logit confidence intervals and the inverse sinh
 transformation, \emph{American Statistician}. \strong{55}:200-2, 2001.
 
-Atkinson E.N. and B.W. Brown. \emph{Biometrics}.
-\strong{41(3)}: 741-4, 1985.
+Atkinson E.N. and B.W. Brown. \emph{Biometrics}. \strong{41(3)}: 741-4,
+1985.
 }
 \seealso{
 \code{\link{binconr}}; \code{\link[Hmisc]{binconf}};

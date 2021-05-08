@@ -47,13 +47,13 @@ conditional probability of more extreme values}
 
 \item{B}{an integer specifying the number of permutations}
 
-\item{formula}{a formula of the form \code{lhs ~ rhs} where \code{lhs} is a
-numeric variable giving the data values and \code{rhs} a factor-like
+\item{formula}{a formula of the form \code{lhs ~ rhs} where \code{lhs} is
+a numeric variable giving the data values and \code{rhs} a factor-like
 variable with two levels giving the corresponding groups}
 
 \item{data}{an optional matrix or data frame (or similar: see
-\code{\link{model.frame}}) containing the variables in \code{formula}; by
-default the variables are taken from \code{environment(formula)}}
+\code{\link{model.frame}}) containing the variables in \code{formula};
+by default the variables are taken from \code{environment(formula)}}
 }
 \description{
 Performs paired and two-sample t-tests based on Monte Carlo permutation.

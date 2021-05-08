@@ -17,13 +17,13 @@ factor2(
 \item{x}{a vector of data, usually taking a small number of distinct values}
 
 \item{levels}{a \emph{named} list of unique values or regular expressions
-to group elements of \code{x}
+  to group elements of \code{x}
 
-a \code{NULL} group will collapse all non matches to a single category;
-however, if there is no \code{NULL} group, non matches will be unchanged
+  a \code{NULL} group will collapse all non matches to a single category;
+  however, if there is no \code{NULL} group, non matches will be unchanged
 
-if \code{regex = TRUE} or flagged with \code{(?r)}, matching elements of
-\code{x} will be combined}
+  if \code{regex = TRUE} or flagged with \code{(?r)}, matching elements of
+  \code{x} will be combined}
 
 \item{exclude, ordered}{passed to \code{\link{factor}}}
 

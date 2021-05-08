@@ -27,24 +27,24 @@ combine_regex(
 \item{x}{a vector}
 
 \item{levels}{for \code{combine_levels}, a vector of unique values of
-\code{x} to combine; to combine values into multiple groups, use a list
+  \code{x} to combine; to combine values into multiple groups, use a list
 
-for \code{combine_regex} (or \code{combine_labels(..., regex = TRUE)}),
-a vector of regular expressions; if a list is given, each list element
-will be collapsed with an "or" statement and treated as single expressions
+  for \code{combine_regex} (or \code{combine_labels(..., regex = TRUE)}),
+  a vector of regular expressions; if a list is given, each list element
+  will be collapsed with an "or" statement and treated as single expressions
 
-for values of \code{x} which match none of \code{levels} and if
-\code{keep.original = FALSE}, a \emph{named} \code{NULL} list element can
-group these values; otherwise, the smallest unused integer is used; see
-examples}
+  for values of \code{x} which match none of \code{levels} and if
+  \code{keep.original = FALSE}, a \emph{named} \code{NULL} list element can
+  group these values; otherwise, the smallest unused integer is used; see
+  examples}
 
 \item{labels}{for \code{combine_levels}, a vector of new labels; if
-\code{levels} is a vector, \code{labels} should be length 1; if
-\code{levels} is a list, \code{labels} (need not be a list but) should
-have one value for each list element of \code{levels}
+  \code{levels} is a vector, \code{labels} should be length 1; if
+  \code{levels} is a list, \code{labels} (need not be a list but) should
+  have one value for each list element of \code{levels}
 
-for \code{combine_regex}, if \code{keep.original = FALSE}, one additional
-label should be given for values that do not match any of \code{levels}}
+  for \code{combine_regex}, if \code{keep.original = FALSE}, one additional
+  label should be given for values that do not match any of \code{levels}}
 
 \item{ordered}{logical; if \code{TRUE}, returns an ordered factor}
 

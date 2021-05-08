@@ -19,21 +19,20 @@ col_scaler(
 \item{x}{a numeric or integer vector}
 
 \item{colors}{a vector of color names as character strings (or
-hexadecimal strings) or integers corresponding to colors in the current
-\code{\link{palette}}; or a function taking an integer argument that
-returns a vector of colors (e.g., \code{\link{colorRampPalette}} or
-\code{\link{rainbow}})
+  hexadecimal strings) or integers corresponding to colors in the current
+  \code{\link{palette}}; or a function taking an integer argument that
+  returns a vector of colors (e.g., \code{\link{colorRampPalette}} or
+  \code{\link{rainbow}})
 
-if only one color is given, the scaled value of \code{x} will determine
-the amount of transparency (default is from 0, fully-transparent to 1-
-fully opaque)}
+  if only one color is given, the scaled value of \code{x} will determine
+  the amount of transparency; default is from 0 (transparent) to 1 (opaque)}
 
 \item{na.color}{color used for \code{NA} values of \code{x}}
 
 \item{breaks}{(optional) numeric vector to center interpolation; if
-\code{NULL} (default), \code{colors} are uniformly spread over a continuous
-\code{x}; useful if \code{colors} should be centered at a specific value
-of \code{x}; see examples}
+\code{NULL} (default), \code{colors} are uniformly spread over a
+continuous \code{x}; useful if \code{colors} should be centered at a
+specific value of \code{x}; see examples}
 
 \item{alpha}{transparency applied to interpolated colors (i.e., if
 \code{colors} is not a single color)}

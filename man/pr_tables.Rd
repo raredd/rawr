@@ -23,8 +23,8 @@ if \code{greater} is \code{TRUE} or \code{FALSE}}
 
 \item{greater}{logical; the direction of \code{crit}: if \code{FALSE},
 the probabilities are calculated for \code{crit} \emph{or fewer} events;
-if \code{TRUE}, the probabilities are calculated for \code{crit} \emph{or
-greater} events}
+if \code{TRUE}, the probabilities are calculated for \code{crit}
+\emph{or greater} events}
 }
 \description{
 Functions to generate standard 3+3 or generalized probability tables.

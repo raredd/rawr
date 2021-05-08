@@ -16,8 +16,8 @@ rleid2(x, na.rm = FALSE, ignore.na = FALSE)
 \code{NA}s are kept in-place}
 
 \item{ignore.na}{for \code{rleid2}, logical; if \code{FALSE} (default),
-\code{NA}s are treated as a distinct group; if \code{TRUE}, \code{NA}s are
-ignored and will not separate runs, e.g., \code{1, 1, NA, 1} would be
+\code{NA}s are treated as a distinct group; if \code{TRUE}, \code{NA}s
+are ignored and will not separate runs, e.g., \code{1, 1, NA, 1} would be
 treated as a single run}
 }
 \value{

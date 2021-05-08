@@ -36,7 +36,8 @@ in one step which could give significant performance gains for some models
 such as survival models (note the final model may be different than if
 \code{refit = TRUE})}
 
-\item{...}{additional parameters passed to \code{\link[randomForestSRC]{rfsrc}}}
+\item{...}{additional parameters passed to
+\code{\link[randomForestSRC]{rfsrc}}}
 }
 \value{
 The \code{formula} of the final model.

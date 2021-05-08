@@ -20,24 +20,24 @@
 #' 
 #' @param x a numeric vector or a single list containing such vectors
 #' @param g a vector or factor object giving the group for the corresponding
-#' elements of \code{x}, ignored with a warning if \code{x} is a list
+#'   elements of \code{x}, ignored with a warning if \code{x} is a list
 #' @param ... for the \code{formula} method, named arguments to be passed to
-#' the default method
+#'   the default method
 #' 
-#' for the default method, graphical parameters passed to \code{\link{par}}
+#'   for the default method, graphical parameters passed to \code{\link{par}}
 #' @param formula a \code{\link{formula}}, such as \code{y ~ grp}, where y is
-#' a numeric vector of data values to be split into groups according to the
-#' grouping variable \code{grp} (usually a factor)
+#'   a numeric vector of data values to be split into groups according to the
+#'   grouping variable \code{grp} (usually a factor)
 #' @param data a data frame (or list) from which the variables in
-#' \code{formula} should be taken
+#'   \code{formula} should be taken
 #' @param subset an optional vector specifying a subset of observations to be
-#' used for plotting
+#'   used for plotting
 #' @param na.action a function which indicates what should happen when the data
-#' contain \code{\link{NA}}s; the default is to ignore missing values in either
-#' the response or the group
+#'   contain \code{\link{NA}}s; the default is to ignore missing values in either
+#'   the response or the group
 #' @param type type of plot (\code{"d"} for dot, \code{"db"} for dot-box,
-#' \code{"bd"} for box-dot, or \code{"b"} box; \code{"v"} may be used instead
-#' of \code{"b"} for a violin plot); see examples for all options
+#'   \code{"bd"} for box-dot, or \code{"b"} box; \code{"v"} may be used instead
+#'   of \code{"b"} for a violin plot); see examples for all options
 #' @param main,sub overall title and sub-title (below x-axis) for the plot
 #' @param xlab,ylab x- and y-axis labels
 #' @param xlim,ylim x- and y-axis limits
@@ -48,71 +48,71 @@
 #' @param horizontal logical; flip axes
 #' @param jit,dist,dist.n jitter parameters for overlapping points (use
 #' \code{0} for no jitter (i.e., points may overlap) and values > 0 for more
-#' distance between points); both can be length 1 (recycled as needed for
-#' groups) or equal to the number of groups (useful if one group has more
-#' points and needs more jittering than other groups)
+#'   distance between points); both can be length 1 (recycled as needed for
+#'   groups) or equal to the number of groups (useful if one group has more
+#'   points and needs more jittering than other groups)
 #' 
-#' \code{jit} controls the amount of spread in a group of neighboring points,
-#' and \code{dist} controls the size of the interval to group neighboring
-#' points, i.e., a group of sequential points that are no more than
-#' \code{dist} apart are considered neighbors and will be jittered
+#'   \code{jit} controls the amount of spread in a group of neighboring points,
+#'   and \code{dist} controls the size of the interval to group neighboring
+#'   points, i.e., a group of sequential points that are no more than
+#'   \code{dist} apart are considered neighbors and will be jittered
 #' 
-#' \code{dist.n} is the maximum number of points allowed in each group of
-#' neighboring points, useful for limiting the spread of points
+#'   \code{dist.n} is the maximum number of points allowed in each group of
+#'   neighboring points, useful for limiting the spread of points
 #' @param args.beeswarm logical or a \emph{named} list of arguments passed to
-#' \code{\link[beeswarm]{beeswarm}}; if \code{NULL} (default) or \code{FALSE},
-#' \code{beeswarm} is not used; if \code{TRUE}, \code{beeswarm} is used with
-#' pre-set defaults (i.e., \code{method = 'center'} and \code{horizontal} to
-#' match the \code{tplot} setting); passing a list of arguments will add or
-#' override arguments except that \code{tplot} \emph{will not} adjust data
-#' values as \code{beeswarm} methods may
+#'   \code{\link[beeswarm]{beeswarm}}; if \code{NULL} (default) or \code{FALSE},
+#'   \code{beeswarm} is not used; if \code{TRUE}, \code{beeswarm} is used with
+#'   pre-set defaults (i.e., \code{method = 'center'} and \code{horizontal} to
+#'   match the \code{tplot} setting); passing a list of arguments will add or
+#'   override arguments except that \code{tplot} \emph{will not} adjust data
+#'   values as \code{beeswarm} methods may
 #' @param boxplot.pars additional list of graphical parameters for box plots
-#' (or violin plots)
+#'   (or violin plots)
 #' @param quantiles for violin plots, probabilities for quantile lines (as an
-#' alternative to box plots); note \code{lwd}/\code{lty} may be passed to
-#' control the quantile lines
+#'   alternative to box plots); note \code{lwd}/\code{lty} may be passed to
+#'   control the quantile lines
 #' @param col plotting color
 #' @param group.col logical; if \code{TRUE}, color by group; otherwise by order
 #' @param boxcol,bordercol box fill and border colors
 #' @param pch plotting character
 #' @param group.pch logical; if \code{TRUE}, \code{pch} by group; otherwise
-#' by order
+#'   by order
 #' @param cex \strong{c}haracter \strong{ex}pansion value
 #' @param group.cex logical; if \code{TRUE}, groups use the same \code{cex}
-#' value; otherwise, points have individual values, recycled if necessary
+#'   value; otherwise, points have individual values, recycled if necessary
 #' @param median.line,mean.line logical; draw median, mean lines
 #' @param median.pars,mean.pars lists of graphical parameters for median and
-#' mean lines
+#'   mean lines
 #' @param show.n,show.na logical; show total and missing in each group
 #' @param cex.n character expansion for \code{show.n} and \code{show.na}
 #' @param text.na label for missing values (default is "missing")
 #' @param n.at the y-coordinate (or x-coordinate if \code{horizontal = TRUE})
-#' to place the total and missing in each group
+#'   to place the total and missing in each group
 #' @param test logical or function; if \code{TRUE}, a rank-sum p-value is
-#' added to the plot (\code{\link{wilcox.test}} or \code{\link{kruskal.test}}
-#' based on the number of groups)
+#'   added to the plot (\code{\link{wilcox.test}} or \code{\link{kruskal.test}}
+#'   based on the number of groups)
 #' 
-#' Alternatively, a function (or function name as a character string) can be
-#' used, e.g., \code{test = cuzick.test} or \code{function(x, g)
-#' cuzick.test(x, g)}; note that if \code{test} is a function, it must have
-#' at least two arguments with the numeric data values and group
+#'   Alternatively, a function (or function name as a character string) can be
+#'   used, e.g., \code{test = cuzick.test} or \code{function(x, g)
+#'   cuzick.test(x, g)}; note that if \code{test} is a function, it must have
+#'   at least two arguments with the numeric data values and group
 #' @param args.test an optional \emph{named} list of \code{\link{mtext}}
-#' arguments controlling the \code{test} text
+#'   arguments controlling the \code{test} text
 #' @param format_pval logical; if \code{TRUE}, p-values are formatted with
-#' \code{\link{pvalr}}; if \code{FALSE}, no formatting is performed;
-#' alternatively, a function can be passed which should take a numeric value
-#' and return a character string (or a value to be coerced) for printing
+#'   \code{\link{pvalr}}; if \code{FALSE}, no formatting is performed;
+#'   alternatively, a function can be passed which should take a numeric value
+#'   and return a character string (or a value to be coerced) for printing
 #' @param ann logical; annotate plot
 #' @param add logical; add to an existing plot
 #' @param panel.first an expression to be evaluated after the plot axes are
-#' set up but before any plotting takes place; this can be useful for drawing
-#' background grids or scatterplot smooths; note that this works by lazy
-#' evaluation: passing this argument from other plot methods may well not work
-#' since it may be evaluated too early; see also \code{\link{plot.default}}
+#'   set up but before any plotting takes place; this can be useful for drawing
+#'   background grids or scatterplot smooths; note that this works by lazy
+#'   evaluation: passing this argument from other plot methods may well not work
+#'   since it may be evaluated too early; see also \code{\link{plot.default}}
 #' @param panel.last an expression to be evaluated after plotting has taken
-#' place but before the axes, title, and box are added; see the comments about
-#' \code{panel.first}
-#'
+#'   place but before the axes, title, and box are added; see the comments about
+#'   \code{panel.first}
+#' 
 #' @return
 #' A list with the following elements (see \code{\link{boxplot}}:
 #' 
@@ -763,29 +763,30 @@ tplot.default <- function(x, g, ..., type = 'db',
 #' A waffle chart.
 #' 
 #' @param mat a matrix of integers or character strings of color names; if
-#' \code{mat} is a matrix of integers, the colors used will correspond to
-#' the current \code{\link{palette}}
+#'   \code{mat} is a matrix of integers, the colors used will correspond to
+#'   the current \code{\link{palette}}
 #' @param xpad,ypad padding between \code{\link{rect}}s, recycled as needed;
-#' note that these do not affect the center coordinates of the rectangles
+#'   note that these do not affect the center coordinates of the rectangles
 #' @param heights,widths row heights and column widths, respectively, usually
-#' in \code{[0,1]}, recycled as needed; note \code{xpad} and/or \code{ypad}
-#' are ignored if \code{widths} and/or \code{heights} are used, respectively
+#'   in \code{[0,1]}, recycled as needed; note \code{xpad} and/or \code{ypad}
+#'   are ignored if \code{widths} and/or \code{heights} are used, respectively
 #' @param colpad,rowpad amount of padding between columns and rows; note that
-#' these shift the \code{\link{rect}} center coordinates rather than the
-#' heights and widths directly
+#'   these shift the \code{\link{rect}} center coordinates rather than the
+#'   heights and widths directly
 #' @param invert character string indicating about which axis the matrix
-#' should be inverted; possible values are \code{"x"}, \code{"y"}, or
-#' \code{"xy"}
+#'   should be inverted; possible values are \code{"x"}, \code{"y"}, or
+#'   \code{"xy"}
 #' @param ... additional graphical parameters passed to \code{\link{rect}}
-#' such as \code{border}, \code{density}, \code{lty}, etc.
+#'   such as \code{border}, \code{density}, \code{lty}, etc.
 #' @param reset_par logical; if \code{TRUE}, resets \code{\link{par}}
-#' settings to state before function call; setting \code{reset_par = FALSE}
-#' along with the return value are useful for adding to a \code{waffle} plot
+#'   settings to state before function call; setting \code{reset_par = FALSE}
+#'   along with the return value are useful for adding to a \code{waffle} plot
 #' @param add logical; use \code{TRUE} to add to an existing plot; otherwise,
-#' a new frame and window are initialized
+#'   a new frame and window are initialized
 #' 
 #' @return
 #' A list of four matrices:
+#' 
 #' \item{\code{$matrix}}{the input matrix as plotted including inversions}
 #' \item{\code{$origin}}{coordinates of the bottom-left corner for each box}
 #' \item{\code{$centers}}{coordinates for the centers of each box}
@@ -981,24 +982,24 @@ waffle <- function(mat, xpad = 0, ypad = 0,
 #' formatted and ordered according to \code{check_river_format()}.
 #' 
 #' @param data,bar_data,bar_data2 data frames; these should have a specific
-#' format, see details, examples, or run \code{check_river_format()}
+#'   format, see details, examples, or run \code{check_river_format()}
 #' @param id,at optional parameters specifying individuals (rows) from
-#' \code{data} to plot and their positions along the y-axis; if not given,
-#' timelines are plotted sequentially
+#'   \code{data} to plot and their positions along the y-axis; if not given,
+#'   time lines are plotted sequentially
 #' @param legend logical; if \code{TRUE}, a legend using the unique values of
-#' \code{data$status} is drawn
+#'   \code{data$status} is drawn
 #' @param args.legend a \emph{named} list of arguments passed to
-#' \code{\link{legend}}
+#'   \code{\link{legend}}
 #' @param xlim,ylim x- and y-axis limits
 #' @param rev logical; if \code{TRUE}, observations will be plotted from top
-#' to bottom
+#'   to bottom
 #' @param stagger logical; if \code{FALSE}, start dates will be fixed at 0
-#' rather than relative to the first start date if \code{TRUE} (default)
+#'   rather than relative to the first start date if \code{TRUE} (default)
 #' @param col,col2 vectors of colors for responses (\code{river}) or toxicity
-#' grades \code{river2}, respectively
+#'   grades \code{river2}, respectively
 #' @param axes logical; if \code{TRUE}, x-axes are drawn
 #' @param split logical; if \code{TRUE}, rows of \code{bar_data2} will be
-#' plotted individually
+#'   plotted individually
 #' 
 #' @examples
 #' ## to print a summary of the required formats
@@ -1434,8 +1435,8 @@ check_river_format <- function(data, bar_data) {
 #' @param labels a character vector of labels for the leaves of the tree
 #' @param col a vector of valid colors for \code{labels}
 #' @param hang the fraction of the plot height by which \code{labels} should
-#' hang below the rest of the plot; a negative value will cause \code{labels}
-#' to hang down from 0
+#'   hang below the rest of the plot; a negative value will cause \code{labels}
+#'   to hang down from 0
 #' @param ... additional arguments passed to \code{\link{plot.hclust}}
 #' 
 #' @author
@@ -1455,9 +1456,9 @@ check_river_format <- function(data, bar_data) {
 #' mat <- matrix(rep(as.numeric(iris$Species), 3), 3)
 #' mat[sample(length(mat), length(mat) / 2)] <- NA
 #' mat <- sort_matrix(mat)[3:1, ]
-#' shift <- c(.5, 6)
+#' shift <- c(0.5, 6)
 #' rect(col(mat) - shift[1], row(mat) - shift[2], col(mat) + shift[1],
-#'      row(mat) - shift[2] + .5, col = mat, xpd = NA, border = 'white')
+#'      row(mat) - shift[2] + 0.5, col = mat, xpd = NA, border = 'white')
 #' 
 #' @export
 
@@ -1495,25 +1496,26 @@ plothc <- function(hc, labels = hc$labels, col = as.factor(labels),
 #' 
 #' @param x a numeric vector
 #' @param type type of waterfall plot; \code{type = 1} draws sorted bars for
-#' values of \code{x}; \code{type = 2} starts from 0 and draws bars according
-#' to the magnitude and direction of \code{x}
+#'   values of \code{x}; \code{type = 2} starts from 0 and draws bars according
+#'   to the magnitude and direction of \code{x}
 #' @param col a vector of colors having 1) the same length as \code{x}; length
-#' 2 (for negative and positive values if \code{type = 2}) or otherwise to be
-#' used for color interpolation (\code{\link{colorRampPalette}})
+#'   2 (for negative and positive values if \code{type = 2}) or otherwise to be
+#'   used for color interpolation (\code{\link{colorRampPalette}})
 #' @param ... additional arguments passed to \code{\link{barplot}}, to/from
-#' other methods, or to \code{\link{par}}
+#'   other methods, or to \code{\link{par}}
 #' @param arrows logical; if \code{TRUE}, arrows are drawn in the direction
-#' of each bar
+#'   of each bar
 #' @param rev logical; if \code{TRUE}, the order along the x-axis is reversed
 #' @param plot logical; if \code{FALSE}, nothing is plotted
 #' @param panel.first an expression to be evaluated after the plot axes are
-#' set up but before any plotting takes place; this can be useful for drawing
-#' background grids or scatterplot smooths; note that this works by lazy
-#' evaluation: passing this argument from other plot methods may well not work
-#' since it may be evaluated too early; see also \code{\link{plot.default}}
+#'   set up but before any plotting takes place; this can be useful for drawing
+#'   background grids or scatterplot smooths; note that this works by lazy
+#'   evaluation: passing this argument from other plot methods may well not
+#'   work since it may be evaluated too early; see also
+#'   \code{\link{plot.default}}
 #' @param panel.last an expression to be evaluated after plotting has taken
-#' place but before the axes, title, and box are added; see the comments about
-#' \code{panel.first}
+#'   place but before the axes, title, and box are added; see the comments
+#'   about \code{panel.first}
 #' 
 #' @return
 #' A matrix giving the coordinates of \emph{all} the bar midpoints drawn (see
@@ -1613,92 +1615,92 @@ waterfall <- function(x, type = 1L, col = c('red','blue'), ...,
 #' 
 #' @param x a numeric matrix of the values to be plotted
 #' @param Rowv,Colv logical or a \code{\link{dendrogram}} controlling the
-#' order and dendrogram along the rows and columns, respectively; for other
-#' options, see \code{\link{heatmap}}
+#'   order and dendrogram along the rows and columns, respectively; for other
+#'   options, see \code{\link{heatmap}}
 #' @param distfun a function used to compute the distance (dissimilarity)
-#' between both rows and columns (default is \code{\link{dist}} with Euclidean
-#' distance); alternatively, any of the \code{method}s can be passed as a
-#' character string; \code{"spearman"} or \code{"pearson"} may also be used
-#' which will calculate the distance as \code{1 - cor(x)}
+#'   between both rows and columns (default is \code{\link{dist}} with Euclidean
+#'   distance); alternatively, any of the \code{method}s can be passed as a
+#'   character string; \code{"spearman"} or \code{"pearson"} may also be used
+#'   which will calculate the distance as \code{1 - cor(x)}
 #' @param hclustfun a function used to compute the hierarchical clustering
-#' when \code{Rowv} or \code{Colv} are \emph{not} dendrograms; default is
-#' \code{\link{hclust}}; should take as argument a result of \code{distfun}
-#' and return an object to which \code{\link{as.dendrogram}} can be applied
+#'   when \code{Rowv} or \code{Colv} are \emph{not} dendrograms; default is
+#'   \code{\link{hclust}}; should take as argument a result of \code{distfun}
+#'   and return an object to which \code{\link{as.dendrogram}} can be applied
 #' @param symm logical; if \code{TRUE} and \code{x} is a square matrix,
-#' \code{x} is treated \strong{symm}etrically
+#'   \code{x} is treated \strong{symm}etrically
 #' @param scale character indicating if \code{x} should be centered and
-#' scaled in either the row or column direction or neither; default is none
+#'   scaled in either the row or column direction or neither; default is none
 #' @param na.rm logical; if \code{TRUE}, \code{NA}s are removed before
-#' calculating dendrogram weights; see \code{\link{reorder.dendrogram}}
+#'   calculating dendrogram weights; see \code{\link{reorder.dendrogram}}
 #' @param revC logical; if \code{TRUE}, the column order is reversed for
-#' plotting, e.g., for the symmetric case, the symmetry axis is as usual
+#'   plotting, e.g., for the symmetric case, the symmetry axis is as usual
 #' @param add.expr an \code{\link{expression}} evaluated after the call to
-#' \code{\link{image}}, useful for adding components to the plot
+#'   \code{\link{image}}, useful for adding components to the plot
 #' @param breaks (optional) either a numeric vector indicating the splitting
-#' points for binning \code{x} into colors, or an integer number of break
-#' points to be used; for the latter, the break points will be spaced equally
-#' between \code{min(x)} and \code{max(x)}
+#'   points for binning \code{x} into colors, or an integer number of break
+#'   points to be used; for the latter, the break points will be spaced equally
+#'   between \code{min(x)} and \code{max(x)}
 #' @param symbreaks logical; if \code{TRUE}, breaks are made symmetric about
-#' 0; default is \code{TRUE} if \code{x} contains negative values and
-#' \code{FALSE} otherwise
+#'   0; default is \code{TRUE} if \code{x} contains negative values and
+#'   \code{FALSE} otherwise
 #' @param cols a vector of character strings of two or more colors used for
-#' interpolation and passed to \code{\link{image}}; alternatively a function
-#' such as \code{\link{heat.colors}} taking an integer argument and returning
-#' a vector of colors
+#'   interpolation and passed to \code{\link{image}}; alternatively a function
+#'   such as \code{\link{heat.colors}} taking an integer argument and returning
+#'   a vector of colors
 #' @param colsep,rowsep,sepcolor,sepwidth (optional) vector of integers
-#' indicating which columns or rows should be separated from the preceding
-#' columns or rows by a narrow space of \code{sepcolor}; widths of space
-#' between is given by \code{sepwidth}
+#'   indicating which columns or rows should be separated from the preceding
+#'   columns or rows by a narrow space of \code{sepcolor}; widths of space
+#'   between is given by \code{sepwidth}
 #' @param cellnote (optional) a matrix having the same dimensions as \code{x}
-#' with text to be plotted in each cell
+#'   with text to be plotted in each cell
 #' @param notecex,notecol size and color for \code{cellnote}
 #' @param na.color color used for \code{NA} values; defaults to background
-#' color \code{par('bg')}
+#'   color \code{par('bg')}
 #' @param trace character string indicating whether a solid "trace" line
-#' should be drawn across rows or down columns; the distance of the line from
-#' the center of each color-cell is proportional to the size of the
-#' measurement; one of \code{"row"}, \code{"column"}, \code{"both"}, or
-#' \code{"none"} (default)
+#'   should be drawn across rows or down columns; the distance of the line
+#'   from the center of each color-cell is proportional to the size of the
+#'   measurement; one of \code{"row"}, \code{"column"}, \code{"both"}, or
+#'   \code{"none"} (default)
 #' @param tracecol color for \code{trace} line
 #' @param hline,vline,linecol a vector of values within cells where a
-#' horizontal or vertical dotted line should be drawn; the color of the line
-#' is controlled by \code{linecol} (default is \code{tracecol})
+#'   horizontal or vertical dotted line should be drawn; the color of the
+#'   line is controlled by \code{linecol} (default is \code{tracecol})
 #' 
-#' horizontal lines are only plotted if \code{trace} is "row" or "both";
-#' vertical lines are only drawn if \code{trace} "column" or "both"; both
-#' \code{hline} and \code{vline} default to the median of the \code{breaks}
+#'   horizontal lines are only plotted if \code{trace} is "row" or "both";
+#'   vertical lines are only drawn if \code{trace} "column" or "both"; both
+#'   \code{hline} and \code{vline} default to the median of the \code{breaks}
 #' @param margins numeric vector of length 2 controlling the margins for
-#' column and row names, respectively
+#'   column and row names, respectively
 #' @param dmargins numeric vector of length 2 controlling the margins for
-#' column and row dendrograms, respectively; useful for "squishing"
+#'   column and row dendrograms, respectively; useful for "squishing"
 #' @param ColSideColors,RowSideColors (optional) character vector or matrix
-#' with color names for horizontal or vertical side bars useful for annotating
-#' columns and/or rows of \code{x}
+#'   with color names for horizontal or vertical side bars useful for annotating
+#'   columns and/or rows of \code{x}
 #' @param ColSideColorsSize,RowSideColorsSize numeric value controlling the
-#' sizes of the horizontal and vertical side bars, respectively
+#'   sizes of the horizontal and vertical side bars, respectively
 #' @param side.height.fraction scaling factor for height and width of bars
 #' @param labRow,labCol row and column labels; defaults to row and column
-#' names of \code{x}; \code{FALSE} suppresses labels
+#'   names of \code{x}; \code{FALSE} suppresses labels
 #' @param labRowCol,labColCol (optional) vectors of colors for row and column
-#' labels, recycled as needed
+#'   labels, recycled as needed
 #' @param cexRow,cexCol size for row and column labels
 #' @param key logical; if \code{TRUE}, a color key is drawn
 #' @param key.cex numeric value controlling the size of the color key
 #' @param key.title,key.sub main and sub titles for the color key
 #' @param density.info character string indicating whether to supermipose a
-#' "histogram" or a "density" plot on the color key; default is "none"
+#'   "histogram" or a "density" plot on the color key; default is "none"
 #' @param denscol color for \code{density.info}; default is \code{tracecol}
 #' @param symkey logical; if \code{TRUE}, color key will be symmetric about
-#' 0; default is \code{TRUE} if \code{x} contains negative values and
-#' \code{FALSE} otherwise
+#'   0; default is \code{TRUE} if \code{x} contains negative values and
+#'   \code{FALSE} otherwise
 #' @param densadj numeric scaling value for tuning the kernel width when a
-#' density plot is drawn on the color key; see the \code{adjust} parameter
-#' in \code{\link{density}}; default is 0.25
+#'   density plot is drawn on the color key; see the \code{adjust} parameter
+#'   in \code{\link{density}}; default is 0.25
 #' @param main,xlab,ylab main, x-, and y-axis labels
 #' @param lmat,lhei,lwid (optional) arguments for controlling \strong{l}ayout
 #' \strong{hei}ghts and \code{wid}ths, passed to \code{\link{layout}}
 #' @param ... additional arguments passed to \code{\link{image}} or further
-#' to \code{\link{plot}}
+#'   to \code{\link{plot}}
 #' 
 #' @seealso
 #' \code{\link{heatmap}}; \code{\link[gplots]{heatmap.2}}; \code{\link{image}};
@@ -2362,24 +2364,24 @@ vioplot <- function(x, range = 1.5, xlim = NULL, ylim = NULL, names,
 #' as a forest plot.
 #' 
 #' @param data a matrix or data frame with variables \code{varname} and
-#' \code{byvar}
+#'   \code{byvar}
 #' @param varname,byvar one or more variables in \code{data} to calculate
-#' binomial confidence intervals by \code{byvar}; the rows variable(s) of
-#' the table;
+#'   binomial confidence intervals by \code{byvar}; the rows variable(s) of
+#'   the table;
 #' 
-#' note that \code{varname} variables should be factor-like, and \code{byvar}
-#' should be binary
+#'   note that \code{varname} variables should be factor-like, and \code{byvar}
+#'   should be binary
 #' @param varname_label,byvar_label optional labels for each \code{varname}
-#' and \code{byvar}
+#'   and \code{byvar}
 #' @param main,xlab the x-axis and title labels
 #' @param col a vector of colors for each \code{varname}; the first will be
-#' used for the overall (if \code{show_overall = TRUE})
+#'   used for the overall (if \code{show_overall = TRUE})
 #' @param conf confidence level; passed to \code{\link{binconr}}
 #' @param digits the number of places past the decimal to keep
 #' @param show_overall,show_missing logical; if \code{TRUE}, rows with the
-#' overall and missing value confidence intervals are shown, respectively
+#'   overall and missing value confidence intervals are shown, respectively
 #' @param alpha_missing if \code{show_missing = TRUE}, the amount of alpha
-#' transparency added to missing value rows; passed to \code{\link{tcol}}
+#'   transparency added to missing value rows; passed to \code{\link{tcol}}
 #' @param ... additional graphical parameters passed to \code{\link{par}}
 #' 
 #' @examples
@@ -2573,38 +2575,38 @@ binconr_ <- function(outcome, variable, addNA = TRUE, lbl = NULL,
 #' examples.
 #' 
 #' @param formula a \code{\link{formula}}, such as \code{y ~ group1 + group2},
-#' where y is a numeric vector of data values to be split into n groups
-#' (\code{group1}), each group split into at most two groups (\code{group2})
+#'   where y is a numeric vector of data values to be split into n groups
+#'   (\code{group1}), each group split into at most two groups (\code{group2})
 #' @param data a data frame (or list) from which the variables in
-#' \code{formula} should be taken
+#'   \code{formula} should be taken
 #' @param x for the default method, a list of groups each having a list of
-#' length 2 of data values
+#'   length 2 of data values
 #' @param at the x-axis group positions
 #' @param pad the padding between \code{at} for each group and the points
 #' @param test logical or function; if \code{TRUE}, a \code{\link{wilcox.test}}
-#' p-value is added for each group
+#'   p-value is added for each group
 #' 
-#' alternatively, a function (or function name as a character string) can be
-#' used, e.g., \code{test = t.test} or \code{function(x, y)
-#' t.test(x, y)}; note that if \code{test} is a function, it must have
-#' at least two arguments with the two groups of data; see examples
+#'   alternatively, a function (or function name as a character string) can be
+#'   used, e.g., \code{test = t.test} or \code{function(x, y)
+#'   t.test(x, y)}; note that if \code{test} is a function, it must have
+#'   at least two arguments with the two groups of data; see examples
 #' @param args.test a \emph{named} list of arguments passed to \code{test}
 #' @param col,pch,cex color, plotting character, and character expansion
-#' vectors, each may be length 1, 2, or total number of groups to be plotted,
-#' recycled as needed
+#'   vectors, each may be length 1, 2, or total number of groups to be plotted,
+#'   recycled as needed
 #' @param args.beeswarm a \emph{named} list of arguments passed to
-#' \code{\link[beeswarm]{beeswarm}} to override defaults
+#'   \code{\link[beeswarm]{beeswarm}} to override defaults
 #' @param names group labels having the same length as \code{l}
 #' @param quantiles optional probabilities passed to \code{\link{quantile}}
-#' to show for each group
+#'   to show for each group
 #' @param pch.quantiles plotting character for each quantile
 #' @param xlab,ylab x- and y-axis labels
 #' @param legend.text group labels of length 2
 #' @param ... for the \code{formula} method, named arguments to be passed to
-#' the default method
+#'   the default method
 #' 
-#' for the default method, additional arguments passed to \code{\link{tplot}}
-#' or graphical parameters passed to \code{\link{par}}
+#'   for the default method, additional arguments passed to \code{\link{tplot}}
+#'   or graphical parameters passed to \code{\link{par}}
 #' 
 #' @examples
 #' ## basic usage

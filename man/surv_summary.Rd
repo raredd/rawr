@@ -29,9 +29,7 @@ acutal return value of \code{survival:::print.summary.survfit}.
 }
 \examples{
 library('survival')
-fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)),
-                      data = cancer),
-                conf.type = 'log-log')
+fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)), cancer))
 surv_summary(fit1, times = c(0, 100, 200))
 
 }

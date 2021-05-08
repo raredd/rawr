@@ -41,8 +41,8 @@ or \code{\link{text}} (e.g., \code{col.text}, \code{cex}, \code{font})}
 variable with three or more unique values (groups)}
 
 \item{data}{an optional matrix or data frame (or similar: see
-\code{\link{model.frame}}) containing the variables in \code{formula}; by
-default, the variables are taken from \code{environment(formula)}}
+\code{\link{model.frame}}) containing the variables in \code{formula};
+by default, the variables are taken from \code{environment(formula)}}
 
 \item{which}{an index vector of the values to display}
 
@@ -57,7 +57,8 @@ by \code{line}}
 \item{test}{the test to use for pairwise comparisons}
 
 \item{plot}{logical; if \code{TRUE}, an existing figure will be annotated
-with the tests; if \code{FALSE}, all tests will be returned but not plotted}
+with the tests; if \code{FALSE}, all tests will be returned but not
+plotted}
 }
 \value{
 A list of user coordinates and text where each \code{x} is drawn.

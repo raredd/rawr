@@ -71,9 +71,9 @@ tplot(x, ...)
 \item{x}{a numeric vector or a single list containing such vectors}
 
 \item{...}{for the \code{formula} method, named arguments to be passed to
-the default method
+  the default method
 
-for the default method, graphical parameters passed to \code{\link{par}}}
+  for the default method, graphical parameters passed to \code{\link{par}}}
 
 \item{formula}{a \code{\link{formula}}, such as \code{y ~ grp}, where y is
 a numeric vector of data values to be split into groups according to the
@@ -108,17 +108,17 @@ of \code{"b"} for a violin plot); see examples for all options}
 
 \item{jit, dist, dist.n}{jitter parameters for overlapping points (use
 \code{0} for no jitter (i.e., points may overlap) and values > 0 for more
-distance between points); both can be length 1 (recycled as needed for
-groups) or equal to the number of groups (useful if one group has more
-points and needs more jittering than other groups)
+  distance between points); both can be length 1 (recycled as needed for
+  groups) or equal to the number of groups (useful if one group has more
+  points and needs more jittering than other groups)
 
-\code{jit} controls the amount of spread in a group of neighboring points,
-and \code{dist} controls the size of the interval to group neighboring
-points, i.e., a group of sequential points that are no more than
-\code{dist} apart are considered neighbors and will be jittered
+  \code{jit} controls the amount of spread in a group of neighboring points,
+  and \code{dist} controls the size of the interval to group neighboring
+  points, i.e., a group of sequential points that are no more than
+  \code{dist} apart are considered neighbors and will be jittered
 
-\code{dist.n} is the maximum number of points allowed in each group of
-neighboring points, useful for limiting the spread of points}
+  \code{dist.n} is the maximum number of points allowed in each group of
+  neighboring points, useful for limiting the spread of points}
 
 \item{args.beeswarm}{logical or a \emph{named} list of arguments passed to
 \code{\link[beeswarm]{beeswarm}}; if \code{NULL} (default) or \code{FALSE},
@@ -174,13 +174,13 @@ control the quantile lines}
 to place the total and missing in each group}
 
 \item{test}{logical or function; if \code{TRUE}, a rank-sum p-value is
-added to the plot (\code{\link{wilcox.test}} or \code{\link{kruskal.test}}
-based on the number of groups)
+  added to the plot (\code{\link{wilcox.test}} or \code{\link{kruskal.test}}
+  based on the number of groups)
 
-Alternatively, a function (or function name as a character string) can be
-used, e.g., \code{test = cuzick.test} or \code{function(x, g)
-cuzick.test(x, g)}; note that if \code{test} is a function, it must have
-at least two arguments with the numeric data values and group}
+  Alternatively, a function (or function name as a character string) can be
+  used, e.g., \code{test = cuzick.test} or \code{function(x, g)
+  cuzick.test(x, g)}; note that if \code{test} is a function, it must have
+  at least two arguments with the numeric data values and group}
 
 \item{args.test}{an optional \emph{named} list of \code{\link{mtext}}
 arguments controlling the \code{test} text}

@@ -16,15 +16,16 @@ na.points(
 }
 \arguments{
 \item{x, y}{vectors of data to be plotted; if only one is given, all points
-will be plotted on the corresponding axis; if both are given, only \code{x}
-values where \code{y} is \code{NA} are plotted and vice versa}
+will be plotted on the corresponding axis; if both are given, only
+\code{x} values where \code{y} is \code{NA} are plotted and vice versa}
 
 \item{xat, yat}{the x- and y-axis positions for points}
 
 \item{label}{axis label for points; use \code{FALSE} or \code{''} to omit}
 
 \item{args.beeswarm}{a \emph{named} list of additional arguments passed to
-\code{\link[beeswarm]{beeswarm}} such as \code{corral} or \code{corralWidth}}
+\code{\link[beeswarm]{beeswarm}} such as \code{corral} or
+\code{corralWidth}}
 
 \item{...}{additional arguments passed to \code{\link{tplot}} or further
 to \code{par} such as \code{col}, \code{cex}, or \code{pch}}

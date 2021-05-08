@@ -19,16 +19,16 @@ identical2(
 \item{num.eq}{logical indicating if (\code{\link{double}} and
 \code{\link{complex}} non-\code{\link{NA}}) numbers should be compared
 using \code{\link{==}} ("equal"), or by bitwise comparison. The latter
-(non-default) differentiates between -0 and +0.}
+(non-default) differentiates between -0 and +0}
 
 \item{single.NA}{logical indicating if there is conceptually just one
 numeric \code{NA} and one \code{\link{NaN}}; \code{single.NA = FALSE}
-differentiates bit patterns.}
+differentiates bit patterns}
 
 \item{attrib.as.set}{logical indicating if \code{\link{attributes}} of
-\code{...} should be treated as \emph{unordered} tagged pairlists ("sets");
-this currently also applies to \code{\link{slot}}s of S4 objects. It may
-well be too strict to set \code{attrib.as.set = FALSE}.}
+\code{...} should be treated as \emph{unordered} tagged pairlists
+("sets"); this currently also applies to \code{\link{slot}}s of S4
+objects. It may well be too strict to set \code{attrib.as.set = FALSE}}
 
 \item{ignore.bytecode}{logical indicating if byte code should be ignored
 when comparing \code{\link{closure}}s.}
@@ -67,6 +67,6 @@ identical2(f, g, ignore.bytecode = FALSE)
 \seealso{
 \code{\link{identical}}; \code{\link{all.equal}} for descriptions of how
 two objects differ; \code{\link{Comparison}} for operators that generate
-elementwise comparisons; \code{\link{isTRUE}} is a simple wrapper based
+element-wise comparisons; \code{\link{isTRUE}} is a simple wrapper based
 on \code{identical}; \code{\link{all_equal2}}
 }

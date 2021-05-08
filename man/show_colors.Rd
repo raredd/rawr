@@ -8,8 +8,8 @@ show_colors(..., plot = FALSE)
 }
 \arguments{
 \item{...}{integer(s) in \code{1:657} corresponding to the built-in color
-name index or color name string(s); if \code{?} is included as a string or
-part of a string, color names will be searched for matches}
+name index or color name string(s); if \code{?} is included as a string
+or part of a string, color names will be searched for matches}
 
 \item{plot}{logical; if \code{TRUE}, integers or color names in \code{...}
 will be plotted with corresponding number and name}

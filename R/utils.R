@@ -96,7 +96,7 @@ name_or_index <- function(x, y = NULL) {
 #' @param a,b raw, logical, "number-like" vectors or objects
 #' @param object a \emph{named} vector or list, a matrix or data frame
 #' @param range a numeric or character vector of length two with the indices
-#' or names from \code{object}, generally of the structure \code{c(from, to)}
+#'   or names from \code{object}, generally of the structure \code{c(from, to)}
 #' 
 #' @seealso
 #' \code{\link{==}}, \code{\link{\%in\%}}, \code{\link{||}}
@@ -192,7 +192,7 @@ NULL
 #' These functions begin with \code{ls} and list different things. \code{lss}
 #' is an "improved" \code{\link{ls}} which gives more details of objects in
 #' the workspace such as type, size, and dimensions; \code{lsp} lists
-#' \code{p}ackage contents, i.e., exported and/or non exported obejcts,
+#' \code{p}ackage contents, i.e., exported and/or non exported objects,
 #' methods, lazy data, etc.; and \code{lsf} lists package \code{f}iles. See
 #' details and examples.
 #' 
@@ -200,8 +200,8 @@ NULL
 #' \code{INDEX}, \code{NAMESPACE}, etc.) to console and returns (invisibly)
 #' the files parsed for easier use.
 #' 
-#' \code{lsp} is a helper function to list exported (\code{?'::'}) and non
-#' exported (\code{?':::'}) functions (and other features from a package's
+#' \code{lsp} is a helper function to list exported (\code{?"::"}) and non
+#' exported (\code{?":::"}) functions (and other features from a package's
 #' \code{NAMESPACE} file).
 #' 
 #' Note that \code{base} and older packages do not have a \code{NAMESPACE}
@@ -214,31 +214,31 @@ NULL
 #' "\code{path}", "\code{S3methods}", "\code{spec}", and others depending on
 #' the package.
 #' 
-#' \code{lsp(packagename, '?')} to see options for a specific package.
+#' \code{lsp(packagename, "?")} to see options for a specific package.
 #' 
 #' \code{lsp(packagename, NULL)} to return all information in a list.
 #' 
 #' @param pos argument specifying the environment as a position in search list
-#' or a "list-like" object such as a data frame or list of objects
+#'   or a "list-like" object such as a data frame or list of objects
 #' @param pattern optional \code{\link{regex}}; for \code{lss} only names
-#' matching  \code{pattern} are returned; \code{\link{glob2rx}} can be used to
-#' convert wildcard patterns to regular expressions; for \code{lsp} a text
-#' pattern or regular expression passed to \code{\link{grep}} to filter the
-#' results
-#' @param by variable to order output ('type', 'size' (default), 'sizef',
-#' 'nrow', or 'ncol')
+#'   matching  \code{pattern} are returned; \code{\link{glob2rx}} can be used
+#'   to convert wildcard patterns to regular expressions; for \code{lsp} a text
+#'   pattern or regular expression passed to \code{\link{grep}} to filter the
+#'   results
+#' @param by variable to order output ("type", "size" (default), "sizef",
+#'   "nrow", or "ncol")
 #' @param all.names logical; if \code{TRUE}, all object names are returned; if
-#' \code{FALSE}, names which begin with a \code{.} are omitted
+#'   \code{FALSE}, names which begin with a \code{.} are omitted
 #' @param decreasing logical; if \code{TRUE}, displays output in decreasing
-#' order
+#'   order
 #' @param n number of objects to displace if \code{head} is \code{TRUE}
 #' @param package package name, as a \code{\link{name}} or literal character
-#' string
+#'   string
 #' @param file file to return as a character string; usual options are
-#' \code{'DESCRIPTION'}, \code{'NEWS'}, \code{'INDEX'}, \code{'NAMESPACE'};
-#' partial matching is supported and case is ignored
-#' @param what what to get; \code{'all'} is default which returns all exported
-#' and non exported functions in \code{package}; see details for more
+#'   \code{"DESCRIPTION"}, \code{"NEWS"}, \code{"INDEX"}, \code{"NAMESPACE"};
+#'   partial matching is supported and case is ignored
+#' @param what what to get; \code{"all"} is default which returns all exported
+#'   and non exported functions in \code{package}; see details for more
 #' 
 #' @return
 #' \code{lss} returns a data frame with each object from the workspace with
@@ -400,7 +400,7 @@ lsp <- function(package, what, pattern) {
 #' 
 #' @param ... numeric vectors, matrices, or data frames with equal dimensions
 #' @param na.rm logical; if \code{TRUE}, omits missing values (including
-#' \code{\link{NaN}}) from calculations
+#'   \code{\link{NaN}}) from calculations
 #' @param FUN a binary function
 #' 
 #' @return
@@ -458,7 +458,7 @@ psum <- function(..., na.rm = FALSE) {
 #' @param x numeric vector of values
 #' @param to output range (numeric vector of length two)
 #' @param from input range (numeric vector of length two); if not given,
-#' \code{from} is calculated from the range of \code{x}
+#'   \code{from} is calculated from the range of \code{x}
 #' 
 #' @seealso
 #' \code{\link[scales]{rescale}}; \code{\link[scales]{zero_range}}
@@ -526,30 +526,30 @@ rescaler <- function (x, to = c(0, 1), from = range(x, na.rm = TRUE)) {
 #' more nested columns.
 #' 
 #' @param ... for \code{bind_all} and \code{rbindfill}, vectors;
-#' \code{cbindx} and \code{rbindx} will accept vectors, matrices, data frames;
-#' data frames should be used with \code{rbindfill2} but matrices (or a
-#' combination) will work, but a data frame is returned; \code{rbindlist}
-#' accepts vectors or one or more lists
+#'   \code{cbindx} and \code{rbindx} will accept vectors, matrices, data
+#'   frames; data frames should be used with \code{rbindfill2} but matrices
+#'   (or a combination) will work, but a data frame is returned;
+#'   \code{rbindlist} accepts vectors or one or more lists
 #' @param which joining method; \code{'rbind'} or \code{'cbind'}
 #' @param deparse.level integer controlling the construction of labels in
-#' the case of non-matrix-like arguments (for the default method):\cr
-#' \code{deparse.level = 0} constructs no labels; the default; \cr
-#' \code{deparse.level = 1} or \code{2} constructs labels from the argument
-#' names \cr see \code{\link{cbind}}
+#'   the case of non-matrix-like arguments (for the default method):\cr
+#'   \code{deparse.level = 0} constructs no labels; the default; \cr
+#'   \code{deparse.level = 1} or \code{2} constructs labels from the argument
+#'   names \cr see \code{\link{cbind}}
 #' @param use.rownames logical; for \code{rbindfill2}, if \code{TRUE}, data
-#' frames in a \emph{named} list will retain corresponding rownames; the
-#' default is to remove rownames (note that this parameter is ignored if
-#' \code{...} is not a named list)
+#'   frames in a \emph{named} list will retain corresponding rownames; the
+#'   default is to remove rownames (note that this parameter is ignored if
+#'   \code{...} is not a named list)
 #' 
-#' for \code{rbindlist} and \code{rbindlist2}, return a data frame with or
-#' without rownames; for \code{rbindlist2}, if \code{data} has no row names
-#' set (i.e., are \code{"1", "2", ...}), then the default is \code{FALSE}
+#'   for \code{rbindlist} and \code{rbindlist2}, return a data frame with or
+#'   without rownames; for \code{rbindlist2}, if \code{data} has no row names
+#'   set (i.e., are \code{"1", "2", ...}), then the default is \code{FALSE}
 #' @param use.names logical; if \code{TRUE} and vectors are named, names
-#' are preserved and added as a column
+#'   are preserved and added as a column
 #' @param data a matrix or data frame
 #' @param column for \code{rbindlist2}, the column(s) to be unnested
 #' @param split,fixed,perl arguments passed to \code{\link{strsplit}}
-#' controlling how nested column text should be split
+#'   controlling how nested column text should be split
 #' 
 #' @seealso
 #' \code{\link{cbind}}; \code{\link{rbind}}; \code{\link{interleave}};
@@ -1002,8 +1002,10 @@ rbindlist2 <- function(data, column, split = '\\W+', fixed = FALSE, perl = FALSE
 #' 
 #' @param ... vectors, matrices, data frames, or lists
 #' @param which joining method to use (\code{'rbind'} or \code{'cbind'}) when
-#' \code{...} are matrices or data frames
-#' @seealso \code{\link{bindx}}
+#'   \code{...} are matrices or data frames
+#' 
+#' @seealso
+#' \code{\link{bindx}}
 #' 
 #' @examples
 #' interleave(letters[1:3], LETTERS[3:1], letters[26:24])
@@ -1051,7 +1053,8 @@ interleave <- function(..., which) {
 #' @param ... arguments passed to \code{FUN} in the order given
 #' @param FUN a function to use on the outer products
 #' 
-#' @seealso \code{\link{outer}}; \code{\link{Vectorize}}
+#' @seealso
+#' \code{\link{outer}}; \code{\link{Vectorize}}
 #' 
 #' @examples
 #' outer2(LETTERS[1:3], letters[1:3], LETTERS[24:26], FUN = paste0)
@@ -1083,9 +1086,10 @@ outer2 <- function(..., FUN) {
 #' 
 #' @param l list of data frames or objects to be coerced
 #' @param ... additional arguments passed to \code{merge} (eg, \code{by},
-#' \code{all}, etc)
+#'   \code{all}, etc)
 #' 
-#' @seealso \code{\link[plyr]{join_all}}
+#' @seealso
+#' \code{\link[plyr]{join_all}}
 #' 
 #' @examples
 #' a <- data.frame(id = 1:10, a = rnorm(10))
@@ -1111,11 +1115,12 @@ merge2 <- function(l, ...) {
 #' 
 #' @param x a vector, matrix, or data frame
 #' @param fromLast logical or vector of logicals; if \code{TRUE}, observations
-#' are carried backward rather than forward; other options such as
-#' \code{c(TRUE, FALSE)} will call \code{locf} first for \code{fromLast = TRUE}
-#' follwed by calling with \code{fromLast = FALSE} on the result
+#'   are carried backward rather than forward; other options such as
+#'   \code{c(TRUE, FALSE)} will call \code{locf} first for
+#'   \code{fromLast = TRUE} follwed by calling with \code{fromLast = FALSE}
+#'   on the result
 #' @param na.strings a vector of values to be treated as \code{NA}; optionally
-#' a list of single elements can be used for mixed data types; see examples
+#'   a list of single elements can be used for mixed data types; see examples
 #' 
 #' @examples
 #' x <- c('', '', 'a', '', 'b', '', '', '', 'c')
@@ -1187,17 +1192,18 @@ locf <- function(x, fromLast = FALSE, na.strings = '') {
 #' @param x a vector
 #' @param n size of groups
 #' @param FUN a function to apply as a \code{\link{name}} or literal character
-#' string
+#'   string
 #' @param ... additional arguments passed to \code{FUN}
 #' @param fromLast logical; if \code{TRUE}, \code{roll_fun} is applied to
-#' \code{x} in reverse order
+#'   \code{x} in reverse order
 #' @param keep logical; if \code{TRUE}, the rolling \code{FUN} is applied to
-#' the first \code{n} elements of \code{x}; if \code{FALSE} (default), then
-#' \code{FUN} is applied to \code{x[1]}, \code{x[1:2]}, ..., \code{x[1:n]},
-#' ie, until groups of size \code{n} are possible
+#'   the first \code{n} elements of \code{x}; if \code{FALSE} (default), then
+#'   \code{FUN} is applied to \code{x[1]}, \code{x[1:2]}, ..., \code{x[1:n]},
+#'   ie, until groups of size \code{n} are possible
 #' 
-#' @return A vector of the same length of \code{x} with calculations obtained
-#' by \code{FUN}.
+#' @return
+#' A vector of the same length of \code{x} with calculations obtained by
+#' \code{FUN}.
 #' 
 #' @examples
 #' cbind(1:10, roll_fun(1:10, 2, keep = TRUE))
@@ -1237,11 +1243,11 @@ roll_fun <- function(x, n = 5L, FUN = mean, ...,
 #' @param x a character vector
 #' @param m an object with match data
 #' @param use.names logical; if \code{FALSE}, all names (capture names and
-#' list names) will be stripped; if \code{TRUE} (default) and capture groups
-#' have names, these will be used; otherwise, match start positions will be
-#' used
+#'   list names) will be stripped; if \code{TRUE} (default) and capture groups
+#'   have names, these will be used; otherwise, match start positions will be
+#'   used
 #' @param pattern a character string containing a Perl-compatible regular
-#' expression
+#'   expression
 #' 
 #' @return
 #' A list with a matrix of captures for each string in \code{x}. Note that the
@@ -1492,13 +1498,13 @@ melt <- function(data, varying = list(1:ncol(data)), ...) {
 #' \code{\link[DT]{datatable}}.
 #' 
 #' @param x an \code{R} object which can be coerced to a data frame with
-#' non-zero numbers of rows and columns or an \code{htmlwidget} object
+#'   non-zero numbers of rows and columns or an \code{htmlwidget} object
 #' @param title title for viewer window, defaults to name of \code{x}
-#' prefixed by \code{Data:}
+#'   prefixed by \code{Data:}
 #' @param ... additional arguments passed to \code{\link[DT]{datatable}}
 #' @param use_viewer logical; if \code{TRUE}, opens in the
-#' \code{\link[rstudioapi]{viewer}} if available; otherwise, opens in the
-#' default browser
+#'   \code{\link[rstudioapi]{viewer}} if available; otherwise, opens in the
+#'   default browser
 #' 
 #' @examples
 #' \dontrun{
@@ -1554,15 +1560,15 @@ view <- function(x, use_viewer = FALSE, ...) {
 #' 
 #' @param l a list
 #' @param FUN the function to be applied to each \code{classes} element of
-#' \code{l}
+#'   \code{l}
 #' @param classes a character vector of \code{\link{class}} names or
-#' \code{"ANY"} to apply to every non-\code{\link{list}} element of \code{l}
+#'   \code{"ANY"} to apply to every non-\code{\link{list}} element of \code{l}
 #' @param ... additional arguments passed to \code{FUN}
 #' @param check.nested logical; if \code{TRUE}, for nested lists,
-#' \code{rapply2} will continue to walk down the list rather than stop at
-#' the first list (only if \code{"list" \%in\% classes})
+#'   \code{rapply2} will continue to walk down the list rather than stop at
+#'   the first list (only if \code{"list" \%in\% classes})
 #' @param skip.null logical; if \code{TRUE} (default), \code{NULL} elements
-#' of \code{l} will be skipped before \code{FUN} can be applied
+#'   of \code{l} will be skipped before \code{FUN} can be applied
 #' 
 #' @return
 #' A list having the same structure as \code{l} with \code{FUN} applied to
@@ -1637,12 +1643,12 @@ rapply2 <- function(l, FUN, classes = 'ANY', ...,
 #' 
 #' @param m a matrix, usually an integer matrix
 #' @param margin margin to sort by; default is to sort on row values
-#' (\code{margin = 1}); sort on column values using \code{margin = 2}
+#'   (\code{margin = 1}); sort on column values using \code{margin = 2}
 #' @param order vector specifying all unique values of \code{m} in the
-#' desired order; if \code{NULL}, the order will be the sorted unique values
-#' of \code{m}
+#'   desired order; if \code{NULL}, the order will be the sorted unique values
+#'   of \code{m}
 #' @param na.last logical; if \code{TRUE}, missing values are put last; if
-#' \code{FALSE}, they are put first; see \code{\link{order}}
+#'   \code{FALSE}, they are put first; see \code{\link{order}}
 #' @param index.return logical; if \code{TRUE}, ordering indices are returned
 #' 
 #' @examples
@@ -1714,14 +1720,14 @@ sort_matrix <- function(m, margin = 1L, order = NULL, na.last = TRUE,
 #' 
 #' @param x a matrix
 #' @param row,col index of row or column to shift right or down,
-#' respectively
+#'   respectively
 #' @param repl replacement values, recycled if needed
 #' @param rowsep,colsep index of row or column to shift right or down,
-#' respectively
+#'   respectively
 #' @param rowrep,colrep row and column replacement values, recycled if needed;
-#' note that rows are replaced first followed by columns, so for the opposite
-#' behavior, transpose \code{m} before and after using \code{insert_matrix}
-#' and swap \code{rowrep} and \code{colrep}; see examples
+#'   note that rows are replaced first followed by columns, so for the opposite
+#'   behavior, transpose \code{m} before and after using \code{insert_matrix}
+#'   and swap \code{rowrep} and \code{colrep}; see examples
 #' 
 #' @examples
 #' ## insert at index for vectors
@@ -1796,7 +1802,7 @@ insert_matrix <- function(x, rowsep = NULL, colsep = NULL,
 #' @param expr an expression
 #' @param ... ignored
 #' @param simplify logical; if \code{TRUE}, simplifies the returned list to
-#' a vector if there were no exceptions
+#'   a vector if there were no exceptions
 #' 
 #' @return
 #' If \code{expr} is evaluated with no errors, warnings, messagess, or
@@ -1875,11 +1881,11 @@ tryCatch2 <- function(expr, ..., simplify = TRUE) {
 #' 
 #' @param x a logical, character, or numeric vector
 #' @param na.rm for \code{rleid2}, logical; if \code{FALSE} (default),
-#' \code{NA}s are kept in-place
+#'   \code{NA}s are kept in-place
 #' @param ignore.na for \code{rleid2}, logical; if \code{FALSE} (default),
-#' \code{NA}s are treated as a distinct group; if \code{TRUE}, \code{NA}s are
-#' ignored and will not separate runs, e.g., \code{1, 1, NA, 1} would be
-#' treated as a single run
+#'   \code{NA}s are treated as a distinct group; if \code{TRUE}, \code{NA}s
+#'   are ignored and will not separate runs, e.g., \code{1, 1, NA, 1} would be
+#'   treated as a single run
 #' 
 #' @return
 #' An integer vector having the same length as \code{x}.
@@ -1968,28 +1974,28 @@ droplevels2 <- function(x, min_level = min(as.integer(x), na.rm = TRUE),
 #' 
 #' @param x a vector
 #' @param levels for \code{combine_levels}, a vector of unique values of
-#' \code{x} to combine; to combine values into multiple groups, use a list
+#'   \code{x} to combine; to combine values into multiple groups, use a list
 #' 
-#' for \code{combine_regex} (or \code{combine_labels(..., regex = TRUE)}),
-#' a vector of regular expressions; if a list is given, each list element
-#' will be collapsed with an "or" statement and treated as single expressions
+#'   for \code{combine_regex} (or \code{combine_labels(..., regex = TRUE)}),
+#'   a vector of regular expressions; if a list is given, each list element
+#'   will be collapsed with an "or" statement and treated as single expressions
 #' 
-#' for values of \code{x} which match none of \code{levels} and if
-#' \code{keep.original = FALSE}, a \emph{named} \code{NULL} list element can
-#' group these values; otherwise, the smallest unused integer is used; see
-#' examples
+#'   for values of \code{x} which match none of \code{levels} and if
+#'   \code{keep.original = FALSE}, a \emph{named} \code{NULL} list element can
+#'   group these values; otherwise, the smallest unused integer is used; see
+#'   examples
 #' @param labels for \code{combine_levels}, a vector of new labels; if
-#' \code{levels} is a vector, \code{labels} should be length 1; if
-#' \code{levels} is a list, \code{labels} (need not be a list but) should
-#' have one value for each list element of \code{levels}
+#'   \code{levels} is a vector, \code{labels} should be length 1; if
+#'   \code{levels} is a list, \code{labels} (need not be a list but) should
+#'   have one value for each list element of \code{levels}
 #' 
-#' for \code{combine_regex}, if \code{keep.original = FALSE}, one additional
-#' label should be given for values that do not match any of \code{levels}
+#'   for \code{combine_regex}, if \code{keep.original = FALSE}, one additional
+#'   label should be given for values that do not match any of \code{levels}
 #' @param ordered logical; if \code{TRUE}, returns an ordered factor
 #' @param regex logical; if \code{TRUE}, \code{levels} is assumed to be
-#' regular expressions, and inputs are passed to \code{combine_regex}
+#'   regular expressions, and inputs are passed to \code{combine_regex}
 #' @param ... additional arguments passed to \code{combine_regex} or further
-#' to \code{\link{grep}}
+#'   to \code{\link{grep}}
 #' @param keep.original deprecated, will be ignored
 #' 
 #' @return
@@ -2113,12 +2119,12 @@ combine_regex <- function(x, levels, labels = NULL, ordered = is.ordered(x),
 #' 
 #' @param data a matrix or data frame
 #' @param column the name of the column to create or the column name used
-#' to create the row names; if \code{column} is already used, the new name
-#' will be passed to \code{\link{make.unique}} before used
+#'   to create the row names; if \code{column} is already used, the new name
+#'   will be passed to \code{\link{make.unique}} before used
 #' @param where the location to add \code{column} or the index of the column
-#' used to create new row names; for \code{rownames_to_column}, the default
-#' is to add the new column first; optional for \code{column_to_rownames}
-#' \code{column} will be ignored if \code{where} is given
+#'   used to create new row names; for \code{rownames_to_column}, the default
+#'   is to add the new column first; optional for \code{column_to_rownames}
+#'   \code{column} will be ignored if \code{where} is given
 #' 
 #' @seealso
 #' \code{\link{insert}}; \code{tibble::rownames}
@@ -2167,12 +2173,12 @@ column_to_rownames <- function(data, column = 'rownames', where = 1L) {
 #' 
 #' @param text,pattern the text and pattern character strings
 #' @param n integer value(s) for splitting at the \code{n}th occurrence of
-#' \code{pattern}; \code{NULL} will split at each \code{pattern}
+#'   \code{pattern}; \code{NULL} will split at each \code{pattern}
 #' @param keep_split logical; if \code{TRUE}, \code{text} will be split at
-#' the boundaries of \code{pattern}
+#'   the boundaries of \code{pattern}
 #' @param repl a string used internally for place-keeping during splitting;
-#' to avoid unexpected results, make sure this string does not occur in
-#' \code{text}
+#'   to avoid unexpected results, make sure this string does not occur in
+#'   \code{text}
 #' @param ... additional arguments passed to \code{\link{gregexpr}}
 #' 
 #' @examples
@@ -2212,11 +2218,11 @@ split_nth <- function(text, pattern, n = NULL, keep_split = FALSE,
 #' 
 #' @param x a numeric, complex, or logical vector
 #' @param decreasing logical; if \code{TRUE}, \code{x} is sorted in decreasing
-#' order
+#'   order
 #' @param index.return logical; if \code{TRUE}, an integer vector with the
-#' ordering index is returned
+#'   ordering index is returned
 #' @param method the sorting method used, \code{"shell"} (default) or
-#' \code{"radix"}; see \code{\link{order}}
+#'   \code{"radix"}; see \code{\link{order}}
 #' 
 #' @examples
 #' set.seed(1)
@@ -2263,50 +2269,52 @@ sort2 <- function(x, decreasing = FALSE, index.return = FALSE,
 #' and the results are aggregated into a single data frame.
 #' 
 #' @param date a vector of assessment dates for a single ID; identical
-#' \code{date}/\code{response} visits will be removed with a warning
+#'   \code{date}/\code{response} visits will be removed with a warning
 #' @param response a factor variable of responses for each \code{date} with
-#' levels ordered from best response to worst (e.g.,
-#' \code{factor(., levels = c('CR', 'PR', 'SD', 'PD'))}
+#'   levels ordered from best response to worst (e.g.,
+#'   \code{factor(., levels = c('CR', 'PR', 'SD', 'PD'))}
 #' @param include integer vector corresponding to the levels of \code{response}
-#' or a single regular expression to match levels of \code{response}; defines
-#' assessments that will be treated as a meaningful response, e.g., if
-#' \code{include} does not match stable disease and/or minimal response,
-#' these assessments will be ignored in calculating best-so-far and best
-#' overall responses
+#'   or a single regular expression to match levels of \code{response}; defines
+#'   assessments that will be treated as a meaningful response, e.g., if
+#'   \code{include} does not match stable disease and/or minimal response,
+#'   these assessments will be ignored in calculating best-so-far and best
+#'   overall responses
 #' @param default (optional) the default response if no assessments have been
-#' confirmed, usually stable disease; must be a level of \code{response}
+#'   confirmed, usually stable disease; must be a level of \code{response}
 #' @param no_confirm responses that do not require confirmation assessments,
-#' usually stable disease (default); must match a level of \code{response}
+#'   usually stable disease (default); must match a level of \code{response}
 #' @param progression a character string or regular expression to identify
-#' progression events in \code{response}; must match a level of \code{response}
+#'   progression events in \code{response}; must match a level of
+#'   \code{response}
 #' @param n_confirm to confirm a response, the number of subsequent responses
-#' equal to or better than previous; e.g., if \code{n_confirm = 1} (default),
-#' to confirm a response, the next assessment must be at least as good as the
-#' current; note that this only affects \code{.$confirmed} and
-#' \code{.$bsf_confirmed} in the return object; if \code{n_confirm = 2}, to
-#' confirm a response, the next two assessments must be at least as good, etc
+#'   equal to or better than previous; e.g., if \code{n_confirm = 1} (default),
+#'   to confirm a response, the next assessment must be at least as good as the
+#'   current; note that this only affects \code{.$confirmed} and
+#'   \code{.$bsf_confirmed} in the return object; if \code{n_confirm = 2}, to
+#'   confirm a response, the next two assessments must be at least as good, etc
 #' @param n_prog similar to \code{n_confirm} but for progression; if
-#' \code{nprog = 1}, then a progression must be followed by at least one
-#' progression to confirm; note that this only affects \code{.$confirmed} and
-#' \code{.$bsf_confirmed} in the return object
+#'   \code{nprog = 1}, then a progression must be followed by at least one
+#'   progression to confirm; note that this only affects \code{.$confirmed}
+#'   and \code{.$bsf_confirmed} in the return object
 #' @param strict logical; if \code{TRUE}, only the first uninterrupted
-#' sequence of confirmed responses will be evaluated for best response; e.g.,
-#' an unconfirmed CR between two confirmed PR sequences will result in the
-#' later PR sequence being ignored
+#'   sequence of confirmed responses will be evaluated for best response; e.g.,
+#'   an unconfirmed CR between two confirmed PR sequences will result in the
+#'   later PR sequence being ignored
 #' @param dr (optional) difference in level required to confirm responses; if
-#' \code{dr = 0} (default), the next response must be equal to or better to
-#' confirm; if \code{dr = -1}, the next response must be at least one level
-#' better; \code{dr = Inf} will be equivalent to unconfirmed responses since
-#' any subsequent response can confirm the one previous
+#'   \code{dr = 0} (default), the next response must be equal to or better to
+#'   confirm; if \code{dr = -1}, the next response must be at least one level
+#'   better; \code{dr = Inf} will be equivalent to unconfirmed responses since
+#'   any subsequent response can confirm the one previous
 #' @param dp (optional) difference in level required to show progression; if
-#' \code{dp = NULL} (default), only responses matching \code{progression}
-#' pattern are progression; if \code{dp = 0}, any worse response will be
-#' considered progression (e.g., CR followed by PR); \code{dp = 1},
-#' progression is defined as a greater than one level drop in response (e.g.,
-#' CR to PR is not progression but CR to SD or MR is progression)
+#'   \code{dp = NULL} (default), only responses matching \code{progression}
+#'   pattern are progression; if \code{dp = 0}, any worse response will be
+#'   considered progression (e.g., CR followed by PR); \code{dp = 1},
+#'   progression is defined as a greater than one level drop in response (e.g.,
+#'   CR to PR is not progression but CR to SD or MR is progression)
 #' 
 #' @return
 #' A list with the following elements:
+#' 
 #' \item{$unconfirmed}{a \code{1 x 10} data frame with dates of first and last
 #' response, first and last best response, the response for each, date last
 #' free from progression, and date of progression}
@@ -2613,7 +2621,9 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
 #' @param id for \code{response2}, a vector of IDs
 #' @param ... additional arguments passed to \code{response}
 #' @param type see "Value" section
+#' 
 #' @rdname response
+#' 
 #' @export
 response2 <- function(id, date, response, ...,
                       type = c('unconfirmed', 'confirmed',
@@ -2636,21 +2646,22 @@ response2 <- function(id, date, response, ...,
 #' Create a contingency table with totals, percentages, and statistical test.
 #' 
 #' @param x,by row and column variables, respectively; should be factor-like
-#' and will be coerced; missing values in \code{by} will be removed with the
-#' corresponding values in \code{x}
+#'   and will be coerced; missing values in \code{by} will be removed with the
+#'   corresponding values in \code{x}
 #' @param digits for percentages, number of digits past the decimal to keep
 #' @param total logical; if \code{TRUE}, the row totals will be added as a
-#' separate column
+#'   separate column
 #' @param pct.sign logical; if \code{FALSE} (default), no percentage signs
-#' will be shown
+#'   will be shown
 #' @param test logical; if \code{TRUE}, a test and p-value will be added as
-#' a separate column; see \code{rawr:::guess_test}
+#'   a separate column; see \code{rawr:::guess_test}
 #' 
-#' alternatively, a user-defined test function which takes two arguments,
-#' \code{x} and \code{by}, and returns a numeric p-value with an optional
-#' attribute, \code{"name"}, which will be used as a test label; see
-#' examples
-#' @param ... additional arguments passed to \code{\link[Gmisc]{getDescriptionStatsBy}}
+#'   alternatively, a user-defined test function which takes two arguments,
+#'   \code{x} and \code{by}, and returns a numeric p-value with an optional
+#'   attribute, \code{"name"}, which will be used as a test label; see
+#'   examples
+#' @param ... additional arguments passed to
+#'   \code{\link[Gmisc]{getDescriptionStatsBy}}
 #' 
 #' @seealso
 #' \code{\link[Gmisc]{getDescriptionStatsBy}}; \code{\link{tabler_stat2}};
@@ -2718,19 +2729,19 @@ xtable <- function(x, by, digits = 0L, total = TRUE, pct.sign = FALSE,
 #' 
 #' @param x a vector of data, usually taking a small number of distinct values
 #' @param levels a \emph{named} list of unique values or regular expressions
-#' to group elements of \code{x}
+#'   to group elements of \code{x}
 #' 
-#' a \code{NULL} group will collapse all non matches to a single category;
-#' however, if there is no \code{NULL} group, non matches will be unchanged
+#'   a \code{NULL} group will collapse all non matches to a single category;
+#'   however, if there is no \code{NULL} group, non matches will be unchanged
 #' 
-#' if \code{regex = TRUE} or flagged with \code{(?r)}, matching elements of
-#' \code{x} will be combined
+#'   if \code{regex = TRUE} or flagged with \code{(?r)}, matching elements of
+#'   \code{x} will be combined
 #' @param exclude,ordered passed to \code{\link{factor}}
 #' @param regex logical; if \code{TRUE}, \code{levels} is treated as a list
-#' of regular expressions or otherwise matched exactly (unless \code{levels}
-#' is flagged with \code{(?r)})
+#'   of regular expressions or otherwise matched exactly (unless \code{levels}
+#'   is flagged with \code{(?r)})
 #' @param ... additional arguments passed to \code{\link{grep}} when using
-#' regular expressions
+#'   regular expressions
 #' 
 #' @seealso
 #' \code{\link{combine_levels}}; \code{\link{combine_regex}}

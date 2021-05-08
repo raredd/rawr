@@ -25,15 +25,15 @@
 #' Convenience functions to summarize statistical tests.
 #'
 #' @param x numeric or factor-like variable, table, or a list depending on
-#' the statistic
+#'   the statistic
 #' @param y (optional) group or stratification variable
 #' @param ... additional arguments passed to the stat function
 #' @param details logical; if \code{FALSE}, only the p-value is printed; if
-#' \code{TRUE}, additional details, such as the test statistic, degrees of
-#' freedom depending on the test, are printed
+#'   \code{TRUE}, additional details, such as the test statistic, degrees of
+#'   freedom depending on the test, are printed
 #' @param digits number of digits past the decimal point to keep
 #' @param object for \code{inl_logrank}, a \code{\link[survival]{survdiff}}
-#' object or formula to be passed to \code{survdiff}
+#'   object or formula to be passed to \code{survdiff}
 #'
 #' @examples
 #' x <- mtcars$vs
@@ -297,7 +297,7 @@ inl_wilcox <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
 #'
 #' @param ... one or more character strings
 #' @param use_viewer logical; if \code{TRUE}, attempts to use
-#' \code{rstudioapi::viewer} or opens in default browser on error
+#'   \code{rstudioapi::viewer} or opens in default browser on error
 #'
 #' @return
 #' The html code (invisibly) as a character string.
@@ -346,9 +346,9 @@ show_html <- function(..., use_viewer = !is.null(getOption('viewer'))) {
 #'
 #' @param ... one or more character strings
 #' @param use_viewer logical; if \code{TRUE}, attempts to use
-#' \code{rstudioapi::viewer} or opens in default browser on error
+#'   \code{rstudioapi::viewer} or opens in default browser on error
 #' @param markArgs a list of addition arguments passed to
-#' \code{\link[markdown]{markdownToHTML}}
+#'   \code{\link[markdown]{markdownToHTML}}
 #'
 #' @return
 #' The html code (invisibly) as a character string.
@@ -439,7 +439,7 @@ show_markdown <- function(..., use_viewer = !is.null(getOption('viewer')),
 #' @param ... one or more character strings
 #' @param css optional css formatting
 #' @param use_viewer logical; if \code{TRUE}, attempts to use
-#' \code{rstudioapi::viewer} or opens in default browser on error
+#'   \code{rstudioapi::viewer} or opens in default browser on error
 #'
 #' @return
 #' The html code (invisibly) as a character string.
@@ -526,9 +526,9 @@ show_math <- function(..., css = '', use_viewer = !is.null(getOption('viewer')))
 #' @param x numeric vector, matrix, or data frame
 #' @param digits number of digits past the decimal point to keep
 #' @param format logical; if \code{TRUE}, large numbers will be formatted
-#' with commas
+#'   with commas
 #' @param check logical; if \code{TRUE}, formatted strings are checked for
-#' consistency with \code{\link[base]{round}} and warned if not identical
+#'   consistency with \code{\link[base]{round}} and warned if not identical
 #'
 #' @return
 #' An object having the same class as \code{x}.
@@ -625,13 +625,13 @@ roundr.data.frame <- function(x, digits = 1L, format = TRUE, check = TRUE) {
 #'
 #' @param ... numeric vector or string of numeric vectors
 #' @param fun summary stat function, usually \code{\link{mean}} or
-#' \code{\link{median}}
+#'   \code{\link{median}}
 #' @param conf width of confidence interval in \code{[0,1]}; if \code{NULL}
-#' (default), returns min and max of \code{...}
+#'   (default), returns min and max of \code{...}
 #' @param digits number of digits (includes trailing 0s)
 #' @param na.rm logical; if \code{TRUE}, any \code{\link{NA}} and \code{NaN}
-#' are removed from \code{...} before \code{FUN} and \code{\link{quantile}}
-#' are computed
+#'   are removed from \code{...} before \code{FUN} and \code{\link{quantile}}
+#'   are computed
 #'
 #' @seealso
 #' \code{\link[rawr]{roundr}}
@@ -686,29 +686,29 @@ intr <- function(..., fun = median, conf = NULL,
 #' not ideal (0.000, 1.00, etc) and will leave others unchanged.
 #'
 #' @param pv for \code{pvalr}, a numeric value or vector of p-values; for
-#' \code{pvalr2}, a vector of p-values as character strings
+#'   \code{pvalr2}, a vector of p-values as character strings
 #' @param sig.limit lower bound for precision; smaller values will be shown as
-#' \code{< sig.limit}
+#'   \code{< sig.limit}
 #' @param digits number of digits past the decimal point to keep
 #' @param html logical; if \code{TRUE}, uses HTML entities for \code{<}
-#' and \code{>}
+#'   and \code{>}
 #' @param show.p logical; if \code{TRUE}, inserts \code{p = }, \code{p < }, or
-#' \code{p > } where appropriate
+#'   \code{p > } where appropriate
 #' @param journal logical; if \code{TRUE}, p-values greater than
-#' \code{sig.limit} are rounded to \code{digits}
+#'   \code{sig.limit} are rounded to \code{digits}
 #' @param limits a vector controlling the number of digits used in p-values
 #' 
-#' if \code{journal = TRUE}, \code{limits} should be length one, and p-values
-#' will be rounded to two digits for values greater than \code{limits} or
-#' \code{digits} for values between \code{sig.limit} and \code{limits}
+#'   if \code{journal = TRUE}, \code{limits} should be length one, and p-values
+#'   will be rounded to two digits for values greater than \code{limits} or
+#'   \code{digits} for values between \code{sig.limit} and \code{limits}
 #' 
-#' if \code{journal = FALSE}, \code{limits} should be length two, and p-values
-#' will be rounded to one digit for values greater than \code{limits[2L]},
-#' two digits for values between \code{limits[1L]} and \code{limits[2L]},
-#' and \code{digits} for values between \code{sig.limit} and
-#' \code{limits[1L]}
+#'   if \code{journal = FALSE}, \code{limits} should be length two, and
+#'   p-values will be rounded to one digit for values greater than
+#'   \code{limits[2L]}, two digits for values between \code{limits[1L]} and
+#'   \code{limits[2L]}, and \code{digits} for values between \code{sig.limit}
+#'   and \code{limits[1L]}
 #' @param ... additional arguments passed to \code{\link{format.pval}} or
-#' further to \code{\link{format}}
+#'   further to \code{\link{format}}
 #'
 #' @seealso
 #' \code{\link[rawr]{roundr}}; \code{\link[base]{format.pval}}
@@ -782,10 +782,10 @@ pvalr2 <- function(pv, html = FALSE, show.p = FALSE) {
 #' @rdname pvalr
 #'
 #' @param breaks,cols a numeric vector defining breaks in \code{(0,1)} (passed
-#' to \code{\link{findInterval}}) and the corresponding colors
+#'   to \code{\link{findInterval}}) and the corresponding colors
 #' @param format_pval logical; if \code{TRUE}, p-values will be formatted
-#' using \code{\link{pvalr}}; alternatively, a function may by used which will
-#' be applied to each p-value
+#'   using \code{\link{pvalr}}; alternatively, a function may by used which
+#'   will be applied to each p-value
 #'
 #' @examples
 #' \dontrun{
@@ -824,9 +824,9 @@ color_pval <- function(pv, breaks = c(0, 0.01, 0.05, 0.1, 0.5, 1),
 #'
 #' @param l a list to concatenate
 #' @param sep,collapse passed to \code{\link{paste}} controlling the string
-#' to separate name from value and list elements, respectively; if
-#' \code{collapse} is a non character string, the result will be a vector
-#' of strings
+#'   to separate name from value and list elements, respectively; if
+#'   \code{collapse} is a non character string, the result will be a vector
+#'   of strings
 #'
 #' @seealso
 #' \code{\link{iprint}}
@@ -868,10 +868,10 @@ catlist <- function(l, sep = ' = ', collapse = ', ') {
 #' @param frac logical; if \code{TRUE}, includes the fraction \code{r/n}
 #' @param show_conf logical; if \code{TRUE} includes the confidence level
 #' @param pct.sign logical; if \code{TRUE}, percent sign is shown; otherwise,
-#' percents are shown without sign (this does not affect the confidence text)
+#'   percents are shown without sign (this does not affect the confidence text)
 #' @param method method to use (default is exact); see \code{\link{bincon}}
 #' @param percent logical; if \code{TRUE} (default), estimates and intervals
-#' are returned as percentages
+#'   are returned as percentages
 #'
 #' @seealso
 #' \code{\link{bincon}}; \code{\link[Hmisc]{binconf}}
@@ -944,7 +944,7 @@ binconr <- function(r, n, conf = 0.95, digits = 0L, est = TRUE, frac = FALSE,
 #' the informal case.
 #'
 #' @param x an integer to convert to words; can be negative or positive but
-#' decimals will be rounded first
+#'   decimals will be rounded first
 #' @param informal logical; if \code{TRUE}, adds "and" before tens or ones
 #' @param cap logical; if \code{TRUE}, capitalizes the first word
 #'
@@ -1046,12 +1046,12 @@ num2char <- function(x, informal = FALSE, cap = TRUE) {
 #' Modified \code{\link[pander]{p}} function from the \pkg{pander} package.
 #'
 #' @param ... one or more numeric or character elements to be converted into
-#' character vectors
+#'   character vectors
 #' @param wrap character string to wrap each term
 #' @param sep character string to separate the terms
 #' @param copula character string to separate last two terms
 #' @param digits number of digits past the decimal point to keep; see
-#' \code{\link{roundr}}
+#'   \code{\link{roundr}}
 #'
 #' @seealso
 #' \code{\link[pander]{p}}; \code{\link{roundr}}; \code{\link{countr}}
@@ -1125,13 +1125,13 @@ writeftable <- function(x, quote = FALSE, digits = getOption('digits')) {
 #' p-values, etc. from model fits.
 #'
 #' @param x an object of class \code{\link{lm}}, \code{\link{glm}},
-#' \code{\link[survival]{survfit}}, \code{\link[survival]{coxph}}
+#'   \code{\link[survival]{survfit}}, \code{\link[survival]{coxph}}
 #' @param digits number of digits printed
 #' @param level confidence level; default is \code{0.95}
 #' @param exp logical; if \code{TRUE}, estimates and confidence intervals are
-#' exponentiated (for \code{glm} or \code{coxph} methods only)
+#'   exponentiated (for \code{glm} or \code{coxph} methods only)
 #' @param add_reference logical; if \code{TRUE}, adds row for each reference
-#' group if applicable
+#'   group if applicable
 #' @param ... additional arguments passed to or from other methods
 #'
 #' @family tabler
@@ -1303,27 +1303,27 @@ tabler.coxph <- function(x, digits = 3L, level = 0.95, exp = TRUE,
 #' \code{n} for percents.
 #'
 #' @param data a data frame; variables \code{varname} and \code{byvar} should
-#' be factors
+#'   be factors
 #' @param varname subgroup variable name (rows)
 #' @param byvar stratification variable name (columns)
 #' @param n number in each group; see details
 #' @param order logical; order the result by decreasing frequency
 #' @param zeros optional character string replacement for cells which have
-#' zero counts; will appear as \code{0 (0\%)} if \code{TRUE}
+#'   zero counts; will appear as \code{0 (0\%)} if \code{TRUE}
 #' @param pct logical; if \code{TRUE} (and \code{n} is not missing), percents
-#' are shown
+#'   are shown
 #' @param pct.column logical; if \code{TRUE}, percents are separated into new
-#' columns
+#'   columns
 #' @param pct.total logical; if \code{TRUE}, adds percents for total column
 #' @param pct.sign logical; if \code{TRUE}, percent sign is shown; otherwise,
-#' percents are shown in parens without sign
+#'   percents are shown in parens without sign
 #' @param drop logical; for \code{tabler_by} if \code{TRUE}, rows or columns
-#' with zero total counts will be removed (default); the \code{FALSE} case is
-#' useful when merging multiple \code{tabler_by} tables (e.g., this is how
-#' \code{tabler_by2} aligns stratified tables)
+#'   with zero total counts will be removed (default); the \code{FALSE} case is
+#'   useful when merging multiple \code{tabler_by} tables (e.g., this is how
+#'   \code{tabler_by2} aligns stratified tables)
 #' @param stratvar for \code{tabler_by2}, a factor-like variable used to
-#' stratify observations into mutually exclusive groups for which
-#' \code{tabler_by} will be performed on each subset
+#'   stratify observations into mutually exclusive groups for which
+#'   \code{tabler_by} will be performed on each subset
 #'
 #' @family tabler
 #'
@@ -1649,41 +1649,41 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' \code{data$byvar}, in this order and return a numeric p-value only.
 #'
 #' @param data a matrix or data frame with variables \code{varname} and
-#' \code{byvar}
+#'   \code{byvar}
 #' @param varname,byvar the row and column variable, respectively
 #' @param digits number of digits past the decimal point to keep
 #' @param FUN a function performing the test of association between
-#' \code{varname} and \code{byvar}; \code{FALSE} will suppress the test but
-#' keep a column for p-values; \code{NA} will suppress the test and drop the
-#' column for p-values; or a character string; see details
+#'   \code{varname} and \code{byvar}; \code{FALSE} will suppress the test but
+#'   keep a column for p-values; \code{NA} will suppress the test and drop the
+#'   column for p-values; or a character string; see details
 #' @param format_pval logical; if \code{TRUE}, p-values will be formatted
-#' using \code{\link{pvalr}}; alternatively, a function may by used which will
-#' be applied to each p-value
+#'   using \code{\link{pvalr}}; alternatively, a function may by used which will
+#'   be applied to each p-value
 #' @param color_pval logical; if \code{TRUE}, p-values will be colored
-#' by significance; see \code{\link{color_pval}}; alternatively, a vector of
-#' colors passed to \code{\link{color_pval}})
+#'   by significance; see \code{\link{color_pval}}; alternatively, a vector of
+#'   colors passed to \code{\link{color_pval}})
 #' @param color_missing logical; if \code{TRUE}, rows summarizing missing
-#' values will be shown in light grey; alternatively, a color string can be
-#' used for a custom color
+#'   values will be shown in light grey; alternatively, a color string can be
+#'   used for a custom color
 #' @param dagger logical or a character string giving the character to
-#' associate with \code{FUN}; if \code{FALSE}, none are used; if \code{TRUE},
-#' the defaults are used (\code{"*"} is used if \code{FUN} is given)
+#'   associate with \code{FUN}; if \code{FALSE}, none are used; if \code{TRUE},
+#'   the defaults are used (\code{"*"} is used if \code{FUN} is given)
 #' @param color_cell_by apply a color gradient to each cell (for html output);
-#' one of \code{"none"} for no coloring, \code{"value"} to color by numeric
-#' summary (e.g., for continuous variables), or \code{"pct"} to color by
-#' proportions (e.g., for factors)
+#'   one of \code{"none"} for no coloring, \code{"value"} to color by numeric
+#'   summary (e.g., for continuous variables), or \code{"pct"} to color by
+#'   proportions (e.g., for factors)
 #' @param cell_color a vector of colors used for \code{color_cell_by}
 #' @param confint logical or \code{varname}; if \code{TRUE} (or \code{varname})
-#' rows will be formatted as confidence intervals; see \code{\link{binconr}}
+#'   rows will be formatted as confidence intervals; see \code{\link{binconr}}
 #' @param include_na_in_prop logical; if \code{TRUE} (default), the number of
-#' missing values is included when calculating proportions for factor levels;
-#' if \code{FALSE}, only non-missing levels count towards proportions
+#'   missing values is included when calculating proportions for factor levels;
+#'   if \code{FALSE}, only non-missing levels count towards proportions
 #' @param iqr logical; if \code{TRUE}, the interquartile range is used
-#' instead of the full range (default) for continuous variables
+#'   instead of the full range (default) for continuous variables
 #' @param continuous_fn a function to describe continuous variables (default
-#' is to show median and range); see \code{\link[Gmisc]{getDescriptionStatsBy}}
+#'   is to show median and range); see \code{\link[Gmisc]{getDescriptionStatsBy}}
 #' @param ... additional arguments passed to
-#' \code{\link[Gmisc]{getDescriptionStatsBy}}
+#'   \code{\link[Gmisc]{getDescriptionStatsBy}}
 #'
 #' @return
 #' A matrix with additional attributes:
@@ -2134,11 +2134,11 @@ guess_test <- function(x, y, n_unique_x = 10L) {
 #' @param format the date format; see \code{\link{strptime}}
 #' @param copula character string to separate the range
 #' @param FUN a function to summarize \code{x}, usually \code{range} or
-#' \code{min}
+#'   \code{min}
 #' @param add_total_col logical, \code{"first"}, or \code{"last"}; adds
-#' the total column to the output
+#'   the total column to the output
 #' @param useNA how to handle missing values, one of \code{"ifany"} (default),
-#' \code{"no"}, or \code{"always"}
+#'   \code{"no"}, or \code{"always"}
 #' @param useNA.digits number of digits to use for missing percentages
 #' @param percentage_sign logical; if \code{TRUE}, percent signs are added
 #'
@@ -2298,60 +2298,60 @@ describeSurv <- function(x, y, include_NA = TRUE, percent = TRUE,
 #' Helper functions for using \code{\link{tabler_stat}}.
 #'
 #' @param data a matrix or data frame with variables \code{varname} and
-#' \code{byvar}
+#'   \code{byvar}
 #' @param varname one or more variables in \code{data} to calculate
-#' statistics by \code{byvar}; the rows variable(s) of the table
+#'   statistics by \code{byvar}; the rows variable(s) of the table
 #' @param byvar a stratification variable; the column variable of the table
 #' @param varname_label,byvar_label optional labels for each \code{varname}
-#' and \code{byvar}
+#'   and \code{byvar}
 #'
-#' note that duplicated \code{varname_label}s will be processed individually
-#' then grouped; this is useful if one variable is shown as continuous and
-#' categorical, for example; grouped variables should be consecutive, see
-#' examples
+#'   note that duplicated \code{varname_label}s will be processed individually
+#'   then grouped; this is useful if one variable is shown as continuous and
+#'   categorical, for example; grouped variables should be consecutive, see
+#'   examples
 #' @param digits \code{NULL} or a vector of digits past the decimal point to
-#' keep for each \code{varname}; if \code{NULL}, these will be guessed using
-#' \code{rawr:::guess_digits}; if length 1, all will be rounded to
-#' \code{digits}
+#'   keep for each \code{varname}; if \code{NULL}, these will be guessed using
+#'   \code{rawr:::guess_digits}; if length 1, all will be rounded to
+#'   \code{digits}
 #'
-#' alternatively, to set \code{digits} for a single \code{varname} manually,
-#' a \emph{named} vector of \code{digits} corresponding to one or more
-#' \code{varname} variables can be used; see examples
+#'   alternatively, to set \code{digits} for a single \code{varname} manually,
+#'   a \emph{named} vector of \code{digits} corresponding to one or more
+#'   \code{varname} variables can be used; see examples
 #' @param FUN \code{NULL} or a list of functions performing the test of
-#' association between each \code{varname} and \code{byvar}; see
-#' \code{\link{tabler_stat}}
+#'   association between each \code{varname} and \code{byvar}; see
+#'   \code{\link{tabler_stat}}
 #' @param confint optional vector of \code{varname}(s) to summarize as
-#' confidence intervals
+#'   confidence intervals
 #' @param include_na_in_prop logical; if \code{TRUE} (default), the number of
-#' missing values is included when calculating proportions for factor levels;
-#' if \code{FALSE}, only non-missing levels count towards proportions
+#'   missing values is included when calculating proportions for factor levels;
+#'   if \code{FALSE}, only non-missing levels count towards proportions
 #' @param iqr logical; if \code{TRUE}, the interquartile range is used
-#' instead of the full range (default) for continuous variables
+#'   instead of the full range (default) for continuous variables
 #' @param format_pval logical; if \code{TRUE}, p-values will be formatted
-#' using \code{\link{pvalr}}; alternatively, a function may by used which
-#' will be applied to each p-value
+#'   using \code{\link{pvalr}}; alternatively, a function may by used which
+#'   will be applied to each p-value
 #' @param color_pval,color_missing,dagger \code{NULL} or vectors, recycled as
-#' needed for each \code{varname}; see \code{\link{tabler_stat}}
+#'   needed for each \code{varname}; see \code{\link{tabler_stat}}
 #' @param correct logical or one of \code{\link{p.adjust.methods}}; if p-value
-#' correction is desired, a column is added to the table with the corrected
-#' p-values
+#'   correction is desired, a column is added to the table with the corrected
+#'   p-values
 #' @param group a \emph{named} vector of variables (either index of or a
-#' value in \code{varname}) to begin a new group (see \code{tspanner} in
-#' \code{\link[htmlTable]{htmlTable}})
+#'   value in \code{varname}) to begin a new group (see \code{tspanner} in
+#'   \code{\link[htmlTable]{htmlTable}})
 #' @param color_cell_by,cell_color apply a color gradient (\code{cell_color})
-#' to each cell (for html output); one of \code{"none"}, \code{"value"}, or
-#' \code{"pct"}; see \code{\link{tabler_stat}}
+#'   to each cell (for html output); one of \code{"none"}, \code{"value"}, or
+#'   \code{"pct"}; see \code{\link{tabler_stat}}
 #' @param statArgs a named list of additional arguments passed to
-#' \code{\link[Gmisc]{getDescriptionStatsBy}}
+#'   \code{\link[Gmisc]{getDescriptionStatsBy}}
 #' @param align,rgroup,cgroup,tfoot optional arguments passed to
-#' \code{\link[htmlTable]{htmlTable}}
+#'   \code{\link[htmlTable]{htmlTable}}
 #' @param tfoot2 optional footnote(s) appended to \code{tfoot}
 #' @param htmlArgs a named list of additional arguments passed to
-#' \code{\link[htmlTable]{htmlTable}}
+#'   \code{\link[htmlTable]{htmlTable}}
 #' @param zeros a character string used in place of zero cells (non-character
-#' value keeps cells as-is)
+#'   value keeps cells as-is)
 #' @param clean_daggers logical or one of \code{"letters"}, \code{"numbers"};
-#' values other than \code{FALSE} will replace default dagger characters
+#'   values other than \code{FALSE} will replace default dagger characters
 #'
 #' @family tabler
 #'
@@ -2777,28 +2777,28 @@ get_tabler_stat_n <- function(x, pct = TRUE, use_labels = TRUE,
 #' format for easy display.
 #'
 #' @param x a factor variable of responses; responses should be ordered as
-#' CR, PR, SD, PD, NE or similar (i.e., best to worst)
+#'   CR, PR, SD, PD, NE or similar (i.e., best to worst)
 #' @param r_or_better if integer(s), indicates the levels of \code{x} that
-#' are to be combined with better responses; for example, if
-#' \code{r_or_better = 3} (default), then any occurrence of level 1, 2, or 3
-#' of \code{x} is treated as a response, and the proportion and confidence
-#' interval are calculated for the aggregate
+#'   are to be combined with better responses; for example, if
+#'   \code{r_or_better = 3} (default), then any occurrence of level 1, 2, or 3
+#'   of \code{x} is treated as a response, and the proportion and confidence
+#'   interval are calculated for the aggregate
 #'
-#' if \code{FALSE}; levels of \code{x} are estimated independently
+#'   if \code{FALSE}; levels of \code{x} are estimated independently
 #' @param conf,frac,show_conf,pct.sign additional arguments passed to
-#' \code{\link{binconr}}
+#'   \code{\link{binconr}}
 #' @param digits number of digits past the decimal point to keep
 #' @param total logical or numeric; if \code{TRUE}, a column with the total,
-#' i.e., \code{length(x)} is added; if numeric, \code{length(x)} and,
-#' optionally, fraction and percent out of \code{total} is added
+#'   i.e., \code{length(x)} is added; if numeric, \code{length(x)} and,
+#'   optionally, fraction and percent out of \code{total} is added
 #' @param two_stage \code{FALSE} (default, assumes exact binomial CIs are
-#' desired) or a vector of length 3 with the 1) maximum number responses in
-#' the first stage that can be observed \emph{without} continuing; 2) the
-#' sample size in the first stage; and 3) the sample size in the second stage
+#'   desired) or a vector of length 3 with the 1) maximum number responses in
+#'   the first stage that can be observed \emph{without} continuing; 2) the
+#'   sample size in the first stage; and 3) the sample size in the second stage
 #'
-#' if more than three integers are given, the remaining should indicate the
-#' columns which should be calculated as two-stage CIs; usually this is only
-#' one value but multiple are accepted
+#'   if more than three integers are given, the remaining should indicate the
+#'   columns which should be calculated as two-stage CIs; usually this is only
+#'   one value but multiple are accepted
 #'
 #' @family tabler
 #'
@@ -2973,8 +2973,8 @@ r_or_better1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
 #' meaningful) descriptions.
 #'
 #' @param ... character string(s) of toxicity codes (usually of the form
-#' \code{AB123} but can handle \code{AB-123} or \code{AB 123}) or keyword(s)
-#' to be matched in the toxicity description
+#'   \code{AB123} but can handle \code{AB-123} or \code{AB 123}) or keyword(s)
+#'   to be matched in the toxicity description
 #' @param version version number; default is CTCAE v4
 #'
 #' @return
@@ -3028,15 +3028,15 @@ match_ctc <- function(..., version = 4L) {
 #' @param id column name with identifier
 #' @param desc column name with toxicity descriptions (or codes)
 #' @param grade column name with toxiticity grades; should be a factor
-#' with the desired order to be properly sorted, i.e., least to most severe
+#'   with the desired order to be properly sorted, i.e., least to most severe
 #' @param code,version if \code{code} is given, \code{\link{match_ctc}} will
-#' match this column from \code{data} with the CTCAE \code{version} given and
-#' return toxicity descriptions rather than codes; if showing toxicity codes
-#' is desired, use \code{desc} instead
+#'   match this column from \code{data} with the CTCAE \code{version} given and
+#'   return toxicity descriptions rather than codes; if showing toxicity codes
+#'   is desired, use \code{desc} instead
 #'
-#' note that \code{version} should be either \code{3} or \code{4} (default)
-#' corresponding to \code{\link{ctcae_v3}} or \code{\link{ctcae_v4}},
-#' respectively
+#'   note that \code{version} should be either \code{3} or \code{4} (default)
+#'   corresponding to \code{\link{ctcae_v3}} or \code{\link{ctcae_v4}},
+#'   respectively
 #'
 #' @return
 #' A filtered data frame with attributes:
@@ -3111,18 +3111,18 @@ tox_worst <- function(data, id = 'id', desc = 'desc', grade = 'grade',
 #' Formats and prints a \emph{named} vector of counts with percents.
 #'
 #' @param x named vector of counts (a summary or table) or a long vector
-#' of character strings or factors
+#'   of character strings or factors
 #' @param n total number of observations; if not given, the length of
-#' \code{x} is used
+#'   \code{x} is used
 #' @param lowcase logical; names will be lowercase if \code{TRUE}, upper
-#' case if \code{FALSE}, and unchanged for any other value
+#'   case if \code{FALSE}, and unchanged for any other value
 #' @param frac logical; if \code{TRUE}, counts are shown as fractions of
-#' \code{n}
+#'   \code{n}
 #' @param digits number of digits past the decimal point to keep
 #' @param which optional integer or character vector to select or re-order
-#' the output; note that this does not change the counts or percentages
+#'   the output; note that this does not change the counts or percentages
 #' @param conf,show_conf optional arguments controlling binomial confidence
-#' intervals, passed to \code{\link{binconr}}
+#'   intervals, passed to \code{\link{binconr}}
 #'
 #' @examples
 #' x <- setNames(3:1, c('Gold', 'Silver', 'Bronze'))
@@ -3195,7 +3195,7 @@ countr <- function(x, n, lowcase = NA, frac = FALSE, digits = 0L,
 #'
 #' @param d,m,y day, month, year as single integers or vectors
 #' @param origin a vector of length three giving the origins for \code{d},
-#' \code{m}, and \code{y}, respectively; see details
+#'   \code{m}, and \code{y}, respectively; see details
 #'
 #' @return
 #' A vector of \code{\link{Date}}-formatted strings.
@@ -3246,13 +3246,13 @@ dmy <- function(d, m, y, origin = c(1, 1, 1900)) {
 #'
 #' @param l a list of matrices or data frames
 #' @param tspanner,n.tspanner table spanner labels and number of rows,
-#' respectively, passed to \code{\link[htmlTable]{htmlTable}}; if missing,
-#' \code{names(l)} and \code{sapply(l, nrow)} are used
+#'   respectively, passed to \code{\link[htmlTable]{htmlTable}}; if missing,
+#'   \code{names(l)} and \code{sapply(l, nrow)} are used
 #' @param cgroup,n.cgroup table column labels and number of columns for each,
-#' respectively, passed to \code{\link[htmlTable]{htmlTable}}; if missing,
-#' \code{names(l)} and \code{sapply(l, ncol)} are used
+#'   respectively, passed to \code{\link[htmlTable]{htmlTable}}; if missing,
+#'   \code{names(l)} and \code{sapply(l, ncol)} are used
 #' @param how method to join objects, by row (\code{"rbind"}) or column
-#' (\code{"cbind"}) binding
+#'   (\code{"cbind"}) binding
 #' @param ... additional arguments passed to \code{\link[htmlTable]{htmlTable}}
 #'
 #' @examples
@@ -3333,10 +3333,10 @@ combine_table2 <- function(l, tspanner, n.tspanner, cgroup, n.cgroup,
 #'
 #' @param x a matrix or data frame
 #' @param where an \code{nx2} matrix of row and column indices or vector (of
-#' the form c(row, col, row, col, ...)) specifying which cells to select; if
-#' \code{where} is missing, \code{style} is recycled for all cells
+#'   the form c(row, col, row, col, ...)) specifying which cells to select; if
+#'   \code{where} is missing, \code{style} is recycled for all cells
 #' @param style vector of character string(s) applied to each cell, recycled
-#' if necessary
+#'   if necessary
 #'
 #' @seealso
 #' \code{\link[htmlTable]{htmlTable}}
@@ -3426,8 +3426,8 @@ inject_ <- function(x, where, what) {
 #' @param x a text string
 #' @param case a case to use; can be (unambiguously) abbreviated; see details
 #' @param translate logical; if \code{TRUE}, strings will be translated to
-#' upper- or lowercase \emph{before} \code{case} is applied to ensure that
-#' the case of all characters of \code{x} is uniform
+#'   upper- or lowercase \emph{before} \code{case} is applied to ensure that
+#'   the case of all characters of \code{x} is uniform
 #'
 #' @examples
 #' cases <- eval(formals(case)$case)
@@ -3487,10 +3487,10 @@ case <- function(x, case = c('first', 'upcase', 'downcase', 'camelcase',
 #'
 #' @param x a string, e.g., the return of \code{\link[htmlTable]{htmlTable}}
 #' @param file a character string naming the file to print to; \code{""},
-#' the default, prints to the console; other values (\code{NULL}, logicals,
-#' etc.) return \code{x}
+#'   the default, prints to the console; other values (\code{NULL}, logicals,
+#'   etc.) return \code{x}
 #' @param attributes logical; if \code{TRUE}, html attributes are added and
-#' default border color names are replaced with hexadecimal values
+#'   default border color names are replaced with hexadecimal values
 #'
 #' @examples
 #' x <- htmlTable::htmlTable(head(cars))
@@ -3527,10 +3527,10 @@ write_htmlTable <- function(x, file = '', attributes = TRUE) {
 #' @param x an object of class \code{\link[htmlTable]{htmlTable}}
 #' @param sep a character string used as the center of alignment
 #' @param where a character string or regular expression (see examples)
-#' defining where strings should be aligned; the easiest method is to
-#' use \code{"&&"} at the desired alignment point
+#'   defining where strings should be aligned; the easiest method is to use
+#'   \code{"&&"} at the desired alignment point
 #' @param min_width minimum width of the span tag; too narrow will not
-#' align strings but too wide adds whitespace
+#'   align strings but too wide adds whitespace
 #'
 #' @examples
 #' tmp <- within(cars, {

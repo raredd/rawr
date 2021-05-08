@@ -17,13 +17,13 @@ tox_worst(data, id = "id", desc = "desc", grade = "grade", code, version = 4L)
 with the desired order to be properly sorted, i.e., least to most severe}
 
 \item{code, version}{if \code{code} is given, \code{\link{match_ctc}} will
-match this column from \code{data} with the CTCAE \code{version} given and
-return toxicity descriptions rather than codes; if showing toxicity codes
-is desired, use \code{desc} instead
+  match this column from \code{data} with the CTCAE \code{version} given and
+  return toxicity descriptions rather than codes; if showing toxicity codes
+  is desired, use \code{desc} instead
 
-note that \code{version} should be either \code{3} or \code{4} (default)
-corresponding to \code{\link{ctcae_v3}} or \code{\link{ctcae_v4}},
-respectively}
+  note that \code{version} should be either \code{3} or \code{4} (default)
+  corresponding to \code{\link{ctcae_v3}} or \code{\link{ctcae_v4}},
+  respectively}
 }
 \value{
 A filtered data frame with attributes:

@@ -46,7 +46,7 @@ format, see details, examples, or run \code{check_river_format()}}
 
 \item{id, at}{optional parameters specifying individuals (rows) from
 \code{data} to plot and their positions along the y-axis; if not given,
-timelines are plotted sequentially}
+time lines are plotted sequentially}
 
 \item{legend}{logical; if \code{TRUE}, a legend using the unique values of
 \code{data$status} is drawn}

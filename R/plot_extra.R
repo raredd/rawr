@@ -19,16 +19,16 @@
 #' and to set useful defaults for \code{jit} and \code{dist}.
 #'
 #' @param formula a \code{\link{formula}}, such as \code{y ~ group}, where
-#' \code{y} is a numeric vector of data values to be split into groups
-#' according to the grouping variable, \code{group}
+#'   \code{y} is a numeric vector of data values to be split into groups
+#'   according to the grouping variable, \code{group}
 #' @param data optional matrix or data frame containing the variables in
-#' \code{formula}; by default, the variables are taken from
-#' \code{environment(formula)}
+#'   \code{formula}; by default, the variables are taken from
+#'   \code{environment(formula)}
 #' @param x grouping variables or, equivalently, positions along x-axis
 #' @param y a numeric vector of data, y-values
 #' @param jit,dist jittering parameters; \code{jit} describes the spread of
-#' close points, and \code{dist} defines a range to consider points "close";
-#' both may be specified for each group and recycled as needed
+#'   close points, and \code{dist} defines a range to consider points "close";
+#'   both may be specified for each group and recycled as needed
 #' @param ... additional arguments passed to or from other methods
 #'
 #' @seealso
@@ -123,16 +123,16 @@ dodge.formula <- function(formula, data = NULL, ...) {
 #' and to set useful defaults for \code{jit} and \code{dist}.
 #'
 #' @param formula a \code{\link{formula}}, such as \code{y ~ group}, where
-#' \code{y} is a numeric vector of data values to be split into groups
-#' according to the grouping variable, \code{group}
+#'   \code{y} is a numeric vector of data values to be split into groups
+#'   according to the grouping variable, \code{group}
 #' @param data optional matrix or data frame containing the variables in
-#' \code{formula}; by default, the variables are taken from
-#' \code{environment(formula)}
+#'   \code{formula}; by default, the variables are taken from
+#'   \code{environment(formula)}
 #' @param x grouping variables or, equivalently, positions along x-axis
 #' @param y a numeric vector of data, y-values
 #' @param jit,dist jittering parameters; \code{jit} describes the spread of
-#' close points, and \code{dist} defines a range to consider points "close";
-#' both may be specified for each group and recycled as needed
+#'   close points, and \code{dist} defines a range to consider points "close";
+#'   both may be specified for each group and recycled as needed
 #' @param ... additional arguments passed to or from other methods
 #'
 #' @seealso
@@ -240,10 +240,10 @@ dodge2.formula <- function(formula, data = NULL, ...) {
 #' such as \code{"red|orange"}, and return all matches, optionally plotting.
 #'
 #' @param ... integer(s) in \code{1:657} corresponding to the built-in color
-#' name index or color name string(s); if \code{?} is included as a string or
-#' part of a string, color names will be searched for matches
+#'   name index or color name string(s); if \code{?} is included as a string
+#'   or part of a string, color names will be searched for matches
 #' @param plot logical; if \code{TRUE}, integers or color names in \code{...}
-#' will be plotted with corresponding number and name
+#'   will be plotted with corresponding number and name
 #'
 #' @return
 #' If \code{...} is missing, a plot will be drawn. If an integer is given, the
@@ -379,7 +379,7 @@ show_pch <- function(...) {
 #' Add alpha transparency to colors.
 #'
 #' @param col a vector of color names, hexadecimal strings, or integers which
-#' correspond to the current \code{\link{palette}}
+#'   correspond to the current \code{\link{palette}}
 #' @param alpha the alpha transparency in \code{[0,1]}
 #'
 #' @seealso
@@ -422,26 +422,25 @@ tcol <- function(col, alpha = 1) {
 #'
 #' @param x a numeric or integer vector
 #' @param colors a vector of color names as character strings (or
-#' hexadecimal strings) or integers corresponding to colors in the current
-#' \code{\link{palette}}; or a function taking an integer argument that
-#' returns a vector of colors (e.g., \code{\link{colorRampPalette}} or
-#' \code{\link{rainbow}})
+#'   hexadecimal strings) or integers corresponding to colors in the current
+#'   \code{\link{palette}}; or a function taking an integer argument that
+#'   returns a vector of colors (e.g., \code{\link{colorRampPalette}} or
+#'   \code{\link{rainbow}})
 #'
-#' if only one color is given, the scaled value of \code{x} will determine
-#' the amount of transparency (default is from 0, fully-transparent to 1-
-#' fully opaque)
+#'   if only one color is given, the scaled value of \code{x} will determine
+#'   the amount of transparency; default is from 0 (transparent) to 1 (opaque)
 #' @param na.color color used for \code{NA} values of \code{x}
 #' @param breaks (optional) numeric vector to center interpolation; if
-#' \code{NULL} (default), \code{colors} are uniformly spread over a continuous
-#' \code{x}; useful if \code{colors} should be centered at a specific value
-#' of \code{x}; see examples
+#'   \code{NULL} (default), \code{colors} are uniformly spread over a
+#'   continuous \code{x}; useful if \code{colors} should be centered at a
+#'   specific value of \code{x}; see examples
 #' @param alpha transparency applied to interpolated colors (i.e., if
-#' \code{colors} is not a single color)
+#'   \code{colors} is not a single color)
 #' @param alpha.min if a single color name is given, sets the lower bound of
-#' alpha; a value greater than 0 ensures that the color is visible even for
-#' the smallest value of \code{x} after rescaling
+#'   alpha; a value greater than 0 ensures that the color is visible even for
+#'   the smallest value of \code{x} after rescaling
 #' @param to,from output and input range, respectively; see
-#' \code{\link{rescaler}}
+#'   \code{\link{rescaler}}
 #'
 #' @return
 #' A character vector having the same length as \code{x} of hexadecimal color
@@ -557,24 +556,25 @@ col_scaler2 <- function(x, colors, breaks = 0, ...) {
 #'
 #' @param x a vector of text to be drawn above each pair of groups
 #' @param ... additional arguments or graphical parameters passed to
-#' \code{\link{segments}} (e.g., \code{col.line}, \code{lty}, \code{lwd})
-#' or \code{\link{text}} (e.g., \code{col.text}, \code{cex}, \code{font})
+#'   \code{\link{segments}} (e.g., \code{col.line}, \code{lty}, \code{lwd})
+#'   or \code{\link{text}} (e.g., \code{col.text}, \code{cex}, \code{font})
 #' @param formula a formula of the form \code{response ~ group} where
-#' \code{response} is a numeric variable and \code{group} is a factor-like
-#' variable with three or more unique values (groups)
+#'   \code{response} is a numeric variable and \code{group} is a factor-like
+#'   variable with three or more unique values (groups)
 #' @param data an optional matrix or data frame (or similar: see
-#' \code{\link{model.frame}}) containing the variables in \code{formula}; by
-#' default, the variables are taken from \code{environment(formula)}
+#'   \code{\link{model.frame}}) containing the variables in \code{formula};
+#'   by default, the variables are taken from \code{environment(formula)}
 #' @param which an index vector of the values to display
 #' @param at numeric vector giving the x-axis locations of each group having
-#' the same length as \code{x} or the number of pairs; alternatively, a list
-#' of pairs of x-axis locations for each \code{x}; see examples
+#'   the same length as \code{x} or the number of pairs; alternatively, a list
+#'   of pairs of x-axis locations for each \code{x}; see examples
 #' @param line lines at which to plot \code{test} results; if \code{NULL},
-#' these will be calculated; if length 1, the calculated lines will be shifted
-#' by \code{line}
+#'   these will be calculated; if length 1, the calculated lines will be shifted
+#'   by \code{line}
 #' @param test the test to use for pairwise comparisons
 #' @param plot logical; if \code{TRUE}, an existing figure will be annotated
-#' with the tests; if \code{FALSE}, all tests will be returned but not plotted
+#'   with the tests; if \code{FALSE}, all tests will be returned but not
+#'   plotted
 #'
 #' @return
 #' A list of user coordinates and text where each \code{x} is drawn.
@@ -757,12 +757,13 @@ bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
 #'
 #' @param path full file path to image
 #' @param n maximum number of colors to extract, result will be <= \code{n},
-#' and the calculated number of unique colors will also be provided
+#'   and the calculated number of unique colors will also be provided
 #' @param options a (optional) character string of additional options passed
-#' to \href{https://www.imagemagick.org/script/command-line-options.php}{\code{magick}}
+#'   to \href{https://www.imagemagick.org/script/command-line-options.php}{\code{magick}}
 #'
 #' @return
 #' A list of class \code{"imgpal"} with the following elements:
+#' 
 #' \item{filename}{the image file name}
 #' \item{n_unique}{the calculated number of unique colors}
 #' \item{col}{a vector of colors (does not return transparent or white colors)}
@@ -785,6 +786,7 @@ bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
 #' ## rawr::rawr_palettes
 #' img <- system.file('fig', package = 'rawr')
 #' img <- list.files(img, full.names = TRUE, pattern = 'g$')
+#' 
 #' op <- par(mfrow = n2mfrow(length(img)))
 #' sapply(img, function(x) show_pal(imgpal(x), fullrange = TRUE))
 #' par(op)
@@ -834,19 +836,19 @@ imgpal <- function(path, n = 10L, options = '') {
 #' Functions for generating and viewing color palettes.
 #'
 #' @param name the palette name, one of \code{names(rawr_palettes)} or an
-#' unambiguous abbreviation
+#'   unambiguous abbreviation
 #' @param n the first \code{n} colors from the palette to use
 #' @param z for \code{type = 'continuous'}, the number of colors to
-#' interpolate from the sequence of \code{n} palette colors
+#'   interpolate from the sequence of \code{n} palette colors
 #' @param type return a discrete or continuous (gradient) of colors
 #' @param rev logical; if \code{TRUE}, the palette is reversed
 #' @param x one of 1) a \code{rawr_palette} name; 2) a vector of two or more
-#' colors; 3) an \code{\link{imgpal}} object
+#'   colors; 3) an \code{\link{imgpal}} object
 #' @param fullrange logical; for \code{\link{imgpal}} objects, if \code{TRUE},
-#' the entire palette is shown; otherwise, only the unique colors (estimated
-#' from ImageMagick) are shown
+#'   the entire palette is shown; otherwise, only the unique colors (estimated
+#'   from ImageMagick) are shown
 #' @param counts logical; for \code{\link{imgpal}} objects, if \code{TRUE},
-#' the frequencies are shown for each color
+#'   the frequencies are shown for each color
 #'
 #' @seealso
 #' \code{\link{imgpal}}; \code{\link{palette}}; \code{\link{colorRampPalette}};
@@ -995,7 +997,7 @@ show_pal <- function(x, n = Inf, fullrange = FALSE,
 #' and blue plus the average of the three.
 #' 
 #' @param col a vector of colors; see \code{\link{col2rgb}}; note that all
-#' \code{choose(length(col), 2)} pairs of colors will be compared
+#'   \code{choose(length(col), 2)} pairs of colors will be compared
 #' @param col2 an optional vector of colors to compare 1:1 with \code{col}
 #' 
 #' @return
@@ -1060,14 +1062,15 @@ rgbdiff <- function(col, col2 = NULL) {
 #' Add 1-D scatter plot to plot margins for missing values.
 #' 
 #' @param x,y vectors of data to be plotted; if only one is given, all points
-#' will be plotted on the corresponding axis; if both are given, only \code{x}
-#' values where \code{y} is \code{NA} are plotted and vice versa
+#'   will be plotted on the corresponding axis; if both are given, only
+#'   \code{x} values where \code{y} is \code{NA} are plotted and vice versa
 #' @param xat,yat the x- and y-axis positions for points
 #' @param label axis label for points; use \code{FALSE} or \code{''} to omit
 #' @param args.beeswarm a \emph{named} list of additional arguments passed to
-#' \code{\link[beeswarm]{beeswarm}} such as \code{corral} or \code{corralWidth}
+#'   \code{\link[beeswarm]{beeswarm}} such as \code{corral} or
+#'   \code{corralWidth}
 #' @param ... additional arguments passed to \code{\link{tplot}} or further
-#' to \code{par} such as \code{col}, \code{cex}, or \code{pch}
+#'   to \code{par} such as \code{col}, \code{cex}, or \code{pch}
 #' 
 #' @examples
 #' op <- par(mar = c(5, 5, 5, 5))

@@ -35,9 +35,9 @@ set.seed(1)
 mat <- matrix(rep(as.numeric(iris$Species), 3), 3)
 mat[sample(length(mat), length(mat) / 2)] <- NA
 mat <- sort_matrix(mat)[3:1, ]
-shift <- c(.5, 6)
+shift <- c(0.5, 6)
 rect(col(mat) - shift[1], row(mat) - shift[2], col(mat) + shift[1],
-     row(mat) - shift[2] + .5, col = mat, xpd = NA, border = 'white')
+     row(mat) - shift[2] + 0.5, col = mat, xpd = NA, border = 'white')
 
 }
 \author{

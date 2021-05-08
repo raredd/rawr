@@ -6,6 +6,7 @@
 \title{Common Terminology Criteria for Adverse Events, v4}
 \format{
 A data frame with 790 rows and 5 variables:
+
 \tabular{lll}{
 \tab \code{tox_code} \tab alphanumeric toxicity code (\code{AB123}) \cr
 \tab \code{tox_desc} \tab description \cr
@@ -24,7 +25,7 @@ Activities codes, v12 \cr
 ctcae_v4
 }
 \description{
-A dataset containing the CTCAE (version 4) toxicity codes, descriptions,
+A dat aset containing the CTCAE (version 4) toxicity codes, descriptions,
 and categories.
 }
 \seealso{

@@ -59,135 +59,136 @@ stratify_formula <- function(formula, vars = NULL) {
 #' 
 #' @param s an object of class \code{\link{survfit}} or \code{survfit.cox}
 #' @param data (optional) the data frame used to create \code{s}, used to
-#' obtain some data not available in \code{survfit} objects; if not given,
-#' \code{s$call$data} will be searched for in the \code{\link{sys.frames}}
+#'   obtain some data not available in \code{survfit} objects; if not given,
+#'   \code{s$call$data} will be searched for in the \code{\link{sys.frames}}
 #' @param lty.surv,lwd.surv,col.surv line type, width, and color for survival
-#' curve(s); colors may be either numeric, color names as character string(s),
-#' or hexadecimal string(s)
+#'   curve(s); colors may be either numeric, color names as character
+#'   string(s), or hexadecimal string(s)
 #' 
-#' colors will be assigned to curves in order of strata or may be mapped using
-#' a named vector (the names must match the ones given to \code{strata.lab} or
-#' those that are created by \code{\link[survival]{strata}}); this can be
-#' useful to set colors for specific strata levels in multiple plots if some
-#' levels are missing; see examples in \code{\link{kmplot_by}}
+#'   colors will be assigned to curves in order of strata or may be mapped
+#'   using a named vector (the names must match the ones given to
+#'   \code{strata.lab} or those that are created by
+#'   \code{\link[survival]{strata}}); this can be useful to set colors for
+#'   specific strata levels in multiple plots if some levels are missing; see
+#'   examples in \code{\link{kmplot_by}}
 #' @param mark,lwd.mark numeric plotting character (\code{\link{pch}}) or
-#' character string, e.g., \code{''}, \code{'|'}; if \code{mark = 'bump'}, a
-#' mark will be drawn only above the curve; \code{lwd.mark} controls the line
-#' width when a \code{pch} or \code{"bump"} is used
+#'   character string, e.g., \code{''}, \code{'|'}; if \code{mark = 'bump'}, a
+#'   mark will be drawn only above the curve; \code{lwd.mark} controls the line
+#'   width when a \code{pch} or \code{"bump"} is used
 #' @param lty.ci,lwd.ci,col.ci line type, width, and color for confidence
-#' interval(s); not plotted (i.e., \code{= 0}) by default
+#'   interval(s); not plotted (i.e., \code{= 0}) by default
 #' @param col.band color for confidence band(s); either as numeric, color
-#' string(s), or hexadecimal string(s); if \code{TRUE}, \code{col.surv}
-#' values will be used; if \code{FALSE}, \code{NA}, or \code{NULL}, no
-#' bands will be plotted; also note that this is not a true confidence band;
-#' see details
+#'   string(s), or hexadecimal string(s); if \code{TRUE}, \code{col.surv}
+#'   values will be used; if \code{FALSE}, \code{NA}, or \code{NULL}, no
+#'   bands will be plotted; also note that this is not a true confidence band;
+#'   see details
 #' @param kmdiff logical; if \code{TRUE}, a confidence band for the difference
-#' between two curves is shown; see \code{\link{kmdiff}} (note that the color
-#' can be passed via \code{col.ci} and the confidence interval is taken from
-#' \code{s$conf.int})
+#'   between two curves is shown; see \code{\link{kmdiff}} (note that the color
+#'   can be passed via \code{col.ci} and the confidence interval is taken from
+#'   \code{s$conf.int})
 #' @param atrisk.table logical; if \code{TRUE} (default), draws at-risk table
 #' @param atrisk.type a character string giving the type of "at-risk" table to
-#' show; one of \code{"atrisk"} (number at-risk), \code{"events"} (cumulative
-#' number of events), \code{"atrisk-events"} (both), \code{"survival"}
-#' (survival probability), \code{"percent"} (survival percent), or
-#' \code{"cuminc"} (cumulative incidence); \code{"survival-ci"},
-#' \code{"percent-ci"}, \code{"percent-cuminc"}, \code{"cuminc-ci"}, and
-#' \code{"percent-cuminc-ci"} are similar but add confidence intervals
+#'   show; one of \code{"atrisk"} (number at-risk), \code{"events"} (cumulative
+#'   number of events), \code{"atrisk-events"} (both), \code{"survival"}
+#'   (survival probability), \code{"percent"} (survival percent), or
+#'   \code{"cuminc"} (cumulative incidence); \code{"survival-ci"},
+#'   \code{"percent-ci"}, \code{"percent-cuminc"}, \code{"cuminc-ci"}, and
+#'   \code{"percent-cuminc-ci"} are similar but add confidence intervals
 #' @param atrisk.digits when survival probabilities are shown in at-risk table
-#' (see \code{atrisk.type}), number of digits past the decimal to keep
+#'   (see \code{atrisk.type}), number of digits past the decimal to keep
 #' @param atrisk.lab heading for at-risk table
 #' @param atrisk.pad extra padding between plot and at-risk table
 #' @param atrisk.lines logical; draw lines next to strata in at-risk table
 #' @param atrisk.col logical or a vector with colors for at-risk table text;
-#' if \code{TRUE}, \code{col.surv} will be used
+#'   if \code{TRUE}, \code{col.surv} will be used
 #' @param atrisk.min optional integer to replace any at-risk counts
-#' \code{< atrisk.min} with \code{"---"} by default; note that if
-#' \code{atrisk.min} is \emph{named}, then \code{names(atrisk.min)} will be
-#' the replacement string
+#'   \code{< atrisk.min} with \code{"---"} by default; note that if
+#'   \code{atrisk.min} is \emph{named}, then \code{names(atrisk.min)} will be
+#'   the replacement string
 #' @param strata.lab labels used in legend and at-risk table for strata; if
-#' \code{NULL} (default), labels created in \code{survfit} are used; if only
-#' one strata is present, "All" is used by default; if \code{FALSE}, labels
-#' are not used; if \code{TRUE}, labels will be stripped of variable names
+#'   \code{NULL} (default), labels created in \code{survfit} are used; if only
+#'   one strata is present, "All" is used by default; if \code{FALSE}, labels
+#'   are not used; if \code{TRUE}, labels will be stripped of variable names
 #' @param strata.expr an alternative to \code{strata.lab} which allows for
-#' \code{\link{bquote}} or \code{\link{expression}} to be passed to labels
-#' for at-risk table; note that \code{strata.expr} trumps \code{strata.lab}
+#'   \code{\link{bquote}} or \code{\link{expression}} to be passed to labels
+#'   for at-risk table; note that \code{strata.expr} trumps \code{strata.lab}
 #' @param strata.order order of strata in legend and at-risk table
 #' @param extra.margin increase left margin when strata labels in at-risk
-#' table are long (note that this will be overridden by \code{mar})
+#'   table are long (note that this will be overridden by \code{mar})
 #' @param mar margins; see \code{mar} section in \code{\link{par}}
 #' @param median logical or numeric; if \code{TRUE}, median and confidence
-#' interval for each curve is added to at-risk table at a calculated
-#' position; for more control, use a specific x-coordinate
+#'   interval for each curve is added to at-risk table at a calculated
+#'   position; for more control, use a specific x-coordinate
 #' @param digits.median number of digits past the decimal point to keep for
-#' median(s)
+#'   median(s)
 #' @param ci.median logical; if \code{TRUE}, confidence interval for medians
-#' are shown
+#'   are shown
 #' @param args.median an optional \emph{named} list of \code{\link{mtext}}
-#' arguments controlling the \code{median} text
+#'   arguments controlling the \code{median} text
 #' 
-#' additionally, \code{list(x = , y = )} may be given for exact placement
-#' (translated to \code{at} and \code{line}, respectively)
+#'   additionally, \code{list(x = , y = )} may be given for exact placement
+#'   (translated to \code{at} and \code{line}, respectively)
 #' @param xaxs style of axis; see details or \code{\link{par}}
 #' @param xlim,ylim x- and y-axis limits
 #' @param xaxis.at,yaxis.at positions for x- and y-axis labels and ticks
 #' @param atrisk.at x-coordinates to show at-risk table (default is
-#' \code{xaxis.at})
+#'   \code{xaxis.at})
 #' @param xaxis.lab,yaxis.lab x- and y-axis tick labels
 #' @param xlab,ylab x- and y-axis labels
 #' @param main title of plot
 #' @param cex.axis,cex.atrisk text size for axes labels, legend, at-risk table
 #' @param legend logical, a vector of x/y coordinates, or a keyword (see
-#' \code{\link{legend}}); if \code{TRUE}, the default position is
-#' \code{"bottomleft"}
+#'   \code{\link{legend}}); if \code{TRUE}, the default position is
+#'   \code{"bottomleft"}
 #' @param args.legend an optional \emph{named} list of \code{\link{legend}}
-#' arguments controlling the \code{legend}
+#'   arguments controlling the \code{legend}
 #' @param lr_test logical or numeric; if \code{TRUE}, a log-rank test will be
-#' performed and the results added to the top-right corner of the plot; if
-#' numeric, the value is passed as \code{rho} controlling the type of test
-#' performed; see \code{\link{survdiff}}
+#'   performed and the results added to the top-right corner of the plot; if
+#'   numeric, the value is passed as \code{rho} controlling the type of test
+#'   performed; see \code{\link{survdiff}}
 #' @param tt_test logical; if \code{TRUE}, Tarone's trend test will be
-#' performed and the resultls added to the top-right corner of the plot; note
-#' that this will override \code{lr_test}
+#'   performed and the resultls added to the top-right corner of the plot;
+#'   note that this will override \code{lr_test}
 #' @param test_details logical; if \code{TRUE} (default), all test details
-#' (test statistic, degrees of freedom, p-value) are shown; if \code{FALSE},
-#' only the p-value is shown
+#'   (test statistic, degrees of freedom, p-value) are shown; if \code{FALSE},
+#'   only the p-value is shown
 #' @param args.test an optional \emph{named} list of \code{\link{mtext}}
-#' arguments controlling the \code{*_test} text; additional text can be
-#' appended with \code{list(.prefix = '')} or \code{list(.suffix = '')}
+#'   arguments controlling the \code{*_test} text; additional text can be
+#'   appended with \code{list(.prefix = '')} or \code{list(.suffix = '')}
 #' @param hr_text logical; if \code{TRUE}, a \code{\link{coxph}} model is fit,
-#' and a summary (hazard ratios, confidence intervals, and Wald p-values)
-#' is shown
+#'   and a summary (hazard ratios, confidence intervals, and Wald p-values)
+#'   is shown
 #' @param args.hr an optional \emph{named} list of \code{\link{legend}}
-#' arguments controlling the \code{hr_text} legend
+#'   arguments controlling the \code{hr_text} legend
 #' @param events logical; if \code{TRUE} and \code{hr_text = TRUE}, the total
-#' events by group is shown
+#'   events by group is shown
 #' @param pw_test logical; if \code{TRUE}, all pairwise tests of survival
-#' curves are performed, and p-valuees are shown
+#'   curves are performed, and p-valuees are shown
 #' @param args.pw an optional \emph{named} list of \code{\link{legend}}
-#' arguments controlling the \code{pw_text} legend
+#'   arguments controlling the \code{pw_text} legend
 #' @param format_pval logical; if \code{TRUE}, p-values are formatted with
-#' \code{\link{pvalr}}; if \code{FALSE}, no formatting is performed;
-#' alternatively, a function can be passed which should take a numeric value
-#' and return a character string (or a value to be coerced) for printing
+#'   \code{\link{pvalr}}; if \code{FALSE}, no formatting is performed;
+#'   alternatively, a function can be passed which should take a numeric value
+#'   and return a character string (or a value to be coerced) for printing
 #' @param stratify (dev) \code{\link[survival]{strata}} variables
 #' @param fun survival curve transformation, one of \code{"S"} or \code{"F"}
-#' for the usual survival curve or empirical CDF, respectively
+#'   for the usual survival curve or empirical CDF, respectively
 #' @param times time points to show additional summaries in a table added to
-#' the plot (requires \href{https://github.com/raredd/plotr}{\pkg{plotr}})
+#'   the plot (requires \href{https://github.com/raredd/plotr}{\pkg{plotr}})
 #' @param times.lab heading for the \code{times} table
 #' @param times.type see \code{atrisk.type}
 #' @param times.digits when survival probabilities are shown in times table
-#' (see \code{times.type}), number of digits past the decimal to keep
+#'   (see \code{times.type}), number of digits past the decimal to keep
 #' @param args.times an optional \emph{named} list of \code{plotr::tableplot}
-#' arguments controlling the table appearance and/or location
+#'   arguments controlling the table appearance and/or location
 #' @param add logical; if \code{TRUE}, \code{par}s are not reset; allows for
-#' multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}
+#'   multiple panels, e.g., when using \code{par(mfrow = c(1, 2))}
 #' @param panel.first an expression to be evaluated after the plot axes are
-#' set up but before any plotting takes place
+#'   set up but before any plotting takes place
 #' @param panel.last an expression to be evaluated after plotting but before
-#' returning from the function
+#'   returning from the function
 #' @param ... additional parameters (\code{font}, \code{mfrow}, \code{bty},
-#' \code{tcl}, \code{cex.lab}, etc) passed to \code{par}
+#'   \code{tcl}, \code{cex.lab}, etc) passed to \code{par}
 #' 
 #' @references
 #' Adapted from \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
@@ -1091,7 +1092,7 @@ points.kmplot <- function(x, xscale, xmax, fun,
 #' 
 #' @param s a \code{\link{survfit}} object
 #' @param strata.lab character vector of strata labels; must be same length
-#' as \code{s$n}
+#'   as \code{s$n}
 #' 
 #' @seealso \code{\link{kmplot}}; \code{\link{kmplot_by}}
 
@@ -1120,7 +1121,8 @@ kmplot_data_ <- function(s, strata.lab) {
 #' @param times time points
 #' @param digits digits
 #' 
-#' @seealso \code{\link{kmplot}}; \code{\link{kmplot_by}}
+#' @seealso
+#' \code{\link{kmplot}}; \code{\link{kmplot_by}}
 
 atrisk_data_ <- function(s, times, digits) {
   ss <- summary(s, times = times, extend = TRUE)
@@ -1211,25 +1213,26 @@ atrisk_data_ <- function(s, times, digits) {
 #' models; see Uno (2011).
 #' 
 #' @param formula,data,rho,... passed to \code{\link{survdiff}} or
-#' \code{\link{coxph}}
+#'   \code{\link{coxph}}
 #' @param object a \code{\link{survfit}}, \code{\link{survdiff}}, or
-#' \code{\link{coxph}} object; alternatively a \code{\link[=Surv]{survival
-#' formula}} in which case \code{data} must be given
+#'   \code{\link{coxph}} object; alternatively a
+#'   \code{\link[=Surv]{survival formula}} in which case \code{data} must be
+#'   given
 #' @param details logical; \code{TRUE} returns statistic, degrees of freedom,
-#' and p-value where \code{FALSE} returns only a pvalue
+#'   and p-value where \code{FALSE} returns only a pvalue
 #' @param pFUN logical; if \code{TRUE}, p-values are formatted with
-#' \code{\link{pvalr}}; if \code{FALSE}, no formatting is performed;
-#' alternatively, a function can be passed which should take a numeric value
-#' and return a character string (or a value to be coerced) for printing
+#'   \code{\link{pvalr}}; if \code{FALSE}, no formatting is performed;
+#'   alternatively, a function can be passed which should take a numeric value
+#'   and return a character string (or a value to be coerced) for printing
 #' @param method for \code{pw_*}, the method used to adjust p-values for
-#' multiple comparisons (default is \code{"none"}); see
-#' \code{\link{p.adjust.methods}}
+#'   multiple comparisons (default is \code{"none"}); see
+#'   \code{\link{p.adjust.methods}}
 #' @param tau,iter,seed arguments passed to \code{\link[survC1]{Inf.Cval}} or
-#' \code{\link[survC1]{Inf.Cval.Delta}}
+#'   \code{\link[survC1]{Inf.Cval.Delta}}
 #' @param digits,conf,show_conf for \code{c_text} and \code{cc_text}, options
-#' to control the text output
+#'   to control the text output
 #' @param formula1,formula2 for \code{cc_pva} and \code{cc_text}, the formulas
-#' of the two models to compare
+#'   of the two models to compare
 #' 
 #' @references
 #' Tarone, Robert E. Tests for Trend in Life Table Analysis. \emph{Biometrika}
@@ -1622,49 +1625,49 @@ cc_text <- function(formula1, formula2, data, tau = NULL, iter = 1000L, seed = 1
 #' efficient and preferred.
 #' 
 #' @param strata,event,time,by character strings of the strata, event (pfs, os,
-#' ttp, etc; see details), time (optional), and stratification variables;
-#' additionally, vectors for each are allowed
+#'   ttp, etc; see details), time (optional), and stratification variables;
+#'   additionally, vectors for each are allowed
 #' @param data a data frame
 #' @param single logical; if \code{TRUE}, each level of \code{by} will be
-#' drawn in a separate window
+#'   drawn in a separate window
 #' @param lr_test logical or numeric; if \code{TRUE}, a log-rank test will be
-#' performed and the results added to the top-right corner of the plot; if
-#' numeric, the value is passed as \code{rho} controlling the type of test
-#' performed; see \code{\link{survdiff}}
+#'   performed and the results added to the top-right corner of the plot; if
+#'   numeric, the value is passed as \code{rho} controlling the type of test
+#'   performed; see \code{\link{survdiff}}
 #' @param main title of plot(s)
 #' @param ylab y-axis label
 #' @param sub sub-title displayed in upper left corner; should be a character
-#' vector with length equal to the number of panels (i.e., the number of
-#' unique values of \code{by} or length one if \code{by} was not given)
+#'   vector with length equal to the number of panels (i.e., the number of
+#'   unique values of \code{by} or length one if \code{by} was not given)
 #' @param strata_lab at-risk table strata labels; should be a character vector
-#' with length equal to the number of strata; \code{TRUE} (or equivalently
-#' missing) is the default, and \code{FALSE} trims the labels; see examples
+#'   with length equal to the number of strata; \code{TRUE} (or equivalently
+#'   missing) is the default, and \code{FALSE} trims the labels; see examples
 #' @param fig_lab figure panel labels; should be a character vector with
-#' length equal to the number of panels (i.e., the number of unique values of
-#' \code{by} or length one if \code{by} was not given)
+#'   length equal to the number of panels (i.e., the number of unique values of
+#'   \code{by} or length one if \code{by} was not given)
 #' @param col.surv color for individual survival curves or for all curves in
-#' a plot if \code{by} is given and \code{map.col = TRUE}; if \code{col.surv}
-#' is a named vector which matches the at risk labels, then colors are mapped
-#' to the corresponding strata; see \code{\link{kmplot}}
+#'   a plot if \code{by} is given and \code{map.col = TRUE}; if \code{col.surv}
+#'   is a named vector which matches the at risk labels, then colors are mapped
+#'   to the corresponding strata; see \code{\link{kmplot}}
 #' @param map.col logical; if \code{TRUE}, \code{col.surv} will be the color
-#' of all curves in each plot (only used when \code{by} is non-missing)
+#'   of all curves in each plot (only used when \code{by} is non-missing)
 #' @param legend logical, a vector of x/y coordinates, or a keyword (see
-#' \code{\link{legend}}); if \code{TRUE}, the default position is
-#' \code{"bottomleft"}
+#'   \code{\link{legend}}); if \code{TRUE}, the default position is
+#'   \code{"bottomleft"}
 #' @param add logical; if \code{FALSE} (default), resets graphical parameters
-#' to settings before \code{kmplot_by} was called; set to \code{TRUE} for
-#' adding to existing plots
+#'   to settings before \code{kmplot_by} was called; set to \code{TRUE} for
+#'   adding to existing plots
 #' @param plot logical; if \code{FALSE}, no plot is created but a list with
-#' \code{survfit}s is returned
+#'   \code{survfit}s is returned
 #' @param args.survfit a \emph{named} list of optional arguments passed to
-#' \code{\link{survfit.formula}}; relevant arguments include \code{type}
-#' (default is \code{"kaplan-meier"}), \code{error} (\code{"greenwood"}),
-#' \code{conf.int} (\code{0.95}), \code{"conf.type"} (\code{"log"}), and
-#' \code{"se.fit"} (\code{TRUE})
+#'   \code{\link{survfit.formula}}; relevant arguments include \code{type}
+#'   (default is \code{"kaplan-meier"}), \code{error} (\code{"greenwood"}),
+#'   \code{conf.int} (\code{0.95}), \code{"conf.type"} (\code{"log"}), and
+#'   \code{"se.fit"} (\code{TRUE})
 #' @param stratify (dev) \code{\link[survival]{strata}} variables
 #' @param panel.first,panel.last,... additional arguments passed to
-#' \code{\link{kmplot}} or graphical parameters subsequently passed to
-#' \code{\link{par}}
+#'   \code{\link{kmplot}} or graphical parameters subsequently passed to
+#'   \code{\link{par}}
 #' 
 #' @return
 #' Invisibly returns a list of \code{\link{survfit}} object(s) used to generate
@@ -1963,21 +1966,22 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
 #' 
 #' @param s an object of class \code{\link{survfit}}
 #' @param data the data set used to fit \code{s} which should also contain
-#' \code{by_var} and optionally \code{time}, \code{event}, and \code{strata};
-#' \code{kmplot_ticks} will attempt to select these variables based on the
-#' call to \code{survfit}
+#'   \code{by_var} and optionally \code{time}, \code{event}, and \code{strata};
+#'   \code{kmplot_ticks} will attempt to select these variables based on the
+#'   call to \code{survfit}
 #' @param by_var,what a variable, \code{by_var} in \code{data} for which
-#' tick marks are to be placed at each occurrence of \code{what}
+#'   tick marks are to be placed at each occurrence of \code{what}
 #' @param y the y-coordinate(s) for each point, recycled as needed
 #' @param time,event,strata (optional) variables used to fit \code{s}
 #' @param col a vector of colors (one for each strata level of \code{s}) for
-#' tick marks; note these colors should match the curves of the survival plot
+#'   tick marks; note these colors should match the curves of the survival plot
 #' @param pch a vector of plotting characters to distinguish censoring and
-#' events
+#'   events
 #' @param ... additional arguments passed to \code{\link{points}}
 #' 
 #' @seealso
 #' \code{\link{kmplot}}; \code{\link{kmplot_by}}
+#' 
 #' @examples
 #' library('survival')
 #' s <- survfit(Surv(futime, fustat) ~ rx, ovarian)
@@ -2050,17 +2054,17 @@ terms.inner <- function(x) {
 
 #' Compute local p-value from coxph
 #' 
-#' Checks the null hypothesis: C * beta.hat = c, i.e., the local
-#' p-value of one or more factors in a model; can also be used to test more
-#' comlex hypotheses.
+#' Checks the null hypothesis: C * beta.hat = c, i.e., the local p-value of
+#' one or more factors in a model; can also be used to test more comlex
+#' hypotheses.
 #' 
 #' @param s survival object of class \code{\link[survival]{coxph}}
 #' @param pos vector of positions of \code{\link{coefficients}} of interest
-#' from \code{summary(coxph)}; defaults to \code{seq_along(coef(s))}
+#'   from \code{summary(coxph)}; defaults to \code{seq_along(coef(s))}
 #' @param C,d \code{C}, a q-by-p matrix, and \code{d}, a q-by-1 matrix, define
-#' the null hypothesis being checked; default is a global test on the variables
-#' in \code{pos}, i.e., \code{C} is the identity matrix, and \code{d} is a
-#' vector of zeros
+#'   the null hypothesis being checked; default is a global test on the
+#'   variables in \code{pos}, i.e., \code{C} is the identity matrix, and
+#'   \code{d} is a vector of zeros
 #' @param digits number of significant figures in output
 #' 
 #' @references
@@ -2073,7 +2077,6 @@ terms.inner <- function(x) {
 #' ## compare to summary(fit)
 #' local_coxph_test(fit)
 #' local_coxph_test(fit, 2)
-#' 
 #' 
 #' @export
 
@@ -2114,7 +2117,7 @@ local_coxph_test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
 #' dependent variables to be introduced.
 #' 
 #' @param data data frame with survival time, survival status, and other
-#' covariates
+#'   covariates
 #' @param time.var \code{data} variable name representing survival time
 #' @param status.var \code{data} variable name representing status
 #' @param covars other covariates to retain
@@ -2178,10 +2181,10 @@ surv_cp <- function(data, time.var, status.var,
 #' @param s a \code{\link{survfit}} object
 #' @param digits number of digits to use in printing numbers
 #' @param locf logical; if \code{TRUE}, any \code{NA} probabilities will be
-#' carried forward, e.g., if no events occurred during two consecutive time
-#' intervals
+#'   carried forward, e.g., if no events occurred during two consecutive time
+#'   intervals
 #' @param ... additional arguments passed to
-#' \code{\link[survival]{summary.survfit}}
+#'   \code{\link[survival]{summary.survfit}}
 #' 
 #' @return
 #' A list with \code{survival:::print.summary.survfit} matrices for each
@@ -2192,9 +2195,7 @@ surv_cp <- function(data, time.var, status.var,
 #' 
 #' @examples
 #' library('survival')
-#' fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)),
-#'                       data = cancer),
-#'                 conf.type = 'log-log')
+#' fit1 <- survfit(coxph(Surv(time, status) ~ strata(I(age > 60)), cancer))
 #' surv_summary(fit1, times = c(0, 100, 200))
 #' 
 #' @export
@@ -2281,12 +2282,12 @@ surv_summary <- function(s, digits = 3L, locf = FALSE, ...) {
 #' @param times vector of times
 #' @param ... additional arguments passed to \code{\link{summary.survfit}}
 #' @param maxtime logical; if \code{TRUE}, adds the maximum time for which an
-#' even occurs; if \code{FALSE}, number of events may not sum to total
+#'   even occurs; if \code{FALSE}, number of events may not sum to total
 #' @param percent logical; if \code{TRUE}, percentages are shown instead of
-#' probabilities
+#'   probabilities
 #' @param locf logical; if \code{TRUE}, any \code{NA} probabilities will be
-#' carried forward, e.g., if no events occurred during two consecutive time
-#' intervals
+#'   carried forward, e.g., if no events occurred during two consecutive time
+#'   intervals
 #' 
 #' @return
 #' A matrix (or list of matrices) with formatted summaries for each strata; see
@@ -2301,15 +2302,13 @@ surv_summary <- function(s, digits = 3L, locf = FALSE, ...) {
 #' surv_table(fit0, times = 0:2 * 100, maxtime = FALSE)
 #' 
 #' ## also works for list of tables
-#' fit1 <- survfit(Surv(time, status == 2) ~ sex, data = cancer, conf.int = 0.9)
+#' fit1 <- survfit(Surv(time, status == 2) ~ sex, data = cancer)
 #' surv_table(fit1)
 #' rawr::combine_table(surv_table(fit1))
 #' 
 #' 
-#' s <- `colnames<-`(
-#'   surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4],
-#'   c('Time', 'No. at risk', 'No. of events', 'Surv (95% CI)')
-#' )
+#' s <- surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4]
+#' colnames(s) <- c('Time', 'No. at risk', 'No. of events', 'Surv (95% CI)')
 #' ht <- htmlTable::htmlTable(s, caption = 'Table: Overall survival.')
 #' structure(ht, class = 'htmlTable')
 #' 
@@ -2376,11 +2375,11 @@ surv_table <- function(s, digits = ifelse(percent, 0L, 3L),
 #' \code{\link[survival]{survdiff}}.
 #' 
 #' @param s an object of class \code{\link[survival]{survdiff}} or
-#' \code{\link[survival]{survfit}}
+#'   \code{\link[survival]{survfit}}
 #' @param ... additional arguments passed to \code{\link{survdiff}} such as
-#' \code{na.action} or \code{rho} to control the test
+#'   \code{na.action} or \code{rho} to control the test
 #' @param method p-value correction method (default is \code{'holm'}; see
-#' \code{\link{p.adjust}}
+#'   \code{\link{p.adjust}}
 #' @param digits integer indicating the number of decimal places to be used
 #' 
 #' @return
@@ -2489,15 +2488,15 @@ survdiff_pairs <- function(s, ..., method = p.adjust.methods,
 #' @param s a \code{\link[survival]{survfit}} object
 #' @param times a vector of landmark times
 #' @param col color for \code{times} annotations; use \code{col = 0} to
-#' suppress labels
+#'   suppress labels
 #' @param plot,plot.main logicals; if \code{TRUE}, landmark and \code{s} are
-#' plotted, respectively
+#'   plotted, respectively
 #' @param lr_test logical or numeric; if \code{TRUE}, a log-rank test will be
-#' performed and the results added to the top-right corner of the plot; if
-#' numeric, the value is passed as \code{rho} controlling the type of test
-#' performed; see \code{\link{survdiff}}
+#'   performed and the results added to the top-right corner of the plot; if
+#'   numeric, the value is passed as \code{rho} controlling the type of test
+#'   performed; see \code{\link{survdiff}}
 #' @param adjust_start logical; if \code{TRUE}, each landmark plot will begin
-#' at the y-axis
+#'   at the y-axis
 #' @param ... additional arguments passed to \code{\link{kmplot}}
 #' @param single logical; if \code{TRUE}, plots drawn on a single frame
 #' 
@@ -2597,19 +2596,19 @@ landmark <- function(s, times = NULL, col = 2L, plot = TRUE, plot.main = plot,
 #' 
 #' @param x an object of class \code{\link[survival]{survfit}}
 #' @param what the data to return, either the index, character string(s), or
-#' \code{NULL} (returns the entire table)
+#'   \code{NULL} (returns the entire table)
 #' @param ci logical; if \code{TRUE}, the confidence interval is printed
 #' @param digits number of digits past the decimal point to keep
 #' @param which optional integer or character vector to select or re-order
-#' the output; \code{which = NULL} and returns results for all strata
+#'   the output; \code{which = NULL} and returns results for all strata
 #' @param print logical; if \code{TRUE}, output is prepared for in-line
-#' printing
+#'   printing
 #' @param na a character string to replace \code{NA} when median
-#' times have not yet been reached
+#'   times have not yet been reached
 #' @param times vector of times passed to \code{\link{surv_table}}
 #' @param show_conf logical; if \code{TRUE}, includes the confidence level
 #' @param percent logical; if \code{TRUE}, percentages are shown instead of
-#' probabilities
+#'   probabilities
 #' 
 #' @examples
 #' library('survival')

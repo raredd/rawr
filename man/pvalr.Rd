@@ -51,15 +51,15 @@ and \code{>}}
 
 \item{limits}{a vector controlling the number of digits used in p-values
 
-if \code{journal = TRUE}, \code{limits} should be length one, and p-values
-will be rounded to two digits for values greater than \code{limits} or
-\code{digits} for values between \code{sig.limit} and \code{limits}
+  if \code{journal = TRUE}, \code{limits} should be length one, and p-values
+  will be rounded to two digits for values greater than \code{limits} or
+  \code{digits} for values between \code{sig.limit} and \code{limits}
 
-if \code{journal = FALSE}, \code{limits} should be length two, and p-values
-will be rounded to one digit for values greater than \code{limits[2L]},
-two digits for values between \code{limits[1L]} and \code{limits[2L]},
-and \code{digits} for values between \code{sig.limit} and
-\code{limits[1L]}}
+  if \code{journal = FALSE}, \code{limits} should be length two, and
+  p-values will be rounded to one digit for values greater than
+  \code{limits[2L]}, two digits for values between \code{limits[1L]} and
+  \code{limits[2L]}, and \code{digits} for values between \code{sig.limit}
+  and \code{limits[1L]}}
 
 \item{...}{additional arguments passed to \code{\link{format.pval}} or
 further to \code{\link{format}}}
@@ -68,8 +68,8 @@ further to \code{\link{format}}}
 to \code{\link{findInterval}}) and the corresponding colors}
 
 \item{format_pval}{logical; if \code{TRUE}, p-values will be formatted
-using \code{\link{pvalr}}; alternatively, a function may by used which will
-be applied to each p-value}
+using \code{\link{pvalr}}; alternatively, a function may by used which
+will be applied to each p-value}
 }
 \description{
 Formats several cases of p-values; see details.

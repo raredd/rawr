@@ -23,8 +23,8 @@ bintest(
 \item{n.max}{maximum sample size allowed (or feasible)}
 
 \item{r}{cut-off value for responses expected; usually best to leave
-\code{r = n.max} (default); useful if the maximum number of responses that
-may occur is known}
+\code{r = n.max} (default); useful if the maximum number of responses
+that may occur is known}
 
 \item{alpha, beta}{type-I and type-II errors}
 }
@@ -59,9 +59,9 @@ bintest(0.1, 0.2, 0.15, 0.2, n.max = 80, alpha = 0.08, beta = 0.24)
 }
 \references{
 Khan, Sarker, Hackshaw. Smaller sample sizes for phase II trials
-based on exact tests with actual error rates by trading-off their nominal
-levels of significance and power. \emph{British J of Cancer} (2012) 107,
-1801-9.
+  based on exact tests with actual error rates by trading-off their nominal
+  levels of significance and power. \emph{British J of Cancer} (2012) 107,
+  1801-9.
 }
 \seealso{
 \code{\link[clinfun]{ph2single}}; \code{\link[desmon]{bin1samp}}; bintest,

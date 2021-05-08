@@ -34,10 +34,10 @@ rbindlist2(
 }
 \arguments{
 \item{...}{for \code{bind_all} and \code{rbindfill}, vectors;
-\code{cbindx} and \code{rbindx} will accept vectors, matrices, data frames;
-data frames should be used with \code{rbindfill2} but matrices (or a
-combination) will work, but a data frame is returned; \code{rbindlist}
-accepts vectors or one or more lists}
+\code{cbindx} and \code{rbindx} will accept vectors, matrices, data
+frames; data frames should be used with \code{rbindfill2} but matrices
+(or a combination) will work, but a data frame is returned;
+\code{rbindlist} accepts vectors or one or more lists}
 
 \item{which}{joining method; \code{'rbind'} or \code{'cbind'}}
 
@@ -48,13 +48,13 @@ the case of non-matrix-like arguments (for the default method):\cr
 names \cr see \code{\link{cbind}}}
 
 \item{use.rownames}{logical; for \code{rbindfill2}, if \code{TRUE}, data
-frames in a \emph{named} list will retain corresponding rownames; the
-default is to remove rownames (note that this parameter is ignored if
-\code{...} is not a named list)
+  frames in a \emph{named} list will retain corresponding rownames; the
+  default is to remove rownames (note that this parameter is ignored if
+  \code{...} is not a named list)
 
-for \code{rbindlist} and \code{rbindlist2}, return a data frame with or
-without rownames; for \code{rbindlist2}, if \code{data} has no row names
-set (i.e., are \code{"1", "2", ...}), then the default is \code{FALSE}}
+  for \code{rbindlist} and \code{rbindlist2}, return a data frame with or
+  without rownames; for \code{rbindlist2}, if \code{data} has no row names
+  set (i.e., are \code{"1", "2", ...}), then the default is \code{FALSE}}
 
 \item{use.names}{logical; if \code{TRUE} and vectors are named, names
 are preserved and added as a column}

@@ -14,20 +14,20 @@
 #'    
 #' @param ... any \code{R} objects
 #' @param num.eq logical indicating if (\code{\link{double}} and
-#' \code{\link{complex}} non-\code{\link{NA}}) numbers should be compared
-#' using \code{\link{==}} ("equal"), or by bitwise comparison. The latter
-#' (non-default) differentiates between -0 and +0.
+#'   \code{\link{complex}} non-\code{\link{NA}}) numbers should be compared
+#'   using \code{\link{==}} ("equal"), or by bitwise comparison. The latter
+#'   (non-default) differentiates between -0 and +0
 #' @param single.NA logical indicating if there is conceptually just one
-#' numeric \code{NA} and one \code{\link{NaN}}; \code{single.NA = FALSE}
-#' differentiates bit patterns.
+#'   numeric \code{NA} and one \code{\link{NaN}}; \code{single.NA = FALSE}
+#'   differentiates bit patterns
 #' @param attrib.as.set logical indicating if \code{\link{attributes}} of
-#' \code{...} should be treated as \emph{unordered} tagged pairlists ("sets");
-#' this currently also applies to \code{\link{slot}}s of S4 objects. It may
-#' well be too strict to set \code{attrib.as.set = FALSE}.
+#'   \code{...} should be treated as \emph{unordered} tagged pairlists
+#'   ("sets"); this currently also applies to \code{\link{slot}}s of S4
+#'   objects. It may well be too strict to set \code{attrib.as.set = FALSE}
 #' @param ignore.bytecode logical indicating if byte code should be ignored
-#' when comparing \code{\link{closure}}s.
+#'   when comparing \code{\link{closure}}s.
 #' @param ignore.environment logical indicating if their environments should
-#' be ignored when comparing \code{closure}s.
+#'   be ignored when comparing \code{closure}s.
 #' 
 #' @return
 #' A single logical value, \code{TRUE} or \code{FALSE}, never \code{NA}
@@ -36,7 +36,7 @@
 #' @seealso
 #' \code{\link{identical}}; \code{\link{all.equal}} for descriptions of how
 #' two objects differ; \code{\link{Comparison}} for operators that generate
-#' elementwise comparisons; \code{\link{isTRUE}} is a simple wrapper based
+#' element-wise comparisons; \code{\link{isTRUE}} is a simple wrapper based
 #' on \code{identical}; \code{\link{all_equal2}}
 #' 
 #' @examples
@@ -81,17 +81,17 @@ identical2 <- function(..., num.eq = TRUE, single.NA = TRUE,
 #' 
 #' @param ... any \code{R} objects
 #' @param tolerance numeric >= 0; differences smaller than \code{tolerance}
-#' are not reported (default value is close to 1.5e-8)
+#'   are not reported (default value is close to 1.5e-8)
 #' @param scale numeric scalar > 0 (or \code{NULL}), see details in
-#' \code{\link{all.equal}}
+#'   \code{\link{all.equal}}
 #' @param check.attributes logical indicating if the \code{\link{attributes}}
-#' should be compared
+#'   should be compared
 #' @param use.names logical indicating if \code{\link{list}} comparison should
-#' report differing components by name (if matching) instead of integer index
+#'   report differing components by name (if matching) instead of integer index
 #' @param all.names logical passed to \code{\link{ls}} indicating if "hidden"
-#' objects should also be considered in the environments
+#'   objects should also be considered in the environments
 #' @param check.names logical indicating if the \code{\link{names}}\code{(.)}
-#' should be compared
+#'   should be compared
 #' 
 #' @return
 #' If all \code{...} are nearly equal, \code{TRUE} otherwise returns a list
@@ -138,13 +138,15 @@ all_equal2 <- function(..., tolerance = .Machine$double.eps ^ 0.5,
 #' a data frame.
 #' 
 #' @param data for \code{fapply}, a vector, list, or data frame to operate on;
-#' for \code{fapply_by}, a data frame containing the variables in \code{formula}
+#'   for \code{fapply_by}, a data frame containing the variables in
+#'   \code{formula}
 #' @param ... summary function(s) such as \code{length(.)} or
-#' \code{mean(., na.rm = TRUE)} to apply; names are not required but strongly
-#' recommended
-#' @param formula a formula such as \code{y ~ x} or \code{cbind(y1, y2) ~ x1 + x2}
-#' where the \code{y} variables are numeric data to be split into groups
-#' according to the grouping \code{x} variables (usually factors)
+#'   \code{mean(., na.rm = TRUE)} to apply; names are not required but
+#'   strongly recommended
+#' @param formula a formula such as \code{y ~ x} or
+#'   \code{cbind(y1, y2) ~ x1 + x2} where the \code{y} variables are numeric
+#'   data to be split into groups according to the grouping \code{x} variables,
+#'   usually factors
 #' 
 #' @examples
 #' tmp <- replace(mtcars, mtcars == 6, NA)
@@ -260,7 +262,7 @@ flatten <- function(l) {
 #' 
 #' @param l a list
 #' @param rm_list logical; if \code{FALSE}, lists with only the \code{NULL}
-#' object will not be removed
+#'   object will not be removed
 #' 
 #' @references
 #' \url{https://stackoverflow.com/q/26539441/2994949}
@@ -297,16 +299,16 @@ rm_null <- function(l, rm_list = TRUE) {
 #' 
 #' @param x a vector (or numeric matrix for \code{cum_mid})
 #' @param value a value of \code{x} which signals the end of a group and
-#' resets \code{FUN}
+#'   resets \code{FUN}
 #' @param FUN function to apply to each group, usually one of
-#' \code{\link{cumsum}}, \code{\link{cumprod}}, \code{\link{cummax}}, or
-#' \code{\link{cummin}} but can be any function that returns a vector the
-#' same length and type as the input (\emph{a la} \code{\link{ave}})
+#'   \code{\link{cumsum}}, \code{\link{cumprod}}, \code{\link{cummax}}, or
+#'   \code{\link{cummin}} but can be any function that returns a vector the
+#'   same length and type as the input (\emph{a la} \code{\link{ave}})
 #' @param useNA logical; if \code{TRUE}, indices with \code{NA} will be
-#' unchanged; if \code{FALSE}, the previous value is carried forward
+#'   unchanged; if \code{FALSE}, the previous value is carried forward
 #' @param adj for \code{cum_mid}, an adjustment parameter, usually in
-#' \code{[0, 1]}, giving the relative position between each value (default
-#' is centered, \code{adj = 0.5})
+#'   \code{[0, 1]}, giving the relative position between each value (default
+#'   is centered, \code{adj = 0.5})
 #' 
 #' @return
 #' A vector having the same length as \code{x} with \code{FUN} applied to
@@ -444,13 +446,13 @@ cum_mid <- function(x, adj = 0.5) {
 #' 
 #' @param x a numeric, complex, character, or logical vector
 #' @param n number of elements of x to remain unsorted (the default is
-#' approximately 10\% of \code{x}), ignored if \code{indices} is given
+#'   approximately 10\% of \code{x}), ignored if \code{indices} is given
 #' @param decreasing logical; if \code{FALSE} (default), \code{x} is sorted
-#' in increasing order
+#'   in increasing order
 #' @param indices a vector of indices specifying which elements of \code{x}
-#' should \emph{not} be sorted
+#'   should \emph{not} be sorted
 #' @param index.return logical; if \code{TRUE}, the ordering index vector is
-#' returned
+#'   returned
 #' 
 #' @return
 #' \code{x} sorted approximately \code{(length(x) - n)/length(x)*100} percent.
@@ -515,7 +517,7 @@ kinda_sort <- function(x, n, decreasing = FALSE, indices = NULL,
 #' @param x a numeric, complex, character, or logical vector
 #' @param rev logical; if \code{TRUE}, vectors are sorted in reverse
 #' @param index.return logical; if \code{TRUE}, the ordering index vector
-#' is returned
+#'   is returned
 #' 
 #' @seealso
 #' \code{\link{kinda_sort}}
@@ -562,8 +564,8 @@ sym_sort <- function(x, rev = FALSE, index.return = FALSE) {
 #' 
 #' @param x a character, factor, or numeric vector
 #' @param n number to sample from each unique group in order; if \code{x} is
-#' a factor, \code{n} should correspond to \code{levels(x)}; otherwise,
-#' \code{n} will be matched with the sorted unique groups
+#'   a factor, \code{n} should correspond to \code{levels(x)}; otherwise,
+#'   \code{n} will be matched with the sorted unique groups
 #' 
 #' @return
 #' A logical vector the same length as \code{x} identifying selected indices.
@@ -669,13 +671,13 @@ round_to <- function(x, to = 1) {
 #' 
 #' @param data a data frame or matrix
 #' @param ind if \code{value = FALSE} (default), a vector (usually a single
-#' value) to match and return column name(s) of \code{data} where \code{ind}
-#' is found; if \code{value = TRUE}, a vector of values to be \emph{ignored},
-#' e.g., \code{NA}s or empty strings
+#'   value) to match and return column name(s) of \code{data} where \code{ind}
+#'   is found; if \code{value = TRUE}, a vector of values to be \emph{ignored},
+#'   e.g., \code{NA}s or empty strings
 #' @param value logical; if \code{TRUE}, returns column value(s); otherwise,
-#' returns column name(s) (default)
+#'   returns column name(s) (default)
 #' @param default for \code{value = FALSE}, the default value returned if
-#' a row of \code{data} contains no \code{ind} in any column
+#'   a row of \code{data} contains no \code{ind} in any column
 #' 
 #' @return
 #' If \code{value} is \code{FALSE} (default), the column names of \code{data}
@@ -737,7 +739,7 @@ pickcol <- function(data, ind = 1L, value = FALSE, default = NA) {
 #' 
 #' @param x a vector
 #' @param na.rm logical; if \code{TRUE}, \code{NA} will not be counted as a
-#' unique level; default is to include
+#'   unique level; default is to include
 #' 
 #' @examples
 #' x <- c(1:5, NA)

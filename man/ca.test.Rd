@@ -14,20 +14,20 @@ ca.test(x, ...)
 }
 \arguments{
 \item{x}{a factor-like vector giving the (unordered) variable (equivalently
-the row variable of a contingency table)
+  the row variable of a contingency table)
 
-alternatively, \code{x} can be a \code{2 x c} table or matrix with exactly
-two rows and at least three ordered columns; \code{x} may also be a list
-of the row variable split by the ordered column variable in which case the
-list is assumed to be ordered, i.e., \code{x[[1]] < x[[2]] < ... < x[[c]]};
-see examples}
+  alternatively, \code{x} can be a \code{2 x c} table or matrix with
+  exactly two rows and at least three ordered columns; \code{x} may also
+  be a list of the row variable split by the ordered column variable in
+  which case the list is assumed to be ordered, i.e.,
+  \code{x[[1]] < x[[2]] < ... < x[[c]]}; see examples}
 
 \item{...}{further arguments to be passed to or from methods}
 
 \item{g}{a factor-like vector giving the \emph{ordered} group for each
-corresponding element of \code{x}, ignored with a warning if \code{x} is a
-list or table; if \code{g} is not a factor, it will be coerced, and groups
-will be ordered as sort(unique(g)); see \code{\link{factor}}}
+corresponding element of \code{x}, ignored with a warning if \code{x} is
+a list or table; if \code{g} is not a factor, it will be coerced, and
+groups will be ordered as sort(unique(g)); see \code{\link{factor}}}
 
 \item{score}{group score for each column, default is \code{1:ncol}}
 
@@ -42,8 +42,8 @@ gives the row variable having two unique values and \code{column} gives
 the \emph{ordered} column variable}
 
 \item{data}{an optional matrix or data frame (or similar: see
-\code{\link{model.frame}}) containing the variables in \code{formula}; by
-default the variables are taken from \code{environment(formula)}}
+\code{\link{model.frame}}) containing the variables in \code{formula};
+by default the variables are taken from \code{environment(formula)}}
 }
 \value{
 A list with class "\code{htest}" containing the following elements:

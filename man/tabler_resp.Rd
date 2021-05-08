@@ -21,12 +21,12 @@ tabler_resp(
 CR, PR, SD, PD, NE or similar (i.e., best to worst)}
 
 \item{r_or_better}{if integer(s), indicates the levels of \code{x} that
-are to be combined with better responses; for example, if
-\code{r_or_better = 3} (default), then any occurrence of level 1, 2, or 3
-of \code{x} is treated as a response, and the proportion and confidence
-interval are calculated for the aggregate
+  are to be combined with better responses; for example, if
+  \code{r_or_better = 3} (default), then any occurrence of level 1, 2, or 3
+  of \code{x} is treated as a response, and the proportion and confidence
+  interval are calculated for the aggregate
 
-if \code{FALSE}; levels of \code{x} are estimated independently}
+  if \code{FALSE}; levels of \code{x} are estimated independently}
 
 \item{conf, frac, show_conf, pct.sign}{additional arguments passed to
 \code{\link{binconr}}}
@@ -38,13 +38,13 @@ i.e., \code{length(x)} is added; if numeric, \code{length(x)} and,
 optionally, fraction and percent out of \code{total} is added}
 
 \item{two_stage}{\code{FALSE} (default, assumes exact binomial CIs are
-desired) or a vector of length 3 with the 1) maximum number responses in
-the first stage that can be observed \emph{without} continuing; 2) the
-sample size in the first stage; and 3) the sample size in the second stage
+  desired) or a vector of length 3 with the 1) maximum number responses in
+  the first stage that can be observed \emph{without} continuing; 2) the
+  sample size in the first stage; and 3) the sample size in the second stage
 
-if more than three integers are given, the remaining should indicate the
-columns which should be calculated as two-stage CIs; usually this is only
-one value but multiple are accepted}
+  if more than three integers are given, the remaining should indicate the
+  columns which should be calculated as two-stage CIs; usually this is only
+  one value but multiple are accepted}
 }
 \description{
 Convenience function to calculate proportions and confidence intervals and

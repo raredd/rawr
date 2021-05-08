@@ -84,14 +84,15 @@ obtain some data not available in \code{survfit} objects; if not given,
 \code{s$call$data} will be searched for in the \code{\link{sys.frames}}}
 
 \item{lty.surv, lwd.surv, col.surv}{line type, width, and color for survival
-curve(s); colors may be either numeric, color names as character string(s),
-or hexadecimal string(s)
+  curve(s); colors may be either numeric, color names as character
+  string(s), or hexadecimal string(s)
 
-colors will be assigned to curves in order of strata or may be mapped using
-a named vector (the names must match the ones given to \code{strata.lab} or
-those that are created by \code{\link[survival]{strata}}); this can be
-useful to set colors for specific strata levels in multiple plots if some
-levels are missing; see examples in \code{\link{kmplot_by}}}
+  colors will be assigned to curves in order of strata or may be mapped
+  using a named vector (the names must match the ones given to
+  \code{strata.lab} or those that are created by
+  \code{\link[survival]{strata}}); this can be useful to set colors for
+  specific strata levels in multiple plots if some levels are missing; see
+  examples in \code{\link{kmplot_by}}}
 
 \item{mark, lwd.mark}{numeric plotting character (\code{\link{pch}}) or
 character string, e.g., \code{''}, \code{'|'}; if \code{mark = 'bump'}, a
@@ -166,10 +167,10 @@ median(s)}
 are shown}
 
 \item{args.median}{an optional \emph{named} list of \code{\link{mtext}}
-arguments controlling the \code{median} text
+  arguments controlling the \code{median} text
 
-additionally, \code{list(x = , y = )} may be given for exact placement
-(translated to \code{at} and \code{line}, respectively)}
+  additionally, \code{list(x = , y = )} may be given for exact placement
+  (translated to \code{at} and \code{line}, respectively)}
 
 \item{xaxs}{style of axis; see details or \code{\link{par}}}
 
@@ -201,8 +202,8 @@ numeric, the value is passed as \code{rho} controlling the type of test
 performed; see \code{\link{survdiff}}}
 
 \item{tt_test}{logical; if \code{TRUE}, Tarone's trend test will be
-performed and the resultls added to the top-right corner of the plot; note
-that this will override \code{lr_test}}
+performed and the resultls added to the top-right corner of the plot;
+note that this will override \code{lr_test}}
 
 \item{test_details}{logical; if \code{TRUE} (default), all test details
 (test statistic, degrees of freedom, p-value) are shown; if \code{FALSE},

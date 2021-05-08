@@ -12,8 +12,8 @@ html_align(x, sep = "&nbsp;", where = "&&", min_width = "35px")
 \item{sep}{a character string used as the center of alignment}
 
 \item{where}{a character string or regular expression (see examples)
-defining where strings should be aligned; the easiest method is to
-use \code{"&&"} at the desired alignment point}
+defining where strings should be aligned; the easiest method is to use
+\code{"&&"} at the desired alignment point}
 
 \item{min_width}{minimum width of the span tag; too narrow will not
 align strings but too wide adds whitespace}

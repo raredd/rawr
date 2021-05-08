@@ -13,16 +13,16 @@ local_coxph_test(s, pos, C = NULL, d = NULL, digits = 3)
 from \code{summary(coxph)}; defaults to \code{seq_along(coef(s))}}
 
 \item{C, d}{\code{C}, a q-by-p matrix, and \code{d}, a q-by-1 matrix, define
-the null hypothesis being checked; default is a global test on the variables
-in \code{pos}, i.e., \code{C} is the identity matrix, and \code{d} is a
-vector of zeros}
+the null hypothesis being checked; default is a global test on the
+variables in \code{pos}, i.e., \code{C} is the identity matrix, and
+\code{d} is a vector of zeros}
 
 \item{digits}{number of significant figures in output}
 }
 \description{
-Checks the null hypothesis: C * beta.hat = c, i.e., the local
-p-value of one or more factors in a model; can also be used to test more
-comlex hypotheses.
+Checks the null hypothesis: C * beta.hat = c, i.e., the local p-value of
+one or more factors in a model; can also be used to test more comlex
+hypotheses.
 }
 \examples{
 library('survival')
@@ -31,7 +31,6 @@ fit <- coxph(Surv(time, status) ~ sex + ph.ecog, data = cancer)
 ## compare to summary(fit)
 local_coxph_test(fit)
 local_coxph_test(fit, 2)
-
 
 }
 \references{

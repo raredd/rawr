@@ -50,6 +50,7 @@ a new frame and window are initialized}
 }
 \value{
 A list of four matrices:
+
 \item{\code{$matrix}}{the input matrix as plotted including inversions}
 \item{\code{$origin}}{coordinates of the bottom-left corner for each box}
 \item{\code{$centers}}{coordinates for the centers of each box}

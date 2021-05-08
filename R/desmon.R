@@ -4,7 +4,7 @@
 ### 
 
 
-bin1samp <- function (p0, pa, alpha = 0.1, beta = 0.1, n.min = 20L) {
+bin1samp <- function(p0, pa, alpha = 0.1, beta = 0.1, n.min = 20L) {
   ## desmon::bin1samp
   # 
   # p0	   Null hypothesis response probability
@@ -267,6 +267,7 @@ twostg <- function(n1, n2, p1, r1, r2) {
   if (n1 < 1 | n2 < 1 | r1 < 0 | r2 < 0 | p1 <= 0 | r1 > n1 |
       r2 > n2 + n1 | p1 >= 1)
     stop('invalid arguments')
+  
   x1 <- 0:n1
   x2 <- 0:n2
   w1 <- dbinom(x1, n1, p1)
@@ -274,6 +275,7 @@ twostg <- function(n1, n2, p1, r1, r2) {
   u1 <- c(outer(x1[-(1:(r1 + 1))], x2, `+`))
   u2 <- c(outer(w1[-(1:(r1 + 1))], w3))
   b1 <- c(w1[1:(r1 + 1)], tapply(u2, u1, sum))
+  
   structure(
     list(inputs = c(n1 = n1, n2 = n2, p1 = p1, r1 = r1, r2 = r2),
          prob.inactive = c(total = sum(b1[1:(r2 + 1)]), sum(b1[1:(r1 + 1)]))),

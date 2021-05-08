@@ -11,8 +11,9 @@ locf(x, fromLast = FALSE, na.strings = "")
 
 \item{fromLast}{logical or vector of logicals; if \code{TRUE}, observations
 are carried backward rather than forward; other options such as
-\code{c(TRUE, FALSE)} will call \code{locf} first for \code{fromLast = TRUE}
-follwed by calling with \code{fromLast = FALSE} on the result}
+\code{c(TRUE, FALSE)} will call \code{locf} first for
+\code{fromLast = TRUE} follwed by calling with \code{fromLast = FALSE}
+on the result}
 
 \item{na.strings}{a vector of values to be treated as \code{NA}; optionally
 a list of single elements can be used for mixed data types; see examples}

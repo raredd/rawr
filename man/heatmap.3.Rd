@@ -122,20 +122,20 @@ with text to be plotted in each cell}
 color \code{par('bg')}}
 
 \item{trace}{character string indicating whether a solid "trace" line
-should be drawn across rows or down columns; the distance of the line from
-the center of each color-cell is proportional to the size of the
+should be drawn across rows or down columns; the distance of the line
+from the center of each color-cell is proportional to the size of the
 measurement; one of \code{"row"}, \code{"column"}, \code{"both"}, or
 \code{"none"} (default)}
 
 \item{tracecol}{color for \code{trace} line}
 
 \item{hline, vline, linecol}{a vector of values within cells where a
-horizontal or vertical dotted line should be drawn; the color of the line
-is controlled by \code{linecol} (default is \code{tracecol})
+  horizontal or vertical dotted line should be drawn; the color of the
+  line is controlled by \code{linecol} (default is \code{tracecol})
 
-horizontal lines are only plotted if \code{trace} is "row" or "both";
-vertical lines are only drawn if \code{trace} "column" or "both"; both
-\code{hline} and \code{vline} default to the median of the \code{breaks}}
+  horizontal lines are only plotted if \code{trace} is "row" or "both";
+  vertical lines are only drawn if \code{trace} "column" or "both"; both
+  \code{hline} and \code{vline} default to the median of the \code{breaks}}
 
 \item{margins}{numeric vector of length 2 controlling the margins for
 column and row names, respectively}

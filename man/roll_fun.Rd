@@ -25,8 +25,8 @@ the first \code{n} elements of \code{x}; if \code{FALSE} (default), then
 ie, until groups of size \code{n} are possible}
 }
 \value{
-A vector of the same length of \code{x} with calculations obtained
-by \code{FUN}.
+A vector of the same length of \code{x} with calculations obtained by
+\code{FUN}.
 }
 \description{
 Apply rolling functions

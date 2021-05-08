@@ -46,15 +46,13 @@ fit0 <- survfit(Surv(time, status == 2) ~ 1, data = cancer)
 surv_table(fit0, times = 0:2 * 100, maxtime = FALSE)
 
 ## also works for list of tables
-fit1 <- survfit(Surv(time, status == 2) ~ sex, data = cancer, conf.int = 0.9)
+fit1 <- survfit(Surv(time, status == 2) ~ sex, data = cancer)
 surv_table(fit1)
 rawr::combine_table(surv_table(fit1))
 
 
-s <- `colnames<-`(
-  surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4],
-  c('Time', 'No. at risk', 'No. of events', 'Surv (95\% CI)')
-)
+s <- surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4]
+colnames(s) <- c('Time', 'No. at risk', 'No. of events', 'Surv (95\% CI)')
 ht <- htmlTable::htmlTable(s, caption = 'Table: Overall survival.')
 structure(ht, class = 'htmlTable')
 

@@ -44,21 +44,21 @@ statistics by \code{byvar}; the rows variable(s) of the table}
 \item{byvar}{a stratification variable; the column variable of the table}
 
 \item{varname_label, byvar_label}{optional labels for each \code{varname}
-and \code{byvar}
+  and \code{byvar}
 
-note that duplicated \code{varname_label}s will be processed individually
-then grouped; this is useful if one variable is shown as continuous and
-categorical, for example; grouped variables should be consecutive, see
-examples}
+  note that duplicated \code{varname_label}s will be processed individually
+  then grouped; this is useful if one variable is shown as continuous and
+  categorical, for example; grouped variables should be consecutive, see
+  examples}
 
 \item{digits}{\code{NULL} or a vector of digits past the decimal point to
-keep for each \code{varname}; if \code{NULL}, these will be guessed using
-\code{rawr:::guess_digits}; if length 1, all will be rounded to
-\code{digits}
+  keep for each \code{varname}; if \code{NULL}, these will be guessed using
+  \code{rawr:::guess_digits}; if length 1, all will be rounded to
+  \code{digits}
 
-alternatively, to set \code{digits} for a single \code{varname} manually,
-a \emph{named} vector of \code{digits} corresponding to one or more
-\code{varname} variables can be used; see examples}
+  alternatively, to set \code{digits} for a single \code{varname} manually,
+  a \emph{named} vector of \code{digits} corresponding to one or more
+  \code{varname} variables can be used; see examples}
 
 \item{FUN}{\code{NULL} or a list of functions performing the test of
 association between each \code{varname} and \code{byvar}; see

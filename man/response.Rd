@@ -49,7 +49,8 @@ confirmed, usually stable disease; must be a level of \code{response}}
 usually stable disease (default); must match a level of \code{response}}
 
 \item{progression}{a character string or regular expression to identify
-progression events in \code{response}; must match a level of \code{response}}
+progression events in \code{response}; must match a level of
+\code{response}}
 
 \item{n_confirm}{to confirm a response, the number of subsequent responses
 equal to or better than previous; e.g., if \code{n_confirm = 1} (default),
@@ -60,8 +61,8 @@ confirm a response, the next two assessments must be at least as good, etc}
 
 \item{n_prog}{similar to \code{n_confirm} but for progression; if
 \code{nprog = 1}, then a progression must be followed by at least one
-progression to confirm; note that this only affects \code{.$confirmed} and
-\code{.$bsf_confirmed} in the return object}
+progression to confirm; note that this only affects \code{.$confirmed}
+and \code{.$bsf_confirmed} in the return object}
 
 \item{strict}{logical; if \code{TRUE}, only the first uninterrupted
 sequence of confirmed responses will be evaluated for best response; e.g.,
@@ -89,6 +90,7 @@ CR to PR is not progression but CR to SD or MR is progression)}
 }
 \value{
 A list with the following elements:
+
 \item{$unconfirmed}{a \code{1 x 10} data frame with dates of first and last
 response, first and last best response, the response for each, date last
 free from progression, and date of progression}

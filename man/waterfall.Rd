@@ -40,12 +40,13 @@ of each bar}
 \item{panel.first}{an expression to be evaluated after the plot axes are
 set up but before any plotting takes place; this can be useful for drawing
 background grids or scatterplot smooths; note that this works by lazy
-evaluation: passing this argument from other plot methods may well not work
-since it may be evaluated too early; see also \code{\link{plot.default}}}
+evaluation: passing this argument from other plot methods may well not
+work since it may be evaluated too early; see also
+\code{\link{plot.default}}}
 
 \item{panel.last}{an expression to be evaluated after plotting has taken
-place but before the axes, title, and box are added; see the comments about
-\code{panel.first}}
+place but before the axes, title, and box are added; see the comments
+about \code{panel.first}}
 }
 \value{
 A matrix giving the coordinates of \emph{all} the bar midpoints drawn (see

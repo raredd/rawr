@@ -25,13 +25,13 @@ lsp(package, what, pattern)
 or a "list-like" object such as a data frame or list of objects}
 
 \item{pattern}{optional \code{\link{regex}}; for \code{lss} only names
-matching  \code{pattern} are returned; \code{\link{glob2rx}} can be used to
-convert wildcard patterns to regular expressions; for \code{lsp} a text
+matching  \code{pattern} are returned; \code{\link{glob2rx}} can be used
+to convert wildcard patterns to regular expressions; for \code{lsp} a text
 pattern or regular expression passed to \code{\link{grep}} to filter the
 results}
 
-\item{by}{variable to order output ('type', 'size' (default), 'sizef',
-'nrow', or 'ncol')}
+\item{by}{variable to order output ("type", "size" (default), "sizef",
+"nrow", or "ncol")}
 
 \item{all.names}{logical; if \code{TRUE}, all object names are returned; if
 \code{FALSE}, names which begin with a \code{.} are omitted}
@@ -45,10 +45,10 @@ order}
 string}
 
 \item{file}{file to return as a character string; usual options are
-\code{'DESCRIPTION'}, \code{'NEWS'}, \code{'INDEX'}, \code{'NAMESPACE'};
+\code{"DESCRIPTION"}, \code{"NEWS"}, \code{"INDEX"}, \code{"NAMESPACE"};
 partial matching is supported and case is ignored}
 
-\item{what}{what to get; \code{'all'} is default which returns all exported
+\item{what}{what to get; \code{"all"} is default which returns all exported
 and non exported functions in \code{package}; see details for more}
 }
 \value{
@@ -61,7 +61,7 @@ returns a vector of character strings.
 These functions begin with \code{ls} and list different things. \code{lss}
 is an "improved" \code{\link{ls}} which gives more details of objects in
 the workspace such as type, size, and dimensions; \code{lsp} lists
-\code{p}ackage contents, i.e., exported and/or non exported obejcts,
+\code{p}ackage contents, i.e., exported and/or non exported objects,
 methods, lazy data, etc.; and \code{lsf} lists package \code{f}iles. See
 details and examples.
 }
@@ -70,8 +70,8 @@ details and examples.
 \code{INDEX}, \code{NAMESPACE}, etc.) to console and returns (invisibly)
 the files parsed for easier use.
 
-\code{lsp} is a helper function to list exported (\code{?'::'}) and non
-exported (\code{?':::'}) functions (and other features from a package's
+\code{lsp} is a helper function to list exported (\code{?"::"}) and non
+exported (\code{?":::"}) functions (and other features from a package's
 \code{NAMESPACE} file).
 
 Note that \code{base} and older packages do not have a \code{NAMESPACE}
@@ -84,7 +84,7 @@ Possible values for \code{what} are "\code{all}" (default), \code{NULL},
 "\code{path}", "\code{S3methods}", "\code{spec}", and others depending on
 the package.
 
-\code{lsp(packagename, '?')} to see options for a specific package.
+\code{lsp(packagename, "?")} to see options for a specific package.
 
 \code{lsp(packagename, NULL)} to return all information in a list.
 }

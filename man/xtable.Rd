@@ -20,14 +20,15 @@ separate column}
 will be shown}
 
 \item{test}{logical; if \code{TRUE}, a test and p-value will be added as
-a separate column; see \code{rawr:::guess_test}
+  a separate column; see \code{rawr:::guess_test}
 
-alternatively, a user-defined test function which takes two arguments,
-\code{x} and \code{by}, and returns a numeric p-value with an optional
-attribute, \code{"name"}, which will be used as a test label; see
-examples}
+  alternatively, a user-defined test function which takes two arguments,
+  \code{x} and \code{by}, and returns a numeric p-value with an optional
+  attribute, \code{"name"}, which will be used as a test label; see
+  examples}
 
-\item{...}{additional arguments passed to \code{\link[Gmisc]{getDescriptionStatsBy}}}
+\item{...}{additional arguments passed to
+\code{\link[Gmisc]{getDescriptionStatsBy}}}
 }
 \description{
 Create a contingency table with totals, percentages, and statistical test.

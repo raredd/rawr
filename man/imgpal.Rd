@@ -17,6 +17,7 @@ to \href{https://www.imagemagick.org/script/command-line-options.php}{\code{magi
 }
 \value{
 A list of class \code{"imgpal"} with the following elements:
+
 \item{filename}{the image file name}
 \item{n_unique}{the calculated number of unique colors}
 \item{col}{a vector of colors (does not return transparent or white colors)}
@@ -40,6 +41,7 @@ show_pal(ip)
 ## rawr::rawr_palettes
 img <- system.file('fig', package = 'rawr')
 img <- list.files(img, full.names = TRUE, pattern = 'g$')
+
 op <- par(mfrow = n2mfrow(length(img)))
 sapply(img, function(x) show_pal(imgpal(x), fullrange = TRUE))
 par(op)
