@@ -3,7 +3,7 @@
 # cuzick.test.default, cuzick.test.formula, jt.test, kw.test, kw.test.default,
 # kw.test.formula, ca.test, ca.test.default, ca.test.formula, lspline,
 # perm.t.test, perm.t.test.default, perm.t.test.formula, rfvar, ransch,
-# ranschtbl, twostg.test, cor.n, cor.ci
+# ranschtbl, twostg.test, cor.n, cor.ci, bni
 # 
 # S3 methods:
 # cuzick.test, kw.test, ca.test, perm.t.test
@@ -2233,4 +2233,64 @@ cor.ci <- function(rho, n, alpha = 0.05, two.sided = TRUE,
     rho = rho, lower = ci[1L], upper = ci[2L], width = diff(ci),
     conf.int = 1 - alpha, sides = two.sided + 1L, method = method
   )
+}
+
+#' Two-arm binomial non-inferiority trials
+#' 
+#' Calculate the required sample size or power for a two-arm non-inferiority
+#' design with binomial outcome. Exactly one of \code{power} or \code{n}
+#' should be \code{NULL} to solve for this value given the other parameters.
+#' 
+#' @param margin the largest acceptable difference in success rates between
+#'   the standard (\code{p1}) and experimental (\code{p2}) arms that would be
+#'   consistent with non-inferiority
+#' @param p1,p2 true success rates for the standard and experimental arms,
+#'   respectively
+#' @param alpha type I error (one-sided), i.e., the \code{1 - 2 * alpha}%
+#'   confidence interval around the difference between the rates
+#' @param power the desired power level to rule out the null of inferiority
+#' @param n the total sample size of both arms
+#' @param p the proportion of \code{n} on the experimental arm, \code{p2}
+#' 
+#' @seealso
+#' \url{https://stattools.crab.org/R/Binomial_Non_Inferiority.html}
+#' 
+#' \url{http://www.powerandsamplesize.com/Calculators/Compare-2-Proportions/2-Sample-Non-Inferiority-or-Superiority}
+#' 
+#' @references
+#' Kopecky K and Green S (2012). Noninferiority trials. In: Handbook of
+#' Statistics in Clinical Oncology. Crowley J and Hoering A, eds. CRC Press,
+#' Boca Raton, FL USA.
+#' 
+#' @return
+#' The a numeric vector with the total sample size, sample size for the
+#' standard and experimental arms, and power.
+#' 
+#' @examples
+#' bni(0.1, 0.65, 0.85, power = 0.8)
+#' bni(0.1, 0.65, 0.85, n = 49)
+#' 
+#' @export
+
+bni <- function(margin, p1, p2 = p1, alpha = 0.05, power = NULL,
+                n = NULL, p = 0.5) {
+  stopifnot(margin > 0)
+  if (is.null(power) & is.null(n))
+    stop('either \'power\' or \'n\' must not be NULL')
+  
+  if (is.null(n)) {
+    za <- qnorm(alpha, lower.tail = FALSE)
+    zb <- qnorm(power)
+    n <- ((za + zb) / (margin + p2 - p1)) ^ 2 *
+      (((p2 * (1 - p2)) / p) + ((p1 * (1 - p1)) / (1 - p)))
+    
+    c(total = n, n1 = n * (1 - p), n2 = n * p, power = power)
+  } else {
+    k <- (1 - p) / p
+    p2_n <- n * p
+    z <- (p1 - p2 - margin) /
+      sqrt(p1 * (1 - p1) / p2_n / k + p2 * (1 - p2) / p2_n)
+    pow <- pnorm(z - qnorm(1 - alpha)) + pnorm(-z - qnorm(1 - alpha))
+    c(total = n, n1 = n * (1 - p), n2 = n * p, power = pow)
+  }
 }
