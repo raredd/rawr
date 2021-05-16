@@ -24,8 +24,9 @@ confidence interval around the difference between the rates}
 \item{p}{the proportion of \code{n} on the experimental arm, \code{p2}}
 }
 \value{
-The a numeric vector with the total sample size, sample size for the
-standard and experimental arms, and power.
+The a numeric vector with the total sample size (\code{n}), sample size
+for the standard (\code{n1}) and experimental (\code{n2}) arms, and power
+(\code{power}).
 }
 \description{
 Calculate the required sample size or power for a two-arm non-inferiority
@@ -34,7 +35,8 @@ should be \code{NULL} to solve for this value given the other parameters.
 }
 \examples{
 bni(0.1, 0.65, 0.85, power = 0.8)
-bni(0.1, 0.65, 0.85, n = 49)
+bni(0.1, 0.65, 0.85, n = 50)
+bni(0.1, 0.65, 0.85, n = 50, p = 2 / 3) ## 1:2 randomization
 
 }
 \references{

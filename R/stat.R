@@ -2263,34 +2263,35 @@ cor.ci <- function(rho, n, alpha = 0.05, two.sided = TRUE,
 #' Boca Raton, FL USA.
 #' 
 #' @return
-#' The a numeric vector with the total sample size, sample size for the
-#' standard and experimental arms, and power.
+#' The a numeric vector with the total sample size (\code{n}), sample size
+#' for the standard (\code{n1}) and experimental (\code{n2}) arms, and power
+#' (\code{power}).
 #' 
 #' @examples
 #' bni(0.1, 0.65, 0.85, power = 0.8)
-#' bni(0.1, 0.65, 0.85, n = 49)
+#' bni(0.1, 0.65, 0.85, n = 50)
+#' bni(0.1, 0.65, 0.85, n = 50, p = 2 / 3) ## 1:2 randomization
 #' 
 #' @export
 
 bni <- function(margin, p1, p2 = p1, alpha = 0.05, power = NULL,
                 n = NULL, p = 0.5) {
   stopifnot(margin > 0)
-  if (is.null(power) & is.null(n))
-    stop('either \'power\' or \'n\' must not be NULL')
+  if ((is.null(power) + is.null(n)) != 1)
+    stop('exactly one of \'power\' and \'n\' should be NULL')
   
   if (is.null(n)) {
     za <- qnorm(alpha, lower.tail = FALSE)
     zb <- qnorm(power)
     n <- ((za + zb) / (margin + p2 - p1)) ^ 2 *
       (((p2 * (1 - p2)) / p) + ((p1 * (1 - p1)) / (1 - p)))
-    
-    c(total = n, n1 = n * (1 - p), n2 = n * p, power = power)
   } else {
     k <- (1 - p) / p
     p2_n <- n * p
     z <- (p1 - p2 - margin) /
       sqrt(p1 * (1 - p1) / p2_n / k + p2 * (1 - p2) / p2_n)
-    pow <- pnorm(z - qnorm(1 - alpha)) + pnorm(-z - qnorm(1 - alpha))
-    c(total = n, n1 = n * (1 - p), n2 = n * p, power = pow)
+    power <- pnorm(z - qnorm(1 - alpha)) + pnorm(-z - qnorm(1 - alpha))
   }
+  
+  c(n = n, n1 = n * (1 - p), n2 = n * p, power = power)
 }
