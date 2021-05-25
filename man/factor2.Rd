@@ -5,7 +5,7 @@
 \title{Combine values to factor levels}
 \usage{
 factor2(
-  x = character(),
+  x = character(0L),
   levels = NULL,
   exclude = NA,
   ordered = is.ordered(x),

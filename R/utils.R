@@ -2771,7 +2771,7 @@ xtable <- function(x, by, digits = 0L, total = TRUE, pct.sign = FALSE,
 #' 
 #' @export
 
-factor2 <- function(x = character(), levels = NULL, exclude = NA,
+factor2 <- function(x = character(0L), levels = NULL, exclude = NA,
                     ordered = is.ordered(x), regex = FALSE, ...) {
   if (is.null(levels))
     return(as.factor(x))
@@ -2800,8 +2800,9 @@ factor2 <- function(x = character(), levels = NULL, exclude = NA,
   
   key <- stack(levels)
   key$ind <- as.character(key$ind)
-  ext <- setdiff(x, key$values)
-  key <- rbind(key, data.frame(values = ext, ind = ext))
+  ext <- setdiff(levels(factor(x)), key$values)
+  key <- rbind(data.frame(values = ext, ind = ext), key)
+  
   if (NA %in% exclude)
     key <- key[!is.na(key$ind), ]
   
