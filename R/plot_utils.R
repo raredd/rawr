@@ -1,6 +1,6 @@
 ### plot utils, helpers for plotting functions
 # unexported:
-# %|%, dodge_, grouping_, jit_, do_rect_, do_seg_, coords
+# %|%, dodge_, grouping_, together_, jit_, do_rect_, do_seg_, coords
 ###
 
 

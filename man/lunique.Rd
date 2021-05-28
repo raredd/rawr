@@ -10,7 +10,7 @@ lunique(x, na.rm = FALSE)
 \item{x}{a vector}
 
 \item{na.rm}{logical; if \code{TRUE}, \code{NA} will not be counted as a
-unique level; default is to include}
+unique level (default is to include \code{NA}s)}
 }
 \description{
 Number of unique values

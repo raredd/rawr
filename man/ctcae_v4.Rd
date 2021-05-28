@@ -13,7 +13,7 @@ A data frame with 790 rows and 5 variables:
 \tab \code{tox_cat} \tab category \cr
 \tab \code{ctc_version} \tab version number \cr
 \tab \code{MedDRA_code_v12} \tab Medical Dictionary for Regulatory 
-Activities codes, v12 \cr
+  Activities codes, v12 \cr
 }
 }
 \source{

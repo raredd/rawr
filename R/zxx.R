@@ -102,6 +102,7 @@ identical2 <- function(..., num.eq = TRUE, single.NA = TRUE,
 #' 
 #' @examples
 #' all_equal2(pi, 355/113, 22/7)
+#' 
 #' all_equal2(pi, 355/113, 22/7, tolerance = 0.01)
 #' 
 #' all_equal2(cars[1], cars[, 1, drop = FALSE], cars[, -2, drop = TRUE])
@@ -238,10 +239,13 @@ fapply_by <- function(formula, data, ...) {
 #' \url{https://stackoverflow.com/q/8139677/2994949}
 #' 
 #' @examples
-#' l <- list(matrix(1:3), list(1:3, 'foo'), TRUE, 'hi',
-#'            list(mtcars[1:5, 1:5], list(mtcars[1:5, 1:5])))
-#' str(l)
-#' str(flatten(l))
+#' l <- list(
+#'   matrix(1:3), list(1:3, 'foo'), TRUE, 'hi',
+#'   list(mtcars[1:5, 1:5], list(mtcars[1:5, 1:5]))
+#' )
+#' 
+#' l
+#' flatten(l)
 #' 
 #' @export
 
@@ -268,9 +272,11 @@ flatten <- function(l) {
 #' \url{https://stackoverflow.com/q/26539441/2994949}
 #' 
 #' @examples
-#' str(l <- list(list(NULL),list(1),list('a', NULL)))
-#' str(rm_null(l))
-#' str(rm_null(l, FALSE))
+#' l <- list(list(NULL), list(1), list('a', NULL))
+#' 
+#' l
+#' rm_null(l)
+#' rm_null(l, FALSE)
 #' 
 #' @export
 
@@ -281,9 +287,8 @@ rm_null <- function(l, rm_list = TRUE) {
   
   x <- Filter(Negate(isnull), l)
   
-  lapply(x, function(x)
-    if (is.list(x))
-      rm_null(x, rm_list) else x)
+  lapply(x, function(x) if (is.list(x))
+    rm_null(x, rm_list) else x)
 }
 
 #' Cumulative functions
@@ -327,13 +332,15 @@ rm_null <- function(l, rm_list = TRUE) {
 #' cum_reset(x, FUN = sum)
 #' 
 #' set.seed(1)
-#' data.frame(x = x <- rpois(15, 1),
-#'            y = cum_reset(x, FUN = cumsum),
-#'            z = cum_reset(x, 0, function(x) ave(x, FUN = sum)))
-#' 
+#' x <- rpois(15, 1)
+#' data.frame(
+#'   x = x,
+#'   y = cum_reset(x, FUN = cumsum),
+#'   z = cum_reset(x, 0, function(x) ave(x, FUN = sum))
+#' )
 #' 
 #' ## x need not be numeric if FUN returns an appropriate type and length
-#' cum_reset(letters[1:10], c('d','g'), function(x)
+#' cum_reset(letters[1:10], c('d', 'g'), function(x)
 #'   letters[as.numeric(factor(x))])
 #' 
 #' 
@@ -462,7 +469,7 @@ cum_mid <- function(x, adj = 0.5) {
 #' 
 #' @examples
 #' set.seed(1)
-#' x <- sample(1:10)
+#' x <- sample(1:12)
 #' 
 #' rbind(
 #'   unsorted   = x,
@@ -470,10 +477,10 @@ cum_mid <- function(x, adj = 0.5) {
 #'   'fix 2:5'  = kinda_sort(x, indices = 2:5)
 #' )
 #' 
-#' #          [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
-#' # unsorted    3    4    5    7    2    8    9    6   10     1
-#' # 50% sort    3    4    5    6    2    8    7    9   10     1
-#' # fix 2:5     1    4    5    7    2    3    6    8    9    10
+#' #          [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12]
+#' # unsorted    9    4    7    1    2    5    3    8    6    11    12    10
+#' # 50% sort    9    1    4    6    2    5    3    7    8    11    10    12
+#' # fix 2:5     3    4    7    1    2    5    6    8    9    10    11    12
 #' 
 #' 
 #' ## use index.return = TRUE for indices instead of values
@@ -485,9 +492,7 @@ cum_mid <- function(x, adj = 0.5) {
 #' x  <- runif(100)
 #' o2 <- kinda_sort(x, n = 50)
 #' 
-#' stopifnot(
-#'   identical(x[o1], o2)
-#' )
+#' stopifnot(identical(x[o1], o2))
 #' 
 #' @export
 
@@ -575,14 +580,17 @@ sym_sort <- function(x, rev = FALSE, index.return = FALSE) {
 #' 
 #' @examples
 #' x <- mtcars$gear
-#' 
 #' sample_each(x)
 #' mtcars[sample_each(x), ]
 #' 
+#' 
 #' ## compare numeric vs factor vectors (see description above)
-#' mtcars[sample_each(x, 3:5), ]
+#' ## samples 3 3s, 4 4s, 5 5s
+#' table(mtcars[sample_each(x, 3:5), ]$gear)
+#' 
+#' ## samples 3 5s, 4 4s, 5 3s
 #' X <- factor(x, 5:3)
-#' mtcars[sample_each(X, 3:5), ]
+#' table(mtcars[sample_each(X, 3:5), ]$gear)
 #' 
 #' @export
 
@@ -739,7 +747,7 @@ pickcol <- function(data, ind = 1L, value = FALSE, default = NA) {
 #' 
 #' @param x a vector
 #' @param na.rm logical; if \code{TRUE}, \code{NA} will not be counted as a
-#'   unique level; default is to include
+#'   unique level (default is to include \code{NA}s)
 #' 
 #' @examples
 #' x <- c(1:5, NA)

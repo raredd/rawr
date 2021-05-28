@@ -45,6 +45,7 @@ objects to be tested for near-equality.
 }
 \examples{
 all_equal2(pi, 355/113, 22/7)
+
 all_equal2(pi, 355/113, 22/7, tolerance = 0.01)
 
 all_equal2(cars[1], cars[, 1, drop = FALSE], cars[, -2, drop = TRUE])

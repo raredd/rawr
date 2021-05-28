@@ -16,9 +16,11 @@ object will not be removed}
 Remove \code{NULL} or \code{list(NULL)} objects recursively from a list.
 }
 \examples{
-str(l <- list(list(NULL),list(1),list('a', NULL)))
-str(rm_null(l))
-str(rm_null(l, FALSE))
+l <- list(list(NULL), list(1), list('a', NULL))
+
+l
+rm_null(l)
+rm_null(l, FALSE)
 
 }
 \references{

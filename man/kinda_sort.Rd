@@ -34,7 +34,7 @@ will remain unsorted.
 }
 \examples{
 set.seed(1)
-x <- sample(1:10)
+x <- sample(1:12)
 
 rbind(
   unsorted   = x,
@@ -42,10 +42,10 @@ rbind(
   'fix 2:5'  = kinda_sort(x, indices = 2:5)
 )
 
-#          [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
-# unsorted    3    4    5    7    2    8    9    6   10     1
-# 50\% sort    3    4    5    6    2    8    7    9   10     1
-# fix 2:5     1    4    5    7    2    3    6    8    9    10
+#          [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10] [,11] [,12]
+# unsorted    9    4    7    1    2    5    3    8    6    11    12    10
+# 50\% sort    9    1    4    6    2    5    3    7    8    11    10    12
+# fix 2:5     3    4    7    1    2    5    6    8    9    10    11    12
 
 
 ## use index.return = TRUE for indices instead of values
@@ -57,9 +57,7 @@ set.seed(1)
 x  <- runif(100)
 o2 <- kinda_sort(x, n = 50)
 
-stopifnot(
-  identical(x[o1], o2)
-)
+stopifnot(identical(x[o1], o2))
 
 }
 \seealso{

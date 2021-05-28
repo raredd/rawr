@@ -47,7 +47,7 @@
 #' \tab \code{tox_cat} \tab category \cr
 #' \tab \code{ctc_version} \tab version number \cr
 #' \tab \code{MedDRA_code_v12} \tab Medical Dictionary for Regulatory 
-#' Activities codes, v12 \cr
+#'   Activities codes, v12 \cr
 #' }
 #' 
 #' @seealso
@@ -72,7 +72,7 @@
 #' \tab \code{tox_cat} \tab category \cr
 #' \tab \code{ctc_version} \tab version number \cr
 #' \tab \code{MedDRA_code_v50} \tab Medical Dictionary for Regulatory 
-#' Activities codes, v50 \cr
+#'   Activities codes, v50 \cr
 #' \tab \code{tox_def} \tab definition \cr
 #' }
 #' 

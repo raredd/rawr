@@ -22,14 +22,17 @@ each unique value of a vector, \code{x}.
 }
 \examples{
 x <- mtcars$gear
-
 sample_each(x)
 mtcars[sample_each(x), ]
 
+
 ## compare numeric vs factor vectors (see description above)
-mtcars[sample_each(x, 3:5), ]
+## samples 3 3s, 4 4s, 5 5s
+table(mtcars[sample_each(x, 3:5), ]$gear)
+
+## samples 3 5s, 4 4s, 5 3s
 X <- factor(x, 5:3)
-mtcars[sample_each(X, 3:5), ]
+table(mtcars[sample_each(X, 3:5), ]$gear)
 
 }
 \seealso{

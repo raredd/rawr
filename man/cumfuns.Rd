@@ -66,13 +66,15 @@ cum_reset(x, FUN = cumsum)
 cum_reset(x, FUN = sum)
 
 set.seed(1)
-data.frame(x = x <- rpois(15, 1),
-           y = cum_reset(x, FUN = cumsum),
-           z = cum_reset(x, 0, function(x) ave(x, FUN = sum)))
-
+x <- rpois(15, 1)
+data.frame(
+  x = x,
+  y = cum_reset(x, FUN = cumsum),
+  z = cum_reset(x, 0, function(x) ave(x, FUN = sum))
+)
 
 ## x need not be numeric if FUN returns an appropriate type and length
-cum_reset(letters[1:10], c('d','g'), function(x)
+cum_reset(letters[1:10], c('d', 'g'), function(x)
   letters[as.numeric(factor(x))])
 
 
