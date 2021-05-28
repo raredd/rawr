@@ -3402,25 +3402,17 @@ inject_ <- function(x, where, what) {
 #'
 #' Convert a text string to several common cases.
 #'
-#' This function supports the following:
+#' This function supports the following letter cases:
 #'
-#' \tabular{llllll}{
-#' \tab \code{first} \tab \tab \tab \tab
-#' \code{Only the first letter is uppercase} \cr
-#' \tab \code{upcase} \tab \tab \tab \tab
-#' \code{Each Word Is Uppercase} \cr
-#' \tab \code{downcase} \tab \tab \tab \tab
-#' \code{tHE oPPOSITE oF uPCASE} \cr
-#' \tab \code{camelcase} \tab \tab \tab \tab
-#' \code{TheStringWillBeInCamelCase} \cr
-#' \tab \code{upper} \tab \tab \tab \tab
-#' \code{EQUIVALENT TO }\code{\link{toupper}} \cr
-#' \tab \code{lower} \tab \tab \tab \tab
-#' \code{equivalent to }\code{\link{tolower}} \cr
-#' \tab \code{lowup} \tab \tab \tab \tab
-#' \code{aLtErNaTiNg cAsEs} \cr
-#' \tab \code{uplow} \tab \tab \tab \tab
-#' \code{ThE OpPoSiTe oF LoWuP} \cr
+#' \tabular{lll}{
+#' \tab \code{first} \tab \code{Only the first letter is uppercase} \cr
+#' \tab \code{upcase} \tab \code{Each Word Is Uppercase} \cr
+#' \tab \code{downcase} \tab \code{tHE oPPOSITE oF uPCASE} \cr
+#' \tab \code{camelcase} \tab \code{TheStringWillBeInCamelCase} \cr
+#' \tab \code{upper} \tab \code{EQUIVALENT TO }\code{\link{toupper}} \cr
+#' \tab \code{lower} \tab \code{equivalent to }\code{\link{tolower}} \cr
+#' \tab \code{lowup} \tab \code{aLtErNaTiNg cAsEs} \cr
+#' \tab \code{uplow} \tab \code{ThE OpPoSiTe oF LoWuP} \cr
 #' }
 #'
 #' @param x a text string
