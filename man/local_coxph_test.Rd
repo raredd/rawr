@@ -4,10 +4,10 @@
 \alias{local_coxph_test}
 \title{Compute local p-value from coxph}
 \usage{
-local_coxph_test(s, pos, C = NULL, d = NULL, digits = 3)
+local_coxph_test(object, pos, C = NULL, d = NULL, digits = 3)
 }
 \arguments{
-\item{s}{survival object of class \code{\link[survival]{coxph}}}
+\item{object}{survival object of class \code{\link[survival]{coxph}}}
 
 \item{pos}{vector of positions of \code{\link{coefficients}} of interest
 from \code{summary(coxph)}; defaults to \code{seq_along(coef(s))}}

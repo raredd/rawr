@@ -4,10 +4,10 @@
 \alias{merge2}
 \title{Recursively merge a list of data frames}
 \usage{
-merge2(l, ...)
+merge2(x, ...)
 }
 \arguments{
-\item{l}{list of data frames or objects to be coerced}
+\item{x}{list of data frames or objects to be coerced to data frames}
 
 \item{...}{additional arguments passed to \code{merge} (eg, \code{by},
 \code{all}, etc)}

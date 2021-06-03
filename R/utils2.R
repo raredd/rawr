@@ -822,7 +822,7 @@ color_pval <- function(pv, breaks = c(0, 0.01, 0.05, 0.1, 0.5, 1),
 #'
 #' Print a \code{list} (usually named) as a character vector or string.
 #'
-#' @param l a list to concatenate
+#' @param x a list to concatenate
 #' @param sep,collapse passed to \code{\link{paste}} controlling the string
 #'   to separate name from value and list elements, respectively; if
 #'   \code{collapse} is a non character string, the result will be a vector
@@ -839,10 +839,10 @@ color_pval <- function(pv, breaks = c(0, 0.01, 0.05, 0.1, 0.5, 1),
 #'
 #' @export
 
-catlist <- function(l, sep = ' = ', collapse = ', ') {
-  res <- paste(names(l), l, sep = sep)
+catlist <- function(x, sep = ' = ', collapse = ', ') {
+  res <- paste(names(x), x, sep = sep)
 
-  idx <- !nzchar(names(l))
+  idx <- !nzchar(names(x))
   res[idx] <- gsub(sprintf('^%s', sep), '', res)[idx]
 
   if (is.character(collapse))
@@ -3244,13 +3244,13 @@ dmy <- function(d, m, y, origin = c(1, 1, 1900)) {
 #' tables vertically or horizontally (common column and row names are not
 #' required).
 #'
-#' @param l a list of matrices or data frames
+#' @param x a list of matrices or data frames
 #' @param tspanner,n.tspanner table spanner labels and number of rows,
 #'   respectively, passed to \code{\link[htmlTable]{htmlTable}}; if missing,
-#'   \code{names(l)} and \code{sapply(l, nrow)} are used
+#'   \code{names(x)} and \code{sapply(x, nrow)} are used
 #' @param cgroup,n.cgroup table column labels and number of columns for each,
 #'   respectively, passed to \code{\link[htmlTable]{htmlTable}}; if missing,
-#'   \code{names(l)} and \code{sapply(l, ncol)} are used
+#'   \code{names(x)} and \code{sapply(x, ncol)} are used
 #' @param how method to join objects, by row (\code{"rbind"}) or column
 #'   (\code{"cbind"}) binding
 #' @param ... additional arguments passed to \code{\link[htmlTable]{htmlTable}}
@@ -3274,17 +3274,17 @@ dmy <- function(d, m, y, origin = c(1, 1, 1900)) {
 #'
 #' @export
 
-combine_table <- function(l, tspanner, n.tspanner, ...) {
-  l <- if (!islist(l))
-    list(l) else l
+combine_table <- function(x, tspanner, n.tspanner, ...) {
+  x <- if (!islist(x))
+    list(x) else x
 
   n.tspanner <- if (missing(n.tspanner))
-    sapply(l, function(x) nrow(x) %||% 1L) else n.tspanner
-  tspanner   <- if (missing(tspanner))
-    names(l) %||% rep(' ', each = length(n.tspanner)) else tspanner
+    sapply(x, function(xx) nrow(xx) %||% 1L) else n.tspanner
+  tspanner <- if (missing(tspanner))
+    names(x) %||% rep(' ', each = length(n.tspanner)) else tspanner
 
   ht <- htmlTable::htmlTable(
-    do.call('rbind', l), tspanner = tspanner, n.tspanner = n.tspanner, ...
+    do.call('rbind', x), tspanner = tspanner, n.tspanner = n.tspanner, ...
   )
 
   structure(ht, class = 'htmlTable')
@@ -3292,26 +3292,26 @@ combine_table <- function(l, tspanner, n.tspanner, ...) {
 
 #' @rdname combine_table
 #' @export
-combine_table2 <- function(l, tspanner, n.tspanner, cgroup, n.cgroup,
+combine_table2 <- function(x, tspanner, n.tspanner, cgroup, n.cgroup,
                            how = c('rbind', 'cbind'), ...) {
-  l <- if (!islist(l))
-    list(l) else l
+  x <- if (!islist(x))
+    list(x) else x
   how <- switch(match.arg(how), rbind = 'rbindx', cbind = 'cbindx')
 
   if (how %in% c('rbind', 'rbindx')) {
     n.tspanner <- if (missing(n.tspanner))
-      sapply(l, function(x) nrow(x) %||% 1L) else n.tspanner
-    tspanner   <- if (missing(tspanner))
-      names(l) %||% rep(' ', each = length(n.tspanner)) else tspanner
+      sapply(x, function(xx) nrow(xx) %||% 1L) else n.tspanner
+    tspanner <- if (missing(tspanner))
+      names(x) %||% rep(' ', each = length(n.tspanner)) else tspanner
     if (missing(cgroup))
       cgroup <- NULL
     if (missing(n.cgroup))
       n.cgroup <- NULL
   } else {
     n.cgroup <- if (missing(n.cgroup))
-      sapply(l, function(x) ncol(x) %||% 1L) else n.cgroup
-    cgroup   <- if (missing(cgroup))
-      names(l) %||% rep(' ', each = length(n.cgroup)) else cgroup
+      sapply(x, function(xx) ncol(xx) %||% 1L) else n.cgroup
+    cgroup <- if (missing(cgroup))
+      names(x) %||% rep(' ', each = length(n.cgroup)) else cgroup
     if (missing(tspanner))
       tspanner <- NULL
     if (missing(n.tspanner))
@@ -3319,7 +3319,7 @@ combine_table2 <- function(l, tspanner, n.tspanner, cgroup, n.cgroup,
   }
 
   ht <- htmlTable::htmlTable(
-    do.call(how, l), ...,
+    do.call(how, x), ...,
     tspanner = tspanner, n.tspanner = n.tspanner,
     cgroup = cgroup, n.cgroup = n.cgroup
   )

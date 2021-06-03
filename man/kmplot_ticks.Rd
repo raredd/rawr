@@ -5,8 +5,8 @@
 \title{Add ticks to \code{kmplot}}
 \usage{
 kmplot_ticks(
-  s,
-  data = eval(s$call$data),
+  object,
+  data = eval(object$call$data),
   by_var,
   what,
   y = 0,
@@ -19,7 +19,7 @@ kmplot_ticks(
 )
 }
 \arguments{
-\item{s}{an object of class \code{\link{survfit}}}
+\item{object}{an object of class \code{\link{survfit}}}
 
 \item{data}{the data set used to fit \code{s} which should also contain
 \code{by_var} and optionally \code{time}, \code{event}, and \code{strata};

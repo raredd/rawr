@@ -4,10 +4,10 @@
 \alias{rm_null}
 \title{Recursive \code{rm} for lists}
 \usage{
-rm_null(l, rm_list = TRUE)
+rm_null(x, rm_list = TRUE)
 }
 \arguments{
-\item{l}{a list}
+\item{x}{a list}
 
 \item{rm_list}{logical; if \code{FALSE}, lists with only the \code{NULL}
 object will not be removed}

@@ -4,10 +4,10 @@
 \alias{kmdiff}
 \title{Difference in two Kaplan-Meier estimates}
 \usage{
-kmdiff(s, col = adjustcolor("grey", 0.5), conf.int = 0.95)
+kmdiff(object, col = adjustcolor("grey", 0.5), conf.int = 0.95)
 }
 \arguments{
-\item{s}{an object of class \code{\link[survival]{survfit}}}
+\item{object}{an object of class \code{\link[survival]{survfit}}}
 
 \item{col}{color used for the band}
 

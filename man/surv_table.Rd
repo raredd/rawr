@@ -5,9 +5,9 @@
 \title{Summary table}
 \usage{
 surv_table(
-  s,
+  object,
   digits = ifelse(percent, 0L, 3L),
-  times = pretty(s$time),
+  times = pretty(object$time),
   maxtime = FALSE,
   percent = FALSE,
   locf = FALSE,
@@ -15,7 +15,7 @@ surv_table(
 )
 }
 \arguments{
-\item{s}{a \code{\link[survival]{survfit}} object}
+\item{object}{an object of class \code{\link[survival]{survfit}}}
 
 \item{digits}{number of digits to use in printing numbers}
 

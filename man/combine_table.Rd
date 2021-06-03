@@ -5,10 +5,10 @@
 \alias{combine_table2}
 \title{Combine html tables}
 \usage{
-combine_table(l, tspanner, n.tspanner, ...)
+combine_table(x, tspanner, n.tspanner, ...)
 
 combine_table2(
-  l,
+  x,
   tspanner,
   n.tspanner,
   cgroup,
@@ -18,17 +18,17 @@ combine_table2(
 )
 }
 \arguments{
-\item{l}{a list of matrices or data frames}
+\item{x}{a list of matrices or data frames}
 
 \item{tspanner, n.tspanner}{table spanner labels and number of rows,
 respectively, passed to \code{\link[htmlTable]{htmlTable}}; if missing,
-\code{names(l)} and \code{sapply(l, nrow)} are used}
+\code{names(x)} and \code{sapply(x, nrow)} are used}
 
 \item{...}{additional arguments passed to \code{\link[htmlTable]{htmlTable}}}
 
 \item{cgroup, n.cgroup}{table column labels and number of columns for each,
 respectively, passed to \code{\link[htmlTable]{htmlTable}}; if missing,
-\code{names(l)} and \code{sapply(l, ncol)} are used}
+\code{names(x)} and \code{sapply(x, ncol)} are used}
 
 \item{how}{method to join objects, by row (\code{"rbind"}) or column
 (\code{"cbind"}) binding}

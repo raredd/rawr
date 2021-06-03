@@ -4,10 +4,10 @@
 \alias{catlist}
 \title{Concatenate list for output}
 \usage{
-catlist(l, sep = " = ", collapse = ", ")
+catlist(x, sep = " = ", collapse = ", ")
 }
 \arguments{
-\item{l}{a list to concatenate}
+\item{x}{a list to concatenate}
 
 \item{sep, collapse}{passed to \code{\link{paste}} controlling the string
 to separate name from value and list elements, respectively; if

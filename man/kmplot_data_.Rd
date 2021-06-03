@@ -4,13 +4,13 @@
 \alias{kmplot_data_}
 \title{Create data frame to plot survival data}
 \usage{
-kmplot_data_(s, strata.lab)
+kmplot_data_(object, strata.lab)
 }
 \arguments{
-\item{s}{a \code{\link{survfit}} object}
+\item{object}{a \code{\link{survfit}} object}
 
 \item{strata.lab}{character vector of strata labels; must be same length
-as \code{s$n}}
+as \code{object$n}}
 }
 \description{
 Create data frame to plot survival data

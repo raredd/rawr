@@ -5,7 +5,7 @@
 \title{Recursively apply a function to a list}
 \usage{
 rapply2(
-  l,
+  x,
   FUN,
   classes = "ANY",
   ...,
@@ -14,13 +14,13 @@ rapply2(
 )
 }
 \arguments{
-\item{l}{a list}
+\item{x}{a list}
 
 \item{FUN}{the function to be applied to each \code{classes} element of
-\code{l}}
+\code{x}}
 
 \item{classes}{a character vector of \code{\link{class}} names or
-\code{"ANY"} to apply to every non-\code{\link{list}} element of \code{l}}
+\code{"ANY"} to apply to every non-\code{\link{list}} element of \code{x}}
 
 \item{...}{additional arguments passed to \code{FUN}}
 
@@ -29,10 +29,10 @@ rapply2(
 the first list (only if \code{"list" \%in\% classes})}
 
 \item{skip.null}{logical; if \code{TRUE} (default), \code{NULL} elements
-of \code{l} will be skipped before \code{FUN} can be applied}
+of \code{x} will be skipped before \code{FUN} can be applied}
 }
 \value{
-A list having the same structure as \code{l} with \code{FUN} applied to
+A list having the same structure as \code{x} with \code{FUN} applied to
 all (including nested) elements with a class matching \code{classes}.
 }
 \description{

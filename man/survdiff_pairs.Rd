@@ -4,10 +4,15 @@
 \alias{survdiff_pairs}
 \title{Pairwise \code{survdiff} comparisons}
 \usage{
-survdiff_pairs(s, ..., method = p.adjust.methods, digits = getOption("digits"))
+survdiff_pairs(
+  object,
+  ...,
+  method = p.adjust.methods,
+  digits = getOption("digits")
+)
 }
 \arguments{
-\item{s}{an object of class \code{\link[survival]{survdiff}} or
+\item{object}{an object of class \code{\link[survival]{survdiff}} or
 \code{\link[survival]{survfit}}}
 
 \item{...}{additional arguments passed to \code{\link{survdiff}} such as
@@ -20,6 +25,7 @@ survdiff_pairs(s, ..., method = p.adjust.methods, digits = getOption("digits"))
 }
 \value{
 A list with three elements:
+
 \item{\code{n}}{the number of subjects in each pair of groups}
 \item{\code{chi.sq}}{the chi-square statistic for a test of equality
 between pairs of groups}

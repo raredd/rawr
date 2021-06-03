@@ -233,7 +233,7 @@ fapply_by <- function(formula, data, ...) {
 #' 
 #' Flattens lists and nested lists of vectors, matrices, and/or data frames.
 #' 
-#' @param l a list
+#' @param x a list
 #' 
 #' @references
 #' \url{https://stackoverflow.com/q/8139677/2994949}
@@ -249,22 +249,22 @@ fapply_by <- function(formula, data, ...) {
 #' 
 #' @export
 
-flatten <- function(l) {
-  while (any(vapply(l, islist, logical(1L)))) {
-    l <- lapply(l, function(x)
-      if (islist(x))
-        x else list(x))
-    l <- unlist(l, recursive = FALSE)
+flatten <- function(x) {
+  while (any(vapply(x, islist, logical(1L)))) {
+    x <- lapply(x, function(xx)
+      if (islist(xx))
+        xx else list(xx))
+    x <- unlist(x, recursive = FALSE)
   }
   
-  l
+  x
 }
 
 #' Recursive \code{rm} for lists
 #' 
 #' Remove \code{NULL} or \code{list(NULL)} objects recursively from a list.
 #' 
-#' @param l a list
+#' @param x a list
 #' @param rm_list logical; if \code{FALSE}, lists with only the \code{NULL}
 #'   object will not be removed
 #' 
@@ -280,15 +280,15 @@ flatten <- function(l) {
 #' 
 #' @export
 
-rm_null <- function(l, rm_list = TRUE) {
+rm_null <- function(x, rm_list = TRUE) {
   isnull <- if (rm_list)
-    function(x) is.null(x) | all(vapply(x, is.null, logical(1L)))
-  else function(x) is.null(x)
+    function(xx) is.null(xx) | all(vapply(xx, is.null, logical(1L)))
+  else function(xx) is.null(xx)
   
-  x <- Filter(Negate(isnull), l)
+  x <- Filter(Negate(isnull), x)
   
-  lapply(x, function(x) if (is.list(x))
-    rm_null(x, rm_list) else x)
+  lapply(x, function(xx) if (is.list(xx))
+    rm_null(xx, rm_list) else xx)
 }
 
 #' Cumulative functions

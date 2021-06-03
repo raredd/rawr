@@ -4,10 +4,10 @@
 \alias{atrisk_data_}
 \title{Create a list of data frames for at-risk tables}
 \usage{
-atrisk_data_(s, times, digits)
+atrisk_data_(object, times, digits)
 }
 \arguments{
-\item{s}{a \code{\link{survfit}} object}
+\item{object}{a \code{\link{survfit}} object}
 
 \item{times}{time points}
 

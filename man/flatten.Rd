@@ -4,10 +4,10 @@
 \alias{flatten}
 \title{Flatten lists}
 \usage{
-flatten(l)
+flatten(x)
 }
 \arguments{
-\item{l}{a list}
+\item{x}{a list}
 }
 \description{
 Flattens lists and nested lists of vectors, matrices, and/or data frames.

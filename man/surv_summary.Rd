@@ -4,10 +4,10 @@
 \alias{surv_summary}
 \title{Summary of a survival curve}
 \usage{
-surv_summary(s, digits = 3L, locf = FALSE, ...)
+surv_summary(object, digits = 3L, locf = FALSE, ...)
 }
 \arguments{
-\item{s}{a \code{\link{survfit}} object}
+\item{object}{a \code{\link{survfit}} object}
 
 \item{digits}{number of digits to use in printing numbers}
 

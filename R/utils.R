@@ -1084,7 +1084,7 @@ outer2 <- function(..., FUN) {
 #' 
 #' Use \code{\link{merge}} to join \code{n} data frames.
 #' 
-#' @param l list of data frames or objects to be coerced
+#' @param x list of data frames or objects to be coerced to data frames
 #' @param ... additional arguments passed to \code{merge} (eg, \code{by},
 #'   \code{all}, etc)
 #' 
@@ -1104,8 +1104,8 @@ outer2 <- function(..., FUN) {
 #' 
 #' @export
 
-merge2 <- function(l, ...) {
-  Reduce(function(x, y) merge(x, y, ...), l)
+merge2 <- function(x, ...) {
+  Reduce(function(xx, yy) merge(xx, yy, ...), x)
 }
 
 #' Last observation carried forward
@@ -1558,20 +1558,20 @@ view <- function(x, use_viewer = FALSE, ...) {
 #' Iterates over a (possibly nested) list and applies a function if a specific
 #' \code{\link{class}} is found.
 #' 
-#' @param l a list
+#' @param x a list
 #' @param FUN the function to be applied to each \code{classes} element of
-#'   \code{l}
+#'   \code{x}
 #' @param classes a character vector of \code{\link{class}} names or
-#'   \code{"ANY"} to apply to every non-\code{\link{list}} element of \code{l}
+#'   \code{"ANY"} to apply to every non-\code{\link{list}} element of \code{x}
 #' @param ... additional arguments passed to \code{FUN}
 #' @param check.nested logical; if \code{TRUE}, for nested lists,
 #'   \code{rapply2} will continue to walk down the list rather than stop at
 #'   the first list (only if \code{"list" \%in\% classes})
 #' @param skip.null logical; if \code{TRUE} (default), \code{NULL} elements
-#'   of \code{l} will be skipped before \code{FUN} can be applied
+#'   of \code{x} will be skipped before \code{FUN} can be applied
 #' 
 #' @return
-#' A list having the same structure as \code{l} with \code{FUN} applied to
+#' A list having the same structure as \code{x} with \code{FUN} applied to
 #' all (including nested) elements with a class matching \code{classes}.
 #' 
 #' @seealso
@@ -1612,28 +1612,28 @@ view <- function(x, use_viewer = FALSE, ...) {
 #' 
 #' @export
 
-rapply2 <- function(l, FUN, classes = 'ANY', ...,
+rapply2 <- function(x, FUN, classes = 'ANY', ...,
                     check.nested = 'list' %in% classes, skip.null = TRUE) {
-  stopifnot(islist(l))
+  stopifnot(islist(x))
   FUN <- match.fun(FUN)
   
   is.nested <- if (check.nested)
-    function(l) any(vapply(l, islist, NA)) else function(l) FALSE
+    function(xx) any(vapply(xx, islist, NA)) else function(xx) FALSE
   
-  for (ii in seq_along(l)) {
-    if (skip.null && is.null(l[[ii]]))
+  for (ii in seq_along(x)) {
+    if (skip.null && is.null(x[[ii]]))
       next
-    l[[ii]] <- if (is.nested(l[[ii]]) ||
-                   (islist(l[[ii]]) & ('list' %ni% classes)))
-      Recall(l[[ii]], FUN, classes, ..., check.nested = check.nested,
+    x[[ii]] <- if (is.nested(x[[ii]]) ||
+                   (islist(x[[ii]]) & ('list' %ni% classes)))
+      Recall(x[[ii]], FUN, classes, ..., check.nested = check.nested,
              skip.null = skip.null)
-    else if (any(toupper(classes) == 'ANY') || inherits(l[[ii]], classes))
-      FUN(l[[ii]], ...)
-    else l[[ii]]
+    else if (any(toupper(classes) == 'ANY') || inherits(x[[ii]], classes))
+      FUN(x[[ii]], ...)
+    else x[[ii]]
   }
   
   if ('list' %in% classes & !identical(FUN, unlist))
-    FUN(l, ...) else l
+    FUN(x, ...) else x
 }
 
 #' Sort matrix

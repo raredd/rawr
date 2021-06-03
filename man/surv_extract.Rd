@@ -6,10 +6,10 @@
 \alias{surv_prob}
 \title{Extract \code{survfit} summaries}
 \usage{
-surv_extract(x, what = "median")
+surv_extract(object, what = "median")
 
 surv_median(
-  x,
+  object,
   ci = FALSE,
   digits = 0L,
   which = NULL,
@@ -19,8 +19,8 @@ surv_median(
 )
 
 surv_prob(
-  x,
-  times = pretty(x$time),
+  object,
+  times = pretty(object$time),
   ci = FALSE,
   digits = ifelse(percent, 0L, 2L),
   which = 1L,
@@ -30,7 +30,7 @@ surv_prob(
 )
 }
 \arguments{
-\item{x}{an object of class \code{\link[survival]{survfit}}}
+\item{object}{an object of class \code{\link[survival]{survfit}}}
 
 \item{what}{the data to return, either the index, character string(s), or
 \code{NULL} (returns the entire table)}

@@ -5,7 +5,7 @@
 \title{Landmark}
 \usage{
 landmark(
-  s,
+  object,
   times = NULL,
   col = 2L,
   plot = TRUE,
@@ -17,7 +17,7 @@ landmark(
 )
 }
 \arguments{
-\item{s}{a \code{\link[survival]{survfit}} object}
+\item{object}{an object of class \code{\link[survival]{survfit}}}
 
 \item{times}{a vector of landmark times}
 
