@@ -57,10 +57,10 @@ stratify_formula <- function(formula, vars = NULL) {
 #' from the \code{R} graphics device. Doing so may cause the at-risk table or
 #' legend to be mis-aligned.
 #' 
-#' @param s an object of class \code{\link{survfit}} or \code{survfit.cox}
+#' @param object an object of class \code{\link{survfit}} or \code{survfit.cox}
 #' @param data (optional) the data frame used to create \code{s}, used to
 #'   obtain some data not available in \code{survfit} objects; if not given,
-#'   \code{s$call$data} will be searched for in the \code{\link{sys.frames}}
+#'   \code{object$call$data} will be searched for in the \code{\link{sys.frames}}
 #' @param lty.surv,lwd.surv,col.surv line type, width, and color for survival
 #'   curve(s); colors may be either numeric, color names as character
 #'   string(s), or hexadecimal string(s)
@@ -85,7 +85,7 @@ stratify_formula <- function(formula, vars = NULL) {
 #' @param kmdiff logical; if \code{TRUE}, a confidence band for the difference
 #'   between two curves is shown; see \code{\link{kmdiff}} (note that the color
 #'   can be passed via \code{col.ci} and the confidence interval is taken from
-#'   \code{s$conf.int})
+#'   \code{object$conf.int})
 #' @param atrisk.table logical; if \code{TRUE} (default), draws at-risk table
 #' @param atrisk.type a character string giving the type of "at-risk" table to
 #'   show; one of \code{"atrisk"} (number at-risk), \code{"events"} (cumulative
@@ -142,6 +142,9 @@ stratify_formula <- function(formula, vars = NULL) {
 #'   \code{"bottomleft"}
 #' @param args.legend an optional \emph{named} list of \code{\link{legend}}
 #'   arguments controlling the \code{legend}
+#' @param median.legend logical; if \code{TRUE}, medians (and optionally
+#'   confidence intervals if \code{ci.median = TRUE}) are added to the legend,
+#'   useful for adding a legend and median without at-risk table
 #' @param lr_test logical or numeric; if \code{TRUE}, a log-rank test will be
 #'   performed and the results added to the top-right corner of the plot; if
 #'   numeric, the value is passed as \code{rho} controlling the type of test
@@ -207,6 +210,7 @@ stratify_formula <- function(formula, vars = NULL) {
 #' ## basic usage
 #' kmplot(km1)
 #' kmplot(km1, args.median = list(x = 500, y = 0.2))
+#' kmplot(km1, atrisk.table = FALSE, median.legend = TRUE)
 #' kmplot(km1, fun = 'F')
 #' kmplot(km1, atrisk.col = c('grey50', 'tomato'), test_details = FALSE,
 #'        args.test = list(col = 'red', cex = 1.5, .prefix = 'Log-rank: '))
@@ -298,10 +302,10 @@ stratify_formula <- function(formula, vars = NULL) {
 #' 
 #' @export
 
-kmplot <- function(s, data = NULL,
+kmplot <- function(object, data = NULL,
                    ## basic plot options
                    lty.surv = par('lty'), lwd.surv = par('lwd'),
-                   col.surv = seq_along(s$n), mark = 3L, lwd.mark = lwd.surv,
+                   col.surv = seq_along(object$n), mark = 3L, lwd.mark = lwd.surv,
                    
                    ## confidence options
                    lty.ci = 0, lwd.ci = lwd.surv,
@@ -317,7 +321,7 @@ kmplot <- function(s, data = NULL,
                    atrisk.digits = (!grepl('percent', atrisk.type)) * 2,
                    atrisk.lines = TRUE, atrisk.col = !atrisk.lines,
                    atrisk.min = NULL, strata.lab = NULL,
-                   strata.expr = NULL, strata.order = seq_along(s$n),
+                   strata.expr = NULL, strata.order = seq_along(object$n),
                    extra.margin = 5, mar = NULL,
                    median = FALSE, digits.median = 0L, ci.median = TRUE,
                    args.median = list(),
@@ -330,8 +334,8 @@ kmplot <- function(s, data = NULL,
                    xlab = 'Time', ylab = 'Probability',
                    main = NULL, cex.axis = par('cex.axis'),
                    cex.atrisk = cex.axis,
-                   legend = !atrisk.table && !is.null(s$strata),
-                   args.legend = list(),
+                   legend = !atrisk.table && !is.null(object$strata),
+                   args.legend = list(), median.legend = FALSE,
                    
                    ## test/hazard ratio options
                    lr_test = TRUE, tt_test = FALSE, test_details = TRUE,
@@ -351,11 +355,11 @@ kmplot <- function(s, data = NULL,
                    times.digits = (!grepl('percent', times.type)) * 2,
                    args.times = list(),
                    add = FALSE, panel.first = NULL, panel.last = NULL, ...) {
-  if (!inherits(s, 'survfit'))
-    stop('\'s\' must be a \'survfit\' object')
+  if (!inherits(object, 'survfit'))
+    stop('\'object\' must be a \'survfit\' object')
   
-  if (length(form <- s$call$formula) == 1L)
-    s$call$formula <- as.formula(eval(form, parent.frame(1L)))
+  if (length(form <- object$call$formula) == 1L)
+    object$call$formula <- as.formula(eval(form, parent.frame(1L)))
   
   if (is.logical(lr_test)) {
     rho <- 0
@@ -369,14 +373,14 @@ kmplot <- function(s, data = NULL,
   
   fun <- match.arg(fun)
   
-  svar <- as.character(form <- s$call$formula)
+  svar <- as.character(form <- object$call$formula)
   svar <- svar[-(1:2)]
   
   ## formula with strata (if given), used for tests/coxph
   sform <- stratify_formula(form, stratify)
   
-  sdat <- s$.data %||% {
-    sdat <- deparse(s$call$data)
+  sdat <- object$.data %||% {
+    sdat <- deparse(object$call$data)
     sname <- gsub('[$[].*', '', sdat)
     tryCatch(if (identical(sdat, sname))
       get(sdat, where(sname)) else eval(parse(text = sdat), where(sname)),
@@ -384,21 +388,21 @@ kmplot <- function(s, data = NULL,
   }
   sdat <- data %||% sdat
   ## remove missing here for special case: all NA for one strata level
-  ## drops level in s$strata but not in table(sdat[, svar])
+  ## drops level in object$strata but not in table(sdat[, svar])
   if (!is.null(sdat))
     sdat <- na.omit(sdat[, c(all.vars(form), stratify)])
   
   ## single strata
   one <- identical(svar, '1')
-  if (!(ng <- length(s$strata))) {
-    s$strata <- length(s$time)
+  if (!(ng <- length(object$strata))) {
+    object$strata <- length(object$time)
     if (length(svar) == 1L & !one) {
       svar <- tryCatch({
         tbl <- table(sdat[, svar])
         names(tbl)[tbl > 0L]
       }, error = function(e) NULL)
     }
-    names(s$strata) <- if (!is.null(svar) & !one) svar else 'All'
+    names(object$strata) <- if (!is.null(svar) & !one) svar else 'All'
     # legend <- atrisk.lines <- FALSE
     legend <- FALSE
   }
@@ -411,7 +415,7 @@ kmplot <- function(s, data = NULL,
   
   col.surv <- if (is.null(col.surv)) {
     if (isTRUE(col.band) || all(!col.band))
-      seq_along(s$n)
+      seq_along(object$n)
     else rep_len(col.band, ng)
   } else rep(col.surv, length.out = ng)
   ## must use rep instead of rep_len for names
@@ -429,14 +433,14 @@ kmplot <- function(s, data = NULL,
   col.ci <- rep_len(col.ci, ng)
   
   ## group names and more error checks
-  gr <- c(s$strata)
+  gr <- c(object$strata)
   if (isTRUE(strata.lab)) {
     svar <- colnames(model.frame(form, sdat)[, -1L, drop = FALSE])
     cl <- c(list(survival::strata),
             lapply(svar, as.symbol),
             shortlabel = TRUE)
     mode(cl) <- 'call'
-    names(s$strata) <- levels(eval(cl, model.frame(form, sdat)))
+    names(object$strata) <- levels(eval(cl, model.frame(form, sdat)))
   }
   
   if (!is.null(strata.lab) && isTRUE(strata.lab))
@@ -444,7 +448,7 @@ kmplot <- function(s, data = NULL,
   if (!is.null(strata.lab) && identical(strata.lab, FALSE))
     strata.lab <- rep_len('', ng)
   if (is.null(strata.lab))
-    strata.lab <- names(s$strata)
+    strata.lab <- names(object$strata)
   if (length(strata.lab) != ng && strata.lab[1L] != FALSE) {
     strata.lab <- strata.lab[seq.int(ng)]
     warning('length(strata.lab) != number of groups')
@@ -482,6 +486,7 @@ kmplot <- function(s, data = NULL,
   median.mar <- c('x', 'at') %in% names(args.median) | is.numeric(median)
   if (identical(median, FALSE) & length(args.median) > 0L)
     median <- TRUE
+  median.at <- NA
   if (!identical(median, FALSE)) {
     median.at <- median
     median <- TRUE
@@ -501,7 +506,7 @@ kmplot <- function(s, data = NULL,
     par(mar = mar)
   
   if (is.null(xlim))
-    xlim <- c(0, max(s$time))
+    xlim <- c(0, max(object$time))
   oxlim <- xlim
   if (is.null(ylim))
     ylim <- c(0, 1.025)
@@ -519,7 +524,7 @@ kmplot <- function(s, data = NULL,
   } else 'r'
   
   ## reformat survival estimates
-  dat <- kmplot_data_(s, strata.lab)
+  dat <- kmplot_data_(object, strata.lab)
   dat.list <- split(dat, dat$order)
   
   ## base plot
@@ -537,21 +542,21 @@ kmplot <- function(s, data = NULL,
   )
   
   ## at-risk table below surv plot
+  line.pos <- seq.int(ng)[order(strata.order)] + 2L + atrisk.pad
+  ## set colors for lines of text
+  col.atrisk <- if (isTRUE(atrisk.col))
+    col.surv
+  else if (!identical(atrisk.col, FALSE) && length(atrisk.col) == ng)
+    atrisk.col else rep_len(1L, ng)
+  
   if (atrisk.table) {
     usr <- par('usr')
     
     atrisk.at <- atrisk.at[atrisk.at <= usr[2L]]
     
-    ## set colors for lines of text
-    col.atrisk <- if (isTRUE(atrisk.col))
-      col.surv
-    else if (!identical(atrisk.col, FALSE) && length(atrisk.col) == ng)
-      atrisk.col else rep_len(1L, ng)
-    
     ## labels for each row in at-risk table
     group.name.pos <- diff(usr[1:2]) / ifelse(atrisk.lines, -8, -16)
     padding <- abs(group.name.pos / 8)
-    line.pos <- seq.int(ng)[order(strata.order)] + 2L + atrisk.pad
     
     if (!identical(unique(strata.lab), FALSE)) {
       if (!is.null(strata.expr)) {
@@ -590,7 +595,7 @@ kmplot <- function(s, data = NULL,
       'percent-cuminc-ci' = 'percent.cuminc.ci'
     )
     
-    ar <- atrisk_data_(s, atrisk.at, atrisk.digits)
+    ar <- atrisk_data_(object, atrisk.at, atrisk.digits)
     ss <- ar$summary
     d2 <- ar$data
     
@@ -644,59 +649,47 @@ kmplot <- function(s, data = NULL,
     if (!(identical(atrisk.lab, FALSE)))
       mtext(atrisk.lab, side = 1L, at = usr[1L], cex = cex.atrisk,
             line = 1.5 + atrisk.pad, adj = 1, col = 1L, las = 1L)
-    
-    ## median (ci) text on right of at-risk
-    if (median) {
-      st <- ss$table
-      st <- if (length(s$n) != 1L)
-        as.data.frame(st) else as.data.frame(t(st))
-      st <- st[, grep('(?i)median|[ul]cl', names(st)), drop = FALSE]
-      tt <- if (ncol(st) < 3L)
-        roundr(st[, 'median'], digits.median) else
-          do.call('sprintf', c(list(
-            fmt = '%s (%s, %s)'), lapply(st, roundr, digits = digits.median))
-          )
-      tt <- ifelse(
-        rowSums(is.na(st)) == ncol(st),
-        'NR', gsub('NA', 'NR', tt, fixed = TRUE)
-      )
-      if (!ci.median) {
-        s$conf.int <- NULL
-        tt <- gsub('\\s*\\(.*$', '', tt)
-      }
-      
-      at <- if (isTRUE(median.at))
-        usr[2L] + diff(usr[1:2]) / 8 else median.at
-      
-      largs <- list(
-        text = c(if (!is.null(s$conf.int))
-          sprintf('Median (%s%% CI)', s$conf.int * 100) else 'Median', tt),
-        side = 1L, col = c(palette()[1L], col.atrisk), at = at, las = 1L,
-        adj = 0.5, cex = cex.atrisk, line = c(1.5 + atrisk.pad, line.pos)
-      )
-      
-      if (!islist(args.median))
-        args.median <- list()
-      
-      ## convert (x, y) coords to work with mtext
-      if (all(c('x', 'y') %in% names(args.median))) {
-        args.median <- within.list(args.median, {
-          at <- grconvertX(x, 'user', 'ndc')
-          line <- largs$line - min(largs$line) - 0.5 -
-            grconvertY(args.median$y, 'user', 'line')
-          outer <- TRUE
-          side <- 1L
-          
-          text <- c(largs$text[1L],
-                    sprintf('%s: %s', strata.lab, largs$text[-1L]))
-          text <- gsub('^:\\s*', '', trimws(text))
-          x <- y <- NULL
-        })
-      }
-      
-      do.call('mtext', modifyList(largs, args.median))
-    }
   }
+  
+  ## median (ci) text on at-risk or using x, y coords
+  tt <- surv_median(object, ci = ci.median, digits = digits.median,
+                    show_conf = FALSE, print = FALSE)
+  tt <- format(tt, big.mark = ',')
+  tt <- gsub('NA', 'NR', tt)
+  at <- if (isTRUE(median.at))
+    usr[2L] + diff(usr[1:2]) / 8 else median.at
+  
+  largs <- list(
+    text = c(if (!is.null(object$conf.int))
+      sprintf('Median (%s%% CI)', object$conf.int * 100) else 'Median', tt),
+    side = 1L, col = c(palette()[1L], col.atrisk), at = at, las = 1L,
+    adj = 0.5, cex = cex.atrisk, line = c(1.5 + atrisk.pad, line.pos)
+  )
+  if (!ci.median)
+    largs$text <- gsub(' .*', '', largs$text)
+  
+  if (!islist(args.median))
+    args.median <- list()
+  
+  ## convert (x, y) coords to work with mtext
+  if (all(c('x', 'y') %in% names(args.median))) {
+    args.median <- within.list(args.median, {
+      at <- grconvertX(x, 'user', 'ndc')
+      line <- largs$line - min(largs$line) - 0.5 -
+        grconvertY(args.median$y, 'user', 'line')
+      outer <- TRUE
+      side <- 1L
+      
+      text <- c(largs$text[1L], sprintf('%s: %s', strata.lab, largs$text[-1L]))
+      text <- gsub('^:\\s*', '', trimws(text))
+      x <- y <- NULL
+    })
+  }
+  
+  args.median <- modifyList(largs, args.median)
+  
+  if (median)
+    do.call('mtext', args.median)
   
   ## summary by strata at specified times
   if (!is.null(times)) {
@@ -732,7 +725,7 @@ kmplot <- function(s, data = NULL,
         'percent-cuminc-ci' = sprintf('%% cuminc (%s%% CI)', ss$conf.int * 100)
       )
     
-    ar <- atrisk_data_(s, times, times.digits)
+    ar <- atrisk_data_(object, times, times.digits)
     ss <- ar$summary
     d2 <- ar$data
     d3 <- lapply(d2, function(x) x[, c('time', wh)])
@@ -768,14 +761,30 @@ kmplot <- function(s, data = NULL,
       legend = if (!is.null(strata.expr))
         strata.expr[strata.order] else
           (if (identical(strata.lab, FALSE) || all(strata.lab %in% ''))
-            names(s$strata) else strata.lab)[strata.order],
+            names(object$strata) else strata.lab)[strata.order],
       col = col.surv[strata.order], bty = 'n',
       lty = lty.surv[strata.order], lwd = lwd.surv[strata.order]
     )
     
     if (!islist(args.legend))
       args.legend <- list()
-    do.call('legend', modifyList(largs, args.legend))
+    
+    lg <- do.call('legend', modifyList(largs, args.legend))
+    
+    largs <- within.list(largs, {
+      x <- lg$rect$left + lg$rect$w
+      y <- lg$rect$top
+      legend <- tt
+    })
+    largs <- largs[setdiff(names(largs), c('lwd', 'lty'))]
+    
+    if (median.legend) {
+      lg <- do.call('legend', largs)
+      text(
+        lg$rect$left + lg$rect$w / 2, lg$rect$top,
+        args.median$text[1L], xpd = NA
+      )
+    }
   }
   
   ## hazard ratios
@@ -793,7 +802,7 @@ kmplot <- function(s, data = NULL,
         call. = FALSE
       )
     
-    tot <- tapply(s$n.event, rep(seq_along(s$strata), s$strata), sum)
+    tot <- tapply(object$n.event, rep(seq_along(object$strata), object$strata), sum)
     if (events)
       txt <- paste(txt, sprintf('(%s events)', tot))
     
@@ -811,9 +820,7 @@ kmplot <- function(s, data = NULL,
   ## pairwise tests
   if (!identical(pw_test, FALSE)) {
     txt <- pw_text(sform, sdat, pFUN = format_pval)
-    
     largs <- list(x = 'topright', legend = txt, bty = 'n', xpd = NA)
-    
     if (!islist(args.pw))
       args.pw <- list()
     do.call('legend', modifyList(largs, args.pw))
@@ -847,19 +854,18 @@ kmplot <- function(s, data = NULL,
       
       ## confidence bands
       if (any(!is.na(col.band))) {
-        col.band[ii] <- tcol(col.band[ii], alpha = .5)
-        polygon(c(x, rev(x)), c(U, rev(L)),
-                border = NA, col = col.band[ii])
+        col.band[ii] <- tcol(col.band[ii], alpha = 0.5)
+        polygon(c(x, rev(x)), c(U, rev(L)), border = NA, col = col.band[ii])
       }
     }
     
     ## survival curves
-    lines(s[ii], conf.int = FALSE, col = col.surv[ii], fun = fun,
+    lines(object[ii], conf.int = FALSE, col = col.surv[ii], fun = fun,
           lty = lty.surv[ii], lwd = lwd.surv, mark.time = FALSE)
     
     if (!mark[ii] == FALSE)
       points.kmplot(
-        s[ii], col = col.surv[ii], pch = mark[ii], censor = TRUE, plot = TRUE,
+        object[ii], col = col.surv[ii], pch = mark[ii], censor = TRUE, plot = TRUE,
         event = FALSE, bump = mark[ii] == 'bump', lwd = lwd.mark[ii], fun = fun
       )
   }
@@ -867,7 +873,7 @@ kmplot <- function(s, data = NULL,
   if (isTRUE(kmdiff)) {
     col.diff <- if (identical(col.surv, tcol(col.ci)))
       adjustcolor('grey', 0.5) else col.ci[1L]
-    kmdiff(s, col.diff, s$conf.int)
+    kmdiff(object, col.diff, object$conf.int)
   }
   
   do.call('clip', as.list(u0))
@@ -899,6 +905,7 @@ kmplot <- function(s, data = NULL,
       
       if (!islist(args.test))
         args.test <- list()
+      
       do.call('mtext', modifyList(largs, args.test))
     }
   }
@@ -930,20 +937,19 @@ points.kmplot <- function(x, xscale, xmax, fun,
       dimnames(x$surv) <- list(NULL, x$states)
       if (ncol(x$surv) > 1 && any(x$states == '')) {
         x$surv <- x$surv[, x$states != '']
-        if (is.matrix(x$p0)) 
-          x$p0 <- x$p0[, x$states != '']
-        else x$p0 <- x$p0[x$states != '']
+        x$p0 <- if (is.matrix(x$p0))
+          x$p0[, x$states != ''] else x$p0[x$states != '']
       }
     }
     if (!is.null(x$lower)) {
       x$lower <- 1 - x$lower
       x$upper <- 1 - x$upper
     }
-    if (missing(fun)) 
+    if (missing(fun))
       fun <- 'event'
   }
   
-  firstx <- firsty <- NA # part of the common args, but irrelevant for points
+  firstx <- firsty <- NA # part of the common args but irrelevant for points
   ssurv <- as.matrix(x$surv)
   stime <- x$time
   if(!is.null(x$upper)) {
@@ -951,16 +957,16 @@ points.kmplot <- function(x, xscale, xmax, fun,
     slower <- as.matrix(x$lower)
   } else {
     conf.int <- FALSE
-    supper   <- NULL  ## marker for later code
+    supper   <- NULL ## marker for later code
   }
   
   ## set up strata
   if (is.null(x$strata)) {
     nstrat <- 1
-    stemp <- rep(1, length(x$time)) ## same length as stime
+    stemp  <- rep_len(1, length(x$time)) ## same length as stime
   } else {
     nstrat <- length(x$strata)
-    stemp <- rep(seq.int(nstrat), x$strata) ## same length as stime
+    stemp  <- rep(seq.int(nstrat), x$strata) ## same length as stime
   }
   ncurve <- nstrat * ncol(ssurv)
   firsty <- matrix(firsty, nrow = nstrat, ncol = ncol(ssurv))
@@ -1002,7 +1008,7 @@ points.kmplot <- function(x, xscale, xmax, fun,
       slower <- slower[keepy, , drop = FALSE]
     }
   }
-  # stime <- stime/xscale  ## scaling is deferred until xmax processing is done
+  # stime <- stime / xscale ## scaling is deferred until xmax processing is done
   
   if (!missing(fun)) {
     if (is.character(fun)) {
@@ -1032,9 +1038,12 @@ points.kmplot <- function(x, xscale, xmax, fun,
     firsty <- tfun(firsty)
   }
   
-  res <- cbind(stime = stime,
-               ssurv = if (ncol(ssurv) == 1L) c(ssurv) else ssurv,
-               n.event = x$n.event)
+  res <- cbind(
+    stime = stime,
+    ssurv = if (ncol(ssurv) == 1L) c(ssurv) else ssurv,
+    n.event = x$n.event
+  )
+  
   if (!plot)
     return(res)
   
@@ -1051,15 +1060,14 @@ points.kmplot <- function(x, xscale, xmax, fun,
       st <- stime[x$n.event > 0]
       ss <- ssurv[x$n.event > 0]
       if (bump)
-        segments(st, ss, st, ss + diff(par('usr')[3:4]) / 100,
-                 col = col, ...)
+        segments(st, ss, st, ss + diff(par('usr')[3:4]) / 100, col = col, ...)
       else points(st, ss, col = col, pch = pch, ...)
     }
   } else {
     c2 <- 1
-    col <- rep(col, length = ncurve)
+    col <- rep_len(col, ncurve)
     if (!missing(pch))
-      pch2 <- rep(pch, length = ncurve)
+      pch2 <- rep_len(pch, ncurve)
     for (jj in seq.int(ncol(ssurv))) {
       for (ii in unique(stemp)) {
         if (censor) {
@@ -1067,8 +1075,7 @@ points.kmplot <- function(x, xscale, xmax, fun,
           st <- stime[who]
           ss <- ssurv[who, jj]
           if (bump)
-            segments(st, ss, st, ss + diff(par('usr')[3:4]) / 100,
-                     col = col, ...)
+            segments(st, ss, st, ss + diff(par('usr')[3:4]) / 100, col = col, ...)
           else points(st, ss, col = col[c2], pch = pch2[c2], ...)
         }
         if (event) {
@@ -1076,8 +1083,7 @@ points.kmplot <- function(x, xscale, xmax, fun,
           st <- stime[who]
           ss <- ssurv[who, jj]
           if (bump)
-            segments(st, ss, st, ss + diff(par('usr')[3:4]) / 100,
-                     col = col, ...)
+            segments(st, ss, st, ss + diff(par('usr')[3:4]) / 100, col = col, ...)
           else points(st, ss, col = col[c2], pch = pch2[c2], ...)
         }
         c2 <- c2 + 1L
@@ -1090,24 +1096,24 @@ points.kmplot <- function(x, xscale, xmax, fun,
 
 #' Create data frame to plot survival data
 #' 
-#' @param s a \code{\link{survfit}} object
+#' @param object a \code{\link{survfit}} object
 #' @param strata.lab character vector of strata labels; must be same length
-#'   as \code{s$n}
+#'   as \code{object$n}
 #' 
 #' @seealso \code{\link{kmplot}}; \code{\link{kmplot_by}}
 
-kmplot_data_ <- function(s, strata.lab) {
-  stopifnot(inherits(s, 'survfit'))
-  gr <- c(s$strata)
+kmplot_data_ <- function(object, strata.lab) {
+  stopifnot(inherits(object, 'survfit'))
+  gr <- c(object$strata)
   ng <- max(length(gr), 1L)
   
-  ## if conf.type = 'none', upper/lower defined as s$surv for plotting
-  if (is.null(s$lower))
-    s <- c(s, list(lower = s$surv))
-  if (is.null(s$upper))
-    s <- c(s, list(upper = s$surv))
+  ## if conf.type = 'none', upper/lower defined as object$surv for plotting
+  if (is.null(object$lower))
+    object <- c(object, list(lower = object$surv))
+  if (is.null(object$upper))
+    object <- c(object, list(upper = object$surv))
   
-  with(s, {
+  with(object, {
     data.frame(
       time, n.risk, n.event, survival = surv, lower, upper,
       group = rep(strata.lab, gr), order = rep(seq.int(ng), gr)
@@ -1117,15 +1123,16 @@ kmplot_data_ <- function(s, strata.lab) {
 
 #' Create a list of data frames for at-risk tables
 #' 
-#' @param s a \code{\link{survfit}} object
+#' @param object a \code{\link{survfit}} object
 #' @param times time points
 #' @param digits digits
 #' 
 #' @seealso
 #' \code{\link{kmplot}}; \code{\link{kmplot_by}}
 
-atrisk_data_ <- function(s, times, digits) {
-  ss <- summary(s, times = times, extend = TRUE)
+atrisk_data_ <- function(object, times, digits) {
+  ss <- summary(object, times = times, extend = TRUE)
+  
   if (is.null(ss$strata))
     ss$strata <- rep_len(1L, length(ss$time))
   
@@ -1964,7 +1971,7 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
 #' Add tick marks to a \code{\link{kmplot}} representing a specific event,
 #' \code{what}, occurring within a variable, \code{by_var}.
 #' 
-#' @param s an object of class \code{\link{survfit}}
+#' @param object an object of class \code{\link{survfit}}
 #' @param data the data set used to fit \code{s} which should also contain
 #'   \code{by_var} and optionally \code{time}, \code{event}, and \code{strata};
 #'   \code{kmplot_ticks} will attempt to select these variables based on the
@@ -1992,20 +1999,20 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
 #' 
 #' @export
 
-kmplot_ticks <- function(s, data = eval(s$call$data), by_var, what,
+kmplot_ticks <- function(object, data = eval(object$call$data), by_var, what,
                          y = 0, time, event, strata, col = NULL,
                          pch = NULL, ...) {
   op <- par(no.readonly = TRUE)
   on.exit(par(op))
   
   ## lifted from kmplot_by
-  if (inherits(s, 'survfit')) {
-    if (is.null(data <- s$.data)) {
-      data <- deparse(s$call$data)
+  if (inherits(object, 'survfit')) {
+    if (is.null(data <- object$.data)) {
+      data <- deparse(object$call$data)
       data <- get(data, where(gsub('[$[].*', '', data)))
     }
-    terms <- c(terms.inner(s$call$formula),
-               tail(as.character(s$call$formula), 1L))
+    terms <- c(terms.inner(object$call$formula),
+               tail(as.character(object$call$formula), 1L))
     if (missing(time))
       time <- terms[1L]
     if (missing(event))
@@ -2058,7 +2065,7 @@ terms.inner <- function(x) {
 #' one or more factors in a model; can also be used to test more comlex
 #' hypotheses.
 #' 
-#' @param s survival object of class \code{\link[survival]{coxph}}
+#' @param object survival object of class \code{\link[survival]{coxph}}
 #' @param pos vector of positions of \code{\link{coefficients}} of interest
 #'   from \code{summary(coxph)}; defaults to \code{seq_along(coef(s))}
 #' @param C,d \code{C}, a q-by-p matrix, and \code{d}, a q-by-1 matrix, define
@@ -2080,14 +2087,14 @@ terms.inner <- function(x) {
 #' 
 #' @export
 
-local_coxph_test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
-  stopifnot(inherits(s, 'coxph'))
+local_coxph_test <- function(object, pos, C = NULL, d = NULL, digits = 3) {
+  stopifnot(inherits(object, 'coxph'))
   
   if (missing(pos))
-    pos <- seq_along(coef(s))
+    pos <- seq_along(coef(object))
   
   n <- length(pos)
-  if (!(n <- length(pos)) || !length(coef(s)))
+  if (!(n <- length(pos)) || !length(coef(object)))
     stop('Model has no coefficients')
   
   if (is.null(C)) {
@@ -2101,8 +2108,8 @@ local_coxph_test <- function(s, pos, C = NULL, d = NULL, digits = 3) {
   if (dim(d)[1L] != dim(C)[1L])
     stop('C and d do not have appropriate dimensions')
   
-  I. <- s$var[pos, pos]
-  est <- matrix(as.vector(s$coeff[pos]), dim(C)[2L])
+  I. <- object$var[pos, pos]
+  est <- matrix(as.vector(object$coeff[pos]), dim(C)[2L])
   chisq <- t(C %*% est - d) %*% solve(t(C) %*% I. %*% C ) %*% (C %*% est - d)
   chisq <- as.numeric(chisq)
   df <- dim(C)[1L]
@@ -2178,7 +2185,7 @@ surv_cp <- function(data, time.var, status.var,
 #' for the curve, and other information which can be more useful than the
 #' acutal return value of \code{survival:::print.summary.survfit}.
 #' 
-#' @param s a \code{\link{survfit}} object
+#' @param object a \code{\link{survfit}} object
 #' @param digits number of digits to use in printing numbers
 #' @param locf logical; if \code{TRUE}, any \code{NA} probabilities will be
 #'   carried forward, e.g., if no events occurred during two consecutive time
@@ -2200,13 +2207,13 @@ surv_cp <- function(data, time.var, status.var,
 #' 
 #' @export
 
-surv_summary <- function(s, digits = 3L, locf = FALSE, ...) {
-  if (!inherits(s, 'survfit'))
-    stop('\'s\' must be a \'survfit\' object')
+surv_summary <- function(object, digits = 3L, locf = FALSE, ...) {
+  if (!inherits(object, 'survfit'))
+    stop('\'object\' must be a \'survfit\' object')
   oo <- options(digits = digits)
   on.exit(options(oo))
   
-  x <- summary(s, ...)
+  x <- summary(object, ...)
   if (!is.null(cl <- x$call)) {
     cat('Call: ')
     dput(cl)
@@ -2277,7 +2284,7 @@ surv_summary <- function(s, digits = 3L, locf = FALSE, ...) {
 #' 
 #' Prints a formatted summary table for \code{\link{survfit}} objects.
 #' 
-#' @param s a \code{\link[survival]{survfit}} object
+#' @param object an object of class \code{\link[survival]{survfit}}
 #' @param digits number of digits to use in printing numbers
 #' @param times vector of times
 #' @param ... additional arguments passed to \code{\link{summary.survfit}}
@@ -2314,19 +2321,19 @@ surv_summary <- function(s, digits = 3L, locf = FALSE, ...) {
 #' 
 #' @export
 
-surv_table <- function(s, digits = ifelse(percent, 0L, 3L),
-                       times = pretty(s$time), maxtime = FALSE,
+surv_table <- function(object, digits = ifelse(percent, 0L, 3L),
+                       times = pretty(object$time), maxtime = FALSE,
                        percent = FALSE, locf = FALSE, ...) {
   if (maxtime) {
-    idx <- s$n.event > 0
-    maxtime <- max(s$time[if (any(idx))
+    idx <- object$n.event > 0
+    maxtime <- max(object$time[if (any(idx))
       idx else seq_along(idx) == length(idx)])
     times <- c(times[times <= maxtime], maxtime)
   }
   
   capture.output(
     ss <- surv_summary(
-      s, digits = 7L, times = unique(times), locf = locf, ...
+      object, digits = 7L, times = unique(times), locf = locf, ...
     )
   )
   
@@ -2359,7 +2366,7 @@ surv_table <- function(s, digits = ifelse(percent, 0L, 3L),
     surv <- sprintf('%s (%s, %s)',
                     x[, g('survival')], x[, g('lower')], x[, g('upper')])
     cn <- c('Time', 'No. at risk', 'No. event', 'Std.Error',
-            sprintf('Surv (%s%% CI)', s$conf.int * 100))
+            sprintf('Surv (%s%% CI)', object$conf.int * 100))
     x <- cbind(x[, c(setdiff(vars, tmpvar), 'std.err'), drop = FALSE], surv)
     colnames(x) <- cn
     x
@@ -2374,7 +2381,7 @@ surv_table <- function(s, digits = ifelse(percent, 0L, 3L),
 #' Evaluate pairwise group differences in survival curves with
 #' \code{\link[survival]{survdiff}}.
 #' 
-#' @param s an object of class \code{\link[survival]{survdiff}} or
+#' @param object an object of class \code{\link[survival]{survdiff}} or
 #'   \code{\link[survival]{survfit}}
 #' @param ... additional arguments passed to \code{\link{survdiff}} such as
 #'   \code{na.action} or \code{rho} to control the test
@@ -2384,6 +2391,7 @@ surv_table <- function(s, digits = ifelse(percent, 0L, 3L),
 #' 
 #' @return
 #' A list with three elements:
+#' 
 #' \item{\code{n}}{the number of subjects in each pair of groups}
 #' \item{\code{chi.sq}}{the chi-square statistic for a test of equality
 #' between pairs of groups}
@@ -2430,19 +2438,19 @@ surv_table <- function(s, digits = ifelse(percent, 0L, 3L),
 #' 
 #' @export
 
-survdiff_pairs <- function(s, ..., method = p.adjust.methods,
+survdiff_pairs <- function(object, ..., method = p.adjust.methods,
                            digits = getOption('digits')) {
-  stopifnot(inherits(s, c('survdiff', 'survfit')))
+  stopifnot(inherits(object, c('survdiff', 'survfit')))
   
   pwchisq <- function(i, j) {
     data <- data[data[, rhs] %in% c(unq[i], unq[j]), ]
-    survdiff(as.formula(s$call$formula), data = data, ...)$chisq
+    survdiff(as.formula(object$call$formula), data = data, ...)$chisq
   }
   
   method <- match.arg(method)
-  data <- eval(s$call$data, envir = parent.frame(1L))
-  # rhs <- tail(all.vars(s$call$formula), -2L) ## fails for strata and s ~ ...
-  rhs <- strsplit(as.character(s$call$formula)[3L], '\\s*\\+\\s*')[[1L]]
+  data <- eval(object$call$data, envir = parent.frame(1L))
+  # rhs <- tail(all.vars(object$call$formula), -2L) ## fails for strata and s ~ ...
+  rhs <- strsplit(as.character(object$call$formula)[3L], '\\s*\\+\\s*')[[1L]]
   rhs <- trimws(grep('strata\\s*\\(', rhs, value = TRUE, invert = TRUE))
   
   if (any(grepl('factor\\s*\\(', rhs))) {
@@ -2452,7 +2460,7 @@ survdiff_pairs <- function(s, ..., method = p.adjust.methods,
   
   if (length(rhs) > 1L) {
     data[, 'int__'] <- interaction(data[, rhs], drop = TRUE)
-    s <- update(s, . ~ int__, data = data)
+    object <- update(object, . ~ int__, data = data)
     rhs <- 'int__'
   }
   
@@ -2485,7 +2493,7 @@ survdiff_pairs <- function(s, ..., method = p.adjust.methods,
 #' 
 #' Fit survival curves for landmark time points.
 #' 
-#' @param s a \code{\link[survival]{survfit}} object
+#' @param object an object of class \code{\link[survival]{survfit}}
 #' @param times a vector of landmark times
 #' @param col color for \code{times} annotations; use \code{col = 0} to
 #'   suppress labels
@@ -2522,10 +2530,10 @@ survdiff_pairs <- function(s, ..., method = p.adjust.methods,
 #' 
 #' @export
 
-landmark <- function(s, times = NULL, col = 2L, plot = TRUE, plot.main = plot,
+landmark <- function(object, times = NULL, col = 2L, plot = TRUE, plot.main = plot,
                      lr_test = TRUE, adjust_start = FALSE, ..., single = FALSE) {
-  form <- s$call$formula
-  data <- eval(s$call$data)
+  form <- object$call$formula
+  data <- eval(object$call$data)
   tvar <- terms.inner(form)[1L]
   
   op <- par(no.readonly = TRUE)
@@ -2534,10 +2542,10 @@ landmark <- function(s, times = NULL, col = 2L, plot = TRUE, plot.main = plot,
   if (single)
     par(mfrow = n2mfrow(length(times) + plot.main))
   
-  st <- data.frame(n = sum(s$n), lr_pval(s, TRUE), row.names = 'Total')
+  st <- data.frame(n = sum(object$n), lr_pval(object, TRUE), row.names = 'Total')
   if (plot.main)
     kmplot(
-      s, ..., add = TRUE, lr_test = lr_test,
+      object, ..., add = TRUE, lr_test = lr_test,
       panel.first = {
         abline(v = times, col = col)
         if (length(times))
@@ -2578,7 +2586,7 @@ landmark <- function(s, times = NULL, col = 2L, plot = TRUE, plot.main = plot,
   
   res <- list(
     table   = do.call('rbind', c(list(st), tt)),
-    survfit = c(list(Total = s), setNames(ss, sprintf('time=%s', times)))
+    survfit = c(list(Total = object), setNames(ss, sprintf('time=%s', times)))
   )
   
   invisible(res)
@@ -2594,7 +2602,7 @@ landmark <- function(s, times = NULL, col = 2L, plot = TRUE, plot.main = plot,
 #' estimate(s) with optional confidence intervals, respectively.
 #' \code{surv_extract} is a generic extractor.
 #' 
-#' @param x an object of class \code{\link[survival]{survfit}}
+#' @param object an object of class \code{\link[survival]{survfit}}
 #' @param what the data to return, either the index, character string(s), or
 #'   \code{NULL} (returns the entire table)
 #' @param ci logical; if \code{TRUE}, the confidence interval is printed
@@ -2643,13 +2651,13 @@ landmark <- function(s, times = NULL, col = 2L, plot = TRUE, plot.main = plot,
 #' 
 #' @export
 
-surv_extract <- function(x, what = 'median') {
-  stopifnot(inherits(x, 'survfit'))
+surv_extract <- function(object, what = 'median') {
+  stopifnot(inherits(object, 'survfit'))
   
   oo <- options(survfit.rmean = 'individual')
   on.exit(options(oo))
   
-  tbl <- summary(x)$table
+  tbl <- summary(object)$table
   if (is.null(what))
     return(tbl)
   
@@ -2663,32 +2671,32 @@ surv_extract <- function(x, what = 'median') {
 
 #' @rdname surv_extract
 #' @export
-surv_median <- function(x, ci = FALSE, digits = 0L, which = NULL,
+surv_median <- function(object, ci = FALSE, digits = 0L, which = NULL,
                         print = TRUE, na = ifelse(ci, 'NR', 'not reached'),
                         show_conf = TRUE) {
   nr <- function(x) {
     gsub('NA', na, x)
   }
-  nst <- pmax(1L, length(x$strata))
+  nst <- pmax(1L, length(object$strata))
   which <- if (is.null(which))
     seq.int(nst) else which
   
   if (!ci) {
-    res <- surv_extract(x, 'median')[which]
+    res <- surv_extract(object, 'median')[which]
     return(
       if (print)
         nr(iprint(res, digits = digits)) else res
     )
   }
   
-  res <- surv_extract(x, 'median|.CL')
+  res <- surv_extract(object, 'median|.CL')
   res <- roundr(res, digits)
   
-  f <- function(.x) {
+  f <- function(x) {
     if (show_conf)
-        sprintf('%s (%s%% CI: %s - %s)',
-                .x[1L], x$conf.int * 100, .x[2L], .x[3L])
-    else sprintf('%s (%s - %s)', .x[1L], .x[2L], .x[3L])
+      sprintf('%s (%s%% CI: %s - %s)',
+              x[1L], object$conf.int * 100, x[2L], x[3L])
+    else sprintf('%s (%s - %s)', x[1L], x[2L], x[3L])
   }
   
   res <- if (is.null(dim(res)))
@@ -2700,10 +2708,10 @@ surv_median <- function(x, ci = FALSE, digits = 0L, which = NULL,
 
 #' @rdname surv_extract
 #' @export
-surv_prob <- function(x, times = pretty(x$time), ci = FALSE,
+surv_prob <- function(object, times = pretty(object$time), ci = FALSE,
                       digits = ifelse(percent, 0L, 2L), which = 1L,
                       print = TRUE, show_conf = TRUE, percent = FALSE) {
-  res <- surv_table(x, digits, times, FALSE, percent = percent, extend = TRUE)
+  res <- surv_table(object, digits, times, FALSE, percent = percent, extend = TRUE)
   if (!islist(res))
     res <- list(res)
   
@@ -2713,7 +2721,7 @@ surv_prob <- function(x, times = pretty(x$time), ci = FALSE,
       gsub(' .*', '', y) else gsub(', ', ' - ', y)
     
     if (show_conf)
-      y <- gsub('(?<=\\()', sprintf('%s%% CI: ', x$conf.int * 100), y, perl = TRUE)
+      y <- gsub('(?<=\\()', sprintf('%s%% CI: ', object$conf.int * 100), y, perl = TRUE)
     
     if (print)
       iprint(y) else y
@@ -2733,7 +2741,7 @@ surv_prob <- function(x, times = pretty(x$time), ci = FALSE,
 #' region. Curves not overlapping the shaded area are approximately
 #' significantly different at the \code{1 - conf.int} level.
 #' 
-#' @param s an object of class \code{\link[survival]{survfit}}
+#' @param object an object of class \code{\link[survival]{survfit}}
 #' @param col color used for the band
 #' @param conf.int the level of the two-sided confidence interval
 #' 
@@ -2758,22 +2766,22 @@ surv_prob <- function(x, times = pretty(x$time), ci = FALSE,
 #' 
 #' @export
 
-kmdiff <- function(s, col = adjustcolor('grey', 0.5), conf.int = 0.95) {
-  strata <- names(s$strata)
+kmdiff <- function(object, col = adjustcolor('grey', 0.5), conf.int = 0.95) {
+  strata <- names(object$strata)
   
   if (length(strata) != 2L) {
-    warning('\'kmdiff\' requires exactly two levels in s$strata')
+    warning('\'kmdiff\' requires exactly two levels in object$strata')
     return(invisible(NULL))
   }
   
-  f <- function(level, times, object) {
-    strata <- object$strata
+  f <- function(level, times, x) {
+    strata <- x$strata
     ii <- strata == level
-    time <- object$time[ii]
+    time <- x$time[ii]
     jj <- match(times, time)
-    surv <- object$surv[ii]
-    nrisk <- object$n.risk[ii]
-    se <- object$std.err[ii]
+    surv <- x$surv[ii]
+    nrisk <- x$n.risk[ii]
+    se <- x$std.err[ii]
     list(time = times, surv = surv[jj], se = se[jj], nrisk = nrisk[jj])
   }
   
@@ -2805,10 +2813,10 @@ kmdiff <- function(s, col = adjustcolor('grey', 0.5), conf.int = 0.95) {
     }
   }
   
-  st <- s$time
+  st <- object$time
   st <- c(st, seq(min(st), max(st), length.out = length(st) * 10))
   st <- unique(sort(st))
-  ss <- summary(s, times = st)
+  ss <- summary(object, times = st)
   
   a <- f(strata[1L], st, ss)
   b <- f(strata[2L], st, ss)

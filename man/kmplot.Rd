@@ -5,11 +5,11 @@
 \title{Survival curves}
 \usage{
 kmplot(
-  s,
+  object,
   data = NULL,
   lty.surv = par("lty"),
   lwd.surv = par("lwd"),
-  col.surv = seq_along(s$n),
+  col.surv = seq_along(object$n),
   mark = 3L,
   lwd.mark = lwd.surv,
   lty.ci = 0,
@@ -29,7 +29,7 @@ kmplot(
   atrisk.min = NULL,
   strata.lab = NULL,
   strata.expr = NULL,
-  strata.order = seq_along(s$n),
+  strata.order = seq_along(object$n),
   extra.margin = 5,
   mar = NULL,
   median = FALSE,
@@ -49,8 +49,9 @@ kmplot(
   main = NULL,
   cex.axis = par("cex.axis"),
   cex.atrisk = cex.axis,
-  legend = !atrisk.table && !is.null(s$strata),
+  legend = !atrisk.table && !is.null(object$strata),
   args.legend = list(),
+  median.legend = FALSE,
   lr_test = TRUE,
   tt_test = FALSE,
   test_details = TRUE,
@@ -77,11 +78,11 @@ kmplot(
 )
 }
 \arguments{
-\item{s}{an object of class \code{\link{survfit}} or \code{survfit.cox}}
+\item{object}{an object of class \code{\link{survfit}} or \code{survfit.cox}}
 
 \item{data}{(optional) the data frame used to create \code{s}, used to
 obtain some data not available in \code{survfit} objects; if not given,
-\code{s$call$data} will be searched for in the \code{\link{sys.frames}}}
+\code{object$call$data} will be searched for in the \code{\link{sys.frames}}}
 
 \item{lty.surv, lwd.surv, col.surv}{line type, width, and color for survival
   curve(s); colors may be either numeric, color names as character
@@ -111,7 +112,7 @@ see details}
 \item{kmdiff}{logical; if \code{TRUE}, a confidence band for the difference
 between two curves is shown; see \code{\link{kmdiff}} (note that the color
 can be passed via \code{col.ci} and the confidence interval is taken from
-\code{s$conf.int})}
+\code{object$conf.int})}
 
 \item{atrisk.table}{logical; if \code{TRUE} (default), draws at-risk table}
 
@@ -195,6 +196,10 @@ are shown}
 
 \item{args.legend}{an optional \emph{named} list of \code{\link{legend}}
 arguments controlling the \code{legend}}
+
+\item{median.legend}{logical; if \code{TRUE}, medians (and optionally
+confidence intervals if \code{ci.median = TRUE}) are added to the legend,
+useful for adding a legend and median without at-risk table}
 
 \item{lr_test}{logical or numeric; if \code{TRUE}, a log-rank test will be
 performed and the results added to the top-right corner of the plot; if
@@ -302,6 +307,7 @@ km2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 ## basic usage
 kmplot(km1)
 kmplot(km1, args.median = list(x = 500, y = 0.2))
+kmplot(km1, atrisk.table = FALSE, median.legend = TRUE)
 kmplot(km1, fun = 'F')
 kmplot(km1, atrisk.col = c('grey50', 'tomato'), test_details = FALSE,
        args.test = list(col = 'red', cex = 1.5, .prefix = 'Log-rank: '))
