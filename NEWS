@@ -1,8 +1,15 @@
+rawr 1.0.1
+--------
+  * improve docs, re-name objects for consistency
+  * kmplot - re-arrange some code, add median to legend
+
 rawr 1.0.0
 --------
   * move some functions to rawr2
-  * add factor2
+  * add factor2, response2, na.points, rleid2, getPvalLogrank, describeSurv, bni
+  * kmplot allows x,y coords for median
   * survdiff_pairs accepts multivariable formulas
+  * tabler_stat adds support for Surv
   * fixes to tplot (subset), kmplot (^0.* in atrisk table)
 
 rawr 0.9.2
