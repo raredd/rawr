@@ -2065,9 +2065,8 @@ combine_levels <- function(x, levels, labels = NULL, ordered = is.ordered(x),
   
   ## create unique labels to allow for swapping
   labels <- lapply(as.list(labels %||% names(levels)), as.character)
-  set.seed(1)
   ul <- lapply(labels, function(x)
-    format(runif(length(x)), digits = 22L))
+    sprintf('_%s___%s', as.numeric(Sys.time()), seq_along(x)))
   labels <- unlist(labels)
   
   stopifnot(length(levels) == length(labels))
