@@ -626,8 +626,9 @@ col_scaler2 <- function(x, colors, breaks = 0, ...) {
 #'
 #' ## also works for barplots
 #' bp <- barplot(with(mtcars, tapply(mpg, gear, mean)), ylim = c(0, 30))
-#' bp.test(mpg ~ gear, mtcars, at = bp, line = -1, test = t.test)
-#'
+#' bt <- bp.test(mpg ~ gear, mtcars, at = bp, line = -1, test = t.test)
+#' bp.test(bt$text[2], at = bp[c(1, 3)], line = -3, col.text = 2, col.line = 2)
+#' 
 #'
 #' ## use default method for more control
 #' boxplot(mpg ~ am + vs, mtcars, axes = FALSE, ylim = c(10, 55))
