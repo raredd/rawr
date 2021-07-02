@@ -29,8 +29,8 @@
 #' @param y (optional) group or stratification variable
 #' @param ... additional arguments passed to the stat function
 #' @param details logical; if \code{FALSE}, only the p-value is printed; if
-#'   \code{TRUE}, additional details, such as the test statistic, degrees of
-#'   freedom depending on the test, are printed
+#'   \code{TRUE}, additional details depending on the test (e.g., the test
+#'   statistic, degrees of freedom depending, etc) are printed
 #' @param digits number of digits past the decimal point to keep
 #' @param object for \code{inl_logrank}, a \code{\link[survival]{survdiff}}
 #'   object or formula to be passed to \code{survdiff}
@@ -38,10 +38,15 @@
 #' @examples
 #' x <- mtcars$vs
 #' y <- mtcars$am
-#'
+#' 
+#' ## t-test (two-sample)
 #' t.test(x ~ y)
 #' inl_t(split(x, y))
 #' inl_t(x, y)
+#' 
+#' ## t-test (paired)
+#' t.test(x, y, paired = TRUE)
+#' inl_t(x, y, paired = TRUE)
 #'
 #' fisher.test(x, y)
 #' inl_fisher(x, y)
@@ -93,6 +98,26 @@ inl_anova <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
       'F: %s (%s df), one-way ANOVA p-value: %s',
       roundr(res[['F value']][[1L]], digits), res$Df[[1L]],
       pvalr(res[['Pr(>F)']][[1L]])
+    )
+  }
+}
+
+#' @rdname inline_stats
+#' @export
+inl_ca <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
+  tbl <- if (!is.null(dim(x)))
+    x else table(x, y)
+  
+  suppressWarnings({
+    res <- ca.test(tbl, ...)
+  })
+  
+  if (!details)
+    pvalr(res$p.value, show.p = TRUE)
+  else {
+    sprintf(
+      '&chi;<sup>2</sup>: %s (%s df), Cochran-Armitage p-value: %s',
+      roundr(res$statistic, digits), res$parameter, pvalr(res$p.value)
     )
   }
 }
@@ -193,26 +218,6 @@ inl_kruskal <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
 
 #' @rdname inline_stats
 #' @export
-inl_ca <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
-  tbl <- if (!is.null(dim(x)))
-    x else table(x, y)
-  
-  suppressWarnings({
-    res <- ca.test(tbl, ...)
-  })
-  
-  if (!details)
-    pvalr(res$p.value, show.p = TRUE)
-  else {
-    sprintf(
-      '&chi;<sup>2</sup>: %s (%s df), Cochran-Armitage p-value: %s',
-      roundr(res$statistic, digits), res$parameter, pvalr(res$p.value)
-    )
-  }
-}
-
-#' @rdname inline_stats
-#' @export
 inl_kw <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
   tbl <- if (!is.null(dim(x)))
     x else table(x, y)
@@ -256,7 +261,7 @@ inl_t <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
     x <- x[, 2L]
   }
 
-  res <- t.test(x ~ as.factor(y), ...)
+  res <- t.test(x, y, ...)
 
   if (!details)
     pvalr(res$p.value, show.p = TRUE)

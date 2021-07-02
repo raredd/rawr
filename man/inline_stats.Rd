@@ -3,12 +3,12 @@
 \name{inline_stats}
 \alias{inline_stats}
 \alias{inl_anova}
+\alias{inl_ca}
 \alias{inl_chisq}
 \alias{inl_cuzick}
 \alias{inl_fisher}
 \alias{inl_jt}
 \alias{inl_kruskal}
-\alias{inl_ca}
 \alias{inl_kw}
 \alias{inl_logrank}
 \alias{inl_t}
@@ -16,6 +16,8 @@
 \title{In-line stats}
 \usage{
 inl_anova(x, y = NULL, ..., details = TRUE, digits = 2L)
+
+inl_ca(x, y = NULL, ..., details = TRUE, digits = 2L)
 
 inl_chisq(x, y = NULL, ..., details = TRUE, digits = 2L)
 
@@ -26,8 +28,6 @@ inl_fisher(x, y = NULL, ..., details = TRUE, digits = 2L)
 inl_jt(x, y = NULL, ..., details = TRUE, digits = 2L)
 
 inl_kruskal(x, y = NULL, ..., details = TRUE, digits = 2L)
-
-inl_ca(x, y = NULL, ..., details = TRUE, digits = 2L)
 
 inl_kw(x, y = NULL, ..., details = TRUE, digits = 2L)
 
@@ -46,8 +46,8 @@ the statistic}
 \item{...}{additional arguments passed to the stat function}
 
 \item{details}{logical; if \code{FALSE}, only the p-value is printed; if
-\code{TRUE}, additional details, such as the test statistic, degrees of
-freedom depending on the test, are printed}
+\code{TRUE}, additional details depending on the test (e.g., the test
+statistic, degrees of freedom depending, etc) are printed}
 
 \item{digits}{number of digits past the decimal point to keep}
 
@@ -61,9 +61,12 @@ Convenience functions to summarize statistical tests.
 x <- mtcars$vs
 y <- mtcars$am
 
+## t-tests
 t.test(x ~ y)
 inl_t(split(x, y))
 inl_t(x, y)
+t.test(x, y, paired = TRUE)
+inl_t(x, y, paired = TRUE)
 
 fisher.test(x, y)
 inl_fisher(x, y)
