@@ -46,36 +46,58 @@
 #' 
 #' ## t-test (paired)
 #' t.test(x, y, paired = TRUE)
-#' inl_t(x, y, paired = TRUE)
-#'
+#' inl_t(list(x, y), paired = TRUE)
+#' inl_t(c(x, y), rep(1:2, each = length(x)), paired = TRUE)
+#' 
+#' 
+#' ## fisher's exact
 #' fisher.test(x, y)
 #' inl_fisher(x, y)
 #' inl_fisher(table(x, y))
-#'
+#' 
+#' 
+#' ## chi-squared test for count data
 #' chisq.test(table(x, y))
 #' inl_chisq(x, y)
 #' inl_chisq(table(x, y))
-#'
+#' 
+#' 
+#' ## wilcoxon rank-sum test
 #' wilcox.test(mtcars$mpg ~ y)
 #' inl_wilcox(mtcars$mpg, y)
 #' inl_wilcox(split(mtcars$mpg, y))
-#'
+#' 
+#' ## wilcoxon signed-rank test
+#' wilcox.test(x, y, paired = TRUE)
+#' inl_wilcox(list(x, y), paired = TRUE)
+#' inl_wilcox(c(x, y), rep(1:2, each = length(x)), paired = TRUE)
+#' 
+#' 
+#' ## cuzick's trend test
 #' cuzick.test(mpg ~ gear, mtcars)
 #' inl_cuzick(mtcars$mpg, mtcars$gear)
 #' inl_cuzick(split(mtcars$mpg, mtcars$gear))
-#'
+#' 
+#' 
+#' ## jonckheere-terpstra test
 #' jt.test(table(mtcars$gear, mtcars$cyl))
 #' inl_jt(mtcars$gear, mtcars$cyl)
 #' inl_jt(table(mtcars$gear, mtcars$cyl))
 #' 
+#' 
+#' ## cochran-armitage test for trend
 #' ca.test(table(mtcars$vs, mtcars$cyl))
 #' inl_ca(mtcars$vs, mtcars$cyl)
 #' inl_ca(table(mtcars$vs, mtcars$cyl))
 #' 
+#' 
+#' ## test for trend in proportions
 #' kw.test(table(mtcars$gear, mtcars$cyl))
 #' inl_kw(mtcars$gear, mtcars$cyl)
 #' inl_kw(table(mtcars$gear, mtcars$cyl))
-#'
+#' 
+#' 
+#' ## log-rank test
 #' library('survival')
 #' s1 <- survdiff(Surv(time, status) ~ sex, colon)
 #' s2 <- survdiff(Surv(time, status) ~ sex + strata(age), colon)
@@ -255,13 +277,23 @@ inl_logrank <- function(object, ..., details = TRUE, digits = 2L) {
 #' @rdname inline_stats
 #' @export
 inl_t <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
+  paired <- isTRUE(eval(match.call()$paired))
+  
   if (inherits(x, 'list')) {
-    x <- rbindlist(x)
-    y <- x[, 1L]
-    x <- x[, 2L]
+    if (length(x) != 2L)
+      stop('grouping factor must have exactly 2 levels')
+    
+    if (paired) {
+      y <- rep(seq_along(x), each = length(x[[1L]]))
+      x <- unlist(x)
+    } else {
+      x <- rbindlist(x)
+      y <- x[, 1L]
+      x <- x[, 2L]
+    }
   }
 
-  res <- t.test(x, y, ...)
+  res <- t.test(x ~ as.factor(y), ...)
 
   if (!details)
     pvalr(res$p.value, show.p = TRUE)
@@ -276,10 +308,17 @@ inl_t <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
 #' @rdname inline_stats
 #' @export
 inl_wilcox <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
+  paired <- isTRUE(eval(match.call()$paired))
+  
   if (inherits(x, 'list')) {
-    x <- rbindlist(x)
-    y <- x[, 1L]
-    x <- x[, 2L]
+    if (paired) {
+      y <- rep(seq_along(x), each = length(x[[1L]]))
+      x <- unlist(x)
+    } else {
+      x <- rbindlist(x)
+      y <- x[, 1L]
+      x <- x[, 2L]
+    }
   }
 
   suppressWarnings({
@@ -290,8 +329,9 @@ inl_wilcox <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
     pvalr(res$p.value, show.p = TRUE)
   else {
     sprintf(
-      'w: %s, Wilcoxon rank-sum p-value: %s',
-      roundr(res$statistic, digits), pvalr(res$p.value)
+      'w: %s, Wilcoxon %s p-value: %s',
+      roundr(res$statistic, digits),
+      if (paired) 'signed-rank' else 'rank-sum', pvalr(res$p.value)
     )
   }
 }

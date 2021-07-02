@@ -61,41 +61,65 @@ Convenience functions to summarize statistical tests.
 x <- mtcars$vs
 y <- mtcars$am
 
-## t-tests
+## t-test (two-sample)
 t.test(x ~ y)
 inl_t(split(x, y))
 inl_t(x, y)
-t.test(x, y, paired = TRUE)
-inl_t(x, y, paired = TRUE)
 
+## t-test (paired)
+t.test(x, y, paired = TRUE)
+inl_t(list(x, y), paired = TRUE)
+inl_t(c(x, y), rep(1:2, each = length(x)), paired = TRUE)
+
+
+## fisher's exact
 fisher.test(x, y)
 inl_fisher(x, y)
 inl_fisher(table(x, y))
 
+
+## chi-squared test for count data
 chisq.test(table(x, y))
 inl_chisq(x, y)
 inl_chisq(table(x, y))
 
+
+## wilcoxon rank-sum test
 wilcox.test(mtcars$mpg ~ y)
 inl_wilcox(mtcars$mpg, y)
 inl_wilcox(split(mtcars$mpg, y))
 
+## wilcoxon signed-rank test
+wilcox.test(x, y, paired = TRUE)
+inl_wilcox(list(x, y), paired = TRUE)
+inl_wilcox(c(x, y), rep(1:2, each = length(x)), paired = TRUE)
+
+
+## cuzick's trend test
 cuzick.test(mpg ~ gear, mtcars)
 inl_cuzick(mtcars$mpg, mtcars$gear)
 inl_cuzick(split(mtcars$mpg, mtcars$gear))
 
+
+## jonckheere-terpstra test
 jt.test(table(mtcars$gear, mtcars$cyl))
 inl_jt(mtcars$gear, mtcars$cyl)
 inl_jt(table(mtcars$gear, mtcars$cyl))
 
+
+## cochran-armitage test for trend
 ca.test(table(mtcars$vs, mtcars$cyl))
 inl_ca(mtcars$vs, mtcars$cyl)
 inl_ca(table(mtcars$vs, mtcars$cyl))
 
+
+## test for trend in proportions
 kw.test(table(mtcars$gear, mtcars$cyl))
 inl_kw(mtcars$gear, mtcars$cyl)
 inl_kw(table(mtcars$gear, mtcars$cyl))
 
+
+## log-rank test
 library('survival')
 s1 <- survdiff(Surv(time, status) ~ sex, colon)
 s2 <- survdiff(Surv(time, status) ~ sex + strata(age), colon)
