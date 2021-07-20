@@ -7,13 +7,37 @@
 \alias{roundr.data.frame}
 \title{roundr}
 \usage{
-roundr(x, digits = 1L, format = TRUE, check = TRUE)
+roundr(
+  x,
+  digits = 1L,
+  format = TRUE,
+  check = TRUE,
+  scipen = getOption("scipen")
+)
 
-\method{roundr}{default}(x, digits = 1L, format = TRUE, check = TRUE)
+\method{roundr}{default}(
+  x,
+  digits = 1L,
+  format = TRUE,
+  check = TRUE,
+  scipen = getOption("scipen")
+)
 
-\method{roundr}{matrix}(x, digits = 1L, format = TRUE, check = TRUE)
+\method{roundr}{matrix}(
+  x,
+  digits = 1L,
+  format = TRUE,
+  check = TRUE,
+  scipen = getOption("scipen")
+)
 
-\method{roundr}{data.frame}(x, digits = 1L, format = TRUE, check = TRUE)
+\method{roundr}{data.frame}(
+  x,
+  digits = 1L,
+  format = TRUE,
+  check = TRUE,
+  scipen = getOption("scipen")
+)
 }
 \arguments{
 \item{x}{numeric vector, matrix, or data frame}
@@ -25,6 +49,8 @@ with commas}
 
 \item{check}{logical; if \code{TRUE}, formatted strings are checked for
 consistency with \code{\link[base]{round}} and warned if not identical}
+
+\item{scipen}{see \code{\link{options}}}
 }
 \value{
 An object having the same class as \code{x}.
@@ -41,6 +67,10 @@ trailing zeros.
 round(0.199, 2)
 roundr(0.199, 2)
 
+round(1e9)
+roundr(1e9, 0)
+roundr(1e9, 0, scipen = 10)
+
 ## drops negative when x rounds to 0, eg, case 1:
 roundr(c(1000, 1, -0.0002, 0.0002, 0.5, -0.5, -0.002), digits = 3)
 
@@ -51,7 +81,6 @@ dd <- within(head(mtcars), {
   mpg <- as.character(mpg)
   cyl <- factor(cyl, labels = LETTERS[1:3])
 })
-
 roundr(dd)
 
 }

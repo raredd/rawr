@@ -574,6 +574,7 @@ show_math <- function(..., css = '', use_viewer = !is.null(getOption('viewer')))
 #'   with commas
 #' @param check logical; if \code{TRUE}, formatted strings are checked for
 #'   consistency with \code{\link[base]{round}} and warned if not identical
+#' @param scipen see \code{\link{options}}
 #'
 #' @return
 #' An object having the same class as \code{x}.
@@ -586,6 +587,10 @@ show_math <- function(..., css = '', use_viewer = !is.null(getOption('viewer')))
 #' ## compare
 #' round(0.199, 2)
 #' roundr(0.199, 2)
+#' 
+#' round(1e9)
+#' roundr(1e9, 0)
+#' roundr(1e9, 0, scipen = 10)
 #'
 #' ## drops negative when x rounds to 0, eg, case 1:
 #' roundr(c(1000, 1, -0.0002, 0.0002, 0.5, -0.5, -0.002), digits = 3)
@@ -597,21 +602,26 @@ show_math <- function(..., css = '', use_viewer = !is.null(getOption('viewer')))
 #'   mpg <- as.character(mpg)
 #'   cyl <- factor(cyl, labels = LETTERS[1:3])
 #' })
-#'
 #' roundr(dd)
 #'
 #' @export
 
-roundr <- function(x, digits = 1L, format = TRUE, check = TRUE) {
+roundr <- function(x, digits = 1L, format = TRUE, check = TRUE,
+                   scipen = getOption('scipen')) {
   UseMethod('roundr')
 }
 
 #' @rdname roundr
 #' @export
-roundr.default <- function(x, digits = 1L, format = TRUE, check = TRUE) {
+roundr.default <- function(x, digits = 1L, format = TRUE, check = TRUE,
+                           scipen = getOption('scipen')) {
   if (!is.numeric(x) || is.complex(x))
     stop('non-numeric argument to mathematical function')
-
+  
+  oo <- getOption('scipen')
+  options(scipen = scipen)
+  on.exit(options(scipen = oo))
+  
   fmt <- paste0('%.', digits, 'f')
   res <- sprintf(fmt, round(x, digits))
   
@@ -634,7 +644,7 @@ roundr.default <- function(x, digits = 1L, format = TRUE, check = TRUE) {
   res[is.na(x)] <- NA
   
   if (check) {
-    current <- type.convert(gsub(',', '', res))
+    current <- type.convert(gsub(',|\\.0+$', '', res))
     target <- c(round(x, digits))
     if (any(current != target, na.rm = TRUE))
       warning(
@@ -648,19 +658,21 @@ roundr.default <- function(x, digits = 1L, format = TRUE, check = TRUE) {
 
 #' @rdname roundr
 #' @export
-roundr.matrix <- function(x, digits = 1L, format = TRUE, check = TRUE) {
+roundr.matrix <- function(x, digits = 1L, format = TRUE, check = TRUE,
+                          scipen = getOption('scipen')) {
   if (!is.numeric(x) || is.complex(x))
     stop(deparse(substitute(x)), ' is not numeric')
-  x[] <- roundr.default(x, digits, format)
+  x[] <- roundr.default(x, digits, format, scipen)
   x
 }
 
 #' @rdname roundr
 #' @export
-roundr.data.frame <- function(x, digits = 1L, format = TRUE, check = TRUE) {
+roundr.data.frame <- function(x, digits = 1L, format = TRUE, check = TRUE,
+                              scipen = getOption('scipen')) {
   x[] <- lapply(x, function(xx)
     if (is.numeric(xx) || is.complex(xx))
-      roundr.default(xx, digits, format) else xx)
+      roundr.default(xx, digits, format, check, scipen) else xx)
   x
 }
 
