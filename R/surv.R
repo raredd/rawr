@@ -2295,6 +2295,12 @@ surv_summary <- function(object, digits = 3L, locf = FALSE, ...) {
 #' @param locf logical; if \code{TRUE}, any \code{NA} probabilities will be
 #'   carried forward, e.g., if no events occurred during two consecutive time
 #'   intervals
+#' @param median,ci.median logical; if \code{TRUE}, the median (and confidence
+#'   interval) will be added as a separate column
+#' @param digits.median for the median, the number of digits past the decimal
+#'   point to keep
+#' @param na.median a string to use in place of "NA" for the median text;
+#'   default is "NR" for "not reached"
 #' 
 #' @return
 #' A matrix (or list of matrices) with formatted summaries for each strata; see
@@ -2306,24 +2312,21 @@ surv_summary <- function(object, digits = 3L, locf = FALSE, ...) {
 #' @examples
 #' library('survival')
 #' fit0 <- survfit(Surv(time, status == 2) ~ 1, data = cancer)
-#' surv_table(fit0, times = 0:2 * 100, maxtime = FALSE)
+#' surv_table(fit0, times = 0:2 * 100)
+#' surv_table(fit0, times = 0:2 * 100, median = TRUE)
 #' 
 #' ## also works for list of tables
 #' fit1 <- survfit(Surv(time, status == 2) ~ sex, data = cancer)
-#' surv_table(fit1)
-#' rawr::combine_table(surv_table(fit1))
-#' 
-#' 
-#' s <- surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4]
-#' colnames(s) <- c('Time', 'No. at risk', 'No. of events', 'Surv (95% CI)')
-#' ht <- htmlTable::htmlTable(s, caption = 'Table: Overall survival.')
-#' structure(ht, class = 'htmlTable')
+#' surv_table(fit1, median = TRUE, digits.median = 2, ci.median = FALSE)
+#' rawr::combine_table(surv_table(fit1, median = TRUE))
 #' 
 #' @export
 
 surv_table <- function(object, digits = ifelse(percent, 0L, 3L),
                        times = pretty(object$time), maxtime = FALSE,
-                       percent = FALSE, locf = FALSE, ...) {
+                       percent = FALSE, locf = FALSE,
+                       median = FALSE, ci.median = TRUE, digits.median = 0L,
+                       na.median = 'NR', ...) {
   if (maxtime) {
     idx <- object$n.event > 0
     maxtime <- max(object$time[if (any(idx))
@@ -2372,8 +2375,21 @@ surv_table <- function(object, digits = ifelse(percent, 0L, 3L),
     x
   }
   
-  if (is.list(ss))
+  g <- function(x, y) {
+    nr <- nrow(x)
+    cbind(x, Median = c(y, rep_len('', nr - 1L)))
+  }
+  
+  res <- if (is.list(ss))
     Map('f', ss) else f(ss)
+  
+  if (median) {
+    md <- surv_median(object, ci = ci.median, show_conf = TRUE,
+                      print = FALSE, digits = digits.median)
+    md <- gsub('NA', na.median, md)
+    if (is.list(ss))
+      Map(g, res, md) else g(res, md)
+  } else res
 }
 
 #' Pairwise \code{survdiff} comparisons
@@ -2685,7 +2701,7 @@ surv_median <- function(object, ci = FALSE, digits = 0L, which = NULL,
     res <- surv_extract(object, 'median')[which]
     return(
       if (print)
-        nr(iprint(res, digits = digits)) else res
+        nr(iprint(res, digits = digits)) else roundr(res, digits)
     )
   }
   

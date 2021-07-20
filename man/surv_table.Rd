@@ -11,6 +11,10 @@ surv_table(
   maxtime = FALSE,
   percent = FALSE,
   locf = FALSE,
+  median = FALSE,
+  ci.median = TRUE,
+  digits.median = 0L,
+  na.median = "NR",
   ...
 )
 }
@@ -31,6 +35,15 @@ probabilities}
 carried forward, e.g., if no events occurred during two consecutive time
 intervals}
 
+\item{median, ci.median}{logical; if \code{TRUE}, the median (and confidence
+interval) will be added as a separate column}
+
+\item{digits.median}{for the median, the number of digits past the decimal
+point to keep}
+
+\item{na.median}{a string to use in place of "NA" for the median text;
+default is "NR" for "not reached"}
+
 \item{...}{additional arguments passed to \code{\link{summary.survfit}}}
 }
 \value{
@@ -43,18 +56,13 @@ Prints a formatted summary table for \code{\link{survfit}} objects.
 \examples{
 library('survival')
 fit0 <- survfit(Surv(time, status == 2) ~ 1, data = cancer)
-surv_table(fit0, times = 0:2 * 100, maxtime = FALSE)
+surv_table(fit0, times = 0:2 * 100)
+surv_table(fit0, times = 0:2 * 100, median = TRUE)
 
 ## also works for list of tables
 fit1 <- survfit(Surv(time, status == 2) ~ sex, data = cancer)
-surv_table(fit1)
-rawr::combine_table(surv_table(fit1))
-
-
-s <- surv_table(fit0, times = 0:8 * 100, digits = 2)[, -4]
-colnames(s) <- c('Time', 'No. at risk', 'No. of events', 'Surv (95\% CI)')
-ht <- htmlTable::htmlTable(s, caption = 'Table: Overall survival.')
-structure(ht, class = 'htmlTable')
+surv_table(fit1, median = TRUE, digits.median = 2, ci.median = FALSE)
+rawr::combine_table(surv_table(fit1, median = TRUE))
 
 }
 \seealso{
