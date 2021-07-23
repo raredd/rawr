@@ -15,7 +15,8 @@ surv_median(
   which = NULL,
   print = TRUE,
   na = ifelse(ci, "NR", "not reached"),
-  show_conf = TRUE
+  show_conf = TRUE,
+  type = c("conf.int", "range")
 )
 
 surv_prob(
@@ -50,6 +51,10 @@ times have not yet been reached}
 
 \item{show_conf}{logical; if \code{TRUE}, includes the confidence level}
 
+\item{type}{if \code{ci = TRUE}, the type of confidence interval to show:
+\code{"conf.int"} for the \code{object$conf.int * 100}% confidence
+interval (default) or \code{"range"} for the full range}
+
 \item{times}{vector of times passed to \code{\link{surv_table}}}
 
 \item{percent}{logical; if \code{TRUE}, percentages are shown instead of
@@ -71,7 +76,7 @@ sfit2 <- survfit(Surv(time, status) ~ sex, lung, conf.int = 0.9)
 surv_extract(sfit1, NULL)
 surv_extract(sfit1, 2:3)
 surv_extract(sfit2, 'median|CL')
-surv_extract(sfit1, c('events', 'median'))
+surv_extract(sfit2, c('events', 'median'))
 
 
 surv_median(sfit1)
@@ -81,6 +86,10 @@ surv_median(sfit2, print = FALSE)
 surv_median(sfit1, ci = TRUE)
 surv_median(sfit2, ci = TRUE)
 surv_median(sfit2, ci = TRUE, print = FALSE)
+
+surv_median(sfit1, ci = TRUE, type = 'range')
+surv_median(sfit2, ci = TRUE, type = 'range')
+surv_median(sfit2, ci = TRUE, print = FALSE, type = 'range')
 
 
 times <- 365.242 * c(0.5, 1, 2)

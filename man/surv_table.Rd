@@ -13,6 +13,7 @@ surv_table(
   locf = FALSE,
   median = FALSE,
   ci.median = TRUE,
+  ci.type = c("conf.int", "range"),
   digits.median = 0L,
   na.median = "NR",
   ...
@@ -38,6 +39,9 @@ intervals}
 \item{median, ci.median}{logical; if \code{TRUE}, the median (and confidence
 interval) will be added as a separate column}
 
+\item{ci.type}{for the median confidence interval, show either the
+\code{object$conf.int} or the full range; see \code{\link{surv_extract}}}
+
 \item{digits.median}{for the median, the number of digits past the decimal
 point to keep}
 
@@ -58,6 +62,7 @@ library('survival')
 fit0 <- survfit(Surv(time, status == 2) ~ 1, data = cancer)
 surv_table(fit0, times = 0:2 * 100)
 surv_table(fit0, times = 0:2 * 100, median = TRUE)
+surv_table(fit0, times = 0:2 * 100, median = TRUE, ci.type = 'range')
 
 ## also works for list of tables
 fit1 <- survfit(Surv(time, status == 2) ~ sex, data = cancer)

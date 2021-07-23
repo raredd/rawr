@@ -2297,6 +2297,8 @@ surv_summary <- function(object, digits = 3L, locf = FALSE, ...) {
 #'   intervals
 #' @param median,ci.median logical; if \code{TRUE}, the median (and confidence
 #'   interval) will be added as a separate column
+#' @param ci.type for the median confidence interval, show either the
+#'   \code{object$conf.int} or the full range; see \code{\link{surv_extract}}
 #' @param digits.median for the median, the number of digits past the decimal
 #'   point to keep
 #' @param na.median a string to use in place of "NA" for the median text;
@@ -2314,6 +2316,7 @@ surv_summary <- function(object, digits = 3L, locf = FALSE, ...) {
 #' fit0 <- survfit(Surv(time, status == 2) ~ 1, data = cancer)
 #' surv_table(fit0, times = 0:2 * 100)
 #' surv_table(fit0, times = 0:2 * 100, median = TRUE)
+#' surv_table(fit0, times = 0:2 * 100, median = TRUE, ci.type = 'range')
 #' 
 #' ## also works for list of tables
 #' fit1 <- survfit(Surv(time, status == 2) ~ sex, data = cancer)
@@ -2325,8 +2328,9 @@ surv_summary <- function(object, digits = 3L, locf = FALSE, ...) {
 surv_table <- function(object, digits = ifelse(percent, 0L, 3L),
                        times = pretty(object$time), maxtime = FALSE,
                        percent = FALSE, locf = FALSE,
-                       median = FALSE, ci.median = TRUE, digits.median = 0L,
-                       na.median = 'NR', ...) {
+                       median = FALSE, ci.median = TRUE,
+                       ci.type = c('conf.int', 'range'),
+                       digits.median = 0L, na.median = 'NR', ...) {
   if (maxtime) {
     idx <- object$n.event > 0
     maxtime <- max(object$time[if (any(idx))
@@ -2384,8 +2388,8 @@ surv_table <- function(object, digits = ifelse(percent, 0L, 3L),
     Map('f', ss) else f(ss)
   
   if (median) {
-    md <- surv_median(object, ci = ci.median, show_conf = TRUE,
-                      print = FALSE, digits = digits.median)
+    md <- surv_median(object, ci = ci.median, show_conf = TRUE, print = FALSE,
+                      type = ci.type, digits = digits.median)
     md <- gsub('NA', na.median, md)
     if (is.list(ss))
       Map(g, res, md) else g(res, md)
@@ -2629,6 +2633,9 @@ landmark <- function(object, times = NULL, col = 2L, plot = TRUE, plot.main = pl
 #'   printing
 #' @param na a character string to replace \code{NA} when median
 #'   times have not yet been reached
+#' @param type if \code{ci = TRUE}, the type of confidence interval to show:
+#'   \code{"conf.int"} for the \code{object$conf.int * 100}% confidence
+#'   interval (default) or \code{"range"} for the full range
 #' @param times vector of times passed to \code{\link{surv_table}}
 #' @param show_conf logical; if \code{TRUE}, includes the confidence level
 #' @param percent logical; if \code{TRUE}, percentages are shown instead of
@@ -2642,7 +2649,7 @@ landmark <- function(object, times = NULL, col = 2L, plot = TRUE, plot.main = pl
 #' surv_extract(sfit1, NULL)
 #' surv_extract(sfit1, 2:3)
 #' surv_extract(sfit2, 'median|CL')
-#' surv_extract(sfit1, c('events', 'median'))
+#' surv_extract(sfit2, c('events', 'median'))
 #' 
 #' 
 #' surv_median(sfit1)
@@ -2652,6 +2659,10 @@ landmark <- function(object, times = NULL, col = 2L, plot = TRUE, plot.main = pl
 #' surv_median(sfit1, ci = TRUE)
 #' surv_median(sfit2, ci = TRUE)
 #' surv_median(sfit2, ci = TRUE, print = FALSE)
+#' 
+#' surv_median(sfit1, ci = TRUE, type = 'range')
+#' surv_median(sfit2, ci = TRUE, type = 'range')
+#' surv_median(sfit2, ci = TRUE, print = FALSE, type = 'range')
 #' 
 #' 
 #' times <- 365.242 * c(0.5, 1, 2)
@@ -2674,6 +2685,12 @@ surv_extract <- function(object, what = 'median') {
   on.exit(options(oo))
   
   tbl <- summary(object)$table
+  tbl <- if (is.null(object$strata)) {
+    c(tbl, time.min = min(object$time), time.max = max(object$time))
+  } else {
+    sp <- split(object$time, rep(seq_along(object$strata), object$strata))
+    cbind(tbl, time.min = sapply(sp, min), time.max = sapply(sp, max))
+  }
   if (is.null(what))
     return(tbl)
   
@@ -2681,18 +2698,23 @@ surv_extract <- function(object, what = 'median') {
     grep(paste0(what, collapse = '|'), names(tbl) %||% colnames(tbl))
   else what
   
-  if (length(dim(tbl)))
-    tbl[, what] else tbl[what]
+  if (is.null(object$strata))
+    tbl[what] else tbl[, what]
 }
 
 #' @rdname surv_extract
 #' @export
 surv_median <- function(object, ci = FALSE, digits = 0L, which = NULL,
                         print = TRUE, na = ifelse(ci, 'NR', 'not reached'),
-                        show_conf = TRUE) {
+                        show_conf = TRUE, type = c('conf.int', 'range')) {
+  stopifnot(inherits(object, 'survfit'))
+  
   nr <- function(x) {
     gsub('NA', na, x)
   }
+  
+  type <- match.arg(type)
+  
   nst <- pmax(1L, length(object$strata))
   which <- if (is.null(which))
     seq.int(nst) else which
@@ -2705,14 +2727,20 @@ surv_median <- function(object, ci = FALSE, digits = 0L, which = NULL,
     )
   }
   
-  res <- surv_extract(object, 'median|.CL')
+  res <- surv_extract(
+    object,
+    switch(type, conf.int = 'median|.CL', range = 'median|time.m')
+  )
   res <- roundr(res, digits)
   
   f <- function(x) {
-    if (show_conf)
+    res <- if (show_conf)
       sprintf('%s (%s%% CI: %s - %s)',
               x[1L], object$conf.int * 100, x[2L], x[3L])
     else sprintf('%s (%s - %s)', x[1L], x[2L], x[3L])
+    
+    if (type == 'range')
+      gsub('[0-9.]+% CI', 'range', res) else res
   }
   
   res <- if (is.null(dim(res)))
