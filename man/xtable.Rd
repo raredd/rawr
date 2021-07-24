@@ -4,7 +4,16 @@
 \alias{xtable}
 \title{Cross table}
 \usage{
-xtable(x, by, digits = 0L, total = TRUE, pct.sign = FALSE, test = TRUE, ...)
+xtable(
+  x,
+  by,
+  digits = 0L,
+  total = TRUE,
+  pct.sign = FALSE,
+  test = TRUE,
+  label.test = NULL,
+  ...
+)
 }
 \arguments{
 \item{x, by}{row and column variables, respectively; should be factor-like
@@ -27,6 +36,8 @@ will be shown}
   attribute, \code{"name"}, which will be used as a test label; see
   examples}
 
+\item{label.test}{optional label for the test column}
+
 \item{...}{additional arguments passed to
 \code{\link[Gmisc]{getDescriptionStatsBy}}}
 }
@@ -46,9 +57,20 @@ xtable(ordered(x), y)
 xtable(ordered(x), ordered(y))
 
 
-## user-defined test function
+## user-defined test functions
 test <- function(x, by) {
-  structure(chisq.test(table(x, by))$p.value, name = '<i>p-value</i>')
+  x <- fisher.test(table(x, by))
+  sprintf('\%.1f (\%.1f, \%.1f), \%s', x$estimate, x$conf.int[1],
+          x$conf.int[2], pvalr(x$p.value, show.p = TRUE))
+}
+xtable(mtcars$am, z, test = test, label.test = 'OR (95\% CI), p-value')
+
+
+test <- function(x, by) {
+  structure(
+    color_pval(chisq.test(table(x, by))$p.value),
+    name = '<i>p-value</i>'
+  )
 }
 res <- xtable(x, y, test = test)
 res

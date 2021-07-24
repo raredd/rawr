@@ -2659,6 +2659,7 @@ response2 <- function(id, date, response, ...,
 #'   \code{x} and \code{by}, and returns a numeric p-value with an optional
 #'   attribute, \code{"name"}, which will be used as a test label; see
 #'   examples
+#' @param label.test optional label for the test column
 #' @param ... additional arguments passed to
 #'   \code{\link[Gmisc]{getDescriptionStatsBy}}
 #' 
@@ -2679,9 +2680,20 @@ response2 <- function(id, date, response, ...,
 #' xtable(ordered(x), ordered(y))
 #' 
 #' 
-#' ## user-defined test function
+#' ## user-defined test functions
 #' test <- function(x, by) {
-#'   structure(chisq.test(table(x, by))$p.value, name = '<i>p-value</i>')
+#'   x <- fisher.test(table(x, by))
+#'   sprintf('%.1f (%.1f, %.1f), %s', x$estimate, x$conf.int[1],
+#'           x$conf.int[2], pvalr(x$p.value, show.p = TRUE))
+#' }
+#' xtable(mtcars$am, z, test = test, label.test = 'OR (95% CI), p-value')
+#' 
+#' 
+#' test <- function(x, by) {
+#'   structure(
+#'     color_pval(chisq.test(table(x, by))$p.value),
+#'     name = '<i>p-value</i>'
+#'   )
 #' }
 #' res <- xtable(x, y, test = test)
 #' res
@@ -2694,7 +2706,7 @@ response2 <- function(id, date, response, ...,
 #' @export
 
 xtable <- function(x, by, digits = 0L, total = TRUE, pct.sign = FALSE,
-                   test = TRUE, ...) {
+                   test = TRUE, label.test = NULL, ...) {
   xn <- deparse(substitute(x))
   bn <- deparse(substitute(by))
   
@@ -2708,14 +2720,21 @@ xtable <- function(x, by, digits = 0L, total = TRUE, pct.sign = FALSE,
   class(res) <- attr(res, 'label') <- NULL
   
   if (!isFALSE(test)) {
-    test <- if (isTRUE(test))
-      guess_test(x, by) else match.fun(test)(x, by)
-    res <- cbind(res, c(pvalr(test), rep_len('', nrow(res) - 1L)))
-    colnames(res)[ncol(res)] <- attr(test, 'name') %||% 'test'
+    if (isTRUE(test)) {
+      test <- guess_test(x, by)
+      pval <- pvalr(test)
+    } else {
+      test <- match.fun(test)(x, by)
+      pval <- test
+    }
+    
+    res <- cbind(res, c(pval, rep_len('', nrow(res) - 1L)))
+    colnames(res)[ncol(res)] <- label.test %||% attr(test, 'name') %||% 'test'
   }
+  
   names(dimnames(res)) <- c(xn, bn)
   
-  res
+  structure(res, test = test, p.value = pval)
 }
 
 #' Combine values to factor levels
