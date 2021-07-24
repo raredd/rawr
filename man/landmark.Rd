@@ -12,8 +12,8 @@ landmark(
   plot.main = plot,
   lr_test = TRUE,
   adjust_start = FALSE,
-  ...,
-  single = FALSE
+  single = FALSE,
+  ...
 )
 }
 \arguments{
@@ -35,19 +35,19 @@ performed; see \code{\link{survdiff}}}
 \item{adjust_start}{logical; if \code{TRUE}, each landmark plot will begin
 at the y-axis}
 
-\item{...}{additional arguments passed to \code{\link{kmplot}}}
-
 \item{single}{logical; if \code{TRUE}, plots drawn on a single frame}
+
+\item{...}{additional arguments passed to \code{\link{kmplot}}}
 }
 \value{
 A list with the following elements:
 
 \item{\code{$table}}{data frame with the sample size, chi-square
-statistic, degrees of freedom, and p-value for the test (the type of test
-can be controlled by using a numeric value for \code{lr_test}, passed as
-\code{rho} to \code{\link{survdiff}})}
+  statistic, degrees of freedom, and p-value for the test (the type of test
+  can be controlled by using a numeric value for \code{lr_test}, passed as
+  \code{rho} to \code{\link[survival]{survdiff}})}
 \item{\code{$survfit}}{a list with each \code{\link[survival]{survfit}}
-object}
+  object}
 }
 \description{
 Fit survival curves for landmark time points.

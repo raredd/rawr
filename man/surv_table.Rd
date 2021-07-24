@@ -48,7 +48,8 @@ point to keep}
 \item{na.median}{a string to use in place of "NA" for the median text;
 default is "NR" for "not reached"}
 
-\item{...}{additional arguments passed to \code{\link{summary.survfit}}}
+\item{...}{additional arguments passed to \code{\link{surv_summary}} and
+further to \code{\link[survival]{summary.survfit}}}
 }
 \value{
 A matrix (or list of matrices) with formatted summaries for each strata; see

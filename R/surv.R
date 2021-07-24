@@ -2208,8 +2208,8 @@ surv_cp <- function(data, time.var, status.var,
 #' @export
 
 surv_summary <- function(object, digits = 3L, locf = FALSE, ...) {
-  if (!inherits(object, 'survfit'))
-    stop('\'object\' must be a \'survfit\' object')
+  stopifnot(inherits(object, 'survfit'))
+  
   oo <- options(digits = digits)
   on.exit(options(oo))
   
@@ -2287,7 +2287,8 @@ surv_summary <- function(object, digits = 3L, locf = FALSE, ...) {
 #' @param object an object of class \code{\link[survival]{survfit}}
 #' @param digits number of digits to use in printing numbers
 #' @param times vector of times
-#' @param ... additional arguments passed to \code{\link{summary.survfit}}
+#' @param ... additional arguments passed to \code{\link{surv_summary}} and
+#'   further to \code{\link[survival]{summary.survfit}}
 #' @param maxtime logical; if \code{TRUE}, adds the maximum time for which an
 #'   even occurs; if \code{FALSE}, number of events may not sum to total
 #' @param percent logical; if \code{TRUE}, percentages are shown instead of
@@ -2331,6 +2332,8 @@ surv_table <- function(object, digits = ifelse(percent, 0L, 3L),
                        median = FALSE, ci.median = TRUE,
                        ci.type = c('conf.int', 'range'),
                        digits.median = 0L, na.median = 'NR', ...) {
+  stopifnot(inherits(object, 'survfit'))
+  
   if (maxtime) {
     idx <- object$n.event > 0
     maxtime <- max(object$time[if (any(idx))
@@ -2388,9 +2391,12 @@ surv_table <- function(object, digits = ifelse(percent, 0L, 3L),
     Map('f', ss) else f(ss)
   
   if (median) {
-    md <- surv_median(object, ci = ci.median, show_conf = TRUE, print = FALSE,
-                      type = ci.type, digits = digits.median)
+    md <- surv_median(
+      object, ci = ci.median, show_conf = TRUE, print = FALSE,
+      type = ci.type, digits = digits.median
+    )
     md <- gsub('NA', na.median, md)
+    
     if (is.list(ss))
       Map(g, res, md) else g(res, md)
   } else res
@@ -2525,18 +2531,18 @@ survdiff_pairs <- function(object, ..., method = p.adjust.methods,
 #'   performed; see \code{\link{survdiff}}
 #' @param adjust_start logical; if \code{TRUE}, each landmark plot will begin
 #'   at the y-axis
-#' @param ... additional arguments passed to \code{\link{kmplot}}
 #' @param single logical; if \code{TRUE}, plots drawn on a single frame
+#' @param ... additional arguments passed to \code{\link{kmplot}}
 #' 
 #' @return
 #' A list with the following elements:
 #' 
 #' \item{\code{$table}}{data frame with the sample size, chi-square
-#' statistic, degrees of freedom, and p-value for the test (the type of test
-#' can be controlled by using a numeric value for \code{lr_test}, passed as
-#' \code{rho} to \code{\link{survdiff}})}
+#'   statistic, degrees of freedom, and p-value for the test (the type of test
+#'   can be controlled by using a numeric value for \code{lr_test}, passed as
+#'   \code{rho} to \code{\link[survival]{survdiff}})}
 #' \item{\code{$survfit}}{a list with each \code{\link[survival]{survfit}}
-#' object}
+#'   object}
 #' 
 #' @examples
 #' library('survival')
@@ -2551,7 +2557,9 @@ survdiff_pairs <- function(object, ..., method = p.adjust.methods,
 #' @export
 
 landmark <- function(object, times = NULL, col = 2L, plot = TRUE, plot.main = plot,
-                     lr_test = TRUE, adjust_start = FALSE, ..., single = FALSE) {
+                     lr_test = TRUE, adjust_start = FALSE, single = FALSE, ...) {
+  stopifnot(inherits(object, 'survfit'))
+  
   form <- object$call$formula
   data <- eval(object$call$data)
   tvar <- terms.inner(form)[1L]
@@ -2573,39 +2581,39 @@ landmark <- function(object, times = NULL, col = 2L, plot = TRUE, plot.main = pl
       }
     )
   
-  sd <- 
-    if (length(times))
-      lapply(times, function(ii) {
-        tmp <- data[data[, tvar] > ii, ]
-        if (adjust_start)
-          tmp[, tvar] <- tmp[, tvar] - ii
-        si <- eval(substitute(survfit(formula, tmp),
-                              list(formula = as.formula(form))))
-        si$.data <- tmp
-        at <- pretty(si$time)
-        
-        if (plot)
-          kmplot(
-            si, ..., add = TRUE, lr_test = lr_test, xaxis.at = at,
-            xaxis.lab = ifelse(adjust_start, ii, 0) + at,
-            panel.first = {
-              abline(v = ii, col = if (adjust_start) 0L else col)
-              mtext(which(times %in% ii), at = par('usr')[1L], col = col,
-                    cex = par('cex.main'), font = par('font.main'))
-            }
-          )
-        
-        list(
-          table = data.frame(n = sum(si$n), lr_pval(si, TRUE), row.names = ii),
-          survfit = si
+  sd <- NULL
+  if (length(times))
+    sd <- lapply(times, function(ii) {
+      tmp <- data[data[, tvar] > ii, ]
+      if (adjust_start)
+        tmp[, tvar] <- tmp[, tvar] - ii
+      si <- eval(substitute(survfit(formula, tmp),
+                            list(formula = as.formula(form))))
+      si$.data <- tmp
+      at <- pretty(si$time)
+      
+      if (plot)
+        kmplot(
+          si, ..., add = TRUE, lr_test = lr_test, xaxis.at = at,
+          xaxis.lab = ifelse(adjust_start, ii, 0) + at,
+          panel.first = {
+            abline(v = ii, col = if (adjust_start) 0L else col)
+            mtext(which(times %in% ii), at = par('usr')[1L], col = col,
+                  cex = par('cex.main'), font = par('font.main'))
+          }
         )
-      }) else NULL
+      
+      list(
+        table = data.frame(n = sum(si$n), lr_pval(si, TRUE), row.names = ii),
+        survfit = si
+      )
+    })
   
   ss <- lapply(sd, '[[', 'survfit')
   tt <- lapply(sd, '[[', 'table')
   
   res <- list(
-    table   = do.call('rbind', c(list(st), tt)),
+    table = do.call('rbind', c(list(st), tt)),
     survfit = c(list(Total = object), setNames(ss, sprintf('time=%s', times)))
   )
   
@@ -2755,7 +2763,12 @@ surv_median <- function(object, ci = FALSE, digits = 0L, which = NULL,
 surv_prob <- function(object, times = pretty(object$time), ci = FALSE,
                       digits = ifelse(percent, 0L, 2L), which = 1L,
                       print = TRUE, show_conf = TRUE, percent = FALSE) {
-  res <- surv_table(object, digits, times, FALSE, percent = percent, extend = TRUE)
+  stopifnot(inherits(object, 'survfit'))
+  
+  res <- surv_table(
+    object, digits, times, FALSE, percent = percent, extend = TRUE
+  )
+  
   if (!islist(res))
     res <- list(res)
   
@@ -2765,7 +2778,8 @@ surv_prob <- function(object, times = pretty(object$time), ci = FALSE,
       gsub(' .*', '', y) else gsub(', ', ' - ', y)
     
     if (show_conf)
-      y <- gsub('(?<=\\()', sprintf('%s%% CI: ', object$conf.int * 100), y, perl = TRUE)
+      y <- gsub('(?<=\\()', sprintf('%s%% CI: ', object$conf.int * 100),
+                y, perl = TRUE)
     
     if (print)
       iprint(y) else y
@@ -2811,6 +2825,8 @@ surv_prob <- function(object, times = pretty(object$time), ci = FALSE,
 #' @export
 
 kmdiff <- function(object, col = adjustcolor('grey', 0.5), conf.int = 0.95) {
+  stopifnot(inherits(object, 'survfit'))
+  
   strata <- names(object$strata)
   
   if (length(strata) != 2L) {
