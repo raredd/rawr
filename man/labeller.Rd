@@ -9,42 +9,47 @@ labeller(
   sub = NULL,
   side = 3L,
   pad = NULL,
-  col.text = par("col"),
-  cex = par("cex"),
-  col.bg = par("bg"),
-  col.border = par("col.axis"),
-  lty = par("lty"),
-  lwd = par("lwd"),
-  ...
+  at = c(0.05, 0.9),
+  args.fig = list(),
+  args.sub = list(),
+  args.rect = list()
 )
 }
 \arguments{
-\item{fig, sub}{labels for the upper left corner and plot, respectively; note
-that \code{side} controls where \code{sub} is placed}
+\item{fig, sub}{labels for the upper left corner and plot, respectively;
+note that \code{side} controls where \code{sub} is placed}
 
 \item{side}{the side of the plot to draw the \code{sub} label}
 
 \item{pad}{(optional) height of the sub label space as a fraction of the
 length of the axis perpendicular to \code{side}}
 
-\item{col.text, cex}{the color and character expansion value for text}
+\item{at}{the x- and y-locations of \code{fig} given in normalized figure
+coordinates; see \code{\link[=grconvertX]{convertXY}}}
 
-\item{col.bg, col.border, lty, lwd}{the background color, border color, border
-line type, and border line width of the \code{sub} rectangle}
-
-\item{...}{additional arguments passed to \code{\link{text}} or graphical
-parameters passed further to \code{\link{par}}}
+\item{args.fig, args.sub, args.rect}{a \emph{named} list of additional
+arguments passed to \code{\link{text}}, \code{text}, and
+\code{\link{rect}}, respectively}
 }
 \description{
-Adds a figure or sub label to an existing plot.
+Adds a figure label or sub label to an existing plot.
 }
 \examples{
 op <- par(mar = c(5, 5, 5, 5))
 plot(1)
-labeller(fig = 'A', sub = 'plot label')
+labeller(fig = 'A')
+labeller(fig = 'A', at = c(0.025, 0.9), args.fig = list(font = 2, cex = 2))
+labeller(sub = 'this is a\nplot label')
 labeller(sub = 'plot label', side = 4)
+labeller(sub = 'pad = -0.1', side = 2, pad = -0.1)
+labeller(
+  sub = 'plot label', side = 1,
+  args.sub = list(cex = 3, font = 2, col = 'white'),
+  args.rect = list(col = 'red', lwd = 3, border = 'orange', lty = 2)
+)
+par(op)
 
-par(mfrow = c(2, 3), mar = c(5, 5, 2, 2))
+op <- par(mfrow = c(2, 3))
 sapply(1:6, function(ii) {
   plot(1)
   fig <- names(plotr::fig(ii, par('mfrow')))
