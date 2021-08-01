@@ -1,7 +1,8 @@
 ### plot misc, extra, random
 # dodge, dodge.default, dodge.formula, dodge2, dodge2.default, dodge2.formula,
 # show_colors, show_pch, tcol, col_scaler, bp.test, bp.test.default,
-# bp.test.formula, imgpal, rawr_palettes, rawr_pal, show_pal, rgbdiff, na.points
+# bp.test.formula, imgpal, rawr_palettes, rawr_pal, show_pal, rgbdiff,
+# na.points, labeler
 #
 # S3 methods:
 # dodge, dodge2, bp.test
@@ -1125,4 +1126,81 @@ na.points <- function(x = NULL, y = NULL, xat = NULL, yat = NULL,
   }
   
   invisible(list(x = nax, y = nay, xat = xat, yat = yat))
+}
+
+#' Add labels to a plot
+#' 
+#' Adds a figure or sub label to an existing plot.
+#' 
+#' @param fig,sub labels for the upper left corner and plot, respectively; note
+#'   that \code{side} controls where \code{sub} is placed
+#' @param side the side of the plot to draw the \code{sub} label
+#' @param pad (optional) height of the sub label space as a fraction of the
+#'   length of the axis perpendicular to \code{side}
+#' @param col.text,cex the color and character expansion value for text
+#' @param col.bg,col.border,lty,lwd the background color, border color, border
+#'   line type, and border line width of the \code{sub} rectangle
+#' @param ... additional arguments passed to \code{\link{text}} or graphical
+#'   parameters passed further to \code{\link{par}}
+#' 
+#' @examples
+#' op <- par(mar = c(5, 5, 5, 5))
+#' plot(1)
+#' labeller(fig = 'A', sub = 'plot label')
+#' labeller(sub = 'plot label', side = 4)
+#' 
+#' par(mfrow = c(2, 3), mar = c(5, 5, 2, 2))
+#' sapply(1:6, function(ii) {
+#'   plot(1)
+#'   fig <- names(plotr::fig(ii, par('mfrow')))
+#'   labeller(LETTERS[ii], sprintf('Panel %s', ii), side = 3L + grepl('right', fig))
+#' })
+#' par(op)
+#' 
+#' @export
+
+labeller <- function(
+  fig = NULL, sub = NULL, side = 3L, pad = NULL,
+  col.text = par('col'), cex = par('cex'),
+  col.bg = par('bg'), col.border = par('col.axis'),
+  lty = par('lty'), lwd = par('lwd'), ...
+) {
+  
+  if (is.null(pad))
+    pad <- strheight(sub, cex = cex) * 2
+  
+  u <- par('usr')
+  
+  coords <- list(
+    c(u[1L], u[3L], u[2L], u[3L] - diff(u[3:4]) * pad),
+    c(u[1L] - diff(u[1:2]) * pad, u[3L], u[1L], u[4L]),
+    c(u[1L], u[4L], u[2L], u[4L] + diff(u[3:4]) * pad),
+    c(u[2L], u[3L], u[2L] + diff(u[1:2]) * pad, u[4L])
+  )[[side]]
+  
+  args.sub <- rowMeans(matrix(coords, 2L))
+  if (side %in% 1:2 * 2)
+    args.sub <- rev(args.sub)
+  srt <- c(0, 90, 0, -90)[side]
+  
+  args.sub <- c(
+    as.list(args.sub),
+    list(labels = sub, col = col.text, cex = cex, srt = srt, ..., xpd = NA)
+  )
+  
+  args.rect <- c(
+    as.list(coords), col = col.bg, border = col.border,
+    lty = lty, lwd = lwd, xpd = NA
+  )
+  
+  args.fig <- list(
+    x = grconvertX(-0.1, 'npc'), y = grconvertY(1, 'npc'), labels = fig,
+    col = col.text, cex = cex, ..., xpd = NA
+  )
+  
+  do.call('rect', args.rect)
+  do.call('text', args.sub)
+  do.call('text', args.fig)
+  
+  invisible(NULL)
 }
