@@ -222,6 +222,11 @@ stratify_formula <- function(formula, vars = NULL) {
 #' 
 #' ## small table of additional stats
 #' kmplot(km1, times = 1:3 * 1000, times.type = 'percent-ci')
+#' kmplot(km1, times = 1:3 * 1000, times.type = 'percent-ci',
+#'        atrisk.table = FALSE, args.times = list(x = 'bottomright'))
+#' kmplot(km1, times = 0:10 * 250, times.type = 'survival',
+#'        times.digits = 3, times.lab = 'Prob. of survival',
+#'        args.times = list(x = mean(par('usr')[1]), y = 0))
 #' 
 #' 
 #' ## use stratified models
@@ -549,11 +554,32 @@ kmplot <- function(object, data = NULL,
   else if (!identical(atrisk.col, FALSE) && length(atrisk.col) == ng)
     atrisk.col else rep_len(1L, ng)
   
+  
+  ## at-risk table
+  usr <- par('usr')
+  atrisk.at <- atrisk.at[atrisk.at <= usr[2L]]
+  
+  atrisk.type <- match.arg(atrisk.type)
+  wh <- switch(
+    atrisk.type,
+    atrisk = 'atrisk',
+    events = 'events',
+    'atrisk-events' = 'atrisk.events',
+    survival = 'survival',
+    'survival-ci' = 'survival.ci',
+    percent = 'percent',
+    'percent-ci' = 'percent.ci',
+    cuminc = 'cuminc',
+    'cuminc-ci' = 'cuminc.ci',
+    'percent-cuminc' = 'percent.cuminc',
+    'percent-cuminc-ci' = 'percent.cuminc.ci'
+  )
+  
+  ar <- atrisk_data_(object, atrisk.at, atrisk.digits)
+  ss <- ar$summary
+  d2 <- ar$data
+  
   if (atrisk.table) {
-    usr <- par('usr')
-    
-    atrisk.at <- atrisk.at[atrisk.at <= usr[2L]]
-    
     ## labels for each row in at-risk table
     group.name.pos <- diff(usr[1:2]) / ifelse(atrisk.lines, -8, -16)
     padding <- abs(group.name.pos / 8)
@@ -577,27 +603,6 @@ kmplot <- function(object, data = NULL,
         axis(1L, c(group.name.pos + padding, 0 - 4 * padding), xpd = NA,
              labels = FALSE, line = line.pos[ii] + 0.6, lwd.ticks = 0,
              col = col.surv[ii], lty = lty.surv[ii], lwd = lwd.surv[ii])
-    
-    ## at-risk table
-    atrisk.type <- match.arg(atrisk.type)
-    wh <- switch(
-      atrisk.type,
-      atrisk = 'atrisk',
-      events = 'events',
-      'atrisk-events' = 'atrisk.events',
-      survival = 'survival',
-      'survival-ci' = 'survival.ci',
-      percent = 'percent',
-      'percent-ci' = 'percent.ci',
-      cuminc = 'cuminc',
-      'cuminc-ci' = 'cuminc.ci',
-      'percent-cuminc' = 'percent.cuminc',
-      'percent-cuminc-ci' = 'percent.cuminc.ci'
-    )
-    
-    ar <- atrisk_data_(object, atrisk.at, atrisk.digits)
-    ss <- ar$summary
-    d2 <- ar$data
     
     ## right-justify numbers
     ndigits <- lapply(d2, function(x) nchar(x[, 2L]))
@@ -737,7 +742,7 @@ kmplot <- function(object, data = NULL,
     })
     
     largs <- list(
-      x = diff(par('usr')[1:2]) * 0.025, y = 0,
+      x = 'bottomleft',
       table = d3[, c(1, strata.order + 1L)], title = times.lab,
       frame.colnames = TRUE, frame.type = 'line', font.title = 1L
     )
@@ -2120,8 +2125,8 @@ local_coxph_test <- function(object, pos, C = NULL, d = NULL, digits = 3) {
 
 #' Create counting process data
 #' 
-#' Converts a data frame to counting process notation and allows for time-
-#' dependent variables to be introduced.
+#' Converts a data frame to counting process notation and allows for
+#' time-dependent variables to be introduced.
 #' 
 #' @param data data frame with survival time, survival status, and other
 #'   covariates

@@ -319,6 +319,11 @@ kmplot(km2, atrisk.table = FALSE, lwd.surv = 2, lwd.mark = 0.5,
 
 ## small table of additional stats
 kmplot(km1, times = 1:3 * 1000, times.type = 'percent-ci')
+kmplot(km1, times = 1:3 * 1000, times.type = 'percent-ci',
+       atrisk.table = FALSE, args.times = list(x = 'bottomright'))
+kmplot(km1, times = 0:10 * 250, times.type = 'survival',
+       times.digits = 3, times.lab = 'Prob. of survival',
+       args.times = list(x = mean(par('usr')[1]), y = 0))
 
 
 ## use stratified models
