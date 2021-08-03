@@ -1132,7 +1132,7 @@ na.points <- function(x = NULL, y = NULL, xat = NULL, yat = NULL,
 #' 
 #' Adds a figure label or sub label to an existing plot.
 #' 
-#' @param fig,sub labels for the upper left corner and plot, respectively;
+#' @param fig,sub labels for the upper left corner and panel, respectively;
 #'   note that \code{side} controls where \code{sub} is placed
 #' @param side the side of the plot to draw the \code{sub} label
 #' @param pad (optional) height of the sub label space as a fraction of the

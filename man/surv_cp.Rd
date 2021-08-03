@@ -25,8 +25,8 @@ covariates}
 A data frame with events in counting process notation.
 }
 \description{
-Converts a data frame to counting process notation and allows for time-
-dependent variables to be introduced.
+Converts a data frame to counting process notation and allows for
+time-dependent variables to be introduced.
 }
 \examples{
 library('survival')
