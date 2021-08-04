@@ -16,7 +16,7 @@ labeller(
 )
 }
 \arguments{
-\item{fig, sub}{labels for the upper left corner and plot, respectively;
+\item{fig, sub}{labels for the upper left corner and panel, respectively;
 note that \code{side} controls where \code{sub} is placed}
 
 \item{side}{the side of the plot to draw the \code{sub} label}
