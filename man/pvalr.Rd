@@ -84,7 +84,7 @@ be formatted as \code{< 0.001}, for example; 3) p-values that are less than
 keep any trailing 0s.
 
 \code{pvalr2} deals with common cases of character string p-values which are
-not ideal (0.000, 1.00, etc) and will leave others unchanged.
+not ideal (0.000, 1.00, etc.) and will leave others unchanged.
 }
 \examples{
 pv <- c(-1, 0.00001, 0.0042, 0.0601, 0.1335, 0.4999, 0.51, 0.89, 0.9, 1)

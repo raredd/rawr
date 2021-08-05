@@ -30,7 +30,7 @@
 #' @param ... additional arguments passed to the stat function
 #' @param details logical; if \code{FALSE}, only the p-value is printed; if
 #'   \code{TRUE}, additional details depending on the test (e.g., the test
-#'   statistic, degrees of freedom depending, etc) are printed
+#'   statistic, degrees of freedom depending, etc.) are printed
 #' @param digits number of digits past the decimal point to keep
 #' @param object for \code{inl_logrank}, a \code{\link[survival]{survdiff}}
 #'   object or formula to be passed to \code{survdiff}
@@ -740,7 +740,7 @@ intr <- function(..., fun = median, conf = NULL,
 #' keep any trailing 0s.
 #'
 #' \code{pvalr2} deals with common cases of character string p-values which are
-#' not ideal (0.000, 1.00, etc) and will leave others unchanged.
+#' not ideal (0.000, 1.00, etc.) and will leave others unchanged.
 #'
 #' @param pv for \code{pvalr}, a numeric value or vector of p-values; for
 #'   \code{pvalr2}, a vector of p-values as character strings

@@ -10,7 +10,7 @@ merge2(x, ...)
 \item{x}{list of data frames or objects to be coerced to data frames}
 
 \item{...}{additional arguments passed to \code{merge} (eg, \code{by},
-\code{all}, etc)}
+\code{all}, etc.)}
 }
 \description{
 Use \code{\link{merge}} to join \code{n} data frames.

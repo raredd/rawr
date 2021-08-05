@@ -47,7 +47,7 @@ the statistic}
 
 \item{details}{logical; if \code{FALSE}, only the p-value is printed; if
 \code{TRUE}, additional details depending on the test (e.g., the test
-statistic, degrees of freedom depending, etc) are printed}
+statistic, degrees of freedom depending, etc.) are printed}
 
 \item{digits}{number of digits past the decimal point to keep}
 

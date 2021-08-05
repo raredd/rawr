@@ -31,7 +31,7 @@ kmplot_by(
 }
 \arguments{
 \item{strata, event, time, by}{character strings of the strata, event (pfs, os,
-ttp, etc; see details), time (optional), and stratification variables;
+ttp, etc.; see details), time (optional), and stratification variables;
 additionally, vectors for each are allowed}
 
 \item{data}{a data frame}

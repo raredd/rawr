@@ -57,7 +57,7 @@ equal to or better than previous; e.g., if \code{n_confirm = 1} (default),
 to confirm a response, the next assessment must be at least as good as the
 current; note that this only affects \code{.$confirmed} and
 \code{.$bsf_confirmed} in the return object; if \code{n_confirm = 2}, to
-confirm a response, the next two assessments must be at least as good, etc}
+confirm a response, the next two assessments must be at least as good, etc.}
 
 \item{n_prog}{similar to \code{n_confirm} but for progression; if
 \code{nprog = 1}, then a progression must be followed by at least one

@@ -1086,7 +1086,7 @@ outer2 <- function(..., FUN) {
 #' 
 #' @param x list of data frames or objects to be coerced to data frames
 #' @param ... additional arguments passed to \code{merge} (eg, \code{by},
-#'   \code{all}, etc)
+#'   \code{all}, etc.)
 #' 
 #' @seealso
 #' \code{\link[plyr]{join_all}}
@@ -2290,7 +2290,7 @@ sort2 <- function(x, decreasing = FALSE, index.return = FALSE,
 #'   to confirm a response, the next assessment must be at least as good as the
 #'   current; note that this only affects \code{.$confirmed} and
 #'   \code{.$bsf_confirmed} in the return object; if \code{n_confirm = 2}, to
-#'   confirm a response, the next two assessments must be at least as good, etc
+#'   confirm a response, the next two assessments must be at least as good, etc.
 #' @param n_prog similar to \code{n_confirm} but for progression; if
 #'   \code{nprog = 1}, then a progression must be followed by at least one
 #'   progression to confirm; note that this only affects \code{.$confirmed}
