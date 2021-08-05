@@ -33,7 +33,7 @@ stratify_formula <- function(formula, vars = NULL) {
 #' median survival summary, confidence bands/intervals, pairwise tests,
 #' hazard ratios, cumulative incidences, and other features.
 #' 
-#' Line specifications (e.g., \code{lty.surv}, \code{lwd.surv}, etc) will be
+#' Line specifications (e.g., \code{lty.surv}, \code{lwd.surv}, etc.) will be
 #' recycled as needed.
 #' 
 #' If \code{col.band} is not \code{NULL}, \code{NA}, or \code{FALSE}, a
@@ -97,7 +97,8 @@ stratify_formula <- function(formula, vars = NULL) {
 #' @param atrisk.digits when survival probabilities are shown in at-risk table
 #'   (see \code{atrisk.type}), number of digits past the decimal to keep
 #' @param atrisk.lab heading for at-risk table
-#' @param atrisk.pad extra padding between plot and at-risk table
+#' @param atrisk.pad extra padding between plot and at-risk table; additionally,
+#'   a vector of padding for each line in the at-risk table, recycled as needed
 #' @param atrisk.lines logical; draw lines next to strata in at-risk table
 #' @param atrisk.col logical or a vector with colors for at-risk table text;
 #'   if \code{TRUE}, \code{col.surv} will be used
@@ -136,7 +137,8 @@ stratify_formula <- function(formula, vars = NULL) {
 #' @param xaxis.lab,yaxis.lab x- and y-axis tick labels
 #' @param xlab,ylab x- and y-axis labels
 #' @param main title of plot
-#' @param cex.axis,cex.atrisk text size for axes labels, legend, at-risk table
+#' @param cex.axis,cex.atrisk text size for axis tick labels and at-risk table
+#' @param cex.lab,cex.main text size for axis and main titles
 #' @param legend logical, a vector of x/y coordinates, or a keyword (see
 #'   \code{\link{legend}}); if \code{TRUE}, the default position is
 #'   \code{"bottomleft"}
@@ -191,7 +193,7 @@ stratify_formula <- function(formula, vars = NULL) {
 #' @param panel.last an expression to be evaluated after plotting but before
 #'   returning from the function
 #' @param ... additional parameters (\code{font}, \code{mfrow}, \code{bty},
-#'   \code{tcl}, \code{cex.lab}, etc) passed to \code{par}
+#'   \code{tcl}, etc.) passed to \code{par}
 #' 
 #' @references
 #' Adapted from \url{http://biostat.mc.vanderbilt.edu/wiki/Main/TatsukiRcode}
@@ -216,11 +218,16 @@ stratify_formula <- function(formula, vars = NULL) {
 #'        args.test = list(col = 'red', cex = 1.5, .prefix = 'Log-rank: '))
 #' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
 #' kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3500)
+#' 
+#' ## atrisk spacing adjustment
+#' kmplot(km2, atrisk.pad = 3)
+#' kmplot(km2, atrisk.pad = 1:4 / 4)
+#' 
 #' kmplot(km2, atrisk.table = FALSE, lwd.surv = 2, lwd.mark = 0.5,
 #'        col.surv = 1:4, col.band = c(1, 0, 0, 4))
 #' 
 #' 
-#' ## small table of additional stats
+#' ## table of additional stats
 #' kmplot(km1, times = 1:3 * 1000, times.type = 'percent-ci')
 #' kmplot(km1, times = 1:3 * 1000, times.type = 'percent-ci',
 #'        atrisk.table = FALSE, args.times = list(x = 'bottomright'))
@@ -265,10 +272,11 @@ stratify_formula <- function(formula, vars = NULL) {
 #' 
 #' 
 #' ## when using mfrow options, use add = TRUE and same mar to align axes
-#' mar <- c(8, 6, 2, 2)
-#' par(mfrow = c(1, 2))
+#' mar <- c(9, 6, 2, 2)
+#' op <- par(mfrow = c(1, 2))
 #' kmplot(km1, add = TRUE, mar = mar)
 #' kmplot(km2, add = TRUE, strata.lab = TRUE, mar = mar)
+#' par(mfrow = op)
 #' 
 #' 
 #' \dontrun{
@@ -336,9 +344,9 @@ kmplot <- function(object, data = NULL,
                    xaxis.at = pretty(xlim), xaxis.lab = xaxis.at,
                    atrisk.at = xaxis.at,
                    yaxis.at = pretty(0:1), yaxis.lab = yaxis.at,
-                   xlab = 'Time', ylab = 'Probability',
-                   main = NULL, cex.axis = par('cex.axis'),
-                   cex.atrisk = cex.axis,
+                   xlab = 'Time', ylab = 'Probability', main = NULL,
+                   cex.axis = par('cex.axis'), cex.atrisk = cex.axis,
+                   cex.lab = par('cex.lab'), cex.main = par('cex.main'),
                    legend = !atrisk.table && !is.null(object$strata),
                    args.legend = list(), median.legend = FALSE,
                    
@@ -459,7 +467,7 @@ kmplot <- function(object, data = NULL,
     warning('length(strata.lab) != number of groups')
   }
   if (suppressWarnings(any(sort(strata.order) != seq.int(ng))))
-    stop('sort(strata.order) must equal 1:', ng)
+    stop('sort(strata.order) must contain 1:', ng)
   if (ng == 1L & (strata.lab[1L] == 'strata.lab')) {
     strata.lab <- 'Number at risk'
     atrisk.lab <- ifelse(is.null(atrisk.lab), strata.lab, atrisk.lab)
@@ -502,13 +510,15 @@ kmplot <- function(object, data = NULL,
     on.exit(par(op))
 
   ## guess margins based on at-risk table options
-  par(mar = c(4 + ng * atrisk.table + atrisk.pad,
-              4 + pmax(4, extra.margin) - 3 * !atrisk.table,
-              2,
-              2 + 6 * (median & atrisk.table & !any(median.mar))))
-  par(...)
-  if (!is.null(mar))
-    par(mar = mar)
+  atrisk.pad <- rep_len(atrisk.pad, ng)
+  mar <- mar %||% c(
+    5 + ng * atrisk.table + max(atrisk.pad),
+    4 + pmax(4, extra.margin) - 3 * !atrisk.table,
+    2,
+    2 + 6 * (median & atrisk.table & !any(median.mar))
+  )
+  
+  par(mar = mar, ...)
   
   if (is.null(xlim))
     xlim <- c(0, max(object$time))
@@ -533,27 +543,19 @@ kmplot <- function(object, data = NULL,
   dat.list <- split(dat, dat$order)
   
   ## base plot
+  cex.cex <- 1 / switch(par('mfrow')[1L], 1, 0.83, 0.66)
   plot(
     0, type = 'n', xlim = xlim, ylim = ylim, ann = FALSE,
     axes = FALSE, xaxs = xaxs, panel.first = panel.first,
     panel.last = {
       box(bty = par('bty'))
       axis(1L, xaxis.at, FALSE, lwd = 0, lwd.ticks = 1)
-      axis(1L, xaxis.at, xaxis.lab, FALSE, -0.5, cex.axis = cex.axis)
-      axis(2L, yaxis.at, yaxis.lab, las = 1L, cex.axis = cex.axis)
-      title(xlab = xlab, line = 1.5, adj = 0.5, ...)
-      title(ylab = ylab, main = main, ...)
+      axis(1L, xaxis.at, xaxis.lab, FALSE, cex.axis = cex.axis * cex.cex)
+      axis(2L, yaxis.at, yaxis.lab, las = 1L, cex.axis = cex.axis * cex.cex)
+      title(xlab = xlab, ylab = ylab, main = main, ...,
+            cex.lab = cex.lab * cex.cex, cex.main = cex.main * cex.cex)
     }
   )
-  
-  ## at-risk table below surv plot
-  line.pos <- seq.int(ng)[order(strata.order)] + 2L + atrisk.pad
-  ## set colors for lines of text
-  col.atrisk <- if (isTRUE(atrisk.col))
-    col.surv
-  else if (!identical(atrisk.col, FALSE) && length(atrisk.col) == ng)
-    atrisk.col else rep_len(1L, ng)
-  
   
   ## at-risk table
   usr <- par('usr')
@@ -578,6 +580,14 @@ kmplot <- function(object, data = NULL,
   ar <- atrisk_data_(object, atrisk.at, atrisk.digits)
   ss <- ar$summary
   d2 <- ar$data
+  
+  ## at-risk table below surv plot
+  line.pos <- seq.int(ng)[order(strata.order)] + 3L + atrisk.pad
+  ## set colors for lines of text
+  col.atrisk <- if (isTRUE(atrisk.col))
+    col.surv
+  else if (!identical(atrisk.col, FALSE) && length(atrisk.col) == ng)
+    atrisk.col else rep_len(1L, ng)
   
   if (atrisk.table) {
     ## labels for each row in at-risk table
@@ -653,7 +663,7 @@ kmplot <- function(object, data = NULL,
     
     if (!(identical(atrisk.lab, FALSE)))
       mtext(atrisk.lab, side = 1L, at = usr[1L], cex = cex.atrisk,
-            line = 1.5 + atrisk.pad, adj = 1, col = 1L, las = 1L)
+            line = min(line.pos) - 1.5, adj = 1, col = 1L, las = 1L)
   }
   
   ## median (ci) text on at-risk or using x, y coords
@@ -662,14 +672,16 @@ kmplot <- function(object, data = NULL,
   tt <- format(tt, big.mark = ',')
   tt <- gsub('NA', 'NR', tt)
   at <- if (isTRUE(median.at))
-    usr[2L] + diff(usr[1:2]) / 8 else median.at
+    usr[2L] + diff(usr[1:2]) / 10 else median.at
   
   largs <- list(
     text = c(if (!is.null(object$conf.int))
       sprintf('Median (%s%% CI)', object$conf.int * 100) else 'Median', tt),
     side = 1L, col = c(palette()[1L], col.atrisk), at = at, las = 1L,
-    adj = 0.5, cex = cex.atrisk, line = c(1.5 + atrisk.pad, line.pos)
+    adj = 0.5, cex = cex.atrisk, line = c(min(line.pos) - 1.5, line.pos)
   )
+  largs$text <- trimws(largs$text)
+  
   if (!ci.median)
     largs$text <- gsub(' .*', '', largs$text)
   
@@ -779,7 +791,7 @@ kmplot <- function(object, data = NULL,
     largs <- within.list(largs, {
       x <- lg$rect$left + lg$rect$w
       y <- lg$rect$top
-      legend <- tt
+      legend <- tt[strata.order]
     })
     largs <- largs[setdiff(names(largs), c('lwd', 'lty'))]
     
@@ -1637,7 +1649,7 @@ cc_text <- function(formula1, formula2, data, tau = NULL, iter = 1000L, seed = 1
 #' efficient and preferred.
 #' 
 #' @param strata,event,time,by character strings of the strata, event (pfs, os,
-#'   ttp, etc; see details), time (optional), and stratification variables;
+#'   ttp, etc.; see details), time (optional), and stratification variables;
 #'   additionally, vectors for each are allowed
 #' @param data a data frame
 #' @param single logical; if \code{TRUE}, each level of \code{by} will be
@@ -1952,6 +1964,8 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
       panel.last = panel.last,
       
       panel.first = {
+        panel.first
+        
         ## sub label - top left margin (default: strata var)
         mtxt <- if (!msub)
           rep_len(sub, length(sp))[x] else strata
@@ -1961,7 +1975,6 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
         ## figure label - top left outer margin (eg, A, B, C)
         mtext(fig[x], side = 3L, line = 0.25, outer = FALSE,
               at = 0 - par('usr')[2L] * 0.05, font = 2, cex = 1.2)
-        panel.first
       }
     )
     s0
@@ -2698,7 +2711,9 @@ surv_extract <- function(object, what = 'median') {
   on.exit(options(oo))
   
   tbl <- summary(object)$table
-  tbl <- if (is.null(object$strata)) {
+  one <- is.null(object$strata) | length(object$strata) == 1L
+  
+  tbl <- if (one) {
     c(tbl, time.min = min(object$time), time.max = max(object$time))
   } else {
     sp <- split(object$time, rep(seq_along(object$strata), object$strata))
@@ -2711,7 +2726,7 @@ surv_extract <- function(object, what = 'median') {
     grep(paste0(what, collapse = '|'), names(tbl) %||% colnames(tbl))
   else what
   
-  if (is.null(object$strata))
+  if (one)
     tbl[what] else tbl[, what]
 }
 

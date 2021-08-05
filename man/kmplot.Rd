@@ -49,6 +49,8 @@ kmplot(
   main = NULL,
   cex.axis = par("cex.axis"),
   cex.atrisk = cex.axis,
+  cex.lab = par("cex.lab"),
+  cex.main = par("cex.main"),
   legend = !atrisk.table && !is.null(object$strata),
   args.legend = list(),
   median.legend = FALSE,
@@ -118,7 +120,8 @@ can be passed via \code{col.ci} and the confidence interval is taken from
 
 \item{atrisk.lab}{heading for at-risk table}
 
-\item{atrisk.pad}{extra padding between plot and at-risk table}
+\item{atrisk.pad}{extra padding between plot and at-risk table; additionally,
+a vector of padding for each line in the at-risk table, recycled as needed}
 
 \item{atrisk.type}{a character string giving the type of "at-risk" table to
 show; one of \code{"atrisk"} (number at-risk), \code{"events"} (cumulative
@@ -188,7 +191,9 @@ are shown}
 
 \item{main}{title of plot}
 
-\item{cex.axis, cex.atrisk}{text size for axes labels, legend, at-risk table}
+\item{cex.axis, cex.atrisk}{text size for axis tick labels and at-risk table}
+
+\item{cex.lab, cex.main}{text size for axis and main titles}
 
 \item{legend}{logical, a vector of x/y coordinates, or a keyword (see
 \code{\link{legend}}); if \code{TRUE}, the default position is
@@ -267,7 +272,7 @@ set up but before any plotting takes place}
 returning from the function}
 
 \item{...}{additional parameters (\code{font}, \code{mfrow}, \code{bty},
-\code{tcl}, \code{cex.lab}, etc) passed to \code{par}}
+\code{tcl}, etc.) passed to \code{par}}
 }
 \description{
 Plot Kaplan-Meier or Cox regression models with optional at-risk table,
@@ -275,7 +280,7 @@ median survival summary, confidence bands/intervals, pairwise tests,
 hazard ratios, cumulative incidences, and other features.
 }
 \details{
-Line specifications (e.g., \code{lty.surv}, \code{lwd.surv}, etc) will be
+Line specifications (e.g., \code{lty.surv}, \code{lwd.surv}, etc.) will be
 recycled as needed.
 
 If \code{col.band} is not \code{NULL}, \code{NA}, or \code{FALSE}, a
@@ -313,11 +318,16 @@ kmplot(km1, atrisk.col = c('grey50', 'tomato'), test_details = FALSE,
        args.test = list(col = 'red', cex = 1.5, .prefix = 'Log-rank: '))
 kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = TRUE)
 kmplot(km1, mark = 'bump', atrisk.lines = FALSE, median = 3500)
+
+## atrisk spacing adjustment
+kmplot(km2, atrisk.pad = 3)
+kmplot(km2, atrisk.pad = 1:4 / 4)
+
 kmplot(km2, atrisk.table = FALSE, lwd.surv = 2, lwd.mark = 0.5,
        col.surv = 1:4, col.band = c(1, 0, 0, 4))
 
 
-## small table of additional stats
+## table of additional stats
 kmplot(km1, times = 1:3 * 1000, times.type = 'percent-ci')
 kmplot(km1, times = 1:3 * 1000, times.type = 'percent-ci',
        atrisk.table = FALSE, args.times = list(x = 'bottomright'))
@@ -362,10 +372,11 @@ kmplot(km1, strata.lab  = c('Sex[Female]', 'Sex[Male]'))
 
 
 ## when using mfrow options, use add = TRUE and same mar to align axes
-mar <- c(8, 6, 2, 2)
-par(mfrow = c(1, 2))
+mar <- c(9, 6, 2, 2)
+op <- par(mfrow = c(1, 2))
 kmplot(km1, add = TRUE, mar = mar)
 kmplot(km2, add = TRUE, strata.lab = TRUE, mar = mar)
+par(mfrow = op)
 
 
 \dontrun{
