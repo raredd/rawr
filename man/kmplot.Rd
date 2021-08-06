@@ -80,7 +80,11 @@ kmplot(
 )
 }
 \arguments{
-\item{object}{an object of class \code{\link{survfit}} or \code{survfit.cox}}
+\item{object}{an object of class \code{\link[survival]{survfit}} or
+\code{\link[survival]{survfit.coxph}}; note that for the latter some
+features are not available, e.g., \code{lr_test}, \code{tt_test},
+\code{hr_text}, \code{atrisk.type} and/or
+\code{times.type \%in\% c("atrisk", "events", "atrisk-events")}, etc.}
 
 \item{data}{(optional) the data frame used to create \code{s}, used to
 obtain some data not available in \code{survfit} objects; if not given,
@@ -371,7 +375,7 @@ kmplot(km1, strata.expr = c('Sex[Female]', 'Sex[Male]'))
 kmplot(km1, strata.lab  = c('Sex[Female]', 'Sex[Male]'))
 
 
-## when using mfrow options, use add = TRUE and same mar to align axes
+## when using mfrow options, use add = TRUE and mar to align axes
 mar <- c(9, 6, 2, 2)
 op <- par(mfrow = c(1, 2))
 kmplot(km1, add = TRUE, mar = mar)
@@ -379,39 +383,22 @@ kmplot(km2, add = TRUE, strata.lab = TRUE, mar = mar)
 par(mfrow = op)
 
 
-\dontrun{
-## more customized figure
-pdf(tf <- tempfile(fileext = '.pdf'), height = 8, width = 11,
-    pointsize = 12, family = 'serif')
+## survfit.coxph object
+cx1 <- coxph(Surv(time, status) ~ sex, data = colon)
+cx2 <- coxph(Surv(time, status) ~ sex + adhere, data = colon)
+cx3 <- coxph(Surv(time, status) ~ I(rx == "Obs") + adhere + age, data = colon)
 
-kmplot(
-  survfit(Surv(time, status) ~ rx + adhere, data = colon),
-  panel.first = abline(v = c(0, 0.5, 1:9) * 365, lty = 3),
-  mark = 'bump',                     # bump censor mark
-  lty.ci = 2, lwd.ci = 0.3,          # dashed line for CIs
-  xaxis.at = c(0, 0.5, 1:9) * 365,   # change days to years
-  xaxis.lab = c(0, 0.5, 1:9),        # label years
-  yaxis.lab = pretty(0:1) * 100,     # change to percent
-  xlab = 'Time (years)',
-  ylab = 'Percent survival',
-  lr_test = TRUE, test_details = FALSE, # custom test output
-  args.test = list(line = -2, col = 'red', cex = 2, at = 11 * 365),
-  col.surv = c('blue', 'red', 'green', 'black', 'purple', 'orange'),
-  col.ci   = c(0,0,0,0,'purple',0),  # CI only for one group
-  extra.margin = 6,        # increase margin for long strata labels
-  strata.lab = c('Obs', 'Obs+', 'Lev', 'Lev+', 'Lev5fu', 'Lev5fu+'),
-  strata.order = c(5,6,3,1,4,2),     # order table by curve positions
-  median = 10.5 * 365,               # add median and CI
-  atrisk.col = TRUE,                 # color at-risk text
-  font = 2, bty = 'l', tcl = 0.5     # bold table text, other options
-)
-title(main = 'Chemotherapy for stage B/C colon cancer', line = 2.5)
+kmplot(survfit(cx1))
+kmplot(survfit(cx1, data.frame(sex = 0:1)), strata.lab = c('F', 'M'))
 
-dev.off()
+nd <- expand.grid(adhere = 0:1, sex = 0:1)
+kmplot(survfit(cx2, nd), col.surv = 1:4, strata.lab = do.call(paste, nd))
+## compare
+kmplot(survfit(Surv(time, status) ~ sex + adhere, data = colon),
+       atrisk.type = 'survival')
 
-system2(getOption('pdfviewer'), tf)
-unlink(tf)
-}
+nd <- data.frame(rx = 'Obs', adhere = 0:1, age = c(30, 30, 70, 70))
+kmplot(survfit(cx3, nd), col.surv = 1:4, strata.lab = do.call(paste, nd))
 
 }
 \references{

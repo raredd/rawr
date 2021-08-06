@@ -57,7 +57,11 @@ stratify_formula <- function(formula, vars = NULL) {
 #' from the \code{R} graphics device. Doing so may cause the at-risk table or
 #' legend to be mis-aligned.
 #' 
-#' @param object an object of class \code{\link{survfit}} or \code{survfit.cox}
+#' @param object an object of class \code{\link[survival]{survfit}} or
+#'   \code{\link[survival]{survfit.coxph}}; note that for the latter some
+#'   features are not available, e.g., \code{lr_test}, \code{tt_test},
+#'   \code{hr_text}, \code{atrisk.type} and/or
+#'   \code{times.type \%in\% c("atrisk", "events", "atrisk-events")}, etc.
 #' @param data (optional) the data frame used to create \code{s}, used to
 #'   obtain some data not available in \code{survfit} objects; if not given,
 #'   \code{object$call$data} will be searched for in the \code{\link{sys.frames}}
@@ -271,7 +275,7 @@ stratify_formula <- function(formula, vars = NULL) {
 #' kmplot(km1, strata.lab  = c('Sex[Female]', 'Sex[Male]'))
 #' 
 #' 
-#' ## when using mfrow options, use add = TRUE and same mar to align axes
+#' ## when using mfrow options, use add = TRUE and mar to align axes
 #' mar <- c(9, 6, 2, 2)
 #' op <- par(mfrow = c(1, 2))
 #' kmplot(km1, add = TRUE, mar = mar)
@@ -279,39 +283,22 @@ stratify_formula <- function(formula, vars = NULL) {
 #' par(mfrow = op)
 #' 
 #' 
-#' \dontrun{
-#' ## more customized figure
-#' pdf(tf <- tempfile(fileext = '.pdf'), height = 8, width = 11,
-#'     pointsize = 12, family = 'serif')
+#' ## survfit.coxph object
+#' cx1 <- coxph(Surv(time, status) ~ sex, data = colon)
+#' cx2 <- coxph(Surv(time, status) ~ sex + adhere, data = colon)
+#' cx3 <- coxph(Surv(time, status) ~ I(rx == "Obs") + adhere + age, data = colon)
 #' 
-#' kmplot(
-#'   survfit(Surv(time, status) ~ rx + adhere, data = colon),
-#'   panel.first = abline(v = c(0, 0.5, 1:9) * 365, lty = 3),
-#'   mark = 'bump',                     # bump censor mark
-#'   lty.ci = 2, lwd.ci = 0.3,          # dashed line for CIs
-#'   xaxis.at = c(0, 0.5, 1:9) * 365,   # change days to years
-#'   xaxis.lab = c(0, 0.5, 1:9),        # label years
-#'   yaxis.lab = pretty(0:1) * 100,     # change to percent
-#'   xlab = 'Time (years)',
-#'   ylab = 'Percent survival',
-#'   lr_test = TRUE, test_details = FALSE, # custom test output
-#'   args.test = list(line = -2, col = 'red', cex = 2, at = 11 * 365),
-#'   col.surv = c('blue', 'red', 'green', 'black', 'purple', 'orange'),
-#'   col.ci   = c(0,0,0,0,'purple',0),  # CI only for one group
-#'   extra.margin = 6,        # increase margin for long strata labels
-#'   strata.lab = c('Obs', 'Obs+', 'Lev', 'Lev+', 'Lev5fu', 'Lev5fu+'),
-#'   strata.order = c(5,6,3,1,4,2),     # order table by curve positions
-#'   median = 10.5 * 365,               # add median and CI
-#'   atrisk.col = TRUE,                 # color at-risk text
-#'   font = 2, bty = 'l', tcl = 0.5     # bold table text, other options
-#' )
-#' title(main = 'Chemotherapy for stage B/C colon cancer', line = 2.5)
+#' kmplot(survfit(cx1))
+#' kmplot(survfit(cx1, data.frame(sex = 0:1)), strata.lab = c('F', 'M'))
 #' 
-#' dev.off()
+#' nd <- expand.grid(adhere = 0:1, sex = 0:1)
+#' kmplot(survfit(cx2, nd), col.surv = 1:4, strata.lab = do.call(paste, nd))
+#' ## compare
+#' kmplot(survfit(Surv(time, status) ~ sex + adhere, data = colon),
+#'        atrisk.type = 'survival')
 #' 
-#' system2(getOption('pdfviewer'), tf)
-#' unlink(tf)
-#' }
+#' nd <- data.frame(rx = 'Obs', adhere = 0:1, age = c(30, 30, 70, 70))
+#' kmplot(survfit(cx3, nd), col.surv = 1:4, strata.lab = do.call(paste, nd))
 #' 
 #' @export
 
@@ -370,6 +357,51 @@ kmplot <- function(object, data = NULL,
                    add = FALSE, panel.first = NULL, panel.last = NULL, ...) {
   if (!inherits(object, 'survfit'))
     stop('\'object\' must be a \'survfit\' object')
+  
+  ## coerce survfitcox object to mimic survfit
+  if (inherits(object, 'survfitcox')) {
+    lr_test <- tt_test <- hr_text <- FALSE
+    
+    types <- c('survival', 'survival-ci', 'percent', 'percent-ci', 'cuminc',
+               'percent-cuminc', 'cuminc-ci', 'percent-cuminc-ci')
+    
+    atrisk.type <- if (missing(atrisk.type))
+      'survival'
+    else if (!atrisk.type[1L] %in% types) {
+      warning('for \'survfitcox\' objects \'atrisk.type\' should be one of:\n\t',
+              toString(dQuote(types)),
+              '\ndefaulting to atrisk.type = "survival"')
+      'survival'
+    } else atrisk.type[1L]
+    
+    times.type <- if (missing(times.type))
+      'survival'
+    else if (!times.type[1L] %in% types) {
+      warning('for \'survfitcox\' objects \'times.type\' should be one of:\n\t',
+              toString(dQuote(types)),
+              '\ndefaulting to times.type = "survival"')
+      'survival'
+    } else times.type[1L]
+    
+    ng <- max(1L, ncol(object$surv))
+    
+    object <- within.list(object, {
+      strata <- rep_len(length(time), ng)
+      names(strata) <- colnames(surv) %||% 'All'
+      n <- rep_len(n, length(strata))
+      
+      time <- rep(time, ng)
+      n.risk <- rep(n.risk, ng)
+      n.event <- rep(n.event, ng)
+      n.censor <- rep(n.censor, ng)
+      
+      surv <- c(surv)
+      lower <- c(lower)
+      upper <- c(upper)
+      std.err <- c(std.err)
+      cumhaz <- c(cumhaz)
+    })
+  }
   
   if (length(form <- object$call$formula) == 1L)
     object$call$formula <- as.formula(eval(form, parent.frame(1L)))
@@ -1132,7 +1164,7 @@ kmplot_data_ <- function(object, strata.lab) {
   
   with(object, {
     data.frame(
-      time, n.risk, n.event, survival = surv, lower, upper,
+      time, n.risk, n.event, survival = surv, lower = lower, upper = upper,
       group = rep(strata.lab, gr), order = rep(seq.int(ng), gr)
     )
   })
