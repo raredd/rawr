@@ -3555,7 +3555,7 @@ case <- function(x, case = c('first', 'upcase', 'downcase', 'camelcase',
 
 write_htmlTable <- function(x, file = '', attributes = TRUE) {
   if (attributes) {
-    x <- gsub('gr[ea]y\\s*(?=;)', '#bebebe', x, perl = TRUE)
+    x <- gsub('(?i)gr[ea]y\\s*(?=;)', '#bebebe', x, perl = TRUE)
 
     x <- paste(
       '<!DOCTYPE html>\n<html>\n<body>',
