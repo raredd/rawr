@@ -25,6 +25,7 @@ kmplot(
     "percent-cuminc-ci"),
   atrisk.digits = (!grepl("percent", atrisk.type)) * 2,
   atrisk.lines = TRUE,
+  atrisk.lines.adj = NA,
   atrisk.col = !atrisk.lines,
   atrisk.min = NULL,
   strata.lab = NULL,
@@ -82,8 +83,8 @@ kmplot(
 \arguments{
 \item{object}{an object of class \code{\link[survival]{survfit}} or
 \code{\link[survival]{survfit.coxph}}; note that for the latter some
-features are not available, e.g., \code{lr_test}, \code{tt_test},
-\code{hr_text}, \code{atrisk.type} and/or
+features are not available, e.g., \code{kmdiff}, \code{lr_test},
+\code{tt_test}, \code{hr_text}, \code{atrisk.type} and/or
 \code{times.type \%in\% c("atrisk", "events", "atrisk-events")}, etc.}
 
 \item{data}{(optional) the data frame used to create \code{s}, used to
@@ -139,6 +140,11 @@ number of events), \code{"atrisk-events"} (both), \code{"survival"}
 (see \code{atrisk.type}), number of digits past the decimal to keep}
 
 \item{atrisk.lines}{logical; draw lines next to strata in at-risk table}
+
+\item{atrisk.lines.adj}{a vector of length 2 giving the left and right
+adjustment for the at-risk lines in normalized units, e.g.,
+\code{c(0, 1)} and \code{c(-0.5, 0.5)} doubles the length by extending
+right-only and equally left and right, respectively}
 
 \item{atrisk.col}{logical or a vector with colors for at-risk table text;
 if \code{TRUE}, \code{col.surv} will be used}

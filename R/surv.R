@@ -59,8 +59,8 @@ stratify_formula <- function(formula, vars = NULL) {
 #' 
 #' @param object an object of class \code{\link[survival]{survfit}} or
 #'   \code{\link[survival]{survfit.coxph}}; note that for the latter some
-#'   features are not available, e.g., \code{lr_test}, \code{tt_test},
-#'   \code{hr_text}, \code{atrisk.type} and/or
+#'   features are not available, e.g., \code{kmdiff}, \code{lr_test},
+#'   \code{tt_test}, \code{hr_text}, \code{atrisk.type} and/or
 #'   \code{times.type \%in\% c("atrisk", "events", "atrisk-events")}, etc.
 #' @param data (optional) the data frame used to create \code{s}, used to
 #'   obtain some data not available in \code{survfit} objects; if not given,
@@ -104,6 +104,10 @@ stratify_formula <- function(formula, vars = NULL) {
 #' @param atrisk.pad extra padding between plot and at-risk table; additionally,
 #'   a vector of padding for each line in the at-risk table, recycled as needed
 #' @param atrisk.lines logical; draw lines next to strata in at-risk table
+#' @param atrisk.lines.adj a vector of length 2 giving the left and right
+#'   adjustment for the at-risk lines in normalized units, e.g.,
+#'   \code{c(0, 1)} and \code{c(-0.5, 0.5)} doubles the length by extending
+#'   right-only and equally left and right, respectively
 #' @param atrisk.col logical or a vector with colors for at-risk table text;
 #'   if \code{TRUE}, \code{col.surv} will be used
 #' @param atrisk.min optional integer to replace any at-risk counts
@@ -319,8 +323,9 @@ kmplot <- function(object, data = NULL,
                                    'cuminc', 'percent-cuminc',
                                    'cuminc-ci', 'percent-cuminc-ci'),
                    atrisk.digits = (!grepl('percent', atrisk.type)) * 2,
-                   atrisk.lines = TRUE, atrisk.col = !atrisk.lines,
-                   atrisk.min = NULL, strata.lab = NULL,
+                   atrisk.lines = TRUE, atrisk.lines.adj = NA,
+                   atrisk.col = !atrisk.lines, atrisk.min = NULL,
+                   strata.lab = NULL,
                    strata.expr = NULL, strata.order = seq_along(object$n),
                    extra.margin = 5, mar = NULL,
                    median = FALSE, digits.median = 0L, ci.median = TRUE,
@@ -360,7 +365,7 @@ kmplot <- function(object, data = NULL,
   
   ## coerce survfitcox object to mimic survfit
   if (inherits(object, 'survfitcox')) {
-    lr_test <- tt_test <- hr_text <- FALSE
+    kmdiff <- lr_test <- tt_test <- hr_text <- FALSE
     
     types <- c('survival', 'survival-ci', 'percent', 'percent-ci', 'cuminc',
                'percent-cuminc', 'cuminc-ci', 'percent-cuminc-ci')
@@ -624,26 +629,28 @@ kmplot <- function(object, data = NULL,
   if (atrisk.table) {
     ## labels for each row in at-risk table
     group.name.pos <- diff(usr[1:2]) / ifelse(atrisk.lines, -8, -16)
+    
+    if (identical(strata.lab, FALSE))
+      strata.lab <- ''
+    strata.lab <- if (!is.null(strata.expr))
+      parse(text = strata.expr) else as.list(strata.lab)
+    
+    for (ii in seq_along(strata.lab))
+      mtext(strata.lab[[ii]], side = 1L, at = group.name.pos, adj = 1, las = 1L,
+            line = line.pos[ii], col = col.atrisk[ii], cex = cex.atrisk[ii])
+    
+    ## draw matching lines for n at risk
+    atrisk.lines.adj <- rep_len(atrisk.lines.adj, 2L)
+    atrisk.lines.adj[is.na(atrisk.lines.adj)] <- 0
+    
     padding <- abs(group.name.pos / 8)
+    at <- c(group.name.pos + padding, 0 - 4 * padding)
+    at <- at + diff(at) * atrisk.lines.adj
     
-    if (!identical(unique(strata.lab), FALSE)) {
-      if (!is.null(strata.expr)) {
-        if (is.character(strata.expr))
-          strata.expr <- parse(text = strata.expr)
-        sapply(seq.int(length(strata.expr)), function(x)
-          mtext(strata.expr[[x]], side = 1L, line = line.pos[x], adj = 1,
-                at = group.name.pos, col = col.atrisk[x], las = 1L,
-                cex = cex.atrisk))
-      } else mtext(strata.lab, side = 1L, line = line.pos, adj = 1, las = 1L,
-                   col = col.atrisk, at = group.name.pos, cex = cex.atrisk)
-    }
-    
-    ## draw matching lines for n at risk  
     if (atrisk.lines)
       for (ii in seq.int(ng))
         ## mess with the 4 here to adjust the length of the atrisk.line
-        axis(1L, c(group.name.pos + padding, 0 - 4 * padding), xpd = NA,
-             labels = FALSE, line = line.pos[ii] + 0.6, lwd.ticks = 0,
+        axis(1L, at, FALSE, xpd = NA, line = line.pos[ii] + 0.5, lwd.ticks = 0,
              col = col.surv[ii], lty = lty.surv[ii], lwd = lwd.surv[ii])
     
     ## right-justify numbers
@@ -779,10 +786,7 @@ kmplot <- function(object, data = NULL,
     d2 <- ar$data
     d3 <- lapply(d2, function(x) x[, c('time', wh)])
     d3 <- suppressWarnings({
-      setNames(
-        merge2(d3, by = 'time', all = TRUE),
-        c('Time', strata.lab)
-      )
+      setNames(merge2(d3, by = 'time', all = TRUE), c('Time', strata.lab))
     })
     
     largs <- list(
