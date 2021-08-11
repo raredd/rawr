@@ -2723,7 +2723,7 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
     css.cell = 'padding: 0px 5px 0px; white-space: nowrap;',
     tfoot = tr(tfoot %||% sprintf('<font size=1>%s</font>', tf))
   )
-  args <- c(args, htmlArgs)
+  args <- modifyList(args, htmlArgs)
   ht <- do.call(htmlTable::htmlTable, args)
 
   structure(ht, class = 'htmlTable', p.value = pvn, call = args)
@@ -2794,7 +2794,7 @@ combine_tabler_stat2 <- function(l, correct = FALSE, format_pval = TRUE,
   }
   
   structure(
-    do.call(htmlTable::htmlTable, c(args, htmlArgs)),
+    do.call(htmlTable::htmlTable, modifyList(args, htmlArgs)),
     class = 'htmlTable', p.value = p, call = args
   )
 }
