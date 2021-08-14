@@ -2619,7 +2619,8 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
 
 #' @param id for \code{response2}, a vector of IDs
 #' @param ... additional arguments passed to \code{response}
-#' @param type see "Value" section
+#' @param type one of \code{"unconfirmed"}, \code{"confirmed"},
+#'   \code{"bsf_unconfirmed"}, or \code{"bsf_confirmed"}: see "Value" section
 #' 
 #' @rdname response
 #' 
@@ -2629,8 +2630,16 @@ response2 <- function(id, date, response, ...,
                                'bsf_unconfirmed', 'bsf_confirmed')) {
   type <- match.arg(type)
   data <- data.frame(id, date, response)[order(id, date), ]
-  data <- split(data, data$id)
   
+  if (any(idx <- duplicated(data))) {
+    warning(
+      'removing duplicated id-date-response observations:\n\t',
+      'check IDs: ', toString(unique(data$id[idx]))
+    )
+    data <- data[!idx, ]
+  }
+  
+  data <- split(data, data$id)
   resp <- lapply(data, function(x)
     cbind(id = x$id[1L], response(x$date, x$response, ...)[[type]]))
   

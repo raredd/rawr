@@ -86,7 +86,8 @@ CR to PR is not progression but CR to SD or MR is progression)}
 
 \item{...}{additional arguments passed to \code{response}}
 
-\item{type}{see "Value" section}
+\item{type}{one of \code{"unconfirmed"}, \code{"confirmed"},
+\code{"bsf_unconfirmed"}, or \code{"bsf_confirmed"}: see "Value" section}
 }
 \value{
 A list with the following elements:
