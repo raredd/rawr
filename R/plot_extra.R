@@ -1145,7 +1145,7 @@ na.points <- function(x = NULL, y = NULL, xat = NULL, yat = NULL,
 #' 
 #' @examples
 #' op <- par(mar = c(5, 5, 5, 5))
-#' plot(1)
+#' plot(1, ylim = c(0, 100))
 #' labeller(fig = 'A')
 #' labeller(fig = 'A', at = c(0.025, 0.9), args.fig = list(font = 2, cex = 2))
 #' labeller(sub = 'this is a\nplot label')
@@ -1176,7 +1176,7 @@ labeller <- function(fig = NULL, sub = NULL, side = 3L, pad = NULL, at = c(0.05,
   )
   
   pad <- if (is.null(pad))
-    strheight(sub, cex = args.sub$cex %||% par('cex')) * 2 else pad[1L]
+    strheight(sub, 'fig', args.sub$cex %||% par('cex')) * 4 else pad[1L]
   
   usr <- par('usr')
   

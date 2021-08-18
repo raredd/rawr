@@ -36,7 +36,7 @@ Adds a figure label or sub label to an existing plot.
 }
 \examples{
 op <- par(mar = c(5, 5, 5, 5))
-plot(1)
+plot(1, ylim = c(0, 100))
 labeller(fig = 'A')
 labeller(fig = 'A', at = c(0.025, 0.9), args.fig = list(font = 2, cex = 2))
 labeller(sub = 'this is a\nplot label')
