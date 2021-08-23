@@ -2858,8 +2858,7 @@ get_tabler_stat_n <- function(x, pct = TRUE, use_labels = TRUE,
 #'   sample size in the first stage; and 3) the sample size in the second stage
 #'
 #'   if more than three integers are given, the remaining should indicate the
-#'   columns which should be calculated as two-stage CIs; usually this is only
-#'   one value but multiple are accepted
+#'   column(s) which should be calculated as two-stage CIs
 #'
 #' @family tabler
 #'
@@ -2941,7 +2940,11 @@ tabler_resp <- function(x, r_or_better = levels(x)[3:2], conf = 0.95,
   )
 
   if (!identical(two_stage, FALSE)) {
-    two_idx   <- tail(two_stage, -3L)
+    ## define specific CIs to use for two-stage
+    two_idx <- tail(two_stage, -3L)
+    ## if none are given then do all
+    if (!length(two_idx))
+      two_idx <- seq_along(res)
     two_stage <- two_stage[1:3]
 
     if (two_stage[1L] > two_stage[2L] || two_stage[1L] > two_stage[3L])
@@ -2988,8 +2991,8 @@ tabler_resp <- function(x, r_or_better = levels(x)[3:2], conf = 0.95,
 }
 
 resp1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
-  # rawr:::resp1(x, levels(x),    .9, 0L, TRUE, TRUE, TRUE, FALSE)
-  # rawr:::resp1(x, c('CR','PR'), .9, 0L, TRUE, TRUE, TRUE, FALSE)
+  # rawr:::resp1(x, levels(x),    0.9, 0L, TRUE, TRUE, TRUE, FALSE)
+  # rawr:::resp1(x, c('CR','PR'), 0.9, 0L, TRUE, TRUE, TRUE, FALSE)
   FUN <- if ('CR' %ni% r || which(r %in% 'CR') == 1L)
     identity else rev
   tbl <- table(x)[FUN(r)]

@@ -43,8 +43,7 @@ optionally, fraction and percent out of \code{total} is added}
   sample size in the first stage; and 3) the sample size in the second stage
 
   if more than three integers are given, the remaining should indicate the
-  columns which should be calculated as two-stage CIs; usually this is only
-  one value but multiple are accepted}
+  column(s) which should be calculated as two-stage CIs}
 }
 \description{
 Convenience function to calculate proportions and confidence intervals and
