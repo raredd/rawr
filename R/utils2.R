@@ -2641,12 +2641,12 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
   res <- gsub('%', '', l$output_data, fixed = TRUE)
   p <- c(
     '0 (0)' = '^\\s*0\\s*\\(\\s*0\\s*\\)\\s*$',
-    '0 (0)' = '\\s*0\\s*\\(\\s*0\\s*\\)\\s*', ## targets % missing row
+    '0 (0)' = '(?<=>)\\s*0\\s*\\(\\s*0\\s*\\)\\s*', ## targets % missing row with tags
     '0' = '^\\s*0\\s*$',
     'NA (NA - NA)' = '^\\s*NA\\s*\\(\\s*NA\\s*-\\s*NA\\s*\\)\\s*$'
   )
   if (is.character(zeros))
-    res <- gsub(paste(p, collapse = '|'), zeros, res)
+    res <- gsub(paste(p, collapse = '|'), zeros, res, perl = TRUE)
 
   ## text/daggers used in footnotes
   tt <- strsplit(sapply(l$l, attr, 'tfoot'), ', (?=<sup>)', perl = TRUE)
@@ -2723,7 +2723,7 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
     css.cell = 'padding: 0px 5px 0px; white-space: nowrap;',
     tfoot = tr(tfoot %||% sprintf('<font size=1>%s</font>', tf))
   )
-  args <- modifyList(args, htmlArgs)
+  args <- modifyList(args, htmlArgs %||% list())
   ht <- do.call(htmlTable::htmlTable, args)
 
   structure(ht, class = 'htmlTable', p.value = pvn, call = args)
