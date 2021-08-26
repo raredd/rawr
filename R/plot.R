@@ -2728,13 +2728,15 @@ pplot.default <- function(x, at = seq_along(x), pad = 0.05,
     }
   })
   
-  legend.text <- legend.text %||% base::names(x[[1L]])
-  if (!is.null(legend.text)) {
-    col <- if (col[1L] == col[2L])
-      1L else col[1:2]
-    legend(
-      'topleft', legend = legend.text, col = col, pch = pch, bty = 'n'
-    )
+  if (!identical(legend.text, FALSE)) {
+    legend.text <- legend.text %||% base::names(x[[1L]])
+    if (!is.null(legend.text)) {
+      col <- if (col[1L] == col[2L])
+        1L else col[1:2]
+      legend(
+        'topleft', legend = legend.text, col = col, pch = pch, bty = 'n'
+      )
+    }
   }
   
   if (quantile) {

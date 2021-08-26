@@ -503,14 +503,21 @@ col_scaler <- function(x, colors, na.color = NA, breaks = NULL, alpha = 1,
   else if (colors[1L] %in% pals)
     get(colors, mode = 'function')
   else as.character(colors)
-
+  
+  ox <- x
   x <- if (is.factor(x) || is.character(x) || is.integer(x))
     as.integer(as.factor(x)) else as.numeric(x)
   na <- is.na(x)
 
-  ## add alpha
+  ## add alpha for single colors
   if (is.character(colors) & length(colors) == 1L) {
     res <- tcol(colors, alpha = rescaler(x, c(alpha.min, to[2L]), from))
+    return(replace(res, na, na.color))
+  }
+  
+  ## if factor-like, use 1-1 mapping
+  if (is.factor(ox)) {
+    res <- colors[as.integer(ox)]
     return(replace(res, na, na.color))
   }
 
@@ -1203,7 +1210,8 @@ labeller <- function(fig = NULL, sub = NULL, side = 3L, pad = NULL, at = c(0.05,
   )
   args.fig <- modifyList(args, args.fig)
   
-  do.call('rect', args.rect)
+  if (!is.null(sub))
+    do.call('rect', args.rect)
   do.call('text', args.sub)
   do.call('text', args.fig)
   
