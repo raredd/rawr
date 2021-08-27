@@ -637,7 +637,7 @@ kmplot <- function(object, data = NULL,
     
     for (ii in seq_along(strata.lab))
       mtext(strata.lab[[ii]], side = 1L, at = group.name.pos, adj = 1, las = 1L,
-            line = line.pos[ii], col = col.atrisk[ii], cex = cex.atrisk[ii])
+            line = line.pos[ii], col = col.atrisk[ii], cex = cex.atrisk)
     
     ## draw matching lines for n at risk
     atrisk.lines.adj <- rep_len(atrisk.lines.adj, 2L)
