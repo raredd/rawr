@@ -10,6 +10,7 @@ factor2(
   exclude = NA,
   ordered = is.ordered(x),
   regex = FALSE,
+  keep.na = TRUE,
   ...
 )
 }
@@ -31,6 +32,10 @@ factor2(
 of regular expressions or otherwise matched exactly (unless \code{levels}
 is flagged with \code{(?r)})}
 
+\item{keep.na}{logical; if \code{TRUE}, \code{NA} values in \code{x} will
+be kept, useful for \code{levels = list(label = NULL)} situations where
+\code{NA} should be unchanged (or changed if \code{keep.na = FALSE})}
+
 \item{...}{additional arguments passed to \code{\link{grep}} when using
 regular expressions}
 }
@@ -39,6 +44,7 @@ Convenience function to combine level(s) of a vector into a new or existing
 factor level(s) by unique value and/or regular expression.
 
 Requires \code{R >= 3.5.0} for duplicated labels in \code{\link{factor}}s.
+For \code{R < 3.5.0}, see \code{\link{combine_levels}}.
 }
 \examples{
 ## combine numeric, character, or factor
@@ -62,6 +68,13 @@ factor2(x, list(a = 'a', b = 'b|c|e'), regex = TRUE)
 x <- c('a', 'aaa', 'abc', 'def')
 factor2(x, list(a = 'a', b = '(?r)a.', d = '(?r)d'))
 factor2(x, list(a = 'a', b = '(?r)a.', d = 'd'))
+
+## working with NAs
+x <- c(1:5, NA)
+# factor(x, x, c(1:5, 5), exclude = NA) ## default for factor - error
+factor(x, x, c(1:5, 5), exclude = FALSE) ## converts NA
+factor2(x, list(x = NULL), exclude = FALSE, keep.na = FALSE) ## converts NA
+factor2(x, list(x = NULL), keep.na = TRUE) ## keeps NA
 
 }
 \seealso{

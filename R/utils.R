@@ -2753,6 +2753,7 @@ xtable <- function(x, by, digits = 0L, total = TRUE, pct.sign = FALSE,
 #' factor level(s) by unique value and/or regular expression.
 #' 
 #' Requires \code{R >= 3.5.0} for duplicated labels in \code{\link{factor}}s.
+#' For \code{R < 3.5.0}, see \code{\link{combine_levels}}.
 #' 
 #' @param x a vector of data, usually taking a small number of distinct values
 #' @param levels a \emph{named} list of unique values or regular expressions
@@ -2767,6 +2768,9 @@ xtable <- function(x, by, digits = 0L, total = TRUE, pct.sign = FALSE,
 #' @param regex logical; if \code{TRUE}, \code{levels} is treated as a list
 #'   of regular expressions or otherwise matched exactly (unless \code{levels}
 #'   is flagged with \code{(?r)})
+#' @param keep.na logical; if \code{TRUE}, \code{NA} values in \code{x} will
+#'   be kept, useful for \code{levels = list(label = NULL)} situations where
+#'   \code{NA} should be unchanged (or changed if \code{keep.na = FALSE})
 #' @param ... additional arguments passed to \code{\link{grep}} when using
 #'   regular expressions
 #' 
@@ -2796,10 +2800,18 @@ xtable <- function(x, by, digits = 0L, total = TRUE, pct.sign = FALSE,
 #' factor2(x, list(a = 'a', b = '(?r)a.', d = '(?r)d'))
 #' factor2(x, list(a = 'a', b = '(?r)a.', d = 'd'))
 #' 
+#' ## working with NAs
+#' x <- c(1:5, NA)
+#' # factor(x, x, c(1:5, 5), exclude = NA) ## default for factor - error
+#' factor(x, x, c(1:5, 5), exclude = FALSE) ## converts NA
+#' factor2(x, list(x = NULL), exclude = FALSE, keep.na = FALSE) ## converts NA
+#' factor2(x, list(x = NULL), keep.na = TRUE) ## keeps NA
+#' 
 #' @export
 
 factor2 <- function(x = character(0L), levels = NULL, exclude = NA,
-                    ordered = is.ordered(x), regex = FALSE, ...) {
+                    ordered = is.ordered(x), regex = FALSE,
+                    keep.na = TRUE, ...) {
   if (is.null(levels))
     return(as.factor(x))
   
@@ -2829,6 +2841,9 @@ factor2 <- function(x = character(0L), levels = NULL, exclude = NA,
   key$ind <- as.character(key$ind)
   ext <- setdiff(levels(factor(x)), key$values)
   key <- rbind(data.frame(values = ext, ind = ext), key)
+  
+  if (keep.na)
+    key <- key[!is.na(key$values), ]
   
   if (NA %in% exclude)
     key <- key[!is.na(key$ind), ]
