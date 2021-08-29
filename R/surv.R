@@ -965,6 +965,14 @@ kmplot <- function(object, data = NULL,
   
   panel.last
   
+  scall <- object$call
+  scall$formula <- sform
+  ccall <- scall
+  ccall[[1L]] <- quote(coxph)
+  scall[[1L]] <- quote(survdiff)
+  
+  dat <- structure(dat, call = object$call, scall = scall, ccall = ccall)
+  
   invisible(dat)
 }
 
@@ -1969,6 +1977,7 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
     
     if (strata == '1')
       strata <- ''
+    
     if (!is.null(s$strata)) {
       ns <- names(s$strata)
       ns <- if (mlabs || isTRUE(strata_lab)) ns else
@@ -1991,7 +2000,7 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
     if (!plot)
       return(s0)
     
-    kmplot(
+    km <- kmplot(
       s, add = add, ...,
       legend = legend, main = names(sp)[x], ylab = ylab,
       lr_test = lr_test, stratify = stratify,
@@ -2009,11 +2018,20 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
               at = 0, adj = 0, font = 3L)
         
         ## figure label - top left outer margin (eg, A, B, C)
-        mtext(fig[x], side = 3L, line = 0.25, outer = FALSE,
-              at = 0 - par('usr')[2L] * 0.05, font = 2, cex = 1.2)
+        mtext(
+          fig[x], side = 3L, line = 0.25, outer = FALSE,
+          at = 0 - par('usr')[2L] * 0.05,
+          font = par('font.main'), cex = par('cex.main')
+        )
       }
     )
-    s0
+    
+    structure(
+      s0,
+      call = attr(km, 'call'),
+      scall = attr(km, 'scall'),
+      ccall = attr(km, 'ccall')
+    )
   })
   names(l) <- names(sp) %||% strata
   
