@@ -1217,3 +1217,80 @@ labeller <- function(fig = NULL, sub = NULL, side = 3L, pad = NULL, at = c(0.05,
   
   invisible(NULL)
 }
+
+#' mlegend
+#' 
+#' Stack multiple legends.
+#' 
+#' @param x,y the x- and y-coordinates to be used or a keyword, see
+#'   \code{\link[grDevices]{xy.coords}}; note that this is only used for
+#'   the first legend, and the coordinates for subsequent legends are
+#'   automatically calculated from the previous legend
+#' @param legend a list or list of lists of arguments passed to
+#'   \code{\link[graphics]{legend}} with each list corresponding to a single
+#'   legend
+#' @param horizontal logical; if \code{TRUE}, stack legends horizontally
+#' @param ... additional arguments passed to \emph{all} legends, e.g., to set
+#'   defaults; these will be over-ridden in individual legends by passing a
+#'   list of arguments to \code{legend}
+#' 
+#' @examples
+#' op <- par(mfrow = c(1, 2))
+#' plot(1)
+#' l <- list(
+#'   legend = 'first\nlegend', fill = 'red'
+#' )
+#' mlegend('topleft', legend = l)
+#' 
+#' l <- list(
+#'   l,
+#'   list(
+#'     legend = 'second legend', fill = 'blue'
+#'   ),
+#'   list(
+#'     legend = letters[1:5], pch = 16, col = 1:5, bty = 'n'
+#'   ),
+#'   list(
+#'     legend = LETTERS[1:3], horiz = TRUE, lty = 1, col = 1:3
+#'   ),
+#'   list(
+#'     legend = 'final legend'
+#'   )
+#' )
+#' 
+#' mlegend('left', legend = l, horizontal = TRUE)
+#' 
+#' ## dot arguments will be applied to all legends
+#' mlegend('topright', legend = l, bty = 'n', inset = c(-0.5, 0), xpd = NA)
+#' par(op)
+#' 
+#' @export
+
+mlegend <- function(x, y = NULL, legend, horizontal = FALSE, ...) {
+  stopifnot(islist(legend))
+  if (!islist(legend[[1L]]))
+    legend <- list(legend)
+  nl <- length(legend)
+  
+  lg <- res <- do.call(
+    'legend', modifyList(list(x = x, y = y, ...), legend[[1L]])
+  )
+  
+  if (nl == 1L)
+    return(invisible(lg))
+  
+  for (ii in 2:nl) {
+    if (horizontal) {
+      x <- lg$rect$left + lg$rect$w
+      y <- lg$rect$top
+    } else {
+      x <- lg$rect$left
+      y <- lg$rect$top - lg$rect$h
+    }
+    
+    lg <- do.call('legend', modifyList(list(x = x, y = y, ...), legend[[ii]]))
+    res <- c(res, lg)
+  }
+  
+  invisible(res)
+}
