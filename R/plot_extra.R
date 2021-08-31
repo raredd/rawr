@@ -831,7 +831,7 @@ imgpal <- function(path, n = 10L, options = '') {
 
   res <- list(
     filename = gsub(', n.*', '', res[1L]),
-    n_unique = type.convert(gsub('n=(\\d+)$|.', '\\1', res[1L])),
+    n_unique = type.convert(gsub('n=(\\d+)$|.', '\\1', res[1L]), as.is = TRUE),
     col = gsub('(#.{6})|.', '\\1', dat[, 2L]), counts = dat[, 1L],
     call = gsub('\\s{2,}', ' ', gsub('\\\n', ' ', cmd, fixed = TRUE)),
     magick = res

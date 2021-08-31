@@ -16,7 +16,7 @@
 # getPvalCAtest, getPvalCuzick, getPvalJTtest, getPvalKruskal, getPvalKWtest,
 # getPvalLogrank, getPvalTtest, getPval_, guess_test, describeConfint,
 # describeFactors, describeSurv, tabler_stat_list, tabler_stat_html,
-# guess_digits, get_tabler_stat_n, resp1, r_or_better1, inject_
+# guess_digits, get_tabler_stat_n, resp1, r_or_better1
 ###
 
 
@@ -644,7 +644,7 @@ roundr.default <- function(x, digits = 1L, format = TRUE, check = TRUE,
   res[is.na(x)] <- NA
   
   if (check) {
-    current <- type.convert(gsub(',|\\.0+$', '', res))
+    current <- type.convert(gsub(',|\\.0+$', '', res), as.is = TRUE)
     target <- c(round(x, digits))
     if (any(current != target, na.rm = TRUE))
       warning(
@@ -2991,27 +2991,26 @@ tabler_resp <- function(x, r_or_better = levels(x)[3:2], conf = 0.95,
 }
 
 resp1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
-  # rawr:::resp1(x, levels(x),    0.9, 0L, TRUE, TRUE, TRUE, FALSE)
-  # rawr:::resp1(x, c('CR','PR'), 0.9, 0L, TRUE, TRUE, TRUE, FALSE)
-  FUN <- if ('CR' %ni% r || which(r %in% 'CR') == 1L)
-    identity else rev
-  tbl <- table(x)[FUN(r)]
+  # rawr:::resp1(x, levels(x),     0.9, 0L, TRUE, TRUE, TRUE, FALSE)
+  # rawr:::resp1(x, c('CR', 'PR'), 0.9, 0L, TRUE, TRUE, TRUE, FALSE)
+  tbl <- table(x)[rev(r)]
 
   res <- if (all(is.na(x)))
     rep('-', length(r))
   else sapply(tbl, function(X)
     if (identical(two, FALSE))
       binconr(X, sum(tbl), conf, digits, TRUE, frac,
-              show_conf, pct.sign, 'exact')
-    else binconr(c(two[1L], X), two[2:3], conf, digits, TRUE, frac,
-                 show_conf, pct.sign, 'two-stage')
+              show_conf, pct.sign, 'exact', TRUE)
+    else
+      binconr(c(two[1L], X), two[2:3], conf, digits, TRUE, frac,
+              show_conf, pct.sign, 'two-stage', TRUE)
   )
 
-  setNames(res, FUN(r))
+  setNames(res, rev(r))
 }
 
 r_or_better1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
-  # rawr:::r_or_better1(x, unique(x), .9, 0L, TRUE, TRUE, TRUE, FALSE)
+  # rawr:::r_or_better1(x, unique(x), 0.9, 0L, TRUE, TRUE, TRUE, FALSE)
   x[x %ni% r] <- NA
   x <- na.omit(x)
 
@@ -3021,9 +3020,10 @@ r_or_better1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
     sapply(seq_along(r), function(X)
       if (identical(two, FALSE))
         binconr(sum(x %in% r[X:length(r)]), length(x), conf,
-                digits, TRUE, frac, show_conf, pct.sign, 'exact')
-      else binconr(c(two[1L], sum(x %in% r[X:length(r)])), two[2:3], conf,
-                   digits, TRUE, frac, show_conf, pct.sign, 'two-stage')
+                digits, TRUE, frac, show_conf, pct.sign, 'exact', TRUE)
+      else
+        binconr(c(two[1L], sum(x %in% r[X:length(r)])), two[2:3], conf,
+                digits, TRUE, frac, show_conf, pct.sign, 'two-stage', TRUE)
     )
 
   setNames(res, paste(r, 'or better'))
@@ -3150,11 +3150,11 @@ match_ctc <- function(..., version = 4L) {
 #' @export
 
 tox_worst <- function(data, id = 'id', desc = 'desc', grade = 'grade',
-                      code, version = 4L) {
+                      code = NULL, version = 4L) {
   if (!is.factor(data[, grade]))
     stop('\'grade\' should be a factor with proper order')
 
-  if (!missing(code)) {
+  if (!is.null(code)) {
     ctc <- match_ctc(data[, code], version = version)
     data$desc <- factor(ctc$tox_desc)
     desc <- 'desc'
@@ -3195,13 +3195,11 @@ tox_worst <- function(data, id = 'id', desc = 'desc', grade = 'grade',
 #' countr(x, n = 10, frac = TRUE)
 #' countr(x, n = 10, frac = TRUE, which = 2)
 #'
+#' ## using a character/factor vector, not counts
 #' countr(names(x))
 #' countr(names(x), which = 1)
-#' countr(names(x), which = c(3, 1))
-#' countr(names(x), which = 'Silver')
-#'
-#' countr(names(x), lowcase = TRUE)
-#' countr(names(x), frac = TRUE)
+#' countr(names(x), which = c(3, 1), frac = TRUE)
+#' countr(names(x), which = 'Silver', lowcase = TRUE)
 #'
 #' @export
 
@@ -3221,30 +3219,29 @@ countr <- function(x, n, lowcase = NA, frac = FALSE, digits = 0L,
   if (is.na(lowcase) || !is.logical(lowcase))
     lowcase <- NULL
 
-  x <- x[which]
   n <- setNames(rep_len(n, length(x)), names(x))[which]
+  x <- x[which]
   
   if (!is.null(conf)) {
     conf <- Map(binconr, x, n, conf = conf, show_conf = show_conf, percent = TRUE)
     conf <- gsub('.*\\(|\\)', '', conf)
   }
-
-  iprint(
-    sprintf(
-      '%s (n = %s%s; %s%%%s)',
-      if (isTRUE(lowcase))
-        tolower(names(x))
-      else if (identical(lowcase, FALSE))
-        toupper(names(x)) else names(x),
-      roundr(x, 0L),
-      if (frac)
-        paste0('/', n) else '',
-      roundr(as.numeric(x) / n * 100, digits),
-      if (is.null(conf))
-        ''
-      else paste(';', conf)
-    )
+  
+  res <- sprintf(
+    '%s (n = %s%s; %s%%%s)',
+    if (isTRUE(lowcase))
+      tolower(names(x))
+    else if (identical(lowcase, FALSE))
+      toupper(names(x)) else names(x),
+    roundr(x, 0L),
+    if (frac)
+      paste0('/', n) else '',
+    roundr(as.numeric(x) / n * 100, digits),
+    if (is.null(conf))
+      '' else paste(';', conf)
   )
+  
+  iprint(res)
 }
 
 #' Date parse
@@ -3407,7 +3404,7 @@ combine_table2 <- function(x, tspanner, n.tspanner, cgroup, n.cgroup,
 #'
 #' @examples
 #' ht <- htmlTable::htmlTable(
-#'   inject_div(head(cars), c(2,2), style = 'border: dashed 1px;')
+#'   inject_div(head(cars), c(2, 2), style = 'border: dashed 1px;')
 #' )
 #' structure(ht, class = 'htmlTable')
 #'
@@ -3418,14 +3415,16 @@ combine_table2 <- function(x, tspanner, n.tspanner, cgroup, n.cgroup,
 #'   )
 #' )
 #' structure(ht, class = 'htmlTable')
-#'
+#' 
+#' ## where as a matrix
 #' ht <- htmlTable::htmlTable(
 #'   inject_div(head(cars),
-#'              rbind(c(2,2), c(2,1), c(5,2)),
+#'              rbind(c(2, 2), c(2, 1), c(5, 2)),
 #'              'background-color: yellow;')
 #' )
 #' structure(ht, class = 'htmlTable')
-#'
+#' 
+#' ## where as a vector
 #' ht <- htmlTable::htmlTable(
 #'   inject_div(head(cars),
 #'              c(2,2,2,1,5,2),
@@ -3441,25 +3440,25 @@ combine_table2 <- function(x, tspanner, n.tspanner, cgroup, n.cgroup,
 inject_div <- function(x, where, style) {
   if (missing(style))
     return(x)
-
-  style <- inject_(x, where, style)
+  
+  inject <- function(x, where, what) {
+    where <- if (missing(where) & !missing(what) || !length(where))
+      which(row(x) > 0L, arr.ind = TRUE)
+    else matrix(where, ncol = 2L, byrow = !is.matrix(where))
+    
+    what <- rep_len(what, nrow(where))
+    mat  <- matrix('', nrow(x), ncol(x))
+    mat[where] <- what
+    
+    mat
+  }
+  
+  style <- inject(x, where, style)
   where <- style != ''
 
   x[where] <- sprintf('<div style=\'%s\'>%s</div>',
                       gsub(';*$', ';', style[where]), x[where])
   x
-}
-
-inject_ <- function(x, where, what) {
-  where <- if (missing(where) & !missing(what) || !length(where))
-    which(row(x) > 0L, arr.ind = TRUE)
-  else matrix(where, ncol = 2L, byrow = !is.matrix(where))
-
-  what <- rep_len(what, nrow(where))
-  mat  <- matrix('', nrow(x), ncol(x))
-  mat[where] <- what
-  
-  mat
 }
 
 #' Letter case

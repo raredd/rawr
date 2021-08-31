@@ -21,7 +21,7 @@ Inject an html division tag with style attribute.
 }
 \examples{
 ht <- htmlTable::htmlTable(
-  inject_div(head(cars), c(2,2), style = 'border: dashed 1px;')
+  inject_div(head(cars), c(2, 2), style = 'border: dashed 1px;')
 )
 structure(ht, class = 'htmlTable')
 
@@ -33,13 +33,15 @@ ht <- htmlTable::htmlTable(
 )
 structure(ht, class = 'htmlTable')
 
+## where as a matrix
 ht <- htmlTable::htmlTable(
   inject_div(head(cars),
-             rbind(c(2,2), c(2,1), c(5,2)),
+             rbind(c(2, 2), c(2, 1), c(5, 2)),
              'background-color: yellow;')
 )
 structure(ht, class = 'htmlTable')
 
+## where as a vector
 ht <- htmlTable::htmlTable(
   inject_div(head(cars),
              c(2,2,2,1,5,2),

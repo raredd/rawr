@@ -46,12 +46,10 @@ countr(x, conf = 0.95)
 countr(x, n = 10, frac = TRUE)
 countr(x, n = 10, frac = TRUE, which = 2)
 
+## using a character/factor vector, not counts
 countr(names(x))
 countr(names(x), which = 1)
-countr(names(x), which = c(3, 1))
-countr(names(x), which = 'Silver')
-
-countr(names(x), lowcase = TRUE)
-countr(names(x), frac = TRUE)
+countr(names(x), which = c(3, 1), frac = TRUE)
+countr(names(x), which = 'Silver', lowcase = TRUE)
 
 }
