@@ -1737,6 +1737,7 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #'   if \code{FALSE}, only non-missing levels count towards proportions
 #' @param iqr logical; if \code{TRUE}, the interquartile range is used
 #'   instead of the full range (default) for continuous variables
+#' @param total logical; if \code{TRUE}, total column will be shown
 #' @param continuous_fn a function to describe continuous variables (default
 #'   is to show median and range); see \code{\link[Gmisc]{getDescriptionStatsBy}}
 #' @param ... additional arguments passed to
@@ -1826,7 +1827,7 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
                         color_missing = TRUE, dagger = TRUE,
                         color_cell_by = c('none', 'value', 'pct'),
                         cell_color = palette()[1:2], confint = FALSE,
-                        include_na_in_prop = TRUE, iqr = FALSE,
+                        include_na_in_prop = TRUE, iqr = FALSE, total = TRUE,
                         continuous_fn = function(...)
                           Gmisc::describeMedian(..., iqr = iqr), ...) {
   fun <- deparse(substitute(FUN))
@@ -1916,6 +1917,9 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
       sprintf('<font color="%s">%s</font>',
               col_scaler(as.numeric(pp), cell_color), res[wh, -1L])
   }
+  
+  if (identical(total, FALSE))
+    res <- res[, -1L, drop = FALSE]
 
   ## no stat fn, no pvalue column
   if (identical(NA, FUN))
@@ -2379,6 +2383,7 @@ describeSurv <- function(x, y, include_NA = TRUE, percent = TRUE,
 #'   \code{\link{tabler_stat}}
 #' @param confint optional vector of \code{varname}(s) to summarize as
 #'   confidence intervals
+#' @param total logical; if \code{TRUE}, total column will be shown
 #' @param include_na_in_prop logical; if \code{TRUE} (default), the number of
 #'   missing values is included when calculating proportions for factor levels;
 #'   if \code{FALSE}, only non-missing levels count towards proportions
@@ -2472,7 +2477,7 @@ describeSurv <- function(x, y, include_NA = TRUE, percent = TRUE,
 
 tabler_stat2 <- function(data, varname, byvar = NULL,
                          varname_label = names(varname), byvar_label = names(byvar),
-                         digits = NULL, FUN = NULL, confint = FALSE,
+                         digits = NULL, FUN = NULL, confint = FALSE, total = TRUE,
                          include_na_in_prop = TRUE, iqr = FALSE,
                          format_pval = TRUE, color_pval = TRUE, correct = FALSE,
                          color_missing = TRUE, dagger = TRUE,
@@ -2515,12 +2520,12 @@ tabler_stat2 <- function(data, varname, byvar = NULL,
   l <- tabler_stat_list(
     data, varname, byvar, varname_label, byvar_label, digits, FUN,
     format_pval, color_pval, color_missing, dagger, color_cell_by,
-    cell_color, confint, include_na_in_prop, iqr, statArgs
+    cell_color, confint, include_na_in_prop, iqr, statArgs, total
   )
 
   tabler_stat_html(
     l, align, rgroup, cgroup, tfoot, tfoot2, htmlArgs,
-    zeros, group, correct, format_pval, clean_daggers
+    zeros, group, correct, format_pval, clean_daggers, total
   )
 }
 
@@ -2530,7 +2535,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
                              color_missing = TRUE, dagger = TRUE,
                              color_cell_by = 'none', cell_color = NULL,
                              confint = NULL, include_na_in_prop = TRUE,
-                             iqr = FALSE, statArgs = NULL) {
+                             iqr = FALSE, statArgs = NULL, total = TRUE) {
   if (is.null(byvar)) {
     FUN   <- NA
     byvar <- '_by_var_'
@@ -2579,7 +2584,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
     f = tabler_stat, data, varname, byvar, digits, FUN,
     list(format_pval), color_pval, color_missing, dagger,
     color_cell_by, cell_color, list(confint %||% '')),
-    include_na_in_prop, iqr, statArgs)
+    include_na_in_prop, iqr, total, statArgs)
   )
   
   tbl <- lapply(l, function(x)
@@ -2603,6 +2608,10 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
   n.rgroup <- unname(sapply(rgroup, function(x) nrow(tbl[[x]]) %||% 1L))
   cgroup   <- c('', byvar_label, '')
   n.cgroup <- c(1L, nlevels(.data[, byvar]), 1L)
+  if (identical(total, FALSE)) {
+    cgroup <- cgroup[-1L]
+    n.cgroup <- n.cgroup[-1L]
+  }
 
   if (!pval) {
     cgroup   <- head(cgroup, -1L)
@@ -2622,7 +2631,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
 tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
                              tfoot = NULL, tfoot2 = NULL, htmlArgs = NULL,
                              zeros = NULL, group = NULL, correct = FALSE,
-                             format_pval = TRUE, clean_daggers = FALSE) {
+                             format_pval = TRUE, clean_daggers = FALSE, total = TRUE) {
   stopifnot(inherits(l, 'htmlStat'))
 
   tr <- function(x) {
@@ -2635,6 +2644,9 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
   }
 
   cn <- c(get_tabler_stat_n(l$data[, l$byvar]), '<em>p-value</em>')
+  if (identical(total, FALSE))
+    cn <- cn[-1L]
+  
   colnames(l$output_data) <- if (noby)
     cn[1L] else if (l$pval) cn else head(cn, -1L)
 

@@ -13,6 +13,7 @@ tabler_stat2(
   digits = NULL,
   FUN = NULL,
   confint = FALSE,
+  total = TRUE,
   include_na_in_prop = TRUE,
   iqr = FALSE,
   format_pval = TRUE,
@@ -66,6 +67,8 @@ association between each \code{varname} and \code{byvar}; see
 
 \item{confint}{optional vector of \code{varname}(s) to summarize as
 confidence intervals}
+
+\item{total}{logical; if \code{TRUE}, total column will be shown}
 
 \item{include_na_in_prop}{logical; if \code{TRUE} (default), the number of
 missing values is included when calculating proportions for factor levels;

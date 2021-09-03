@@ -19,6 +19,7 @@ tabler_stat(
   confint = FALSE,
   include_na_in_prop = TRUE,
   iqr = FALSE,
+  total = TRUE,
   continuous_fn = function(...) Gmisc::describeMedian(..., iqr = iqr),
   ...
 )
@@ -68,6 +69,8 @@ if \code{FALSE}, only non-missing levels count towards proportions}
 
 \item{iqr}{logical; if \code{TRUE}, the interquartile range is used
 instead of the full range (default) for continuous variables}
+
+\item{total}{logical; if \code{TRUE}, total column will be shown}
 
 \item{continuous_fn}{a function to describe continuous variables (default
 is to show median and range); see \code{\link[Gmisc]{getDescriptionStatsBy}}}
