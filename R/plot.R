@@ -2462,7 +2462,7 @@ bplot <- function(data, varname, byvar, varname_label = names(varname),
   dev.hold()
   
   lo <- layout(t(c(2, 1, 3)), widths = c(3, 3.5, 3))
-  par(mar = c(5, 0, 3, 0), oma = c(0, 1, 0, 1), family = 'serif')
+  par(mar = c(5, 0, 3, 0), oma = c(0, 1, 0, 1))
   par(...)
   
   col <- if (show_overall & length(col) == 2L)
