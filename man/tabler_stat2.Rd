@@ -100,7 +100,8 @@ to each cell (for html output); one of \code{"none"}, \code{"value"}, or
 \code{\link[Gmisc]{getDescriptionStatsBy}}}
 
 \item{align, rgroup, cgroup, tfoot}{optional arguments passed to
-\code{\link[htmlTable]{htmlTable}}}
+\code{\link[htmlTable]{htmlTable}}; if \code{cgroup = FALSE}, no column
+spanners will be shown}
 
 \item{tfoot2}{optional footnote(s) appended to \code{tfoot}}
 

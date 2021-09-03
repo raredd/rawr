@@ -2406,7 +2406,8 @@ describeSurv <- function(x, y, include_NA = TRUE, percent = TRUE,
 #' @param statArgs a named list of additional arguments passed to
 #'   \code{\link[Gmisc]{getDescriptionStatsBy}}
 #' @param align,rgroup,cgroup,tfoot optional arguments passed to
-#'   \code{\link[htmlTable]{htmlTable}}
+#'   \code{\link[htmlTable]{htmlTable}}; if \code{cgroup = FALSE}, no column
+#'   spanners will be shown
 #' @param tfoot2 optional footnote(s) appended to \code{tfoot}
 #' @param htmlArgs a named list of additional arguments passed to
 #'   \code{\link[htmlTable]{htmlTable}}
@@ -2735,6 +2736,10 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
     css.cell = 'padding: 0px 5px 0px; white-space: nowrap;',
     tfoot = tr(tfoot %||% sprintf('<font size=1>%s</font>', tf))
   )
+  
+  if (identical(cgroup, FALSE))
+    args$cgroup <- args$n.cgroup <- NULL
+  
   args <- modifyList(args, htmlArgs %||% list())
   ht <- do.call(htmlTable::htmlTable, args)
 
