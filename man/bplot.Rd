@@ -13,12 +13,17 @@ bplot(
   byvar_label = names(byvar),
   main = byvar_label,
   xlab = byvar_label,
+  names = NULL,
   col = c("dodgerblue4", "dodgerblue2"),
+  percent = FALSE,
   conf = 0.95,
-  digits = 2L,
+  digits = ifelse(percent, 0L, 2L),
   show_overall = TRUE,
   show_missing = TRUE,
   alpha_missing = 1,
+  widths = c(1, 2, 1),
+  col.bar = c(grey(0.95), NA),
+  group.bar = FALSE,
   ...
 )
 
@@ -30,12 +35,17 @@ tabler_bincon(
   byvar_label = names(byvar),
   main = byvar_label,
   xlab = byvar_label,
+  names = NULL,
   col = c("dodgerblue4", "dodgerblue2"),
+  percent = FALSE,
   conf = 0.95,
-  digits = 2L,
+  digits = ifelse(percent, 0L, 2L),
   show_overall = TRUE,
   show_missing = TRUE,
   alpha_missing = 1,
+  widths = c(1, 2, 1),
+  col.bar = c(grey(0.95), NA),
+  group.bar = FALSE,
   ...
 )
 }
@@ -55,8 +65,13 @@ and \code{byvar}}
 
 \item{main, xlab}{the x-axis and title labels}
 
+\item{names}{optional vector of names for each panel to override defaults}
+
 \item{col}{a vector of colors for each \code{varname}; the first will be
 used for the overall (if \code{show_overall = TRUE})}
+
+\item{percent}{logical; if \code{TRUE}, percentages will be shown instead of
+probabilities}
 
 \item{conf}{confidence level; passed to \code{\link{binconr}}}
 
@@ -68,6 +83,13 @@ overall and missing value confidence intervals are shown, respectively}
 \item{alpha_missing}{if \code{show_missing = TRUE}, the amount of alpha
 transparency added to missing value rows; passed to \code{\link{tcol}}}
 
+\item{widths}{a vector of widths for each panel, recycled as needed}
+
+\item{col.bar}{a vector of colors for background bars, recycled as needed}
+
+\item{group.bar}{logical; if \code{TRUE}, \code{col.bar} will be used once
+for each \code{varname}, recycled as needed}
+
 \item{...}{additional graphical parameters passed to \code{\link{par}}}
 }
 \description{
@@ -75,13 +97,16 @@ Wrapper function to create table of binomial confidence intervals and draw
 as a forest plot.
 }
 \examples{
+set.seed(1)
 dat <- mtcars[sample(nrow(mtcars), 100L, TRUE), ]
 dat[1, 2] <- NA
 vv  <- c('cyl', 'vs', 'gear', 'carb')
 dat$gear <- factor(dat$gear, 3:6)
 
+bplot(dat, vv, 'am')
+
 bplot(
-  dat, vv, 'am',
+  dat, vv, 'am', percent = TRUE,
   col = c(0, seq_along(vv)) + 1L,
   main = 'Manual rate', xlab = 'Proportion of manual'
 )

@@ -2374,24 +2374,34 @@ vioplot <- function(x, range = 1.5, xlim = NULL, ylim = NULL, names,
 #' @param varname_label,byvar_label optional labels for each \code{varname}
 #'   and \code{byvar}
 #' @param main,xlab the x-axis and title labels
+#' @param names optional vector of names for each panel to override defaults
 #' @param col a vector of colors for each \code{varname}; the first will be
 #'   used for the overall (if \code{show_overall = TRUE})
+#' @param percent logical; if \code{TRUE}, percentages will be shown instead of
+#'   probabilities
 #' @param conf confidence level; passed to \code{\link{binconr}}
 #' @param digits the number of places past the decimal to keep
 #' @param show_overall,show_missing logical; if \code{TRUE}, rows with the
 #'   overall and missing value confidence intervals are shown, respectively
 #' @param alpha_missing if \code{show_missing = TRUE}, the amount of alpha
 #'   transparency added to missing value rows; passed to \code{\link{tcol}}
+#' @param widths a vector of widths for each panel, recycled as needed
+#' @param col.bar a vector of colors for background bars, recycled as needed
+#' @param group.bar logical; if \code{TRUE}, \code{col.bar} will be used once
+#'   for each \code{varname}, recycled as needed
 #' @param ... additional graphical parameters passed to \code{\link{par}}
 #' 
 #' @examples
+#' set.seed(1)
 #' dat <- mtcars[sample(nrow(mtcars), 100L, TRUE), ]
 #' dat[1, 2] <- NA
 #' vv  <- c('cyl', 'vs', 'gear', 'carb')
 #' dat$gear <- factor(dat$gear, 3:6)
 #' 
+#' bplot(dat, vv, 'am')
+#' 
 #' bplot(
-#'   dat, vv, 'am',
+#'   dat, vv, 'am', percent = TRUE,
 #'   col = c(0, seq_along(vv)) + 1L,
 #'   main = 'Manual rate', xlab = 'Proportion of manual'
 #' )
@@ -2406,11 +2416,61 @@ vioplot <- function(x, range = 1.5, xlim = NULL, ylim = NULL, names,
 
 bplot <- function(data, varname, byvar, varname_label = names(varname),
                   byvar_label = names(byvar), main = byvar_label,
-                  xlab = byvar_label, col = c('dodgerblue4', 'dodgerblue2'),
-                  conf = 0.95, digits = 2L, show_overall = TRUE,
-                  show_missing = TRUE, alpha_missing = 1, ...) {
+                  xlab = byvar_label, names = NULL,
+                  col = c('dodgerblue4', 'dodgerblue2'), percent = FALSE,
+                  conf = 0.95, digits = ifelse(percent, 0L, 2L),
+                  show_overall = TRUE, show_missing = TRUE, alpha_missing = 1,
+                  widths = c(1, 2, 1), col.bar = c(grey(0.95), NA),
+                  group.bar = FALSE, ...) {
+  bars_ <- function(x, col = c(grey(0.95), NA), horiz = TRUE, fullspan = TRUE) {
+    ## forest:::bars
+    p <- c(0.025, 0.975)
+    p <- if (fullspan)
+      c(grconvertX(p, 'ndc'), grconvertY(0:1, 'ndc')) else par('usr')
+    col <- rep_len(col, length(x))
+    x <- rev(x) + 0.5
+    if (horiz)
+      rect(p[1L], x - 1L, p[2L], x, border = NA, col = col, xpd = NA)
+    else rect(x - 1L, p[3L], x, p[4L], border = NA, col = rev(col), xpd = NA)
+  }
+  
+  binconr_ <- function(outcome, variable, addNA = TRUE, lbl = NULL,
+                       conf = 0.95, digits = 2L, percent = FALSE) {
+    # binconr_(mtcars$vs, mtcars$gear)
+    pad <- if (all(variable == 'Overall')) {
+      lbl <- NULL
+      NULL
+    } else NA
+    na <- is.na(outcome)
+    outcome  <- as.integer(as.factor(outcome))[!na]
+    variable <- as.factor(variable)[!na]
+    if (addNA) {
+      variable <- addNA(variable, TRUE)
+      levels(variable)[is.na(levels(variable))] <- 'Missing'
+    }
+    sp <- split(outcome, variable)
+    txt <- lapply(sp, function(x) {
+      x <- binconr(
+        sum(x - 1L), length(x), frac = TRUE, conf = conf, digits = digits,
+        show_conf = FALSE, est = TRUE, pct.sign = TRUE, percent = percent
+      )
+      gsub('([0-9/]+),\\s+([0-9.%]+)\\s+(.*)', '\\2, \\1 \\3', x)
+    })
+    num <- lapply(sp, function(x)
+      bincon(sum(x - 1L), length(x), alpha = 1 - conf)[3:5] *
+        ifelse(percent, 100, 1)
+    )
+    list(
+      num = setNames(c(pad, num), c(lbl, names(num))),
+      txt = setNames(c(pad, txt), c(lbl, names(num)))
+    )
+  }
+  
   varname_label <- varname_label %||% varname
   byvar_label <- byvar_label %||% byvar
+  names <- if (is.null(names))
+    c('Subgroup', main, sprintf('Estimate (%s%% CI)', conf * 100))
+  else rep_len(names, 3L)
   
   if (show_overall) {
     data$Overall <- 'Overall'
@@ -2418,20 +2478,22 @@ bplot <- function(data, varname, byvar, varname_label = names(varname),
     varname_label <- c('Overall', varname_label)
   }
   
+  ## numeric values for center panel
   ff <- lapply(seq_along(varname), function(ii) {
     res <- binconr_(
       data[, byvar], data[, varname[ii]], lbl = varname_label[ii],
-      conf = conf, digits = digits
+      conf = conf, digits = digits, percent = percent
     )
     do.call('rbind', res$num)
   })
   nn <- sapply(ff, nrow)
   ff <- do.call('rbind', ff)
   
+  ## text for right panel
   tt <- lapply(seq_along(varname), function(ii) {
     res <- binconr_(
       data[, byvar], data[, varname[ii]], lbl = varname_label[ii],
-      conf = conf, digits = digits
+      conf = conf, digits = digits, percent = percent
     )
     do.call('rbind', res$txt)
   })
@@ -2461,8 +2523,10 @@ bplot <- function(data, varname, byvar, varname_label = names(varname),
   })
   dev.hold()
   
-  lo <- layout(t(c(2, 1, 3)), widths = c(3, 3.5, 3))
-  par(mar = c(5, 0, 3, 0), oma = c(0, 1, 0, 1))
+  ## scale cex due to 3-panel layout
+  par(mar = c(5, 0, 3, 0), oma = c(0, 1, 0, 1),
+      cex.axis = 1.2, cex.lab = 1.2, cex = 1.2)
+  lo <- layout(t(c(1, 3, 2)), widths = rep_len(widths, 3L))
   par(...)
   
   col <- if (show_overall & length(col) == 2L)
@@ -2473,39 +2537,50 @@ bplot <- function(data, varname, byvar, varname_label = names(varname),
   i <- if (show_overall)
     y == max(y) else rep_len(FALSE, length(y))
   
+  ## vector of colors for bars - alternating or grouped
+  bgc <- rep_len(col.bar, length(varname))
+  bgc <- rep(bgc, nn)
+  bgc <- if (group.bar)
+    rev(bgc) else col.bar
+  
+  line <- 0.5
+  pad <- 0.8
+  cex <- par('cex.main')
+  lag <- (is.na(ff[, 1L]) & !na) | y == max(y)
+  
+  ## left panel - labels
+  x <- rep_len(0, length(y))
+  par(mar = c(5, 2, 3, 4), xpd = NA)
+  plot(x, y, type = 'n', ann = FALSE, axes = FALSE, panel.last = bars_(y, bgc))
+  title(main = names[1L], cex.main = cex, adj = 0, line = line)
+  text(x - ifelse(lag, 1, pad), y, rownames(ff), font = i + 1L,
+       col = tcol('black', alpha = a), adj = 0, cex = cex)
+  
+  
+  ## right panel - estimate/ci
+  x <- rep_len(0, length(y))
+  plot(x, y, type = 'n', ann = FALSE, axes = FALSE)
+  title(main = names[3L], cex.main = cex, line = line)
+  text(x, y, tt[, 1L], col = tcol('black', alpha = a),
+       cex = cex, font = ifelse(i, 2L, 1L))
+  
+  
+  ## center panel - plot
   plot(
-    ff[, 1L], y, xlim = c(0, 1), bty = 'n', axes = FALSE, ann = FALSE,
+    ff[, 1L], y, xlim = c(0, 1) * ifelse(percent, 100, 1),
+    bty = 'n', axes = FALSE, ann = FALSE,
     pch = ifelse(i, 18L, 16L), col = tcol(col, alpha = a), cex = i + 2L,
     panel.first = {
-      bars_(y)
-      abline(v = ff[1L, 1L], lwd = 2, lty = 2L, col = 'grey')
+      abline(v = ff[1L, 1L], lwd = 2, lty = 2L, col = 'grey', xpd = FALSE,)
       arrows(ff[, 2L], y, ff[, 3L], code = 3L, angle = 90, length = 0.05,
              lwd = 1.5, col = tcol(c('grey50', 'black')[i + 1L], alpha = a))
     },
     panel.last = {
-      axis(1L, cex.axis = 1.5)
-      title(xlab = xlab, cex.lab = 1.5)
-      title(main = main, cex.main = 1.5, line = 0.5)
+      axis(1L, cex.axis = par('cex.axis'))
+      title(xlab = xlab, cex.lab = par('cex.lab'))
+      title(main = names[2L], cex.main = cex, line = line)
     }
   )
-  
-  x <- rep_len(0, length(y))
-  par(mar = c(5, 2, 3, 4), xpd = NA)
-  plot(x, y, type = 'n', ann = FALSE, axes = FALSE)
-  title(main = 'Subgroup', cex.main = 1.5, adj = 0, xpd = NA, line = 0.5)
-  
-  pad <- 0.8
-  lag <- (is.na(ff[, 1L]) & !na) | y == max(y)
-  text(x - ifelse(lag, 1, pad), y, rownames(ff), font = i + 1L,
-       col = tcol('black', alpha = a), adj = 0, cex = 1.5)
-  
-  x <- rep_len(0, length(y))
-  plot(x, y, type = 'n', ann = FALSE, axes = FALSE)
-  title(main = sprintf('Point estimate (%s%% CI)', conf * 100),
-        cex.main = 1.5, xpd = NA, line = 0.5)
-  text(x, y, tt[, 1L], col = tcol('black', alpha = a),
-       cex = 1.5, font = ifelse(i, 2L, 1L), xpd = NA)
-  box('outer')
   
   invisible(list(ff, tt))
 }
@@ -2513,55 +2588,6 @@ bplot <- function(data, varname, byvar, varname_label = names(varname),
 #' @rdname bplot
 #' @export
 tabler_bincon <- bplot
-
-bars_ <- function(x, cols = c(grey(0.95), NA), horiz = TRUE, fullspan = TRUE) {
-  ## forest:::bars
-  p <- if (fullspan)
-    c(grconvertX(c(0.025, 0.975), 'ndc'), grconvertY(c(0, 1), 'ndc'))
-  else par('usr')
-  
-  cols <- rep_len(cols, length(x))
-  x <- rev(x) + 0.5
-  
-  if (horiz)
-    rect(p[1L], x - 1L, p[2L], x, border = NA, col = cols, xpd = NA)
-  else rect(x - 1L, p[3L], x, p[4L], border = NA, col = rev(cols), xpd = NA)
-  
-  invisible(NULL)
-}
-
-binconr_ <- function(outcome, variable, addNA = TRUE, lbl = NULL,
-                     conf = 0.95, digits = 2L) {
-  # binconr_(mtcars$vs, mtcars$gear)
-  pad <- if (all(variable == 'Overall')) {
-    lbl <- NULL
-    NULL
-  } else NA
-  na <- is.na(outcome)
-  
-  outcome  <- as.integer(as.factor(outcome))[!na]
-  variable <- as.factor(variable)[!na]
-  
-  if (addNA) {
-    variable <- addNA(variable, TRUE)
-    levels(variable)[is.na(levels(variable))] <- 'Missing'
-  }
-  
-  sp <- split(outcome, variable)
-  
-  txt <- lapply(sp, function(x)
-    binconr(sum(x - 1L), length(x), frac = TRUE, conf = conf, digits = digits,
-            show_conf = FALSE, est = TRUE, pct.sign = TRUE, percent = FALSE)
-  )
-  num <- lapply(sp, function(x)
-    bincon(sum(x - 1L), length(x), alpha = 1 - conf)[3:5]
-  )
-  
-  list(
-    num = setNames(c(pad, num), c(lbl, names(num))),
-    txt = setNames(c(pad, txt), c(lbl, names(num)))
-  )
-}
 
 #' pplot
 #' 
