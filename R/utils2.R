@@ -1849,6 +1849,11 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
     byvar <- '_by_var_'
     data[, byvar] <- factor(1L, 1:2)
   }
+  
+  if (length(byvar) > 1L) {
+    data[, '_by_var_'] <- interaction(data[, byvar])
+    byvar <- '_by_var_'
+  }
 
   x <- if (is.character(x <- data[, varname]))
     as.factor(x) else x
@@ -2501,7 +2506,7 @@ tabler_stat2 <- function(data, varname, byvar = NULL,
   }
 
   stopifnot(
-    length(byvar) %in% 0:1,
+    # length(byvar) %in% 0:1,
     byvar %in% names(data),
     nv == length(varname_label),
     is.null(FUN) ||
@@ -2537,15 +2542,26 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
                              color_cell_by = 'none', cell_color = NULL,
                              confint = NULL, include_na_in_prop = TRUE,
                              iqr = FALSE, statArgs = NULL, total = TRUE) {
+  cg <- ncg <- NULL
+  obv <- byvar
+  
   if (is.null(byvar)) {
     FUN   <- NA
     byvar <- '_by_var_'
-    data[, byvar] <- factor(1, 1:2)
+    data[, byvar] <- factor(1L, 1:2)
   }
-
+  
+  if (length(byvar) > 1L) {
+    sep <- '__xxx__'
+    obv <- byvar
+    data[, '_by_var_'] <- interaction(data[, byvar], drop = TRUE, sep = sep)
+    byvar <- '_by_var_'
+  }
+  
   nv <- length(varname)
   byvar <- byvar[1L]
 
+  odata <- data
   data <- data[, c(varname, byvar)]
   data[, byvar] <- as.factor(data[, byvar])
   .data <- data
@@ -2609,6 +2625,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
   n.rgroup <- unname(sapply(rgroup, function(x) nrow(tbl[[x]]) %||% 1L))
   cgroup   <- c('', byvar_label, '')
   n.cgroup <- c(1L, nlevels(.data[, byvar]), 1L)
+  
   if (identical(total, FALSE)) {
     cgroup <- cgroup[-1L]
     n.cgroup <- n.cgroup[-1L]
@@ -2618,12 +2635,61 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
     cgroup   <- head(cgroup, -1L)
     n.cgroup <- head(n.cgroup, -1L)
   }
-
+  
+  if (length(obv) > 1L) {
+    tmp <- tmp1 <- data.frame(table(odata[, obv]))
+    tmp[, sprintf('id_%s', obv)] <- lapply(tmp[, -ncol(tmp)], function(x)
+      rleid(as.integer(x)))
+    tmp <- tmp[tmp$Freq > 0, ]
+    ncg <- lapply(seq_along(obv[-1L]), function(ii) {
+      x <- tmp[, sprintf('id_%s', obv)[ii]]
+      y <- tmp[, sprintf('id_%s', obv)[ii + 1L]]
+      as.vector(tapply(x, y, lunique))
+    })
+    if (length(ncg) > 2L)
+      ncg[-(1:2)] <- lapply(ncg[-(1:2)], unique)
+    
+    ncg <- do.call('rbindx', rev(ncg))
+    rownames(ncg) <- rev(obv[-1L])
+    
+    cg <- lapply(seq.int(nrow(ncg)), function(ii) {
+      r <- if (ii < nrow(ncg)) {
+        n <- na.omit(ncg[ii, ])
+        as.vector(tapply(ncg[nrow(ncg), ], rep(seq_along(n), n), sum))
+      } else ncg[ii, ]
+      rn <- rownames(ncg)[ii]
+      as.character(tmp[, rn][cumsum(r)])
+    })
+    cg <- do.call('rbindx', cg)
+    
+    if (!identical(total, FALSE)) {
+      cg <- cbind('', cg)
+      ncg <- cbind(1L, ncg)
+    }
+    
+    if (pval) {
+      cg <- t(apply(cbind(cg, NA), 1L, function(x) {
+        x[which(is.na(x))[1L]] <- ''
+        x
+      }))
+      ncg <- t(apply(cbind(ncg, NA), 1L, function(x) {
+        x[which(is.na(x))[1L]] <- 1L
+        x
+      }))
+    }
+    
+    colnames(res) <- gsub(sprintf('%s.*', sep), '', colnames(res))
+    l <- lapply(l, function(x) {
+      colnames(x) <- gsub(sprintf('%s.*', sep), '', colnames(x))
+      x
+    })
+  }
+  
   structure(
     class = 'htmlStat',
     list(
       output_data = res, rgroup = rgroup, n.rgroup = n.rgroup,
-      cgroup = cgroup, n.cgroup = n.cgroup, pval = pval,
+      cgroup = cg %||% cgroup, n.cgroup = ncg %||% n.cgroup, pval = pval,
       data = .data, byvar = byvar, l = l
     )
   )
@@ -2639,7 +2705,7 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
     gsub('\\s{2,}', ' ', x)
   }
 
-  if (noby <- l$byvar == '_by_var_') {
+  if (noby <- (l$byvar == '_by_var_' & is.null(dim(l$n.cgroup)))) {
     l$cgroup <- l$cgroup[1L]
     l$n.cgroup <- 1L
   }
@@ -2647,6 +2713,8 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
   cn <- c(get_tabler_stat_n(l$data[, l$byvar]), '<em>p-value</em>')
   if (identical(total, FALSE))
     cn <- cn[-1L]
+  
+  cn <- gsub('__xxx__.*?(?=<br)', '', cn, perl = TRUE)
   
   colnames(l$output_data) <- if (noby)
     cn[1L] else if (l$pval) cn else head(cn, -1L)
