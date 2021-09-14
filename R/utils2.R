@@ -1851,8 +1851,8 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
   }
   
   if (length(byvar) > 1L) {
-    data[, '_by_var_'] <- interaction(data[, byvar])
-    byvar <- '_by_var_'
+    data[, '_by_var_n_'] <- interaction(data[, byvar])
+    byvar <- '_by_var_n_'
   }
 
   x <- if (is.character(x <- data[, varname]))
@@ -2467,7 +2467,13 @@ describeSurv <- function(x, y, include_NA = TRUE, percent = TRUE,
 #'   # digits = c('3' = 2) ## equivalently
 #' )
 #' 
+#' 
+#' ## multiple column variables
+#' tabler_stat2(mt, c('mpg', 'cyl', 'wt'), c('vs', 'gear'), FUN = NA)
+#' 
+#' 
 #' \dontrun{
+#' ## experimental -- row- or column-merge tables
 #' h1 <- tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs')
 #' h2 <- tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'am')
 #' h3 <- tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'gear')
@@ -2554,8 +2560,8 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
   if (length(byvar) > 1L) {
     sep <- '__xxx__'
     obv <- byvar
-    data[, '_by_var_'] <- interaction(data[, byvar], drop = TRUE, sep = sep)
-    byvar <- '_by_var_'
+    data[, '_by_var_n_'] <- interaction(data[, byvar], drop = TRUE, sep = sep)
+    byvar <- '_by_var_n_'
   }
   
   nv <- length(varname)
@@ -2705,7 +2711,7 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
     gsub('\\s{2,}', ' ', x)
   }
 
-  if (noby <- (l$byvar == '_by_var_' & is.null(dim(l$n.cgroup)))) {
+  if (noby <- (l$byvar == '_by_var_')) {
     l$cgroup <- l$cgroup[1L]
     l$n.cgroup <- 1L
   }

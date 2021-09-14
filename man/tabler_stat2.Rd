@@ -154,7 +154,13 @@ tabler_stat2(
   # digits = c('3' = 2) ## equivalently
 )
 
+
+## multiple column variables
+tabler_stat2(mt, c('mpg', 'cyl', 'wt'), c('vs', 'gear'), FUN = NA)
+
+
 \dontrun{
+## experimental -- row- or column-merge tables
 h1 <- tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'vs')
 h2 <- tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'am')
 h3 <- tabler_stat2(mt, c('mpg', 'cyl', 'wt'), 'gear')
