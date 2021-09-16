@@ -53,8 +53,8 @@ indicating if \code{x} is weakly or strongly inside \code{interval}.
 \code{\%inside\%} is an alias for \code{\%winside\%} to preserve existing
 code.
 
-\code{\%=\%} is an operator combining the qualities of \code{\link{==}} and
-\code{\link{\%in\%}} to compare vectors in a pairwise manner which may
+\code{\%==\%} is an operator combining the qualities of \code{\link{==}}
+and \code{\link{\%in\%}} to compare vectors in a pairwise manner which may
 include \code{\link{NA}}s.
 
 \code{\%||\%} is useful for a function, \code{f}, that may return a value
@@ -66,9 +66,11 @@ is desirable to return some other default value.
 character strings rather than by index.
 }
 \examples{
+## notin
 1:5 \%ni\% 3:5
 
 
+## weakly/strongly inside
 c(0,4) \%winside\% c(0, 4)
 c(0,4) \%sinside\% c(0, 4)
 
@@ -76,6 +78,7 @@ c(0,4) \%sinside\% c(0, 4)
 -5:5 \%sinside\% c(0,5)
 
 
+## \%in\% plus ==
 a <- c(1, NA, 2)
 b <- c(2, NA, 1)
 ## not desired
@@ -89,11 +92,11 @@ a \%==\% b   # FALSE TRUE FALSE
 NULL \%||\% TRUE   # TRUE
 
 
-1:5 \%:\% c(3,5)
+1:5 \%:\% c(3, 5)
 letters \%:\% c('e', 'n')
 
 ## these are equivalent
-mtcars \%:\% c('hp','vs')
+mtcars \%:\% c('hp', 'vs')
 mtcars \%:\% c(4, 8)
 names(mtcars[, 4:8])
 

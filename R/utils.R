@@ -78,8 +78,8 @@ name_or_index <- function(x, y = NULL) {
 #' \code{\%inside\%} is an alias for \code{\%winside\%} to preserve existing
 #' code.
 #'
-#' \code{\%=\%} is an operator combining the qualities of \code{\link{==}} and
-#' \code{\link{\%in\%}} to compare vectors in a pairwise manner which may
+#' \code{\%==\%} is an operator combining the qualities of \code{\link{==}}
+#' and \code{\link{\%in\%}} to compare vectors in a pairwise manner which may
 #' include \code{\link{NA}}s.
 #' 
 #' \code{\%||\%} is useful for a function, \code{f}, that may return a value
@@ -102,9 +102,11 @@ name_or_index <- function(x, y = NULL) {
 #' \code{\link{==}}, \code{\link{\%in\%}}, \code{\link{||}}
 #' 
 #' @examples
+#' ## notin
 #' 1:5 %ni% 3:5
 #' 
 #' 
+#' ## weakly/strongly inside
 #' c(0,4) %winside% c(0, 4)
 #' c(0,4) %sinside% c(0, 4)
 #' 
@@ -112,6 +114,7 @@ name_or_index <- function(x, y = NULL) {
 #' -5:5 %sinside% c(0,5)
 #' 
 #' 
+#' ## %in% plus ==
 #' a <- c(1, NA, 2)
 #' b <- c(2, NA, 1)
 #' ## not desired
@@ -125,11 +128,11 @@ name_or_index <- function(x, y = NULL) {
 #' NULL %||% TRUE   # TRUE
 #' 
 #' 
-#' 1:5 %:% c(3,5)
+#' 1:5 %:% c(3, 5)
 #' letters %:% c('e', 'n')
 #' 
 #' ## these are equivalent
-#' mtcars %:% c('hp','vs')
+#' mtcars %:% c('hp', 'vs')
 #' mtcars %:% c(4, 8)
 #' names(mtcars[, 4:8])
 #' 
@@ -221,7 +224,7 @@ NULL
 #' @param pos argument specifying the environment as a position in search list
 #'   or a "list-like" object such as a data frame or list of objects
 #' @param pattern optional \code{\link{regex}}; for \code{lss} only names
-#'   matching  \code{pattern} are returned; \code{\link{glob2rx}} can be used
+#'   matching \code{pattern} are returned; \code{\link{glob2rx}} can be used
 #'   to convert wildcard patterns to regular expressions; for \code{lsp} a text
 #'   pattern or regular expression passed to \code{\link{grep}} to filter the
 #'   results
@@ -1926,7 +1929,6 @@ rleid2 <- function(x, na.rm = FALSE, ignore.na = FALSE) {
   if (na.rm)
     res else replace(res, is.na(x), NA)
 }
-
 
 #' Drop factor levels
 #' 
