@@ -138,21 +138,15 @@ values as \code{beeswarm} methods may}
 
 \item{names}{group labels}
 
-\item{col, bg}{plotting fill color; note for pch = 21:25, \code{bg} is used
-to fill while \code{col} defines the border color}
+\item{col, bg, pch, cex}{plotting fill color, border color (if applicable),
+character, and \strong{c}haracter \strong{ex}pansion value; note for
+pch = 21:25 \code{bg} is the fill while \code{col} is the border color}
 
-\item{group.col, group.bg}{logical; if \code{TRUE}, color by group; otherwise
-by order}
-
-\item{pch}{plotting character}
-
-\item{group.pch}{logical; if \code{TRUE}, \code{pch} by group; otherwise
-by order}
-
-\item{cex}{\strong{c}haracter \strong{ex}pansion value}
-
-\item{group.cex}{logical; if \code{TRUE}, groups use the same \code{cex}
-value; otherwise, points have individual values, recycled if necessary}
+\item{group.col, group.bg, group.pch, group.cex}{logical; if \code{TRUE}, apply
+\code{col}, \code{bg}, \code{pch}, and/or \code{cex} by group in which
+case only the first \code{n} values are used where \code{n} is the number
+of groups; otherwise, points are treated individually by order (recycled
+as needed)}
 
 \item{boxcol, bordercol}{box fill and border colors}
 
@@ -178,13 +172,13 @@ control the quantile lines}
 to place the total and missing in each group}
 
 \item{test}{logical or function; if \code{TRUE}, a rank-sum p-value is
-  added to the plot (\code{\link{wilcox.test}} or \code{\link{kruskal.test}}
-  based on the number of groups)
+added to the plot (\code{\link{wilcox.test}} or \code{\link{kruskal.test}}
+based on the number of groups)
 
-  Alternatively, a function (or function name as a character string) can be
-  used, e.g., \code{test = cuzick.test} or \code{function(x, g)
-  cuzick.test(x, g)}; note that if \code{test} is a function, it must have
-  at least two arguments with the numeric data values and group}
+alternatively, a function can be used, e.g., \code{test = cuzick.test} or
+\code{function(x, g) cuzick.test(x, g)}; note that if \code{test} is a
+function, it must have at least two arguments of numeric data values and
+group}
 
 \item{args.test}{an optional \emph{named} list of \code{\link{mtext}}
 arguments controlling the \code{test} text}
@@ -248,6 +242,12 @@ tplot(mpg ~ gear + vs, mtcars)
 co <- tplot(mpg ~ vs, mtcars)
 sapply(co$coords, function(x)
   points(x, pch = 16L, col = findInterval(x$y, fivenum(x$y)) + 1L))
+
+
+## group.{col,bg,pch,cex} can be used to achieve this directly
+tplot(mpg ~ vs, mtcars, pch = 21L, col = 'black', group.bg = FALSE,
+  bg = ave(mpg, vs, FUN = function(x)
+    findInterval(x, fivenum(x)) + 1L))
 
 
 ## options for box, violin, dots
@@ -314,16 +314,16 @@ beeswarm::beeswarm(x, method = 'square', corral = 'gutter', corralWidth = 0.25)
 set.seed(1)
 dat <- data.frame(
   age   = replace(rnorm(80, rep(c(26, 36), c(70, 10)), 4), 1:5, NA),
-  sex   = factor(sample(c('Female', 'Male'), 80, replace = TRUE)),
-  group = paste0('Group ', sample(1:4, 80, prob = c(2, 5, 4, 1),
-                                  replace = TRUE))
+  sex   = factor(sample(c('Female', 'Male'), 80, TRUE)),
+  group = paste0('Group ', sample(1:4, 80, TRUE, prob = c(2, 5, 4, 1)))
 )
 
 tplot(
-  age ~ group, data = dat, las = 1, bty = 'l',
-  type = c('db', 'dv', 'dbv', 'bv'), names = LETTERS[1:4],
-  quantiles = c(0.25, 0.5, 0.75), lwd = c(0.5, 2, 0.5),
+  age ~ group, data = dat, las = 1, bty = 'l', names = LETTERS[1:4],
   text.na = 'n/a', ## default is 'missing'
+  type = c('db', 'dv', 'dbv', 'd'),
+  ## options for violin types
+  quantiles = c(0.25, 0.5, 0.75), lwd = c(0.5, 2, 0.5),
   ## one pch per group
   group.pch = TRUE, pch = c(15, 17, 19, 8),
   ## color by variable not group
