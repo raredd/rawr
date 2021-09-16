@@ -35,14 +35,16 @@ tplot(x, ...)
   xlim = NULL,
   ylim = NULL,
   names,
-  col,
+  col = NULL,
   group.col = TRUE,
-  boxcol = "grey90",
-  bordercol = par("fg"),
+  bg = NA,
+  group.bg = TRUE,
   pch = par("pch"),
   group.pch = TRUE,
   cex = par("cex"),
   group.cex = FALSE,
+  boxcol = "grey90",
+  bordercol = par("fg"),
   median.line = FALSE,
   mean.line = FALSE,
   median.pars = list(),
@@ -51,7 +53,7 @@ tplot(x, ...)
   quantiles = NULL,
   show.n = TRUE,
   show.na = show.n,
-  cex.n = cex,
+  cex.n = par("cex"),
   text.na = "missing",
   n.at = NULL,
   test = FALSE,
@@ -136,11 +138,11 @@ values as \code{beeswarm} methods may}
 
 \item{names}{group labels}
 
-\item{col}{plotting color}
+\item{col, bg}{plotting fill color; note for pch = 21:25, \code{bg} is used
+to fill while \code{col} defines the border color}
 
-\item{group.col}{logical; if \code{TRUE}, color by group; otherwise by order}
-
-\item{boxcol, bordercol}{box fill and border colors}
+\item{group.col, group.bg}{logical; if \code{TRUE}, color by group; otherwise
+by order}
 
 \item{pch}{plotting character}
 
@@ -151,6 +153,8 @@ by order}
 
 \item{group.cex}{logical; if \code{TRUE}, groups use the same \code{cex}
 value; otherwise, points have individual values, recycled if necessary}
+
+\item{boxcol, bordercol}{box fill and border colors}
 
 \item{median.line, mean.line}{logical; draw median, mean lines}
 
@@ -230,17 +234,17 @@ be shown (either in the foreground or background) with point-dodging.
 Violin plots with optional boxplots (and/or points) may also be shown.
 }
 \examples{
-## these are equivalent ways to call tplot
 x <- mtcars$mpg
 g <- interaction(mtcars$gear, mtcars$vs)
 
+## these are equivalent ways to call tplot
 tplot(x, g)
 tplot(split(x, g))
 tplot(x ~ g)
 tplot(mpg ~ gear + vs, mtcars)
 
 
-## use of point coordinates
+## tplot returns the point coordinates for later use
 co <- tplot(mpg ~ vs, mtcars)
 sapply(co$coords, function(x)
   points(x, pch = 16L, col = findInterval(x$y, fivenum(x$y)) + 1L))
@@ -316,11 +320,13 @@ dat <- data.frame(
 )
 
 tplot(
-  age ~ group, data = dat, las = 1, cex.axis = 1, bty = 'L',
+  age ~ group, data = dat, las = 1, bty = 'l',
   type = c('db', 'dv', 'dbv', 'bv'), names = LETTERS[1:4],
   quantiles = c(0.25, 0.5, 0.75), lwd = c(0.5, 2, 0.5),
   text.na = 'n/a', ## default is 'missing'
+  ## one pch per group
   group.pch = TRUE, pch = c(15, 17, 19, 8),
+  ## color by variable not group
   group.col = FALSE, col = c('darkred', 'darkblue')[sex],
   boxcol = c('lightsteelblue1', 'lightyellow1', grey(0.9)),
   boxplot.pars = list(notch = TRUE, boxwex = 0.5)

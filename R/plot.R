@@ -71,8 +71,10 @@
 #' @param quantiles for violin plots, probabilities for quantile lines (as an
 #'   alternative to box plots); note \code{lwd}/\code{lty} may be passed to
 #'   control the quantile lines
-#' @param col plotting color
-#' @param group.col logical; if \code{TRUE}, color by group; otherwise by order
+#' @param col,bg plotting fill color; note for pch = 21:25, \code{bg} is used
+#'   to fill while \code{col} defines the border color
+#' @param group.col,group.bg logical; if \code{TRUE}, color by group; otherwise
+#'   by order
 #' @param boxcol,bordercol box fill and border colors
 #' @param pch plotting character
 #' @param group.pch logical; if \code{TRUE}, \code{pch} by group; otherwise
@@ -142,17 +144,17 @@
 #' for Tatsuki \code{tplot}}; \code{\link{boxplot}}; \code{\link[plotr]{jmplot}}
 #'
 #' @examples
-#' ## these are equivalent ways to call tplot
 #' x <- mtcars$mpg
 #' g <- interaction(mtcars$gear, mtcars$vs)
 #' 
+#' ## these are equivalent ways to call tplot
 #' tplot(x, g)
 #' tplot(split(x, g))
 #' tplot(x ~ g)
 #' tplot(mpg ~ gear + vs, mtcars)
 #' 
 #' 
-#' ## use of point coordinates
+#' ## tplot returns the point coordinates for later use
 #' co <- tplot(mpg ~ vs, mtcars)
 #' sapply(co$coords, function(x)
 #'   points(x, pch = 16L, col = findInterval(x$y, fivenum(x$y)) + 1L))
@@ -228,11 +230,13 @@
 #' )
 #' 
 #' tplot(
-#'   age ~ group, data = dat, las = 1, cex.axis = 1, bty = 'L',
+#'   age ~ group, data = dat, las = 1, bty = 'l',
 #'   type = c('db', 'dv', 'dbv', 'bv'), names = LETTERS[1:4],
 #'   quantiles = c(0.25, 0.5, 0.75), lwd = c(0.5, 2, 0.5),
 #'   text.na = 'n/a', ## default is 'missing'
+#'   ## one pch per group
 #'   group.pch = TRUE, pch = c(15, 17, 19, 8),
+#'   ## color by variable not group
 #'   group.col = FALSE, col = c('darkred', 'darkblue')[sex],
 #'   boxcol = c('lightsteelblue1', 'lightyellow1', grey(0.9)),
 #'   boxplot.pars = list(notch = TRUE, boxwex = 0.5)
@@ -285,9 +289,10 @@ tplot.formula <- function(formula, data = NULL, ...,
   response <- attr(attr(mf, 'terms'), 'response')
   
   ## special handling of col and pch for grouping
-  group.col <- if ('group.col' %in% names(args)) args$group.col else FALSE
-  group.pch <- if ('group.pch' %in% names(args)) args$group.pch else FALSE
-  group.cex <- if ('group.cex' %in% names(args)) args$group.cex else FALSE
+  group.col <- if ('group.col' %in% names(args)) args$group.col else TRUE
+  group.bg  <- if ('group.bg'  %in% names(args)) args$group.bg  else TRUE
+  group.pch <- if ('group.pch' %in% names(args)) args$group.pch else TRUE
+  group.cex <- if ('group.cex' %in% names(args)) args$group.cex else TRUE
   
   ## reorder if necessary
   if ('col' %in% names(args) && !group.col)
@@ -296,6 +301,8 @@ tplot.formula <- function(formula, data = NULL, ...,
     args$pch <- unlist(split(rep_len(args$pch, n), mf[-response]))
   if ('cex' %in% names(args) && !group.cex)
     args$cex <- unlist(split(rep_len(args$cex, n), mf[-response]))
+  if ('bg' %in% names(args) && !group.bg)
+    args$bg <- unlist(split(rep_len(args$bg, n), mf[-response]))
   
   do.call('tplot', c(list(split(mf[[response]], mf[-response])), args))
 }
@@ -309,10 +316,11 @@ tplot.default <- function(x, g, ..., type = 'db',
                           ## labels/aesthetics
                           main = NULL, sub = NULL, xlab = NULL, ylab = NULL,
                           xlim = NULL, ylim = NULL, names,
-                          col, group.col = TRUE, boxcol = 'grey90',
-                          bordercol = par('fg'),
+                          col = NULL, group.col = TRUE,
+                          bg = NA, group.bg = TRUE,
                           pch = par('pch'), group.pch = TRUE,
                           cex = par('cex'), group.cex = FALSE,
+                          boxcol = 'grey90', bordercol = par('fg'),
                           
                           ## additional aesthetics
                           median.line = FALSE, mean.line = FALSE,
@@ -320,7 +328,7 @@ tplot.default <- function(x, g, ..., type = 'db',
                           boxplot.pars = list(), quantiles = NULL,
                           
                           ## n/missing for each group
-                          show.n = TRUE, show.na = show.n, cex.n = cex,
+                          show.n = TRUE, show.na = show.n, cex.n = par('cex'),
                           text.na = 'missing', n.at = NULL,
                           
                           ## extra stuff
@@ -409,7 +417,7 @@ tplot.default <- function(x, g, ..., type = 'db',
   ## 50% gray for box/dots in back, otherwise default color
   defcols <- c(bordercol, par('col'))
   
-  if (missing(col)) {
+  if (is.null(col)) {
     col <- defcols[2L - grepl('.d', type)]
     group.col <- TRUE
   }
@@ -425,6 +433,17 @@ tplot.default <- function(x, g, ..., type = 'db',
     ## colors by individual or global
     col   <- rep_len(col, nv)
     g.col <- rep_len(1L, ng)
+  }
+  
+  ## for pch 21:25
+  if (group.bg) {
+    ## bg colors by group
+    g.bg <- rep_len(bg, ng)
+    bg   <- rep(g.bg, lg)
+  } else {
+    ## bg colors by individual or global
+    bg   <- rep_len(bg, nv)
+    g.bg <- rep_len(1L, ng)
   }
   pch <- if (group.pch) {
     ## plot characters by group
@@ -444,6 +463,7 @@ tplot.default <- function(x, g, ..., type = 'db',
   
   ## split colors and plot characters into groups
   col <- split(col, g)
+  bg  <- split(bg,  g)
   pch <- split(pch, g)
   cex <- split(cex, g)
   
@@ -455,6 +475,7 @@ tplot.default <- function(x, g, ..., type = 'db',
     show.na <- FALSE
   groups <- Map('[', groups, nonas)
   col <- Map('[', col, nonas)
+  bg  <- Map('[', bg,  nonas)
   pch <- Map('[', pch, nonas)
   cex <- Map('[', cex, nonas)
   
@@ -573,11 +594,11 @@ tplot.default <- function(x, g, ..., type = 'db',
         'localPoints',
         if (horizontal)
           c(list(x = y, y = x, pch = pch[[ii]],
-                 col = col[[ii]], cex = cex[[ii]]),
+                 col = col[[ii]], cex = cex[[ii]], bg = bg[[ii]]),
             pars)
         else
           c(list(x = x, y = y, pch = pch[[ii]],
-                 col = col[[ii]], cex = cex[[ii]]),
+                 col = col[[ii]], cex = cex[[ii]], bg = bg[[ii]]),
             pars)
       )
     }
@@ -596,15 +617,17 @@ tplot.default <- function(x, g, ..., type = 'db',
         0 else (y > bp$stats[5L, ]) | (y < bp$stats[1L, ])
       
       if (sum(toplot) > 0)
-        if (col[[ii]][toplot][1] == '#bfbfbf')
+        if (col[[ii]][toplot][1L] == '#bfbfbf')
           col[[ii]][toplot] <- 1L
       do.call(
         'localPoints',
         if (horizontal)
           c(list(x = y[toplot], y = x[toplot], pch = pch[[ii]][toplot],
+                 bg = bg[[ii]][toplot],
                  col = col[[ii]][toplot], cex = cex[[ii]][toplot]), pars)
         else
           c(list(x = x[toplot], y = y[toplot], pch = pch[[ii]][toplot],
+                 bg = bg[[ii]][toplot],
                  col = col[[ii]][toplot], cex = cex[[ii]][toplot]), pars)
       )
     }
@@ -624,10 +647,10 @@ tplot.default <- function(x, g, ..., type = 'db',
       do.call(
         'localPoints',
         if (horizontal)
-          c(list(x = y, y = x, pch = pch[[ii]],
+          c(list(x = y, y = x, pch = pch[[ii]], bg = bg[[ii]],
                  col = col[[ii]], cex = cex[[ii]]), pars)
         else
-          c(list(x = x, y = y, pch = pch[[ii]],
+          c(list(x = x, y = y, pch = pch[[ii]], bg = bg[[ii]],
                  col = col[[ii]], cex = cex[[ii]]), pars)
       )
     }
@@ -717,8 +740,8 @@ tplot.default <- function(x, g, ..., type = 'db',
     usr <- if (is.na(idx <- match(log, c('x', 'y', 'xy', 'yx'))))
       par('usr')
     else list(
-      x  = c(10, 10, 1, 1),
-      y  = c(1, 1, 10, 10),
+      x  = c(10, 10,  1,  1),
+      y  = c( 1,  1, 10, 10),
       xy = c(10, 10, 10, 10),
       yx = c(10, 10, 10, 10)
     )[[idx]] ^ usr
