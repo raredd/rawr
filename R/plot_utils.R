@@ -18,22 +18,17 @@ dodge_ <- function(x, at, dist, jit) {
 grouping_ <- function(v, dif, max.n = Inf) {
   ## turn values in each group into their plotting points
   # rawr:::grouping_(rep(1:2, 4), .1)
-  hmsf_ <- function(x)
-    ave(x, x, FUN = seq_along)
+  hmsf_ <- function(x) ave(x, x, FUN = seq_along)
   vs <- sort(v)
   together <- c(FALSE, diff(vs) <=  dif)
   together[is.na(together)] <- FALSE
   together <- tryCatch(
     together_(together, max.n),
-    error = function(e) {
-      print(e$message)
-      together
-    }
+    error = function(e) {print(e$message); together}
   )
   g.id <- cumsum(!together)
   g.si <- rep(x <- as.vector(table(g.id)), x)
-  # vg <- cbind(vs = vs, g.id = g.id, g.si = g.si)[rank(v), ]
-  vg <- cbind(vs = vs, g.id = g.id, g.si = g.si)[order(v), ]
+  vg <- cbind(vs = vs, g.id = g.id, g.si = g.si)[order(order(v)), ]
   if (length(v) == 1L)
     vg <- as.data.frame(t(vg))
   data.frame(vg, hmsf = hmsf_(vg[, 2L]))
