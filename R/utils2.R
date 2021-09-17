@@ -1738,8 +1738,9 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' @param iqr logical; if \code{TRUE}, the interquartile range is used
 #'   instead of the full range (default) for continuous variables
 #' @param total logical; if \code{TRUE}, total column will be shown
-#' @param continuous_fn a function to describe continuous variables (default
-#'   is to show median and range); see \code{\link[Gmisc]{getDescriptionStatsBy}}
+#' @param continuous_fn,factor_fn functions to describe continuous and factor-like
+#'   variables (default is to show median and range for continuous); see
+#'   \code{\link[Gmisc]{getDescriptionStatsBy}}
 #' @param ... additional arguments passed to
 #'   \code{\link[Gmisc]{getDescriptionStatsBy}}
 #'
@@ -1747,14 +1748,14 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 #' A matrix with additional attributes:
 #'
 #' \item{\code{attr(,"FUN")}}{the test passed to \code{FUN} or the test
-#' selected based on \code{varname} and \code{byvar} if \code{FUN = NULL}}
+#'   selected based on \code{varname} and \code{byvar} if \code{FUN = NULL}}
 #' \item{\code{attr(,"p.value")}}{the numeric p-value returned by \code{FUN}}
 #' \item{\code{attr(,"fnames")}}{a vector of the default \code{FUN} options
-#' with names to match the appropriate \code{dagger} character; see examples;
-#' if \code{FUN} is given, the function name will be added with a new dagger
-#' symbol (\code{"*"} by default or \code{dagger} if given)}
+#'   with names to match the appropriate \code{dagger} character; see examples;
+#'   if \code{FUN} is given, the function name will be added with a new dagger
+#'   symbol (\code{"*"} by default or \code{dagger} if given)}
 #' \item{\code{attr(,"tfoot")}}{a footnote for the table using each dagger
-#' and corresponding test name}
+#'   and corresponding test name}
 #'
 #' @family tabler
 #'
@@ -1829,7 +1830,10 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
                         cell_color = palette()[1:2], confint = FALSE,
                         include_na_in_prop = TRUE, iqr = FALSE, total = TRUE,
                         continuous_fn = function(...)
-                          Gmisc::describeMedian(..., iqr = iqr), ...) {
+                          Gmisc::describeMedian(..., iqr = iqr),
+                        factor_fn = if (!include_na_in_prop)
+                          describeFactors else Gmisc::describeFactors,
+                        ...) {
   fun <- deparse(substitute(FUN))
   nof <- identical(FUN, FALSE)
   color_missing <- if (isTRUE(color_missing))
@@ -1889,9 +1893,7 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
     Gmisc::getDescriptionStatsBy(
       x, y, digits = digits, html = TRUE, add_total_col = TRUE, ...,
       show_all_values = TRUE, statistics = FALSE, useNA.digits = 0L,
-      continuous_fn = continuous_fn,
-      factor_fn = if (!include_na_in_prop)
-        describeFactors else Gmisc::describeFactors
+      continuous_fn = continuous_fn, factor_fn = factor_fn
     )
   }
   class(res) <- 'matrix'
@@ -2319,6 +2321,7 @@ describeFactors <- function(..., useNA, exclude_na_prop = TRUE) {
   
   if (exclude_na_prop) {
     tmp <- rbind(Gmisc::describeFactors(..., useNA = 'no'), '')
+    tmp <- tmp[!grepl('^Missing$', rownames(tmp)), , drop = FALSE]
     res[] <- trimws(paste(gsub(' .*', '', res), gsub('.* ', '', tmp)))
   }
   
@@ -2602,12 +2605,20 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
 
   data <- rep_len(list(data), nv)
   pval <- any(!is.na(FUN))
+  
+  cf <- list(statArgs$continuous_fn %||% eval(formals(tabler_stat)$continuous_fn))
+  statArgs$continuous_fn <- NULL
+  ff <- list(statArgs$factor_fn %||% eval(formals(tabler_stat)$factor_fn))
+  statArgs$factor_fn <- NULL
+  
+  statArgs <- if (!length(statArgs))
+    NULL else statArgs
 
   l <- do.call('Map', c(list(
     f = tabler_stat, data, varname, byvar, digits, FUN,
     list(format_pval), color_pval, color_missing, dagger,
     color_cell_by, cell_color, list(confint %||% '')),
-    include_na_in_prop, iqr, total, statArgs)
+    include_na_in_prop, iqr, total, list(cf), list(ff), statArgs)
   )
   
   tbl <- lapply(l, function(x)
@@ -2704,7 +2715,8 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
 tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
                              tfoot = NULL, tfoot2 = NULL, htmlArgs = NULL,
                              zeros = NULL, group = NULL, correct = FALSE,
-                             format_pval = TRUE, clean_daggers = FALSE, total = TRUE) {
+                             format_pval = TRUE, clean_daggers = FALSE,
+                             total = TRUE) {
   stopifnot(inherits(l, 'htmlStat'))
 
   tr <- function(x) {
@@ -3197,10 +3209,10 @@ match_ctc <- function(..., version = 4L) {
 #' A filtered data frame with attributes:
 #'
 #' \item{\code{attr(., "data")}}{the input data frame sorted by \code{id},
-#' \code{desc}, and \code{grade}}
+#'   \code{desc}, and \code{grade}}
 #' \item{\code{attr(., "duplicates"}}{the indices of rows removed from
-#' \code{attr(., "data")} which correspond to duplicate \code{desc} per
-#' \code{id} with equal or lesser \code{grade}s}
+#'   \code{attr(., "data")} which correspond to duplicate \code{desc} per
+#'   \code{id} with equal or lesser \code{grade}s}
 #'
 #' @seealso
 #' \code{\link{match_ctc}}, \code{\link{tabler_by}}; \code{\link{tabler_by2}}
