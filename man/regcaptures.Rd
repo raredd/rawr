@@ -7,20 +7,26 @@
 \usage{
 regcaptures(x, m, use.names = TRUE)
 
-regcaptures2(x, pattern, use.names = TRUE)
+regcaptures2(x, pattern, use.names = TRUE, simplify = FALSE)
 }
 \arguments{
 \item{x}{a character vector}
 
 \item{m}{an object with match data}
 
-\item{use.names}{logical; if \code{FALSE}, all names (capture names and
-list names) will be stripped; if \code{TRUE} (default) and capture groups
-have names, these will be used; otherwise, match start positions will be
-used}
+\item{use.names}{logical; if \code{FALSE}, all names (capture names and list
+names) will be stripped; if \code{TRUE} (default) and capture groups have
+names, these will be used; otherwise, match start positions will be used}
 
 \item{pattern}{a character string containing a Perl-compatible regular
 expression}
+
+\item{simplify}{logical; if \code{TRUE}, result will be coerced to a matrix
+
+alternatively, a data frame with a column corresponding to each capture
+expression in order; captured character vectors are coerced to the type of
+the column, and the column names are carried over to the return value; any
+data in the prototype are ignored}
 }
 \value{
 A list with a matrix of captures for each string in \code{x}. Note that the
@@ -39,14 +45,22 @@ p2 <- '(?<name>.*):(?<age>\\\\d+)?,(?<sex>[MF])?'
 
 m <- regexpr(p1, x, perl = TRUE)
 regcaptures(x, m)
-do.call('rbind.data.frame', regcaptures(x, m, use.names = FALSE))
 
-## regcaptures2 is a convenience function for the two step above
+## regcaptures2 is a convenience function for the two-step above
 regcaptures2(x, p1)
+regcaptures2(x, p1, simplify = TRUE)
 
 ## both will use named captures (if perl = TRUE)
 regcaptures(x, gregexpr(p2, x, perl = TRUE))
-do.call('rbind.data.frame', regcaptures2(x, p2))
+regcaptures2(x, p2, simplify = TRUE)
+
+
+## use simplify = proto
+proto <- data.frame(name = character(), age = integer(), sex = character())
+regcaptures2(x, p1, simplify = proto)
+
+proto <- data.frame(name = '', age = NA_integer_, sex = factor('', c('M', 'F')))
+regcaptures2(x, p1, simplify = proto)
 
 
 ## capture overlapping matches
@@ -65,5 +79,5 @@ mapply(function(xx) substr(x, xx, xx + 1L), m[[1]])
 Adapted from \url{https://gist.github.com/MrFlick/10413321}
 }
 \seealso{
-\code{\link{regmatches}}; \code{\link{grep}}; \code{\link{regex}}
+\code{\link{regmatches}}; \code{\link{strcapture}}
 }

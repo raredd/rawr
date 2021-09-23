@@ -1245,19 +1245,24 @@ roll_fun <- function(x, n = 5L, FUN = mean, ...,
 #' 
 #' @param x a character vector
 #' @param m an object with match data
-#' @param use.names logical; if \code{FALSE}, all names (capture names and
-#'   list names) will be stripped; if \code{TRUE} (default) and capture groups
-#'   have names, these will be used; otherwise, match start positions will be
-#'   used
+#' @param use.names logical; if \code{FALSE}, all names (capture names and list
+#'   names) will be stripped; if \code{TRUE} (default) and capture groups have
+#'   names, these will be used; otherwise, match start positions will be used
 #' @param pattern a character string containing a Perl-compatible regular
 #'   expression
+#' @param simplify logical; if \code{TRUE}, result will be coerced to a matrix
+#'   
+#'   alternatively, a data frame with a column corresponding to each capture
+#'   expression in order; captured character vectors are coerced to the type of
+#'   the column, and the column names are carried over to the return value; any
+#'   data in the prototype are ignored
 #' 
 #' @return
 #' A list with a matrix of captures for each string in \code{x}. Note that the
 #' column names of each matrix will be the starting positions of the captures.
 #' 
 #' @seealso
-#' \code{\link{regmatches}}; \code{\link{grep}}; \code{\link{regex}}
+#' \code{\link{regmatches}}; \code{\link{strcapture}}
 #' 
 #' @references
 #' Adapted from \url{https://gist.github.com/MrFlick/10413321}
@@ -1269,14 +1274,22 @@ roll_fun <- function(x, n = 5L, FUN = mean, ...,
 #' 
 #' m <- regexpr(p1, x, perl = TRUE)
 #' regcaptures(x, m)
-#' do.call('rbind.data.frame', regcaptures(x, m, use.names = FALSE))
 #' 
-#' ## regcaptures2 is a convenience function for the two step above
+#' ## regcaptures2 is a convenience function for the two-step above
 #' regcaptures2(x, p1)
+#' regcaptures2(x, p1, simplify = TRUE)
 #' 
 #' ## both will use named captures (if perl = TRUE)
 #' regcaptures(x, gregexpr(p2, x, perl = TRUE))
-#' do.call('rbind.data.frame', regcaptures2(x, p2))
+#' regcaptures2(x, p2, simplify = TRUE)
+#' 
+#' 
+#' ## use simplify = proto
+#' proto <- data.frame(name = character(), age = integer(), sex = character())
+#' regcaptures2(x, p1, simplify = proto)
+#' 
+#' proto <- data.frame(name = '', age = NA_integer_, sex = factor('', c('M', 'F')))
+#' regcaptures2(x, p1, simplify = proto)
 #' 
 #' 
 #' ## capture overlapping matches
@@ -1293,8 +1306,7 @@ roll_fun <- function(x, n = 5L, FUN = mean, ...,
 #' @export
 
 regcaptures <- function(x, m, use.names = TRUE) {
-  if (length(x) != length(m))
-    stop('\'x\' and \'m\' must have the same length')
+  stopifnot(length(x) == length(m))
   oo <- options(stringsAsFactors = FALSE)
   on.exit(options(oo))
   
@@ -1332,17 +1344,37 @@ regcaptures <- function(x, m, use.names = TRUE) {
         if (all(!nzchar(names))) starts else names),
         error = function(e) if (grepl('not equal to array extent', e))
           `colnames<-`(ss, NULL) else e)
-    } else character(0L)
+    } else matrix('', ncol = length(starts), dimnames = list(NULL, names))
   }
   
-  Map(Substring, x, cs, cl, cn, USE.NAMES = use.names)
+  res <- Map(Substring, x, cs, cl, cn, USE.NAMES = use.names)
+  structure(res, capture.names = if (all(unlist(cn) == '')) NULL else cn[[1L]])
 }
 
 #' @rdname regcaptures
 #' @export
-
-regcaptures2 <- function(x, pattern, use.names = TRUE) {
-  regcaptures(x, gregexpr(pattern, x, perl = TRUE), use.names)
+regcaptures2 <- function(x, pattern, use.names = TRUE, simplify = FALSE) {
+  res <- regcaptures(x, gregexpr(pattern, x, perl = TRUE), use.names)
+  if (identical(simplify, FALSE))
+    return(res)
+  
+  conformToProto <- function(mat, proto) {
+    # simplified utils:::conformToProto
+    ans <- lapply(seq_along(proto), function(ii)
+      match.fun(paste0('as.', class(proto[[ii]])))(mat[, ii]))
+    names(ans) <- names(proto)
+    as.data.frame(ans, optional = TRUE, stringsAsFactors = FALSE)
+  }
+  
+  if (is.null(attr(res, 'capture.names')))
+    res <- lapply(res, function(x) `colnames<-`(x, NULL))
+  res <- if (isTRUE(simplify))
+    do.call('rbind', res) else conformToProto(do.call('rbind', res), simplify)
+  
+  if (use.names)
+    rownames(res) <- make.unique(x)
+  
+  res
 }
 
 #' Reshape data
