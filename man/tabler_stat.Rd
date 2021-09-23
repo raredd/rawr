@@ -21,6 +21,7 @@ tabler_stat(
   iqr = FALSE,
   total = TRUE,
   continuous_fn = function(...) Gmisc::describeMedian(..., iqr = iqr),
+  factor_fn = if (!include_na_in_prop) describeFactors else Gmisc::describeFactors,
   ...
 )
 }
@@ -72,8 +73,9 @@ instead of the full range (default) for continuous variables}
 
 \item{total}{logical; if \code{TRUE}, total column will be shown}
 
-\item{continuous_fn}{a function to describe continuous variables (default
-is to show median and range); see \code{\link[Gmisc]{getDescriptionStatsBy}}}
+\item{continuous_fn, factor_fn}{functions to describe continuous and factor-like
+variables (default is to show median and range for continuous); see
+\code{\link[Gmisc]{getDescriptionStatsBy}}}
 
 \item{...}{additional arguments passed to
 \code{\link[Gmisc]{getDescriptionStatsBy}}}
@@ -82,14 +84,14 @@ is to show median and range); see \code{\link[Gmisc]{getDescriptionStatsBy}}}
 A matrix with additional attributes:
 
 \item{\code{attr(,"FUN")}}{the test passed to \code{FUN} or the test
-selected based on \code{varname} and \code{byvar} if \code{FUN = NULL}}
+  selected based on \code{varname} and \code{byvar} if \code{FUN = NULL}}
 \item{\code{attr(,"p.value")}}{the numeric p-value returned by \code{FUN}}
 \item{\code{attr(,"fnames")}}{a vector of the default \code{FUN} options
-with names to match the appropriate \code{dagger} character; see examples;
-if \code{FUN} is given, the function name will be added with a new dagger
-symbol (\code{"*"} by default or \code{dagger} if given)}
+  with names to match the appropriate \code{dagger} character; see examples;
+  if \code{FUN} is given, the function name will be added with a new dagger
+  symbol (\code{"*"} by default or \code{dagger} if given)}
 \item{\code{attr(,"tfoot")}}{a footnote for the table using each dagger
-and corresponding test name}
+  and corresponding test name}
 }
 \description{
 Wrapper function to create table of description statistics with optional

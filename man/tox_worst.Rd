@@ -36,10 +36,10 @@ with the desired order to be properly sorted, i.e., least to most severe}
 A filtered data frame with attributes:
 
 \item{\code{attr(., "data")}}{the input data frame sorted by \code{id},
-\code{desc}, and \code{grade}}
+  \code{desc}, and \code{grade}}
 \item{\code{attr(., "duplicates"}}{the indices of rows removed from
-\code{attr(., "data")} which correspond to duplicate \code{desc} per
-\code{id} with equal or lesser \code{grade}s}
+  \code{attr(., "data")} which correspond to duplicate \code{desc} per
+  \code{id} with equal or lesser \code{grade}s}
 }
 \description{
 Returns a subset of input data with worst toxicity grade per toxicity
