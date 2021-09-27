@@ -1,7 +1,13 @@
 rawr 1.0.1
 --------
+  * add labeller, mlegend
+  * tabler_stat(2) - allow multiple byvar variables - cgroup/n.cgroup nightmare
   * improve docs, re-name objects for consistency
+  * kmplot - add missing functionality for survfitcox objects
   * kmplot - re-arrange some code, add median to legend
+  * kmplot - adjust cex in multi-row layouts for text size consistency, should
+    not break any code but figs may need adjustment
+  * bplot - add names, percent, widths, col.bar, group.bar args, remove box
 
 rawr 1.0.0
 --------
