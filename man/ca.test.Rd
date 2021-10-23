@@ -85,7 +85,7 @@ ca.test(table(dat$x, dat$y))
 
 
 \dontrun{
-## simulate p-value with 10k replicates
+## simulate p-value with 1k replicates
 set.seed(1)
 ca.test(rbind(smokers, patients - smokers), simulate.p.value = TRUE, B = 1000)
 }

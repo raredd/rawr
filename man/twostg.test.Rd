@@ -29,11 +29,11 @@ rawr:::simon(0.1, 0.3)
 # $designs$`p0 = 0.1, pa = 0.3`
 #      n1 r1 n2 r2 Pstop1.H0       size      type2 E.tot.n.H0
 # [1,] 12  1 23  5 0.6590023 0.09771828 0.09855051   19.84295
-# 
+#
 # ...
-# 
+#
 # $description
-# [1] "n1, n2 = cases 1st stage and additional # in 2nd"                    
+# [1] "n1, n2 = cases 1st stage and additional # in 2nd"
 # [2] "r1, r2 = max # responses 1st stage and total to declare trt inactive"
 
 twostg.test(5, 1, 12, 23)

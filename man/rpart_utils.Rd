@@ -29,7 +29,7 @@ one observation are used (i.e., only terminal node labels are used)}
 \code{node}.
 
 \code{rpart_subset} returns the data frame of observations in \code{node}.
-For any \code{tree}, the possibilities 
+For any \code{tree}, the possibilities
 
 \code{rpart_nodes} returns a factor variable
 }
