@@ -4,7 +4,7 @@
 # regcaptures2, cast, melt, View2, view, rapply2, sort_matrix, insert,
 # insert_matrix, tryCatch2, rleid, rleid2, droplevels2, combine_levels,
 # combine_regex, rownames_to_column, column_to_rownames, split_nth, sort2,
-# response, response2, xtable, factor2
+# response, response2, xtable, factor2, switch2
 # 
 # rawr_ops:
 # %ni%, %==%, %||%, %sinside%, %winside%, %inside%, %:%
@@ -2883,4 +2883,26 @@ factor2 <- function(x = character(0L), levels = NULL, exclude = NA,
     key <- key[!is.na(key$ind), ]
   
   factor(x, key$values, key$ind, exclude = exclude, ordered = ordered)
+}
+
+#' Select one of a list of alternatives
+#' 
+#' \code{\link{switch}} which accepts a vector of strings.
+#' 
+#' @param x a vector of character strings
+#' @param ... a list of alternatives; see \code{\link{switch}}
+#' 
+#' @examples
+#' switch('b',               a = 10, b = 2:0, c = 3, d = 1.5, e = mean)
+#' switch2(c('d', 'a'),      a = 10, b = 2:0, c = 3, d = 1.5, e = mean)
+#' switch2(c('b', 'a'),      a = 10, b = 2:0, c = 3, d = 1.5, e = mean)
+#' switch2(c('b', 'a', 'e'), a = 10, b = 2:0, c = 3, d = 1.5, e = mean)
+#' 
+#' @export
+
+switch2 <- function(x, ...) {
+  res <- vector('list', length(x))
+  for (ii in seq_along(x))
+    res[[ii]] <- switch(x[ii], ...)
+  simplify2array(res)
 }
