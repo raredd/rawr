@@ -1007,43 +1007,45 @@ binconr <- function(r, n, conf = 0.95, digits = 0L, est = TRUE, frac = FALSE,
 #'
 #' @references
 #' \url{http://dictionary.reference.com/help/faq/language/g80.html}
+#' 
+#' \url{https://www.grammarbook.com/numbers/numbers.asp}
 #'
 #' @seealso
 #' \code{\link{case}}; adapted from
 #' \url{github.com/ateucher/useful_code/blob/master/R/numbers2words.r}
 #'
 #' @examples
-#' num2char(19401, TRUE, TRUE)
-#' num2char(19401, FALSE, FALSE)
-#'
-#' v <- Vectorize(num2char)
-#' x <- c(-1000, 100, 10000, 3922, 3012, 201, -152, 1002, 91765432)
-#' setNames(x, v(x))
+#' num2char(52052, TRUE)
+#' num2char(52052, FALSE)
+#' 
+#' ## vectorized
+#' num2char(-1:2)
+#' 
+#' x <- c(-1000, 100, 52052, 3922, 3012, 201, -152, 1002, 91070432)
+#' cbind(x, informal = num2char(x, TRUE), formal = num2char(x, FALSE))
 #'
 #' @export
 
 num2char <- function(x, informal = FALSE, cap = TRUE) {
-  neg <- x < 0
-  x <- round(abs(x))
-  if (isTRUE(all.equal(x, 0)))
-    return(ifelse(cap, 'Zero', 'zero'))
-
   oo <- options(scipen = 999)
   on.exit(options(oo))
-
+  
   ## helpers
+  as.num <- function(...) {
+    as.numeric(paste(..., collapse = ''))
+  }
   num2char_ <- function(x) {
     digits <- rev(strsplit(as.character(x), '')[[1L]])
     nDigits <- length(digits)
-
-    if (nDigits == 1L) as.vector(ones[digits])
+    
+    if (nDigits == 1L)
+      as.vector(ones[digits])
     else if (nDigits == 2L)
-      if (x <= 19) as.vector(teens[digits[1L]])
-    else trim(paste(tens[digits[2L]],
-                    Recall(as.numeric(digits[1L]))))
+      if (x <= 19)
+        as.vector(teens[digits[1L]]) else
+          trim(paste(tens[digits[2L]], Recall(as.numeric(digits[1L]))))
     else if (nDigits == 3L)
-      trim(paste(ones[digits[3L]], 'hundred and',
-                 Recall(as.num(digits[2:1]))))
+      trim(paste(ones[digits[3L]], 'hundred', Recall(as.num(digits[2:1]))))
     else {
       nSuffix <- ((nDigits + 2) %/% 3) - 1L
       if (nSuffix > length(suffixes))
@@ -1054,13 +1056,13 @@ num2char <- function(x, informal = FALSE, cap = TRUE) {
         Recall(as.num(digits[(3 * nSuffix):1]))))
     }
   }
-  as.num <- function(...) {
-    as.numeric(paste(..., collapse = ''))
+  or <- function(...) {
+    paste0(..., collapse = '|')
   }
   trim <- function(x) {
     gsub('\\s*,|,\\s*$|\\s*and\\s*$', '', trimws(x))
   }
-
+  
   ## definitions
   ones <- setNames(
     c('', 'one', 'two', 'three', 'four', 'five',
@@ -1079,23 +1081,29 @@ num2char <- function(x, informal = FALSE, cap = TRUE) {
     2:9
   )
   suffixes <- c('thousand', 'million', 'billion', 'trillion')
-
+  
+  
   ## actual work
-  x <- if (length(x) > 1L)
-    trim(sapply(x, num2char_)) else num2char_(x)
-  if (neg)
-    x <- paste('negative', x)
-  if (!informal)
-    x <- gsub(' and ', ' ', x)
-
-  ## add hyphen between tens and ones
-  x <- gsub(
-    sprintf('(.*%s) (%s)$', paste(tens, collapse = '|'),
-            paste(ones, collapse = '|')), '\\1-\\2', x
-  )
-
-  if (cap)
-    case(x) else x
+  neg <- x < 0
+  x <- ox <- round(abs(x))
+  
+  x <- sapply(x, num2char_)
+  x[neg] <- paste('negative', x)[neg]
+  x[vapply(ox, function(v) isTRUE(all.equal(v, 0)), NA)] <- 'zero'
+  
+  ## add "and" before 1-99
+  p <- sprintf('(?=((%s) (%s)|%s)$)', or(tens), or(ones[-1L]),
+               or(c(ones[-1L], teens, tens)))
+  informal <- rep_len(informal, length(x))
+  x[informal] <- sub(p, 'and ', x, perl = TRUE)[informal]
+  
+  ## add hyphen between 21 to 99 inclusive
+  p <- sprintf('(.*%s) (%s)$', or(tens), or(ones[-1L]))
+  i <- ceiling_to(ox, 100) - ox
+  i <- i >= 21 & i <= 99
+  x[i] <- gsub(p, '\\1-\\2', x)[i]
+  
+  ifelse(rep_len(cap, length(x)), case(x), x)
 }
 
 #' In-line printing

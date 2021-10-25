@@ -32,16 +32,20 @@ Informal and formal case differ only by the use of "and" to separate
 the informal case.
 }
 \examples{
-num2char(19401, TRUE, TRUE)
-num2char(19401, FALSE, FALSE)
+num2char(52052, TRUE)
+num2char(52052, FALSE)
 
-v <- Vectorize(num2char)
-x <- c(-1000, 100, 10000, 3922, 3012, 201, -152, 1002, 91765432)
-setNames(x, v(x))
+## vectorized
+num2char(-1:2)
+
+x <- c(-1000, 100, 52052, 3922, 3012, 201, -152, 1002, 91070432)
+cbind(x, informal = num2char(x, TRUE), formal = num2char(x, FALSE))
 
 }
 \references{
 \url{http://dictionary.reference.com/help/faq/language/g80.html}
+
+\url{https://www.grammarbook.com/numbers/numbers.asp}
 }
 \seealso{
 \code{\link{case}}; adapted from
