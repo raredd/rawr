@@ -2,23 +2,43 @@
 % Please edit documentation in R/zxx.R
 \name{round_to}
 \alias{round_to}
+\alias{ceiling_to}
+\alias{floor_to}
 \title{Round to}
 \usage{
-round_to(x, to = 1)
+round_to(x, to = 1, FUN = round)
+
+ceiling_to(x, to = 1, FUN = ceiling)
+
+floor_to(x, to = 1, FUN = floor)
 }
 \arguments{
 \item{x}{a numeric vector}
 
-\item{to}{nearest fraction or integer
+\item{to}{nearest fraction or integer}
 
-\code{\link{roundr}}; \code{\link{Round}}}
+\item{FUN}{a function to perform rounding}
 }
 \description{
-Round numerics to nearest multiple of \code{to}.
+\code{\link{round}}, \code{\link{floor}}, or \code{\link{ceiling}} numerics
+to nearest multiple of \code{to}.
 }
 \examples{
 x <- 1:20 / 10
-round_to(x, 1)
-round_to(x, 0.5)
+cbind(
+  x,
+  round = round_to(x, 1),
+  floor = floor_to(x, 1),
+  ceiling = ceiling_to(x, 1)
+)
+cbind(
+  x,
+  round = round_to(x, 0.5),
+  floor = floor_to(x, 0.5),
+  ceiling = ceiling_to(x, 0.5)
+)
 
+}
+\seealso{
+\code{\link{roundr}}; \code{\link{Round}}
 }

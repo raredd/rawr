@@ -1,6 +1,7 @@
 ### some random things
 # identical2, all_equal2, fapply, fapply_by, flatten, rm_null, kinda_sort,
-# sym_sort, sample_each, Round, round_to, pickcol, lunique, rm_nonascii
+# sym_sort, sample_each, Round, round_to, ceiling_to, floor_to, pickcol,
+# lunique, rm_nonascii
 # 
 # cumfuns
 # cum_reset, cum_na, cumsum_na, cumprod_na, cummax_na, cummin_na, cum_mid
@@ -653,23 +654,48 @@ Round <- function(x, target = NULL) {
 
 #' Round to
 #' 
-#' Round numerics to nearest multiple of \code{to}.
+#' \code{\link{round}}, \code{\link{floor}}, or \code{\link{ceiling}} numerics
+#' to nearest multiple of \code{to}.
 #' 
 #' @param x a numeric vector
 #' @param to nearest fraction or integer
+#' @param FUN a function to perform rounding
 #' 
+#' @seealso
 #' \code{\link{roundr}}; \code{\link{Round}}
 #' 
 #' @examples
 #' x <- 1:20 / 10
-#' round_to(x, 1)
-#' round_to(x, 0.5)
+#' cbind(
+#'   x,
+#'   round = round_to(x, 1),
+#'   floor = floor_to(x, 1),
+#'   ceiling = ceiling_to(x, 1)
+#' )
+#' cbind(
+#'   x,
+#'   round = round_to(x, 0.5),
+#'   floor = floor_to(x, 0.5),
+#'   ceiling = ceiling_to(x, 0.5)
+#' )
 #' 
 #' @export
 
-round_to <- function(x, to = 1) {
+round_to <- function(x, to = 1, FUN = round) {
   to <- abs(to)
-  round(x / to) * to
+  FUN(x / to) * to
+}
+
+#' @rdname round_to
+#' @export
+ceiling_to <- function(x, to = 1, FUN = ceiling) {
+  round_to(x, to, ceiling)
+}
+
+#' @rdname round_to
+#' @export
+floor_to <- function(x, to = 1, FUN = floor) {
+  round_to(x, to, floor)
 }
 
 #' Pick elements from columns
