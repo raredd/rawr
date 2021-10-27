@@ -14,6 +14,8 @@ bp.test(x, ...)
   which = NULL,
   at = NULL,
   line = NULL,
+  length = NULL,
+  space = NULL,
   test = wilcox.test,
   plot = TRUE,
   ...
@@ -24,6 +26,8 @@ bp.test(x, ...)
   which = NULL,
   at = NULL,
   line = NULL,
+  length = NULL,
+  space = NULL,
   test = wilcox.test,
   plot = TRUE,
   ...
@@ -53,6 +57,10 @@ of pairs of x-axis locations for each \code{x}; see examples}
 \item{line}{lines at which to plot \code{test} results; if \code{NULL},
 these will be calculated; if length 1, the calculated lines will be shifted
 by \code{line}}
+
+\item{length, space}{the length of segment legs and space between text in
+user units; if \code{NULL} (default), values are calculated based on the
+plotting region}
 
 \item{test}{the test to use for pairwise comparisons}
 
@@ -134,7 +142,7 @@ pairs <- list(1:2, 3:4, 5:6)
 pv <- sapply(pairs, function(ii)
   pvalr(t.test(sp[[ii[1]]], sp[[ii[2]]])$p.value))
 tplot(sp, show.n = FALSE)
-bp.test(pv, at = pairs)
+bp.test(pv, at = pairs, length = 1, space = 2, cex = 1.5)
 par(op)
 
 }

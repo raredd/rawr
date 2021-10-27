@@ -579,6 +579,9 @@ col_scaler2 <- function(x, colors, breaks = 0, ...) {
 #' @param line lines at which to plot \code{test} results; if \code{NULL},
 #'   these will be calculated; if length 1, the calculated lines will be shifted
 #'   by \code{line}
+#' @param length,space the length of segment legs and space between text in
+#'   user units; if \code{NULL} (default), values are calculated based on the
+#'   plotting region
 #' @param test the test to use for pairwise comparisons
 #' @param plot logical; if \code{TRUE}, an existing figure will be annotated
 #'   with the tests; if \code{FALSE}, all tests will be returned but not
@@ -657,7 +660,7 @@ col_scaler2 <- function(x, colors, breaks = 0, ...) {
 #' pv <- sapply(pairs, function(ii)
 #'   pvalr(t.test(sp[[ii[1]]], sp[[ii[2]]])$p.value))
 #' tplot(sp, show.n = FALSE)
-#' bp.test(pv, at = pairs)
+#' bp.test(pv, at = pairs, length = 1, space = 2, cex = 1.5)
 #' par(op)
 #'
 #' @export
@@ -668,7 +671,8 @@ bp.test <- function(x, ...) {
 
 #' @rdname bp.test
 #' @export
-bp.test.formula <- function(formula, data, which = NULL, at = NULL, line = NULL,
+bp.test.formula <- function(formula, data, which = NULL, at = NULL,
+                            line = NULL, length = NULL, space = NULL,
                             test = wilcox.test, plot = TRUE, ...) {
   m <- match.call(expand.dots = FALSE)
   dots <- lapply(m$`...`, eval, data, parent.frame(1L))
@@ -694,7 +698,9 @@ bp.test.formula <- function(formula, data, which = NULL, at = NULL, line = NULL,
     1.25 * (seq_along(which) - 1) + line %||% 0 else line
 
   args <- list(
-    x = pv, which = which, at = at, line = line, test = test, plot = plot
+    x = pv, which = which, at = at,
+    line = line, length = length, space = space,
+    test = test, plot = plot
   )
 
   do.call('bp.test', c(args, dots))
@@ -702,7 +708,8 @@ bp.test.formula <- function(formula, data, which = NULL, at = NULL, line = NULL,
 
 #' @rdname bp.test
 #' @export
-bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
+bp.test.default <- function(x, which = NULL, at = NULL,
+                            line = NULL, length = NULL, space = NULL,
                             test = wilcox.test, plot = TRUE, ...) {
   m <- match.call()
   segments2 <- function(..., col, labels, adj, pos, offset, vfont, cex, font,
@@ -729,17 +736,20 @@ bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
   else if (is.null(line) || length(line) == 1L)
     1.25 * (seq_along(which) - 1) + line %||% 0 else line
 
-  seg <- function(x1, y, x2, plot = TRUE) {
-    pad <- diff(par('usr')[3:4]) / 100
-    col <- par('fg')
-
+  seg <- function(x1, y1, x2, y2 = y1, pad = NULL, hgt = NULL, plot = TRUE) {
+    usr <- diff(par('usr')[3:4]) / 100
+    hgt <- if (is.null(hgt))
+      usr * 3 else as.numeric(hgt)[1L]
+    pad <- if (is.null(pad))
+      usr else as.numeric(pad)[1L]
+    
     if (plot) {
-      segments2(x1, y, x2, y, ...)
-      segments2(x1, y, x1, y - pad, ...)
-      segments2(x2, y, x2, y - pad, ...)
+      segments2(x1, y1, x2, y1, ...)
+      segments2(x1, y1, x1, y1 - pad, ...)
+      segments2(x2, y1, x2, y1 - pad, ...)
     }
-
-    c(x1 + (x2 - x1) / 2, y + pad * 3)
+    
+    c(x1 + (x2 - x1) / 2, y1 + hgt)
   }
 
   yat <- coords(line = line, side = 3L)
@@ -748,7 +758,8 @@ bp.test.default <- function(x, which = NULL, at = NULL, line = NULL,
 
   coords <- sapply(seq_along(which), function(ii) {
     xat <- cbn[, which[ii]]
-    seg(xat[1L], yat[ii], xat[2L], plot && !is.na(x[which[ii]]))
+    seg(xat[1L], yat[ii], xat[2L], yat[ii], length, space,
+        plot && !is.na(x[which[ii]]))
   })
   if (plot)
     text2(coords[1L, ], coords[2L, ], x[which], ...)
