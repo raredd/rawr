@@ -301,14 +301,21 @@ show_colors <- function(..., plot = FALSE) {
   } else if (is.character(dots)) {
     dots <- gsub('[^a-z0-9]', '', tolower(dots))
     match(dots, colors(FALSE))
-  } else if (length(dots))
-    warning('... should be missing, %in% 1:657, or a color name')
-
-  op <- par(mfrow = c(1, 1), mar = c(1, 4, 1, 2), cex = 1)
-  on.exit(par(op))
-
+  } else if (length(dots)) {
+    message('... should be missing, %in% 1:657, or a color name')
+    character(0L)
+  }
+  
+  if (!is.null(cols) & !length(sort(cols))) {
+    message('no valid colors found')
+    return(invisible(NULL))
+  }
+  
   if (!is.null(dots)) {
     if (plot) {
+      op <- par(mfrow = c(1, 1), mar = c(1, 4, 1, 2), cex = 1)
+      on.exit(par(op))
+      
       cc <- if (is.numeric(cols))   Recall(cols) else cols
       cn <- if (is.character(cols)) Recall(cols) else cols
       m <- array(NA, n2mfrow(length(cols)))
@@ -319,11 +326,14 @@ show_colors <- function(..., plot = FALSE) {
       text(y, x, pos = 3L, col = 1L, xpd = NA, labels = cn)
       text(y, x, pos = 1L, col = 1L, xpd = NA, labels = cc)
     }
+    
     return(cols)
   }
 
   ## default plot of all colors with indices
-  par(mfrow = c(1, 1), mar = c(2, 3, 4, 3), cex = 0.7)
+  op <- par(mfrow = c(1, 1), mar = c(2, 3, 4, 3), cex = 0.7)
+  on.exit(par(op))
+  
   suppressWarnings({
     cc <- matrix(colors(), 30L)
     cc[duplicated(c(cc))] <- NA
