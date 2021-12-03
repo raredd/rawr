@@ -694,8 +694,9 @@ roundr.data.frame <- function(x, digits = 1L, format = TRUE, check = TRUE,
 #' \code{\link[rawr]{roundr}}
 #'
 #' @examples
-#' intr(1:10)
-#' intr(1:10, conf = 0.95)
+#' x <- 1:10
+#' intr(x)
+#' intr(x, conf = 0.95)
 #'
 #' ## inner quartile range
 #' cbind(
@@ -708,8 +709,7 @@ roundr.data.frame <- function(x, digits = 1L, format = TRUE, check = TRUE,
 #'
 #' @export
 
-intr <- function(..., fun = median, conf = NULL,
-                 digits = 0L, na.rm = FALSE) {
+intr <- function(..., fun = median, conf = NULL, digits = 0L, na.rm = FALSE) {
   lst <- list(...)
   if (is.null(conf) || conf == 0 ||
       findInterval(conf, 0:1, rightmost.closed = FALSE) != 1L)
@@ -724,6 +724,51 @@ intr <- function(..., fun = median, conf = NULL,
       sprintf('%s (%s%% CI: %s - %s)', val, conf * 100,
               bounds[1L], bounds[2L])
     else sprintf('%s (range: %s - %s)', val, bounds[1L], bounds[2L])
+  })
+}
+
+#' @param conf.int for \code{intr2}, the confidence level if
+#'   \code{conf = TRUE}; default is \code{0.95}
+#' @param range,ci,sd,mad,iqr logical; for \code{intr2} if \code{TRUE},
+#'   the range (default), confidence interval, standard deviation, median
+#'   absolute deviation, and/or inner quartile range are shown
+#' 
+#' @examples
+#' x <- mtcars$mpg
+#' intr2(x)
+#' intr2(x, fun = mean, sd = TRUE, conf = TRUE, conf.int = 0.9)
+#' 
+#' ## compare
+#' x <- list(mtcars$mpg, mtcars$wt)
+#' intr2(x, range = TRUE, iqr = TRUE, digits = 2)
+#' summary(mtcars[, c('mpg', 'wt')])
+#' 
+#' @rdname intr
+#' @export
+
+intr2 <- function(..., fun = median, na.rm = FALSE, digits = 0L, conf.int = 0.95,
+                  range = TRUE, ci = FALSE, sd = FALSE, mad = FALSE, iqr = FALSE) {
+  lst <- if (islist(...))
+    c(...) else list(...)
+  
+  sapply(lst, function(x) {
+    pr <- c((1 - conf.int[1L]) / 2 * c(1, -1) + 0:1)
+    l1 <- roundr(quantile(x, pr, na.rm = TRUE), digits)
+    l2 <- roundr(quantile(x, c(0.25, 0.75), na.rm = TRUE), digits)
+    l3 <- roundr(range(x, na.rm = TRUE), digits)
+    
+    val <- roundr(fun(if (na.rm) na.omit(x) else x), digits)
+    
+    lbl <- c(
+      lim = sprintf('range: %s - %s', l3[1L], l3[2L]),
+      ci  = sprintf('%s%% CI: %s - %s', conf.int[1L] * 100, l1[1L], l1[2L]),
+      sd  = sprintf('SD: %s', roundr(sd(x), digits)),
+      mad = sprintf('MAD: %s', roundr(mad(x), digits)),
+      iqr = sprintf('IQR: %s - %s', l2[1L], l2[2L])
+    )
+    lbl <- lbl[c(range, ci, sd, mad, iqr)]
+    
+    sprintf('%s (%s)', val, paste(lbl, collapse = '; '))
   })
 }
 
@@ -3173,8 +3218,7 @@ match_ctc <- function(..., version = 4L) {
   ctc <- if (version %ni% 3:4)
     stop('\'version\' should be 3 or 4')
   else if (version == 3L)
-    rawr::ctcae_v3
-  else rawr::ctcae_v4
+    ctcae_v3 else ctcae_v4
 
   ## guess if input is code or description
   idx <- if (any(grepl('([A-Za-z -])([0-9])', x)))

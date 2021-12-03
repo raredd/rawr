@@ -2,9 +2,23 @@
 % Please edit documentation in R/utils2.R
 \name{intr}
 \alias{intr}
+\alias{intr2}
 \title{Interval formatter}
 \usage{
 intr(..., fun = median, conf = NULL, digits = 0L, na.rm = FALSE)
+
+intr2(
+  ...,
+  fun = median,
+  na.rm = FALSE,
+  digits = 0L,
+  conf.int = 0.95,
+  range = TRUE,
+  ci = FALSE,
+  sd = FALSE,
+  mad = FALSE,
+  iqr = FALSE
+)
 }
 \arguments{
 \item{...}{numeric vector or string of numeric vectors}
@@ -20,13 +34,21 @@ intr(..., fun = median, conf = NULL, digits = 0L, na.rm = FALSE)
 \item{na.rm}{logical; if \code{TRUE}, any \code{\link{NA}} and \code{NaN}
 are removed from \code{...} before \code{FUN} and \code{\link{quantile}}
 are computed}
+
+\item{conf.int}{for \code{intr2}, the confidence level if
+\code{conf = TRUE}; default is \code{0.95}}
+
+\item{range, ci, sd, mad, iqr}{logical; for \code{intr2} if \code{TRUE},
+the range (default), confidence interval, standard deviation, median
+absolute deviation, and/or inner quartile range are shown}
 }
 \description{
 Calculate summary statistic with range or confidence interval.
 }
 \examples{
-intr(1:10)
-intr(1:10, conf = 0.95)
+x <- 1:10
+intr(x)
+intr(x, conf = 0.95)
 
 ## inner quartile range
 cbind(
@@ -36,6 +58,15 @@ cbind(
 
 ## compare to
 summary(mtcars)
+
+x <- mtcars$mpg
+intr2(x)
+intr2(x, fun = mean, sd = TRUE, conf = TRUE, conf.int = 0.9)
+
+## compare
+x <- list(mtcars$mpg, mtcars$wt)
+intr2(x, range = TRUE, iqr = TRUE, digits = 2)
+summary(mtcars[, c('mpg', 'wt')])
 
 }
 \seealso{
