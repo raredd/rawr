@@ -736,7 +736,7 @@ intr <- function(..., fun = median, conf = NULL, digits = 0L, na.rm = FALSE) {
 #' @examples
 #' x <- mtcars$mpg
 #' intr2(x)
-#' intr2(x, fun = mean, sd = TRUE, conf = TRUE, conf.int = 0.9)
+#' intr2(x, fun = mean, sd = TRUE, ci = TRUE, conf.int = 0.9)
 #' 
 #' ## compare
 #' x <- list(mtcars$mpg, mtcars$wt)
@@ -748,7 +748,7 @@ intr <- function(..., fun = median, conf = NULL, digits = 0L, na.rm = FALSE) {
 
 intr2 <- function(..., fun = median, na.rm = FALSE, digits = 0L, conf.int = 0.95,
                   range = TRUE, ci = FALSE, sd = FALSE, mad = FALSE, iqr = FALSE) {
-  lst <- if (islist(...))
+  lst <- if (islist(..1))
     c(...) else list(...)
   
   sapply(lst, function(x) {
@@ -1136,17 +1136,13 @@ num2char <- function(x, informal = FALSE, cap = TRUE) {
   x[neg] <- paste('negative', x)[neg]
   x[vapply(ox, function(v) isTRUE(all.equal(v, 0)), NA)] <- 'zero'
   
-  ## add "and" before 1-99
-  p <- sprintf('(?=((%s) (%s)|%s)$)', or(tens), or(ones[-1L]),
-               or(c(ones[-1L], teens, tens)))
-  informal <- rep_len(informal, length(x))
-  x[informal] <- sub(p, 'and ', x, perl = TRUE)[informal]
-  
   ## add hyphen between 21 to 99 inclusive
-  p <- sprintf('(.*%s) (%s)$', or(tens), or(ones[-1L]))
-  i <- ceiling_to(ox, 100) - ox
-  i <- i >= 21 & i <= 99
-  x[i] <- gsub(p, '\\1-\\2', x)[i]
+  x <- gsub(sprintf('(.*%s) (%s)$', or(tens), or(ones[-1L])), '\\1-\\2', x)
+  
+  ## add "and" before 1-99
+  informal <- rep_len(informal, length(x))
+  i <- informal & (ox / 100 - floor(ox / 100)) > 0
+  x[i] <- sub(' (?=\\S+$)', ' and ', x, perl = TRUE)[i]
   
   ifelse(rep_len(cap, length(x)), case(x), x)
 }
@@ -3218,7 +3214,7 @@ match_ctc <- function(..., version = 4L) {
   ctc <- if (version %ni% 3:4)
     stop('\'version\' should be 3 or 4')
   else if (version == 3L)
-    ctcae_v3 else ctcae_v4
+    rawr::ctcae_v3 else rawr::ctcae_v4
 
   ## guess if input is code or description
   idx <- if (any(grepl('([A-Za-z -])([0-9])', x)))

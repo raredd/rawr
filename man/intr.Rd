@@ -61,7 +61,7 @@ summary(mtcars)
 
 x <- mtcars$mpg
 intr2(x)
-intr2(x, fun = mean, sd = TRUE, conf = TRUE, conf.int = 0.9)
+intr2(x, fun = mean, sd = TRUE, ci = TRUE, conf.int = 0.9)
 
 ## compare
 x <- list(mtcars$mpg, mtcars$wt)
