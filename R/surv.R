@@ -423,8 +423,9 @@ kmplot <- function(object, data = NULL,
   
   fun <- match.arg(fun)
   
-  svar <- as.character(form <- object$call$formula)
-  svar <- svar[-(1:2)]
+  form <- object$call$formula
+  svar <- as.character(form)[-(1:2)]
+  # svar <- as.character(unlist(object$call$formula[-(1:2)]))
   
   ## formula with strata (if given), used for tests/coxph
   sform <- stratify_formula(form, stratify)
@@ -841,20 +842,24 @@ kmplot <- function(object, data = NULL,
   }
   
   ## hazard ratios
-  if (!identical(hr_text, FALSE)) {
-    txt <- tryCatch(
-      hr_text(sform, sdat, pFUN = format_pval),
-      error = function(e) ''
+  cform <- sform
+  cform <- stratify_formula(sform, stratify)
+  txt <- tryCatch(
+    hr_text(cform, sdat, pFUN = format_pval),
+    error = function(e) ''
+  )
+  
+  if (length(nchar(na.omit(txt))) != ng) {
+    warning(
+      'number of strata levels does not equal number of HR estimates:\n',
+      '  rhs of formula should be one factor with all combinations of\n',
+      '  the strata levels (eg, see ?interaction)',
+      call. = FALSE
     )
-    
-    if (length(nchar(na.omit(txt))) != ng)
-      warning(
-        'Number of strata levels does not equal number of HR estimates:\n',
-        '\tRHS of formula should be one factor with all combinations of\n',
-        '\tthe strata levels (eg, see ?interaction)',
-        call. = FALSE
-      )
-    
+    hr_text <- FALSE
+  }
+  
+  if (!identical(hr_text, FALSE)) {
     tot <- tapply(object$n.event, rep(seq_along(object$strata), object$strata), sum)
     if (events)
       txt <- paste(txt, sprintf('(%s events)', tot))
@@ -888,7 +893,7 @@ kmplot <- function(object, data = NULL,
     tmp <- dat.list[[ii]]
     if (nrow(tmp) < 2L) {
       if (any(!is.na(col.band)))
-        message('Note: strata level with one observation - no CI plotted.')
+        message('note: strata level with one observation - no CI plotted')
     } else {
       x <- tmp$time
       L <- tmp$lower
@@ -943,7 +948,7 @@ kmplot <- function(object, data = NULL,
           error = function(e) 'n/a'
         )
     if (identical(txt, FALSE))
-      message('There is only one group for ', svar, ' -- no test performed')
+      message('only one group for ', svar, ' -- no test performed')
     else {
       txt <- if (inherits(txt, 'call')) {
         txt <- as.list(txt)
@@ -1551,8 +1556,10 @@ hr_text <- function(formula, data, ..., details = TRUE, pFUN = NULL) {
   txt <- paste(cph$xlevels[[lbl[!grepl('strata\\(', lbl)]]],
                c('Reference', txt), sep = ': ')
   
-  if (is.null(cph$xlevels))
-    c(NA, gsub('^.*: ', '', txt)[-1L]) else txt
+  if (is.null(cph$xlevels)) {
+    if (length(txt) == 2L)
+      gsub('^.*: ', '', txt) else c(NA, gsub('^.*: ', '', txt)[-1L])
+  } else txt
 }
 
 #' @rdname surv_test
