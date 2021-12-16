@@ -2768,7 +2768,7 @@ xtable <- function(x, by, digits = 0L, total = TRUE, pct.sign = FALSE,
       pval <- pvalr(test)
     } else {
       test <- match.fun(test)(x, by)
-      pval <- test
+      pval <- pvalr(test)
     }
     
     res <- cbind(res, c(pval, rep_len('', nrow(res) - 1L)))
