@@ -1727,7 +1727,7 @@ sort_matrix <- function(m, margin = 1L, order = NULL, na.last = TRUE,
     is.logical(na.last) & !is.na(na.last)
   )
   
-  m <- as.matrix(m)
+  m <- as.matrix(unclass(m))
   m <- if (margin == 1L)
     t(m) else m
   order <- order %||% sort(unique(c(m)), decreasing = TRUE, na.last = na.last)
