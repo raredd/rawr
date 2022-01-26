@@ -8,12 +8,11 @@
 \usage{
 pvalr(
   pv,
-  sig.limit = 10^-digits,
-  digits = 3L,
+  sig.limit = 1e-03,
+  digits = 2L,
+  scientific = FALSE,
   html = FALSE,
   show.p = FALSE,
-  journal = TRUE,
-  limits = c(0.01, 0.5),
   ...
 )
 
@@ -38,7 +37,9 @@ color_pval(
 \item{sig.limit}{lower bound for precision; smaller values will be shown as
 \code{< sig.limit}}
 
-\item{digits}{number of digits past the decimal point to keep}
+\item{digits}{number of significant digits}
+
+\item{scientific}{see \code{\link[base]{format}}}
 
 \item{html}{logical; if \code{TRUE}, uses HTML entities for \code{<}
 and \code{>}}
@@ -46,23 +47,7 @@ and \code{>}}
 \item{show.p}{logical; if \code{TRUE}, inserts \code{p = }, \code{p < }, or
 \code{p > } where appropriate}
 
-\item{journal}{logical; if \code{TRUE}, p-values greater than
-\code{sig.limit} are rounded to \code{digits}}
-
-\item{limits}{a vector controlling the number of digits used in p-values
-
-  if \code{journal = TRUE}, \code{limits} should be length one, and p-values
-  will be rounded to two digits for values greater than \code{limits} or
-  \code{digits} for values between \code{sig.limit} and \code{limits}
-
-  if \code{journal = FALSE}, \code{limits} should be length two, and
-  p-values will be rounded to one digit for values greater than
-  \code{limits[2L]}, two digits for values between \code{limits[1L]} and
-  \code{limits[2L]}, and \code{digits} for values between \code{sig.limit}
-  and \code{limits[1L]}}
-
-\item{...}{additional arguments passed to \code{\link{format.pval}} or
-further to \code{\link{format}}}
+\item{...}{ignored}
 
 \item{breaks, cols}{a numeric vector defining breaks in \code{(0,1)} (passed
 to \code{\link{findInterval}}) and the corresponding colors}
@@ -73,27 +58,37 @@ will be applied to each p-value}
 }
 \description{
 Formats several cases of p-values; see details.
+
+Note that a previous \code{pvalr} function had additional arguments. For
+this version, see \code{rawr2::pvalr}.
 }
 \details{
-\code{pvalr} will deal with several cases of common p-values: 1) p-values
-which are > 0.1 will be rounded to two decimal places (and keep any trailing
-0s) since we are not usually interested in precision of insignificant
-values; 2) p-values which are less than the specified \code{sig.level} will
-be formatted as \code{< 0.001}, for example; 3) p-values that are less than
-0.01 but greater than \code{sig.level} will be precise to \code{digits} and
-keep any trailing 0s.
+\code{pvalr} rounds numeric values to a specified number of significant
+\code{digits} and add (if necessary) trailing 0s. The result will be a
+character string to prevent loss of significant digits.
+
+Note that negative values are treated as small p-values (similar to
+\code{format.pval}), but unlike \code{format.pval}, values greater than 1
+are formatted as \code{> 1 - 1 / 10 ^ digits}
 
 \code{pvalr2} deals with common cases of character string p-values which are
 not ideal (0.000, 1.00, etc.) and will leave others unchanged.
 }
 \examples{
-pv <- c(-1, 0.00001, 0.0042, 0.0601, 0.1335, 0.4999, 0.51, 0.89, 0.9, 1)
+pv <- c(-1, 0.001, 0.0001, 0.0042, 0.0601, 0.1335, 0.4999, 0.9, 0.997, 1, 2)
 format.pval(pv, eps = 0.001)
 
 pvalr(pv)
-pvalr(pv, journal = FALSE)
-pvalr(pv, limits = 0.1)
+pvalr(pv, digits = 3)
 pvalr(pv, show.p = TRUE, html = TRUE)
+
+\dontrun{
+## older version of pvalr in rawr2 package
+## note differences in digits used
+rawr2::pvalr(pv)
+rawr2::pvalr(pv, journal = FALSE)
+rawr2::pvalr(pv, limits = 0.1)
+}
 
 pv <- c('0.00000', '< 0.001', '0.0', '0.123', '0.6', '1', '1.0', '1.000')
 pvalr2(pv)
@@ -107,5 +102,6 @@ show_html(iprint(color_pval(pv, show.p = TRUE)))
 
 }
 \seealso{
-\code{\link[rawr]{roundr}}; \code{\link[base]{format.pval}}
+\code{\link[rawr]{roundr}}; \code{\link[base]{format.pval}};
+\code{rawr:::signif2}
 }
