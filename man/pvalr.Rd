@@ -23,7 +23,7 @@ color_pval(
   breaks = c(0, 0.01, 0.05, 0.1, 0.5, 1),
   cols = colorRampPalette(2:1)(length(breaks)),
   sig.limit = 1e-03,
-  digits = 3L,
+  digits = 2L,
   show.p = FALSE,
   format_pval = TRUE,
   journal = TRUE,
@@ -94,7 +94,7 @@ pv <- c('0.00000', '< 0.001', '0.0', '0.123', '0.6', '1', '1.0', '1.000')
 pvalr2(pv)
 
 \dontrun{
-pv <- c(0, 0.00001, 0.03, .06, .11, .49, .51, .89, .9, 1)
+pv <- c(0, 0.00001, 0.03, 0.06, 0.11, 0.49, 0.51, 0.89, 0.9, 1)
 show_html(color_pval(pv))
 show_html(color_pval(pv, format_pval = format.pval))
 show_html(iprint(color_pval(pv, show.p = TRUE)))
