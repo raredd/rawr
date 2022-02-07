@@ -849,17 +849,17 @@ kmplot <- function(object, data = NULL,
     error = function(e) ''
   )
   
-  if (length(nchar(na.omit(txt))) != ng) {
-    warning(
-      'number of strata levels does not equal number of HR estimates:\n',
-      '  rhs of formula should be one factor with all combinations of\n',
-      '  the strata levels (eg, see ?interaction)',
-      call. = FALSE
-    )
-    hr_text <- FALSE
-  }
-  
   if (!identical(hr_text, FALSE)) {
+    if (length(nchar(na.omit(txt))) != ng) {
+      warning(
+        'number of strata levels does not equal number of HR estimates:\n',
+        '  rhs of formula should be one factor with all combinations of\n',
+        '  the strata levels (eg, see ?interaction)',
+        call. = FALSE
+      )
+      hr_text <- FALSE
+    }
+    
     tot <- tapply(object$n.event, rep(seq_along(object$strata), object$strata), sum)
     if (events)
       txt <- paste(txt, sprintf('(%s events)', tot))
