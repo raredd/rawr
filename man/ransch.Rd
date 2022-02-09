@@ -5,15 +5,25 @@
 \alias{ranschtbl}
 \title{ransch}
 \usage{
-ransch(n, block, arms, r = 1L, strata = NULL)
+ransch(n, block, arms, r = rep_len(1L, length(arms)), strata = NULL)
 
-ranschtbl(n, block, arms, r = 1L, strata = NULL, write = NULL)
+ranschtbl(
+  n,
+  block,
+  arms,
+  r = rep_len(1L, length(arms)),
+  strata = NULL,
+  write = NULL
+)
 }
 \arguments{
 \item{n}{sample size of study or each stratum}
 
 \item{block}{block size; note if \code{block} is not a factor of \code{n},
-\code{n} will be increased to accommodate a full block}
+  \code{n} will be increased to accommodate a full block
+
+  for randomly-sized blocks, a vector of potential block sizes; note that
+  a block size must be a multiple of \code{sum(r)}}
 
 \item{arms}{names of the treatment arms}
 
@@ -25,13 +35,29 @@ ranschtbl(n, block, arms, r = 1L, strata = NULL, write = NULL)
 randomization table}
 }
 \description{
-Generate block randomization schedule tables.
+Generate block randomization schedule tables with fixed or random block
+size.
 }
 \examples{
 ## no strata, 2-3 treatments with varying randomization ratios
 ransch(24, 4, 1:2) ## 1:1
 ransch(24, 6, 1:3) ## 1:1:1
 ransch(24, 8, 1:3, c(1, 2, 1)) ## 1:2:1
+
+
+## randomly-sized blocks
+ransch(24, c(2, 4, 6), 1:2)
+
+set.seed(1)
+r1 <- ransch(24, c(3, 6, 9), 1:3)
+set.seed(1)
+r2 <- ransch(24, 1:10, 1:3)
+
+## note that these two are the same since only blocks sized 3, 6, 9
+## work for 1:1:1 randomization
+identical(r1, r2)
+addmargins(table(r1[[1]][, -1]))
+
 
 ## one two-level stratum
 ransch(24, 4, 1:2, strata = list(Age = c('<65', '>=65')))

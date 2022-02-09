@@ -1941,11 +1941,15 @@ rfvar <- function(formula, data, nvar = -1L, depth = NULL,
 
 #' ransch
 #'
-#' Generate block randomization schedule tables.
+#' Generate block randomization schedule tables with fixed or random block
+#' size.
 #'
 #' @param n sample size of study or each stratum
 #' @param block block size; note if \code{block} is not a factor of \code{n},
 #'   \code{n} will be increased to accommodate a full block
+#' 
+#'   for randomly-sized blocks, a vector of potential block sizes; note that
+#'   a block size must be a multiple of \code{sum(r)}
 #' @param arms names of the treatment arms
 #' @param r randomization ratio; see examples
 #' @param strata an optional named list of vectors for each stratum
@@ -1957,6 +1961,21 @@ rfvar <- function(formula, data, nvar = -1L, depth = NULL,
 #' ransch(24, 4, 1:2) ## 1:1
 #' ransch(24, 6, 1:3) ## 1:1:1
 #' ransch(24, 8, 1:3, c(1, 2, 1)) ## 1:2:1
+#' 
+#' 
+#' ## randomly-sized blocks
+#' ransch(24, c(2, 4, 6), 1:2)
+#' 
+#' set.seed(1)
+#' r1 <- ransch(24, c(3, 6, 9), 1:3)
+#' set.seed(1)
+#' r2 <- ransch(24, 1:10, 1:3)
+#' 
+#' ## note that these two are the same since only blocks sized 3, 6, 9
+#' ## work for 1:1:1 randomization
+#' identical(r1, r2)
+#' addmargins(table(r1[[1]][, -1]))
+#' 
 #'
 #' ## one two-level stratum
 #' ransch(24, 4, 1:2, strata = list(Age = c('<65', '>=65')))
@@ -1976,7 +1995,8 @@ rfvar <- function(formula, data, nvar = -1L, depth = NULL,
 #'
 #' @export
 
-ransch <- function(n, block, arms, r = 1L, strata = NULL) {
+ransch <- function(n, block, arms, r = rep_len(1L, length(arms)),
+                   strata = NULL) {
   if (!is.null(strata)) {
     if (is.null(names(strata)))
       names(strata) <- paste0('Stratum', seq_along(strata))
@@ -1994,7 +2014,8 @@ ransch <- function(n, block, arms, r = 1L, strata = NULL) {
 
 #' @rdname ransch
 #' @export
-ranschtbl <- function(n, block, arms, r = 1L, strata = NULL, write = NULL) {
+ranschtbl <- function(n, block, arms, r = rep_len(1L, length(arms)),
+                      strata = NULL, write = NULL) {
   res <- ransch(n, block, arms, r, strata)
 
   res[] <- lapply(seq_along(res), function(ii) {
@@ -2020,23 +2041,28 @@ ranschtbl <- function(n, block, arms, r = 1L, strata = NULL, write = NULL) {
 }
 
 ransch_ <- function(n, block, arms, r) {
-  # table(rawr:::ransch_(12, 6, c('Pbo', 'Trt'), c(1, 1))[, -1])
-  # table(rawr:::ransch_(15, 5, c('Pbo', 'Ex1', 'Ex2'), c(1, 2, 2))[, -1])
-  stopifnot(
-    length(arms) == length(r),
-    block %% sum(r) == 0L
-  )
-
-  arms <- rep_len(rep(arms, r), block)
-  n <- if (n %% block == 0)
-    n else n + block
-  b <- n %/% block
-  x <- c(replicate(b, sample(seq.int(block))))
-
+  ## table(ransch_(12, 6, c('Pbo', 'Trt'), c(1, 1))[, -1])
+  ## table(ransch_(12, 1:4, c('Pbo', 'Trt'), c(1, 1))[, -1])
+  stopifnot(length(arms) == length(r))
+  
+  sample <- function(x, ...) {
+    x[sample.int(length(x), ...)]
+  }
+  rblock <- function(b, arms, r) {
+    arms <- rep_len(rep(arms, r), b)
+    sample(arms)
+  }
+  
+  block <- block[block %% sum(r) == 0L]
+  block <- sample(block, n, replace = TRUE)
+  idx <- cumsum(block) < n
+  block <- block[c(which(idx), sum(idx) + 1L)]
+  
+  
   data.frame(
-    Number = seq_along(x),
-    Block = rep(seq.int(b), each = block),
-    Assignment = arms[x]
+    Number = seq.int(sum(block)),
+    Block = rep(seq_along(block), block),
+    Assignment = unlist(lapply(block, rblock, arms = arms, r = r))
   )
 }
 
