@@ -907,7 +907,10 @@ color_pval <- function(pv, breaks = c(0, 0.01, 0.05, 0.1, 0.5, 1),
   stopifnot(length(breaks) == length(cols))
 
   pv <- if (isTRUE(format_pval))
-    pvalr(pvn, sig.limit, digits, TRUE, show.p, journal, ...)
+    pvalr(
+      pvn, sig.limit = sig.limit, digits = digits, scientific = FALSE,
+      html = TRUE, show.p = show.p, ...
+    )
   else if (identical(format_pval, FALSE))
     pv else format_pval(pv)
 
