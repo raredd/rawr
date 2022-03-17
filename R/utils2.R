@@ -639,7 +639,7 @@ roundr.default <- function(x, digits = 1L, format = TRUE, check = TRUE,
 
   ## drop leading '-' if value is 0.00...
   zero <- sprintf(fmt, 0)
-  res[res == paste0('-', zero)] <- zero
+  res[res == paste0('-', zero) & !is.na(res)] <- zero[!is.na(res)]
 
   res[is.na(x)] <- NA
   
