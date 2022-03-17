@@ -711,7 +711,9 @@ floor_to <- function(x, to = 1, FUN = floor) {
 #' @param value logical; if \code{TRUE}, returns column value(s); otherwise,
 #'   returns column name(s) (default)
 #' @param default for \code{value = FALSE}, the default value returned if
-#'   a row of \code{data} contains no \code{ind} in any column
+#'   a row of \code{data} contains no \code{ind} in any column;
+#'   for \code{value = TRUE}, the value returned if all \code{data} in a row
+#'   is \code{NA}
 #' 
 #' @return
 #' If \code{value} is \code{FALSE} (default), the column names of \code{data}
@@ -733,12 +735,12 @@ floor_to <- function(x, to = 1, FUN = floor) {
 #' 
 #' 
 #' dd <- data.frame(
-#'   x = c(1, 0, 0),
-#'   y = c(0, 0, 1),
-#'   z = c(0, 1, 0),
-#'   a = c('one', '', ''),
-#'   b = c('', '', 'three'),
-#'   c = c('', 'two', '')
+#'   x = c(1, 0, 0, NA),
+#'   y = c(0, 0, 1, NA),
+#'   z = c(0, 1, 0, NA),
+#'   a = c('one', '', '', NA),
+#'   b = c('', '', 'three', NA),
+#'   c = c('', 'two', '', NA)
 #' )
 #' 
 #' pickcol(dd[1:2])
@@ -757,7 +759,10 @@ pickcol <- function(data, ind = 1L, value = FALSE, default = NA) {
   res <- apply(data, 1L, function(x) {
     if (value) {
       x[x %in% ind] <- NA
-      if (length(x <- x[!is.na(x)]) > 1L)
+      x <- x[!is.na(x)]
+      if (!length(x))
+        default
+      else if (length(x) > 1L)
         toString(x) else x
     } else {
       idx <- x %in% ind

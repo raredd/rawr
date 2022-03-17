@@ -18,7 +18,9 @@ e.g., \code{NA}s or empty strings}
 returns column name(s) (default)}
 
 \item{default}{for \code{value = FALSE}, the default value returned if
-a row of \code{data} contains no \code{ind} in any column}
+a row of \code{data} contains no \code{ind} in any column;
+for \code{value = TRUE}, the value returned if all \code{data} in a row
+is \code{NA}}
 }
 \value{
 If \code{value} is \code{FALSE} (default), the column names of \code{data}
@@ -44,12 +46,12 @@ all(pickcol(dd, value = TRUE, ind = 0) == rowSums(dd))
 
 
 dd <- data.frame(
-  x = c(1, 0, 0),
-  y = c(0, 0, 1),
-  z = c(0, 1, 0),
-  a = c('one', '', ''),
-  b = c('', '', 'three'),
-  c = c('', 'two', '')
+  x = c(1, 0, 0, NA),
+  y = c(0, 0, 1, NA),
+  z = c(0, 1, 0, NA),
+  a = c('one', '', '', NA),
+  b = c('', '', 'three', NA),
+  c = c('', 'two', '', NA)
 )
 
 pickcol(dd[1:2])
