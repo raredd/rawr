@@ -885,6 +885,7 @@ pvalr2 <- function(pv, html = FALSE, show.p = FALSE) {
 #' @param format_pval logical; if \code{TRUE}, p-values will be formatted
 #'   using \code{\link{pvalr}}; alternatively, a function may by used which
 #'   will be applied to each p-value
+#' @param na a string used for \code{NA} p-values (default is \code{"-"})
 #'
 #' @examples
 #' \dontrun{
@@ -899,7 +900,7 @@ pvalr2 <- function(pv, html = FALSE, show.p = FALSE) {
 color_pval <- function(pv, breaks = c(0, 0.01, 0.05, 0.1, 0.5, 1),
                        cols = colorRampPalette(2:1)(length(breaks)),
                        sig.limit = 0.001, digits = 2L, show.p = FALSE,
-                       format_pval = TRUE, journal = TRUE, ...) {
+                       format_pval = TRUE, journal = TRUE, na = '-', ...) {
   if (!is.numeric(pv))
     return(pv)
   pvn <- pv
@@ -907,17 +908,14 @@ color_pval <- function(pv, breaks = c(0, 0.01, 0.05, 0.1, 0.5, 1),
   stopifnot(length(breaks) == length(cols))
 
   pv <- if (isTRUE(format_pval))
-    pvalr(
-      pvn, sig.limit = sig.limit, digits = digits, scientific = FALSE,
-      html = TRUE, show.p = show.p, ...
-    )
+    pvalr(pvn, sig.limit, digits, scientific = FALSE, html = TRUE, show.p)
   else if (identical(format_pval, FALSE))
     pv else format_pval(pv)
 
   pvc <- cols[findInterval(pvn, breaks)]
   res <- sprintf('<font color=\"%s\">%s</font>', pvc, pv)
 
-  replace(res, grepl('>NA<', res, fixed = TRUE), '-')
+  replace(res, grepl('>NA<', res, fixed = TRUE), na)
 }
 
 #' Concatenate list for output

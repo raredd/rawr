@@ -27,6 +27,7 @@ color_pval(
   show.p = FALSE,
   format_pval = TRUE,
   journal = TRUE,
+  na = "-",
   ...
 )
 }
@@ -55,6 +56,8 @@ to \code{\link{findInterval}}) and the corresponding colors}
 \item{format_pval}{logical; if \code{TRUE}, p-values will be formatted
 using \code{\link{pvalr}}; alternatively, a function may by used which
 will be applied to each p-value}
+
+\item{na}{a string used for \code{NA} p-values (default is \code{"-"})}
 }
 \description{
 Formats several cases of p-values; see details.
