@@ -837,7 +837,7 @@ pvalr <- function(pv, sig.limit = 0.001, digits = 2L, scientific = FALSE,
   high <- 1 - 1 / 10 ^ digits
   
   sapply(pv, function(x) {
-    if (is.na(x) | !nzchar(x))
+    if (is.na(x) | !nzchar(x) | !is.numeric(x))
       NA
     else if (x > high)
       paste0(pstr, c('> ', '&gt; ')[html + 1L], high)
