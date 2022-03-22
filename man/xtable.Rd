@@ -12,6 +12,7 @@ xtable(
   pct.sign = FALSE,
   test = TRUE,
   label.test = NULL,
+  html = FALSE,
   ...
 )
 }
@@ -37,6 +38,9 @@ will be shown}
   examples}
 
 \item{label.test}{optional label for the test column}
+
+\item{html}{logical; if \code{TRUE} uses HTML entities for < and >; see
+\code{\link[rawr]{pvalr}}}
 
 \item{...}{additional arguments passed to
 \code{\link[Gmisc]{getDescriptionStatsBy}}}

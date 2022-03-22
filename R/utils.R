@@ -2703,6 +2703,8 @@ response2 <- function(id, date, response, ...,
 #'   attribute, \code{"name"}, which will be used as a test label; see
 #'   examples
 #' @param label.test optional label for the test column
+#' @param html logical; if \code{TRUE} uses HTML entities for < and >; see
+#'   \code{\link[rawr]{pvalr}}
 #' @param ... additional arguments passed to
 #'   \code{\link[Gmisc]{getDescriptionStatsBy}}
 #' 
@@ -2749,7 +2751,7 @@ response2 <- function(id, date, response, ...,
 #' @export
 
 xtable <- function(x, by, digits = 0L, total = TRUE, pct.sign = FALSE,
-                   test = TRUE, label.test = NULL, ...) {
+                   test = TRUE, label.test = NULL, html = FALSE, ...) {
   xn <- deparse(substitute(x))
   bn <- deparse(substitute(by))
   
@@ -2765,10 +2767,10 @@ xtable <- function(x, by, digits = 0L, total = TRUE, pct.sign = FALSE,
   if (!isFALSE(test)) {
     if (isTRUE(test)) {
       test <- guess_test(x, by)
-      pval <- pvalr(test)
+      pval <- pvalr(test, html = html)
     } else {
       test <- match.fun(test)(x, by)
-      pval <- pvalr(test)
+      pval <- pvalr(test, html = html)
     }
     
     res <- cbind(res, c(pval, rep_len('', nrow(res) - 1L)))
