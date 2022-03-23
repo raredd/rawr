@@ -2700,8 +2700,9 @@ response2 <- function(id, date, response, ...,
 #' 
 #'   alternatively, a user-defined test function which takes two arguments,
 #'   \code{x} and \code{by}, and returns a numeric p-value with an optional
-#'   attribute, \code{"name"}, which will be used as a test label; see
-#'   examples
+#'   attribute, \code{"name"}, which will be used as a test label; the
+#'   function may return a string instead in which case the string will be
+#'   used literally; see examples
 #' @param label.test optional label for the test column
 #' @param html logical; if \code{TRUE} uses HTML entities for < and >; see
 #'   \code{\link[rawr]{pvalr}}
@@ -2770,7 +2771,7 @@ xtable <- function(x, by, digits = 0L, total = TRUE, pct.sign = FALSE,
       pval <- pvalr(test, html = html)
     } else {
       test <- match.fun(test)(x, by)
-      pval <- pvalr(test, html = html)
+      pval <- if (is.numeric(test)) pvalr(test, html = html) else test
     }
     
     res <- cbind(res, c(pval, rep_len('', nrow(res) - 1L)))

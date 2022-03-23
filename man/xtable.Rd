@@ -34,8 +34,9 @@ will be shown}
 
   alternatively, a user-defined test function which takes two arguments,
   \code{x} and \code{by}, and returns a numeric p-value with an optional
-  attribute, \code{"name"}, which will be used as a test label; see
-  examples}
+  attribute, \code{"name"}, which will be used as a test label; the
+  function may return a string instead in which case the string will be
+  used literally; see examples}
 
 \item{label.test}{optional label for the test column}
 
