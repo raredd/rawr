@@ -22,6 +22,11 @@ legend}
 defaults; these will be over-ridden in individual legends by passing a
 list of arguments to \code{legend}}
 }
+\value{
+A data frame of \code{data.frame(legend(...))} for each \code{legend} with
+the legend index to distinguish multiple legends. Note that the number of
+rows in each group depends on the number of values in each legend.
+}
 \description{
 Stack multiple legends.
 }

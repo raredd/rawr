@@ -1255,6 +1255,11 @@ labeller <- function(fig = NULL, sub = NULL, side = 3L, pad = NULL, at = c(0.05,
 #'   defaults; these will be over-ridden in individual legends by passing a
 #'   list of arguments to \code{legend}
 #' 
+#' @return
+#' A data frame of \code{data.frame(legend(...))} for each \code{legend} with
+#' the legend index to distinguish multiple legends. Note that the number of
+#' rows in each group depends on the number of values in each legend.
+#' 
 #' @examples
 #' op <- par(mfrow = c(1, 2))
 #' plot(1)
@@ -1293,14 +1298,15 @@ mlegend <- function(x, y = NULL, legend, horizontal = FALSE, ...) {
     legend <- list(legend)
   nl <- length(legend)
   
-  lg <- res <- do.call(
+  lg <- do.call(
     'legend', modifyList(list(x = x, y = y, ...), legend[[1L]])
   )
+  res <- within(data.frame(lg), legend <- 1L)
   
   if (nl == 1L)
     return(invisible(lg))
   
-  for (ii in 2:nl) {
+  for (ii in seq.int(nl)[-1L]) {
     if (horizontal) {
       x <- lg$rect$left + lg$rect$w
       y <- lg$rect$top
@@ -1310,7 +1316,7 @@ mlegend <- function(x, y = NULL, legend, horizontal = FALSE, ...) {
     }
     
     lg <- do.call('legend', modifyList(list(x = x, y = y, ...), legend[[ii]]))
-    res <- c(res, lg)
+    res <- rbind(res, within(data.frame(lg), legend <- ii))
   }
   
   invisible(res)
