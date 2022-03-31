@@ -92,6 +92,8 @@
 #'   \code{dp = 0} will give the Atkinson and Brown procedure, and
 #'   \code{dp = 1} (default) will order based on MLE; values such as
 #'   \code{dp = 0.5} can also be used; see details
+#' @param max_width logical; if \code{TRUE}, the maximum width of each
+#'   confidence interval is given for \code{n}
 #'
 #' @return
 #' A matrix containing the computed interval(s) and their widths.
@@ -138,7 +140,7 @@
 
 bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
                    method = c('exact', 'wilson', 'asymptotic', 'all', 'two-stage'),
-                   dp = 1) {
+                   dp = 1, max_width = TRUE) {
   if (alpha >= 1 | alpha <= 0)
     stop('\'alpha\' must be between 0 and 1')
 
@@ -181,16 +183,18 @@ bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
     cl <- (p + z2 / 2 / n + c(-1, 1) * zcrit *
              sqrt((p * (1 - p) + z2 / 4 / n) / n)) / (1 + z2 / n)
     if (r == 1)
-      cl[1] <- -log(1 - alpha) / n
+      cl[1L] <- -log(1 - alpha) / n
     if (r == (n - 1))
-      cl[2] <- 1 + log(1 - alpha) / n
+      cl[2L] <- 1 + log(1 - alpha) / n
     asymp.lcl <- r / n - qnorm(1 - alpha / 2) *
       sqrt(((r / n) * (1 - r / n)) / n)
     asymp.ucl <- r / n + qnorm(1 - alpha / 2) *
       sqrt(((r / n) * (1 - r / n)) / n)
     res <- rbind(c(ll, ul), cl, c(asymp.lcl, asymp.ucl))
-    res <- cbind(rep(r / n, 3), res)
-
+    res <- cbind(rep(r / n, 3L), res)
+    res <- cbind(res, res[, 3L] - res[, 2L])
+    dimnames(res) <- NULL
+    
     switch(
       method,
       exact      = res[1L, ],
@@ -209,23 +213,33 @@ bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
     warning('Multiple confidence intervals should use only one method, ',
             'defaulting to \'exact\' method', domain = NA)
   }
+  
+  maxwid <- function(n, alpha, method) {
+    max(sapply(seq.int(n), function(nn)
+      bc(nn, n[1L], alpha[1L], method[1L])[4L]))
+  }
+  
+  rn <- c('exact', 'wilson', 'asymptotic')
+  cn <- c('PointEst', 'Lower', 'Upper', 'Width')
 
   if (method == 'all' & lr == 1L & ln == 1L) {
     mat <- bc(r, n, alpha, method)
-    mat <- cbind(mat, mat[, 3L] - mat[, 2L])
-    dimnames(mat) <- list(c('Exact', 'Wilson', 'Asymptotic'),
-                          c('PointEst', 'Lower', 'Upper','Width'))
-    mat[, 2:4] <- round(mat[, 2:4], digits = digits)
+    dimnames(mat) <- list(rn, cn)
+    
+    if (max_width)
+      mat <- cbind(mat, MaxWidth = sapply(rn, function(x) maxwid(n, alpha, x)))
+    mat[, -1L] <- round(mat[, -1L], digits = digits)
 
     return(cbind(Responses = r, Trials = n, mat))
   }
 
-  mat <- matrix(ncol = 3L, nrow = lr)
+  mat <- matrix(ncol = 3L + max_width, nrow = lr)
   for (i in seq.int(lr))
     mat[i, ] <- bc(r[i], n[i], alpha = alpha, method = method)
-  mat <- cbind(mat, mat[, 3L] - mat[, 2L])
-  colnames(mat) <- c('PointEst', 'Lower', 'Upper', 'Width')
-  mat[, 2:4] <- round(mat[, 2:4], digits = digits)
+  colnames(mat) <- cn
+  if (max_width)
+    mat <- cbind(mat, MaxWidth = sapply(n, function(x) maxwid(x, alpha, method)))
+  mat[, -1L] <- round(mat[, -1L], digits = digits)
 
   cbind(Responses = r, Trials = n, mat)
 }

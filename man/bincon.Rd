@@ -10,7 +10,8 @@ bincon(
   alpha = 0.05,
   digits = getOption("digits"),
   method = c("exact", "wilson", "asymptotic", "all", "two-stage"),
-  dp = 1
+  dp = 1,
+  max_width = TRUE
 )
 }
 \arguments{
@@ -37,6 +38,9 @@ stage}
   \code{dp = 0} will give the Atkinson and Brown procedure, and
   \code{dp = 1} (default) will order based on MLE; values such as
   \code{dp = 0.5} can also be used; see details}
+
+\item{max_width}{logical; if \code{TRUE}, the maximum width of each
+confidence interval is given for \code{n}}
 }
 \value{
 A matrix containing the computed interval(s) and their widths.
