@@ -26,7 +26,6 @@ color_pval(
   digits = 2L,
   show.p = FALSE,
   format_pval = TRUE,
-  journal = TRUE,
   na = "-",
   ...
 )

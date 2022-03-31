@@ -900,7 +900,7 @@ pvalr2 <- function(pv, html = FALSE, show.p = FALSE) {
 color_pval <- function(pv, breaks = c(0, 0.01, 0.05, 0.1, 0.5, 1),
                        cols = colorRampPalette(2:1)(length(breaks)),
                        sig.limit = 0.001, digits = 2L, show.p = FALSE,
-                       format_pval = TRUE, journal = TRUE, na = '-', ...) {
+                       format_pval = TRUE, na = '-', ...) {
   if (!is.numeric(pv))
     return(pv)
   pvn <- pv
