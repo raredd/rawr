@@ -18,6 +18,7 @@ Imports:
 Suggests:
     beeswarm,
     DT,
+    glmnet,
     Gmisc (>= 1.0),
     htmlTable (>= 1.0),
     htmlwidgets,

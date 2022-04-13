@@ -2,8 +2,8 @@
 # bincon, bintest, dlt_table, pr_table, moods.test, cuzick.test,
 # cuzick.test.default, cuzick.test.formula, jt.test, kw.test, kw.test.default,
 # kw.test.formula, ca.test, ca.test.default, ca.test.formula, lspline,
-# perm.t.test, perm.t.test.default, perm.t.test.formula, rfvar, ransch,
-# ranschtbl, twostg.test, cor.n, cor.ci, bni
+# perm.t.test, perm.t.test.default, perm.t.test.formula, vs.rfsrc, vs.glmnet,
+# ransch, ranschtbl, twostg.test, cor.n, cor.ci, bni
 #
 # S3 methods:
 # cuzick.test, kw.test, ca.test, perm.t.test
@@ -1854,12 +1854,13 @@ perm.t.test.formula <- function(formula, data, ...) {
   y
 }
 
-#' Random forest variable selection
+#' rfsrc variable selection
 #'
 #' Drop least relevant variables from a \code{\link[randomForestSRC]{rfsrc}}
 #' model with optional diagnostics.
 #'
-#' @param formula,data see \code{\link[randomForestSRC]{rfsrc}}
+#' @param formula,data a formula and data frame containing the response and
+#'   all potential predictor variables
 #' @param nvar number of variables desired in final model (if positive) or
 #'   the number of variables to drop (if negative)
 #' @param depth logical or a numeric value (if \code{NULL}, variables will
@@ -1876,41 +1877,52 @@ perm.t.test.formula <- function(formula, data, ...) {
 #'   \code{refit = TRUE})
 #' @param ... additional parameters passed to
 #'   \code{\link[randomForestSRC]{rfsrc}}
-#'
+#' 
+#' @seealso
+#' \code{\link{vs.rfsrc}}
+#' 
 #' @return
 #' The \code{formula} of the final model.
 #'
 #' @examples
-#' f <- formula(rev(iris))
-#'
+#' vs.rfsrc(iris)
+#' vs.rfsrc(I(Species == 'setosa') ~ ., iris)
+#' 
+#' 
 #' ## select variables based on first-order depth
-#' rfvar(f, iris, depth = TRUE, verbose = TRUE, plot = FALSE, ntree = 10)
-#'
-#'
+#' f <- formula(rev(iris))
+#' vs.rfsrc(f, iris, depth = TRUE, verbose = TRUE, plot = FALSE, ntree = 10)
+#' 
 #' ## keep only most relevant 2 variables
-#' rfvar(f, iris, nvar = 2)
+#' vs.rfsrc(f, iris, nvar = 2)
+#' 
 #' ## drop 2 least relevant variables
-#' rfvar(f, iris, nvar = -2)
-#' rfvar(f, iris, nvar = -2, refit = FALSE)
+#' vs.rfsrc(f, iris, nvar = -2)
+#' vs.rfsrc(f, iris, nvar = -2, refit = FALSE)
 #'
 #'
 #' library('survival')
 #' f <- Surv(time, status == 0) ~ rx + sex + age + obstruct + adhere + nodes
-#' rfvar(f, colon, nvar = 4, ntree = 5)
-#' # rfvar(f, colon, nvar = -2, ntree = 5) ## same
+#' vs.rfsrc(f, colon, nvar = 4, ntree = 5)
+#' # vs.rfsrc(f, colon, nvar = -2, ntree = 5) ## same
 #'
 #' ## for slower models, refit = FALSE may improve performance
-#' rfvar(f, colon, nvar = 4, ntree = 5, refit = FALSE, plot = TRUE)
+#' vs.rfsrc(f, colon, nvar = 4, ntree = 5, refit = FALSE, plot = TRUE)
 #'
 #' @export
 
-rfvar <- function(formula, data, nvar = -1L, depth = NULL,
-                  verbose = FALSE, plot = verbose, refit = TRUE, ...) {
-  tt <- rownames(attr(terms(formula), 'factors'))
-  yy <- tt[1L]
-  xx <- tt[-1L]
+vs.rfsrc <- function(formula, data, nvar = -1L, depth = NULL,
+                     verbose = FALSE, plot = verbose, refit = TRUE, ...) {
+  if (is.data.frame(formula)) {
+    data <- formula
+    formula <- formula(data)
+  }
+  
+  mf <- model.frame(formula, data)
+  yy <- colnames(mf)[1L]
+  xx <- colnames(mf)[-1L]
 
-  co <- complete.cases(data[, all.vars(formula)])
+  co <- complete.cases(data[, all.vars(mf)])
   if (any(!co)) {
     message(sum(!co), ' observations removed due to missingness')
     data <- data[co, ]
@@ -1920,7 +1932,7 @@ rfvar <- function(formula, data, nvar = -1L, depth = NULL,
     nvar <- pmax(1L, length(xx) + nvar)
 
   if (nvar == 0 || length(xx) == nvar)
-    return(print(formula, showEnv = FALSE))
+    return(formula0(formula))
 
   rf <- randomForestSRC::rfsrc(formula, data = data, importance = TRUE, ...)
 
@@ -1939,7 +1951,7 @@ rfvar <- function(formula, data, nvar = -1L, depth = NULL,
     vo <- rownames(vo[vo[, 1L] <= threshold, ])
     if (verbose)
       message('threshold used: ', threshold)
-    return(print(reformulate(vo, yy), showEnv = FALSE))
+    return(formula0(reformulate(vo, yy)))
   }
 
   ## remove least relevant variable(s)
@@ -1950,7 +1962,55 @@ rfvar <- function(formula, data, nvar = -1L, depth = NULL,
     names(which.min(ri)) else head(names(ri)[order(ri)], -nvar)
   formula <- reformulate(setdiff(xx, ex), yy)
 
-  Recall(formula, data, nvar, depth, verbose, plot, refit, ...)
+  formula0(Recall(formula, data, nvar, depth, verbose, plot, refit, ...))
+}
+
+#' glmnet variable selection
+#' 
+#' Drop least relevant variables from a \code{\link[glmnet]{glmnet}}
+#' model with optional diagnostics.
+#' 
+#' @param formula,data a formula and data frame containing the response and
+#'   all potential predictor variables
+#' @param alpha elastic net mixing parameter; default penalty is 1 for lasso,
+#'   or any value between 0 (ridge penalty) and 1
+#' @param ... additional arguments passed to \code{\link[glmnet]{cv.glmnet}}
+#'   or further to \code{\link[glmnet]{glmnet}}
+#' 
+#' @seealso
+#' \code{\link{vs.rfsrc}}
+#' 
+#' @examples
+#' vs.glmnet(iris, alpha = 1) ## lasso - default
+#' vs.glmnet(iris, alpha = 0) ## ridge
+#' 
+#' vs.glmnet(I(Species == 'setosa') ~ ., iris)
+#' 
+#' @export
+
+vs.glmnet <- function(formula, data, alpha = 1, ...) {
+  if (is.data.frame(formula)) {
+    data <- formula
+    formula <- formula(data)
+  }
+  
+  mf <- model.frame(formula, data)
+  mm <- model.matrix(formula, data)
+  gn <- glmnet::cv.glmnet(x = mm[, -1L], y = mf[, 1L], alpha = alpha, ...)
+  
+  co <- coef(gn, s = 'lambda.1se')
+  ii <- which(as.numeric(co) != 0)
+  rn <- row.names(co)[ii]
+  rn <- rn[!grepl('\\(Intercept\\)', rn)]
+  if (!length(rn))
+    rn <- '1'
+  
+  formula0(reformulate(rn, colnames(mf)[1L]))
+}
+
+formula0 <- function(x) {
+  attr(x, '.Environment') <- .GlobalEnv
+  x
 }
 
 #' ransch
