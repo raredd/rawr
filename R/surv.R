@@ -217,6 +217,7 @@ stratify_formula <- function(formula, vars = NULL) {
 #' km1 <- survfit(Surv(time, status) ~ sex, data = colon)
 #' km2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 #' 
+#' 
 #' ## basic usage
 #' kmplot(km1)
 #' kmplot(km1, args.median = list(x = 500, y = 0.2))
@@ -393,18 +394,19 @@ kmplot <- function(object, data = NULL,
     object <- within.list(object, {
       strata <- rep_len(length(time), ng)
       names(strata) <- colnames(surv) %||% 'All'
-      n <- rep_len(n, length(strata))
       
+      n <- rep_len(n, length(strata))
       time <- rep(time, ng)
       n.risk <- rep(n.risk, ng)
       n.event <- rep(n.event, ng)
       n.censor <- rep(n.censor, ng)
       
       surv <- c(surv)
+      cumhaz <- c(cumhaz)
+      std.err <- c(std.err)
+      std.chaz <- c(std.chaz)
       lower <- c(lower)
       upper <- c(upper)
-      std.err <- c(std.err)
-      cumhaz <- c(cumhaz)
     })
   }
   

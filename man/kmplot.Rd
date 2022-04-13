@@ -319,6 +319,7 @@ library('survival')
 km1 <- survfit(Surv(time, status) ~ sex, data = colon)
 km2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 
+
 ## basic usage
 kmplot(km1)
 kmplot(km1, args.median = list(x = 500, y = 0.2))
