@@ -48,6 +48,7 @@ Drop least relevant variables from a \code{\link[randomForestSRC]{rfsrc}}
 model with optional diagnostics.
 }
 \examples{
+set.seed(1)
 vs.rfsrc(iris)
 vs.rfsrc(I(Species == 'setosa') ~ ., iris)
 
@@ -74,5 +75,5 @@ vs.rfsrc(f, colon, nvar = 4, ntree = 5, refit = FALSE, plot = TRUE)
 
 }
 \seealso{
-\code{\link{vs.rfsrc}}
+\code{\link{vs.glmnet}}
 }
