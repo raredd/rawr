@@ -12,7 +12,8 @@
 # rpart_parent, rpart_subset, rpart_nodes
 #
 # unexported:
-# cuzick.test.stat, cuzick.test.pvalue, jt.test.stat, sim.test.pvalue, ransch_
+# cuzick.test.stat, cuzick.test.pvalue, jt.test.stat, sim.test.pvalue,
+# formula0, ransch_
 ###
 
 
@@ -1879,12 +1880,13 @@ perm.t.test.formula <- function(formula, data, ...) {
 #'   \code{\link[randomForestSRC]{rfsrc}}
 #' 
 #' @seealso
-#' \code{\link{vs.rfsrc}}
+#' \code{\link{vs.glmnet}}
 #' 
 #' @return
 #' The \code{formula} of the final model.
 #'
 #' @examples
+#' set.seed(1)
 #' vs.rfsrc(iris)
 #' vs.rfsrc(I(Species == 'setosa') ~ ., iris)
 #' 
@@ -1972,6 +1974,9 @@ vs.rfsrc <- function(formula, data, nvar = -1L, depth = NULL,
 #' 
 #' @param formula,data a formula and data frame containing the response and
 #'   all potential predictor variables
+#' @param family a character string or family function for the error
+#'   distribution and link, e.g., \code{"gaussian"}, \code{"binomial"},
+#'   or \code{"cox"}; see \code{\link[glmnet]{glmnet}}
 #' @param alpha elastic net mixing parameter; default penalty is 1 for lasso,
 #'   or any value between 0 (ridge penalty) and 1
 #' @param ... additional arguments passed to \code{\link[glmnet]{cv.glmnet}}
@@ -1981,14 +1986,19 @@ vs.rfsrc <- function(formula, data, nvar = -1L, depth = NULL,
 #' \code{\link{vs.rfsrc}}
 #' 
 #' @examples
-#' vs.glmnet(iris, alpha = 1) ## lasso - default
-#' vs.glmnet(iris, alpha = 0) ## ridge
+#' set.seed(1)
+#' vs.glmnet(iris, family = 'gaussian', alpha = 1) ## lasso - default
+#' vs.glmnet(iris, family = 'gaussian', alpha = 0) ## ridge
 #' 
-#' vs.glmnet(I(Species == 'setosa') ~ ., iris)
+#' vs.glmnet(I(Species == 'setosa') ~ ., iris, family = 'binomial')
+#' 
+#' library('survival')
+#' f <- Surv(time, status == 0) ~ rx + sex + age + obstruct + adhere + nodes
+#' vs.glmnet(f, colon, family = 'cox')
 #' 
 #' @export
 
-vs.glmnet <- function(formula, data, alpha = 1, ...) {
+vs.glmnet <- function(formula, data, family, alpha = 1, ...) {
   if (is.data.frame(formula)) {
     data <- formula
     formula <- formula(data)
@@ -1996,7 +2006,11 @@ vs.glmnet <- function(formula, data, alpha = 1, ...) {
   
   mf <- model.frame(formula, data)
   mm <- model.matrix(formula, data)
-  gn <- glmnet::cv.glmnet(x = mm[, -1L], y = mf[, 1L], alpha = alpha, ...)
+  # colnames(mm) <- make.names(colnames(mm))
+  
+  gn <- glmnet::cv.glmnet(
+    x = mm[, -1L], y = as.matrix(mf[, 1L]), alpha = alpha, family = family, ...
+  )
   
   co <- coef(gn, s = 'lambda.1se')
   ii <- which(as.numeric(co) != 0)

@@ -4,11 +4,15 @@
 \alias{vs.glmnet}
 \title{glmnet variable selection}
 \usage{
-vs.glmnet(formula, data, alpha = 1, ...)
+vs.glmnet(formula, data, family, alpha = 1, ...)
 }
 \arguments{
 \item{formula, data}{a formula and data frame containing the response and
 all potential predictor variables}
+
+\item{family}{a character string or family function for the error
+distribution and link, e.g., \code{"gaussian"}, \code{"binomial"},
+or \code{"cox"}; see \code{\link[glmnet]{glmnet}}}
 
 \item{alpha}{elastic net mixing parameter; default penalty is 1 for lasso,
 or any value between 0 (ridge penalty) and 1}
@@ -21,10 +25,15 @@ Drop least relevant variables from a \code{\link[glmnet]{glmnet}}
 model with optional diagnostics.
 }
 \examples{
-vs.glmnet(iris, alpha = 1) ## lasso - default
-vs.glmnet(iris, alpha = 0) ## ridge
+set.seed(1)
+vs.glmnet(iris, family = 'gaussian', alpha = 1) ## lasso - default
+vs.glmnet(iris, family = 'gaussian', alpha = 0) ## ridge
 
-vs.glmnet(I(Species == 'setosa') ~ ., iris)
+vs.glmnet(I(Species == 'setosa') ~ ., iris, family = 'binomial')
+
+library('survival')
+f <- Surv(time, status == 0) ~ rx + sex + age + obstruct + adhere + nodes
+vs.glmnet(f, colon, family = 'cox')
 
 }
 \seealso{
