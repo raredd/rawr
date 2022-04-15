@@ -14,9 +14,11 @@ body {
   */
 }
 
+/*
 body, td {
-  /* background-color: white; */
+  background-color: white;
 }
+*/
 
 table {
   margin: auto;
@@ -100,7 +102,7 @@ pre {
   margin: auto;
 }
 
-pre.r {
+pre .r {
   /* spacing between r code and printed output */
   margin-bottom: 10px;
 }
@@ -165,27 +167,31 @@ a[href^="https:"] {
   text-decoration: underline dotted;
 }
 
-h1, h6 {
-  margin-left: 11pt;
-  margin-bottom: 5px;
-  text-align: center;
-  text-justify: inter-word;
+h1 {
+  font-size: 16pt !important;
+  width: 75%;
+  padding-top: 10px;
+  border-bottom: 3px solid #ccc;
 }
 h2 {
+  font-size: 13pt !important;
   width: 75%;
   padding-top: 10px;
-  font-size: 14pt;
-  border-bottom: 2px solid #ccc;
+  border-bottom: 1px solid #ccc;
 }
 h3 {
+  font-size: 11pt !important;
   width: 75%;
   padding-top: 10px;
-  font-size: 14pt;
 }
 h4, h5 {
+  font-size: 9pt !important;
   width: 60%;
   margin-left: 8px;
-  font-size: 16px;
+}
+h6 {
+  text-align: center;
+  text-justify: inter-word;
 }
 
 #TOC {
