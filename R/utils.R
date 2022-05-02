@@ -13,9 +13,14 @@
 # lss, lsf, lsp
 # 
 # unexported:
-# islist, where_, where, dots, name_or_index, rm_na_dimnames, insert_
+# as.character.formula, islist, where_, where, dots, name_or_index,
+# rm_na_dimnames, insert_
 ###
 
+
+as.character.formula <- function(x, ...) {
+  base::as.character.default(as.list(x))
+}
 
 islist <- function(x) {
   ## is.list(data.frame()); rawr:::islist(data.frame())
