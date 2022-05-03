@@ -4,20 +4,29 @@
 \alias{switch2}
 \title{Select one of a list of alternatives}
 \usage{
-switch2(x, ...)
+switch2(x, ..., nomatch = NA)
 }
 \arguments{
 \item{x}{a vector of character strings}
 
 \item{...}{a list of alternatives; see \code{\link{switch}}}
+
+\item{nomatch}{the value returned when no matching case is given}
 }
 \description{
 \code{\link{switch}} which accepts a vector of strings.
 }
 \examples{
+switch('a',               a = 10, b = 2:0, c = 3, d = 1.5, e = mean)
 switch('b',               a = 10, b = 2:0, c = 3, d = 1.5, e = mean)
+# switch(c('a', 'b'),       a = 10, b = 2:0, c = 3, d = 1.5, e = mean) ## error
+
 switch2(c('d', 'a'),      a = 10, b = 2:0, c = 3, d = 1.5, e = mean)
 switch2(c('b', 'a'),      a = 10, b = 2:0, c = 3, d = 1.5, e = mean)
 switch2(c('b', 'a', 'e'), a = 10, b = 2:0, c = 3, d = 1.5, e = mean)
+
+## no matching expressions
+switch2(c('a', 'b', 'e', 'f'), a = 1, b = 2)
+switch2(c('a', 'b', 'e', 'f'), a = 1, b = 2, nomatch = 'other')
 
 }

@@ -2899,18 +2899,26 @@ factor2 <- function(x = character(0L), levels = NULL, exclude = NA,
 #' 
 #' @param x a vector of character strings
 #' @param ... a list of alternatives; see \code{\link{switch}}
+#' @param nomatch the value returned when no matching case is given
 #' 
 #' @examples
+#' switch('a',               a = 10, b = 2:0, c = 3, d = 1.5, e = mean)
 #' switch('b',               a = 10, b = 2:0, c = 3, d = 1.5, e = mean)
+#' # switch(c('a', 'b'),       a = 10, b = 2:0, c = 3, d = 1.5, e = mean) ## error
+#' 
 #' switch2(c('d', 'a'),      a = 10, b = 2:0, c = 3, d = 1.5, e = mean)
 #' switch2(c('b', 'a'),      a = 10, b = 2:0, c = 3, d = 1.5, e = mean)
 #' switch2(c('b', 'a', 'e'), a = 10, b = 2:0, c = 3, d = 1.5, e = mean)
 #' 
+#' ## no matching expressions
+#' switch2(c('a', 'b', 'e', 'f'), a = 1, b = 2)
+#' switch2(c('a', 'b', 'e', 'f'), a = 1, b = 2, nomatch = 'other')
+#' 
 #' @export
 
-switch2 <- function(x, ...) {
+switch2 <- function(x, ..., nomatch = NA) {
   res <- vector('list', length(x))
   for (ii in seq_along(x))
-    res[[ii]] <- switch(x[ii], ...)
+    res[[ii]] <- switch(x[ii], ..., nomatch)
   simplify2array(res)
 }
