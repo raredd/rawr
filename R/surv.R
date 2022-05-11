@@ -584,6 +584,9 @@ kmplot <- function(object, data = NULL,
   
   ## base plot
   cex.cex <- 1 / switch(par('mfrow')[1L], 1, 0.83, 0.66)
+  if (!length(cex.cex))
+    cex.cex <- 0.66
+  
   plot(
     0, type = 'n', xlim = xlim, ylim = ylim, ann = FALSE,
     axes = FALSE, xaxs = xaxs, panel.first = panel.first,
