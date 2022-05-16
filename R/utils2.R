@@ -1502,7 +1502,7 @@ tabler.coxph <- function(x, digits = 3L, level = 0.95, exp = TRUE,
 #'   sprintf('Phase II<br /><font size=1>n = %s</font>', n[2])
 #' )
 #'
-#' ht <- htmlTable::htmlTable(
+#' htmlTable::htmlTable(
 #'   out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
 #'   caption = 'Table 1: Toxicities<sup>&dagger;</sup> by phase and grade,
 #'             sorted by total.',
@@ -1511,7 +1511,7 @@ tabler.coxph <- function(x, digits = 3L, level = 0.95, exp = TRUE,
 #'   tfoot = paste0('<font size=1><sup>&dagger;</sup>Percents represent ',
 #'            'proportion of patients out of respective phase total.</font>')
 #' )
-#' structure(ht, clas = 'htmlTable')
+#' 
 #'
 #' ## same as above but add level of stratification, sort by total within group
 #' out2 <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'grade', order = TRUE,
@@ -1531,17 +1531,30 @@ tabler.coxph <- function(x, digits = 3L, level = 0.95, exp = TRUE,
 #'   sprintf('Phase I<br /><font size=1>n = %s</font>', n[1]),
 #'   sprintf('Phase II<br /><font size=1>n = %s</font>', n[2])
 #' )
-#'
-#' ht <- htmlTable::htmlTable(
+#' 
+#' htmlTable::htmlTable(
 #'   out2, align = 'lc', cgroup = cgroup, n.cgroup = c(1, 1, 4, 4),
 #'   caption = 'Table 1: Toxicities<sup>&dagger;</sup> by category, phase,
 #'   grade.'
 #' )
-#' structure(ht, clas = 'htmlTable')
-#'
+#' 
+#' 
+#' ## keep extra varname but add to rows
+#' out3 <- tabler_by2(
+#'   tox, c('tox_cat', 'tox_desc'), 'grade', stratvar = 'phase', zeros = '-',
+#'   n = c(5, 5), pct = TRUE, pct.sign = FALSE,
+#'   collapse_varname = TRUE, collapse_format = c('<i>%s</i>', '&emsp;%s')
+#' )
+#' 
+#' htmlTable::htmlTable(
+#'   out3, align = 'c', cgroup = cgroup[-1], n.cgroup = c(1, 1, 4, 4)[-1],
+#'   caption = 'Table 1: Toxicities<sup>&dagger;</sup> by category, phase,
+#'   grade.'
+#' )
+#' 
 #' @export
 
-tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
+tabler_by <- function(data, varname, byvar, n = NULL, order = FALSE, zeros = TRUE,
                       pct = FALSE, pct.column = FALSE, pct.total = FALSE,
                       pct.sign = FALSE, drop = TRUE) {
   stopifnot(
@@ -1563,7 +1576,7 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
             domain = NA)
     data[, idx] <- lapply(data[, idx, drop = FALSE], as.factor)
   }
-  if (pct.column & missing(n))
+  if (pct.column & is.null(n))
     warning('\'n\' must be given when \'pct.column = TRUE\'', domain = NA)
 
   ## use ftbl format later, ttbl for counts, ptbl for percents
@@ -1574,12 +1587,12 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
   nc <- ncol(ttbl)
 
   ## add percents, eg "N (x%)", to each column
-  if (missing(n) & length(varname) == 1L)
+  if (is.null(n) & length(varname) == 1L)
     n <- c(table(data[, byvar]))
-  if (missing(n) & any(pct, pct.column, pct.total))
+  if (is.null(n) & any(pct, pct.column, pct.total))
     warning('\'n\' must be given if pct = TRUE', domain = NA)
 
-  if (pct & !missing(n)) {
+  if (pct & !is.null(n)) {
     ## if length(n) == 1L, use same n for all strat levels (assume subgroup)
     ## else, map each n to each strat level (assume total)
     if ((ln <- length(n)) == 1L)
@@ -1591,13 +1604,13 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
     ## if recursive error in rawr::Round, skip to regular round
 
     ## pct based on counts
-    ptbl <- ttbl / matrix(rep(c(sum(ttbl[, 1]), n), each = nr), nr) * 100
+    ptbl <- ttbl / matrix(rep(c(sum(ttbl[, 1L]), n), each = nr), nr) * 100
     ## pct based on n
     ptbl <- ttbl / matrix(rep(c(sum(n[seq.int(ln)]), n), each = nr), nr) * 100
 
     ptbl <- tryCatch(
       apply(ptbl, 2L, Round, 100),
-      error = function(e) apply(ptbl, 2L, round, digits = 0)
+      error = function(e) apply(ptbl, 2L, round, digits = 0L)
     )
     res <- matrix(sprintf('%s (%s%%)', ttbl, ptbl), nrow = nr, ncol = nc)
     res[] <- gsub('0 (NaN%)', '0 (0%)', res, fixed = TRUE)
@@ -1663,9 +1676,12 @@ tabler_by <- function(data, varname, byvar, n, order = FALSE, zeros = TRUE,
 
 #' @rdname tabler_by
 #' @export
-tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
-                       zeros = TRUE, pct = FALSE, pct.column = FALSE,
-                       pct.total = FALSE, pct.sign = TRUE, drop = TRUE) {
+tabler_by2 <- function(data, varname, byvar, n = NULL, order = FALSE,
+                       stratvar = NULL, zeros = TRUE,
+                       pct = FALSE, pct.column = FALSE,
+                       pct.total = FALSE, pct.sign = TRUE, drop = TRUE,
+                       collapse_varname = FALSE, 
+                       collapse_format = c('<b>%s</b>', '%s')) {
   ## helpers
   rm_p <- function(x) {
     gsub(' \\(.*\\)$', '', x)
@@ -1676,42 +1692,45 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
 
   stopifnot(
     length(byvar) == 1L,
-    (missing(stratvar) || length(stratvar) == 1L),
+    (is.null(stratvar) || length(stratvar) == 1L),
     (ln <- length(varname)) <= 2L
   )
 
   data[] <- lapply(data, as.factor)
-  data$`_strat_var_` <- if (missing(stratvar))
-    factor(1) else data[, stratvar]
+  data$`_strat_var_` <- if (is.null(stratvar))
+    factor(1L) else data[, stratvar]
   bylvl <- levels(data[, '_strat_var_'])
 
-  if (pct && missing(n)) {
+  if (pct && is.null(n)) {
     warning('\'n\' must be given if pct = TRUE', domain = NA)
     pct <- FALSE
-  } else if (!missing(n))
+  } else if (!is.null(n))
     names(n) <- bylvl
 
   ## get (second varname if ln == 2L and) overall total column(s)
-  o1 <- tabler_by(data, varname, '_strat_var_', n, FALSE, zeros,
-                  pct, pct.column, pct.total, pct.sign, FALSE)
-  o1 <- o1[, 1:(ln + (pct.column & pct.total)), drop = FALSE]
+  o1 <- tabler_by(
+    data, varname, '_strat_var_', n, FALSE, zeros,
+    pct, pct.column, pct.total, pct.sign, FALSE
+  )
+  o1 <- o1[, seq.int(ln + (pct.column & pct.total)), drop = FALSE]
 
   ## get groups of columns for each level of byvar
-  o2 <- lapply(bylvl, function(x)
-    tabler_by(data[data[, '_strat_var_'] == x, ], varname, byvar, n[x],
-              FALSE, zeros, pct, pct.column, pct.total, pct.sign, FALSE))
+  o2 <- lapply(bylvl, function(x) {
+    tabler_by(
+      data[data[, '_strat_var_'] == x, ], varname, byvar, n[x],
+      FALSE, zeros, pct, pct.column, pct.total, pct.sign, FALSE
+    )
+  })
 
   res <- do.call('cbind', c(if (length(bylvl) == 1L) NULL else list(o1), o2))
   rownames(res) <- locf(rownames(res))
 
   ## remove duplicate columns, rows with 0 total, order using varname input
-  # res <- t(t(res)[!duplicated(t(res)), ])
   res <- res[, !(duplicated(colnames(res)) & colnames(res) %in% varname)]
   if (drop) {
     res <- res[, apply(res, 2L, function(x)
       !(all(grepl('^\\s*0', x)) | all(x %in% as.character(zeros)))),
       drop = FALSE]
-    # res <- res[!res[, ln] %in% c('0', as.character(zeros)), , drop = FALSE]
     res <- res[!(grepl('^\\s*0', res[, ln]) |
                    res[, ln] %in% as.character(zeros)), , drop = FALSE]
   }
@@ -1722,6 +1741,18 @@ tabler_by2 <- function(data, varname, byvar, n, order = FALSE, stratvar,
           ord(-xtfrm(rownames(res)), as.numeric(rm_p(res[, ln])))
     }, , drop = FALSE]
   rownames(res)[duplicated(rownames(res))] <- ''
+  
+  if (collapse_varname) {
+    orn <- rownames(res)
+    idx <- which(nzchar(orn))
+    res <- insert(res, row = idx)
+    rownames(res) <- ifelse(
+      is.na(res[, 1L]),
+      sprintf(collapse_format[1L], orn[idx]),
+      sprintf(collapse_format[2L], res[, 1L])
+    )
+    res <- res[, -1L]
+  }
 
   res
 }

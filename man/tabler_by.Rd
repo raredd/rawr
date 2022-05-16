@@ -9,7 +9,7 @@ tabler_by(
   data,
   varname,
   byvar,
-  n,
+  n = NULL,
   order = FALSE,
   zeros = TRUE,
   pct = FALSE,
@@ -23,15 +23,17 @@ tabler_by2(
   data,
   varname,
   byvar,
-  n,
+  n = NULL,
   order = FALSE,
-  stratvar,
+  stratvar = NULL,
   zeros = TRUE,
   pct = FALSE,
   pct.column = FALSE,
   pct.total = FALSE,
   pct.sign = TRUE,
-  drop = TRUE
+  drop = TRUE,
+  collapse_varname = FALSE,
+  collapse_format = c("<b>\%s</b>", "\%s")
 )
 }
 \arguments{
@@ -161,7 +163,7 @@ cgroup <- c(
   sprintf('Phase II<br /><font size=1>n = \%s</font>', n[2])
 )
 
-ht <- htmlTable::htmlTable(
+htmlTable::htmlTable(
   out, ctable = TRUE, cgroup = cgroup, n.cgroup = c(1, 4, 4),
   caption = 'Table 1: Toxicities<sup>&dagger;</sup> by phase and grade,
             sorted by total.',
@@ -170,7 +172,7 @@ ht <- htmlTable::htmlTable(
   tfoot = paste0('<font size=1><sup>&dagger;</sup>Percents represent ',
            'proportion of patients out of respective phase total.</font>')
 )
-structure(ht, clas = 'htmlTable')
+
 
 ## same as above but add level of stratification, sort by total within group
 out2 <- tabler_by2(tox, c('tox_cat', 'tox_desc'), 'grade', order = TRUE,
@@ -191,12 +193,25 @@ cgroup <- c(
   sprintf('Phase II<br /><font size=1>n = \%s</font>', n[2])
 )
 
-ht <- htmlTable::htmlTable(
+htmlTable::htmlTable(
   out2, align = 'lc', cgroup = cgroup, n.cgroup = c(1, 1, 4, 4),
   caption = 'Table 1: Toxicities<sup>&dagger;</sup> by category, phase,
   grade.'
 )
-structure(ht, clas = 'htmlTable')
+
+
+## keep extra varname but add to rows
+out3 <- tabler_by2(
+  tox, c('tox_cat', 'tox_desc'), 'grade', stratvar = 'phase', zeros = '-',
+  n = c(5, 5), pct = TRUE, pct.sign = FALSE,
+  collapse_varname = TRUE, collapse_format = c('<i>\%s</i>', '&emsp;\%s')
+)
+
+htmlTable::htmlTable(
+  out3, align = 'c', cgroup = cgroup[-1], n.cgroup = c(1, 1, 4, 4)[-1],
+  caption = 'Table 1: Toxicities<sup>&dagger;</sup> by category, phase,
+  grade.'
+)
 
 }
 \seealso{
