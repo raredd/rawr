@@ -16,6 +16,7 @@ surv_table(
   ci.type = c("conf.int", "range"),
   digits.median = 0L,
   na.median = "NR",
+  fun = c("S", "F"),
   ...
 )
 }
@@ -47,6 +48,9 @@ point to keep}
 
 \item{na.median}{a string to use in place of "NA" for the median text;
 default is "NR" for "not reached"}
+
+\item{fun}{survival estimate transformation, one of "S" or "F" for the usual
+survival probabilities, \code{S}, or \code{1 - S}, respectively}
 
 \item{...}{additional arguments passed to \code{\link{surv_summary}} and
 further to \code{\link[survival]{summary.survfit}}}

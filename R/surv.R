@@ -1041,7 +1041,7 @@ points.kmplot <- function(x, xscale, xmax, fun,
   }
   ncurve <- nstrat * ncol(ssurv)
   firsty <- matrix(firsty, nrow = nstrat, ncol = ncol(ssurv))
-  if (!missing(xmax) && any(x$time>xmax)) {
+  if (!missing(xmax) && any(x$time > xmax)) {
     ## prune back the survival curves
     ## I need to replace x's over the limit with xmax, and y's over the
     ## limit with either the prior y value  or firsty
@@ -2388,6 +2388,8 @@ surv_summary <- function(object, digits = 3L, locf = FALSE, ...) {
 #'   point to keep
 #' @param na.median a string to use in place of "NA" for the median text;
 #'   default is "NR" for "not reached"
+#' @param fun survival estimate transformation, one of "S" or "F" for the usual
+#'   survival probabilities, \code{S}, or \code{1 - S}, respectively
 #' 
 #' @return
 #' A matrix (or list of matrices) with formatted summaries for each strata; see
@@ -2415,7 +2417,8 @@ surv_table <- function(object, digits = ifelse(percent, 0L, 3L),
                        percent = FALSE, locf = FALSE,
                        median = FALSE, ci.median = TRUE,
                        ci.type = c('conf.int', 'range'),
-                       digits.median = 0L, na.median = 'NR', ...) {
+                       digits.median = 0L, na.median = 'NR',
+                       fun = c('S', 'F'), ...) {
   stopifnot(inherits(object, 'survfit'))
   
   if (maxtime) {
@@ -2430,6 +2433,20 @@ surv_table <- function(object, digits = ifelse(percent, 0L, 3L),
       object, digits = 7L, times = unique(times), locf = locf, ...
     )
   )
+  
+  if (fun <- fun[1L] %in% c('F', 'event', 'events')) {
+    s_to_f <- function(x) {
+      nn <- colnames(x)
+      si <- grep('survival', nn)
+      ui <- grep('upper', nn)
+      li <- grep('lower', nn)
+      x[, c(si, li, ui)] <- 1 - x[, c(si, ui, li)]
+      x
+    }
+    
+    ss <- if (islist(ss))
+      lapply(ss, s_to_f) else s_to_f(ss)
+  }
   
   if (percent) {
     ss <- if (islist(ss)) {
@@ -2457,10 +2474,13 @@ surv_table <- function(object, digits = ifelse(percent, 0L, 3L),
     x[, tmpvar] <- roundr(x[, tmpvar], digits = d)
     x[, 'n.risk'] <- format(ox[, 'n.risk'], big.mark = ',')
     x[, 'n.event'] <- format(ox[, 'n.event'], big.mark = ',')
-    surv <- sprintf('%s (%s, %s)',
-                    x[, g('survival')], x[, g('lower')], x[, g('upper')])
+    surv <- sprintf(
+      '%s (%s, %s)',
+      x[, g('survival')], x[, g('lower')], x[, g('upper')]
+    )
     cn <- c('Time', 'No. at risk', 'No. event', 'Std.Error',
-            sprintf('Surv (%s%% CI)', object$conf.int * 100))
+            sprintf('%s (%s%% CI)', ifelse(fun, 'Cuminc', 'Surv'),
+                    object$conf.int * 100))
     x <- cbind(x[, c(setdiff(vars, tmpvar), 'std.err'), drop = FALSE], surv)
     colnames(x) <- cn
     x
