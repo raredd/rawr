@@ -590,10 +590,10 @@ tplot.default <- function(x, g, ..., type = 'db',
       if (type[ii] == 'n')
         next
       
-      notoplot <- (y <= bp$stats[5L, ]) & (y >= bp$stats[1L, ])
+      # notoplot <- (y <= bp$stats[5L, ]) & (y >= bp$stats[1L, ])
+      # if (sum(notoplot) > 0)
+      #   col[[ii]][notoplot] <- '#bfbfbf'
       
-      if (sum(notoplot) > 0)
-        col[[ii]][notoplot] <- '#bfbfbf'
       do.call(
         'localPoints',
         if (horizontal)
