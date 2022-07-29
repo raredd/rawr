@@ -2470,6 +2470,9 @@ describeSurv <- function(x, y, include_NA = TRUE, percent = TRUE,
 #' @param confint optional vector of \code{varname}(s) to summarize as
 #'   confidence intervals
 #' @param total logical; if \code{TRUE}, total column will be shown
+#' @param n (optional) the sample size for each column used to calculate
+#'   percents; if length 1, recycled as necessary; if length > 1, length must
+#'   be the same as the number of columns in the table including total
 #' @param include_na_in_prop logical; if \code{TRUE} (default), the number of
 #'   missing values is included when calculating proportions for factor levels;
 #'   if \code{FALSE}, only non-missing levels count towards proportions
@@ -2570,7 +2573,8 @@ describeSurv <- function(x, y, include_NA = TRUE, percent = TRUE,
 
 tabler_stat2 <- function(data, varname, byvar = NULL,
                          varname_label = names(varname), byvar_label = names(byvar),
-                         digits = NULL, FUN = NULL, confint = FALSE, total = TRUE,
+                         digits = NULL, FUN = NULL, confint = FALSE,
+                         total = TRUE, n = NULL,
                          include_na_in_prop = TRUE, iqr = FALSE,
                          format_pval = TRUE, color_pval = TRUE, correct = FALSE,
                          color_missing = TRUE, dagger = TRUE,
@@ -2618,7 +2622,7 @@ tabler_stat2 <- function(data, varname, byvar = NULL,
 
   tabler_stat_html(
     l, align, rgroup, cgroup, tfoot, tfoot2, htmlArgs,
-    zeros, group, correct, format_pval, clean_daggers, total
+    zeros, group, correct, format_pval, clean_daggers, total, n
   )
 }
 
@@ -2794,7 +2798,7 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
                              tfoot = NULL, tfoot2 = NULL, htmlArgs = NULL,
                              zeros = NULL, group = NULL, correct = FALSE,
                              format_pval = TRUE, clean_daggers = FALSE,
-                             total = TRUE) {
+                             total = TRUE, n = NULL) {
   stopifnot(inherits(l, 'htmlStat'))
 
   tr <- function(x) {
@@ -2806,7 +2810,7 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
     l$n.cgroup <- 1L
   }
 
-  cn <- c(get_tabler_stat_n(l$data[, l$byvar]), '<em>p-value</em>')
+  cn <- c(get_tabler_stat_n(l$data[, l$byvar], n = n), '<em>p-value</em>')
   if (identical(total, FALSE))
     cn <- cn[-1L]
   
@@ -2996,19 +3000,27 @@ guess_digits <- function(x, default = 0L) {
 }
 
 get_tabler_stat_n <- function(x, pct = TRUE, use_labels = TRUE,
-                              total = 'Total') {
-  fmt <- if (pct)
-    '%s<br /><font weight=normal; size=1>n = %s (%s)</font>'
-  else '%s<br /><font weight=normal; size=1>n = %s</font>'
+                              total = 'Total', n = NULL) {
+  fmt <- '%s<br /><font weight=normal; size=1>n = %s (%s)</font>'
+  if (!pct)
+    fmt <- gsub(' (%s)', '', fmt, fixed = TRUE)
   
   x <- as.factor(x)
   l <- if (use_labels)
     levels(x) else rep_len(total, nlevels(x))
   
   t <- table(x)
-  n <- roundr(c(sum(t), t), 0)
-  p <- roundr(prop.table(t) * 100, 0)
-  o <- Vectorize('sprintf')(c(total, l), n, c('%', p), fmt = fmt)
+  if (length(n) == 1L)
+    n <- rep_len(n, length(t) + 1L)
+  if (!is.null(n))
+    stopifnot(length(n) == length(t) + 1L)
+  N <- n %||% sum(t)
+  n <- c(if (is.null(n)) sum(t) else n[1L], t)
+  p <- roundr(n / N * 100, 0)[-1L]
+  o <- Vectorize('sprintf')
+  o <- if (pct)
+    o(c(total, l), roundr(n, 0), c('%', p), fmt = fmt)
+  else o(c(total, l), roundr(n, 0), fmt = fmt)
 
   drop(o)
 }

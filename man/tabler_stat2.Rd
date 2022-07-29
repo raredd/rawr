@@ -14,6 +14,7 @@ tabler_stat2(
   FUN = NULL,
   confint = FALSE,
   total = TRUE,
+  n = NULL,
   include_na_in_prop = TRUE,
   iqr = FALSE,
   format_pval = TRUE,
@@ -69,6 +70,10 @@ association between each \code{varname} and \code{byvar}; see
 confidence intervals}
 
 \item{total}{logical; if \code{TRUE}, total column will be shown}
+
+\item{n}{(optional) the sample size for each column used to calculate
+percents; if length 1, recycled as necessary; if length > 1, length must
+be the same as the number of columns in the table including total}
 
 \item{include_na_in_prop}{logical; if \code{TRUE} (default), the number of
 missing values is included when calculating proportions for factor levels;
