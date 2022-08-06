@@ -4,7 +4,7 @@
 # regcaptures2, cast, melt, View2, view, rapply2, sort_matrix, insert,
 # insert_matrix, tryCatch2, rleid, rleid2, droplevels2, combine_levels,
 # combine_regex, rownames_to_column, column_to_rownames, split_nth, sort2,
-# response, response2, xtable, factor2, switch2
+# response, response2, xtable, factor2, switch2, ave_dt
 # 
 # rawr_ops:
 # %ni%, %==%, %||%, %sinside%, %winside%, %inside%, %:%
@@ -2921,4 +2921,35 @@ switch2 <- function(x, ..., nomatch = NA) {
   for (ii in seq_along(x))
     res[[ii]] <- switch(x[ii], ..., nomatch)
   simplify2array(res)
+}
+
+#' \code{ave} for date objects
+#' 
+#' Return date objects when \code{ave} tries to return integers.
+#' 
+#' @param x an integer or date vector
+#' @param ... grouping variables, typically factors, all of the same length
+#'   as \code{x}
+#' @param FUN function to apply for each factor level combination
+#' 
+#' @seealso
+#' \code{\link{ave}}
+#' 
+#' @examples
+#' set.seed(1)
+#' dt <- Sys.Date() + sample(1:20, 20)
+#' id <- rep(1:4, each = 5)
+#' 
+#' ave(dt, id, FUN = min)
+#' ave_dt(dt, id, FUN = min)
+#' 
+#' ave(seq_along(dt), id, FUN = function(ii) dt[ii])
+#' ave_dt(seq_along(dt), id, FUN = function(ii) dt[ii])
+#' 
+#' @export
+
+ave_dt <- function(x, ..., FUN = identity) {
+  x <- as.integer(x)
+  res <- ave(x, ..., FUN = FUN)
+  as.Date(res, origin = '1970-01-01')
 }
