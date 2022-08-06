@@ -150,7 +150,7 @@ kmplot_by('rx + sex', 'pfs', colon2, strata_lab = FALSE, lty.surv = 1:6)
 ## if "by" is given, default is to plot separately
 kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3,
   strata_lab = c('Observation', 'Trt', 'Trt + 5-FU'))
-  
+
 ## if "by" is given, use map.col to map colors to plots
 kmplot_by( 'rx', 'pfs', colon2, by = 'rx', map.col = TRUE, single = FALSE)
 kmplot_by('sex', 'pfs', colon2, by = 'rx', map.col = TRUE, single = FALSE)

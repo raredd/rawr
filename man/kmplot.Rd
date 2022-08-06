@@ -125,7 +125,7 @@ can be passed via \code{col.ci} and the confidence interval is taken from
 
 \item{atrisk.lab}{heading for at-risk table}
 
-\item{atrisk.pad}{extra padding between plot and at-risk table; additionally,
+\item{atrisk.pad}{extra padding between plot and at-risk table; alternatively,
 a vector of padding for each line in the at-risk table, recycled as needed}
 
 \item{atrisk.type}{a character string giving the type of "at-risk" table to
@@ -298,7 +298,7 @@ confidence band is plotted; however, this is not a confidence band in the
 statistical sense, i.e., a xx-percent chance of containing the entire
 population of the survival curve which are wider than the point-wise
 confidence limits. Rather, it refers to a band of color plotted between
-the confidence limits calculated in the survfit object. That is, the xx-\% 
+the confidence limits calculated in the survfit object. That is, the xx-\%
 confidence interval (plotted when \code{lty.ci != 0}) and the confidence
 bands are identical--just two ways of plotting the same invervals.
 

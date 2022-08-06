@@ -76,7 +76,7 @@ prop.trend.test(smokers, patients)
 ca.test(rbind(smokers, patients - smokers))
 ca.test(rbind(smokers, patients - smokers), score = c(0, 0, 1, 2))
 
-## the following are equivalent to call ca.test
+## equivalent ways to call ca.test
 dat <- data.frame(x = mtcars$vs, y = mtcars$gear)
 ca.test(dat$x, dat$y)
 ca.test(x ~ y, dat)

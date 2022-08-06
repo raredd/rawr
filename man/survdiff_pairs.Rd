@@ -45,7 +45,7 @@ sfit <- survfit(Surv(time, status) ~ sex, data = lung)
 
 stopifnot(identical(survdiff_pairs(sdif), survdiff_pairs(sfit)))
 
- 
+
 ## numeric and integer variables will be treated as factor-like
 sfit <- survfit(Surv(time, status) ~ extent, data = colon)
 kmplot(sfit)

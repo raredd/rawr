@@ -195,7 +195,7 @@ bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
     res <- cbind(rep(r / n, 3L), res)
     res <- cbind(res, res[, 3L] - res[, 2L])
     dimnames(res) <- NULL
-    
+
     switch(
       method,
       exact      = res[1L, ],
@@ -214,19 +214,19 @@ bincon <- function(r, n, alpha = 0.05, digits = getOption('digits'),
     warning('Multiple confidence intervals should use only one method, ',
             'defaulting to \'exact\' method', domain = NA)
   }
-  
+
   maxwid <- function(n, alpha, method) {
     max(sapply(seq.int(n), function(nn)
       bc(nn, n[1L], alpha[1L], method[1L])[4L]))
   }
-  
+
   rn <- c('exact', 'wilson', 'asymptotic')
   cn <- c('PointEst', 'Lower', 'Upper', 'Width')
 
   if (method == 'all' & lr == 1L & ln == 1L) {
     mat <- bc(r, n, alpha, method)
     dimnames(mat) <- list(rn, cn)
-    
+
     if (max_width)
       mat <- cbind(mat, MaxWidth = sapply(rn, function(x) maxwid(n, alpha, x)))
     mat[, -1L] <- round(mat[, -1L], digits = digits)
@@ -1431,7 +1431,7 @@ sim.test.pvalue <- function(x, g, FUN, ordered = FALSE, B = 2000L,
 #' ca.test(rbind(smokers, patients - smokers))
 #' ca.test(rbind(smokers, patients - smokers), score = c(0, 0, 1, 2))
 #'
-#' ## the following are equivalent to call ca.test
+#' ## equivalent ways to call ca.test
 #' dat <- data.frame(x = mtcars$vs, y = mtcars$gear)
 #' ca.test(dat$x, dat$y)
 #' ca.test(x ~ y, dat)
@@ -1878,10 +1878,10 @@ perm.t.test.formula <- function(formula, data, ...) {
 #'   \code{refit = TRUE})
 #' @param ... additional parameters passed to
 #'   \code{\link[randomForestSRC]{rfsrc}}
-#' 
+#'
 #' @seealso
 #' \code{\link{vs.glmnet}}
-#' 
+#'
 #' @return
 #' The \code{formula} of the final model.
 #'
@@ -1889,15 +1889,15 @@ perm.t.test.formula <- function(formula, data, ...) {
 #' set.seed(1)
 #' vs.rfsrc(iris)
 #' vs.rfsrc(I(Species == 'setosa') ~ ., iris)
-#' 
-#' 
+#'
+#'
 #' ## select variables based on first-order depth
 #' f <- formula(rev(iris))
 #' vs.rfsrc(f, iris, depth = TRUE, verbose = TRUE, plot = FALSE, ntree = 10)
-#' 
+#'
 #' ## keep only most relevant 2 variables
 #' vs.rfsrc(f, iris, nvar = 2)
-#' 
+#'
 #' ## drop 2 least relevant variables
 #' vs.rfsrc(f, iris, nvar = -2)
 #' vs.rfsrc(f, iris, nvar = -2, refit = FALSE)
@@ -1919,7 +1919,7 @@ vs.rfsrc <- function(formula, data, nvar = -1L, depth = NULL,
     data <- formula
     formula <- formula(data)
   }
-  
+
   mf <- model.frame(formula, data)
   yy <- colnames(mf)[1L]
   xx <- colnames(mf)[-1L]
@@ -1968,10 +1968,10 @@ vs.rfsrc <- function(formula, data, nvar = -1L, depth = NULL,
 }
 
 #' glmnet variable selection
-#' 
+#'
 #' Drop least relevant variables from a \code{\link[glmnet]{glmnet}}
 #' model with optional diagnostics.
-#' 
+#'
 #' @param formula,data a formula and data frame containing the response and
 #'   all potential predictor variables
 #' @param family a character string or family function for the error
@@ -1981,21 +1981,21 @@ vs.rfsrc <- function(formula, data, nvar = -1L, depth = NULL,
 #'   or any value between 0 (ridge penalty) and 1
 #' @param ... additional arguments passed to \code{\link[glmnet]{cv.glmnet}}
 #'   or further to \code{\link[glmnet]{glmnet}}
-#' 
+#'
 #' @seealso
 #' \code{\link{vs.rfsrc}}
-#' 
+#'
 #' @examples
 #' set.seed(1)
 #' vs.glmnet(iris, family = 'gaussian', alpha = 1) ## lasso - default
 #' vs.glmnet(iris, family = 'gaussian', alpha = 0) ## ridge
-#' 
+#'
 #' vs.glmnet(I(Species == 'setosa') ~ ., iris, family = 'binomial')
-#' 
+#'
 #' library('survival')
 #' f <- Surv(time, status == 0) ~ rx + sex + age + obstruct + adhere + nodes
 #' vs.glmnet(f, colon, family = 'cox')
-#' 
+#'
 #' @export
 
 vs.glmnet <- function(formula, data, family, alpha = 1, ...) {
@@ -2003,22 +2003,22 @@ vs.glmnet <- function(formula, data, family, alpha = 1, ...) {
     data <- formula
     formula <- formula(data)
   }
-  
+
   mf <- model.frame(formula, data)
   mm <- model.matrix(formula, data)
   # colnames(mm) <- make.names(colnames(mm))
-  
+
   gn <- glmnet::cv.glmnet(
     x = mm[, -1L], y = as.matrix(mf[, 1L]), alpha = alpha, family = family, ...
   )
-  
+
   co <- coef(gn, s = 'lambda.1se')
   ii <- which(as.numeric(co) != 0)
   rn <- row.names(co)[ii]
   rn <- rn[!grepl('\\(Intercept\\)', rn)]
   if (!length(rn))
     rn <- '1'
-  
+
   formula0(reformulate(rn, colnames(mf)[1L]))
 }
 
@@ -2035,7 +2035,7 @@ formula0 <- function(x) {
 #' @param n sample size of study or each stratum
 #' @param block block size; note if \code{block} is not a factor of \code{n},
 #'   \code{n} will be increased to accommodate a full block
-#' 
+#'
 #'   for randomly-sized blocks, a vector of potential block sizes; note that
 #'   a block size must be a multiple of \code{sum(r)}
 #' @param arms names of the treatment arms
@@ -2049,21 +2049,21 @@ formula0 <- function(x) {
 #' ransch(24, 4, 1:2) ## 1:1
 #' ransch(24, 6, 1:3) ## 1:1:1
 #' ransch(24, 8, 1:3, c(1, 2, 1)) ## 1:2:1
-#' 
-#' 
+#'
+#'
 #' ## randomly-sized blocks
 #' ransch(24, c(2, 4, 6), 1:2)
-#' 
+#'
 #' set.seed(1)
 #' r1 <- ransch(24, c(3, 6, 9), 1:3)
 #' set.seed(1)
 #' r2 <- ransch(24, 1:10, 1:3)
-#' 
+#'
 #' ## note that these two are the same since only blocks sized 3, 6, 9
 #' ## work for 1:1:1 randomization
 #' identical(r1, r2)
 #' addmargins(table(r1[[1]][, -1]))
-#' 
+#'
 #'
 #' ## one two-level stratum
 #' ransch(24, 4, 1:2, strata = list(Age = c('<65', '>=65')))
@@ -2132,7 +2132,7 @@ ransch_ <- function(n, block, arms, r) {
   ## table(ransch_(12, 6, c('Pbo', 'Trt'), c(1, 1))[, -1])
   ## table(ransch_(12, 1:4, c('Pbo', 'Trt'), c(1, 1))[, -1])
   stopifnot(length(arms) == length(r))
-  
+
   sample <- function(x, ...) {
     x[sample.int(length(x), ...)]
   }
@@ -2140,13 +2140,13 @@ ransch_ <- function(n, block, arms, r) {
     arms <- rep_len(rep(arms, r), b)
     sample(arms)
   }
-  
+
   block <- block[block %% sum(r) == 0L]
   block <- sample(block, n, replace = TRUE)
   idx <- cumsum(block) < n
   block <- block[c(which(idx), sum(idx) + 1L)]
-  
-  
+
+
   data.frame(
     Number = seq.int(sum(block)),
     Block = rep(seq_along(block), block),
