@@ -48,7 +48,7 @@ tryCatch2({message('calculating...'); 1})
 
 }
 \seealso{
-\code{\link[base]{tryCatch}}; \code{\link[logR]{tryCatch2}};
+\code{\link[base]{tryCatch}}; \code{logR::tryCatch2};
 \url{https://stackoverflow.com/q/4948361/2994949};
 \href{https://github.com/jangorecki/logR}{\pkg{logR} github repo}
 }

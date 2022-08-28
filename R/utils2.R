@@ -1428,6 +1428,11 @@ tabler.coxph <- function(x, digits = 3L, level = 0.95, exp = TRUE,
 #' @param stratvar for \code{tabler_by2}, a factor-like variable used to
 #'   stratify observations into mutually exclusive groups for which
 #'   \code{tabler_by} will be performed on each subset
+#' @param collapse_varname logical; for \code{tabler_by2}, combine multiple
+#'   \code{varname}s into a single column with indents and extra rows for
+#'   headers
+#' @param collapse_format format strings for headers and normal rows,
+#'   respectively, passed to \code{\link{sprintf}}
 #'
 #' @family tabler
 #'
@@ -1539,7 +1544,7 @@ tabler.coxph <- function(x, digits = 3L, level = 0.95, exp = TRUE,
 #' )
 #' 
 #' 
-#' ## keep extra varname but add to rows
+#' ## collapse varname columns into single column with indents/extra rows
 #' out3 <- tabler_by2(
 #'   tox, c('tox_cat', 'tox_desc'), 'grade', stratvar = 'phase', zeros = '-',
 #'   n = c(5, 5), pct = TRUE, pct.sign = FALSE,
