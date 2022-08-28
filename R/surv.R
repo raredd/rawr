@@ -1,7 +1,7 @@
 ### survival
 # kmplot, kmplot_by, kmplot_ticks, local_coxph_test, surv_cp, surv_summary,
-# surv_table, survdiff_pairs, landmark, surv_extract, surv_median, surv_prob,
-# kmdiff
+# surv_table, survdiff_pairs, coxph_pairs, landmark, surv_extract, surv_median,
+# surv_prob, kmdiff
 #
 # unexported:
 # stratify_formula, points.kmplot, kmplot_data_, atrisk_data_, terms.inner
@@ -2511,8 +2511,12 @@ surv_table <- function(object, digits = ifelse(percent, 0L, 3L),
 #' Evaluate pairwise group differences in survival curves with
 #' \code{\link[survival]{survdiff}}.
 #'
-#' @param object an object of class \code{\link[survival]{survdiff}} or
-#'   \code{\link[survival]{survfit}}
+#' @param object an object of class \code{\link[survival]{survdiff}},
+#'   \code{\link[survival]{survfit}}, or \code{\link[survival]{coxph}}
+#'   
+#'   alternatively, a formula in which case \code{data} must be provided
+#' @param data (optional) a data frame in which to interpret the variables
+#'   named in \code{object} if given as a formula
 #' @param ... additional arguments passed to \code{\link{survdiff}} such as
 #'   \code{na.action} or \code{rho} to control the test
 #' @param method p-value correction method (default is \code{'holm'}; see
@@ -2524,14 +2528,16 @@ surv_table <- function(object, digits = ifelse(percent, 0L, 3L),
 #'
 #' \item{\code{n}}{the number of subjects in each pair of groups}
 #' \item{\code{chi.sq}}{the chi-square statistic for a test of equality
-#' between pairs of groups}
+#'   between pairs of groups}
 #' \item{\code{p.value}}{significance for each test. The lower and upper
-#' triangles of the matrix are uncorrected and adjusted, respectively, for
-#' multiple comparisons using \code{method} (the default is the Holm
-#' correction, see \code{\link{p.adjust}})}
+#'   triangles of the matrix are uncorrected and adjusted, respectively, for
+#'   multiple comparisons using \code{method} (the default is the Holm
+#'   correction, see \code{\link{p.adjust}})}
 #'
 #' @seealso
-#' \code{\link[rawr]{pvalr}}; \code{\link{survdiff}}; \code{\link{p.adjust}};
+#' \code{\link[rawr]{coxph_pairs}}
+#' 
+#' \code{\link{survdiff}}; \code{\link{p.adjust}};
 #' \code{\link[rms]{contrast}} from the \pkg{\link[rms]{rms}} package;
 #' \code{\link{pairwise.table}}
 #'
@@ -2550,7 +2556,10 @@ surv_table <- function(object, digits = ifelse(percent, 0L, 3L),
 #'
 #' ## compare
 #' survdiff(Surv(time, status) ~ extent, data = colon[colon$extent %in% 1:2, ])
-#'
+#' survdiff(Surv(time, status) ~ extent, data = colon[colon$extent %in% 2:3, ])
+#' survdiff(Surv(time, status) ~ extent, data = colon[colon$extent %in% 3:4, ])
+#' ## etc ...
+#' 
 #'
 #' ## for interactions, create a new variable with all levels
 #' colon$int <- with(colon, interaction(sex, extent))
@@ -2560,6 +2569,10 @@ surv_table <- function(object, digits = ifelse(percent, 0L, 3L),
 #' ## rawr >= 1.0.0 allows multiple variables
 #' sfit <- survfit(Surv(time, status) ~ sex + extent, data = colon)
 #' survdiff_pairs(sfit, rho = 1, method = 'BH')
+#' 
+#' 
+#' ## also allows for a formula to be passed (data arg required)
+#' survdiff_pairs(Surv(time, status) ~ sex + extent, data = colon)
 #'
 #'
 #' ## strata will be ignored
@@ -2568,17 +2581,25 @@ surv_table <- function(object, digits = ifelse(percent, 0L, 3L),
 #'
 #' @export
 
-survdiff_pairs <- function(object, ..., method = p.adjust.methods,
+survdiff_pairs <- function(object, data = NULL, ...,
+                           method = p.adjust.methods,
                            digits = getOption('digits')) {
-  stopifnot(inherits(object, c('survdiff', 'survfit')))
+  if (inherits(object, 'formula')) {
+    form <- object
+    object <- survfit(form, data)
+    object$call$formula <- form
+  }
+  
+  stopifnot(inherits(object, c('survdiff', 'survfit', 'coxph')))
 
   pwchisq <- function(i, j) {
-    data <- data[data[, rhs] %in% c(unq[i], unq[j]), ]
+    data <- droplevels(data[data[, rhs] %in% c(unq[i], unq[j]), ])
     survdiff(as.formula(object$call$formula), data = data, ...)$chisq
   }
 
   method <- match.arg(method)
-  data <- eval(object$call$data, envir = parent.frame(1L))
+  if (is.null(data))
+    data <- eval(object$call$data, envir = parent.frame(1L))
   # rhs <- tail(all.vars(object$call$formula), -2L) ## fails for strata and s ~ ...
   rhs <- strsplit(as.character(object$call$formula)[3L], '\\s*\\+\\s*')[[1L]]
   rhs <- trimws(grep('strata\\s*\\(', rhs, value = TRUE, invert = TRUE))
@@ -2598,7 +2619,7 @@ survdiff_pairs <- function(object, ..., method = p.adjust.methods,
 
   nn <- outer(as.character(unq), as.character(unq), Vectorize(function(x, y)
     nrow(data[data[, rhs] %in% c(x, y), ])))
-  nn[upper.tri(nn, FALSE)] <- NA
+  nn[upper.tri(nn)] <- NA
 
   chisq <- rbind(NA, cbind(pairwise.table(pwchisq, unq, 'none'), NA))
   dimnames(chisq) <- dimnames(nn) <- list(unq, unq)
@@ -2616,6 +2637,172 @@ survdiff_pairs <- function(object, ..., method = p.adjust.methods,
   structure(
     lapply(res, round, digits = digits),
     class = 'survdiff_pairs'
+  )
+}
+
+#' Pairwise \code{coxph} comparisons
+#'
+#' Evaluate pairwise group differences in hazard ratios with
+#' \code{\link[survival]{coxph}}.
+#'
+#' @param object an object of class \code{\link[survival]{survdiff}},
+#'   \code{\link[survival]{survfit}}, or \code{\link[survival]{coxph}}
+#'   
+#'   alternatively, a formula in which case \code{data} must be provided
+#' @param data (optional) a data frame in which to interpret the variables
+#'   named in \code{object} if given as a formula
+#' @param level the confidence level for intervals; see \code{\link{confint}}
+#' @param ... additional arguments passed to \code{\link{survdiff}} such as
+#'   \code{na.action} or \code{rho} to control the test
+#' @param method p-value correction method (default is \code{'holm'}; see
+#'   \code{\link{p.adjust}}
+#' @param digits integer indicating the number of decimal places to be used
+#'
+#' @return
+#' A list with three elements:
+#'
+#' \item{\code{n}}{the number of subjects in each pair of groups}
+#' \item{\code{n_model}}{the number of subjects in each pair of models, i.e.,
+#'   excluding subjects with missing data}
+#' \item{\code{hr}}{the hazard ratio between pairs of groups}
+#' \item{\code{lci}}{the lower \code{level} confidence intervals for each
+#'   hazard ratio}
+#' \item{\code{uci}}{the upper \code{level} confidence intervals for each
+#'   hazard ratio}
+#' \item{\code{p.value}}{Wald p-value for each hazard ratio. The lower and
+#'   upper triangles of the matrix are uncorrected and adjusted, respectively,
+#'   for multiple comparisons using \code{method} (the default is the Holm
+#'   correction, see \code{\link{p.adjust}})}
+#' 
+#' @seealso
+#' \code{\link[rawr]{survdiff_pairs}}
+#' 
+#' @examples
+#' library('survival')
+#' sdif <- survdiff(Surv(time, status) ~ sex, data = lung)
+#' sfit <- survfit(Surv(time, status) ~ sex, data = lung)
+#' cxph <- coxph(Surv(time, status) ~ sex, data = lung)
+#' 
+#' stopifnot(
+#'   identical(coxph_pairs(sdif), coxph_pairs(sfit)),
+#'   identical(coxph_pairs(sdif), coxph_pairs(cxph))
+#' )
+#' 
+#' ## numeric and integer variables will be treated as factor-like
+#' sfit <- survfit(Surv(time, status) ~ extent, data = colon)
+#' kmplot(sfit, add = TRUE)
+#' coxph_pairs(sfit)$n
+#' 
+#' leg <- function(ii, jj) {
+#'   hr <- coxph_pairs(sfit)
+#'   sapply(seq_along(ii), function(i) {
+#'     j <- ii[i]
+#'     i <- jj[i]
+#'     sprintf(
+#'       '%s vs %s: n=%s, HR: %.2f (%.2f - %.2f), %s',
+#'       i, j, hr$n[i, j], hr$hr[i, j], hr$lci[i, j], hr$uci[i, j],
+#'       pvalr(hr$p.value[i, j], show.p = TRUE)
+#'     )
+#'   })
+#' }
+#' legend(
+#'   'bottomleft', leg(c('1', '1', '1'), c('2', '3', '4')),
+#'   lty = 1, col = 2:4, bty = 'n'
+#' )
+#' 
+#' ## compare
+#' f <- function(x) exp(coef(x))
+#' f(coxph(Surv(time, status) ~ extent, data = colon[colon$extent %in% 1:2, ]))
+#' f(coxph(Surv(time, status) ~ extent, data = colon[colon$extent %in% 2:3, ]))
+#' f(coxph(Surv(time, status) ~ extent, data = colon[colon$extent %in% 3:4, ]))
+#' ## etc ...
+#' 
+#' 
+#' ## rawr >= 1.0.0 allows multiple variables
+#' sfit <- survfit(Surv(time, status) ~ sex + extent, data = colon)
+#' coxph_pairs(sfit, method = 'BH')
+#' 
+#' 
+#' ## also allows for a formula to be passed (data arg required)
+#' coxph_pairs(Surv(time, status) ~ sex + extent, data = colon)
+#' 
+#' 
+#' ## strata will be ignored
+#' sdif <- survdiff(Surv(time, status) ~ sex + strata(inst), data = lung)
+#' coxph_pairs(sdif)
+#' 
+#' @export
+
+coxph_pairs <- function(object, data = NULL, level = 0.95, ...,
+                     method = p.adjust.methods, digits = getOption('digits')) {
+  if (inherits(object, 'formula')) {
+    form <- object
+    object <- survfit(form, data)
+    object$call$formula <- form
+  }
+  stopifnot(inherits(object, c('survdiff', 'survfit', 'coxph')))
+  
+  method <- match.arg(method)
+  if (is.null(data))
+    data <- eval(object$call$data, envir = parent.frame(1L))
+  # rhs <- tail(all.vars(object$call$formula), -2L) ## fails for strata and s ~ ...
+  rhs <- strsplit(as.character(object$call$formula)[3L], '\\s*\\+\\s*')[[1L]]
+  rhs <- trimws(grep('strata\\s*\\(', rhs, value = TRUE, invert = TRUE))
+  
+  if (any(grepl('factor\\s*\\(', rhs))) {
+    rhs <- trimws(gsub('factor\\s*\\(([^)]+)\\)', '\\1', rhs))
+    # names(data) <- trimws(gsub('factor\\s*\\(([^)]+)\\)', '\\1', names(data)))
+  }
+  
+  if (length(rhs) > 1L) {
+    data[, 'int__'] <- interaction(data[, rhs], drop = TRUE)
+    object <- update(object, . ~ int__, data = data)
+    rhs <- 'int__'
+  }
+  
+  unq <- as.character(sort(unique(data[, rhs])))
+  
+  f <- function(i, j) {
+    dd <- droplevels(data[data[, rhs] %in% c(i, j), ])
+    cx <- coxph(as.formula(object$call$formula), data = dd, ...)
+    co <- coef(summary(cx))
+    ci <- exp(confint(cx, level = level))
+    data.frame(
+      x = i, y = j, n = cx$n, hr = co[2L], p.value = co[5L],
+      lci = ci[1L], uci = ci[2L], level = level
+    )
+  }
+  g <- function(i) {
+    res <- matrix(NA, length(unq), length(unq), TRUE, list(unq, unq))
+    res[lower.tri(res)] <- pw[, i]
+    res
+  }
+  
+  pw <- combn(unq, 2L, simplify = FALSE, function(x) {
+    f(x[1L], x[2L])
+  })
+  pw <- do.call('rbind', pw)
+  
+  p.value <- g(5)
+  tpv <- t(p.value)
+  tpv[lower.tri(p.value)] <-
+    p.adjust(p.value[lower.tri(p.value)], method = method)
+  p.value <- t(tpv)
+  
+  nn <- outer(as.character(unq), as.character(unq), Vectorize(function(x, y)
+    nrow(data[data[, rhs] %in% c(x, y), ])))
+  nn[upper.tri(nn)] <- NA
+  dimnames(nn) <- list(unq, unq)
+  
+  res <- list(
+    n = nn, n_model = g(3),
+    hr = g(4), lci = g(6), uci = g(7),
+    p.value = p.value
+  )
+  
+  structure(
+    lapply(res, round, digits = digits),
+    class = 'coxph_pairs', level = level
   )
 }
 

@@ -6,14 +6,20 @@
 \usage{
 survdiff_pairs(
   object,
+  data = NULL,
   ...,
   method = p.adjust.methods,
   digits = getOption("digits")
 )
 }
 \arguments{
-\item{object}{an object of class \code{\link[survival]{survdiff}} or
-\code{\link[survival]{survfit}}}
+\item{object}{an object of class \code{\link[survival]{survdiff}},
+\code{\link[survival]{survfit}}, or \code{\link[survival]{coxph}}
+
+alternatively, a formula in which case \code{data} must be provided}
+
+\item{data}{(optional) a data frame in which to interpret the variables
+named in \code{object} if given as a formula}
 
 \item{...}{additional arguments passed to \code{\link{survdiff}} such as
 \code{na.action} or \code{rho} to control the test}
@@ -28,11 +34,11 @@ A list with three elements:
 
 \item{\code{n}}{the number of subjects in each pair of groups}
 \item{\code{chi.sq}}{the chi-square statistic for a test of equality
-between pairs of groups}
+  between pairs of groups}
 \item{\code{p.value}}{significance for each test. The lower and upper
-triangles of the matrix are uncorrected and adjusted, respectively, for
-multiple comparisons using \code{method} (the default is the Holm
-correction, see \code{\link{p.adjust}})}
+  triangles of the matrix are uncorrected and adjusted, respectively, for
+  multiple comparisons using \code{method} (the default is the Holm
+  correction, see \code{\link{p.adjust}})}
 }
 \description{
 Evaluate pairwise group differences in survival curves with
@@ -53,6 +59,9 @@ survdiff_pairs(sfit)
 
 ## compare
 survdiff(Surv(time, status) ~ extent, data = colon[colon$extent \%in\% 1:2, ])
+survdiff(Surv(time, status) ~ extent, data = colon[colon$extent \%in\% 2:3, ])
+survdiff(Surv(time, status) ~ extent, data = colon[colon$extent \%in\% 3:4, ])
+## etc ...
 
 
 ## for interactions, create a new variable with all levels
@@ -65,13 +74,19 @@ sfit <- survfit(Surv(time, status) ~ sex + extent, data = colon)
 survdiff_pairs(sfit, rho = 1, method = 'BH')
 
 
+## also allows for a formula to be passed (data arg required)
+survdiff_pairs(Surv(time, status) ~ sex + extent, data = colon)
+
+
 ## strata will be ignored
 sdif <- survdiff(Surv(time, status) ~ sex + strata(inst), data = lung)
 survdiff_pairs(sdif)
 
 }
 \seealso{
-\code{\link[rawr]{pvalr}}; \code{\link{survdiff}}; \code{\link{p.adjust}};
+\code{\link[rawr]{coxph_pairs}}
+
+\code{\link{survdiff}}; \code{\link{p.adjust}};
 \code{\link[rms]{contrast}} from the \pkg{\link[rms]{rms}} package;
 \code{\link{pairwise.table}}
 }
