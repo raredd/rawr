@@ -9,6 +9,7 @@ coxph_pairs(
   data = NULL,
   level = 0.95,
   ...,
+  relevel = FALSE,
   method = p.adjust.methods,
   digits = getOption("digits")
 )
@@ -26,6 +27,8 @@ named in \code{object} if given as a formula}
 
 \item{...}{additional arguments passed to \code{\link{survdiff}} such as
 \code{na.action} or \code{rho} to control the test}
+
+\item{relevel}{logical; if \code{TRUE}, the reference group is flipped}
 
 \item{method}{p-value correction method (default is \code{'holm'}; see
 \code{\link{p.adjust}}}
@@ -50,7 +53,8 @@ A list with three elements:
 }
 \description{
 Evaluate pairwise group differences in hazard ratios with
-\code{\link[survival]{coxph}}.
+\code{\link[survival]{coxph}}. Note this function is intended to be used
+for uni-variable models with a factor-like predictor.
 }
 \examples{
 library('survival')
@@ -68,8 +72,8 @@ sfit <- survfit(Surv(time, status) ~ extent, data = colon)
 kmplot(sfit, add = TRUE)
 coxph_pairs(sfit)$n
 
-leg <- function(ii, jj) {
-  hr <- coxph_pairs(sfit)
+leg <- function(ii, jj, ...) {
+  hr <- coxph_pairs(sfit, ...)
   sapply(seq_along(ii), function(i) {
     j <- ii[i]
     i <- jj[i]
@@ -85,11 +89,12 @@ legend(
   lty = 1, col = 2:4, bty = 'n'
 )
 
+
 ## compare
 f <- function(x) exp(coef(x))
-f(coxph(Surv(time, status) ~ extent, data = colon[colon$extent \%in\% 1:2, ]))
-f(coxph(Surv(time, status) ~ extent, data = colon[colon$extent \%in\% 2:3, ]))
-f(coxph(Surv(time, status) ~ extent, data = colon[colon$extent \%in\% 3:4, ]))
+f(coxph(Surv(time, status) ~ extent, data = colon[colon$extent \%in\% c(1, 2), ]))
+f(coxph(Surv(time, status) ~ extent, data = colon[colon$extent \%in\% c(1, 3), ]))
+f(coxph(Surv(time, status) ~ extent, data = colon[colon$extent \%in\% c(1, 4), ]))
 ## etc ...
 
 

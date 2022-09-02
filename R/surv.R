@@ -2643,7 +2643,8 @@ survdiff_pairs <- function(object, data = NULL, ...,
 #' Pairwise \code{coxph} comparisons
 #'
 #' Evaluate pairwise group differences in hazard ratios with
-#' \code{\link[survival]{coxph}}.
+#' \code{\link[survival]{coxph}}. Note this function is intended to be used
+#' for uni-variable models with a factor-like predictor.
 #'
 #' @param object an object of class \code{\link[survival]{survdiff}},
 #'   \code{\link[survival]{survfit}}, or \code{\link[survival]{coxph}}
@@ -2654,6 +2655,7 @@ survdiff_pairs <- function(object, data = NULL, ...,
 #' @param level the confidence level for intervals; see \code{\link{confint}}
 #' @param ... additional arguments passed to \code{\link{survdiff}} such as
 #'   \code{na.action} or \code{rho} to control the test
+#' @param relevel logical; if \code{TRUE}, the reference group is flipped
 #' @param method p-value correction method (default is \code{'holm'}; see
 #'   \code{\link{p.adjust}}
 #' @param digits integer indicating the number of decimal places to be used
@@ -2693,8 +2695,8 @@ survdiff_pairs <- function(object, data = NULL, ...,
 #' kmplot(sfit, add = TRUE)
 #' coxph_pairs(sfit)$n
 #' 
-#' leg <- function(ii, jj) {
-#'   hr <- coxph_pairs(sfit)
+#' leg <- function(ii, jj, ...) {
+#'   hr <- coxph_pairs(sfit, ...)
 #'   sapply(seq_along(ii), function(i) {
 #'     j <- ii[i]
 #'     i <- jj[i]
@@ -2710,11 +2712,12 @@ survdiff_pairs <- function(object, data = NULL, ...,
 #'   lty = 1, col = 2:4, bty = 'n'
 #' )
 #' 
+#' 
 #' ## compare
 #' f <- function(x) exp(coef(x))
-#' f(coxph(Surv(time, status) ~ extent, data = colon[colon$extent %in% 1:2, ]))
-#' f(coxph(Surv(time, status) ~ extent, data = colon[colon$extent %in% 2:3, ]))
-#' f(coxph(Surv(time, status) ~ extent, data = colon[colon$extent %in% 3:4, ]))
+#' f(coxph(Surv(time, status) ~ extent, data = colon[colon$extent %in% c(1, 2), ]))
+#' f(coxph(Surv(time, status) ~ extent, data = colon[colon$extent %in% c(1, 3), ]))
+#' f(coxph(Surv(time, status) ~ extent, data = colon[colon$extent %in% c(1, 4), ]))
 #' ## etc ...
 #' 
 #' 
@@ -2733,7 +2736,7 @@ survdiff_pairs <- function(object, data = NULL, ...,
 #' 
 #' @export
 
-coxph_pairs <- function(object, data = NULL, level = 0.95, ...,
+coxph_pairs <- function(object, data = NULL, level = 0.95, ..., relevel = FALSE,
                      method = p.adjust.methods, digits = getOption('digits')) {
   if (inherits(object, 'formula')) {
     form <- object
@@ -2767,6 +2770,10 @@ coxph_pairs <- function(object, data = NULL, level = 0.95, ...,
     cx <- coxph(as.formula(object$call$formula), data = dd, ...)
     co <- coef(summary(cx))
     ci <- exp(confint(cx, level = level))
+    if (relevel) {
+      co[2L] <- 1 / co[2L]
+      ci <- 1 / rev(ci)
+    }
     data.frame(
       x = i, y = j, n = cx$n, hr = co[2L], p.value = co[5L],
       lci = ci[1L], uci = ci[2L], level = level
