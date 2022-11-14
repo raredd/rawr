@@ -1025,6 +1025,12 @@ waffle <- function(mat, xpad = 0, ypad = 0,
 #' @param col,col2 vectors of colors for responses (\code{river}) or toxicity
 #'   grades \code{river2}, respectively
 #' @param axes logical; if \code{TRUE}, x-axes are drawn
+#' @param label logical; if \code{TRUE}, IDs are shown for each line
+#' @param bar.width,bar.alpha width and alpha transparency for bars
+#' @param col.seg colors for timeline/on-treatment
+#' @param col.arrows the color for on-going arrows or use \code{NA} to suppress
+#' @param cex.pt the size for progression/censoring points
+#' @param col.pt colors for death/progression and censoring
 #' @param split logical; if \code{TRUE}, rows of \code{bar_data2} will be
 #'   plotted individually
 #' 
@@ -1118,7 +1124,11 @@ waffle <- function(mat, xpad = 0, ypad = 0,
 river <- function(data, bar_data, id, at,
                   legend = TRUE, args.legend = list(),
                   xlim = NULL, ylim = NULL, rev = FALSE,
-                  stagger = TRUE, col = NULL, axes = TRUE) {
+                  stagger = TRUE, col = NULL, axes = TRUE,
+                  label = TRUE, bar.width = 0.25, bar.alpha = 0.5,
+                  col.seg = c(1L, 3L), col.arrows = 2L,
+                  cex.pt = 1.5,
+                  col.pt = c(2L, 4L)) {
   ## error checks
   dd <- check_river_format(data)
   bd <- check_river_format(data, bar_data)
@@ -1154,11 +1164,11 @@ river <- function(data, bar_data, id, at,
       range(unlist(mm[dd$id %in% id, , drop = FALSE]), na.rm = TRUE)
   
   mm[] <- lapply(mm, as.numeric)
-  mm   <- t(apply(mm, 1, function(x)
+  mm   <- t(apply(mm, 1L, function(x)
     x - min(if (stagger) mm[, 'dd_reg'] else x['dd_reg'], na.rm = TRUE)))
   
   dd <- within(cbind(dd, mm), {
-    end_day <- apply(mm, 1, max, na.rm = TRUE)
+    end_day <- apply(mm, 1L, max, na.rm = TRUE)
     end_day <- pmax(end_day, dd_reg)
     alive   <- is.na(status) | (grepl('(?i)[0v]', status) + 0L)
     censor  <- alive & !is.na(dt_offstudy)
@@ -1169,12 +1179,12 @@ river <- function(data, bar_data, id, at,
   })
   
   plot.new()
-  par(mar = c(4,1,1,0))
+  par(mar = c(4, 1, 1, 0))
   plot.window(if (!is.null(xlim)) xlim else c(0, diff(rx)),
               ## set min ylim to c(0,5) for case: id < 5
               if (!is.null(ylim)) ylim else range(c(0, at, 5)))
   if (axes) {
-    axis(1, tcl = 0.2, las = 1L)
+    axis(1L, tcl = 0.2, las = 1L)
     title(
       xlab = sprintf('Days from %sregistration',
                      c('', 'first ')[stagger + 1L]),
@@ -1199,28 +1209,29 @@ river <- function(data, bar_data, id, at,
     # with(dd[ii, ], {
     with(sp[[as.character(ii)]], {
       ## label ids in black to left of rect
-      text(dd_reg[1L], jj, labels = id[1L], pos = 2L, xpd = NA)
+      if (label)
+        text(dd_reg[1L], jj, labels = id[1L], pos = 2L, xpd = NA)
       
       ## lines - time alive, on tx
       do_seg_(jj, dd_reg, end_day, arrow = alive[1L] & !censor[1L],
-              single = TRUE, col = 1L)
+              single = TRUE, col.seg = col.seg[1L], col.arrows = col.arrows)
       ## thicker line and arrow for continuing
       do_seg_(jj, dd_txstart, dd_txend %|% end_day, arrow = FALSE,
-              single = TRUE, lty = 1L, lwd = 4, col = 'green4')
+              single = TRUE, lty = 1L, lwd = 4, col.seg = col.seg[1L])
       
       ## rects - assessments
       do_rect_(jj, dd_assess_start, dd_assess_end %|% end_day,
-               col = tcol(col_assess, alpha = 0.5))
+               col = tcol(col_assess, bar.alpha), adj = bar.width)
       ## pipe at each assessment time
       points(dd_assess_start, rep(jj, length(dd_assess_start)),
              pch = '|', col = 1L, cex = 0.5)
       
       ## points - prog (red circle), death, (red x), censor (blue x)
-      points(dd_prog[1L], jj, pch = 16L, col = 2L, cex = 1.5)
+      points(dd_prog[1L], jj, pch = 16L, col = col.pt[1L], cex = cex.pt)
       points(end_day[1L], jj, pch = c(4L, NA)[alive[1L] + 1L],
-             col = 2L, lwd = 3, cex = 1.5)
+             col = col.pt[1L], lwd = 3, cex = cex.pt)
       points(end_day[1L], jj, pch = c(NA, 4L)[(alive[1L] & censor[1L]) + 1L],
-             col = 4L, lwd = 3, cex = 1.5)
+             col = col.pt[2L], lwd = 3, cex = cex.pt)
     })
   }
   
@@ -1232,7 +1243,8 @@ river <- function(data, bar_data, id, at,
 river2 <- function(data, bar_data, bar_data2, id,
                    legend = TRUE, args.legend = list(),
                    xlim = NULL, ylim = NULL, rev = FALSE, stagger = FALSE,
-                   split = FALSE, col = NULL, col2 = NULL, axes = TRUE) {
+                   split = FALSE, col = NULL, col2 = NULL, axes = TRUE,
+                   bar.width = 0.25, bar.alpha = 0.5) {
   ## error checks
   if (!missing(data)) {
     if (missing(bar_data2))
@@ -1334,9 +1346,9 @@ river2 <- function(data, bar_data, bar_data2, id,
   for (ii in nn) {
     with(sp[[ii]], {
       ## rect for indiv td
-      col  <- tcol(col_grade, alpha = 0.5)
+      col  <- tcol(col_grade, alpha = bar.alpha)
       endx <- pmax(dd_end %|% dd_end2, dd_start, na.rm = TRUE)
-      do_rect_(ii + 1L, dd_start, endx, col = col, border = col)
+      do_rect_(ii + 1L, dd_start, endx, col = col, border = col, adj = bar.width)
       
       ## td with end but no start date
       # if (no_start)
@@ -1345,7 +1357,7 @@ river2 <- function(data, bar_data, bar_data2, id,
                  1 + ii + c(0.15, -0.15), col = col, lwd = 2)
       
       ## add count of td to left in black if start date, color/italic if NA
-      ## desc on right in color, italics if continuing; black otherwise
+      ## desc on right in color, italic if continuing; black otherwise
       text(dd_start[1L], ii + 1L, labels = ii, pos = 2L, xpd = NA,
            cex = 0.8, col = if (no_start[1L]) col else 1L,
            font = if (no_start[1L]) 3L else 1L)

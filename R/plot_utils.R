@@ -66,7 +66,8 @@ do_rect_ <- function(n, x, y, single = FALSE, border = NA, col = NA,
   invisible(NULL)
 }
 
-do_seg_ <- function(n, x, y, arrow, single = FALSE, lwd = 2, ...) {
+do_seg_ <- function(n, x, y, arrow, single = FALSE, lwd = 2,
+                    col.seg = par('fg'), col.arrows = par('fg'), ...) {
   ## used in river/river2 to add segs for each n
   if (single) {
     n <- n[1L]
@@ -75,10 +76,10 @@ do_seg_ <- function(n, x, y, arrow, single = FALSE, lwd = 2, ...) {
   }
   if (is.na(x))
     return(invisible(NULL))
-  if (arrow[1L])
+  if (arrow[1L] & !is.na(col.arrows[1L]))
     arrows(x, n, pmax(y, 1, na.rm = TRUE), n, lwd = lwd,
-           angle = 30, length = 0.15, ...)
-  else segments(x, n, y, n, lwd = lwd, ...)
+           angle = 30, length = 0.15, col = col.arrows[1L], ...)
+  else segments(x, n, y, n, lwd = lwd, col = col.seg[1L], ...)
   invisible(NULL)
 }
 

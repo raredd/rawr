@@ -18,7 +18,14 @@ river(
   rev = FALSE,
   stagger = TRUE,
   col = NULL,
-  axes = TRUE
+  axes = TRUE,
+  label = TRUE,
+  bar.width = 0.25,
+  bar.alpha = 0.5,
+  col.seg = c(1L, 3L),
+  col.arrows = 2L,
+  cex.pt = 1.5,
+  col.pt = c(2L, 4L)
 )
 
 river2(
@@ -35,7 +42,9 @@ river2(
   split = FALSE,
   col = NULL,
   col2 = NULL,
-  axes = TRUE
+  axes = TRUE,
+  bar.width = 0.25,
+  bar.alpha = 0.5
 )
 
 check_river_format(data, bar_data)
@@ -66,6 +75,18 @@ rather than relative to the first start date if \code{TRUE} (default)}
 grades \code{river2}, respectively}
 
 \item{axes}{logical; if \code{TRUE}, x-axes are drawn}
+
+\item{label}{logical; if \code{TRUE}, IDs are shown for each line}
+
+\item{bar.width, bar.alpha}{width and alpha transparency for bars}
+
+\item{col.seg}{colors for timeline/on-treatment}
+
+\item{col.arrows}{the color for on-going arrows or use \code{NA} to suppress}
+
+\item{cex.pt}{the size for progression/censoring points}
+
+\item{col.pt}{colors for death/progression and censoring}
 
 \item{split}{logical; if \code{TRUE}, rows of \code{bar_data2} will be
 plotted individually}
