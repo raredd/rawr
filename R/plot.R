@@ -1121,23 +1121,20 @@ waffle <- function(mat, xpad = 0, ypad = 0,
 #' 
 #' @export
 
-river <- function(data, bar_data, id, at,
+river <- function(data, bar_data, id = NULL, at = seq_along(id),
                   legend = TRUE, args.legend = list(),
                   xlim = NULL, ylim = NULL, rev = FALSE,
                   stagger = TRUE, col = NULL, axes = TRUE,
                   label = TRUE, bar.width = 0.25, bar.alpha = 0.5,
                   col.seg = c(1L, 3L), col.arrows = 2L,
-                  cex.pt = 1.5,
-                  col.pt = c(2L, 4L)) {
+                  cex.pt = 1.5, col.pt = c(2L, 4L)) {
   ## error checks
   dd <- check_river_format(data)
   bd <- check_river_format(data, bar_data)
   nn <- as.character(unique(dd$id))
   
-  if (missing(id))
+  if (is.null(id))
     id <- nn
-  if (missing(at))
-    at <- seq_along(id)
   if (rev)
     at <- rev(at)
   

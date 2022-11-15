@@ -9,8 +9,8 @@
 river(
   data,
   bar_data,
-  id,
-  at,
+  id = NULL,
+  at = seq_along(id),
   legend = TRUE,
   args.legend = list(),
   xlim = NULL,
