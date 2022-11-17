@@ -3,7 +3,7 @@
 # cuzick.test.default, cuzick.test.formula, jt.test, kw.test, kw.test.default,
 # kw.test.formula, ca.test, ca.test.default, ca.test.formula, lspline,
 # perm.t.test, perm.t.test.default, perm.t.test.formula, vs.rfsrc, vs.glmnet,
-# ransch, ranschtbl, twostg.test, cor.n, cor.ci, bni
+# ransch, ranschtbl, twostg.test, cor.n, cor.ci, bni, pickwin
 #
 # S3 methods:
 # cuzick.test, kw.test, ca.test, perm.t.test
@@ -2408,4 +2408,105 @@ bni <- function(margin, p1, p2 = p1, alpha = 0.05, power = NULL,
   }
 
   c(n = n, n1 = n * (1 - p), n2 = n * p, power = power)
+}
+
+#' Pick-the-winner design
+#' 
+#' Calculate sample size of Simon's pick winner design or determine the
+#' probability of alternative hypothesis to obtain target power.
+#' 
+#' These calculations use method proposed by R. Simon for pick-the-winner design
+#' for randomized phase II clinical trials.
+#' 
+#' Exactly one of the parameters \code{n}, \code{power}, and \code{p1} must
+#' be \code{NULL}.
+#' 
+#' This design is not a hypothesis test, nor is there a formal comparison
+#' between arms. Therefore, the type I error rate does not apply.
+#' 
+#' @param n sample size per arm
+#' @param k number of arms
+#' @param p0,p1 null and alternative response rates, respectively
+#' @param power probability of choosing the winning arm
+#' @param tol the desired accuracy (convergence tolerance); see
+#'   \code{\link[stats]{uniroot}}
+#' 
+#' @return
+#' Ab object of class \code{power.htest} with the following elements:
+#' 
+#' \item{n}{sample size per arm}
+#' \item{arm}{number of arms}
+#' \item{n.total}{total sample size for the study}
+#' 
+#' @references
+#' Adapted from \code{power.ctepd::n.pick.winner}, Bingshu E. Chen
+#' 
+#' Simon, R., R.E. Wittes, S.S. Ellenberg. Randomized phase II clinical
+#' trials. \emph{Cancer Treat Rep}. \strong{69}:1375-1381, 1985.
+#' 
+#' @seealso
+#' \code{power.ctepd::n.pick.winner}; \code{\link[clinfun]{pselect}};
+#' \code{\link[desmon]{pickwin}};
+#' 
+#' @examples
+#' pickwin(20, 2, 0.25, 0.5)
+#' pickwin(NULL, 2, 0.25, 0.5, 0.95)
+#' 
+#' pickwin(20, 3, 0.25, 0.5)$power
+#' pickwin(20, 4, 0.25, 0.5)$power
+#' 
+#' @export
+
+pickwin <- function(n = NULL, k = 2L, p0 = NULL, p1 = NULL, power = NULL,
+                    tol = .Machine$double.eps ^ 0.25) {
+  stopifnot(
+    'exactly one of n, p1, and power must be NULL' =
+      (is.null(n) + is.null(p1) + is.null(power)) == 1L,
+    k >= 2L,
+    p0 > 0,
+    p0 < 1,
+    is.null(p0) | p0 < p1,
+    is.null(p0) | p1 < 1
+  )
+  
+  ## prob of picking the winning arm
+  p.body <- quote({
+    n <- ceiling(n)
+    x <- seq(0, n)
+    ## cdf - cumulative prob of x or fewer responses
+    Bi0 <- pbinom(x, n, p0)
+    Bi1 <- pbinom(x, n, p1)
+    ## pdf - prob of exactly x responses
+    bi0 <- dbinom(x, n, p0)
+    bi1 <- dbinom(x, n, p1)
+    
+    ## prob that max response is i in (k - 1) null arms
+    Bix <- c(0, Bi0)[seq.int(n + 1L)]
+    fx  <- Bi0 ^ (k - 1L) - Bix ^ (k - 1L)
+    
+    ## for ties, best arm was selected when being tied with 1 or more null arms
+    gj <- 0
+    for (j in seq.int(k - 1L)) {
+      ckj <- choose(k - 1L, j)
+      gj  <- gj + ckj * bi0 ^ j * Bix ^ (k - 1L - j) / (j + 1L)
+    }  
+    pb <- sum(fx * (1 - Bi1)) + sum(bi1 * gj)
+  })
+  
+  if (is.null(n)) {
+    n <- uniroot(function(n) eval(p.body) - power, c(5, 500), tol = tol)$root
+    n <- n + 1
+  }
+  if (is.null(p1)) {
+    p1 <- uniroot(function(p1) eval(p.body) - power, c(p0 - 0.001, 0.99), tol = tol)$root
+  }
+  
+  power <- eval(p.body)
+  
+  structure(
+    list(
+      n = n, arms = k, n.total = n * k, p0 = p0, p1 = p1, power = power,
+      method = 'Sample size for Simon\'s pick-the-winner'
+    ), class = 'power.htest'
+  )
 }
