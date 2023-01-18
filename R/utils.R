@@ -2781,6 +2781,8 @@ xtable <- function(x, by, digits = 0L, total = TRUE, pct.sign = FALSE,
     
     res <- cbind(res, c(pval, rep_len('', nrow(res) - 1L)))
     colnames(res)[ncol(res)] <- label.test %||% attr(test, 'name') %||% 'test'
+  } else {
+    pval <- NA
   }
   
   names(dimnames(res)) <- c(xn, bn)
