@@ -86,6 +86,7 @@ stratify_formula <- function(formula, vars = NULL) {
 #'   values will be used; if \code{FALSE}, \code{NA}, or \code{NULL}, no
 #'   bands will be plotted; also note that this is not a true confidence band;
 #'   see details
+#' @param alpha.band alpha transparency (in \code{[0, 1]}) of the band
 #' @param kmdiff logical; if \code{TRUE}, a confidence band for the difference
 #'   between two curves is shown; see \code{\link{kmdiff}} (note that the color
 #'   can be passed via \code{col.ci} and the confidence interval is taken from
@@ -314,7 +315,8 @@ kmplot <- function(object, data = NULL,
 
                    ## confidence options
                    lty.ci = 0, lwd.ci = lwd.surv,
-                   col.ci = col.surv, col.band = FALSE, kmdiff = FALSE,
+                   col.ci = col.surv, col.band = FALSE, alpha.band = 0.5,
+                   kmdiff = FALSE,
 
                    ## at-risk table options
                    atrisk.table = TRUE, atrisk.lab = NULL, atrisk.pad = 0.5,
@@ -917,8 +919,15 @@ kmplot <- function(object, data = NULL,
 
       ## confidence bands
       if (any(!is.na(col.band))) {
-        col.band[ii] <- tcol(col.band[ii], alpha = 0.5)
-        polygon(c(x, rev(x)), c(U, rev(L)), border = NA, col = col.band[ii])
+        col.band[ii] <- tcol(col.band[ii], alpha = alpha.band)
+        
+        px <- c(x, rev(x))
+        py <- c(U, rev(L))
+        if (identical(fun, 'F')) {
+          py <- 1 - py
+        }
+        
+        polygon(px, py, border = NA, col = col.band[ii])
       }
     }
 

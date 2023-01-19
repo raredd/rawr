@@ -16,6 +16,7 @@ kmplot(
   lwd.ci = lwd.surv,
   col.ci = col.surv,
   col.band = FALSE,
+  alpha.band = 0.5,
   kmdiff = FALSE,
   atrisk.table = TRUE,
   atrisk.lab = NULL,
@@ -115,6 +116,8 @@ string(s), or hexadecimal string(s); if \code{TRUE}, \code{col.surv}
 values will be used; if \code{FALSE}, \code{NA}, or \code{NULL}, no
 bands will be plotted; also note that this is not a true confidence band;
 see details}
+
+\item{alpha.band}{alpha transparency (in \code{[0, 1]}) of the band}
 
 \item{kmdiff}{logical; if \code{TRUE}, a confidence band for the difference
 between two curves is shown; see \code{\link{kmdiff}} (note that the color
