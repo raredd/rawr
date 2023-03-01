@@ -933,7 +933,7 @@ kmplot <- function(object, data = NULL,
 
     ## survival curves
     lines(object[ii], conf.int = FALSE, col = col.surv[ii], fun = fun,
-          lty = lty.surv[ii], lwd = lwd.surv, mark.time = FALSE)
+          lty = lty.surv[ii], lwd = lwd.surv[ii], mark.time = FALSE)
 
     if (!mark[ii] == FALSE)
       points.kmplot(
