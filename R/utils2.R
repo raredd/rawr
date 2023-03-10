@@ -2590,7 +2590,10 @@ tabler_stat2 <- function(data, varname, byvar = NULL,
                          zeros = '-', clean_daggers = FALSE) {
   data <- as.data.frame(data)
   nv   <- length(varname)
-
+  
+  nm <- names(varname)
+  if (!is.null(nm))
+    names(varname)[!nzchar(nm)] <- varname[!nzchar(nm)]
   varname_label <- varname_label %||% varname
   byvar_label   <- byvar_label %||% byvar
 
