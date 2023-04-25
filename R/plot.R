@@ -1029,7 +1029,7 @@ waffle <- function(mat, xpad = 0, ypad = 0,
 #' @param bar.width,bar.alpha width and alpha transparency for bars
 #' @param col.seg colors for timeline/on-treatment
 #' @param col.arrows the color for on-going arrows or use \code{NA} to suppress
-#' @param cex.pt the size for progression/censoring points
+#' @param cex.pt the size for progression/death/censoring points
 #' @param col.pt colors for death/progression and censoring
 #' @param split logical; if \code{TRUE}, rows of \code{bar_data2} will be
 #'   plotted individually
@@ -1127,7 +1127,7 @@ river <- function(data, bar_data, id = NULL, at = seq_along(id),
                   stagger = TRUE, col = NULL, axes = TRUE,
                   label = TRUE, bar.width = 0.25, bar.alpha = 0.5,
                   col.seg = c(1L, 3L), col.arrows = 2L,
-                  cex.pt = 1.5, col.pt = c(2L, 4L)) {
+                  cex.pt = 1.5, col.pt = c(2L, 2L, 4L)) {
   ## error checks
   dd <- check_river_format(data)
   bd <- check_river_format(data, bar_data)
@@ -1199,6 +1199,9 @@ river <- function(data, bar_data, id = NULL, at = seq_along(id),
   
   sp <- split(dd, dd$id, drop = FALSE)
   
+  cex.pt <- rep_len(cex.pt, 3L)
+  col.pt <- rep_len(col.pt, 3L)
+  
   for (ii in id) {
     ## lines at specific points require new index
     jj <- at[which(id %in% ii)]
@@ -1226,9 +1229,9 @@ river <- function(data, bar_data, id = NULL, at = seq_along(id),
       ## points - prog (red circle), death, (red x), censor (blue x)
       points(dd_prog[1L], jj, pch = 16L, col = col.pt[1L], cex = cex.pt)
       points(end_day[1L], jj, pch = c(4L, NA)[alive[1L] + 1L],
-             col = col.pt[1L], lwd = 3, cex = cex.pt)
-      points(end_day[1L], jj, pch = c(NA, 4L)[(alive[1L] & censor[1L]) + 1L],
              col = col.pt[2L], lwd = 3, cex = cex.pt)
+      points(end_day[1L], jj, pch = c(NA, 4L)[(alive[1L] & censor[1L]) + 1L],
+             col = col.pt[3L], lwd = 3, cex = cex.pt)
     })
   }
   

@@ -25,7 +25,7 @@ river(
   col.seg = c(1L, 3L),
   col.arrows = 2L,
   cex.pt = 1.5,
-  col.pt = c(2L, 4L)
+  col.pt = c(2L, 2L, 4L)
 )
 
 river2(
@@ -84,7 +84,7 @@ grades \code{river2}, respectively}
 
 \item{col.arrows}{the color for on-going arrows or use \code{NA} to suppress}
 
-\item{cex.pt}{the size for progression/censoring points}
+\item{cex.pt}{the size for progression/death/censoring points}
 
 \item{col.pt}{colors for death/progression and censoring}
 
