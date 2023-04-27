@@ -23,7 +23,7 @@ river(
   bar.width = 0.25,
   bar.alpha = 0.5,
   col.seg = c(1L, 3L),
-  col.arrows = 2L,
+  col.arrows = 1L,
   cex.pt = 1.5,
   col.pt = c(2L, 2L, 4L)
 )

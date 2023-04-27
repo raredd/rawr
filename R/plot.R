@@ -1126,7 +1126,7 @@ river <- function(data, bar_data, id = NULL, at = seq_along(id),
                   xlim = NULL, ylim = NULL, rev = FALSE,
                   stagger = TRUE, col = NULL, axes = TRUE,
                   label = TRUE, bar.width = 0.25, bar.alpha = 0.5,
-                  col.seg = c(1L, 3L), col.arrows = 2L,
+                  col.seg = c(1L, 3L), col.arrows = 1L,
                   cex.pt = 1.5, col.pt = c(2L, 2L, 4L)) {
   ## error checks
   dd <- check_river_format(data)
@@ -1217,7 +1217,7 @@ river <- function(data, bar_data, id = NULL, at = seq_along(id),
               single = TRUE, col.seg = col.seg[1L], col.arrows = col.arrows)
       ## thicker line and arrow for continuing
       do_seg_(jj, dd_txstart, dd_txend %|% end_day, arrow = FALSE,
-              single = TRUE, lty = 1L, lwd = 4, col.seg = col.seg[1L])
+              single = TRUE, lty = 1L, lwd = 4, col.seg = col.seg[2L])
       
       ## rects - assessments
       do_rect_(jj, dd_assess_start, dd_assess_end %|% end_day,
