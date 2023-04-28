@@ -4,7 +4,8 @@
 # num2char, iprint, writeftable, tabler, tabler.default, tabler.lm, tabler.glm,
 # tabler.survfit, tabler_by, tabler_by2, tabler_stat, describeDate,
 # describeDateBy, tabler_stat2, tabler_resp, match_ctc, tox_worst, countr, dmy,
-# combine_table, combine_table2, inject_div, case, write_htmlTable, html_align
+# combine_table, combine_table2, inject_div, case, write_htmlTable, html_align,
+# abbr
 #
 # S3 methods:
 # roundr, tabler
@@ -3852,4 +3853,30 @@ html_align <- function(x, sep = '&nbsp;', where = '&&', min_width = '35px') {
   attributes(res) <- attributes(x)
 
   res
+}
+
+#' Abbreviations
+#' 
+#' Extract abbreviations from strings.
+#' 
+#' @param x a vector of strings to abbreviate
+#' @param pattern,n the pattern and number of occurrences to use
+#' @param include an optional pattern to match additional strings surrounded
+#'   by word boundaries; any non character will omit
+#' 
+#' @examples
+#' x <- c('United States of America', 'the Red, the White, and the Blue')
+#' abbr(x)
+#' abbr(x, include = NA)
+#' abbr(x, include = 'and')
+#' abbr(x, '[A-Z][A-z]', include = NA)
+#' 
+#' @export
+
+abbr <- function(x, pattern = '[A-Z]', n = 1L, include = '[a-z]+') {
+  p <- if (is.character(include))
+    sprintf('(\\b%s{1,%s}|\\b%s\\b)|.', pattern, n, include)
+  else sprintf('\\b(%s{1,%s})|.', pattern, n)
+  
+  gsub(p, '\\1', x, perl = TRUE)
 }
