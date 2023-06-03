@@ -3034,6 +3034,54 @@ get_tabler_stat_n <- function(x, pct = TRUE, use_labels = TRUE,
   drop(o)
 }
 
+#' Describe multiple functions
+#' 
+#' Concatenate one or more functions for output in \code{\link{tabler_stat}}.
+#' 
+#' @param x a vector to be described by each \code{FUN}
+#' @param FUN a list of functions that each return a \emph{named} string; if
+#'   \code{FUN} is a named list, all non zero length names will take
+#'   precedence; if neither are available, names will be guessed based on
+#'   the list
+#' @param ... ignored
+#' 
+#' @examples
+#' describeFuns(1:10, FUN = list(mean = mean, median = median))
+#' describeFuns(1:10, FUN = list(Gmisc::describeMean, Gmisc::describeMedian))
+#' describeFuns(1:10, FUN = list(function(...) Gmisc::describeMedian(..., iqr = FALSE)))
+#' 
+#' 
+#' ## typical usage
+#' ff <- list(
+#'   'Median (full range)' = function(...) Gmisc::describeMedian(..., iqr = FALSE),
+#'   Gmisc::describeMean,
+#'   Min = min, Max = max
+#' )
+#'   
+#' tabler_stat2(
+#'   mtcars, c('mpg', 'wt'), 'gear', FUN = NA,
+#'   statArgs = list(continuous_fn = function(x, ...) describeFuns(x, FUN = ff))
+#' )
+#' 
+#' @export
+
+describeFuns <- function(x, FUN, ...) {
+  l <- vector('list', length(FUN))
+  for (ii in seq_along(l))
+    l[[ii]] <- FUN[[ii]](x)
+  
+  ## guess names of funs if not given
+  nm <- rbind(names(FUN), sapply(l, names))
+  if (nrow(nm) > 1L)
+    nm <- unlist(apply(nm, 2L, function(x)
+      if (nzchar(x[1L])) x[1L] else x[2L]))
+  
+  setNames(
+    paste(l, collapse = '<br />'),
+    paste(nm, collapse = '<br />&ensp;')
+  )
+}
+
 #' Response table
 #'
 #' Convenience function to calculate proportions and confidence intervals and
