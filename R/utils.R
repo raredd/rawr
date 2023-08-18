@@ -4,7 +4,7 @@
 # regcaptures2, cast, melt, View2, view, rapply2, sort_matrix, insert,
 # insert_matrix, tryCatch2, rleid, rleid2, droplevels2, combine_levels,
 # combine_regex, rownames_to_column, column_to_rownames, split_nth, sort2,
-# response, response2, xtable, factor2, switch2, ave_dt
+# response, response2, xtable, factor2, switch2, ave_dt, which.min2, which.max2
 # 
 # rawr_ops:
 # %ni%, %==%, %||%, %sinside%, %winside%, %inside%, %:%
@@ -2955,3 +2955,53 @@ ave_dt <- function(x, ..., FUN = identity) {
   res <- ave(x, ..., FUN = FUN)
   as.Date(res, origin = '1970-01-01')
 }
+
+#' \code{which.min} and \code{which.max} for n indices
+#' 
+#' Returns the indices of the first \code{n} min and max positions.
+#' 
+#' @param x numeric (logical, integer, or double) vector or an \code{R}
+#'   object for which the internal coercion to \code{\link{double}} works
+#'   whose \code{\link{min}} or \code{\link{max}} is searched for
+#' @param n the number of first min or max to return
+#' 
+#' @seealso
+#' \code{\link{which.min}}; \code{\link{which.max}}
+#' 
+#' @examples
+#' x <- c(3, 1, 2, -2, 5)
+#' stopifnot(identical(which.min(x), which.min2(x)))
+#' stopifnot(identical(which.max(x), which.max2(x)))
+#' 
+#' which.min2(NA, 3)
+#' which.min2(x, 3)
+#' which.max2(x, 3)
+#' 
+#' @export
+
+which.min2 <- function(x, n = 1L) {
+  res <- integer(n)
+  for (ii in seq.int(n)) {
+    if (all(is.na(x)))
+      break
+    idx <- which.min(x)
+    res[ii] <- idx
+    x[idx] <- NA
+  }
+  replace(res, res == 0, NA)
+}
+
+#' @rdname which.min2
+#' @export
+which.max2 <- function(x, n = 1L) {
+  res <- integer(n)
+  for (ii in seq.int(n)) {
+    if (all(is.na(x)))
+      break
+    idx <- which.max(x)
+    res[ii] <- idx
+    x[idx] <- NA
+  }
+  replace(res, res == 0, NA)
+}
+
