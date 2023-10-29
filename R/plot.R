@@ -1033,6 +1033,7 @@ waffle <- function(mat, xpad = 0, ypad = 0,
 #' @param col.pt colors for death/progression and censoring
 #' @param split logical; if \code{TRUE}, rows of \code{bar_data2} will be
 #'   plotted individually
+#' @param ... graphical parameters passed to \code{\link{par}}
 #' 
 #' @examples
 #' ## to print a summary of the required formats
@@ -1115,9 +1116,9 @@ waffle <- function(mat, xpad = 0, ypad = 0,
 #' 
 #' ## use custom axis() to change time units
 #' river2(bar_data = tt2, id = 3, axes = FALSE)
-#' at <- axTicks(1L)
-#' axis(1L, at, at * 12)
-#' title(xlab = 'Months from registration', line = 2.5)
+#' at <- seq(0, 2, 0.5)
+#' axis(1L, at * 7, at)
+#' title(xlab = 'Weeks from registration', line = 2.5)
 #' 
 #' @export
 
@@ -1127,7 +1128,7 @@ river <- function(data, bar_data, id = NULL, at = seq_along(id),
                   stagger = TRUE, col = NULL, axes = TRUE,
                   label = TRUE, bar.width = 0.25, bar.alpha = 0.5,
                   col.seg = c(1L, 3L), col.arrows = 1L,
-                  cex.pt = 1.5, col.pt = c(2L, 2L, 4L)) {
+                  cex.pt = 1.5, col.pt = c(2L, 2L, 4L), ...) {
   ## error checks
   dd <- check_river_format(data)
   bd <- check_river_format(data, bar_data)
@@ -1176,7 +1177,9 @@ river <- function(data, bar_data, id = NULL, at = seq_along(id),
   })
   
   plot.new()
-  par(mar = c(4, 1, 1, 0))
+  op <- par(mar = c(4, 1, 1, 0))
+  on.exit(par(op))
+  par(...)
   plot.window(if (!is.null(xlim)) xlim else c(0, diff(rx)),
               ## set min ylim to c(0,5) for case: id < 5
               if (!is.null(ylim)) ylim else range(c(0, at, 5)))
@@ -1191,7 +1194,8 @@ river <- function(data, bar_data, id = NULL, at = seq_along(id),
   
   if (isTRUE(legend) & !all(is.na(cols)) & !all(is.na(dd$assess))) {
     largs <- list(
-      x = 'topleft', fill = cols, legend = levels(dd$assess),
+      x = ifelse(stagger, 'topleft', 'topright'),
+      fill = cols, legend = levels(dd$assess),
       horiz = FALSE, cex = 0.8, bty = 'n'
     )
     do.call('legend', modifyList(largs, args.legend))
@@ -1244,7 +1248,7 @@ river2 <- function(data, bar_data, bar_data2, id,
                    legend = TRUE, args.legend = list(),
                    xlim = NULL, ylim = NULL, rev = FALSE, stagger = FALSE,
                    split = FALSE, col = NULL, col2 = NULL, axes = TRUE,
-                   bar.width = 0.25, bar.alpha = 0.5) {
+                   bar.width = 0.25, bar.alpha = 0.5, ...) {
   ## error checks
   if (!missing(data)) {
     if (missing(bar_data2))
@@ -1307,7 +1311,7 @@ river2 <- function(data, bar_data, bar_data2, id,
     legend = FALSE, rev = FALSE, stagger = stagger, xlim = xlim,
     ylim = if (is.null(ylim))
       c(0, max(5, (if (split) max(nn) else length(nn)) + 1)) else ylim,
-    axes = axes
+    axes = axes, ...
   )
   
   td <- within(td, {

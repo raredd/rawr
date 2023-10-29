@@ -25,7 +25,8 @@ river(
   col.seg = c(1L, 3L),
   col.arrows = 1L,
   cex.pt = 1.5,
-  col.pt = c(2L, 2L, 4L)
+  col.pt = c(2L, 2L, 4L),
+  ...
 )
 
 river2(
@@ -44,7 +45,8 @@ river2(
   col2 = NULL,
   axes = TRUE,
   bar.width = 0.25,
-  bar.alpha = 0.5
+  bar.alpha = 0.5,
+  ...
 )
 
 check_river_format(data, bar_data)
@@ -87,6 +89,8 @@ grades \code{river2}, respectively}
 \item{cex.pt}{the size for progression/death/censoring points}
 
 \item{col.pt}{colors for death/progression and censoring}
+
+\item{...}{graphical parameters passed to \code{\link{par}}}
 
 \item{split}{logical; if \code{TRUE}, rows of \code{bar_data2} will be
 plotted individually}
@@ -222,8 +226,8 @@ river2(bar_data = tt2, id = 3)
 
 ## use custom axis() to change time units
 river2(bar_data = tt2, id = 3, axes = FALSE)
-at <- axTicks(1L)
-axis(1L, at, at * 12)
-title(xlab = 'Months from registration', line = 2.5)
+at <- seq(0, 2, 0.5)
+axis(1L, at * 7, at)
+title(xlab = 'Weeks from registration', line = 2.5)
 
 }
