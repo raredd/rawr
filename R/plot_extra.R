@@ -422,7 +422,10 @@ tcol <- function(col, alpha = 1) {
   x <- rgb(x, alpha = dat$alpha * 255, maxColorValue = 255)
   x <- replace(x, nas, NA)
 
-  tolower(replace(x, dat$col %in% 'transparent', 'transparent'))
+  setNames(
+    tolower(replace(x, dat$col %in% 'transparent', 'transparent')),
+    names(col)
+  )
 }
 
 #' Color scaling
