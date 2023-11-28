@@ -1,7 +1,7 @@
 ### survival
 # kmplot, kmplot_by, kmplot_ticks, local_coxph_test, surv_cp, surv_summary,
 # surv_table, survdiff_pairs, coxph_pairs, landmark, surv_extract, surv_median,
-# surv_prob, kmdiff
+# surv_prob, kmdiff, surv_dist
 #
 # unexported:
 # stratify_formula, points.kmplot, kmplot_data_, atrisk_data_, terms.inner
@@ -355,9 +355,10 @@ kmplot <- function(object, data = NULL,
                    ## other options
                    stratify = NULL, fun = c('S', 'F'),
                    times = NULL, times.lab = NULL,
-                   times.type = c('atrisk', 'events', 'atrisk-events',
+                   times.type = c('percent',
+                                  'atrisk', 'events', 'atrisk-events',
                                   'survival', 'survival-ci',
-                                  'percent', 'percent-ci',
+                                  'percent-ci',
                                   'cuminc', 'percent-cuminc',
                                   'cuminc-ci', 'percent-cuminc-ci'),
                    times.digits = (!grepl('percent', times.type)) * 2,
@@ -959,7 +960,7 @@ kmplot <- function(object, data = NULL,
       '' else
         tryCatch(
           FUN(sform, sdat, rho, details = test_details, pFUN = format_pval),
-          error = function(e) 'n/a'
+          error = function(e) ''
         )
     if (identical(txt, FALSE))
       message('only one group for ', svar, ' -- no test performed')
@@ -3201,4 +3202,57 @@ kmdiff <- function(object, col = adjustcolor('grey', 0.5), conf.int = 0.95) {
   polygon(x, col = col, border = NA)
 
   invisible(x)
+}
+
+#' Survival distributions
+#' 
+#' Solve for the time or proportion event-free assuming exponential survival.
+#' 
+#' @param p1,p2 proportion of patients who are event-free for the known and
+#'   unknown rates, respectively
+#' @param time1,time2 times corresponding to p1 and p2, respectively; note
+#'   that exactly one of \code{p2} and \code{time2} should be null
+#' 
+#' @examples
+#' time <- seq(0, 5, 0.01)
+#' cumhaz <- cumsum(rep(exp(0.2), length(time)) * 0.01)
+#' surv <- exp(-cumhaz)
+#' 
+#' set.seed(1)
+#' n <- runif(100)
+#' failtimes <- time[colSums(outer(surv, n, `>`))]
+#' 
+#' library('survival')
+#' sf <- survfit(Surv(failtimes) ~ 1)
+#' op <- par(mfrow = c(1, 2))
+#' plot(time, surv, type = 'l', xlab = 'Time', ylab = 'Survival')
+#' plot(sf)
+#' par(op)
+#' 
+#' surv_extract(sf)
+#' # median 
+#' #   0.58 
+#' 
+#' ## given median survival of 0.58 time units, what proportions are
+#' ## event-free at times
+#' times <- c(0.4, 0.6, 0.8)
+#' p <- surv_dist(0.5, 0.58, time2 = times)
+#' round(p, 3)
+#' 
+#' summary(sf, times = times)
+#' 
+#' ## similarly, given median survival of 0.58 time units, when are the
+#' ## proportions of 0.609, 0.478, and 0.374 event-free
+#' surv_dist(0.5, 0.58, round(p, 3))
+#' 
+#' @export
+
+surv_dist <- function(p1, time1, p2 = NULL, time2 = NULL) {
+  # r1 <- log(1 / p1) / time1
+  # r2 <- log(1 / p2) / time2
+  # r1:r2
+  r1 <- log(1 / p1) / time1
+  if (is.null(time2))
+    log(1 / p2) / r1
+  else 1 / exp(r1 * time2)
 }
