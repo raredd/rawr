@@ -24,8 +24,11 @@ river(
   bar.alpha = 0.5,
   col.seg = c(1L, 3L),
   col.arrows = 1L,
+  pch.pt = c(16L, 4L, 4L),
   cex.pt = 1.5,
   col.pt = c(2L, 2L, 4L),
+  panel.first = NULL,
+  panel.last = NULL,
   ...
 )
 
@@ -86,9 +89,10 @@ grades \code{river2}, respectively}
 
 \item{col.arrows}{the color for on-going arrows or use \code{NA} to suppress}
 
-\item{cex.pt}{the size for progression/death/censoring points}
+\item{pch.pt, cex.pt, col.pt}{the plotting character, size, and color for
+progression, death, and censoring points, respectively}
 
-\item{col.pt}{colors for death/progression and censoring}
+\item{panel.first, panel.last}{expression evaluated before and after plotting}
 
 \item{...}{graphical parameters passed to \code{\link{par}}}
 

@@ -1911,7 +1911,9 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
                         format_pval = TRUE, color_pval = TRUE,
                         color_missing = TRUE, dagger = TRUE,
                         color_cell_by = c('none', 'value', 'pct'),
-                        cell_color = palette()[1:2], confint = FALSE,
+                        cell_color = palette()[1:2],
+                        confint = FALSE, survmedian = FALSE,
+                        survtime = FALSE, time = 0,
                         include_na_in_prop = TRUE, iqr = FALSE, total = TRUE,
                         continuous_fn = function(...)
                           Gmisc::describeMedian(..., iqr = iqr),
@@ -1963,6 +1965,10 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
 
   confint <- if (isTRUE(confint))
     varname else if (identical(confint, FALSE)) NULL else confint
+  survmedian <- if (isTRUE(survmedian))
+    varname else if (identical(survmedian, FALSE)) NULL else survmedian
+  survtime <- if (isTRUE(survtime))
+    varname else if (identical(survtime, FALSE)) NULL else survtime
 
   res <- if (inherits(x, c('Date', 'POSIXct', 'POSIXt'))) {
     color_cell_by <- 'none'
@@ -1971,8 +1977,10 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
     describeDateBy(x, y, ...)
   } else if (varname %in% confint) {
     describeConfint(x, y, ...)
-  } else if (inherits(x, 'Surv')) {
-    describeSurv(x, y, ...)
+  } else if (inherits(x, 'Surv') && varname %in% survmedian) {
+    describeSurv(x, y, drop = is.null(byvar) | identical(byvar, '_by_var_'), ...)
+  } else if (inherits(x, 'Surv') && varname %in% survtime) {
+    describeSurv(x, y, times = time, drop = is.null(byvar) | identical(byvar, '_by_var_'), ...)
   } else {
     Gmisc::getDescriptionStatsBy(
       x, y, digits = digits, html = TRUE, add_total_col = TRUE, ...,
@@ -2446,6 +2454,51 @@ describeSurv <- function(x, y, include_NA = TRUE, percent = TRUE,
   res
 }
 
+describeSurv <- function(x, y, include_NA = TRUE, times = NULL, percent = TRUE,
+                         digits = ifelse(percent, 0L, 2L), drop = FALSE,
+                         add_total_col = TRUE, useNA.digits = 0L,
+                         conf = 0.95, conf.type = 'log', show_conf = TRUE, ...) {
+  # describeSurv(Surv(mtcars$mpg, mtcars$vs), mtcars$gear)
+  s0 <- survfit(x ~ 1, conf.int = conf, conf.type = conf.type)
+  s1 <- survfit(x ~ y, conf.int = conf, conf.type = conf.type)
+  
+  nr <- function(x) {
+    gsub('NA', 'NR', x)
+  }
+  label <- if (!is.null(times))
+    ifelse(percent, 'Percent', 'Probability') else 'Median'
+  
+  res <- matrix(
+    c(if (add_total_col) {
+      if (is.null(times)) {
+        surv_median(s0, ci = TRUE, digits = digits, show_conf = FALSE)
+      } else {
+        surv_prob(s0, times[1L], ci = TRUE, digits = digits,
+                  show_conf = FALSE, percent = percent)
+      }
+    } else NULL,
+    nr(if (is.null(times))
+      surv_median(s1, ci = TRUE, digits = digits, show_conf = FALSE, print = FALSE)
+      else unlist(surv_prob(s1, times[1L], which = NULL, ci = TRUE,
+                            percent = percent, digits = digits,
+                            show_conf = FALSE, print = FALSE)))
+    ), nrow = 1L,
+    dimnames = list(
+      sprintf('%s (%s%% CI)', label, conf * 100),
+      c(if (add_total_col) 'Total' else NULL,
+        levels(if (drop) droplevels(as.factor(y)) else as.factor(y)))
+    )
+  )
+  
+  if (!show_conf) {
+    res <- gsub(' .*', '', res)
+    rownames(res) <- label
+  }
+  
+  res
+}
+
+
 #' \code{tabler_stat} wrappers
 #'
 #' Helper functions for using \code{\link{tabler_stat}}.
@@ -2579,7 +2632,9 @@ describeSurv <- function(x, y, include_NA = TRUE, percent = TRUE,
 
 tabler_stat2 <- function(data, varname, byvar = NULL,
                          varname_label = names(varname), byvar_label = names(byvar),
-                         digits = NULL, FUN = NULL, confint = FALSE,
+                         digits = NULL, FUN = NULL,
+                         confint = FALSE, survmedian = FALSE,
+                         survtime = FALSE, time = 0,
                          total = TRUE, n = NULL,
                          include_na_in_prop = TRUE, iqr = FALSE,
                          format_pval = TRUE, color_pval = TRUE, correct = FALSE,
@@ -2604,6 +2659,11 @@ tabler_stat2 <- function(data, varname, byvar = NULL,
               toString(shQuote(setdiff(c(varname, byvar), names(data)))))
     )
   }
+  
+  surv <- varname[sapply(varname, function(x) inherits(data[, x], 'Surv'))]
+  survmedian <- if (length(surv) & !all(surv %in% c(survmedian, survtime)))
+    surv else survmedian
+  survmedian <- setdiff(survmedian, survtime)
 
   stopifnot(
     # length(byvar) %in% 0:1,
@@ -2626,7 +2686,8 @@ tabler_stat2 <- function(data, varname, byvar = NULL,
   l <- tabler_stat_list(
     data, varname, byvar, varname_label, byvar_label, digits, FUN,
     format_pval, color_pval, color_missing, dagger, color_cell_by,
-    cell_color, confint, include_na_in_prop, iqr, statArgs, total
+    cell_color, confint, survmedian, survtime, time,
+    include_na_in_prop, iqr, statArgs, total
   )
 
   tabler_stat_html(
@@ -2640,7 +2701,9 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
                              format_pval = TRUE, color_pval = TRUE,
                              color_missing = TRUE, dagger = TRUE,
                              color_cell_by = 'none', cell_color = NULL,
-                             confint = NULL, include_na_in_prop = TRUE,
+                             confint = NULL, survmedian = NULL,
+                             survtime = NULL, time = 0,
+                             include_na_in_prop = TRUE,
                              iqr = FALSE, statArgs = NULL, total = TRUE) {
   cg <- ncg <- NULL
   obv <- byvar
@@ -2708,8 +2771,9 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
   l <- do.call('Map', c(list(
     f = tabler_stat, data, varname, byvar, digits, FUN,
     list(format_pval), color_pval, color_missing, dagger,
-    color_cell_by, cell_color, list(confint %||% '')),
-    include_na_in_prop, iqr, total, list(cf), list(ff), statArgs)
+    color_cell_by, cell_color,
+    list(confint %||% ''), list(survmedian %||% ''), list(survtime %||% '')),
+    time, include_na_in_prop, iqr, total, list(cf), list(ff), statArgs)
   )
   
   tbl <- lapply(l, function(x)
