@@ -33,8 +33,6 @@ plot(sf)
 par(op)
 
 surv_extract(sf)
-# median 
-#   0.58 
 
 ## given median survival of 0.58 time units, what proportions are
 ## event-free at times
