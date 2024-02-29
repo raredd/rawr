@@ -3230,8 +3230,6 @@ kmdiff <- function(object, col = adjustcolor('grey', 0.5), conf.int = 0.95) {
 #' par(op)
 #' 
 #' surv_extract(sf)
-#' # median 
-#' #   0.58 
 #' 
 #' ## given median survival of 0.58 time units, what proportions are
 #' ## event-free at times
