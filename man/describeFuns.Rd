@@ -20,7 +20,7 @@ the list}
 Concatenate one or more functions for output in \code{\link{tabler_stat}}.
 }
 \examples{
-describeFuns(1:10, FUN = list(mean, median))
+describeFuns(1:10, FUN = list(mean = mean, median = median))
 describeFuns(1:10, FUN = list(Gmisc::describeMean, Gmisc::describeMedian))
 describeFuns(1:10, FUN = list(function(...) Gmisc::describeMedian(..., iqr = FALSE)))
 
@@ -34,7 +34,7 @@ ff <- list(
   
 tabler_stat2(
   mtcars, c('mpg', 'wt'), 'gear', FUN = NA,
-  statArgs = list(continuous_fn = function(...) describeFuns(..., FUN = ff))
+  statArgs = list(continuous_fn = function(x, ...) describeFuns(x, FUN = ff))
 )
 
 }
