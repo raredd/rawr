@@ -1485,8 +1485,10 @@ ca.test.default <- function(x, g, ..., score = NULL,
   g <- g[ok]
   tbl <- table(x, g)
 
+  if (ncol(tbl) < 2L)
+    stop('Fewer than 2 groups - row variable is not binary')
   if (ncol(tbl) < 3L)
-    warning('Fewer than 3 groups - column variable is not ordinal')
+    stop('Fewer than 3 groups - column variable is not ordinal')
 
   if (any(tbl < 5L) & !simulate.p.value)
     warning(

@@ -2137,7 +2137,7 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
 }
 
 getPvalCAtest <- function(x, by) {
-  ca.test(x, by)$p.value
+  ca.test(by, x)$p.value
 }
 
 getPvalCuzick <- function(x, by) {
