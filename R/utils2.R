@@ -2265,20 +2265,22 @@ guess_test <- function(x, y, n_unique_x = 10L) {
       structure(getPvalJTtest(x, y), FUN = 'jt.test',
                 name = 'Jonckheere-Terpstra test')
     else if ((nx == 2L & oy & ny > 2L) || (ny == 2L & ox & nx > 2L)) {
-      if (ny > 2L)
+      if (ox)
         structure(getPvalCAtest(x, y), FUN = 'ca.test',
                   name = 'Cochran-Armitage test for trend')
-      else
+      else if (oy)
         structure(getPvalCAtest(y, x), FUN = 'ca.test',
                   name = 'Cochran-Armitage test for trend')
+      else stop('check ca')
     } else if ((nx > 2L & !ox & oy & ny > 2L) ||
                (ny > 2L & !oy & ox & nx > 2L)) {
-      if (ny > 2L)
+      if (oy)
         structure(getPvalKWtest(x, y), FUN = 'kw.test',
                   name = 'Chi-squared test for trend in proportions')
-      else
+      else if (ox)
         structure(getPvalKWtest(y, x), FUN = 'kw.test',
                   name = 'Chi-squared test for trend in proportions')
+      else stop('check kw')
     }
     else
       structure(Gmisc::getPvalFisher(x, y), FUN = 'fisher.test',
