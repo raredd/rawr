@@ -72,6 +72,9 @@ association between each \code{varname} and \code{byvar}; see
 \item{confint}{optional vector of \code{varname}(s) to summarize as
 confidence intervals}
 
+\item{survmedian, survtime, time}{survival object options - median survival or
+survival time}
+
 \item{total}{logical; if \code{TRUE}, total column will be shown}
 
 \item{n}{(optional) the sample size for each column used to calculate

@@ -67,6 +67,9 @@ proportions (e.g., for factors)}
 \item{confint}{logical or \code{varname}; if \code{TRUE} (or \code{varname})
 rows will be formatted as confidence intervals; see \code{\link{binconr}}}
 
+\item{survmedian, survtime, time}{survival object options - median survival or
+survival time}
+
 \item{include_na_in_prop}{logical; if \code{TRUE} (default), the number of
 missing values is included when calculating proportions for factor levels;
 if \code{FALSE}, only non-missing levels count towards proportions}
@@ -167,6 +170,7 @@ mt <- within(mt, {
   surv <- Surv(wt, vs)
 })
 tabler_stat(mt, 'surv', 'gear')
+tabler_stat(mt, 'surv', 'gear', survtime = TRUE, time = 10)
 
 
 ## use the tabler_stat2 wrapper for convenience

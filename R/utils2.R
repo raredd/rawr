@@ -1816,6 +1816,8 @@ tabler_by2 <- function(data, varname, byvar, n = NULL, order = FALSE,
 #' @param cell_color a vector of colors used for \code{color_cell_by}
 #' @param confint logical or \code{varname}; if \code{TRUE} (or \code{varname})
 #'   rows will be formatted as confidence intervals; see \code{\link{binconr}}
+#' @param survmedian,survtime,time survival object options - median survival or
+#'   survival time
 #' @param include_na_in_prop logical; if \code{TRUE} (default), the number of
 #'   missing values is included when calculating proportions for factor levels;
 #'   if \code{FALSE}, only non-missing levels count towards proportions
@@ -1894,6 +1896,7 @@ tabler_by2 <- function(data, varname, byvar, n = NULL, order = FALSE,
 #'   surv <- Surv(wt, vs)
 #' })
 #' tabler_stat(mt, 'surv', 'gear')
+#' tabler_stat(mt, 'surv', 'gear', survtime = TRUE, time = 10)
 #' 
 #'
 #' ## use the tabler_stat2 wrapper for convenience
@@ -1953,22 +1956,25 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
   oy <- is.ordered(y)
   if (oy & nlevels(y) < 3L) {
     warning(sprintf('%s is ordered has < 3 unique values', shQuote(byvar)))
-    y <- factor(y, ordered = FALSE)
+    class(y) <- setdiff(class(y), 'ordered')
     oy <- FALSE
   }
   ox <- is.ordered(x)
   if (ox & nlevels(x) < 3L) {
     warning(sprintf('%s is ordered has < 3 unique values', shQuote(varname)))
-    x <- factor(x, ordered = FALSE)
+    class(x) <- setdiff(class(x), 'ordered')
     ox <- FALSE
   }
 
+  if (identical(survtime, FALSE) & inherits(x, 'Surv'))
+    survmedian <- varname
   confint <- if (isTRUE(confint))
     varname else if (identical(confint, FALSE)) NULL else confint
   survmedian <- if (isTRUE(survmedian))
     varname else if (identical(survmedian, FALSE)) NULL else survmedian
   survtime <- if (isTRUE(survtime))
     varname else if (identical(survtime, FALSE)) NULL else survtime
+  time <- time[1L]
 
   res <- if (inherits(x, c('Date', 'POSIXct', 'POSIXt'))) {
     color_cell_by <- 'none'
@@ -2241,8 +2247,17 @@ guess_test <- function(x, y, n_unique_x = 10L) {
   ## otherwise assume contingency table
   ox <- is.ordered(x)
   oy <- is.ordered(y)
-  ny <- lunique(y, na.rm = TRUE)
   nx <- lunique(x, na.rm = TRUE)
+  ny <- lunique(y, na.rm = TRUE)
+  
+  if (ox && nx <= 2L) {
+    class(x) <- setdiff(class(x), 'ordered')
+    ox <- FALSE
+  }
+  if (oy && ny <= 2L) {
+    class(y) <- setdiff(class(y), 'ordered')
+    oy <- FALSE
+  }
   
   if (inherits(x, 'Surv'))
     return(structure(getPvalLogrank(x, y), FUN = 'survdiff',
@@ -2530,6 +2545,8 @@ describeSurv <- function(x, y, include_NA = TRUE, times = NULL, percent = TRUE,
 #'   \code{\link{tabler_stat}}
 #' @param confint optional vector of \code{varname}(s) to summarize as
 #'   confidence intervals
+#' @param survmedian,survtime,time survival object options - median survival or
+#'   survival time
 #' @param total logical; if \code{TRUE}, total column will be shown
 #' @param n (optional) the sample size for each column used to calculate
 #'   percents; if length 1, recycled as necessary; if length > 1, length must
