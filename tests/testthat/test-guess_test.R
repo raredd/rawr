@@ -1,4 +1,4 @@
-context('kw.test')
+context('guess_test')
 
 ## see test-stat_pval for more tests
 
@@ -10,10 +10,12 @@ test_that('assuming categorical data, all types give same results', {
     sample(seq.int(i), size, TRUE)
   }
   
-  cat_test <- function(x, y, ox = FALSE, oy = FALSE) {
+  cat_test <- function(x, y, ox = FALSE, oy = FALSE, details = FALSE) {
     x <- factor(x, ordered = ox)
     y <- factor(y, ordered = oy)
-    suppressWarnings(attr(rawr:::guess_test(x, y), 'FUN'))
+    t <- suppressWarnings(rawr:::guess_test(x, y))
+    if (details)
+      t else attr(t, 'FUN')
   }
   
   con_test <- function(x, y, ox = FALSE, oy = FALSE) {
@@ -66,6 +68,23 @@ test_that('assuming categorical data, all types give same results', {
   ## singly-ordered nx3
   expect_identical(
     cat_test(f(3), f(4), TRUE, FALSE), 'kw.test'
+  )
+  
+  ## ca should give same result regardless of variable order
+  ## if one variable is ordered
+  xx <- f(2)
+  yy <- f(4)
+  expect_identical(
+    cat_test(xx, yy, FALSE, TRUE, details = TRUE),
+    cat_test(yy, xx, TRUE, FALSE, details = TRUE)
+  )
+  ## kw should give same result regardless of variable order
+  ## if one variable is ordered
+  xx <- f(3)
+  yy <- f(4)
+  expect_identical(
+    cat_test(xx, yy, TRUE, FALSE, details = TRUE),
+    cat_test(yy, xx, FALSE, TRUE, details = TRUE)
   )
   
   ## doubly-ordered
