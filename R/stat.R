@@ -1714,7 +1714,18 @@ lines.lspline <- function(x, y = NULL, type = 'l', col = NULL, ...) {
 #' @param data an optional matrix or data frame (or similar: see
 #'   \code{\link{model.frame}}) containing the variables in \code{formula};
 #'   by default the variables are taken from \code{environment(formula)}
-#'
+#' 
+#' @return
+#' An object of class \code{power.htest} with the following elements:
+#' 
+#' \item{statistic}{the value of the t-statistic}
+#' \item{p.value}{the p-value for the test}
+#' \item{method}{a character string indicating what type of t-test was performed}
+#' \item{data.name}{a character string giving the name(s) of the data}
+#' \item{alternative}{a character string describing the alternative hypothesis}
+#' \item{B}{the number of permutations}
+#' \item{conf.int}{the confidence interval for the p-value}
+#' 
 #' @seealso
 #' \code{\link{t.test}}
 #'
@@ -1815,7 +1826,7 @@ perm.t.test.default <- function(x, y = NULL,
 
   pv <- pmin(pv, 1)
   ci <- qnorm(conf.level) * c(-1, 1) * sqrt(pv * (1 - pv) / B)
-  ci <- structure(pmin(1, pmax(0, pv + ci)), conf.level = conf.level)
+  ci <- structure(sort(pmin(1, pmax(0, pv + ci))), conf.level = conf.level)
 
   res <- list(
     statistic = st, p.value = pv, method = method, data.name = data.name,
@@ -2434,7 +2445,7 @@ bni <- function(margin, p1, p2 = p1, alpha = 0.05, power = NULL,
 #'   \code{\link[stats]{uniroot}}
 #' 
 #' @return
-#' Ab object of class \code{power.htest} with the following elements:
+#' An object of class \code{power.htest} with the following elements:
 #' 
 #' \item{n}{sample size per arm}
 #' \item{arm}{number of arms}

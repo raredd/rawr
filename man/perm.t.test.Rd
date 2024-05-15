@@ -55,6 +55,17 @@ variable with two levels giving the corresponding groups}
 \code{\link{model.frame}}) containing the variables in \code{formula};
 by default the variables are taken from \code{environment(formula)}}
 }
+\value{
+An object of class \code{power.htest} with the following elements:
+
+\item{statistic}{the value of the t-statistic}
+\item{p.value}{the p-value for the test}
+\item{method}{a character string indicating what type of t-test was performed}
+\item{data.name}{a character string giving the name(s) of the data}
+\item{alternative}{a character string describing the alternative hypothesis}
+\item{B}{the number of permutations}
+\item{conf.int}{the confidence interval for the p-value}
+}
 \description{
 Performs paired and two-sample t-tests based on Monte Carlo permutation.
 }
