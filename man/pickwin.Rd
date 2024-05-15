@@ -26,7 +26,7 @@ pickwin(
 \code{\link[stats]{uniroot}}}
 }
 \value{
-Ab object of class \code{power.htest} with the following elements:
+An object of class \code{power.htest} with the following elements:
 
 \item{n}{sample size per arm}
 \item{arm}{number of arms}
