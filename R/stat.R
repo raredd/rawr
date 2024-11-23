@@ -3,7 +3,7 @@
 # cuzick.test.default, cuzick.test.formula, jt.test, kw.test, kw.test.default,
 # kw.test.formula, ca.test, ca.test.default, ca.test.formula, lspline,
 # perm.t.test, perm.t.test.default, perm.t.test.formula, vs.rfsrc, vs.glmnet,
-# ransch, ranschtbl, twostg.test, cor.n, cor.ci, bni, pickwin
+# twostg.test, cor.n, cor.ci, bni, pickwin
 #
 # S3 methods:
 # cuzick.test, kw.test, ca.test, perm.t.test
@@ -13,7 +13,7 @@
 #
 # unexported:
 # cuzick.test.stat, cuzick.test.pvalue, jt.test.stat, sim.test.pvalue,
-# formula0, ransch_
+# formula0
 ###
 
 
@@ -2038,133 +2038,6 @@ vs.glmnet <- function(formula, data, family, alpha = 1, ...) {
 formula0 <- function(x) {
   attr(x, '.Environment') <- .GlobalEnv
   x
-}
-
-#' ransch
-#'
-#' Generate block randomization schedule tables with fixed or random block
-#' size.
-#'
-#' @param n sample size of study or each stratum
-#' @param block block size; note if \code{block} is not a factor of \code{n},
-#'   \code{n} will be increased to accommodate a full block
-#'
-#'   for randomly-sized blocks, a vector of potential block sizes; note that
-#'   a block size must be a multiple of \code{sum(r)}
-#' @param arms names of the treatment arms
-#' @param r randomization ratio; see examples
-#' @param strata an optional named list of vectors for each stratum
-#' @param write a file path to write a directory with csv files for each
-#'   randomization table
-#'
-#' @examples
-#' ## no strata, 2-3 treatments with varying randomization ratios
-#' ransch(24, 4, 1:2) ## 1:1
-#' ransch(24, 6, 1:3) ## 1:1:1
-#' ransch(24, 8, 1:3, c(1, 2, 1)) ## 1:2:1
-#'
-#'
-#' ## randomly-sized blocks
-#' ransch(24, c(2, 4, 6), 1:2)
-#'
-#' set.seed(1)
-#' r1 <- ransch(24, c(3, 6, 9), 1:3)
-#' set.seed(1)
-#' r2 <- ransch(24, 1:10, 1:3)
-#'
-#' ## note that these two are the same since only blocks sized 3, 6, 9
-#' ## work for 1:1:1 randomization
-#' identical(r1, r2)
-#' addmargins(table(r1[[1]][, -1]))
-#'
-#'
-#' ## one two-level stratum
-#' ransch(24, 4, 1:2, strata = list(Age = c('<65', '>=65')))
-#'
-#' ## multiple strata
-#' strata <- list(Site = LETTERS[1:3], Age = c('<65', '>=65'))
-#' ransch(24, 4, 1:2, strata = strata)
-#'
-#'
-#' ## tables for printing
-#' ranschtbl(24, 4, c('Pbo', 'Trt'))
-#' ranschtbl(24, 4, c('Pbo', 'Trt'), c(1, 3), strata)
-#'
-#' \dontrun{
-#' ranschtbl(24, 4, c('Pbo', 'Trt'), strata = strata, write = '~/desktop')
-#' }
-#'
-#' @export
-
-ransch <- function(n, block, arms, r = rep_len(1L, length(arms)),
-                   strata = NULL) {
-  if (!is.null(strata)) {
-    if (is.null(names(strata)))
-      names(strata) <- paste0('Stratum', seq_along(strata))
-
-    strata <- Map(paste, names(strata), strata)
-    strata <- apply(expand.grid(strata), 1L, toString)
-  }
-
-  res <- replicate(pmax(1L, length(strata)), simplify = FALSE, {
-    ransch_(n, block, arms, rep_len(r, length(arms)))
-  })
-
-  setNames(res, strata %||% 'ransch')
-}
-
-#' @rdname ransch
-#' @export
-ranschtbl <- function(n, block, arms, r = rep_len(1L, length(arms)),
-                      strata = NULL, write = NULL) {
-  res <- ransch(n, block, arms, r, strata)
-
-  res[] <- lapply(seq_along(res), function(ii) {
-    within(res[[ii]], {
-      Stratum <- names(res)[ii]
-      Name <- ID <- Date <- NA
-    })
-  })
-
-  if (is.null(names(res)))
-    names(res) <- 'ransch'
-
-  if (is.character(write) && dir.exists(write)) {
-    path <- sprintf('%s/ransch-%s', write, format(Sys.time(), '%Y%m%d%H%M'))
-    dir.create(path, showWarnings = FALSE, recursive = TRUE)
-
-    for (ii in seq_along(res))
-      write.csv(res[[ii]], sprintf('%s/%s.csv', path, names(res)[ii]),
-                na = '', row.names = FALSE)
-
-    invisible(res)
-  } else res
-}
-
-ransch_ <- function(n, block, arms, r) {
-  ## table(ransch_(12, 6, c('Pbo', 'Trt'), c(1, 1))[, -1])
-  ## table(ransch_(12, 1:4, c('Pbo', 'Trt'), c(1, 1))[, -1])
-  stopifnot(length(arms) == length(r))
-
-  sample <- function(x, ...) {
-    x[sample.int(length(x), ...)]
-  }
-  rblock <- function(b, arms, r) {
-    arms <- rep_len(rep(arms, r), b)
-    sample(arms)
-  }
-
-  block <- block[block %% sum(r) == 0L]
-  block <- sample(block, n, replace = TRUE)
-  idx <- cumsum(block) < n
-  block <- block[c(which(idx), sum(idx) + 1L)]
-
-
-  data.frame(
-    Number = seq.int(sum(block)),
-    Block = rep(seq_along(block), block),
-    Assignment = unlist(lapply(block, rblock, arms = arms, r = r))
-  )
 }
 
 #' Two-stage trials
