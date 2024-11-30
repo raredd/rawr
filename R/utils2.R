@@ -1984,9 +1984,11 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
   } else if (varname %in% confint) {
     describeConfint(x, y, ...)
   } else if (inherits(x, 'Surv') && varname %in% survmedian) {
-    describeSurv(x, y, drop = is.null(byvar) | identical(byvar, '_by_var_'), ...)
+    describeSurv(x, y, drop = is.null(byvar) | identical(byvar, '_by_var_'),
+                 digits = digits, ...)
   } else if (inherits(x, 'Surv') && varname %in% survtime) {
-    describeSurv(x, y, times = time, drop = is.null(byvar) | identical(byvar, '_by_var_'), ...)
+    describeSurv(x, y, times = time, drop = is.null(byvar) | identical(byvar, '_by_var_'),
+                 digits = digits, ...)
   } else {
     Gmisc::getDescriptionStatsBy(
       x, y, digits = digits, html = TRUE, add_total_col = TRUE, ...,
@@ -2437,40 +2439,6 @@ describeFactors <- function(..., useNA, exclude_na_prop = TRUE) {
   res[seq.int(nr), , drop = FALSE]
 }
 
-describeSurv <- function(x, y, include_NA = TRUE, percent = TRUE,
-                         digits = ifelse(percent, 0L, 2L),
-                         add_total_col = TRUE, useNA.digits = 0L,
-                         conf = 0.95, conf.type = 'log', show_conf = TRUE,
-                         ...) {
-  # describeSurv(Surv(mtcars$mpg, mtcars$vs), mtcars$gear)
-  s0 <- survfit(x ~ 1, conf.int = conf, conf.type = conf.type)
-  s1 <- survfit(x ~ y, conf.int = conf, conf.type = conf.type)
-  
-  nr <- function(x) {
-    gsub('NA', 'NR', x)
-  }
-  
-  res <- matrix(
-    c(if (add_total_col)
-      surv_median(s0, ci = TRUE, digits = digits, show_conf = FALSE) else NULL,
-      nr(surv_median(s1, ci = TRUE, digits = digits, show_conf = FALSE,
-                     print = FALSE))
-    ),
-    nrow = 1L,
-    dimnames = list(
-      sprintf('Median (%s%% CI)', conf * 100),
-      c(if (add_total_col) 'Total' else NULL, levels(as.factor(y)))
-    )
-  )
-  
-  if (!show_conf) {
-    res <- gsub(' .*', '', res)
-    rownames(res) <- 'Median'
-  }
-  
-  res
-}
-
 describeSurv <- function(x, y, include_NA = TRUE, times = NULL, percent = TRUE,
                          digits = ifelse(percent, 0L, 2L), drop = FALSE,
                          add_total_col = TRUE, useNA.digits = 0L,
@@ -2514,7 +2482,6 @@ describeSurv <- function(x, y, include_NA = TRUE, times = NULL, percent = TRUE,
   
   res
 }
-
 
 #' \code{tabler_stat} wrappers
 #'
