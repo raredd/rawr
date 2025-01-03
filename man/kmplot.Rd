@@ -49,6 +49,7 @@ kmplot(
   xlab = "Time",
   ylab = "Probability",
   main = NULL,
+  line.xlab = NA,
   cex.axis = par("cex.axis"),
   cex.atrisk = cex.axis,
   cex.lab = par("cex.lab"),
@@ -203,6 +204,8 @@ are shown}
 \item{xlab, ylab}{x- and y-axis labels}
 
 \item{main}{title of plot}
+
+\item{line.xlab}{line position for \code{xlab}, passed to \code{\link{title}}}
 
 \item{cex.axis, cex.atrisk}{text size for axis tick labels and at-risk table}
 

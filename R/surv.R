@@ -146,6 +146,7 @@ stratify_formula <- function(formula, vars = NULL) {
 #' @param xaxis.lab,yaxis.lab x- and y-axis tick labels
 #' @param xlab,ylab x- and y-axis labels
 #' @param main title of plot
+#' @param line.xlab line position for \code{xlab}, passed to \code{\link{title}}
 #' @param cex.axis,cex.atrisk text size for axis tick labels and at-risk table
 #' @param cex.lab,cex.main text size for axis and main titles
 #' @param legend logical, a vector of x/y coordinates, or a keyword (see
@@ -340,6 +341,7 @@ kmplot <- function(object, data = NULL,
                    atrisk.at = xaxis.at,
                    yaxis.at = pretty(0:1), yaxis.lab = yaxis.at,
                    xlab = 'Time', ylab = 'Probability', main = NULL,
+                   line.xlab = NA,
                    cex.axis = par('cex.axis'), cex.atrisk = cex.axis,
                    cex.lab = par('cex.lab'), cex.main = par('cex.main'),
                    legend = !atrisk.table && !is.null(object$strata),
@@ -598,8 +600,9 @@ kmplot <- function(object, data = NULL,
       axis(1L, xaxis.at, FALSE, lwd = 0, lwd.ticks = 1)
       axis(1L, xaxis.at, xaxis.lab, FALSE, cex.axis = cex.axis * cex.cex)
       axis(2L, yaxis.at, yaxis.lab, las = 1L, cex.axis = cex.axis * cex.cex)
-      title(xlab = xlab, ylab = ylab, main = main, ...,
-            cex.lab = cex.lab * cex.cex, cex.main = cex.main * cex.cex)
+      title(xlab = xlab, line = line.xlab, cex.lab = cex.lab * cex.cex)
+      title(ylab = ylab, line = NA, cex.lab = cex.lab * cex.cex)
+      title(main = main, line = NA, cex.main = cex.main * cex.cex)
     }
   )
 
