@@ -2330,6 +2330,14 @@ sort2 <- function(x, decreasing = FALSE, index.return = FALSE,
 #'   current; note that this only affects \code{.$confirmed} and
 #'   \code{.$bsf_confirmed} in the return object; if \code{n_confirm = 2}, to
 #'   confirm a response, the next two assessments must be at least as good, etc.
+#' @param rolling_confirm logical; if \code{TRUE} (default), confirmations are
+#'   based only on the current and \code{n - 1} (unconfirmed) assessment(s);
+#'   otherwise, to confirm a response, the next must be a confirmed response;
+#'   for example, if \code{rolling_confirm = FALSE} PR, PR, MR would not be a
+#'   confirmed PR since the 2nd PR is not confirmed by MR and therefore the 2nd
+#'   PR is not able to confirm the 1st PR; if \code{rolling_conform = TRUE} and
+#'   \code{n_confirm = 2}, then pairs PR, PR and PR, MR are evaluated without
+#'   consideration for subsequent assessments
 #' @param n_prog similar to \code{n_confirm} but for progression; if
 #'   \code{nprog = 1}, then a progression must be followed by at least one
 #'   progression to confirm; note that this only affects \code{.$confirmed}
@@ -2410,7 +2418,8 @@ sort2 <- function(x, decreasing = FALSE, index.return = FALSE,
 
 response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
                      default = NA, no_confirm = 'stable|sd',
-                     progression = 'prog|pd|relapse', n_confirm = 1L,
+                     progression = 'prog|pd|relapse',
+                     n_confirm = 1L, rolling_confirm = TRUE,
                      n_prog = n_confirm, strict = FALSE, dr = 0, dp = NULL) {
   stopifnot(
     is.factor(response),
@@ -2427,7 +2436,7 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
     replace(res, is.na(res), Inf)
   }
   
-  confirm <- function(x, n = 2L, d = 0, dni = NA) {
+  confirm <- function(x, n = 2L, d = 0, dni = NA, rc) {
     ## find confirmed responses requiring n in a row of at least d
     ## with dni not requiring a confirmation
     ##   d = 0 (default) as-good or better response needed
@@ -2447,7 +2456,12 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
       if (ii == 0L)
         x else c(tail(x, -ii), rep_len(Inf, ii))
     })
-    res <- apply(res, 1L, function(x) all(diff(x) <= d))
+    # res <- apply(res, 1L, function(x) all(diff(x) <= d))
+    res <- apply(res, 1L, function(x) {
+      dif <- diff(x)
+      if (rc)
+        all(dif[-length(dif)] <= d) else all(dif <= d)
+    })
     
     if (is.na(dni))
       res else replace(res, x %in% dni, TRUE)
@@ -2545,7 +2559,7 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
     
     confirm <- responsei
     # confirm <- c(confirm[-1L] <= confirm[-length(confirm)], FALSE)
-    confirm <- confirm(responsei, n_confirm + 1L, dr, no_confirmi)
+    confirm <- confirm(responsei, n_confirm + 1L, dr, no_confirmi, rolling_confirm)
     confirm[grepl(progression, response)] <- NA
     confirm_best <- replace(confirm, responsei > min(bsfi), FALSE)
     
