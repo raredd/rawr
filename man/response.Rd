@@ -13,7 +13,6 @@ response(
   no_confirm = "stable|sd",
   progression = "prog|pd|relapse",
   n_confirm = 1L,
-  rolling_confirm = TRUE,
   n_prog = n_confirm,
   strict = FALSE,
   dr = 0,
@@ -59,15 +58,6 @@ to confirm a response, the next assessment must be at least as good as the
 current; note that this only affects \code{.$confirmed} and
 \code{.$bsf_confirmed} in the return object; if \code{n_confirm = 2}, to
 confirm a response, the next two assessments must be at least as good, etc.}
-
-\item{rolling_confirm}{logical; if \code{TRUE} (default), confirmations are
-based only on the current and \code{n - 1} (unconfirmed) assessment(s);
-otherwise, to confirm a response, the next must be a confirmed response;
-for example, if \code{rolling_confirm = FALSE} PR, PR, MR would not be a
-confirmed PR since the 2nd PR is not confirmed by MR and therefore the 2nd
-PR is not able to confirm the 1st PR; if \code{rolling_conform = TRUE} and
-\code{n_confirm = 2}, then pairs PR, PR and PR, MR are evaluated without
-consideration for subsequent assessments}
 
 \item{n_prog}{similar to \code{n_confirm} but for progression; if
 \code{nprog = 1}, then a progression must be followed by at least one
