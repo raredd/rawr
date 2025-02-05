@@ -1,7 +1,7 @@
 ### survival
 # kmplot, kmplot_by, kmplot_ticks, local_coxph_test, surv_cp, surv_summary,
 # surv_table, survdiff_pairs, coxph_pairs, landmark, surv_extract, surv_median,
-# surv_prob, kmdiff, surv_dist
+# surv_prob, kmdiff, surv_dist, tte
 #
 # unexported:
 # stratify_formula, points.kmplot, kmplot_data_, atrisk_data_, terms.inner
@@ -3256,4 +3256,71 @@ surv_dist <- function(p1, time1, p2 = NULL, time2 = NULL) {
   if (is.null(time2))
     log(1 / p2) / r1
   else 1 / exp(r1 * time2)
+}
+
+#' Time-to-event data
+#' 
+#' Calculate time-to-event and competing risks times and event indicators.
+#' 
+#' @param start,fwup start and last follow-up date vectors
+#' @param ... one or more event date vectors; note that event dates occurring
+#'   before \code{start} are removed
+#' @param crisk logical; if \code{TRUE}, event dates are treated as competing
+#'   events and the order of dates in \code{...} matters, i.e., the first date
+#'   takes precedence, and indicators are assigned in order of event date
+#'   vectors
+#' @param fix logical; if \code{TRUE) (default); censor negative times at 0
+#'   and censor the event
+#' @param censor max time after which events/times are censored
+#' @param factor time factor to convert days (default) to months (e.g, use
+#'   30.437), years (365.242), etc.
+#' 
+#' @examples
+#' dd <- data.frame(
+#'   start = 0,
+#'   end = 10,
+#'   death = c(5, 2, NA, 2, NA),
+#'   prog = c(3, 2, NA, 3, 5),
+#'   trt = c(4, 1, NA, NA, 8)
+#' )
+#' dd[] <- lapply(dd, as.Date, origin = '2000-01-01')
+#' 
+#' tte(dd$start, dd$end, dd$death)
+#' tte(dd$start, dd$end, dd$death, dd$prog)
+#' tte(dd$start, dd$end, dd$death, dd$prog, crisk = TRUE)
+#' tte(dd$start, dd$end, dd$death, dd$prog, dd$trt, crisk = TRUE)
+#' 
+#' @export
+
+tte <- function(start, fwup, ..., crisk = FALSE,
+                fix = TRUE, censor = Inf, factor = 1) {
+  e <- data.frame(...)
+  e[] <- lapply(e, function(x) {
+    # x[x < start | x > fwup] <- NA
+    x[x < start] <- NA
+    x
+  })
+  w <- apply(e, 1L, function(x) {
+    if (all(is.na(x)))
+      return(0)
+    x <- as.numeric(as.Date(x))
+    x[is.na(x)] <- Inf
+    max.col(t(-x), 'first')
+  })
+  e <- as.Date(apply(e, 1L, function(x)
+    min(x, na.rm = !all(is.na(x)))))
+  i <- +!is.na(e)
+  if (crisk)
+    i <- w
+  e[is.na(e)] <- fwup[is.na(e)]
+  t <- as.numeric(e - start) / factor
+  if (fix) {
+    i[t < 0] <- 0
+    t[t < 0] <- 0
+  }
+  if (!is.null(censor)) {
+    i[t > censor] <- 0
+    t[t > censor] <- censor
+  }
+  data.frame(ind = i, time = t, dt_start = start, dt_tte = e, dt_fwup = fwup, ...)
 }
