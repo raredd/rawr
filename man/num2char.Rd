@@ -2,44 +2,48 @@
 % Please edit documentation in R/utils2.R
 \name{num2char}
 \alias{num2char}
-\title{Numeric to character string}
+\alias{n2w}
+\alias{N2W}
+\title{Convert numbers to words}
 \usage{
-num2char(x, informal = FALSE, cap = TRUE)
+num2char(x, cap = FALSE, informal = FALSE, hyphen = TRUE, and = FALSE)
+
+n2w(x, cap = FALSE, informal = FALSE, hyphen = TRUE, and = FALSE)
+
+N2W(x, cap = TRUE, informal = FALSE, hyphen = TRUE, and = FALSE)
 }
 \arguments{
-\item{x}{an integer to convert to words; can be negative or positive but
-decimals will be rounded first}
-
-\item{informal}{logical; if \code{TRUE}, adds "and" before tens or ones}
+\item{x}{numeric vector, less than `1e15`}
 
 \item{cap}{logical; if \code{TRUE}, capitalizes the first word}
+
+\item{informal, and}{logical; insert "and" between hundreds and tens}
+
+\item{hyphen}{logical; insert hyphen when the number is between 21 and
+99 (except 30, 40, etc)}
 }
 \description{
-Convert a number to its word equivalent.
+Convert whole or decimal numbers to word equivalent. \code{N2W} is
+equivalent to \code{n2w}/\code{num2char} but defaults to capitalizing
+the first word.
 }
 \details{
 Whole numbers twenty-one through ninety-nine are hyphenated when they are
 written out whether used alone or as part of a larger number; for example:
 "twenty-one" or "one million twenty-one."
 
-Whole numbers in this range are \emph{not} hyphenated for other orders of
-magnitude; for example, 52,052 is written "\emph{fifty two} thousand fifty-
-two" and not "\emph{fifty-two} thousand fifty-two." This rule applies only
-to two-word numbers 21-99.
-
 Informal and formal case differ only by the use of "and" to separate
 1-99: "one hundred one" is the formal case, and "one hundred and one" is
 the informal case.
 }
 \examples{
-num2char(52052, TRUE)
-num2char(52052, FALSE)
-
-## vectorized
-num2char(-1:2)
+n2w(1e15 - 1)
+n2w(0:121, and = TRUE)
+n2w(123.456)
+N2W(1e6)
 
 x <- c(-1000, 100, 52052, 3922, 3012, 201, -152, 1002, 91070432)
-cbind(x, informal = num2char(x, TRUE), formal = num2char(x, FALSE))
+cbind(x, informal = num2char(x, informal = TRUE), formal = num2char(x, FALSE))
 
 }
 \references{
@@ -48,6 +52,5 @@ cbind(x, informal = num2char(x, TRUE), formal = num2char(x, FALSE))
 \url{https://www.grammarbook.com/numbers/numbers.asp}
 }
 \seealso{
-\code{\link{case}}; adapted from
-\url{github.com/ateucher/useful_code/blob/master/R/numbers2words.r}
+\code{\link{case}}; adapted from \code{xfun::numbers_to_words}
 }

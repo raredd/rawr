@@ -1,11 +1,11 @@
 ### formatting, knitr, html-related, misc utils
 # show_html, show_markdown, show_math, roundr, roundr.default, roundr.matrix,
 # roundr.data.frame, intr, pvalr, pvalr2, color_pval, catlist, binconr,
-# num2char, iprint, writeftable, tabler, tabler.default, tabler.lm, tabler.glm,
-# tabler.survfit, tabler_by, tabler_by2, tabler_stat, describeDate,
-# describeDateBy, tabler_stat2, tabler_resp, match_ctc, tox_worst, countr, dmy,
-# combine_table, combine_table2, inject_div, case, write_htmlTable, html_align,
-# abbr
+# num2char, n2w, N2W, iprint, writeftable, tabler, tabler.default,
+# tabler.lm, tabler.glm, tabler.survfit, tabler_by, tabler_by2, tabler_stat,
+# describeDate, describeDateBy, tabler_stat2, tabler_resp, match_ctc, tox_worst,
+# countr, dmy, combine_table, combine_table2, inject_div, case, write_htmlTable,
+# html_align, abbr, html2char, h2c, c2h
 #
 # S3 methods:
 # roundr, tabler
@@ -1027,123 +1027,140 @@ binconr <- function(r, n, conf = 0.95, digits = 0L, est = TRUE, frac = FALSE,
   structure(res, method = method)
 }
 
-#' Numeric to character string
+#' Convert numbers to words
 #'
-#' Convert a number to its word equivalent.
-#'
+#' Convert whole or decimal numbers to word equivalent. \code{N2W} is
+#' equivalent to \code{n2w}/\code{num2char} but defaults to capitalizing
+#' the first word.
+#' 
 #' Whole numbers twenty-one through ninety-nine are hyphenated when they are
 #' written out whether used alone or as part of a larger number; for example:
 #' "twenty-one" or "one million twenty-one."
 #'
-#' Whole numbers in this range are \emph{not} hyphenated for other orders of
-#' magnitude; for example, 52,052 is written "\emph{fifty two} thousand fifty-
-#' two" and not "\emph{fifty-two} thousand fifty-two." This rule applies only
-#' to two-word numbers 21-99.
-#'
 #' Informal and formal case differ only by the use of "and" to separate
 #' 1-99: "one hundred one" is the formal case, and "one hundred and one" is
 #' the informal case.
-#'
-#' @param x an integer to convert to words; can be negative or positive but
-#'   decimals will be rounded first
-#' @param informal logical; if \code{TRUE}, adds "and" before tens or ones
+#' 
+#' @param x numeric vector, less than `1e15`
 #' @param cap logical; if \code{TRUE}, capitalizes the first word
-#'
+#' @param hyphen logical; insert hyphen when the number is between 21 and
+#'   99 (except 30, 40, etc)
+#' @param informal,and logical; insert "and" between hundreds and tens
+#' 
 #' @references
 #' \url{http://dictionary.reference.com/help/faq/language/g80.html}
 #' 
 #' \url{https://www.grammarbook.com/numbers/numbers.asp}
-#'
-#' @seealso
-#' \code{\link{case}}; adapted from
-#' \url{github.com/ateucher/useful_code/blob/master/R/numbers2words.r}
-#'
-#' @examples
-#' num2char(52052, TRUE)
-#' num2char(52052, FALSE)
 #' 
-#' ## vectorized
-#' num2char(-1:2)
+#' @seealso
+#' \code{\link{case}}; adapted from \code{xfun::numbers_to_words}
+#' 
+#' @examples
+#' n2w(1e15 - 1)
+#' n2w(0:121, and = TRUE)
+#' n2w(123.456)
+#' N2W(1e6)
 #' 
 #' x <- c(-1000, 100, 52052, 3922, 3012, 201, -152, 1002, 91070432)
-#' cbind(x, informal = num2char(x, TRUE), formal = num2char(x, FALSE))
-#'
+#' cbind(x, informal = num2char(x, informal = TRUE), formal = num2char(x, FALSE))
+#' 
 #' @export
 
-num2char <- function(x, informal = FALSE, cap = TRUE) {
-  oo <- options(scipen = 999)
-  on.exit(options(oo))
+num2char <- function(x, cap = FALSE, informal = FALSE, hyphen = TRUE, and = FALSE) {
+  if (!is.numeric(x) || any(abs(x) >= 1e15))
+    return(x)
   
-  ## helpers
-  as.num <- function(...) {
-    as.numeric(paste(..., collapse = ''))
-  }
-  num2char_ <- function(x) {
-    digits <- rev(strsplit(as.character(x), '')[[1L]])
-    nDigits <- length(digits)
-    
-    if (nDigits == 1L)
-      as.vector(ones[digits])
-    else if (nDigits == 2L)
-      if (x <= 19)
-        as.vector(teens[digits[1L]]) else
-          trim(paste(tens[digits[2L]], Recall(as.numeric(digits[1L]))))
-    else if (nDigits == 3L)
-      trim(paste(ones[digits[3L]], 'hundred', Recall(as.num(digits[2:1]))))
-    else {
-      nSuffix <- ((nDigits + 2) %/% 3) - 1L
-      if (nSuffix > length(suffixes))
-        return(x)
-      trim(paste(Recall(as.num(digits[
-        nDigits:(3 * nSuffix + 1L)])),
-        suffixes[nSuffix], ',' ,
-        Recall(as.num(digits[(3 * nSuffix):1]))))
-    }
-  }
-  or <- function(...) {
-    paste0(..., collapse = '|')
-  }
-  trim <- function(x) {
-    gsub('\\s*,|,\\s*$|\\s*and\\s*$', '', trimws(x))
-  }
+  oo <- options(scipen = 15L, OutDec = '.')
+  on.exit(options(oo), add = TRUE)
+  informal <- informal | and
+  and <- informal | and
   
-  ## definitions
-  ones <- setNames(
-    c('', 'one', 'two', 'three', 'four', 'five',
-      'six', 'seven', 'eight', 'nine'),
-    0:9
-  )
-  teens <- setNames(
-    c('ten', 'eleven', 'twelve',
-      paste0(c('thir', 'four', 'fif', 'six',
-               'seven', 'eigh', 'nine'), 'teen')),
-    0:9
+  zero_to_19 <- setNames(
+    c('zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight',
+      'nine', 'ten', 'eleven', 'twelve',
+      paste0(c('thir', 'four', 'fif', 'six', 'seven', 'eigh', 'nine'), 'teen')),
+    0:19
   )
   tens <- setNames(
-    c('twenty', 'thirty', 'forty', 'fifty',
-      'sixty', 'seventy', 'eighty', 'ninety'),
-    2:9
+    c('twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'),
+    2:9 * 10
   )
-  suffixes <- c('thousand', 'million', 'billion', 'trillion')
+  marks <- c('', 'thousand,', 'million,', 'billion,', 'trillion,')
   
+  ## 0 - 9
+  convert_1 <- function(x) {
+    zero_to_19[x]
+  }
   
-  ## actual work
-  neg <- x < 0
-  x <- ox <- round(abs(x))
+  ## 10 - 99
+  convert_2 <- function(x) {
+    sp <- strsplit(x, '')[[1L]]
+    if (sp[1L] == 1)
+      zero_to_19[x]  # 10 - 19
+    else if (sp[2L] == 0)
+      tens[x]  # 20, 30, 40, ...
+    # 21, 22, etc.
+    else paste(tens[as.integer(sp[1L]) - 1L], convert_1(sp[2L]),
+               sep = if (hyphen) '-' else ' ')
+  }
   
-  x <- sapply(x, num2char_)
-  x[neg] <- paste('negative', x)[neg]
-  x[vapply(ox, function(v) isTRUE(all.equal(v, 0)), NA)] <- 'zero'
+  ## 100 - 999
+  convert_3 <- function(x) {
+    sp <- strsplit(x, '')[[1L]]
+    n_hundreds <- paste(convert_1(sp[1L]), 'hundred')
+    res <- if (sp[2L] == '0') {
+      if (sp[3L] == '0')
+        return(n_hundreds) # x00
+      convert_1(sp[3L]) # x0x
+    } else convert_2(paste(sp[2:3], collapse = '')) # xxx
+    paste(n_hundreds, res, sep = if (and) ' and ' else ' ')
+  }
   
-  ## add hyphen between 21 to 99 inclusive
-  x <- gsub(sprintf('(.*%s) (%s)$', or(tens), or(ones[-1L])), '\\1-\\2', x)
+  convert_le3 <- function(x) {
+    x <- gsub('^0+', '', x)
+    switch(nchar(x) + 1L, '', convert_1(x), convert_2(x), convert_3(x))
+  }
   
-  ## add "and" before 1-99
-  informal <- rep_len(informal, length(x))
-  i <- informal & (ox / 100 - floor(ox / 100)) > 0
-  x[i] <- sub(' (?=\\S+$)', ' and ', x, perl = TRUE)[i]
+  convert_one <- function(x) {
+    neg <- if (x >= 0) '' else {
+      x <- abs(x)
+      'negative '
+    }
+    res <- if (x == 0) {
+      ## convert_le3 removes all 0s
+      'zero'
+    } else {
+      sp  <- strsplit(format(floor(x), big.mark = ','), ',')[[1L]] ## eg, 123,456,789
+      res <- vapply(sp, convert_le3, character(1L)) ## group by 3 digits
+      sp2 <- marks[length(sp):1L] ## units?
+      sp2[which(res == '')] <- '' ## eg, 4,000,123, 000, remove millions
+      paste(res, sp2, collapse = ' ')
+    }
+    res <- paste0(neg, res)
+    res <- gsub('^ *|,? *$', '', res)
+    res <- gsub(' {2,}', ' ', res)
+    if (cap)
+      res <- sub('^([a-z])', '\\U\\1', res, perl = TRUE)
+    if (x - floor(x) > 0) {
+      frac <- sub('^[0-9]+[.]', '', as.character(x))
+      frac <- convert_1(strsplit(frac, '')[[1L]])
+      res <- paste(c(res, 'point', frac), collapse = ' ')
+    }
+    res
+  }
   
-  ifelse(rep_len(cap, length(x)), case(x), x)
+  if (length(x) > 1L)
+    vapply(x, convert_one, character(1L)) else convert_one(x)
+}
+
+#' @rdname num2char
+#' @export
+n2w <- num2char
+
+#' @rdname num2char
+#' @export
+N2W <- function(x, cap = TRUE, informal = FALSE, hyphen = TRUE, and = FALSE) {
+  n2w(x, cap = cap, informal = FALSE, hyphen = TRUE, and = FALSE)
 }
 
 #' In-line printing
@@ -3977,4 +3994,74 @@ abbr <- function(x, pattern = '[A-Z]', n = 1L, include = '[a-z]+') {
   else sprintf('\\b(%s{1,%s})|.', pattern, n)
   
   gsub(p, '\\1', x, perl = TRUE)
+}
+
+#' html2char
+#' 
+#' Convert html entities to character or vice versa.
+#' 
+#' @param x a character or factor vector
+#' @param to_html logical; if \code{TRUE}, convert to html entities
+#' 
+#' @aliases html2char
+#' 
+#' @examples
+#' x <- c('<', '>', '≤', '+-', '+/-')
+#' c2h(x)
+#' c2h(factor(x))
+#' h2c(c2h(x)) == x
+#' 
+#' h2c(c('&Beta;', '&beta;'))
+#' 
+#' @export
+
+h2c <- function(x, to_html = FALSE) {
+  if (!length(x) || all(is.na(x)) || !(is.character(x) | is.factor(x)))
+    return(x)
+  greek <- c(
+    'Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta',
+    'Iota', 'Kappa', 'Lambda', 'Mu', 'Nu', 'Xi', 'Omicron', 'Pi', 'Rho',
+    'Sigma', 'Tau', 'Upsilon', 'Phi', 'Chi', 'Psi', 'Omega'
+  )
+  key <- data.frame(
+    html = c(
+      'amp', 'pm', 'plusmn', 'lt', 'gt', 'le', 'ge',
+      'emsp', 'ensp', 'nbsp', 'deg', 'frac14', 'frac12', 'frac34', 'infin',
+      c(rbind(greek, tolower(greek))), 'sigmaf'
+    ),
+    char = c(
+      '&', '+/-', '+/-', '<', '>', '≤', '≥',
+      '  ', ' ', ' ', '°', '¼', '½', '¾', '∞',
+      'Α', 'α', 'Β', 'β', 'Γ', 'γ', 'Δ', 'δ', 'Ε', 'ε', 'Ζ', 'ζ',
+      'Η', 'η', 'Θ', 'θ', 'Ι', 'ι', 'Κ', 'κ', 'Λ', 'λ', 'Μ', 'μ',
+      'Ν', 'ν', 'Ξ', 'ξ', 'Ο', 'ο', 'Π', 'π', 'Ρ', 'ρ', 'Σ', 'σ',
+      'Τ', 'τ', 'Υ', 'υ', 'Φ', 'φ', 'Χ', 'χ', 'Ψ', 'ψ', 'Ω', 'ω', 'ς'
+    )
+  )
+  key$html <- sprintf('&%s;', key$html)
+  
+  if (to_html) {
+    to <- key$html
+    fr <- key$char
+  } else {
+    to <- key$char
+    fr <- key$html
+  }
+  
+  idx <- seq.int(nrow(key))
+  if (is.factor(x)) {
+    for (ii in idx)
+      levels(x) <- gsub(fr[ii], to[ii], x, fixed = TRUE)
+  } else {
+    for (ii in idx)
+      x <- gsub(fr[ii], to[ii], x, fixed = TRUE)
+  }
+  
+  x
+}
+
+#' @rdname h2c
+#' @export
+c2h <- function(x) {
+  html2char(x, to_html = TRUE)
 }
