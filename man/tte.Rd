@@ -17,6 +17,9 @@ events and the order of dates in \code{...} matters, i.e., the first date
 takes precedence, and indicators are assigned in order of event date
 vectors}
 
+\item{fix}{logical; if \code{TRUE} (default); censor negative times at 0
+and censor the event}
+
 \item{censor}{max time after which events/times are censored}
 
 \item{factor}{time factor to convert days (default) to months (e.g, use

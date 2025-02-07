@@ -3269,7 +3269,7 @@ surv_dist <- function(p1, time1, p2 = NULL, time2 = NULL) {
 #'   events and the order of dates in \code{...} matters, i.e., the first date
 #'   takes precedence, and indicators are assigned in order of event date
 #'   vectors
-#' @param fix logical; if \code{TRUE) (default); censor negative times at 0
+#' @param fix logical; if \code{TRUE} (default); censor negative times at 0
 #'   and censor the event
 #' @param censor max time after which events/times are censored
 #' @param factor time factor to convert days (default) to months (e.g, use
