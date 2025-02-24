@@ -13,14 +13,9 @@
 # lss, lsf, lsp
 # 
 # unexported:
-# as.character.formula, islist, where_, where, dots, name_or_index,
-# rm_na_dimnames, insert_
+# islist, where_, where, dots, name_or_index, rm_na_dimnames, insert_
 ###
 
-
-as.character.formula <- function(x, ...) {
-  base::as.character.default(as.list(x))
-}
 
 islist <- function(x) {
   ## is.list(data.frame()); rawr:::islist(data.frame())
@@ -112,11 +107,11 @@ name_or_index <- function(x, y = NULL) {
 #' 
 #' 
 #' ## weakly/strongly inside
-#' c(0,4) %winside% c(0, 4)
-#' c(0,4) %sinside% c(0, 4)
+#' c(0, 4) %winside% c(0, 4)
+#' c(0, 4) %sinside% c(0, 4)
 #' 
-#' -5:5 %winside% c(0,5)
-#' -5:5 %sinside% c(0,5)
+#' -5:5 %winside% c(0, 5)
+#' -5:5 %sinside% c(0, 5)
 #' 
 #' 
 #' ## %in% plus ==
@@ -129,8 +124,10 @@ name_or_index <- function(x, y = NULL) {
 #' a %==% b   # FALSE TRUE FALSE
 #' 
 #' 
-#' # NULL || TRUE   # error
-#' NULL %||% TRUE   # TRUE
+#' # NULL | TRUE   # logical(0)
+#' NULL %|% TRUE   # TRUE
+#' # logical() | TRUE   # logical(0)
+#' logical() %|% TRUE   # TRUE
 #' 
 #' 
 #' 1:5 %:% c(3, 5)
@@ -177,9 +174,16 @@ NULL
 
 #' @rdname rawr_ops
 #' @export
-`%||%` <- function(a, b) {
-  if (!is.null(a))
+`%|%` <- function(a, b) {
+  if (length(a))
     a else b
+}
+
+if (getRversion() < '4.4.0') {
+  `%||%` <- function(a, b) {
+    if (!is.null(a))
+      a else b
+  }
 }
 
 #' @rdname rawr_ops

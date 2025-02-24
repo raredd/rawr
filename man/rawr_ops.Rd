@@ -10,7 +10,7 @@
 \alias{\%winside\%}
 \alias{\%inside\%}
 \alias{\%==\%}
-\alias{\%||\%}
+\alias{\%|\%}
 \alias{\%:\%}
 \title{rawr operators}
 \usage{
@@ -24,7 +24,7 @@ x \%inside\% interval
 
 a \%==\% b
 
-a \%||\% b
+a \%|\% b
 
 object \%:\% range
 }
@@ -71,11 +71,11 @@ character strings rather than by index.
 
 
 ## weakly/strongly inside
-c(0,4) \%winside\% c(0, 4)
-c(0,4) \%sinside\% c(0, 4)
+c(0, 4) \%winside\% c(0, 4)
+c(0, 4) \%sinside\% c(0, 4)
 
--5:5 \%winside\% c(0,5)
--5:5 \%sinside\% c(0,5)
+-5:5 \%winside\% c(0, 5)
+-5:5 \%sinside\% c(0, 5)
 
 
 ## \%in\% plus ==
@@ -88,8 +88,10 @@ a \%in\% b   # TRUE  TRUE TRUE
 a \%==\% b   # FALSE TRUE FALSE
 
 
-# NULL || TRUE   # error
-NULL \%||\% TRUE   # TRUE
+# NULL | TRUE   # logical(0)
+NULL \%|\% TRUE   # TRUE
+# logical() | TRUE   # logical(0)
+logical() \%|\% TRUE   # TRUE
 
 
 1:5 \%:\% c(3, 5)
