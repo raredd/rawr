@@ -65,7 +65,7 @@ tabler(cphfit, add_reference = TRUE)
 Other tabler: 
 \code{\link{tabler_by}()},
 \code{\link{tabler_resp}()},
-\code{\link{tabler_stat2}()},
-\code{\link{tabler_stat}()}
+\code{\link{tabler_stat}()},
+\code{\link{tabler_stat2}()}
 }
 \concept{tabler}

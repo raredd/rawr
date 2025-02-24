@@ -190,9 +190,9 @@ tabler_stat2(mt, names(mt)[-10L], 'gear',
 \code{\link{ca.test}}
 
 Other tabler: 
+\code{\link{tabler}()},
 \code{\link{tabler_by}()},
 \code{\link{tabler_resp}()},
-\code{\link{tabler_stat2}()},
-\code{\link{tabler}()}
+\code{\link{tabler_stat2}()}
 }
 \concept{tabler}

@@ -102,9 +102,9 @@ structure(ht, class = 'htmlTable')
 \code{\link{bincon}}; \code{\link{binconr}}; \code{\link{response}}
 
 Other tabler: 
+\code{\link{tabler}()},
 \code{\link{tabler_by}()},
-\code{\link{tabler_stat2}()},
 \code{\link{tabler_stat}()},
-\code{\link{tabler}()}
+\code{\link{tabler_stat2}()}
 }
 \concept{tabler}

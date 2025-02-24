@@ -192,9 +192,9 @@ rawr:::combine_tabler_stat2(list(t1 = h1, t2 = h2, t3 = h3), how = 'cbind')
 \code{rawr:::tabler_stat_list}; \code{rawr:::tabler_stat_html}
 
 Other tabler: 
+\code{\link{tabler}()},
 \code{\link{tabler_by}()},
 \code{\link{tabler_resp}()},
-\code{\link{tabler_stat}()},
-\code{\link{tabler}()}
+\code{\link{tabler_stat}()}
 }
 \concept{tabler}
