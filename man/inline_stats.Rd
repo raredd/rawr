@@ -33,9 +33,9 @@ inl_kw(x, y = NULL, ..., details = TRUE, digits = 2L)
 
 inl_logrank(object, ..., details = TRUE, digits = 2L)
 
-inl_t(x, y = NULL, ..., details = TRUE, digits = 2L)
+inl_t(x, y = NULL, ..., paired = FALSE, details = TRUE, digits = 2L)
 
-inl_wilcox(x, y = NULL, ..., details = TRUE, digits = 2L)
+inl_wilcox(x, y = NULL, ..., paired = FALSE, details = TRUE, digits = 2L)
 }
 \arguments{
 \item{x}{numeric or factor-like variable, table, or a list depending on
@@ -53,6 +53,8 @@ statistic, degrees of freedom depending, etc.) are printed}
 
 \item{object}{for \code{inl_logrank}, a \code{\link[survival]{survdiff}}
 object or formula to be passed to \code{survdiff}}
+
+\item{paired}{logical; if \code{TRUE}, performs a paired test}
 }
 \description{
 Convenience functions to summarize statistical tests.
@@ -68,8 +70,9 @@ inl_t(x, y)
 
 ## t-test (paired)
 t.test(x, y, paired = TRUE)
+inl_t(x, y, paired = TRUE)
 inl_t(list(x, y), paired = TRUE)
-inl_t(c(x, y), rep(1:2, each = length(x)), paired = TRUE)
+inl_t(c(x, y), factor(rep(1:2, each = length(x))), paired = TRUE)
 
 
 ## fisher's exact
@@ -91,8 +94,9 @@ inl_wilcox(split(mtcars$mpg, y))
 
 ## wilcoxon signed-rank test
 wilcox.test(x, y, paired = TRUE)
+inl_wilcox(x, y, paired = TRUE)
 inl_wilcox(list(x, y), paired = TRUE)
-inl_wilcox(c(x, y), rep(1:2, each = length(x)), paired = TRUE)
+inl_wilcox(c(x, y), factor(rep(1:2, each = length(x))), paired = TRUE)
 
 
 ## cuzick's trend test

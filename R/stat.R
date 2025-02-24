@@ -12,7 +12,7 @@
 # rpart_parent, rpart_subset, rpart_nodes
 #
 # unexported:
-# cuzick.test.stat, cuzick.test.pvalue, jt.test.stat, sim.test.pvalue,
+# cuzick.test_stat, cuzick.test_pvalue, jt.test_stat, sim.test_pvalue,
 # formula0
 ###
 
@@ -686,7 +686,7 @@ cuzick.test.default <- function(x, g, details = wilcox.test, correct = TRUE,
     'Wilcoxon rank-sum test for trend in %s ordered groups (%scorrected for ties)',
     ug, c('un', '')[correct + 1L]
   )
-  z <- cuzick.test.stat(x, g, correct)
+  z <- cuzick.test_stat(x, g, correct)
   pval <- 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE))
 
   res <- list(
@@ -695,7 +695,7 @@ cuzick.test.default <- function(x, g, details = wilcox.test, correct = TRUE,
   )
 
   if (simulate.p.value) {
-    p <- cuzick.test.pvalue(x, g, correct, B, TRUE)
+    p <- cuzick.test_pvalue(x, g, correct, B, TRUE)
     res$p.value <- unname(p[1L])
     res$method <- sprintf(
       '%s with simulated p-value (based on %s replicates)', method, B
@@ -776,7 +776,7 @@ cuzick.test.formula <- function (formula, data, ...) {
   y
 }
 
-cuzick.test.stat <- function(x, g, correct) {
+cuzick.test_stat <- function(x, g, correct) {
   if (length(x) < 2L)
     stop('not enough observations')
 
@@ -826,7 +826,7 @@ cuzick.test.stat <- function(x, g, correct) {
   (Ts - eT) / (a * sqrt(vT))
 }
 
-cuzick.test.pvalue <- function(x, g, correct, B = 2000L,
+cuzick.test_pvalue <- function(x, g, correct, B = 2000L,
                                ci = FALSE, alpha = 0.99) {
   stopifnot(
     is.logical(correct),
@@ -836,10 +836,10 @@ cuzick.test.pvalue <- function(x, g, correct, B = 2000L,
   B <- as.integer(B)
   f <- function() {
     g <- sample(g)
-    cuzick.test.stat(x, g, correct)
+    cuzick.test_stat(x, g, correct)
   }
 
-  Z <- cuzick.test.stat(x, g, correct)
+  Z <- cuzick.test_stat(x, g, correct)
   Z <- abs(Z)
   r <- unname(replicate(B, f()))
   z <- r > Z
@@ -960,7 +960,7 @@ jt.test <- function(x, y = NULL) {
     x <- table(x, y)
   }
 
-  z    <- jt.test.stat(x, y)
+  z    <- jt.test_stat(x, y)
   pval <- 2 * min(pnorm(z), pnorm(z, lower.tail = FALSE))
   res  <- list(
     statistic = c(z = z), p.value = pval,
@@ -970,7 +970,7 @@ jt.test <- function(x, y = NULL) {
   structure(res, class = 'htest')
 }
 
-jt.test.stat <- function(x, y) {
+jt.test_stat <- function(x, y) {
   get_PQ <- function(x, y) {
     ## calculates P,Q scores larger,smaller than current score
     x <- unlist(x)
@@ -1284,7 +1284,7 @@ kw.test.default <- function(x, g, ..., simulate.p.value = FALSE, B = 2000L) {
   res <- kruskal.test(g ~ x)
 
   if (simulate.p.value) {
-    p <- sim.test.pvalue(x, g, kruskal.test, TRUE, B, TRUE, 0.99)
+    p <- sim.test_pvalue(x, g, kruskal.test, TRUE, B, TRUE, 0.99)
     res$p.value <- unname(p[1L])
     method <- sprintf('%s with simulated p-value (based on %s replicates)',
                       method, B)
@@ -1323,7 +1323,7 @@ kw.test.formula <- function (formula, data, ...) {
   y
 }
 
-sim.test.pvalue <- function(x, g, FUN, ordered = FALSE, B = 2000L,
+sim.test_pvalue <- function(x, g, FUN, ordered = FALSE, B = 2000L,
                             ci = FALSE, alpha = 0.99) {
   stopifnot(
     is.logical(ordered),
@@ -1505,7 +1505,7 @@ ca.test.default <- function(x, g, ..., score = NULL,
 
   if (simulate.p.value) {
     suppressWarnings({
-      p <- sim.test.pvalue(x, g, ca.test, FALSE, B, TRUE, 0.99)
+      p <- sim.test_pvalue(x, g, ca.test, FALSE, B, TRUE, 0.99)
     })
     res$p.value <- unname(p[1L])
     method <- sprintf('%s with simulated p-value (based on %s replicates)',

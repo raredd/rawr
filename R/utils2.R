@@ -29,6 +29,7 @@
 #'   the statistic
 #' @param y (optional) group or stratification variable
 #' @param ... additional arguments passed to the stat function
+#' @param paired logical; if \code{TRUE}, performs a paired test
 #' @param details logical; if \code{FALSE}, only the p-value is printed; if
 #'   \code{TRUE}, additional details depending on the test (e.g., the test
 #'   statistic, degrees of freedom depending, etc.) are printed
@@ -47,8 +48,9 @@
 #' 
 #' ## t-test (paired)
 #' t.test(x, y, paired = TRUE)
+#' inl_t(x, y, paired = TRUE)
 #' inl_t(list(x, y), paired = TRUE)
-#' inl_t(c(x, y), rep(1:2, each = length(x)), paired = TRUE)
+#' inl_t(c(x, y), factor(rep(1:2, each = length(x))), paired = TRUE)
 #' 
 #' 
 #' ## fisher's exact
@@ -70,8 +72,9 @@
 #' 
 #' ## wilcoxon signed-rank test
 #' wilcox.test(x, y, paired = TRUE)
+#' inl_wilcox(x, y, paired = TRUE)
 #' inl_wilcox(list(x, y), paired = TRUE)
-#' inl_wilcox(c(x, y), rep(1:2, each = length(x)), paired = TRUE)
+#' inl_wilcox(c(x, y), factor(rep(1:2, each = length(x))), paired = TRUE)
 #' 
 #' 
 #' ## cuzick's trend test
@@ -277,16 +280,15 @@ inl_logrank <- function(object, ..., details = TRUE, digits = 2L) {
 
 #' @rdname inline_stats
 #' @export
-inl_t <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
-  paired <- isTRUE(eval(match.call()$paired))
-  
+inl_t <- function(x, y = NULL, ..., paired = FALSE,
+                  details = TRUE, digits = 2L) {
   if (inherits(x, 'list')) {
     if (length(x) != 2L)
       stop('grouping factor must have exactly 2 levels')
     
     if (paired) {
-      y <- rep(seq_along(x), each = length(x[[1L]]))
-      x <- unlist(x)
+      y <- x[[2L]]
+      x <- x[[1L]]
     } else {
       x <- rbindlist(x)
       y <- x[, 1L]
@@ -294,7 +296,14 @@ inl_t <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
     }
   }
 
-  res <- t.test(x ~ as.factor(y), ...)
+  res <- if (paired) {
+    if (is.factor(y)) {
+      y <- split(x, y)
+      x <- y[[1L]]
+      y <- y[[2L]]
+    }
+    t.test(x, y, paired = TRUE)
+  } else t.test(x ~ as.factor(y), ...)
 
   if (!details)
     pvalr(res$p.value, show.p = TRUE)
@@ -308,13 +317,12 @@ inl_t <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
 
 #' @rdname inline_stats
 #' @export
-inl_wilcox <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
-  paired <- isTRUE(eval(match.call()$paired))
-  
+inl_wilcox <- function(x, y = NULL, ..., paired = FALSE,
+                       details = TRUE, digits = 2L) {
   if (inherits(x, 'list')) {
     if (paired) {
-      y <- rep(seq_along(x), each = length(x[[1L]]))
-      x <- unlist(x)
+      y <- x[[2L]]
+      x <- x[[1L]]
     } else {
       x <- rbindlist(x)
       y <- x[, 1L]
@@ -322,8 +330,15 @@ inl_wilcox <- function(x, y = NULL, ..., details = TRUE, digits = 2L) {
     }
   }
 
-  suppressWarnings({
-    res <- wilcox.test(x ~ as.factor(y), ...)
+  res <- suppressWarnings({
+    if (paired) {
+      if (is.factor(y)) {
+        y <- split(x, y)
+        x <- y[[1L]]
+        y <- y[[2L]]
+      }
+      wilcox.test(x, y, paired = TRUE, ...)
+    } else wilcox.test(x ~ as.factor(y), ...)
   })
 
   if (!details)
@@ -1160,7 +1175,7 @@ n2w <- num2char
 #' @rdname num2char
 #' @export
 N2W <- function(x, cap = TRUE, informal = FALSE, hyphen = TRUE, and = FALSE) {
-  n2w(x, cap = cap, informal = FALSE, hyphen = TRUE, and = FALSE)
+  num2char(x, cap = cap, informal = FALSE, hyphen = TRUE, and = FALSE)
 }
 
 #' In-line printing
@@ -4025,12 +4040,12 @@ h2c <- function(x, to_html = FALSE) {
   )
   key <- data.frame(
     html = c(
-      'amp', 'pm', 'plusmn', 'lt', 'gt', 'le', 'ge',
+      'amp', 'pm', 'pm', 'pm', 'lt', 'gt', 'le', 'ge',
       'emsp', 'ensp', 'nbsp', 'deg', 'frac14', 'frac12', 'frac34', 'infin',
       c(rbind(greek, tolower(greek))), 'sigmaf'
     ),
     char = c(
-      '&', '+/-', '+/-', '<', '>', '≤', '≥',
+      '&', '+/-', '+/-', '+-', '<', '>', '≤', '≥',
       '  ', ' ', ' ', '°', '¼', '½', '¾', '∞',
       'Α', 'α', 'Β', 'β', 'Γ', 'γ', 'Δ', 'δ', 'Ε', 'ε', 'Ζ', 'ζ',
       'Η', 'η', 'Θ', 'θ', 'Ι', 'ι', 'Κ', 'κ', 'Λ', 'λ', 'Μ', 'μ',
@@ -4051,7 +4066,7 @@ h2c <- function(x, to_html = FALSE) {
   idx <- seq.int(nrow(key))
   if (is.factor(x)) {
     for (ii in idx)
-      levels(x) <- gsub(fr[ii], to[ii], x, fixed = TRUE)
+      levels(x) <- gsub(fr[ii], to[ii], levels(x), fixed = TRUE)
   } else {
     for (ii in idx)
       x <- gsub(fr[ii], to[ii], x, fixed = TRUE)
@@ -4063,5 +4078,5 @@ h2c <- function(x, to_html = FALSE) {
 #' @rdname h2c
 #' @export
 c2h <- function(x) {
-  html2char(x, to_html = TRUE)
+  h2c(x, to_html = TRUE)
 }
