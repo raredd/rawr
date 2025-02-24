@@ -4,7 +4,7 @@
 # surv_prob, kmdiff, surv_dist, tte
 #
 # unexported:
-# stratify_formula, points.kmplot, kmplot_data_, atrisk_data_, terms.inner
+# stratify_formula, points.kmplot, kmplot_data_, atrisk_data_, innerterms
 #
 # surv_test (unexported):
 # lr_text, lr_pval, tt_text, tt_pval, hr_text, hr_pval, pw_pval, pw_text,
@@ -162,7 +162,7 @@ stratify_formula <- function(formula, vars = NULL) {
 #'   numeric, the value is passed as \code{rho} controlling the type of test
 #'   performed; see \code{\link{survdiff}}
 #' @param tt_test logical; if \code{TRUE}, Tarone's trend test will be
-#'   performed and the resultls added to the top-right corner of the plot;
+#'   performed and the results added to the top-right corner of the plot;
 #'   note that this will override \code{lr_test}
 #' @param test_details logical; if \code{TRUE} (default), all test details
 #'   (test statistic, degrees of freedom, p-value) are shown; if \code{FALSE},
@@ -270,11 +270,13 @@ stratify_formula <- function(formula, vars = NULL) {
 #' kmplot(survfit(Surv(time, status) ~ rx, data = colon),
 #'        pw_test = TRUE, args.pw = list(text.col = 1:3, x = 'bottomleft'))
 #'
+#' \dontrun{
 #' ## expressions in at-risk table (strata.expr takes precedence)
 #' kmplot(km1, strata.lab = c('\u2640', '\u2642'))
 #' kmplot(km1, strata.lab = c('\u2640', '\u2642'),
 #'                strata.expr = expression(widetilde(ring(Female)),
 #'                                         phantom() >= Male))
+#' }
 #'
 #' ## character vectors passed to strata.expr will be parsed
 #' kmplot(km1, strata.expr = c('Sex[Female]', 'Sex[Male]'))
@@ -320,7 +322,7 @@ kmplot <- function(object, data = NULL,
                    kmdiff = FALSE,
 
                    ## at-risk table options
-                   atrisk.table = TRUE, atrisk.lab = NULL, atrisk.pad = 0.5,
+                   atrisk.table = TRUE, atrisk.lab = NULL, atrisk.pad = 1,
                    atrisk.type = c('atrisk', 'events', 'atrisk-events',
                                    'survival', 'survival-ci',
                                    'percent', 'percent-ci',
@@ -341,7 +343,7 @@ kmplot <- function(object, data = NULL,
                    atrisk.at = xaxis.at,
                    yaxis.at = pretty(0:1), yaxis.lab = yaxis.at,
                    xlab = 'Time', ylab = 'Probability', main = NULL,
-                   line.xlab = NA,
+                   line.xlab = 2.5,
                    cex.axis = par('cex.axis'), cex.atrisk = cex.axis,
                    cex.lab = par('cex.lab'), cex.main = par('cex.main'),
                    legend = !atrisk.table && !is.null(object$strata),
@@ -626,7 +628,7 @@ kmplot <- function(object, data = NULL,
     'percent-cuminc-ci' = 'percent.cuminc.ci'
   )
 
-  ar <- atrisk_data_(object, atrisk.at, atrisk.digits)
+  ar <- atrisk_data_(object, atrisk.at, atrisk.digits, fun)
   ss <- ar$summary
   d2 <- ar$data
 
@@ -793,7 +795,7 @@ kmplot <- function(object, data = NULL,
         'percent-cuminc-ci' = sprintf('%% cuminc (%s%% CI)', ss$conf.int * 100)
       )
 
-    ar <- atrisk_data_(object, times, times.digits)
+    ar <- atrisk_data_(object, times, times.digits, fun)
     ss <- ar$summary
     d2 <- ar$data
     d3 <- lapply(d2, function(x) x[, c('time', wh)])
@@ -803,7 +805,7 @@ kmplot <- function(object, data = NULL,
 
     largs <- list(
       x = 'bottomleft',
-      table = d3[, c(1, strata.order + 1L)], title = times.lab,
+      table = d3[, c(1L, strata.order + 1L)], title = times.lab,
       frame.colnames = TRUE, frame.type = 'line', font.title = 1L
     )
     if (!islist(args.times))
@@ -1210,11 +1212,12 @@ kmplot_data_ <- function(object, strata.lab) {
 #' @param object a \code{\link{survfit}} object
 #' @param times time points
 #' @param digits digits
+#' @param fun survival curve transformation
 #'
 #' @seealso
 #' \code{\link{kmplot}}; \code{\link{kmplot_by}}
 
-atrisk_data_ <- function(object, times, digits) {
+atrisk_data_ <- function(object, times, digits, fun) {
   ss <- summary(object, times = times, extend = TRUE)
 
   if (is.null(ss$strata))
@@ -1224,12 +1227,16 @@ atrisk_data_ <- function(object, times, digits) {
     time = ss$time, n.risk = ss$n.risk, n.event = ss$n.event,
     strata = c(ss$strata), surv = ss$surv, lci = ss$lower, uci = ss$upper
   )
+  if (toupper(fun) == 'F') {
+    lower <- 1 - d1$uci
+    upper <- 1 - d1$lci
+    d1$surv <- 1 - d1$surv
+    d1$lci <- lower
+    d1$uci <- upper
+  }
 
   d2 <- split(d1, d1$strata)
   d2 <- lapply(d2, function(x) {
-    # if (fun == 'F')
-    #   x$surv <- 1 - x$surv
-
     x$atrisk <- roundr(x$n.risk, 0L)
     x$events <- roundr(cumsum(x$n.event), 0L)
     x$atrisk.events <- sprintf('%s (%s)', x$atrisk, x$events)
@@ -2108,7 +2115,7 @@ kmplot_ticks <- function(object, data = eval(object$call$data), by_var, what,
       data <- deparse(object$call$data)
       data <- get(data, where(gsub('[$[].*', '', data)))
     }
-    terms <- c(terms.inner(object$call$formula),
+    terms <- c(innerterms(object$call$formula),
                tail(as.character(object$call$formula), 1L))
     if (missing(time))
       time <- terms[1L]
@@ -2137,23 +2144,23 @@ kmplot_ticks <- function(object, data = eval(object$call$data), by_var, what,
   invisible(data)
 }
 
-terms.inner <- function(x) {
-  # survival:::terms.inner
+innerterms <- function(x) {
+  # survival:::innerterms
   if (inherits(x, 'formula')) {
     if (length(x) == 3L)
-      c(terms.inner(x[[2L]]), terms.inner(x[[3L]]))
-    else terms.inner(x[[2L]])
-  } else if (class(x) == 'call' &&
+      c(innerterms(x[[2L]]), innerterms(x[[3L]]))
+    else innerterms(x[[2L]])
+  } else if (inherits(x, 'call') &&
              (x[[1L]] != as.name('$') &&
               x[[1L]] != as.name('['))) {
-    if (x[[1L]] == '+' || x[[1]] == '*' || x[[1]] == '-') {
+    if (x[[1L]] == '+' || x[[1L]] == '*' || x[[1L]] == '-' || x[[1L]] == ':') {
       if (length(x) == 3L)
-        c(terms.inner(x[[2L]]), terms.inner(x[[3L]]))
-      else terms.inner(x[[2L]])
+        c(innerterms(x[[2L]]), innerterms(x[[3L]]))
+      else innerterms(x[[2L]])
     } else if (x[[1L]] == as.name('Surv'))
-      unlist(lapply(x[-1L], terms.inner))
-    else terms.inner(x[[2L]])
-  } else (deparse(x))
+      unlist(lapply(x[-1L], innerterms))
+    else innerterms(x[[2L]])
+  } else deparse(x)
 }
 
 #' Compute local p-value from coxph
@@ -2873,7 +2880,7 @@ landmark <- function(object, times = NULL, col = 2L, plot = TRUE, plot.main = pl
 
   form <- object$call$formula
   data <- eval(object$call$data)
-  tvar <- terms.inner(form)[1L]
+  tvar <- innerterms(form)[1L]
 
   op <- par(no.readonly = TRUE)
   on.exit(par(op))

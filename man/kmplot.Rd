@@ -20,7 +20,7 @@ kmplot(
   kmdiff = FALSE,
   atrisk.table = TRUE,
   atrisk.lab = NULL,
-  atrisk.pad = 0.5,
+  atrisk.pad = 1,
   atrisk.type = c("atrisk", "events", "atrisk-events", "survival", "survival-ci",
     "percent", "percent-ci", "cuminc", "percent-cuminc", "cuminc-ci",
     "percent-cuminc-ci"),
@@ -49,7 +49,7 @@ kmplot(
   xlab = "Time",
   ylab = "Probability",
   main = NULL,
-  line.xlab = NA,
+  line.xlab = 2.5,
   cex.axis = par("cex.axis"),
   cex.atrisk = cex.axis,
   cex.lab = par("cex.lab"),
@@ -228,7 +228,7 @@ numeric, the value is passed as \code{rho} controlling the type of test
 performed; see \code{\link{survdiff}}}
 
 \item{tt_test}{logical; if \code{TRUE}, Tarone's trend test will be
-performed and the resultls added to the top-right corner of the plot;
+performed and the results added to the top-right corner of the plot;
 note that this will override \code{lr_test}}
 
 \item{test_details}{logical; if \code{TRUE} (default), all test details
@@ -376,11 +376,13 @@ kmplot(km1, atrisk.type = 'atrisk-events')
 kmplot(survfit(Surv(time, status) ~ rx, data = colon),
        pw_test = TRUE, args.pw = list(text.col = 1:3, x = 'bottomleft'))
 
+\dontrun{
 ## expressions in at-risk table (strata.expr takes precedence)
 kmplot(km1, strata.lab = c('\u2640', '\u2642'))
 kmplot(km1, strata.lab = c('\u2640', '\u2642'),
                strata.expr = expression(widetilde(ring(Female)),
                                         phantom() >= Male))
+}
 
 ## character vectors passed to strata.expr will be parsed
 kmplot(km1, strata.expr = c('Sex[Female]', 'Sex[Male]'))

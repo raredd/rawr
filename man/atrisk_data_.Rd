@@ -4,7 +4,7 @@
 \alias{atrisk_data_}
 \title{Create a list of data frames for at-risk tables}
 \usage{
-atrisk_data_(object, times, digits)
+atrisk_data_(object, times, digits, fun)
 }
 \arguments{
 \item{object}{a \code{\link{survfit}} object}
@@ -12,6 +12,8 @@ atrisk_data_(object, times, digits)
 \item{times}{time points}
 
 \item{digits}{digits}
+
+\item{fun}{survival curve transformation}
 }
 \description{
 Create a list of data frames for at-risk tables
