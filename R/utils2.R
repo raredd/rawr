@@ -1081,7 +1081,7 @@ binconr <- function(r, n, conf = 0.95, digits = 0L, est = TRUE, frac = FALSE,
 #' 
 #' @export
 
-num2char <- function(x, cap = FALSE, informal = FALSE, hyphen = TRUE, and = FALSE) {
+num2char <- function(x, cap = TRUE, informal = FALSE, hyphen = TRUE, and = FALSE) {
   if (!is.numeric(x) || any(abs(x) >= 1e15))
     return(x)
   
@@ -1170,7 +1170,9 @@ num2char <- function(x, cap = FALSE, informal = FALSE, hyphen = TRUE, and = FALS
 
 #' @rdname num2char
 #' @export
-n2w <- num2char
+n2w <- function(x, cap = FALSE, informal = FALSE, hyphen = TRUE, and = FALSE) {
+  num2char(x, cap = cap, informal = FALSE, hyphen = TRUE, and = FALSE)
+}
 
 #' @rdname num2char
 #' @export

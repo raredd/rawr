@@ -6,7 +6,7 @@
 \alias{N2W}
 \title{Convert numbers to words}
 \usage{
-num2char(x, cap = FALSE, informal = FALSE, hyphen = TRUE, and = FALSE)
+num2char(x, cap = TRUE, informal = FALSE, hyphen = TRUE, and = FALSE)
 
 n2w(x, cap = FALSE, informal = FALSE, hyphen = TRUE, and = FALSE)
 
