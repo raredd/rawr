@@ -1945,6 +1945,7 @@ tabler_by2 <- function(data, varname, byvar, n = NULL, order = FALSE,
 #' @export
 
 tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
+                        paired = FALSE, id = NULL,
                         format_pval = TRUE, color_pval = TRUE,
                         color_missing = TRUE, dagger = TRUE,
                         color_cell_by = c('none', 'value', 'pct'),
@@ -2071,7 +2072,7 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
 
   ## add pvalue column using stat fn
   pvn <- tryCatch(
-    getPval_(x, y, FUN),
+    getPval_(x, y, FUN, paired = paired, id = if (!is.null(id)) data[, id]),
     error = function(e) {
       message(sprintf(
         '\nAn error occurred for %s\n\t%s\nSkipping test for %s\n',
@@ -2087,6 +2088,7 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
   dags1 <- dags[c(1L, 3L, 2L)]
   dags2 <- dags[c(3L, 4L, 1L)]
   dags3 <- dags[c(1L, 1L, 5L)]
+  dags4 <- dags[1:2]
   fname <- attr(pvn, 'FUN') %||% fun
   attr(fname, 'tnames') <- attr(pvn, 'name')
 
@@ -2105,9 +2107,14 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
       setNames(paste0(c('cuzick', 'cuzick', 'jt'), '.test'), dags3),
       tnames = c('Cuzick\'s trend test', 'Cuzick\'s trend test',
                  'Jonckheere-Terpstra test')
+    ),
+    paired = structure(
+      setNames(paste0(c('mcnemar', 'wilcox'), '.test'), dags[4:5]),
+      tnames = c('McNemar\'s test', 'Wilcoxon signed-rank test')
     )
   )
-  fnames <- fnamel[[1L + oy + ox]]
+  fnames <- if (paired)
+    fnamel$paired else fnamel[[1L + oy + ox]]
 
   ## no fun - null out return
   ## user input fns get * identifier
@@ -2208,7 +2215,7 @@ getPvalTtest <- function(x, by) {
   t.test(x ~ by, alternative = 'two.sided')$p.value
 }
 
-getPval_ <- function(x, y, FUN, n_unique_x = 10L) {
+getPval_ <- function(x, y, FUN, n_unique_x = 10L, paired = FALSE, id = NULL) {
   if (identical(FUN, FALSE))
     return(NULL)
 
@@ -2273,10 +2280,10 @@ getPval_ <- function(x, y, FUN, n_unique_x = 10L) {
     )
 
   if (is.null(FUN))
-    guess_test(x, y, n_unique_x) else NULL
+    guess_test(x, y, n_unique_x, paired, id) else NULL
 }
 
-guess_test <- function(x, y, n_unique_x = 10L) {
+guess_test <- function(x, y, n_unique_x = 10L, paired = FALSE, id = NULL) {
   ## guess stat test for table var (x) using stratification var (y)
   ## x with >= n_unique_x unique values is assumed continuous
   ## dbl/int with many (?) unique values uses rank-sum tests
@@ -2295,9 +2302,26 @@ guess_test <- function(x, y, n_unique_x = 10L) {
     oy <- FALSE
   }
   
+  if (paired) {
+    if (is.null(id)) {
+      warning('tabler_stat - invalid id variable', call. = FALSE)
+      return(NA)
+    }
+    d <- setNames(cast(data.frame(id, y, x)), c('id', 't0', 't1'))
+    x <- if (is.character(x) || is.factor(x) || n_unique_x >= nx) {
+      d$t0 <- factor(d$t0, levels(factor(x)))
+      d$t1 <- factor(d$t1, levels(factor(x)))
+      structure(mcnemar.test(d$t0, d$t1, correct = TRUE)$p.value,
+                FUN = 'mcnemar.test', name = 'McNemar\'s test')
+    } else if (is.numeric(x))
+      structure(wilcox.test(d$t0, d$t1, paired = TRUE)$p.value,
+                FUN = 'wilcox.test', name = 'Wilcoxon signed-rank test')
+    else stop('check paired')
+    return(x)
+  }
+  
   if (inherits(x, 'Surv'))
-    return(structure(getPvalLogrank(x, y), FUN = 'survdiff',
-                     name = 'Log-rank test'))
+    return(structure(getPvalLogrank(x, y), FUN = 'survdiff', name = 'Log-rank test'))
 
   if (!is.character(x) && !is.factor(x) && nx >= n_unique_x) {
     if (ny > 2L) {
@@ -2652,7 +2676,7 @@ describeSurv <- function(x, y, include_NA = TRUE, times = NULL, percent = TRUE,
 
 tabler_stat2 <- function(data, varname, byvar = NULL,
                          varname_label = names(varname), byvar_label = names(byvar),
-                         digits = NULL, FUN = NULL,
+                         digits = NULL, FUN = NULL, paired = FALSE, id = NULL,
                          confint = FALSE, survmedian = FALSE,
                          survtime = FALSE, time = 0,
                          total = TRUE, n = NULL,
@@ -2704,7 +2728,7 @@ tabler_stat2 <- function(data, varname, byvar = NULL,
   }
 
   l <- tabler_stat_list(
-    data, varname, byvar, varname_label, byvar_label, digits, FUN,
+    data, varname, byvar, varname_label, byvar_label, digits, FUN, paired, id,
     format_pval, color_pval, color_missing, dagger, color_cell_by,
     cell_color, confint, survmedian, survtime, time,
     include_na_in_prop, iqr, statArgs, total
@@ -2718,6 +2742,7 @@ tabler_stat2 <- function(data, varname, byvar = NULL,
 
 tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
                              byvar_label = byvar, digits = NULL, FUN = NULL,
+                             paired = FALSE, id = NULL,
                              format_pval = TRUE, color_pval = TRUE,
                              color_missing = TRUE, dagger = TRUE,
                              color_cell_by = 'none', cell_color = NULL,
@@ -2745,11 +2770,11 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
   byvar <- byvar[1L]
 
   odata <- data
-  data <- data[, c(varname, byvar)]
+  data <- data[, c(varname, byvar, id)]
   data[, byvar] <- as.factor(data[, byvar])
   .data <- data
 
-  dig <- sapply(data[, -ncol(data), drop = FALSE], guess_digits)
+  dig <- sapply(data[, varname, drop = FALSE], guess_digits)
   digits <- if (is.null(digits))
     dig
   else {
@@ -2789,7 +2814,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
     NULL else statArgs
 
   l <- do.call('Map', c(list(
-    f = tabler_stat, data, varname, byvar, digits, FUN,
+    f = tabler_stat, data, varname, byvar, digits, FUN, paired, list(id),
     list(format_pval), color_pval, color_missing, dagger,
     color_cell_by, cell_color,
     list(confint %||% ''), list(survmedian %||% ''), list(survtime %||% '')),
