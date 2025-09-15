@@ -862,7 +862,7 @@ kmplot <- function(object, data = NULL,
     error = function(e) ''
   )
 
-  if (!identical(hr_text, FALSE)) {
+  if (!identical(hr_text, FALSE) && !identical(txt, '')) {
     if (length(nchar(na.omit(txt))) != ng) {
       warning(
         'number of strata levels does not equal number of HR estimates:\n',
