@@ -8,13 +8,15 @@
   x,
   xscale,
   xmax,
-  fun,
+  fun = "S",
   col = par("col"),
   pch = par("pch"),
   censor = TRUE,
   event = FALSE,
   bump = FALSE,
   plot = TRUE,
+  ctimes = NULL,
+  ctimes.type = "end",
   ...
 )
 }
@@ -27,6 +29,10 @@ and event times, respectively}
 \item{bump}{logical; \code{TRUE} will draw a bump mark rather than pch}
 
 \item{plot}{logical; \code{FALSE} will not plot but return plotting data}
+
+\item{ctimes, ctimes.type}{\code{survfit} trims censoring data so raw data
+is needed to recover full censoring; use \code{ctimes = FALSE} to
+ignore this or if some error is thrown in \code{censor_points}}
 
 \item{...}{additional graphical parameters passed to \code{\link{par}}}
 }

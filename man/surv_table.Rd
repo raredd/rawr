@@ -13,7 +13,7 @@ surv_table(
   locf = FALSE,
   median = FALSE,
   ci.median = TRUE,
-  ci.type = c("conf.int", "range"),
+  ci.type = c("conf.int", "range", "both"),
   digits.median = 0L,
   na.median = "NR",
   fun = c("S", "F"),
@@ -41,7 +41,7 @@ intervals}
 interval) will be added as a separate column}
 
 \item{ci.type}{for the median confidence interval, show either the
-\code{object$conf.int} or the full range; see \code{\link{surv_extract}}}
+\code{object$conf.int}, full range, or both; see \code{\link{surv_median}}}
 
 \item{digits.median}{for the median, the number of digits past the decimal
 point to keep}

@@ -16,7 +16,7 @@ surv_median(
   print = TRUE,
   na = ifelse(ci, "NR", "not reached"),
   show_conf = TRUE,
-  type = c("conf.int", "range")
+  type = c("conf.int", "range", "both")
 )
 
 surv_prob(
@@ -53,7 +53,7 @@ times have not yet been reached}
 
 \item{type}{if \code{ci = TRUE}, the type of confidence interval to show:
 \code{"conf.int"} for the \code{object$conf.int * 100}% confidence
-interval (default) or \code{"range"} for the full range}
+interval (default), \code{"range"} for the full range, or \code{"both"}}
 
 \item{times}{vector of times passed to \code{\link{surv_table}}}
 

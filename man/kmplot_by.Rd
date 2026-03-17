@@ -168,7 +168,7 @@ kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3, single = FALSE,
 
 
 ## if par('mfrow') is anything other than c(1,1), uses current setting
-par(mfrow = c(2,2))
+par(mfrow = c(2, 2))
 kmplot_by('rx', 'pfs', colon2, by = 'sex', col.surv = 1:3, single = FALSE,
   strata_lab = c('Observation','Trt','Trt + 5-FU'), add = TRUE)
 kmplot_by('1', 'pfs', colon2, by = 'sex', col.surv = 1:3, single = FALSE,

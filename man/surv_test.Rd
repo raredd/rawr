@@ -23,9 +23,9 @@ tt_pval(object, details = FALSE, data = NULL, ...)
 
 tt_text(formula, data, ..., details = TRUE, pFUN = NULL)
 
-hr_pval(object, details = FALSE, data = NULL, ...)
+hr_pval(object, details = FALSE, data = NULL, conf = 0.95, ...)
 
-hr_text(formula, data, ..., details = TRUE, pFUN = NULL)
+hr_text(formula, data, conf = 0.95, ..., details = TRUE, pFUN = NULL)
 
 pw_pval(object, details = FALSE, data = NULL, ..., method = "none")
 

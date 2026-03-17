@@ -21,9 +21,9 @@ kmplot(
   atrisk.table = TRUE,
   atrisk.lab = NULL,
   atrisk.pad = 1,
-  atrisk.type = c("atrisk", "events", "atrisk-events", "survival", "survival-ci",
-    "percent", "percent-ci", "cuminc", "percent-cuminc", "cuminc-ci",
-    "percent-cuminc-ci"),
+  atrisk.type = c("atrisk", "events", "atrisk-events", "atrisk-censored",
+    "events-censored", "survival", "survival-ci", "percent", "percent-ci", "cuminc",
+    "percent-cuminc", "cuminc-ci", "percent-cuminc-ci"),
   atrisk.digits = (!grepl("percent", atrisk.type)) * 2,
   atrisk.lines = TRUE,
   atrisk.lines.adj = NA,
@@ -71,14 +71,16 @@ kmplot(
   fun = c("S", "F"),
   times = NULL,
   times.lab = NULL,
-  times.type = c("percent", "atrisk", "events", "atrisk-events", "survival",
-    "survival-ci", "percent-ci", "cuminc", "percent-cuminc", "cuminc-ci",
-    "percent-cuminc-ci"),
+  times.type = c("percent", "atrisk", "events", "atrisk-events", "atrisk-censored",
+    "events-censored", "survival", "survival-ci", "percent-ci", "cuminc",
+    "percent-cuminc", "cuminc-ci", "percent-cuminc-ci"),
   times.digits = (!grepl("percent", times.type)) * 2,
   args.times = list(),
   add = FALSE,
   panel.first = NULL,
   panel.last = NULL,
+  ctimes = TRUE,
+  ctimes.type = "end",
   ...
 )
 }
@@ -287,6 +289,10 @@ set up but before any plotting takes place}
 \item{panel.last}{an expression to be evaluated after plotting but before
 returning from the function}
 
+\item{ctimes, ctimes.type}{(dev) \code{survfit} trims censoring so raw data
+is needed to recover full censoring; use \code{ctimes = FALSE} to
+ignore this or if some error is thrown in \code{censor_points}}
+
 \item{...}{additional parameters (\code{font}, \code{mfrow}, \code{bty},
 \code{tcl}, etc.) passed to \code{par}}
 }
@@ -322,11 +328,13 @@ legend to be mis-aligned.
 }
 \examples{
 library('survival')
+km0 <- survfit(Surv(time, status) ~ 1, data = colon)
 km1 <- survfit(Surv(time, status) ~ sex, data = colon)
 km2 <- survfit(Surv(time, status) ~ I(rx == "Obs") + adhere, data = colon)
 
 
 ## basic usage
+kmplot(km0)
 kmplot(km1)
 kmplot(km1, args.median = list(x = 500, y = 0.2))
 kmplot(km1, atrisk.table = FALSE, median.legend = TRUE)
@@ -377,7 +385,7 @@ kmplot(survfit(Surv(time, status) ~ rx, data = colon),
        pw_test = TRUE, args.pw = list(text.col = 1:3, x = 'bottomleft'))
 
 \dontrun{
-## expressions in at-risk table (strata.expr takes precedence)
+## expressions in at-risk table (strata.expr takes precedence over strata.lab)
 kmplot(km1, strata.lab = c('\u2640', '\u2642'))
 kmplot(km1, strata.lab = c('\u2640', '\u2642'),
                strata.expr = expression(widetilde(ring(Female)),
@@ -394,7 +402,7 @@ kmplot(km1, strata.lab  = c('Sex[Female]', 'Sex[Male]'))
 mar <- c(9, 6, 2, 2)
 op <- par(mfrow = c(1, 2))
 kmplot(km1, add = TRUE, mar = mar)
-kmplot(km2, add = TRUE, strata.lab = TRUE, mar = mar)
+kmplot(km2, add = TRUE, mar = mar, strata.lab = TRUE)
 par(mfrow = op)
 
 
@@ -403,17 +411,17 @@ cx1 <- coxph(Surv(time, status) ~ sex, data = colon)
 cx2 <- coxph(Surv(time, status) ~ sex + adhere, data = colon)
 cx3 <- coxph(Surv(time, status) ~ I(rx == "Obs") + adhere + age, data = colon)
 
-kmplot(survfit(cx1))
-kmplot(survfit(cx1, data.frame(sex = 0:1)), strata.lab = c('F', 'M'))
+kmplot(survfit(cx1), data = colon)
+kmplot(survfit(cx1, data.frame(sex = 0:1)), data = colon, strata.lab = c('F', 'M'))
 
 nd <- expand.grid(adhere = 0:1, sex = 0:1)
-kmplot(survfit(cx2, nd), col.surv = 1:4, strata.lab = do.call(paste, nd))
+kmplot(survfit(cx2, nd), data = colon, col.surv = 1:4, strata.lab = do.call(paste, nd))
 ## compare
 kmplot(survfit(Surv(time, status) ~ sex + adhere, data = colon),
        atrisk.type = 'survival')
 
 nd <- data.frame(rx = 'Obs', adhere = 0:1, age = c(30, 30, 70, 70))
-kmplot(survfit(cx3, nd), col.surv = 1:4, strata.lab = do.call(paste, nd))
+kmplot(survfit(cx3, nd), data = colon, col.surv = 1:4, strata.lab = do.call(paste, nd))
 
 }
 \references{

@@ -92,12 +92,13 @@ CR to PR is not progression but CR to SD or MR is progression)}
 \value{
 A list with the following elements:
 
-\item{$unconfirmed}{a \code{1 x 10} data frame with dates of first and last
+\item{$unconfirmed}{an \code{n x 12} data frame with dates of first and last
 response, first and last best response, the response for each, date last
-free from progression, and date of progression}
+free from progression, date of progression, and the (unconfirmed) date of
+first best response \emph{at any time} with the response assessment}
 \item{$confirmed}{similar to \code{$unconfirmed} but only for responses
 that have been confirmed}
-\item{$bsf_unconfirmed}{an \code{n x 2} data frame with the best-so-far
+\item{$bsf_unconfirmed}{an \code{* x 2} data frame with the best-so-far
 responses matching \code{include} with corresponding dates}
 \item{$bsf_confirmed}{similar to \code{$bsf_unconfirmed} but only for
 responses that have been confirmed}
@@ -108,7 +109,8 @@ confirmed, etc.) for vectors of dates and response assessments.
 
 \code{response} performs the work for a single ID--data with multiple
 IDs should be split before proceeding; see examples. This function also
-requires that dates are ordered.
+requires that dates are ordered and responses are factors with levels
+sorted best to worst.
 
 \code{response2} is a convenience function that calls \code{response}
 for each unique \code{id}. Data are ordered and split by \code{id},
@@ -126,18 +128,25 @@ dat <- data.frame(
     rsp[sample(seq_along(rsp), 50, TRUE)], rsp
   )
 )
+dat$response[1] <- 'PD'
 
 sp <- split(dat[, -1L], dat$id)
-ii <- 2
-response(sp[[ii]]$date, sp[[ii]]$response)
 
+## response results are included until the first pd
+response(sp[[1]]$date, sp[[1]]$response)$unconfirmed$response_best_first
+
+## ignore pd and return the best response from any assessment
+response(sp[[1]]$date, sp[[1]]$response)$unconfirmed$first_best_any
+
+
+## split by id and loop over each data set for all response data
 unconf <- do.call(
   'rbind',
   lapply(sp, function(x) response(x$date, x$response)$unconfirmed)
 )
 conf <- do.call(
   'rbind',
-  lapply(sp, function(x) response(x$date, x$response, default = 'SD')$confirmed)
+  lapply(sp, function(x) response(x$date, x$response)$confirmed)
 )
 rownames(unconf) <- rownames(conf) <- NULL
 
