@@ -10,6 +10,8 @@ tabler_stat(
   byvar = NULL,
   digits = 0L,
   FUN = NULL,
+  paired = FALSE,
+  id = NULL,
   format_pval = TRUE,
   color_pval = TRUE,
   color_missing = TRUE,
@@ -40,6 +42,10 @@ tabler_stat(
 \code{varname} and \code{byvar}; \code{FALSE} will suppress the test but
 keep a column for p-values; \code{NA} will suppress the test and drop the
 column for p-values; or a character string; see details}
+
+\item{paired, id}{(experimental) logical; if \code{TRUE}, paired tests are
+used grouped by \code{byvar}; \code{id} should be the column name of
+\code{data} giving the IDs}
 
 \item{format_pval}{logical; if \code{TRUE}, p-values will be formatted
 using \code{\link{pvalr}}; alternatively, a function may by used which will

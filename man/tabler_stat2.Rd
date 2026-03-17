@@ -12,8 +12,10 @@ tabler_stat2(
   byvar_label = names(byvar),
   digits = NULL,
   FUN = NULL,
+  paired = FALSE,
+  id = NULL,
   confint = FALSE,
-  survmedian = FALSE,
+  survmedian = TRUE,
   survtime = FALSE,
   time = 0,
   total = TRUE,
@@ -26,7 +28,7 @@ tabler_stat2(
   color_missing = TRUE,
   dagger = TRUE,
   group = NULL,
-  color_cell_by = "none",
+  color_cell_by = c("none", "value", "pct"),
   cell_color = palette()[1:2],
   statArgs = NULL,
   align = NULL,
@@ -68,6 +70,10 @@ statistics by \code{byvar}; the rows variable(s) of the table}
 \item{FUN}{\code{NULL} or a list of functions performing the test of
 association between each \code{varname} and \code{byvar}; see
 \code{\link{tabler_stat}}}
+
+\item{paired, id}{(experimental) logical; if \code{TRUE}, paired tests are
+used grouped by \code{byvar}; \code{id} should be the column name of
+\code{data} giving the IDs}
 
 \item{confint}{optional vector of \code{varname}(s) to summarize as
 confidence intervals}

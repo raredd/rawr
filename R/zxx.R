@@ -1,7 +1,7 @@
 ### some random things
 # identical2, all_equal2, fapply, fapply_by, flatten, rm_null, kinda_sort,
 # sym_sort, sample_each, Round, round_to, ceiling_to, floor_to, pickcol,
-# lunique, rm_nonascii
+# lunique, rm_nonascii, warnifnot
 # 
 # cumfuns
 # cum_reset, cum_na, cumsum_na, cumprod_na, cummax_na, cummin_na, cum_mid
@@ -799,4 +799,77 @@ lunique <- function(x, na.rm = FALSE) {
 
 rm_nonascii <- function(x) {
   gsub('[^\x20-\x7E]', '', x)
+}
+
+#' warnifnot
+#' 
+#' \code{\link{stopifnot}} but for \code{\link{warnings}}.
+#' 
+#' @param ...,exprs,exprObject,local see \code{\link{stopifnot}}
+#' 
+#' @examples
+#' \donttest{
+#' warnifnot(TRUE)
+#' warnifnot(FALSE)
+#' warnifnot(
+#'   'warning1' = FALSE,
+#'   'warning2' = TRUE,
+#'   'warning3' = FALSE,
+#'   FALSE
+#' )
+#' }
+#' 
+#' @export
+
+warnifnot <- function(..., exprs, exprObject, local = TRUE) {
+  n <- ...length()
+  if ((has.e <- !missing(exprs)) || !missing(exprObject)) {
+    if (n || (has.e && !missing(exprObject)))
+      stop('Only one of \'exprs\', \'exprObject\' or expressions, not more')
+    envir <- if (isTRUE(local)) 
+      parent.frame()
+    else if (isFALSE(local)) 
+      .GlobalEnv
+    else if (is.environment(local)) 
+      local
+    else stop('\'local\' must be TRUE, FALSE or an environment')
+    E1 <- if (has.e && is.call(exprs <- substitute(exprs))) 
+      exprs[[1L]]
+    cl <- if (is.symbol(E1) && E1 == quote(`{`)) {
+      exprs[[1L]] <- quote(warnifnot)
+      exprs
+    } else as.call(c(quote(warnifnot), if (!has.e) exprObject else as.expression(exprs)))
+    names(cl) <- NULL
+    return(eval(cl, envir = envir))
+  }
+  Dparse <- function(call, cutoff = 60L) {
+    ch <- deparse(call, width.cutoff = cutoff)
+    if (length(ch) > 1L)
+      paste(ch[1L], '....') else ch
+  }
+  head <- function(x, n = 6L) {
+    x[seq_len(if (n < 0L) max(length(x) + n, 0L) else min(n, length(x)))]
+  }
+  abbrev <- function(ae, n = 3L) {
+    paste(c(head(ae, n), if (length(ae) > n) '....'), collapse = '\n  ')
+  }
+  for (i in seq_len(n)) {
+    r <- ...elt(i)
+    if (!(is.logical(r) && !anyNA(r) && all(r))) {
+      dots <- match.call()[-1L]
+      if (is.null(msg <- names(dots)) || !nzchar(msg <- msg[i])) {
+        cl.i <- dots[[i]]
+        msg <- if (is.call(cl.i) &&
+                   identical(1L, pmatch(quote(all.equal), cl.i[[1L]])) &&
+                   (is.null(ni <- names(cl.i)) || length(cl.i) == 3L ||
+                    length(cl.i <- cl.i[!nzchar(ni)]) == 3L))
+          sprintf(gettext('%s and %s are not equal:\n  %s'),
+                  Dparse(cl.i[[2L]]), Dparse(cl.i[[3L]]), abbrev(r))
+        else sprintf(ngettext(length(r), '%s is not TRUE', '%s are not all TRUE'),
+                     Dparse(cl.i))
+      }
+      warning(simpleWarning(msg, call = if (p <- sys.parent(1L)) sys.call(p)))
+    }
+  }
+  invisible(NULL)
 }

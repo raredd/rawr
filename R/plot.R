@@ -1,7 +1,7 @@
 ### plot functions
 # tplot, tplot.default, tplot.formula, waffle, river, river2,
 # check_river_format, plothc, waterfall, heatmap.3, bplot, tabler_bincon,
-# pplot, pplot.default, pplot.formula
+# pplot, pplot.default, pplot.formula, swimmer, points.swimmer, legend.swimmer
 # 
 # S3 methods:
 # tplot, pplot
@@ -395,7 +395,7 @@ tplot.default <- function(x, g, ..., type = 'db',
   if (!missing(names)) {
     if (isTRUE(names) | is.null(names))
       names <- attr(groups, 'names')
-    if (!identical(names, FALSE))
+    if (!isFALSE(names))
       attr(groups, 'names') <- names
   } else {
     if (is.null(attr(groups, 'names')))
@@ -681,7 +681,7 @@ tplot.default <- function(x, g, ..., type = 'db',
   
   ## p-value for wilcoxon/kw test in upper-right corner
   pv <- NULL
-  if (!identical(test, FALSE)) {
+  if (!isFALSE(test)) {
     tFUN <- if (ng == 2L)
       function(x, g) wilcox.test(x ~ g, data.frame(x = x, g = g)) else
         function(x, g) kruskal.test(x ~ g, data.frame(x = x, g = g))
@@ -701,7 +701,7 @@ tplot.default <- function(x, g, ..., type = 'db',
     targs <- list(
       text = if (isTRUE(format_pval))
         pvalr(pv$p.value, show.p = TRUE)
-      else if (identical(format_pval, FALSE))
+      else if (isFALSE(format_pval))
         pv$p.value
       else format_pval(pv$p.value),
       side = 3L, line = 0.5, cex = par('cex.main'),
@@ -2003,8 +2003,8 @@ heatmap.3 <- function(x,
   cellnote <- cellnote[rowInd, colInd]
   
   ## row/column labels
-  label_rn <- !identical(labRow, FALSE)
-  label_cn <- !identical(labCol, FALSE)
+  label_rn <- !isFALSE(labRow)
+  label_cn <- !isFALSE(labCol)
   labRow <- if (is.null(labRow)) {
     if (is.null(rownames(x)))
       seq.int(nr)[rowInd] else rownames(x)
@@ -2056,13 +2056,13 @@ heatmap.3 <- function(x,
   x[x < min.breaks] <- min.breaks
   x[x > max.breaks] <- max.breaks
   
-  if (identical(RowSideColors, FALSE))
+  if (isFALSE(RowSideColors))
     RowSideColors <- NULL
   RowSideColors <- if (!is.null(RowSideColors) & !is.matrix(RowSideColors))
     matrix(RowSideColors, ncol = nr)
   else if (is.null(RowSideColors)) NULL else t(RowSideColors)
   
-  if (identical(ColSideColors, FALSE))
+  if (isFALSE(ColSideColors))
     ColSideColors <- NULL
   ColSideColors <- if (!is.null(ColSideColors) & !is.matrix(ColSideColors))
     matrix(ColSideColors, nrow = nc)
@@ -2777,7 +2777,7 @@ pplot.default <- function(x, at = seq_along(x), pad = 0.05,
   col <- rep_len(col, length(ul))
   pch <- rep_len(pch, length(ul))
   cex <- rep_len(cex, length(ul))
-  quantile <- length(quantiles) && !identical(quantiles, FALSE)
+  quantile <- length(quantiles) && !isFALSE(quantiles)
   
   ## each group * 2
   sapply(seq_along(ul), function(ii) {
@@ -2803,7 +2803,7 @@ pplot.default <- function(x, at = seq_along(x), pad = 0.05,
     }
   })
   
-  if (!identical(legend.text, FALSE)) {
+  if (!isFALSE(legend.text)) {
     legend.text <- legend.text %||% base::names(x[[1L]])
     if (!is.null(legend.text)) {
       col <- if (col[1L] == col[2L])
@@ -2823,7 +2823,7 @@ pplot.default <- function(x, at = seq_along(x), pad = 0.05,
   }
   
   res <- NULL
-  if (!identical(test, FALSE) && !is.null(test)) {
+  if (!isFALSE(test) && !is.null(test)) {
     test <- if (is.function(test) || is.character(test))
       match.fun(test)
     else if (isTRUE(test))
@@ -2848,4 +2848,159 @@ pplot.default <- function(x, at = seq_along(x), pad = 0.05,
   }
   
   invisible(res)
+}
+
+#' Swimmer plot
+#' 
+#' Functions to draw swimmer plots, points, and legends.
+#' 
+#' @param id,event,time vectors of ids, events, and event times; for
+#'   \code{swimmer} this should be one row per ID; \code{points.swimmer} may
+#'   have 0 or more for each ID
+#'   
+#'   \code{event} and \code{time} in \code{swimmer} are intended to be single,
+#'   absorbing states such as end of follow-up, death, on-going response, etc,;
+#'   for \code{points.swimmer}, these may be events that occur multiple times
+#'   during follow-up such as response assessments or toxicity events
+#' @param start,end vectors of start and end/censored times
+#' @param pch,col.pch,cex.pch,bg.pch plotting characters and attributes for
+#'   each event type
+#' @param hadj,vadj horizontal and vertical adjustments to points
+#' @param line draw a line or bar for the follow-up time
+#' @param col.line,lwd.line the color and line width for \code{line}
+#' @param xlim,ylim x- and y-axis limits
+#' @param xlab,ylab x-and y-axis labels
+#' @param label logical; if \code{TRUE}, IDs will be shown on y-axis
+#' @param args.legend a \emph{named} list of arguments passed to \code{\link{legend}}
+#' @param ... additional arguments passed to \code{\link{plot}} or further to
+#'   \code{\link{par}}
+#' @param object an object of class \code{"swimmer"}, usually returned by
+#'   \code{swimmer} or \code{points.swimmer}
+#' 
+#' @return
+#' A list of length 2 with \code{$data} and \code{$legend} elements containing
+#' the data plotted and used for the call to \code{legend.swimmer}.
+#' 
+#' @examples
+#' dat <- data.frame(
+#'   id = c('c1', 'd1', 'c2', 'c3', 'd2'),
+#'   start = 0,
+#'   end = 1:5 + 10,
+#'   event = c('Ongoing', 'Death', 'Ongoing', 'Ongoing', 'Death'),
+#'   time = 1:5 + 10
+#' )
+#' 
+#' rsp <- data.frame(
+#'   id = rep(dat$id, each = 3),
+#'   time = sample(1:10, 15, replace = TRUE),
+#'   event = sample(c('CR', 'PR', 'SD'), 15, replace = TRUE)
+#' )
+#' 
+#' ## base swimmer plot with single events
+#' sw <- swimmer(
+#'   dat$id, dat$start, dat$end, dat$event, dat$time,
+#'   pch = c('X', '>'), col.pch = 2:1, cex.pch = 1.5
+#' )
+#' ## add auto legend
+#' legend.swimmer(sw, x = 'bottomright')
+#' 
+#' ## add response events and legend
+#' pt <- points(sw, rsp$id, rsp$time, rsp$event)
+#' legend.swimmer(pt, x = 'bottomright', inset = c(0, 0.15))
+#' 
+#' ## alternatively combine all legends (see rawr::mlegend)
+#' legend.swimmer(list(pt, sw), x = 'topleft')
+#' 
+#' @export
+
+swimmer <- function(id, start, end, event, time, pch = NULL,
+                    col.pch = par('col'), cex.pch = par('cex'), bg.pch = par('bg'),
+                    line = c('line', 'bar'), col.line = 'grey', lwd.line = par('lwd'),
+                    xlim = NULL, ylim = NULL, xlab = 'Time', ylab = '',
+                    label = TRUE, args.legend = list(), ...) {
+  event <- factor(event)
+  pch <- pch %||% seq_along(levels(event))
+  warnifnot(
+    'duplicated IDs' = length(unique(id)) == length(id),
+    'use one pch for each event type' = length(pch) == nlevels(event)
+  )
+  
+  f <- function(x) rep_len(x, length(pch))[event]
+  
+  dat <- data.frame(
+    id, start, end, event, time, order = seq_along(id), pch = pch[event],
+    col.pch = f(col.pch), cex.pch = f(cex.pch), bg.pch = f(bg.pch),
+    col.line = col.line, lwd.line = lwd.line
+  )
+  
+  op <- par(bty = 'l')
+  on.exit(par(op))
+  
+  plot(
+    NA, type = 'n', yaxt = 'n', xlab = xlab, ylab = ylab, ...,
+    xlim = xlim %||% c(0, max(dat$end)), ylim = ylim %||% c(0, nrow(dat))
+  )
+  if (label) {
+    axis(2L, dat$order, dat$id, lwd = NA, las = 1L)
+  }
+  
+  line <- match.arg(line)
+  sp <- split(dat, dat$id)
+  lapply(sp, function(x) {
+    pad <- lwd.line / 4
+    switch(
+      line,
+      bar = rect(x$start, x$order - pad, x$end, x$order + pad, col = x$col.line,
+                 border = NA),
+      line = segments(x$start, x$order, x$end, col = x$col.line, lwd = x$lwd.line)
+    )
+  })
+  points(dat$time, dat$order, pch = dat$pch, col = dat$col.pch,
+         cex = dat$cex.pch, bg = dat$bg.pch, xpd = NA)
+  
+  legend <- list(legend = levels(dat$event), pch = pch, col = col.pch,
+                 pt.cex = cex.pch, pt.bg = bg.pch, bty = 'n')
+  legend <- modifyList(legend, args.legend)
+  
+  res <- structure(list(data = dat, legend = legend), class = 'swimmer')
+  invisible(res)
+}
+
+#' @rdname swimmer
+#' @export
+points.swimmer <- function(object, id, time, event, pch = NULL,
+                           col.pch = par('col'), cex.pch = par('cex'),
+                           bg.pch = par('bg'), hadj = 0, vadj = 0,
+                           args.legend = list(), ...) {
+  event <- factor(event)
+  pch <- pch %||% seq_along(levels(event))
+  warnifnot(
+    inherits(object, 'swimmer'),
+    'use one pch for each event type' = length(pch) == nlevels(event)
+  )
+  
+  f <- function(x) rep_len(x, length(pch))[event]
+  
+  dat <- data.frame(
+    id, time, event, order = object$data$order[match(id, object$data$id)],
+    pch = pch[event], col.pch = f(col.pch), cex.pch = f(cex.pch), bg.pch = f(bg.pch)
+  )
+  points(dat$time + hadj, dat$order + vadj, col = dat$col.pch, pch = dat$pch,
+         cex = dat$cex.pch, bg = dat$bg.pch, xpd = NA)
+  
+  legend <- list(legend = levels(dat$event), pch = pch, col = col.pch,
+                 pt.cex = cex.pch, pt.bg = bg.pch, bty = 'n')
+  legend <- modifyList(legend, args.legend)
+  
+  res <- structure(list(data = dat, legend = legend), class = 'swimmer')
+  invisible(res)
+}
+
+#' @rdname swimmer
+#' @export
+legend.swimmer <- function(object, ...) {
+  if (inherits(object, 'list')) {
+    args <- list(legend = lapply(object, function(x) x$legend))
+    do.call('mlegend', modifyList(args, list(...)))
+  } else do.call('legend', modifyList(object$legend, list(...)))
 }

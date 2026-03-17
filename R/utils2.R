@@ -5,7 +5,7 @@
 # tabler.lm, tabler.glm, tabler.survfit, tabler_by, tabler_by2, tabler_stat,
 # describeDate, describeDateBy, tabler_stat2, tabler_resp, match_ctc, tox_worst,
 # countr, dmy, combine_table, combine_table2, inject_div, case, write_htmlTable,
-# html_align, abbr, html2char, h2c, c2h
+# html_align, abbr, html2char, h2c, c2h, dt_cutoff
 #
 # S3 methods:
 # roundr, tabler
@@ -925,7 +925,7 @@ color_pval <- function(pv, breaks = c(0, 0.01, 0.05, 0.1, 0.5, 1),
 
   pv <- if (isTRUE(format_pval))
     pvalr(pvn, sig.limit, digits, scientific = FALSE, html = TRUE, show.p)
-  else if (identical(format_pval, FALSE))
+  else if (isFALSE(format_pval))
     pv else format_pval(pv)
 
   pvc <- cols[findInterval(pvn, breaks)]
@@ -1703,7 +1703,7 @@ tabler_by <- function(data, varname, byvar, n = NULL, order = FALSE, zeros = TRU
     res[, 1L] <- ifelse(duplicated(res[, 1]), '', res[, 1])
 
   if (!isTRUE(zeros)) {
-    if (identical(FALSE, zeros))
+    if (isFALSE(zeros))
       zeros = ''
     idx <- idx:ncol(res)
     res[, idx] <- `[<-`(res[, idx], gsub('^0.*', zeros, res[, idx]))
@@ -1831,6 +1831,9 @@ tabler_by2 <- function(data, varname, byvar, n = NULL, order = FALSE,
 #'   \code{varname} and \code{byvar}; \code{FALSE} will suppress the test but
 #'   keep a column for p-values; \code{NA} will suppress the test and drop the
 #'   column for p-values; or a character string; see details
+#' @param paired,id (experimental) logical; if \code{TRUE}, paired tests are
+#'   used grouped by \code{byvar}; \code{id} should be the column name of
+#'   \code{data} giving the IDs
 #' @param format_pval logical; if \code{TRUE}, p-values will be formatted
 #'   using \code{\link{pvalr}}; alternatively, a function may by used which will
 #'   be applied to each p-value
@@ -1959,14 +1962,14 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
                           describeFactors else Gmisc::describeFactors,
                         ...) {
   fun <- deparse(substitute(FUN))
-  nof <- identical(FUN, FALSE)
+  nof <- isFALSE(FUN)
   color_missing <- if (isTRUE(color_missing))
     'lightgrey'
-  else if (identical(color_missing, FALSE))
+  else if (isFALSE(color_missing))
     NULL else color_missing
   pcol <- if (isTRUE(color_pval))
     palette()[2:1]
-  else if (!identical(color_pval, FALSE)) {
+  else if (!isFALSE(color_pval)) {
     pcol <- color_pval
     color_pval <- TRUE
     pcol
@@ -2001,15 +2004,15 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
     ox <- FALSE
   }
 
-  if (identical(survtime, FALSE) & inherits(x, 'Surv'))
+  if (isFALSE(survtime) & inherits(x, 'Surv'))
     survmedian <- varname
   confint <- if (isTRUE(confint))
-    varname else if (identical(confint, FALSE)) NULL else confint
+    varname else if (isFALSE(confint)) NULL else confint
   survmedian <- if (isTRUE(survmedian))
-    varname else if (identical(survmedian, FALSE)) NULL else survmedian
+    varname else if (isFALSE(survmedian)) NULL else survmedian
   survtime <- if (isTRUE(survtime))
-    varname else if (identical(survtime, FALSE)) NULL else survtime
-  time <- time[1L]
+    varname else if (isFALSE(survtime)) NULL else survtime
+  time <- time
 
   res <- if (inherits(x, c('Date', 'POSIXct', 'POSIXt'))) {
     color_cell_by <- 'none'
@@ -2020,10 +2023,10 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
     describeConfint(x, y, ...)
   } else if (inherits(x, 'Surv') && varname %in% survmedian) {
     describeSurv(x, y, drop = is.null(byvar) | identical(byvar, '_by_var_'),
-                 digits = digits, ...)
+                 digits = digits)
   } else if (inherits(x, 'Surv') && varname %in% survtime) {
-    describeSurv(x, y, times = time, drop = is.null(byvar) | identical(byvar, '_by_var_'),
-                 digits = digits, ...)
+    describeSurv(x, y, drop = is.null(byvar) | identical(byvar, '_by_var_'),
+                 digits = digits, times = time)
   } else {
     Gmisc::getDescriptionStatsBy(
       x, y, digits = digits, html = TRUE, add_total_col = TRUE, ...,
@@ -2060,11 +2063,11 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
               col_scaler(as.numeric(pp), cell_color), res[wh, -1L])
   }
   
-  if (identical(total, FALSE))
+  if (isFALSE(total))
     res <- res[, -1L, drop = FALSE]
 
   ## no stat fn, no pvalue column
-  if (identical(NA, FUN))
+  if (identical(FUN, NA))
     return(
       structure(if (byvar == '_by_var_')
         res[, 1L, drop = FALSE] else res, FUN = FALSE, tfoot = '')
@@ -2167,7 +2170,7 @@ tabler_stat <- function(data, varname, byvar = NULL, digits = 0L, FUN = NULL,
                    format_pval = format_pval)
       else if (isTRUE(format_pval))
         sprintf('<em>%s</em>', pvalr(pvn, html = TRUE))
-      else if (identical(format_pval, FALSE))
+      else if (isFALSE(format_pval))
         pvn else format_pval(pvn)
     }
 
@@ -2216,7 +2219,7 @@ getPvalTtest <- function(x, by) {
 }
 
 getPval_ <- function(x, y, FUN, n_unique_x = 10L, paired = FALSE, id = NULL) {
-  if (identical(FUN, FALSE))
+  if (isFALSE(FUN))
     return(NULL)
 
   if (is.numeric(FUN))
@@ -2466,7 +2469,7 @@ describeConfint <- function(x, y, include_NA = TRUE, percent = TRUE,
   }
 
   x <- as.factor(x)
-  sp <- split(x, y)
+  sp <- split(x, y, drop = TRUE)
   sp <- c(Total = list(x), sp)
 
   res <- lapply(sp, function(xx) {
@@ -2502,39 +2505,49 @@ describeSurv <- function(x, y, include_NA = TRUE, times = NULL, percent = TRUE,
                          add_total_col = TRUE, useNA.digits = 0L,
                          conf = 0.95, conf.type = 'log', show_conf = TRUE, ...) {
   # describeSurv(Surv(mtcars$mpg, mtcars$vs), mtcars$gear)
+  # describeSurv(Surv(mtcars$mpg, mtcars$vs), mtcars$gear, times = c(18, 20, 22))
   s0 <- survfit(x ~ 1, conf.int = conf, conf.type = conf.type)
   s1 <- survfit(x ~ y, conf.int = conf, conf.type = conf.type)
   
   nr <- function(x) {
     gsub('NA', 'NR', x)
   }
-  label <- if (!is.null(times))
-    ifelse(percent, 'Percent', 'Probability') else 'Median'
   
-  res <- matrix(
-    c(if (add_total_col) {
-      if (is.null(times)) {
-        surv_median(s0, ci = TRUE, digits = digits, show_conf = FALSE)
-      } else {
-        surv_prob(s0, times[1L], ci = TRUE, digits = digits,
-                  show_conf = FALSE, percent = percent)
-      }
-    } else NULL,
-    nr(if (is.null(times))
-      surv_median(s1, ci = TRUE, digits = digits, show_conf = FALSE, print = FALSE)
-      else unlist(surv_prob(s1, times[1L], which = NULL, ci = TRUE,
+  if (is.null(times)) {
+    label <- 'Median'
+    res <- matrix(
+      c(if (add_total_col)
+        surv_median(s0, ci = TRUE, digits = digits, show_conf = FALSE) else NULL,
+         nr(surv_median(s1, ci = TRUE, digits = digits, show_conf = FALSE, print = FALSE))
+      ), nrow = 1L,
+      dimnames = list(
+        sprintf('%s (%s%% CI)', label, conf * 100),
+        c(if (add_total_col) 'Total' else NULL,
+          levels(if (drop) droplevels(as.factor(y)) else as.factor(y)))
+      )
+    )
+  } else {
+    label <- ifelse(percent, 'Percent', 'Probability')
+    label <- sprintf('t=%s, %s', times, label)
+    
+    res <- matrix(
+      c(if (add_total_col)
+        surv_prob(s0, times, ci = TRUE, digits = digits, print = FALSE,
+                  show_conf = FALSE, percent = percent) else NULL,
+        nr(unlist(surv_prob(s1, times, which = NULL, ci = TRUE,
                             percent = percent, digits = digits,
                             show_conf = FALSE, print = FALSE)))
-    ), nrow = 1L,
-    dimnames = list(
-      sprintf('%s (%s%% CI)', label, conf * 100),
-      c(if (add_total_col) 'Total' else NULL,
-        levels(if (drop) droplevels(as.factor(y)) else as.factor(y)))
+      ), nrow = length(times),
+      dimnames = list(
+        sprintf('%s (%s%% CI)', label, conf * 100),
+        c(if (add_total_col) 'Total' else NULL,
+          levels(if (drop) droplevels(as.factor(y)) else as.factor(y)))
+      )
     )
-  )
+  }
   
   if (!show_conf) {
-    res <- gsub(' .*', '', res)
+    res[] <- gsub(' .*', '', res)
     rownames(res) <- label
   }
   
@@ -2568,6 +2581,9 @@ describeSurv <- function(x, y, include_NA = TRUE, times = NULL, percent = TRUE,
 #' @param FUN \code{NULL} or a list of functions performing the test of
 #'   association between each \code{varname} and \code{byvar}; see
 #'   \code{\link{tabler_stat}}
+#' @param paired,id (experimental) logical; if \code{TRUE}, paired tests are
+#'   used grouped by \code{byvar}; \code{id} should be the column name of
+#'   \code{data} giving the IDs
 #' @param confint optional vector of \code{varname}(s) to summarize as
 #'   confidence intervals
 #' @param survmedian,survtime,time survival object options - median survival or
@@ -2677,13 +2693,13 @@ describeSurv <- function(x, y, include_NA = TRUE, times = NULL, percent = TRUE,
 tabler_stat2 <- function(data, varname, byvar = NULL,
                          varname_label = names(varname), byvar_label = names(byvar),
                          digits = NULL, FUN = NULL, paired = FALSE, id = NULL,
-                         confint = FALSE, survmedian = FALSE,
+                         confint = FALSE, survmedian = TRUE,
                          survtime = FALSE, time = 0,
                          total = TRUE, n = NULL,
                          include_na_in_prop = TRUE, iqr = FALSE,
                          format_pval = TRUE, color_pval = TRUE, correct = FALSE,
                          color_missing = TRUE, dagger = TRUE,
-                         group = NULL, color_cell_by = 'none',
+                         group = NULL, color_cell_by = c('none', 'value', 'pct'),
                          cell_color = palette()[1:2], statArgs = NULL,
                          align = NULL, rgroup = NULL, cgroup = NULL,
                          tfoot = NULL, tfoot2 = NULL, htmlArgs = NULL,
@@ -2696,6 +2712,8 @@ tabler_stat2 <- function(data, varname, byvar = NULL,
     names(varname)[!nzchar(nm)] <- varname[!nzchar(nm)]
   varname_label <- varname_label %||% varname
   byvar_label   <- byvar_label %||% byvar
+  
+  color_cell_by <- match.arg(color_cell_by)
 
   if (!all(c(varname, byvar) %in% names(data))) {
     stop(
@@ -2704,11 +2722,28 @@ tabler_stat2 <- function(data, varname, byvar = NULL,
     )
   }
   
+  f <- function(x, y, options) {
+    ## x/y can be logicals or a set of options; if explicit, use those,
+    ## but all options must be in one of the groups
+    if (!length(options))
+      return(list(x = FALSE, y = FALSE))
+    if (isTRUE(x) & (isFALSE(y)))
+      x <- options
+    if (isTRUE(y) & isFALSE(x))
+      y <- options
+    x <- intersect(x, options)
+    y <- intersect(y, options)
+    y <- setdiff(y, x)
+    x <- c(x, setdiff(options, c(x, y)))
+    if (!length(y))
+      y <- FALSE
+    list(x = x, y = y)
+  }
   surv <- varname[sapply(varname, function(x) inherits(data[, x], 'Surv'))]
-  survmedian <- if (length(surv) & !all(surv %in% c(survmedian, survtime)))
-    surv else survmedian
-  survmedian <- setdiff(survmedian, survtime)
-
+  tmp <- f(survmedian, survtime, surv)
+  survmedian <- tmp$x
+  survtime <- tmp$y
+  
   stopifnot(
     # length(byvar) %in% 0:1,
     byvar %in% names(data),
@@ -2804,6 +2839,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
 
   data <- rep_len(list(data), nv)
   pval <- any(!is.na(FUN))
+  time <- rep_len(list(time), length(varname))
   
   cf <- list(statArgs$continuous_fn %||% eval(formals(tabler_stat)$continuous_fn))
   statArgs$continuous_fn <- NULL
@@ -2818,7 +2854,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
     list(format_pval), color_pval, color_missing, dagger,
     color_cell_by, cell_color,
     list(confint %||% ''), list(survmedian %||% ''), list(survtime %||% '')),
-    time, include_na_in_prop, iqr, total, list(cf), list(ff), statArgs)
+    list(time), include_na_in_prop, iqr, total, list(cf), list(ff), statArgs)
   )
   
   tbl <- lapply(l, function(x)
@@ -2843,7 +2879,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
   cgroup   <- c('', byvar_label, '')
   n.cgroup <- c(1L, nlevels(.data[, byvar]), 1L)
   
-  if (identical(total, FALSE)) {
+  if (isFALSE(total)) {
     cgroup <- cgroup[-1L]
     n.cgroup <- n.cgroup[-1L]
   }
@@ -2879,7 +2915,7 @@ tabler_stat_list <- function(data, varname, byvar, varname_label = varname,
     })
     cg <- do.call('rbindx', cg)
     
-    if (!identical(total, FALSE)) {
+    if (!isFALSE(total)) {
       cg <- cbind('', cg)
       ncg <- cbind(1L, ncg)
     }
@@ -2929,7 +2965,7 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
   }
 
   cn <- c(get_tabler_stat_n(l$data[, l$byvar], n = n), '<em>p-value</em>')
-  if (identical(total, FALSE))
+  if (isFALSE(total))
     cn <- cn[-1L]
   
   cn <- gsub('__xxx__.*?(?=<br)', '', cn, perl = TRUE)
@@ -2987,7 +3023,7 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
     'fdr' else if (is.character(correct)) correct else 'none'
   pvn <- sapply(seq_along(l$l), function(ii)
     attr(l$l[[ii]], 'p.value') %||% NA)
-  if (!identical(correct, FALSE)) {
+  if (!isFALSE(correct)) {
     nc  <- ncol(res)
     wh  <- nzchar(res[, nc])
     pvc <- p.adjust(pvn, method, length(sort(pvn))) ## only non na pvalues
@@ -2998,7 +3034,7 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
     l$n.cgroup[length(l$n.cgroup)] <- l$n.cgroup[length(l$n.cgroup)] + 1L
   }
 
-  if (!identical(clean_daggers, FALSE)) {
+  if (!isFALSE(clean_daggers)) {
     old <- gsub('</sup>.*', '</sup>', lf)
     dag <- if (isTRUE(clean_daggers) | clean_daggers %in% 'letters')
       letters else seq_along(old)
@@ -3023,7 +3059,7 @@ tabler_stat_html <- function(l, align = NULL, rgroup = NULL, cgroup = NULL,
     tfoot = tr(tfoot %||% sprintf('<font size=1>%s</font>', tf))
   )
   
-  if (identical(cgroup, FALSE))
+  if (isFALSE(cgroup))
     args$cgroup <- args$n.cgroup <- NULL
   
   args <- modifyList(args, htmlArgs %||% list())
@@ -3051,7 +3087,7 @@ combine_tabler_stat2 <- function(l, correct = FALSE, format_pval = TRUE,
 
   method <- if (isTRUE(correct))
     'fdr' else if (is.character(correct)) correct else 'none'
-  if (!identical(correct, FALSE)) {
+  if (!isFALSE(correct)) {
     nc  <- ncol(res)
     wh  <- nzchar(res[, nc])
     pvc <- p.adjust(p, method, length(sort(p))) ## only non na pvalues
@@ -3298,7 +3334,7 @@ tabler_resp <- function(x, r_or_better = levels(x)[3:2], conf = 0.95,
     else NULL
   )
 
-  if (!identical(two_stage, FALSE)) {
+  if (!isFALSE(two_stage)) {
     ## define specific CIs to use for two-stage
     two_idx <- tail(two_stage, -3L)
     ## if none are given then do all
@@ -3357,7 +3393,7 @@ resp1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
   res <- if (all(is.na(x)))
     rep('-', length(r))
   else sapply(tbl, function(X)
-    if (identical(two, FALSE))
+    if (isFALSE(two))
       binconr(X, sum(tbl), conf, digits, TRUE, frac,
               show_conf, pct.sign, 'exact', TRUE)
     else
@@ -3377,7 +3413,7 @@ r_or_better1 <- function(x, r, conf, digits, frac, show_conf, pct.sign, two) {
     rep('-', length(r))
   else
     sapply(seq_along(r), function(X)
-      if (identical(two, FALSE))
+      if (isFALSE(two))
         binconr(sum(x %in% r[X:length(r)]), length(x), conf,
                 digits, TRUE, frac, show_conf, pct.sign, 'exact', TRUE)
       else
@@ -3589,7 +3625,7 @@ countr <- function(x, n, lowcase = NA, frac = FALSE, digits = 0L,
     '%s (n = %s%s; %s%%%s)',
     if (isTRUE(lowcase))
       tolower(names(x))
-    else if (identical(lowcase, FALSE))
+    else if (isFALSE(lowcase))
       toupper(names(x)) else names(x),
     roundr(x, 0L),
     if (frac)
@@ -4106,4 +4142,83 @@ h2c <- function(x, to_html = FALSE) {
 #' @export
 c2h <- function(x) {
   h2c(x, to_html = TRUE)
+}
+
+#' Apply cutoff date
+#' 
+#' Drop rows where any dates occur after a cutoff date. By default, all date
+#' variables in \code{data} will be compared to \code{date}
+#' 
+#' @param data a data frame
+#' @param date date of cutoff
+#' @param exclude optional character string to match date variable names
+#'   to be excluded in the comparison
+#' @param verbose logical; if \code{TRUE}, print summary of pre/post data with
+#'   the min/max dates pre and post and the count and number missing for each
+#'   date variable
+#' @param FUN the function used in the comparison to \code{date}; default is
+#'   \code{>}, but any \code{\link{Comparison}} operator would work
+#' 
+#' @examples
+#' dd <- data.frame(id = 1:3, d1 = 1:3, d2 = c(3, NA, 5))
+#' dd[, -1] <- lapply(dd[, -1], as.Date)
+#' date_cutoff(dd, '1970-01-05')
+#' date_cutoff(dd, '1970-01-05', exclude = 'd2')
+#' date_cutoff(dd, '1970-01-03', verbose = TRUE, FUN = `<=`)
+#' 
+#' @export
+
+date_cutoff <- function(data, date = NULL, exclude = NULL, verbose = FALSE,
+                        FUN = match.fun('>')) {
+  if (is.null(date) || is.na(date) || nrow(data) == 0L)
+    return(data)
+  
+  min2 <- function(x) {
+    if (!length(x))
+      NA else min(x, na.rm = !all(is.na(x)))
+  }
+  max2 <- function(x) {
+    if (!length(x))
+      NA else max(x, na.rm = !all(is.na(x)))
+  }
+  f <- function(x) {
+    data.frame(
+      min = min2(x), max = max2(x),
+      n = length(sort(x)), na = sum(is.na(x))
+    )
+  }
+  
+  dts <- sapply(data, function(x) inherits(x, c('Date', 'POSIXct')))
+  dts <- dts[dts]
+  inc <- if (!is.null(exclude))
+    !grepl(paste0(exclude, collapse = '|'), names(dts))
+  else rep_len(TRUE, length(dts))
+  
+  if (any(dts) && !is.null(date)) {
+    idx <- lapply(seq_along(dts), function(ii) {
+      x <- data[, names(dts)[ii]]
+      x <- FUN(as.Date(x), as.Date(date))
+      if (!inc[ii])
+        rep_len(FALSE, length(x))
+      else replace(x, is.na(x), FALSE)
+    })
+    idx <- Reduce(match.fun('|'), idx)
+    res <- data[!idx, ]
+    
+    if (verbose) {
+      pre <- do.call('rbind', lapply(data[, names(dts), drop = FALSE], f))
+      post <- do.call('rbind', lapply(res[, names(dts), drop = FALSE], f))
+      names(post) <- paste0(names(post), '_post')
+      names(pre) <- paste0(names(pre), '_pre')
+      
+      idx <- rbind(names(pre), names(post))
+      ver <- cbind(pre, post)[c(idx)]
+      ver <- cbind(var = names(dts), ver)
+      rownames(ver) <- NULL
+      
+      print(ver)
+    }
+    
+    res
+  } else data
 }
