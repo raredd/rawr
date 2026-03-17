@@ -1,3 +1,13 @@
+rawr 1.0.2
+--------
+  * add dt_cutoff, swimmer, warnifnot
+  * kmplot - lots of changes, censor_points to fix tick marks, atrisk-censored
+    and events-censored options, survmedian/survtime args accept variables
+    instead of only logicals
+  * kmplot_by - simplified internals
+  * describeSurv accepts multiple times
+  * replace identical(..., FALSE) with isFALSE(...)
+
 rawr 1.0.1
 --------
   * add labeller, mlegend
