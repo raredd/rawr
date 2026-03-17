@@ -705,7 +705,7 @@ cuzick.test.default <- function(x, g, details = wilcox.test, correct = TRUE,
   }
 
   ## pairwise details
-  if (!identical(details, FALSE)) {
+  if (!isFALSE(details)) {
     l2df <- function(l) {
       data.frame(unlist(l), factor(rep(seq_along(l), lengths(l))))
     }
@@ -1127,7 +1127,7 @@ rpart_subset <- function(tree, node = 1L) {
 #' @rdname rpart_utils
 #' @export
 rpart_nodes <- function(tree, node_labels = FALSE, droplevels = TRUE) {
-  if (identical(node_labels, FALSE))
+  if (isFALSE(node_labels))
     return(rownames(tree$frame)[tree$where])
 
   labels <- if (!isTRUE(node_labels)) {

@@ -26,8 +26,9 @@ A list of class \code{"imgpal"} with the following elements:
 \item{magick}{the result of \code{call}}
 }
 \description{
-Extract unique and most commonly-used unique colors from an image file
-(requires \href{https://imagemagick.org/index.php}{ImageMagick}).
+Extract unique and most commonly-used unique colors from an image file.
+\code{imgpal} requires \href{https://imagemagick.org/index.php}{ImageMagick}
+and for \code{Sys.which('magick')} to be on \code{Sys.getenv('PATH')}.
 }
 \examples{
 go <- 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png'

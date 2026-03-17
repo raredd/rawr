@@ -1364,7 +1364,7 @@ regcaptures <- function(x, m, use.names = TRUE) {
 #' @export
 regcaptures2 <- function(x, pattern, use.names = TRUE, simplify = FALSE) {
   res <- regcaptures(x, gregexpr(pattern, x, perl = TRUE), use.names)
-  if (identical(simplify, FALSE))
+  if (isFALSE(simplify))
     return(res)
   
   conformToProto <- function(mat, proto) {
@@ -2304,7 +2304,8 @@ sort2 <- function(x, decreasing = FALSE, index.return = FALSE,
 #' 
 #' \code{response} performs the work for a single ID--data with multiple
 #' IDs should be split before proceeding; see examples. This function also
-#' requires that dates are ordered.
+#' requires that dates are ordered and responses are factors with levels
+#' sorted best to worst.
 #' 
 #' \code{response2} is a convenience function that calls \code{response}
 #' for each unique \code{id}. Data are ordered and split by \code{id},
@@ -2357,12 +2358,13 @@ sort2 <- function(x, decreasing = FALSE, index.return = FALSE,
 #' @return
 #' A list with the following elements:
 #' 
-#' \item{$unconfirmed}{a \code{1 x 10} data frame with dates of first and last
+#' \item{$unconfirmed}{an \code{n x 12} data frame with dates of first and last
 #' response, first and last best response, the response for each, date last
-#' free from progression, and date of progression}
+#' free from progression, date of progression, and the (unconfirmed) date of
+#' first best response \emph{at any time} with the response assessment}
 #' \item{$confirmed}{similar to \code{$unconfirmed} but only for responses
 #' that have been confirmed}
-#' \item{$bsf_unconfirmed}{an \code{n x 2} data frame with the best-so-far
+#' \item{$bsf_unconfirmed}{an \code{* x 2} data frame with the best-so-far
 #' responses matching \code{include} with corresponding dates}
 #' \item{$bsf_confirmed}{similar to \code{$bsf_unconfirmed} but only for
 #' responses that have been confirmed}
@@ -2379,18 +2381,25 @@ sort2 <- function(x, decreasing = FALSE, index.return = FALSE,
 #'     rsp[sample(seq_along(rsp), 50, TRUE)], rsp
 #'   )
 #' )
+#' dat$response[1] <- 'PD'
 #' 
 #' sp <- split(dat[, -1L], dat$id)
-#' ii <- 2
-#' response(sp[[ii]]$date, sp[[ii]]$response)
 #' 
+#' ## response results are included until the first pd
+#' response(sp[[1]]$date, sp[[1]]$response)$unconfirmed$response_best_first
+#' 
+#' ## ignore pd and return the best response from any assessment
+#' response(sp[[1]]$date, sp[[1]]$response)$unconfirmed$first_best_any
+#' 
+#' 
+#' ## split by id and loop over each data set for all response data
 #' unconf <- do.call(
 #'   'rbind',
 #'   lapply(sp, function(x) response(x$date, x$response)$unconfirmed)
 #' )
 #' conf <- do.call(
 #'   'rbind',
-#'   lapply(sp, function(x) response(x$date, x$response, default = 'SD')$confirmed)
+#'   lapply(sp, function(x) response(x$date, x$response)$confirmed)
 #' )
 #' rownames(unconf) <- rownames(conf) <- NULL
 #' 
@@ -2483,8 +2492,8 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
   lvls <- levels(response)
   ord  <- is.ordered(response)
   include <- if (is.numeric(include))
-    lvls[include]
-  else grep(include[1L], lvls, value = TRUE, ignore.case = TRUE)
+    lvls[include] else
+      grep(include[1L], lvls, value = TRUE, ignore.case = TRUE)
   
   default <- grep(default[1L], lvls, value = TRUE, ignore.case = TRUE)[1L]
   
@@ -2492,6 +2501,16 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
   no_confirm <- lvls[no_confirm]
   
   na  <- as.Date(NA)
+  
+  ## first best at any time (ignoring pd)
+  first_best_any <- which.min(data$response)
+  if (!length(first_best_any)) {
+    dt_first_best_any <- as.Date(NA)
+    first_best_any <- NA
+  } else {
+    dt_first_best_any <- data$date[first_best_any]
+    first_best_any <- data$response[first_best_any]
+  }
   
   
   ## unconfirmed pd
@@ -2524,7 +2543,8 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
   rsp_na <- data.frame(
     dt_first = na, response_first = NA, dt_last = na, response_last = NA,
     dt_best_first = na, response_best_first = NA, dt_best_last = na,
-    response_best_last = NA, dt_lastprogfree = dt_progfree, dt_prog = dt_prog
+    response_best_last = NA, dt_lastprogfree = dt_progfree, dt_prog = dt_prog,
+    dt_first_best_any = dt_first_best_any, first_best_any = first_best_any
   )
   
   ## make sure response levels are correct
@@ -2595,13 +2615,15 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
   ## repeat but only for confirmed responses
   id <- rleid(dd$confirm_best)
   dd <- if (strict)
-    dd[id %in% id[dd$confirm_best %in% TRUE][1L], ]
-  else dd[dd$confirm %in% TRUE, ]
+    dd[id %in% id[dd$confirm_best %in% TRUE][1L], ] else
+      dd[dd$confirm %in% TRUE, ]
   
   if (nrow(dd) == 0L) {
     bsf_na <- data.frame(dt_bsf = na, response_bsf = NA)
     rsp$dt_prog <- rsp_na$dt_prog
     rsp$dt_lastprogfree <- rsp_na$dt_lastprogfree <- dt_progfree
+    rsp$dt_first_best_any <- rsp_na$dt_first_best_any
+    rsp$first_best_any <- rsp_na$first_best_any
     
     rsp    <- fix_levels(rsp)
     bsf    <- fix_levels(bsf)
@@ -2639,6 +2661,10 @@ response <- function(date, response, include = '(resp|stable)|([cpm]r|sd)$',
   rsp_confirm$dt_prog <- dt_prog_conf
   rsp$dt_lastprogfree <- dt_progfree
   rsp_confirm$dt_lastprogfree <- dt_progfree_conf
+  rsp$dt_first_best_any <- dt_first_best_any
+  rsp_confirm$dt_first_best_any <- dt_first_best_any
+  rsp$first_best_any <- first_best_any
+  rsp_confirm$first_best_any <- first_best_any
   
   
   ## best so far response

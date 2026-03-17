@@ -785,8 +785,9 @@ bp.test.default <- function(x, which = NULL, at = NULL,
 
 #' Image palettes
 #'
-#' Extract unique and most commonly-used unique colors from an image file
-#' (requires \href{https://imagemagick.org/index.php}{ImageMagick}).
+#' Extract unique and most commonly-used unique colors from an image file.
+#' \code{imgpal} requires \href{https://imagemagick.org/index.php}{ImageMagick}
+#' and for \code{Sys.which('magick')} to be on \code{Sys.getenv('PATH')}.
 #'
 #' @param path full file path to image
 #' @param n maximum number of colors to extract, result will be <= \code{n},
