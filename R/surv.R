@@ -1986,7 +1986,7 @@ cc_text <- function(formula1, formula2, data, tau = NULL, iter = 1000L, seed = 1
 #' ## return value is a list of survfit objects
 #' l <- kmplot_by('sex', 'pfs', colon2, 'rx', plot = FALSE)
 #' str(lapply(l, kmplot))
-#' str(lapply(l, kmplot_by))
+#' str(lapply(l, kmplot_by, data = colon2))
 #'
 #'
 #' ## multiple variables can be combined
@@ -2020,7 +2020,7 @@ cc_text <- function(formula1, formula2, data, tau = NULL, iter = 1000L, seed = 1
 #' kmplot_by('1', 'pfs', colon2, by = 'sex', col.surv = 1:3, single = FALSE,
 #'   strata_lab = FALSE, fig = c('C', 'D'), lr_test = FALSE)
 #'
-#'
+#' 
 #' ## use add = TRUE to add to a figure region without using the by argument
 #' par(mfrow = c(1, 2))
 #' mar <- c(8, 6, 3, 2) ## to align axes
@@ -2041,7 +2041,7 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
   conf.int  <- args.survfit$conf.int  %||% 0.95
   conf.type <- args.survfit$conf.type %||% 'log'
   se.fit    <- args.survfit$se.fit    %||% TRUE
-
+  
   if (is.logical(lr_test)) {
     rho <- 0
   } else {
@@ -2060,7 +2060,8 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
     time   <- 'time'
     by     <- if (is.null(by)) NULL else 'by'
   }
-
+  data$...weights  <- args.survfit$weights %||% rep_len(1, nrow(data))
+  
   if (inherits(strata, 'survfit')) {
     ## if survfit object is given, extract needed vars and run as usual
     if (is.null(data <- strata$.data)) {
@@ -2146,7 +2147,7 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
   if (!is.null(by) & is.null(names(col.surv))) {
     sl <- survfit(
       form, data, se.fit = se.fit, type = type, error = error,
-      conf.int = conf.int, conf.type = conf.type
+      conf.int = conf.int, conf.type = conf.type, weights = ...weights
     )
     col.surv <- setNames(
       col.surv %||% seq_along(sl$n),
@@ -2162,7 +2163,7 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
     tryCatch({
       eval(substitute(
         survfit(form, data = sp[[x]], type = type,
-                conf.type = conf.type, error = error,
+                conf.type = conf.type, error = error, weights = ...weights,
                 conf.int = conf.int, se.fit = se.fit),
         list(form = form))
       )
@@ -2174,7 +2175,7 @@ kmplot_by <- function(strata = '1', event = NULL, data = NULL, by = NULL,
                 deparse(update(form, . ~ 1)))
         eval(substitute(
           survfit(form, data = sp[[x]], type = type,
-                  conf.type = conf.type, error = error,
+                  conf.type = conf.type, error = error, weights = ...weights,
                   conf.int = conf.int, se.fit = se.fit),
           list(form = update(form, . ~ 1))))
       } else if (grepl('less than one element in integerOneIndex', e))

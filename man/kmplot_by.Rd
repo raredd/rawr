@@ -140,7 +140,7 @@ kmplot_by('1', 'pfs', colon2)
 ## return value is a list of survfit objects
 l <- kmplot_by('sex', 'pfs', colon2, 'rx', plot = FALSE)
 str(lapply(l, kmplot))
-str(lapply(l, kmplot_by))
+str(lapply(l, kmplot_by, data = colon2))
 
 
 ## multiple variables can be combined
