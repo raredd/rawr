@@ -2,6 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{swimmer}
 \alias{swimmer}
+\alias{lines.swimmer}
 \alias{points.swimmer}
 \alias{legend.swimmer}
 \title{Swimmer plot}
@@ -24,6 +25,20 @@ swimmer(
   xlab = "Time",
   ylab = "",
   label = TRUE,
+  args.legend = list(),
+  ...
+)
+
+\method{lines}{swimmer}(
+  object,
+  id,
+  start,
+  end,
+  event,
+  col.line = adjustcolor(par("col"), 0.25),
+  lwd.line = par("lwd"),
+  hadj = 0,
+  vadj = 0,
   args.legend = list(),
   ...
 )
@@ -110,11 +125,21 @@ sw <- swimmer(
 ## add auto legend
 legend.swimmer(sw, x = 'bottomright')
 
-## add response events and legend
+## add single time point events and legend
 pt <- points(sw, rsp$id, rsp$time, rsp$event)
 legend.swimmer(pt, x = 'bottomright', inset = c(0, 0.15))
 
 ## alternatively combine all legends (see rawr::mlegend)
 legend.swimmer(list(pt, sw), x = 'topleft')
+
+## add interval events and legend
+lin <- data.frame(
+  id = c('d1', 'd1', 'c3'),
+  start = c(2, 10, 3), end = c(4, 11, 10),
+  event = c('AE 1', 'AE 2', 'AE 1'),
+  col = adjustcolor(c('red', 'blue', 'red'), 0.25)
+)
+li <- lines(sw, lin$id, lin$start, lin$end, lin$event, col = lin$col)
+legend.swimmer(li, x = 'right')
 
 }

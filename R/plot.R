@@ -1,7 +1,8 @@
 ### plot functions
 # tplot, tplot.default, tplot.formula, waffle, river, river2,
 # check_river_format, plothc, waterfall, heatmap.3, bplot, tabler_bincon,
-# pplot, pplot.default, pplot.formula, swimmer, points.swimmer, legend.swimmer
+# pplot, pplot.default, pplot.formula, swimmer, lines.swimmer, points.swimmer,
+# legend.swimmer
 # 
 # S3 methods:
 # tplot, pplot
@@ -2904,12 +2905,22 @@ pplot.default <- function(x, at = seq_along(x), pad = 0.05,
 #' ## add auto legend
 #' legend.swimmer(sw, x = 'bottomright')
 #' 
-#' ## add response events and legend
+#' ## add single time point events and legend
 #' pt <- points(sw, rsp$id, rsp$time, rsp$event)
 #' legend.swimmer(pt, x = 'bottomright', inset = c(0, 0.15))
 #' 
 #' ## alternatively combine all legends (see rawr::mlegend)
 #' legend.swimmer(list(pt, sw), x = 'topleft')
+#' 
+#' ## add interval events and legend
+#' lin <- data.frame(
+#'   id = c('d1', 'd1', 'c3'),
+#'   start = c(2, 10, 3), end = c(4, 11, 10),
+#'   event = c('AE 1', 'AE 2', 'AE 1'),
+#'   col = adjustcolor(c('red', 'blue', 'red'), 0.25)
+#' )
+#' li <- lines(sw, lin$id, lin$start, lin$end, lin$event, col = lin$col)
+#' legend.swimmer(li, x = 'right')
 #' 
 #' @export
 
@@ -2960,6 +2971,40 @@ swimmer <- function(id, start, end, event, time, pch = NULL,
   
   legend <- list(legend = levels(dat$event), pch = pch, col = col.pch,
                  pt.cex = cex.pch, pt.bg = bg.pch, bty = 'n')
+  legend <- modifyList(legend, args.legend)
+  
+  res <- structure(list(data = dat, legend = legend), class = 'swimmer')
+  invisible(res)
+}
+
+#' @rdname swimmer
+#' @export
+lines.swimmer <- function(object, id, start, end, event,
+                          col.line = adjustcolor(par('col'), 0.25),
+                          lwd.line = par('lwd'),
+                          hadj = 0, vadj = 0,
+                          args.legend = list(), ...) {
+  event <- factor(event)
+  col.line <- rep_len(col.line, nlevels(event))
+  warnifnot(
+    inherits(object, 'swimmer')
+  )
+  
+  dat <- data.frame(
+    id, start, end, event,
+    order = object$data$order[match(id, object$data$id)],
+    col.line = col.line[event], lwd.line = lwd.line[event]
+  )
+  spl <- split(dat, seq.int(nrow(dat)))
+  
+  lapply(spl, function(d) {
+    pad <- lwd.line / 10
+    rect(d$start + hadj, d$order + vadj - pad,
+         d$end + hadj, d$order + vadj + pad,
+         col = d$col.line, border = NA, xpd = NA)
+  })
+  
+  legend <- list(legend = levels(event), fill = col.line, border = NA, bty = 'n')
   legend <- modifyList(legend, args.legend)
   
   res <- structure(list(data = dat, legend = legend), class = 'swimmer')
