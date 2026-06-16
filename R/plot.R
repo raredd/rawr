@@ -2872,6 +2872,9 @@ pplot.default <- function(x, at = seq_along(x), pad = 0.05,
 #' @param xlim,ylim x- and y-axis limits
 #' @param xlab,ylab x-and y-axis labels
 #' @param label logical; if \code{TRUE}, IDs will be shown on y-axis
+#' @param censor logical; if \code{TRUE}, events occurring after end time
+#'   defined by \code{swimmer} will be removed; otherwise, all events will be
+#'   included, potentially after the end date (default)
 #' @param args.legend a \emph{named} list of arguments passed to \code{\link{legend}}
 #' @param ... additional arguments passed to \code{\link{plot}} or further to
 #'   \code{\link{par}}
@@ -2983,7 +2986,7 @@ lines.swimmer <- function(object, id, start, end, event,
                           col.line = adjustcolor(par('col'), 0.25),
                           lwd.line = par('lwd'),
                           hadj = 0, vadj = 0,
-                          args.legend = list(), ...) {
+                          censor = FALSE, args.legend = list(), ...) {
   event <- factor(event)
   col.line <- rep_len(col.line, nlevels(event))
   warnifnot(
@@ -2993,8 +2996,16 @@ lines.swimmer <- function(object, id, start, end, event,
   dat <- data.frame(
     id, start, end, event,
     order = object$data$order[match(id, object$data$id)],
+    end0 = object$data$end[match(id, object$data$id)],
     col.line = col.line[event], lwd.line = lwd.line[event]
   )
+  ## remove events that occur after the main end date
+  ## only censor the end time
+  if (censor)
+    dat <- within(dat, {
+      end[end > end0] <- end0[end > end0]
+    })
+  
   spl <- split(dat, seq.int(nrow(dat)))
   
   lapply(spl, function(d) {
@@ -3016,7 +3027,7 @@ lines.swimmer <- function(object, id, start, end, event,
 points.swimmer <- function(object, id, time, event, pch = NULL,
                            col.pch = par('col'), cex.pch = par('cex'),
                            bg.pch = par('bg'), hadj = 0, vadj = 0,
-                           args.legend = list(), ...) {
+                           censor = FALSE, args.legend = list(), ...) {
   event <- factor(event)
   pch <- pch %||% seq_along(levels(event))
   warnifnot(
@@ -3028,8 +3039,14 @@ points.swimmer <- function(object, id, time, event, pch = NULL,
   
   dat <- data.frame(
     id, time, event, order = object$data$order[match(id, object$data$id)],
+    end0 = object$data$end[match(id, object$data$id)],
     pch = pch[event], col.pch = f(col.pch), cex.pch = f(cex.pch), bg.pch = f(bg.pch)
   )
+  ## remove events that occur after the main end date
+  ## these should be removed entirely since the event starts after end date
+  if (censor)
+    dat <- dat[dat$end0 >= dat$time, ]
+  
   points(dat$time + hadj, dat$order + vadj, col = dat$col.pch, pch = dat$pch,
          cex = dat$cex.pch, bg = dat$bg.pch, xpd = NA)
   

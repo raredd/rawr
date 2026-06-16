@@ -39,6 +39,7 @@ swimmer(
   lwd.line = par("lwd"),
   hadj = 0,
   vadj = 0,
+  censor = FALSE,
   args.legend = list(),
   ...
 )
@@ -54,6 +55,7 @@ swimmer(
   bg.pch = par("bg"),
   hadj = 0,
   vadj = 0,
+  censor = FALSE,
   args.legend = list(),
   ...
 )
@@ -94,6 +96,10 @@ each event type}
 \code{swimmer} or \code{points.swimmer}}
 
 \item{hadj, vadj}{horizontal and vertical adjustments to points}
+
+\item{censor}{logical; if \code{TRUE}, events occurring after end time
+defined by \code{swimmer} will be removed; otherwise, all events will be
+included, potentially after the end date (default)}
 }
 \value{
 A list of length 2 with \code{$data} and \code{$legend} elements containing
