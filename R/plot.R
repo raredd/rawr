@@ -2927,7 +2927,7 @@ pplot.default <- function(x, at = seq_along(x), pad = 0.05,
 #' 
 #' @export
 
-swimmer <- function(id, start, end, event, time, pch = NULL,
+swimmer <- function(id, start, end, event, time, hadj = 0, vadj = 0, pch = NULL,
                     col.pch = par('col'), cex.pch = par('cex'), bg.pch = par('bg'),
                     line = c('line', 'bar'), col.line = 'grey', lwd.line = par('lwd'),
                     xlim = NULL, ylim = NULL, xlab = 'Time', ylab = '',
@@ -2944,7 +2944,7 @@ swimmer <- function(id, start, end, event, time, pch = NULL,
   dat <- data.frame(
     id, start, end, event, time, order = seq_along(id), pch = pch[event],
     col.pch = f(col.pch), cex.pch = f(cex.pch), bg.pch = f(bg.pch),
-    col.line = col.line, lwd.line = lwd.line
+    col.line = col.line, lwd.line = lwd.line, hadj = hadj, vadj = vadj
   )
   
   op <- par(bty = 'l')
@@ -2969,7 +2969,8 @@ swimmer <- function(id, start, end, event, time, pch = NULL,
       line = segments(x$start, x$order, x$end, col = x$col.line, lwd = x$lwd.line)
     )
   })
-  points(dat$time, dat$order, pch = dat$pch, col = dat$col.pch,
+  points(dat$time + dat$hadj, dat$order + dat$vadj,
+         pch = dat$pch, col = dat$col.pch,
          cex = dat$cex.pch, bg = dat$bg.pch, xpd = NA)
   
   legend <- list(legend = levels(dat$event), pch = pch, col = col.pch,

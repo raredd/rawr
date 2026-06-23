@@ -13,6 +13,8 @@ swimmer(
   end,
   event,
   time,
+  hadj = 0,
+  vadj = 0,
   pch = NULL,
   col.pch = par("col"),
   cex.pch = par("cex"),
@@ -74,6 +76,8 @@ during follow-up such as response assessments or toxicity events}
 
 \item{start, end}{vectors of start and end/censored times}
 
+\item{hadj, vadj}{horizontal and vertical adjustments to points}
+
 \item{pch, col.pch, cex.pch, bg.pch}{plotting characters and attributes for
 each event type}
 
@@ -94,8 +98,6 @@ each event type}
 
 \item{object}{an object of class \code{"swimmer"}, usually returned by
 \code{swimmer} or \code{points.swimmer}}
-
-\item{hadj, vadj}{horizontal and vertical adjustments to points}
 
 \item{censor}{logical; if \code{TRUE}, events occurring after end time
 defined by \code{swimmer} will be removed; otherwise, all events will be
