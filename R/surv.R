@@ -455,7 +455,8 @@ kmplot <- function(object, data = NULL,
     sdat <- deparse(object$call$data)
     sname <- gsub('[$[].*', '', sdat)
     tryCatch(if (identical(sdat, sname))
-      get(sdat, where(sname)) else eval(parse(text = sdat), where(sname)),
+      get(sdat, where(sname), mode = 'list') else
+        eval(parse(text = sdat), where(sname)),
       error = function(e) NULL)
   }
   sdat <- data %||% sdat
