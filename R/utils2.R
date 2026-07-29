@@ -1833,7 +1833,7 @@ tabler_by2 <- function(data, varname, byvar, n = NULL, order = FALSE,
 #'   column for p-values; or a character string; see details
 #' @param paired,id (experimental) logical; if \code{TRUE}, paired tests are
 #'   used grouped by \code{byvar}; \code{id} should be the column name of
-#'   \code{data} giving the IDs
+#'   \code{data} giving the IDs; currently only 1:1 matching is implemented
 #' @param format_pval logical; if \code{TRUE}, p-values will be formatted
 #'   using \code{\link{pvalr}}; alternatively, a function may by used which will
 #'   be applied to each p-value
@@ -2308,6 +2308,10 @@ guess_test <- function(x, y, n_unique_x = 10L, paired = FALSE, id = NULL) {
   if (paired) {
     if (is.null(id)) {
       warning('tabler_stat - invalid id variable', call. = FALSE)
+      return(NA)
+    }
+    if (any(table(id) > 2)) {
+      ## if > 1:1 matching
       return(NA)
     }
     d <- setNames(cast(data.frame(id, y, x)), c('id', 't0', 't1'))

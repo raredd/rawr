@@ -45,7 +45,7 @@ column for p-values; or a character string; see details}
 
 \item{paired, id}{(experimental) logical; if \code{TRUE}, paired tests are
 used grouped by \code{byvar}; \code{id} should be the column name of
-\code{data} giving the IDs}
+\code{data} giving the IDs; currently only 1:1 matching is implemented}
 
 \item{format_pval}{logical; if \code{TRUE}, p-values will be formatted
 using \code{\link{pvalr}}; alternatively, a function may by used which will
@@ -195,10 +195,10 @@ tabler_stat2(mt, names(mt)[-10L], 'gear',
 \code{\link{cuzick.test}}; \code{\link{jt.test}}; \code{\link{kw.test}};
 \code{\link{ca.test}}
 
-Other tabler: 
-\code{\link{tabler}()},
-\code{\link{tabler_by}()},
-\code{\link{tabler_resp}()},
-\code{\link{tabler_stat2}()}
+Other tabler:
+\code{\link[=tabler]{tabler()}},
+\code{\link[=tabler_by]{tabler_by()}},
+\code{\link[=tabler_resp]{tabler_resp()}},
+\code{\link[=tabler_stat2]{tabler_stat2()}}
 }
 \concept{tabler}
