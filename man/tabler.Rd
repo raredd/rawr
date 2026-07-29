@@ -62,10 +62,10 @@ tabler(cphfit, add_reference = TRUE)
 \seealso{
 \code{\link{surv_table}}
 
-Other tabler: 
-\code{\link{tabler_by}()},
-\code{\link{tabler_resp}()},
-\code{\link{tabler_stat}()},
-\code{\link{tabler_stat2}()}
+Other tabler:
+\code{\link[=tabler_by]{tabler_by()}},
+\code{\link[=tabler_resp]{tabler_resp()}},
+\code{\link[=tabler_stat]{tabler_stat()}},
+\code{\link[=tabler_stat2]{tabler_stat2()}}
 }
 \concept{tabler}

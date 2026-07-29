@@ -224,10 +224,10 @@ htmlTable::htmlTable(
 \seealso{
 \code{\link{tox_worst}}; \code{\link{match_ctc}}
 
-Other tabler: 
-\code{\link{tabler}()},
-\code{\link{tabler_resp}()},
-\code{\link{tabler_stat}()},
-\code{\link{tabler_stat2}()}
+Other tabler:
+\code{\link[=tabler]{tabler()}},
+\code{\link[=tabler_resp]{tabler_resp()}},
+\code{\link[=tabler_stat]{tabler_stat()}},
+\code{\link[=tabler_stat2]{tabler_stat2()}}
 }
 \concept{tabler}

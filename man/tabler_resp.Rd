@@ -101,10 +101,10 @@ structure(ht, class = 'htmlTable')
 \seealso{
 \code{\link{bincon}}; \code{\link{binconr}}; \code{\link{response}}
 
-Other tabler: 
-\code{\link{tabler}()},
-\code{\link{tabler_by}()},
-\code{\link{tabler_stat}()},
-\code{\link{tabler_stat2}()}
+Other tabler:
+\code{\link[=tabler]{tabler()}},
+\code{\link[=tabler_by]{tabler_by()}},
+\code{\link[=tabler_stat]{tabler_stat()}},
+\code{\link[=tabler_stat2]{tabler_stat2()}}
 }
 \concept{tabler}

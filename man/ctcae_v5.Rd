@@ -21,7 +21,7 @@ A data frame with 837 rows and 6 variables:
 \url{https://ctep.cancer.gov/protocolDevelopment/electronic_applications/ctc.htm#ctc_50}
 }
 \usage{
-ctcae_v5
+data(ctcae_v5)
 }
 \description{
 A data set containing the CTCAE (version 5) toxicity codes, descriptions,
