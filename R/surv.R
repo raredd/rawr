@@ -1,7 +1,7 @@
 ### survival
 # kmplot, kmplot_by, kmplot_ticks, local_coxph_test, surv_cp, surv_summary,
 # surv_table, survdiff_pairs, coxph_pairs, landmark, surv_extract, surv_median,
-# surv_prob, kmdiff, surv_dist, tte
+# surv_prob, kmdiff, surv_dist, tte, survdiff_time
 #
 # unexported:
 # stratify_formula, points.kmplot, censor_points, kmplot_data_, atrisk_data_,
@@ -3532,4 +3532,91 @@ tte <- function(start, fwup, ..., crisk = FALSE,
     t[t > censor] <- censor
   }
   data.frame(ind = i, time = t, dt_start = start, dt_tte = e, dt_fwup = fwup, ...)
+}
+
+#' survdiff time
+#' 
+#' Compare survival curves at a specific time point.
+#' 
+#' @param object a \code{\link{survfit}} object
+#' @param time time at which to evaluate differences
+#' @param method transformation, one of \code{"log-log"} (default) often
+#'   more stable and bounded on real line or \code{"plain"} for no
+#'   transformation
+#' 
+#' @examples
+#' library('survival')
+#' fit1 <- survfit(Surv(time, status) ~ sex, lung)
+#' kmplot(fit1)
+#' survdiff_time(fit1, 200)
+#' survdiff_time(fit1, c(200, 800))
+#' 
+#' dd <- lung[lung$ph.ecog < 3, ]
+#' fit2 <- survfit(Surv(time, status) ~ ph.ecog, dd)
+#' kmplot(fit2)
+#' survdiff_time(fit2, 400)
+#' 
+#' ## pairwise comparisons
+#' sp <- split(dd, dd$ph.ecog)
+#' xx <- combn(sp, 2, simplify = FALSE, function(x) {
+#'   x <- do.call('rbind', x)
+#'   survdiff_time(survfit(Surv(time, status) ~ ph.ecog, x), 400)
+#' })
+#' do.call('rbind', xx)
+#' 
+#' @export
+
+survdiff_time <- function(object, time, method = c('log-log', 'plain')) {
+  method <- match.arg(method)
+  if (length(object$strata) < 2L) {
+    stop('survfit object must have >= 2 groups')
+  }
+  
+  res <- lapply(time, function(x) {
+    ss <- summary(object, times = x, extend = TRUE)
+    
+    dd <- data.frame(
+      strata  = ss$strata,
+      time    = ss$time,
+      surv    = ss$surv,
+      std.err = ss$std.err
+    )
+    
+    k <- nrow(dd)
+    
+    if (method == 'plain') {
+      est <- dd$surv
+      se  <- dd$std.err
+    } else {
+      ## log(-log(S)) transformation
+      g <- function(s) log(-log(s))
+      g_se <- function(s, se) se / (s * log(s)) ## delta method
+      est <- g(dd$surv)
+      se  <- g_se(dd$surv, dd$std.err)
+    }
+    
+    if (k == 2L) {
+      ## two-group case: z-test (equivalent to chisq with 1 df)
+      diff <- est[1L] - est[2L]
+      se_diff <- sqrt(se[1L] ^ 2 + se[2L] ^ 2)
+      z <- diff / se_diff
+      stat <- z ^ 2
+      df <- 1L
+      p <- 2 * pnorm(abs(z), lower.tail = FALSE)
+    } else {
+      ## k > 2: omnibus Wald chi-square
+      w <- 1 / se ^ 2
+      est_bar <- sum(w * est) / sum(w)
+      stat <- sum(w * (est - est_bar) ^ 2)
+      df <- k - 1L
+      p <- pchisq(stat, df = df, lower.tail = FALSE)
+    }
+    
+    data.frame(
+      time = x, groups = toString(dd$strata),
+      statistic = stat, df = df, p.value = p, method = method
+    )
+  })
+  
+  do.call('rbind', res)
 }
